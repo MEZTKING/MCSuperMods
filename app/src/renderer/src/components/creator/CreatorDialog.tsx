@@ -52,7 +52,7 @@ import {
   toValues,
 } from '../wizard/wizard-model';
 import { CreatorAudioField, type PickAudio } from './CreatorAudioField';
-import { CreatorImageField, colourHintOf, type PickImage } from './CreatorImageField';
+import { blocksHintOf, CreatorImageField, colourHintOf, type PickImage } from './CreatorImageField';
 import { CreatorPreview } from './CreatorPreview';
 import {
   CREATOR_DEBOUNCE_MS,
@@ -66,6 +66,12 @@ import {
 } from './creator-model';
 
 /** The Creator image field's `colourHint` prop, left out when the flow gives no colour. */
+function blocksHintProps(blocksHint: { wide: number; tall: number } | undefined): {
+  blocksHint?: { wide: number; tall: number };
+} {
+  return blocksHint === undefined ? {} : { blocksHint };
+}
+
 function colourHintProps(colourHint: string | undefined): { colourHint?: string } {
   return colourHint === undefined ? {} : { colourHint };
 }
@@ -546,6 +552,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                           onChange={(value) => change(parameter.id, value)}
                           {...(nameHint === undefined ? {} : { nameHint })}
                           {...colourHintProps(colourHintOf(parameters ?? [], raw, parameter))}
+                          {...blocksHintProps(blocksHintOf(parameters ?? [], raw))}
                         />
                       ) : (
                         <Fragment key={parameter.id}>

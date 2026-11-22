@@ -12,7 +12,10 @@ The pictures are MCSuperMods' own drawings. They are never copied, traced, recol
 - the **Block Studio**'s picture rows and texture slots, and the **Item Studio**'s picture rows;
 - the **Particle Studio**, where the button reads **Draw frames…** and draws all four frames in one step ([Particles](particles.md#pictures));
 - the **texture painter**, where a pick replaces the picture on the canvas as one painter step;
-- **New texture…**, under **Start from** ([New texture from a drawn picture](#new-texture-from-a-drawn-picture)).
+- **New texture…**, under **Start from** ([New texture from a drawn picture](#new-texture-from-a-drawn-picture));
+- the **Mob Studio**'s **Draw a skin** and the **Villager look Studio**'s pictures, each with **Make with AI** beside it.
+
+In Very easy mode, once a key for AI pictures is set, the **Draw it for me** window also offers **Make it with AI instead**.
 
 The **Draw a picture** window (Very easy: **Draw it for me**) says "MCSuperMods draws it here in a Minecraft-like style, without a key or the internet. You can paint over it afterwards." and asks:
 
@@ -64,12 +67,12 @@ Four ways to get a picture, which you can mix:
 - **Draw…** makes a picture in the Minecraft-like style from a recipe. It works offline and costs nothing.
 - **Paint this texture** (the texture editor) changes any picture pixel by pixel. Paint over a drawn picture to restyle it ([Replacing the placeholders](creator.md#replacing-the-placeholders)).
 - **Picture to texture** turns a picture of your own into a texture ([Picture to texture](creator.md#picture-to-texture)). It does not make the picture look like Minecraft.
-- **Make with AI** makes a picture from a description with your own key ([AI pictures](ai-pictures.md)). Its clean-up uses the same shades as drawn pictures.
+- **Make with AI** makes a picture from a description with your own key, Retro Diffusion by default ([AI pictures](ai-pictures.md)). It starts from MCSuperMods' drawing of the same thing, checks each result's outline and colour against that drawing, and falls back to the drawing when the service gets it wrong. Its clean-up uses the same shades as drawn pictures. It is on offer wherever **Draw…** is, and also for paintings, armour layers and banner and pot patterns in the painter and **New texture…**.
 
 ## Limits
 
 - **Vanilla-like, not vanilla.** The pictures are in the same style, not the same pixels. MCSuperMods never copies, recolours or learns from Minecraft's textures. To get an exact look, paint it, use Picture to texture or Make with AI.
-- **Paintings keep their placeholder landscape.** A painting is your own picture, so the Painting flow's default picture is unchanged. Choose your own with **Choose picture…**.
+- **Paintings keep their placeholder landscape.** A painting is your own picture, so the Painting flow's default picture is unchanged. Choose your own with **Choose picture…**, or **Make with AI** with a key.
 - **Vanilla mob variant skins are an even coat.** A wolf, cat or pig variant drawn by a flow has fur shading but no eyes or markings in place, because their layout belongs to Minecraft's own models. Paint it or use Picture to texture.
 - **Draw a skin needs a model with boxes.** A model that maps its faces one by one gives the button greyed out (see above).
 - **Nothing is redrawn by itself.** Projects you made before keep their pictures. Only what flows make from now on is drawn, and **Draw…** or **Edit in Creator** redraws one on request.

@@ -8846,3 +8846,25 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Record the five scenarios in the game (`./gradlew runGameTest -PupdateSimParity`, both versions).
 - Follow-ups: the runtime and `dataPackComponents` for a passthrough `minecraft:block_transformer` (then a fixture transformer and scenario); pass the clicked face to `Types3Area.use` (faces, bottom-face rule); rules while sneaking; vanilla tags in Try it for transformers on Minecraft's tags.
+
+## 2026-11-22 — executor — Retro Diffusion as the art route: exact AI pictures everywhere (ADR 0093 accepted with findings)
+
+**What**
+- The user chose Retro Diffusion for the art, then found the Sun Mod's AI armour icons were onion-, shell- and squid-like blobs in the wrong colour and the pieces did not match. AI pictures are now exact: `prompt.ts` builds the prompt from the slot (helmet, chestplate, leggings, boots, tools, bow, shield, ingot, nugget, gem, trinket, food; ore, planks, log, bricks, leaves, block faces), the colour and material words, the slot's Minecraft silhouette words and what the picture must only be; `reference.ts` (lazy) draws the slot with the art generator in the asked colour, sent as Retro Diffusion's `input_image` (RGB, `strength` 0.5) with `input_palette`; `checks.ts` checks every result's outline (fitted masks, overlap at least 0.6 and the drawing's gaps kept), colour (hue within 40 degrees) and seams; `runCheckedRound` retries once (stronger words, `strength` 0.35) and then shows MSM's drawing with a plain line; the Creator and Surprise me batch is one set (one seed, one palette, each piece checked against its built-in drawing).
+- Make with AI beside Draw… everywhere a picture is made: the Mob Studio's **Make a skin with AI** (an `mc_texture` tile laid on the model's boxes), the Villager look Studio's pictures, the Particle Studio's frames (8 by 8 sprites), every Creator image field (skins, paintings of the chosen size, particles), New texture's **Made with AI** (paintings too) and the painter by folder (paintings, armour and leggings layers, banner and shield masks, pot patterns, skins, villager looks, particles; `shapes.ts`), and Very easy's **Draw it for me** offers **Make it with AI instead** once a key is set.
+- The price is asked before every request (Retro Diffusion's free `check_cost`; new channel `msm:v1:aiPictures:cost`), shown in the window and in the batch switch; the window shows the exact words sent, **Try again** and **Use MSM's drawing**.
+- The clean-up keeps pixels of one colour on one shade (flat areas no longer turn into stripes or speckle).
+- ADR 0093 accepted with findings F1 (the API facts with sources), F2 (exact pictures), F3 (the places); DESIGN section 8, `app/CLAUDE.md`, guide `ai-pictures.md` and `pictures.md`, CHANGELOG `[Unreleased]`.
+- Verified: `pnpm lint`, `pnpm typecheck` (only the existing liveviews fake error, not this work), app tests (3,027 of 3,028; the one failure, `WorldMap` debounce, passes alone), new tests `ai-pictures-exact` (renderer and main) and `ai-pictures-places`, the skin section's AI tests; `pnpm build`, `dist:dir`, check-size from an empty `app/out` (asar 26.5 MB, renderer 17.8 MB); e2e `smoke` and `ai-pictures-path` (the block, plus a mob skin and a painting) under `xvfb-run -a`.
+
+**Decisions**
+- MSM's own drawing is sent as the reference: it is made on the user's computer by the art generator, never a project file, so ADR 0093 D1 holds; the window says it is sent.
+- `negative` is ignored by Retro Diffusion's models (its README), so the exclusions are written into the prompt; `bypass_prompt_expansion` stays off as the README asks.
+- Skins have no Retro Diffusion style: the service draws a tileable coat and MSM lays it on the boxes. Paintings use `rd_plus__default` (verify at implementation which RD Plus style suits them best).
+- The batch places pictures that pass their checks without a separate review step (one Undo), as D7 decided; failures keep MSM's drawing with the reason in the note.
+- The colour words, palette and colour check are used only when a colour was given or chosen (a grey default would hold every picture to greys).
+
+**Next**
+- The user's look: a Sun Mod gear set made again with Use AI pictures and a real Retro Diffusion key (whether `mc_item` takes `input_image`, the best `strength`, RD Plus aspect limits, `check_cost` on V2 are all "verify at implementation").
+- Root `CLAUDE.md` still says "All ADRs up to 0106 except 0093 are accepted"; the next main session updates that line.
+- The leggings drawing has almost no gap, so a blob passes its outline check; a sharper leggings recipe or a per-slot threshold would help.

@@ -35,6 +35,7 @@ import {
 import type { RgbaImage } from '../../src/renderer/src/components/texture-editor/pixels';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
 import type {
+  AiPictureRaster,
   AiPictureRequest,
   AiPictureResult,
   AiPicturesPlatform,
@@ -78,6 +79,23 @@ function ball(hue: number): Uint8Array {
   return codec.encode({ width: size, height: size, data });
 }
 
+/** An RGB raster scaled up `scale` times, opaque, in the test codec. */
+function fromRaster(raster: AiPictureRaster, scale: number): Uint8Array {
+  const width = raster.width * scale;
+  const height = raster.height * scale;
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const from = (Math.floor(y / scale) * raster.width + Math.floor(x / scale)) * 3;
+      data.set(
+        [raster.rgb[from] ?? 0, raster.rgb[from + 1] ?? 0, raster.rgb[from + 2] ?? 0, 255],
+        (y * width + x) * 4,
+      );
+    }
+  }
+  return codec.encode({ width, height, data });
+}
+
 const READY: AiPicturesStatus = {
   service: 'retro-diffusion',
   keys: { 'retro-diffusion': { set: true, tail: 'wxyz' }, openai: { set: false, tail: null } },
@@ -116,6 +134,14 @@ function fakePlatform(status: AiPicturesStatus = READY): FakePlatform {
     testKey: async () => ({ ok: true }),
     generate: (request) => {
       fake.requests.push(request);
+      const reference = request.reference;
+      if (fake.next === null && reference !== undefined) {
+        // As img2img: MSM's drawing back, four times larger, for every picture.
+        return Promise.resolve({
+          ok: true,
+          images: Array.from({ length: request.count }, () => fromRaster(reference, 4)),
+        });
+      }
       if (fake.next === 'hang') {
         return new Promise((resolve) => pending.set(request.requestId, resolve));
       }
@@ -200,11 +226,19 @@ describe('Make with AI', () => {
     await user.clear(prompt);
     await user.type(prompt, 'a glowing ruby');
     await user.click(screen.getByTestId('ai-pictures-style-tool'));
+    // MSM's drawing of a gem (the name says ruby) is the reference and the shape.
+    await screen.findByTestId('ai-pictures-reference');
+    expect(screen.getByTestId('ai-pictures-sent').textContent).toContain(
+      'a glowing ruby gem, a Minecraft-style pixel art gem icon',
+    );
+    expect(screen.getByTestId('ai-pictures-cost').textContent).toBeTruthy();
     await user.click(screen.getByTestId('ai-pictures-generate'));
     await waitFor(() => expect(screen.getByTestId('ai-pictures-result-3')).toBeTruthy());
     expect(platform.requests).toEqual([
       expect.objectContaining({
-        prompt: 'a glowing ruby',
+        prompt: expect.stringContaining('a glowing ruby gem'),
+        reference: expect.objectContaining({ width: 16, height: 16 }),
+        strength: 0.5,
         style: 'tool',
         size: 16,
         count: 4,
@@ -307,11 +341,16 @@ function textureItem(path: string, bytes: Uint8Array): ChangeItem {
   };
 }
 
-const builtIn = codec.encode({
-  width: 16,
-  height: 16,
-  data: new Uint8ClampedArray(16 * 16 * 4).fill(9),
-} satisfies RgbaImage);
+/** A golden disc on a clear ground: MSM's built-in picture in the tests. */
+const builtIn = (() => {
+  const data = new Uint8ClampedArray(16 * 16 * 4);
+  for (let y = 0; y < 16; y += 1) {
+    for (let x = 0; x < 16; x += 1) {
+      if ((x - 7.5) ** 2 + (y - 7.5) ** 2 < 36) data.set([214, 168, 40, 255], (y * 16 + x) * 4);
+    }
+  }
+  return codec.encode({ width: 16, height: 16, data } satisfies RgbaImage);
+})();
 
 describe('Use AI pictures (the Creator and Surprise me)', () => {
   it('replaces block and item textures, one request each, keeping the rest', async () => {
@@ -337,12 +376,13 @@ describe('Use AI pictures (the Creator and Surprise me)', () => {
       theme: 'volcano',
       onProgress: (entry) => progress.push(entry.done),
     });
-    expect(
-      platform.requests.map((request) => [request.style, request.count, request.prompt]),
-    ).toEqual([
-      ['block', 1, 'a ruby ore, volcano theme'],
-      ['tool', 1, 'a ruby pickaxe, volcano theme'],
+    expect(platform.requests.map((request) => [request.style, request.count])).toEqual([
+      ['block', 1],
+      ['tool', 1],
     ]);
+    expect(platform.requests[0]?.prompt).toContain('volcano ruby ore, block texture');
+    expect(platform.requests[1]?.prompt).toContain('golden volcano ruby pickaxe');
+    expect(platform.requests[1]?.prompt).toContain('same outline as an iron pickaxe');
     expect(result.made).toHaveLength(2);
     expect(result.items[0]?.asset?.bytes).not.toBe(builtIn);
     expect(result.items[2]).toBe(items[2]);

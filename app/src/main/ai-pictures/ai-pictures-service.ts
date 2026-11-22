@@ -14,6 +14,8 @@ import { join } from 'node:path';
 import {
   AI_PICTURE_SERVICES,
   AI_PICTURES_IMAGE_MAX_BYTES,
+  type AiPictureCost,
+  type AiPictureCostRequest,
   type AiPictureKeyTest,
   type AiPictureRequest,
   type AiPictureResult,
@@ -60,6 +62,7 @@ export interface AiPicturesServiceDeps {
 
 /** The service behind `PlatformAdapter.aiPictures`. */
 export type AiPicturesService = AiPicturesPlatform & {
+  cost(request: AiPictureCostRequest): Promise<AiPictureCost>;
   /** Request ids still running (tests). */
   active(): string[];
 };
@@ -213,8 +216,14 @@ export function createAiPicturesService(deps: AiPicturesServiceDeps): AiPictures
               prompt: request.prompt,
               style: request.style,
               size: request.size,
+              ...(request.width === undefined ? {} : { width: request.width }),
+              ...(request.height === undefined ? {} : { height: request.height }),
               count: request.count,
               transparent: request.transparent,
+              ...(request.reference === undefined ? {} : { reference: request.reference }),
+              ...(request.strength === undefined ? {} : { strength: request.strength }),
+              ...(request.palette === undefined ? {} : { palette: request.palette }),
+              ...(request.seed === undefined ? {} : { seed: request.seed }),
             },
             {
               apiKey,
@@ -228,6 +237,39 @@ export function createAiPicturesService(deps: AiPicturesServiceDeps): AiPictures
           throw pictureError('bad_response', 'a picture is too large');
         }
         return { ok: true, images: images.slice(0, request.count) };
+      } catch (error) {
+        return failed(error);
+      }
+    },
+    async cost(request: AiPictureCostRequest): Promise<AiPictureCost> {
+      const service = await chosen();
+      const apiKey = await keyOf(service);
+      if (apiKey === null) return { ok: false, error: ERROR_WORDS.no_key, errorClass: 'no_key' };
+      try {
+        const price = await withSignal(null, (signal) =>
+          providerOf(service).cost(
+            {
+              prompt: request.prompt,
+              style: request.style,
+              size: request.size,
+              ...(request.width === undefined ? {} : { width: request.width }),
+              ...(request.height === undefined ? {} : { height: request.height }),
+              count: request.count,
+              transparent: request.transparent,
+              ...(request.reference === undefined ? {} : { reference: request.reference }),
+              ...(request.strength === undefined ? {} : { strength: request.strength }),
+              ...(request.palette === undefined ? {} : { palette: request.palette }),
+              ...(request.seed === undefined ? {} : { seed: request.seed }),
+            },
+            {
+              apiKey,
+              fetch: doFetch,
+              signal,
+              ...(deps.sleep === undefined ? {} : { sleep: deps.sleep }),
+            },
+          ),
+        );
+        return { ok: true, usd: price.usd, balanceUsd: price.balanceUsd };
       } catch (error) {
         return failed(error);
       }

@@ -18,6 +18,13 @@
  *    never inverted.
  * 5. Items and tools may get a one-pixel dark outline outside the shape.
  *
+ * Since 2026-11-22 the picture need not be a square: paintings take the largest centred part of
+ * the painting's proportions and keep it opaque, with up to five hue clusters for a scene;
+ * particles and patterns (banner, shield and pot motifs) are cut out like items but fitted
+ * into their own width and height and drawn without an outline; a mob's coat (`skin`) is
+ * cleaned up as a block texture, the tile the renderer then lays on the model's boxes
+ * (`layouts.ts`). {@link seamCheck} tells whether a block texture tiles without a seam.
+ *
  * @packageDocumentation
  */
 
@@ -36,6 +43,11 @@ export const MAX_HUE_CLUSTERS = 3;
 export interface CleanUpOptions {
   /** The texture's edge in pixels (16 or 32). */
   size: number;
+  /** The picture's width and height when not a square of `size`. */
+  width?: number;
+  height?: number;
+  /** The most hue clusters (default {@link MAX_HUE_CLUSTERS}; paintings five). */
+  clusters?: number;
   style: AiPictureStyle;
   /** Shades per hue cluster (default {@link DEFAULT_SHADES}). */
   shades?: number;
@@ -46,46 +58,116 @@ export interface CleanUpOptions {
 /** The whole pipeline. Does not change `image`. */
 export function cleanUpPicture(image: RgbaImage, options: CleanUpOptions): RgbaImage {
   const size = Math.max(1, Math.round(options.size));
+  const width = Math.max(1, Math.round(options.width ?? size));
+  const height = Math.max(1, Math.round(options.height ?? size));
   const shades = Math.max(2, Math.round(options.shades ?? DEFAULT_SHADES));
   const working: RgbaImage = {
     width: image.width,
     height: image.height,
     data: new Uint8ClampedArray(image.data),
   };
-  if (options.style === 'block') {
-    const square = fitRect(working.width, working.height, 1);
-    const cropped = crop(working, square);
+  if (options.style === 'block' || options.style === 'skin' || options.style === 'painting') {
+    const painting = options.style === 'painting';
+    const tw = painting ? width : size;
+    const th = painting ? height : size;
+    const part = fitRect(working.width, working.height, tw / th);
+    const cropped = crop(working, part);
     for (let at = 3; at < cropped.data.length; at += 4) cropped.data[at] = 255;
-    const scaled = downscale(cropped, size, size);
-    quantise(scaled, shades);
+    const scaled = downscale(cropped, tw, th);
+    quantise(scaled, shades, options.clusters ?? (painting ? PAINTING_HUE_CLUSTERS : undefined));
     return scaled;
   }
   removeItemBackground(working);
   const box = contentBox(working);
-  const outline = options.outline ?? true;
+  const outline = options.outline ?? (options.style === 'item' || options.style === 'tool');
   if (box === null) {
-    return { width: size, height: size, data: new Uint8ClampedArray(size * size * 4) };
+    return { width, height, data: new Uint8ClampedArray(width * height * 4) };
   }
   const content = crop(working, box);
-  const inner = Math.max(1, outline && size > 4 ? size - 2 : size);
-  const scale = Math.min(inner / content.width, inner / content.height);
-  const w = Math.max(1, Math.min(inner, Math.round(content.width * scale)));
-  const h = Math.max(1, Math.min(inner, Math.round(content.height * scale)));
+  const innerW = Math.max(1, outline && width > 4 ? width - 2 : width);
+  const innerH = Math.max(1, outline && height > 4 ? height - 2 : height);
+  const scale = Math.min(innerW / content.width, innerH / content.height);
+  const w = Math.max(1, Math.min(innerW, Math.round(content.width * scale)));
+  const h = Math.max(1, Math.min(innerH, Math.round(content.height * scale)));
   const scaled = downscale(content, w, h);
   const out: RgbaImage = {
-    width: size,
-    height: size,
-    data: new Uint8ClampedArray(size * size * 4),
+    width,
+    height,
+    data: new Uint8ClampedArray(width * height * 4),
   };
-  const ox = Math.floor((size - w) / 2);
-  const oy = Math.floor((size - h) / 2);
+  const ox = Math.floor((width - w) / 2);
+  const oy = Math.floor((height - h) / 2);
   for (let y = 0; y < h; y += 1) {
-    out.data.set(scaled.data.subarray(y * w * 4, (y + 1) * w * 4), ((oy + y) * size + ox) * 4);
+    out.data.set(scaled.data.subarray(y * w * 4, (y + 1) * w * 4), ((oy + y) * width + ox) * 4);
   }
   hardenAlpha(out);
-  const ramps = quantise(out, shades);
+  const ramps = quantise(out, shades, options.clusters);
   if (outline) addOutline(out, outlineColour(ramps));
   return out;
+}
+
+/** The hue clusters of a painting, a scene with more colours than a texture. */
+export const PAINTING_HUE_CLUSTERS = 5;
+
+// Seams ------------------------------------------------------------------------------------
+
+/** How much larger than the picture's own neighbour steps the edge steps may be. */
+export const SEAM_RATIO = 1.8;
+
+/** Whether a block texture tiles without a seam, with the two measures it compares. */
+export interface SeamCheck {
+  /** `true` when the texture placed beside itself shows no seam. */
+  tiles: boolean;
+  /** The mean colour step across the wrap (right edge to left, bottom to top). */
+  edge: number;
+  /** The mean colour step between neighbours inside the picture. */
+  inner: number;
+}
+
+function step(image: RgbaImage, a: number, b: number): number {
+  const d = image.data;
+  return Math.hypot(
+    (d[a] ?? 0) - (d[b] ?? 0),
+    (d[a + 1] ?? 0) - (d[b + 1] ?? 0),
+    (d[a + 2] ?? 0) - (d[b + 2] ?? 0),
+  );
+}
+
+/**
+ * The seam check of a tileable texture: the colour steps across the wrap against the steps
+ * between neighbours inside. A texture shows a seam when the wrap's steps are more than
+ * {@link SEAM_RATIO} times the inside's (and more than a small floor, so flat pictures pass).
+ */
+export function seamCheck(image: RgbaImage): SeamCheck {
+  const { width, height } = image;
+  let edge = 0;
+  let edgeCount = 0;
+  let inner = 0;
+  let innerCount = 0;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const at = (y * width + x) * 4;
+      const right = (y * width + ((x + 1) % width)) * 4;
+      const down = (((y + 1) % height) * width + x) * 4;
+      if (x === width - 1) {
+        edge += step(image, at, right);
+        edgeCount += 1;
+      } else {
+        inner += step(image, at, right);
+        innerCount += 1;
+      }
+      if (y === height - 1) {
+        edge += step(image, at, down);
+        edgeCount += 1;
+      } else {
+        inner += step(image, at, down);
+        innerCount += 1;
+      }
+    }
+  }
+  const e = edgeCount === 0 ? 0 : edge / edgeCount;
+  const i = innerCount === 0 ? 0 : inner / innerCount;
+  return { tiles: e <= Math.max(12, i * SEAM_RATIO), edge: e, inner: i };
 }
 
 // Background and crop ------------------------------------------------------------------------
@@ -287,7 +369,7 @@ export interface Ramp {
 }
 
 /** The hue clusters' centres: the strongest twelfths of the colour wheel, merged when near. */
-function clusterHues(hues: readonly number[]): number[] {
+function clusterHues(hues: readonly number[], most: number = MAX_HUE_CLUSTERS): number[] {
   if (hues.length === 0) return [];
   const bins = new Array<number>(12).fill(0);
   for (const hue of hues)
@@ -298,7 +380,7 @@ function clusterHues(hues: readonly number[]): number[] {
     .sort((a, b) => b.count - a.count);
   const centres: number[] = [];
   for (const { index } of order) {
-    if (centres.length >= MAX_HUE_CLUSTERS) break;
+    if (centres.length >= most) break;
     // The mean hue of the pixels in this twelfth.
     let x = 0;
     let y = 0;
@@ -320,7 +402,11 @@ function clusterHues(hues: readonly number[]): number[] {
  * colour, anchored on the middle group's lightness: darkest group, darkest shade. Returns the
  * ramps.
  */
-export function quantise(image: RgbaImage, shades: number = DEFAULT_SHADES): Ramp[] {
+export function quantise(
+  image: RgbaImage,
+  shades: number = DEFAULT_SHADES,
+  clusters: number = MAX_HUE_CLUSTERS,
+): Ramp[] {
   const pixels: { at: number; h: number; s: number; l: number }[] = [];
   for (let at = 0; at < image.data.length; at += 4) {
     if ((image.data[at + 3] ?? 0) === 0) continue;
@@ -328,7 +414,10 @@ export function quantise(image: RgbaImage, shades: number = DEFAULT_SHADES): Ram
     pixels.push({ at, h, s, l });
   }
   if (pixels.length === 0) return [];
-  const centres = clusterHues(pixels.filter((p) => p.s >= GREY_SATURATION).map((p) => p.h));
+  const centres = clusterHues(
+    pixels.filter((p) => p.s >= GREY_SATURATION).map((p) => p.h),
+    clusters,
+  );
   const groups = new Map<number, typeof pixels>();
   for (const pixel of pixels) {
     let cluster = -1;
@@ -384,16 +473,25 @@ export function quantise(image: RgbaImage, shades: number = DEFAULT_SHADES): Ram
             anchor,
             hueShift: minecraftArt.ART_HUE_SHIFT,
           });
+    // Each member's level by its rank; equal colours keep one level (the first of their run),
+    // so a flat area never turns into a gradient of shades by its position (2026-11-22).
+    const levels = new Array<number>(members.length).fill(0);
+    for (let level = 0; level < count; level += 1) {
+      const { from, to } = bounds(level);
+      for (let index = from; index < to; index += 1) levels[index] = level;
+    }
+    for (let index = 1; index < members.length; index += 1) {
+      if (members[index]?.l === members[index - 1]?.l) levels[index] = levels[index - 1] ?? 0;
+    }
     const colours: Rgba[] = [];
     for (let level = 0; level < count; level += 1) {
       const [r, g, b] = shadesOf[level] ?? anchorColour;
       colours.push([r, g, b, 255]);
-      const { from, to } = bounds(level);
-      for (let index = from; index < to; index += 1) {
-        const member = members[index];
-        if (member !== undefined) image.data.set([r, g, b], member.at);
-      }
     }
+    members.forEach((member, index) => {
+      const colour = colours[levels[index] ?? 0];
+      if (colour !== undefined) image.data.set([colour[0], colour[1], colour[2]], member.at);
+    });
     ramps.push({ hue, colours, weight: members.length });
   }
   ramps.sort((a, b) => b.weight - a.weight);

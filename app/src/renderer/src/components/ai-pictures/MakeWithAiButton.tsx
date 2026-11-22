@@ -13,6 +13,7 @@ import { usePreferences } from '../../store/preferences';
 import { Button } from '../ui/Button';
 import { aiPicturesReady, useAiPictures } from './ai-pictures-host';
 import { MakeWithAiDialog } from './MakeWithAiDialog';
+import type { AiPictureShape } from './shapes';
 
 /** The button's words. */
 export const MAKE_WITH_AI = 'Make with AI';
@@ -30,6 +31,14 @@ export interface MakeWithAiButtonProps {
   size: number;
   /** The largest edge allowed. */
   maxSize?: number;
+  /** What the picture is for when not a square texture (a skin, a painting, a pattern). */
+  shape?: AiPictureShape;
+  /** The thing's main colour, when the field knows it. */
+  colour?: readonly [number, number, number];
+  /** The button's words outside Very easy mode (default "Make with AI"). */
+  label?: string;
+  /** A tooltip, for example why the button is disabled. */
+  title?: string;
   /** Writes the picked picture (one undo step). */
   onPick(bytes: Uint8Array): Promise<void> | void;
   disabled?: boolean;
@@ -60,10 +69,11 @@ export function MakeWithAiButton(props: MakeWithAiButtonProps) {
         data-testid={props.testId}
         className={props.className}
         disabled={props.disabled}
+        {...(props.title === undefined ? {} : { title: props.title })}
         onClick={() => setOpen(true)}
       >
         <Sparkles size={12} aria-hidden />
-        {veryEasy ? MAKE_IT_WITH_AI : MAKE_WITH_AI}
+        {veryEasy ? MAKE_IT_WITH_AI : (props.label ?? MAKE_WITH_AI)}
       </Button>
       {open && (
         <MakeWithAiDialog
@@ -73,6 +83,8 @@ export function MakeWithAiButton(props: MakeWithAiButtonProps) {
           defaultStyle={props.defaultStyle}
           size={props.size}
           {...(props.maxSize === undefined ? {} : { maxSize: props.maxSize })}
+          {...(props.shape === undefined ? {} : { shape: props.shape })}
+          {...(props.colour === undefined ? {} : { colour: props.colour })}
           veryEasy={veryEasy}
           onPick={props.onPick}
           onClose={() => setOpen(false)}

@@ -6,7 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+### Added
+
+- **AI pictures are exact now.** Make with AI no longer sends a bare description: it names what the thing is (a helmet, a chestplate, a sword, an ore…), how Minecraft draws it and your colour, starts Retro Diffusion from MCSuperMods' own drawing of that thing, and checks every picture's outline and colour before you see it. A picture that does not look like the thing is tried once more, and then you get MCSuperMods' drawing with a plain line instead of a wrong picture. The pieces of a set (a gear set's armour, a wood set) are made with one seed and one palette so they match. The words sent and the price of each request show before anything is made, with **Try again** and **Use MSM's drawing** beside the results.
+- **Make with AI everywhere you make a picture**: mob skins (**Make a skin with AI** beside **Draw a skin**), villager looks, paintings, armour layers, banner, shield and pot patterns, particle frames and every picture field of the Creator, and **New texture…** can start **Made with AI**. In Very easy mode, **Draw it for me** offers **Make it with AI instead** once a key is set. Retro Diffusion is the recommended service; the guide says where to get a key and what it costs.
+
 ### Fixed
+
+- AI pictures' clean-up no longer turns a flat area into stripes or speckles of different shades.
 
 - Five data pack forms that stop a real Minecraft server from starting are now refused before export, with plain words: a predicate or item modifier file that is a list or a bare id, a time check without its clock, a damage tag named without `#`, and a block transformer state in the old `{Name}` form.
 - The function checker no longer breaks on valid lines that use a fake player name such as `#count` in a score (`execute if score`, `scoreboard players get` and `operation`, `team join`, a score in `tellraw`), a named random sequence, a `place jigsaw` target, or a block or particle from your own mod; these lines now check cleanly, and if the checker ever stops early it says so as a note instead of failing.

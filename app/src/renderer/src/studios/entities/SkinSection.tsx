@@ -9,7 +9,16 @@
  * mode reads "Draw its skin". Drawing needs no key and no internet; the writes go through the
  * Studio host's `applyChanges`, so without a host nothing is shown.
  *
- * Test ids: `entity-draw-skin`, `entity-draw-skin-note`.
+ * **Make a skin with AI** sits beside it (ADR 0093 D6 as amended on 2026-11-22): the chosen
+ * image service (Retro Diffusion by default) draws a tileable coat from a description
+ * (`rd_plus__mc_texture`, a 16 by 16 tile), which is cleaned up and laid on the same boxes at the
+ * model's texture size, each side shaded, and written the same way in one undo step. It is
+ * greyed out for the same reasons, reads "Set up AI pictures in Settings" without a key, and in
+ * Very easy mode "Make it with AI"; Very easy's **Draw its skin** dialog also offers **Make it
+ * with AI instead** when a key is set.
+ *
+ * Test ids: `entity-draw-skin`, `entity-draw-skin-note`, `entity-ai-skin` (and
+ * `entity-ai-skin-setup` without a key), `entity-draw-skin-ai-instead`.
  *
  * @packageDocumentation
  */
@@ -19,8 +28,13 @@ import { boxesOfGeoModel, type SkinBox } from '@msm/plugin-library';
 import { Palette } from 'lucide-react';
 import { Suspense, useState } from 'react';
 import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
+import { aiPicturesReady, useAiPictures } from '../../components/ai-pictures/ai-pictures-host';
+import { MakeWithAiButton } from '../../components/ai-pictures/MakeWithAiButton';
+import { MakeWithAiDialog } from '../../components/ai-pictures/MakeWithAiDialog';
+import { defaultPrompt } from '../../components/ai-pictures/prompt';
+import { boxesShape } from '../../components/ai-pictures/shapes';
 import { textureAsset, textureChange } from '../../components/ai-pictures/texture-write';
-import { LazyDrawPictureDialog } from '../../components/art/DrawButton';
+import { LazyDrawPictureDialog, MAKE_IT_WITH_AI_INSTEAD } from '../../components/art/DrawButton';
 import type { DrawField } from '../../components/art/draw-model';
 import { Button } from '../../components/ui/Button';
 import { usePreferences } from '../../store/preferences';
@@ -31,6 +45,7 @@ import { GEO_MODEL_KIND } from './entities-model';
 /** The words of the button, the dialog and the reasons it is greyed out. */
 export const DRAW_A_SKIN = 'Draw a skin';
 export const DRAW_ITS_SKIN = 'Draw its skin';
+export const MAKE_A_SKIN_WITH_AI = 'Make a skin with AI';
 export const USE_THIS_SKIN = 'Use this skin';
 export const NO_MODEL = 'Choose a model first.';
 export const MODEL_NOT_IN_PROJECT = 'The model is not part of this project.';
@@ -164,6 +179,11 @@ export function skinChange(
   return { items, writes: change.writes, label: `Draw a skin ${asset.path}` };
 }
 
+/** The AI shape of a mob's skin: a coat laid on its model's boxes at the model's size. */
+export function skinAiShape(plan: SkinPlan) {
+  return plan.ok ? boxesShape(plan.boxes, plan.field.width, plan.field.height) : undefined;
+}
+
 /** Props of {@link SkinSection}. */
 export interface SkinSectionProps {
   project: Project;
@@ -176,11 +196,20 @@ export function SkinSection(props: SkinSectionProps) {
   const host = useBlocksItemsStudioHost();
   const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
   const [open, setOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const ai = useAiPictures();
   if (host?.applyChanges === undefined) return null;
   const apply = host.applyChanges;
   const plan = skinPlan(props.project, props.element);
   const label = veryEasy ? DRAW_ITS_SKIN : DRAW_A_SKIN;
   const { asset } = skinTexture(props.element);
+  const shape = skinAiShape(plan);
+  const prompt = defaultPrompt(props.element.id, 'skin');
+  const writeAi = async (bytes: Uint8Array): Promise<void> => {
+    const change = skinChange(props.project, props.element, bytes);
+    await apply(change.items, `Make with AI ${asset.path}`, change.writes);
+  };
+  const offerAi = veryEasy && ai !== null && aiPicturesReady(ai.status) && shape !== undefined;
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       <Button
@@ -192,6 +221,20 @@ export function SkinSection(props: SkinSectionProps) {
         <Palette size={12} aria-hidden />
         {label}
       </Button>
+      <MakeWithAiButton
+        testId="entity-ai-skin"
+        target={`${asset.namespace}:${asset.path}`}
+        label={MAKE_A_SKIN_WITH_AI}
+        defaultPrompt={prompt}
+        defaultStyle="skin"
+        size={16}
+        {...(shape === undefined ? {} : { shape })}
+        disabled={!plan.ok}
+        title={
+          plan.ok ? 'Make a coat with your image service and lay it on the model' : plan.reason
+        }
+        onPick={writeAi}
+      />
       {!plan.ok && (
         <span className="text-muted" data-testid="entity-draw-skin-note">
           {plan.reason}
@@ -212,8 +255,33 @@ export function SkinSection(props: SkinSectionProps) {
               await apply(change.items, change.label, change.writes);
             }}
             onClose={() => setOpen(false)}
+            {...(offerAi
+              ? {
+                  alternative: {
+                    label: MAKE_IT_WITH_AI_INSTEAD,
+                    testId: 'entity-draw-skin-ai-instead',
+                    onChoose: () => {
+                      setOpen(false);
+                      setAiOpen(true);
+                    },
+                  },
+                }
+              : {})}
           />
         </Suspense>
+      )}
+      {aiOpen && ai !== null && shape !== undefined && (
+        <MakeWithAiDialog
+          host={ai}
+          target={`${asset.namespace}:${asset.path}`}
+          defaultPrompt={prompt}
+          defaultStyle="skin"
+          size={16}
+          shape={shape}
+          veryEasy={veryEasy}
+          onPick={writeAi}
+          onClose={() => setAiOpen(false)}
+        />
       )}
     </div>
   );

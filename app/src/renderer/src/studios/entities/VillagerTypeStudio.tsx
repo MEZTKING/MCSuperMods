@@ -8,7 +8,10 @@
  *   layout) and the hat (none, one that shows the job's headwear, one that hides it). The game
  *   draws them only from fixed places (`villagerTypeTexturePaths`), so choosing a picture stored
  *   elsewhere also copies it there in the same undo step (`picture-copies.ts`); "Copy the
- *   pictures" does it for pictures added before.
+ *   pictures" does it for pictures added before. Each picture has **Draw…** (clothes drawn on the
+ *   villager's boxes, no key) and **Make with AI** (ADR 0093 D6 as amended on 2026-11-22: a
+ *   tileable coat from the image service laid on the same boxes); either writes the picture at
+ *   the fixed place and names it, in one undo step ({@link villagerLookChange}).
  *
  * Everything else stays behind "Advanced (all fields)".
  *
@@ -18,6 +21,12 @@
 import type { Element, Json } from '@msm/core';
 import { villagerTypeTexturePaths } from '@msm/plugin-entities';
 import { useState } from 'react';
+import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
+import { MakeWithAiButton } from '../../components/ai-pictures/MakeWithAiButton';
+import { wordsOf } from '../../components/ai-pictures/prompt';
+import { boxesShape, VILLAGER_CLOTHES_BOXES } from '../../components/ai-pictures/shapes';
+import { textureChange } from '../../components/ai-pictures/texture-write';
+import { DrawButton } from '../../components/art/DrawButton';
 import { thingWords } from '../../components/thing-picker/thing-sources';
 import { Button } from '../../components/ui/Button';
 import { asObject, pathSetter, pointerOf } from '../blocks-items/blocks-items-model';
@@ -74,6 +83,49 @@ export function withVillagerTypePicture(
   return out;
 }
 
+/** The AI shape of a villager look's picture: a coat laid on the villager's clothes boxes. */
+export const VILLAGER_LOOK_SHAPE = boxesShape(
+  VILLAGER_CLOTHES_BOXES,
+  64,
+  64,
+  'laid on the clothes',
+);
+
+/**
+ * The change of a made picture for `slot` of a villager look: the bytes at the fixed place the
+ * game reads (`<textures>/entity/<slot>/type/<path>.png` of the look's namespace) and the slot
+ * naming it, as the items and writes of one `applyChanges` step.
+ */
+export function villagerLookChange(
+  project: Parameters<typeof textureChange>[0],
+  element: Pick<Element, 'id' | 'kind' | 'data'>,
+  slot: 'villager' | 'zombie_villager',
+  bytes: Uint8Array,
+  texturesFolder = 'textures',
+): { items: ChangeItem[]; writes: ChangeAsset[]; label: string } {
+  const colon = element.id.indexOf(':');
+  const namespace = colon < 0 ? 'minecraft' : element.id.slice(0, colon);
+  const path = colon < 0 ? element.id : element.id.slice(colon + 1);
+  const assetPath = `${texturesFolder}/entity/${slot}/type/${path}.png`;
+  const change = textureChange(project, namespace, assetPath, bytes);
+  const textureId = `${namespace}:entity/${slot}/type/${path}`;
+  const items = [...change.items];
+  const current = asObject(asObject(element.data).textures)[slot];
+  if (current !== textureId) {
+    items.push({
+      itemId: `villager-look:${slot}`,
+      op: 'update',
+      elementId: element.id,
+      kind: element.kind,
+      before: element.data,
+      after: withVillagerTypePicture(element.data, slot, textureId),
+      accepted: true,
+      problems: [],
+    });
+  }
+  return { items, writes: change.writes, label: `Villager look picture ${assetPath}` };
+}
+
 const strings = (value: Json | undefined): string[] =>
   Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
 
@@ -123,6 +175,22 @@ export default function VillagerTypeStudio(props: StudioProps) {
     ).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : String(cause)));
   };
   const missing = missingPictureCopies(project, villagerTypePictureCopies(target, element));
+  const lookPrompt = `the clothes of a ${wordsOf(element.id)} villager`;
+  const takePicture = async (
+    slot: 'villager' | 'zombie_villager',
+    bytes: Uint8Array,
+  ): Promise<void> => {
+    const apply = host?.applyChanges;
+    if (apply === undefined) return;
+    const change = villagerLookChange(
+      project,
+      element,
+      slot,
+      bytes,
+      target.folders?.resource?.textures ?? 'textures',
+    );
+    await apply(change.items, change.label, change.writes);
+  };
   const vanillaLooks = target.entities?.villagerTypes ?? [];
 
   const biomes = (
@@ -168,6 +236,42 @@ export default function VillagerTypeStudio(props: StudioProps) {
               write(withVillagerTypePicture(element.data, slot, value), 'Villager look picture')
             }
           />
+          {host?.applyChanges !== undefined && (
+            <>
+              <DrawButton
+                testId={`villager-type-picture-${slot}-draw`}
+                target={`${element.id} ${slot}`}
+                field={{
+                  kinds: ['entity'],
+                  width: 64,
+                  height: 64,
+                  name: element.id,
+                  skin: true,
+                  boxes: VILLAGER_CLOTHES_BOXES,
+                }}
+                onPick={(picture) => {
+                  const bytes = picture.pngs[0];
+                  if (bytes !== undefined) return takePicture(slot, bytes);
+                }}
+                ai={{
+                  defaultPrompt: lookPrompt,
+                  defaultStyle: 'skin',
+                  size: 16,
+                  shape: VILLAGER_LOOK_SHAPE,
+                  onPick: (bytes) => takePicture(slot, bytes),
+                }}
+              />
+              <MakeWithAiButton
+                testId={`villager-type-picture-${slot}-ai`}
+                target={`${element.id} ${slot}`}
+                defaultPrompt={lookPrompt}
+                defaultStyle="skin"
+                size={16}
+                shape={VILLAGER_LOOK_SHAPE}
+                onPick={(bytes) => takePicture(slot, bytes)}
+              />
+            </>
+          )}
         </div>
       ))}
       <ChoiceField

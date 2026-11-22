@@ -24,6 +24,10 @@ import {
   type ChangeItem,
   planChangeItems,
 } from '../../../src/renderer/src/changeset/changeset';
+import {
+  AiPicturesContext,
+  type AiPicturesHost,
+} from '../../../src/renderer/src/components/ai-pictures/ai-pictures-host';
 import { usePreferences } from '../../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
@@ -35,6 +39,7 @@ import {
   skinPlan,
 } from '../../../src/renderer/src/studios/entities/SkinSection';
 import type { SchemaContextState } from '../../../src/renderer/src/studios/use-schema-context';
+import { fakeHost, fakePictures, testCodec } from '../ai-pictures-fake';
 import { element } from '../fixtures';
 import { schemaIndex } from '../forms/schemas';
 import { projectOf, renderOnStack, schemaState } from '../studios/blocks-items/harness';
@@ -112,7 +117,7 @@ interface Call {
 }
 
 /** The Entity Studio with a host whose `applyChanges` applies one command per call. */
-function renderMob(subject: Element, geometry: Json | null) {
+function renderMob(subject: Element, geometry: Json | null, ai: AiPicturesHost | null = null) {
   const calls: Call[] = [];
   let current: CommandStack | undefined;
   const host: BlocksItemsStudioHost = {
@@ -134,9 +139,11 @@ function renderMob(subject: Element, geometry: Json | null) {
     },
   };
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <BlocksItemsStudioHostContext.Provider value={host}>
-      {children}
-    </BlocksItemsStudioHostContext.Provider>
+    <AiPicturesContext.Provider value={ai}>
+      <BlocksItemsStudioHostContext.Provider value={host}>
+        {children}
+      </BlocksItemsStudioHostContext.Provider>
+    </AiPicturesContext.Provider>
   );
   const others = geometry === null ? [] : [element(MODEL, 'msm:geo_model', geometry)];
   const rendered = renderOnStack(subject, schema, { wrapper, others });
@@ -266,5 +273,41 @@ describe('geometryTextureSize', () => {
       geometryTextureSize({ 'geometry.old': { texturewidth: 32, textureheight: 16, bones: [] } }),
     ).toEqual({ width: 32, height: 16 });
     expect(geometryTextureSize({})).toEqual({ width: 64, height: 64 });
+  });
+});
+
+describe('Make a skin with AI (ADR 0093, 2026-11-22)', () => {
+  it('lays the service’s coat on the model’s own boxes and names the texture in one undo step', async () => {
+    const platform = fakePictures();
+    const { stack, data, calls } = renderMob(mob(MODEL), BOX_GEOMETRY, fakeHost(platform));
+    const button = screen.getByTestId('entity-ai-skin') as HTMLButtonElement;
+    expect(button.textContent).toBe('Make a skin with AI');
+    fireEvent.click(button);
+    expect((await screen.findByTestId('ai-pictures-shape')).textContent).toBe(
+      'Mob skin: 64 × 32, laid on the model',
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('ai-pictures-cost').textContent).toContain('$0.24'),
+    );
+    fireEvent.click(screen.getByTestId('ai-pictures-generate'));
+    await screen.findByTestId('ai-pictures-result-0');
+    expect(platform.requests[0]).toMatchObject({ style: 'skin', size: 16, transparent: false });
+    fireEvent.click(screen.getByTestId('ai-pictures-use'));
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(calls[0]?.label).toBe('Make with AI textures/entity/golem.png');
+    const asset = calls[0]?.items.find((item) => item.op === 'asset')?.asset;
+    const skin = await testCodec.decode(asset?.bytes ?? new Uint8Array(8));
+    expect([skin.width, skin.height]).toEqual([64, 32]);
+    // The head's front face (6, 6) is drawn; a pixel outside every box (63, 31) is clear.
+    expect(skin.data[(6 * 64 + 6) * 4 + 3]).toBe(255);
+    expect(skin.data[(31 * 64 + 63) * 4 + 3]).toBe(0);
+    expect(textureOf(data())).toBe('demo:entity/golem');
+    stack.undo();
+    expect(textureOf(data())).toBe('');
+  });
+
+  it('is greyed out with the reason when the model maps faces one by one', () => {
+    renderMob(mob(MODEL), PER_FACE_GEOMETRY, fakeHost(fakePictures()));
+    expect((screen.getByTestId('entity-ai-skin') as HTMLButtonElement).disabled).toBe(true);
   });
 });

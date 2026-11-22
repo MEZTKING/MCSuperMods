@@ -9,6 +9,7 @@
 import type {
   AiPictureErrorClass,
   AiPictureKeyTest,
+  AiPictureRaster,
   AiPictureServiceId,
   AiPictureStyle,
 } from '../../shared/ai-pictures';
@@ -19,8 +20,23 @@ export interface GenerateInput {
   style: AiPictureStyle;
   /** The texture's edge in pixels; the adapter picks the nearest size its service draws. */
   size: number;
+  /** A picture that is not a square of `size` (a painting, a banner motif). */
+  width?: number;
+  height?: number;
   count: number;
   transparent: boolean;
+  /** MSM's drawing of the thing, RGB (img2img); see `AiPictureRequest.reference`. */
+  reference?: AiPictureRaster;
+  strength?: number;
+  palette?: AiPictureRaster;
+  seed?: number;
+}
+
+/** The price of a request in US dollars (`null`: the service publishes none a picture). */
+export interface PictureCost {
+  usd: number | null;
+  /** What is left on the account afterwards, when the service says. */
+  balanceUsd: number | null;
 }
 
 /** What every call of an adapter gets. */
@@ -40,6 +56,8 @@ export interface PictureProvider {
   generate(input: GenerateInput, context: CallContext): Promise<Uint8Array[]>;
   /** A free request that checks the key. */
   testKey(context: CallContext): Promise<AiPictureKeyTest>;
+  /** The price of `input` without making a picture (free). Throws {@link PictureError}. */
+  cost(input: GenerateInput, context: CallContext): Promise<PictureCost>;
 }
 
 /** A failure the UI can explain. */

@@ -810,6 +810,34 @@ const samples: Record<
     request: [{ requestId: 'r1' }, { requestId: '' }],
     response: [undefined, 'cancelled'],
   },
+  [InvokeChannels.aiPicturesCost]: {
+    request: [
+      {
+        prompt: 'a ruby',
+        style: 'painting',
+        size: 32,
+        width: 32,
+        height: 16,
+        count: 4,
+        transparent: false,
+        reference: { width: 2, height: 1, rgb: new Uint8Array(6) },
+        strength: 0.5,
+        seed: 7,
+      },
+      {
+        prompt: 'a ruby',
+        style: 'item',
+        size: 16,
+        count: 4,
+        transparent: true,
+        reference: { width: 2, height: 1, rgb: new Uint8Array(5) },
+      },
+    ],
+    response: [
+      { ok: true, usd: 0.24, balanceUsd: 9.76 },
+      { ok: true, usd: '0.24', balanceUsd: null },
+    ],
+  },
   [InvokeChannels.aiStart]: {
     request: [aiStart, { ...aiStart, mode: 'agent' }],
     response: [undefined, 'started'],

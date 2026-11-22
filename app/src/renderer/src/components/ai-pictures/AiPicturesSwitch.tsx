@@ -4,12 +4,17 @@
  * then each block and item texture is made with one request, with progress and a Stop button.
  * A texture that fails keeps its built-in picture, and the note says so.
  *
+ * Since 2026-11-22 the batch is one set (one seed, one palette, each piece sent with MSM's
+ * drawing of it and checked against it; `aiTextures`), and the price of one picture is shown
+ * as soon as the switch is on, before anything is made (`<testId>-cost`).
+ *
  * Test ids: `<testId>` (the switch), `<testId>-progress`, `<testId>-stop`.
  *
  * @packageDocumentation
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { AiPictureCost } from '../../../../shared/ai-pictures';
 import { Button } from '../ui/Button';
 import { aiPicturesReady, useAiPictures } from './ai-pictures-host';
 import {
@@ -19,6 +24,7 @@ import {
   aiTextures,
   batchNote,
   canvasCodec,
+  roundCost,
 } from './generate';
 
 /** The switch's words. */
@@ -38,6 +44,8 @@ export interface AiBatch {
   ): Promise<{ items: T[]; note: string | null }>;
   /** Stops the batch: the request running is cancelled, the rest keep their pictures. */
   stop(): void;
+  /** The price of one picture, once asked (`undefined` while asking). */
+  price: AiPictureCost | null | undefined;
 }
 
 /** The state of one switch. */
@@ -48,6 +56,19 @@ export function useAiBatch(): AiBatch {
   const [progress, setProgress] = useState<AiBatchProgress | null>(null);
   const stopped = useRef(false);
   const request = useRef<string | null>(null);
+  const [price, setPrice] = useState<AiPictureCost | null | undefined>(undefined);
+  useEffect(() => {
+    if (!on || !available || host === null) return;
+    let live = true;
+    void roundCost(host.platform, { prompt: 'a block', style: 'block', size: 16, count: 1 }).then(
+      (answer) => {
+        if (live) setPrice(answer);
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [on, available, host]);
 
   const run = useCallback(
     async <T extends AssetItem>(
@@ -83,7 +104,7 @@ export function useAiBatch(): AiBatch {
     if (request.current !== null && host !== null) void host.platform.cancel(request.current);
   }, [host]);
 
-  return { available, on: on && available, setOn, progress, run, stop };
+  return { available, on: on && available, setOn, progress, run, stop, price };
 }
 
 /** The switch, and the progress while a batch runs. */
@@ -105,7 +126,16 @@ export function AiPicturesSwitch(props: { batch: AiBatch; testId: string; disabl
       {batch.on && batch.progress === null && (
         <p className="text-xs text-muted">
           Each block and item picture is made by your image service when you make it: one request a
-          picture, charged to your account. Pictures that fail keep the built-in art.
+          picture, charged to your account, a second only when a picture fails its check. Every
+          piece starts from MSM's drawing of it and is checked against it; pictures that fail keep
+          MSM's drawing.{' '}
+          <span data-testid={`${props.testId}-cost`}>
+            {batch.price === undefined
+              ? 'Checking the price…'
+              : batch.price === null || !batch.price.ok || batch.price.usd === null
+                ? 'The service gives no price in advance.'
+                : `About $${batch.price.usd.toFixed(2)} a picture.`}
+          </span>
         </p>
       )}
       {batch.progress !== null && (

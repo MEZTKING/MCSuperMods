@@ -5,12 +5,20 @@
  * The dialog and the drawing code load lazily on the first click, so the renderer's main chunk
  * does not carry them (ADR 0092 D17).
  *
+ * Given `ai` (what Make with AI would make here), Very easy's **Draw it for me** dialog offers
+ * **Make it with AI instead** when the chosen image service has a key (ADR 0093, 2026-11-22);
+ * without a key nothing changes, so drawing stays the free route.
+ *
  * @packageDocumentation
  */
 
 import { Palette } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
+import type { AiPictureStyle } from '../../../../shared/ai-pictures';
 import { usePreferences } from '../../store/preferences';
+import { aiPicturesReady, useAiPictures } from '../ai-pictures/ai-pictures-host';
+import { MakeWithAiDialog } from '../ai-pictures/MakeWithAiDialog';
+import type { AiPictureShape } from '../ai-pictures/shapes';
 import { Button } from '../ui/Button';
 import type { DrawField, DrawnPicture } from './draw-model';
 
@@ -21,6 +29,19 @@ const DrawPictureDialog = LazyDrawPictureDialog;
 /** The button's words. */
 export const DRAW = 'Draw…';
 export const DRAW_IT_FOR_ME_BUTTON = 'Draw it for me';
+export const MAKE_IT_WITH_AI_INSTEAD = 'Make it with AI instead';
+
+/** What Make with AI would make in place of a drawing (Very easy's offer). */
+export interface DrawAiOffer {
+  defaultPrompt: string;
+  defaultStyle: AiPictureStyle;
+  size: number;
+  maxSize?: number;
+  shape?: AiPictureShape;
+  colour?: readonly [number, number, number];
+  /** Writes the AI picture (one undo step). */
+  onPick(bytes: Uint8Array): Promise<void> | void;
+}
 
 /**
  * What the Draw dialog draws for a texture at `name` (`ns:textures/block/ruby_ore.png` or a
@@ -67,11 +88,16 @@ export interface DrawButtonProps {
   /** A tooltip, for example why the button is disabled. */
   title?: string;
   className?: string;
+  /** Very easy's offer of Make with AI in the Draw dialog, when a key is set. */
+  ai?: DrawAiOffer;
 }
 
 export function DrawButton(props: DrawButtonProps) {
   const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
   const [open, setOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const host = useAiPictures();
+  const offer = veryEasy && props.ai !== undefined && host !== null && aiPicturesReady(host.status);
   return (
     <>
       <Button
@@ -92,8 +118,35 @@ export function DrawButton(props: DrawButtonProps) {
             veryEasy={veryEasy}
             onPick={props.onPick}
             onClose={() => setOpen(false)}
+            {...(offer
+              ? {
+                  alternative: {
+                    label: MAKE_IT_WITH_AI_INSTEAD,
+                    testId: `${props.testId}-ai-instead`,
+                    onChoose: () => {
+                      setOpen(false);
+                      setAiOpen(true);
+                    },
+                  },
+                }
+              : {})}
           />
         </Suspense>
+      )}
+      {aiOpen && host !== null && props.ai !== undefined && (
+        <MakeWithAiDialog
+          host={host}
+          target={props.target}
+          defaultPrompt={props.ai.defaultPrompt}
+          defaultStyle={props.ai.defaultStyle}
+          size={props.ai.size}
+          {...(props.ai.maxSize === undefined ? {} : { maxSize: props.ai.maxSize })}
+          {...(props.ai.shape === undefined ? {} : { shape: props.ai.shape })}
+          {...(props.ai.colour === undefined ? {} : { colour: props.ai.colour })}
+          veryEasy
+          onPick={props.ai.onPick}
+          onClose={() => setAiOpen(false)}
+        />
       )}
     </>
   );

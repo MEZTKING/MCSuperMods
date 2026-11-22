@@ -21,7 +21,10 @@ import {
   AI_PICTURES_IMAGE_MAX_BYTES,
   AI_PICTURES_KEY_MAX,
   AI_PICTURES_MAX_COUNT,
+  AI_PICTURES_MAX_EDGE,
+  AI_PICTURES_MIN_EDGE,
   AI_PICTURES_PROMPT_MAX,
+  AI_PICTURES_REFERENCE_MAX_EDGE,
 } from './ai-pictures';
 import {
   type InvokeChannel,
@@ -697,16 +700,45 @@ const aiPictureFailure = z
   .object({ ok: z.literal(false), error: z.string().max(2000), errorClass: aiPictureErrorClass })
   .strict();
 const aiPictureKeyTest = z.union([z.object({ ok: z.literal(true) }).strict(), aiPictureFailure]);
+/** RGB pixels of a reference or palette picture: exactly width × height × 3 bytes. */
+const aiPictureRaster = z
+  .object({
+    width: z.number().int().min(1).max(AI_PICTURES_REFERENCE_MAX_EDGE),
+    height: z.number().int().min(1).max(AI_PICTURES_REFERENCE_MAX_EDGE),
+    rgb: bytes,
+  })
+  .strict()
+  .refine((value) => value.rgb.length === value.width * value.height * 3, {
+    message: 'The picture has the wrong number of bytes',
+  });
 const aiPictureRequest = z
   .object({
     requestId: aiId,
     prompt: z.string().trim().min(1).max(AI_PICTURES_PROMPT_MAX),
     style: z.enum(AI_PICTURE_STYLES),
     size: z.number().int().min(8).max(64),
+    width: z.number().int().min(AI_PICTURES_MIN_EDGE).max(AI_PICTURES_MAX_EDGE).optional(),
+    height: z.number().int().min(AI_PICTURES_MIN_EDGE).max(AI_PICTURES_MAX_EDGE).optional(),
     count: z.number().int().min(1).max(AI_PICTURES_MAX_COUNT),
     transparent: z.boolean(),
+    reference: aiPictureRaster.optional(),
+    strength: z.number().min(0).max(1).optional(),
+    palette: aiPictureRaster.optional(),
+    seed: z.number().int().min(0).max(2_147_483_647).optional(),
   })
   .strict();
+/** A price asked before a request: the request without its id. */
+const aiPictureCostRequest = aiPictureRequest.omit({ requestId: true });
+const aiPictureCost = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      usd: z.number().min(0).max(1000).nullable(),
+      balanceUsd: z.number().min(-1e9).max(1e9).nullable(),
+    })
+    .strict(),
+  aiPictureFailure,
+]);
 const aiPictureResult = z.union([
   z
     .object({
@@ -1407,6 +1439,10 @@ export const ipcContract = {
   [InvokeChannels.aiPicturesCancel]: {
     request: z.object({ requestId: aiId }).strict(),
     response: voidResponse,
+  },
+  [InvokeChannels.aiPicturesCost]: {
+    request: aiPictureCostRequest,
+    response: aiPictureCost,
   },
   [InvokeChannels.playStatus]: {
     request: z.object({ targetId }).strict(),

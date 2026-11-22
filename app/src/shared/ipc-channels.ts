@@ -94,6 +94,7 @@ export const InvokeChannels = {
   aiPicturesTestKey: 'msm:v1:aiPictures:testKey',
   aiPicturesGenerate: 'msm:v1:aiPictures:generate',
   aiPicturesCancel: 'msm:v1:aiPictures:cancel',
+  aiPicturesCost: 'msm:v1:aiPictures:cost',
   // ADR 0084: one-click Play and Reload.
   playStatus: 'msm:v1:play:status',
   playPlay: 'msm:v1:play:play',

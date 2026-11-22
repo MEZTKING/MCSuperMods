@@ -75,6 +75,7 @@ const hanging: PictureProvider = {
       });
     }),
   testKey: async () => ({ ok: true }),
+  cost: async () => ({ usd: null, balanceUsd: null }),
 };
 
 describe('AI pictures service', () => {
@@ -117,6 +118,7 @@ describe('AI pictures service', () => {
         return [fakePicture(0, false), fakePicture(1, false)];
       },
       testKey: async () => ({ ok: true }),
+      cost: async () => ({ usd: 0.12, balanceUsd: null }),
     };
     const service = serviceWith({ 'retro-diffusion': provider });
     expect(await service.generate(request)).toMatchObject({ ok: false, errorClass: 'no_key' });

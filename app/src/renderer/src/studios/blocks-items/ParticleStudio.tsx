@@ -24,6 +24,7 @@ import { ArrowDown, ArrowUp, Paintbrush, X } from 'lucide-react';
 import { useState } from 'react';
 import { MakeWithAiButton } from '../../components/ai-pictures/MakeWithAiButton';
 import { defaultPrompt } from '../../components/ai-pictures/prompt';
+import { particleShape } from '../../components/ai-pictures/shapes';
 import { textureChange } from '../../components/ai-pictures/texture-write';
 import { DrawButton } from '../../components/art/DrawButton';
 import type { DrawnPicture } from '../../components/art/draw-model';
@@ -209,10 +210,11 @@ export default function ParticleStudio(props: StudioProps) {
                   <MakeWithAiButton
                     testId={`particle-frame-${index}-ai`}
                     target={sprite}
-                    defaultPrompt={defaultPrompt(`${sprite} particle`, 'item')}
-                    defaultStyle="item"
+                    defaultPrompt={defaultPrompt(sprite.replace(/_\d+$/, ''), 'particle')}
+                    defaultStyle="particle"
                     size={NEW_PICTURE_SIZE.width}
                     maxSize={NEW_PICTURE_SIZE.width}
+                    shape={particleShape(NEW_PICTURE_SIZE.width)}
                     onPick={async (bytes) => {
                       const asset = spriteAsset(target, sprite);
                       if (asset === undefined || host.applyChanges === undefined) return;

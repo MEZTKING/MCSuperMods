@@ -8,15 +8,24 @@
  * Test ids as the wizard's image field: `param-<id>` (the choose button), `param-<id>-field`,
  * `param-<id>-thumbnail`, `param-<id>-empty`, `param-<id>-summary`, `param-<id>-clear`,
  * `param-<id>-error`; `param-<id>-draw` (**Draw…**, ADR 0092 D10: a humanoid box skin on skin
- * fields) and `param-<id>-ai` (**Make with AI**, ADR 0093, not on skins).
+ * fields) and `param-<id>-ai` (**Make with AI**, ADR 0093; since 2026-11-22 on every image field:
+ * a skin is a coat laid on the humanoid boxes, a painting takes the flow's size answer, a
+ * particle is a cut-out 8 by 8 sprite; {@link aiShapeOf}).
  *
  * @packageDocumentation
  */
 
 import type { StarterParameter } from '@msm/plugin-api';
+import { HUMANOID_SKIN_BOXES } from '@msm/plugin-library';
 import { useId, useState } from 'react';
 import { MakeWithAiButton } from '../ai-pictures/MakeWithAiButton';
 import { defaultPrompt, styleForName, wordsOf } from '../ai-pictures/prompt';
+import {
+  type AiPictureShape,
+  boxesShape,
+  paintingShape,
+  particleShape,
+} from '../ai-pictures/shapes';
 import { DrawButton } from '../art/DrawButton';
 import type { DrawField } from '../art/draw-model';
 import { Button } from '../ui/Button';
@@ -43,6 +52,55 @@ export interface CreatorImageFieldProps {
   nameHint?: string;
   /** The thing's colour as `#rrggbb` (the flow's colour), for the Draw dialog (ADR 0092 D9). */
   colourHint?: string;
+  /** The flow's size answer in blocks (a painting's "2x1"), for Make with AI's painting. */
+  blocksHint?: { wide: number; tall: number };
+}
+
+/**
+ * The flow's answer of a size in blocks, such as the Painting flow's "2x1" (a choice whose
+ * value is `<wide>x<tall>`, 1 to 4 each), or `undefined`.
+ */
+export function blocksHintOf(
+  parameters: readonly StarterParameter[],
+  raw: Readonly<Record<string, unknown>>,
+): { wide: number; tall: number } | undefined {
+  for (const parameter of parameters) {
+    if (parameter.type !== 'choice') continue;
+    const value = raw[parameter.id] ?? parameter.default;
+    const match = typeof value === 'string' ? /^([1-4])x([1-4])$/.exec(value) : null;
+    if (match !== null) return { wide: Number(match[1]), tall: Number(match[2]) };
+  }
+  return undefined;
+}
+
+/** Whether an image parameter is a mob's skin (the player skin layout), by its words. */
+export function isSkinPicture(parameter: StarterParameter & { type: 'image' }): boolean {
+  const words = `${parameter.id} ${parameter.label}`;
+  return /skin/i.test(words) || /^variant_\d+_picture$/.test(parameter.id);
+}
+
+/**
+ * What Make with AI makes for an image parameter (ADR 0093 D6 as amended): a coat on the
+ * humanoid boxes for a skin, a painting of the flow's size, an 8 by 8 particle sprite, or
+ * `undefined` for a square block or item texture.
+ */
+export function aiShapeOf(
+  parameter: StarterParameter & { type: 'image' },
+  blocks?: { wide: number; tall: number },
+): AiPictureShape | undefined {
+  if (isSkinPicture(parameter))
+    return boxesShape(HUMANOID_SKIN_BOXES, 64, 64, 'laid on a humanoid');
+  if (blocks !== undefined && /\b(image|picture)\b/i.test(`${parameter.id} ${parameter.label}`)) {
+    return paintingShape(blocks.wide, blocks.tall);
+  }
+  if (
+    parameter.maxSize !== undefined &&
+    parameter.maxSize <= 64 &&
+    /particle|spark/i.test(parameter.description ?? '')
+  ) {
+    return particleShape(8);
+  }
+  return undefined;
 }
 
 /**
@@ -65,9 +123,12 @@ export function colourHintOf(
     : undefined;
 }
 
-/** Whether "Make with AI" suits an image parameter: not a mob skin's 64 by 64 layout. */
-export function takesAiPicture(parameter: StarterParameter & { type: 'image' }): boolean {
-  return !/skin/i.test(`${parameter.id} ${parameter.label}`);
+/**
+ * Whether "Make with AI" suits an image parameter: every one since 2026-11-22 (a skin is a
+ * coat laid on the humanoid boxes, {@link aiShapeOf}).
+ */
+export function takesAiPicture(_parameter: StarterParameter & { type: 'image' }): boolean {
+  return true;
 }
 
 /** Whether an image parameter is a block's texture (else an item's picture), by its words. */
@@ -95,7 +156,7 @@ export function drawFieldOf(
 ): DrawField {
   const rgb = colour === undefined ? null : hexColour(colour);
   const base = rgb === null ? {} : { colour: rgb };
-  if (!takesAiPicture(parameter)) {
+  if (isSkinPicture(parameter)) {
     return { kinds: ['entity'], width: 64, height: 64, skin: true, ...base };
   }
   const size = parameter.maxSize !== undefined && parameter.maxSize < 16 ? parameter.maxSize : 16;
@@ -124,6 +185,7 @@ export function CreatorImageField({
   onChange,
   nameHint,
   colourHint,
+  blocksHint,
 }: CreatorImageFieldProps) {
   const labelId = useId();
   const descriptionId = useId();
@@ -134,6 +196,17 @@ export function CreatorImageField({
   const shownError = pickError ?? error;
   const testId = `param-${parameter.id}`;
   const aiName = nameHint === undefined || wordsOf(nameHint) === '' ? parameter.label : nameHint;
+  const aiShape = aiShapeOf(parameter, blocksHint);
+  const aiStyle = aiShape?.style ?? aiStyleOf(parameter, aiName);
+  const aiSize = parameter.maxSize !== undefined && parameter.maxSize < 16 ? parameter.maxSize : 16;
+  const aiColour = colourHint === undefined ? null : hexColour(colourHint);
+  const aiColourProps = aiColour === null ? {} : { colour: aiColour };
+  const takeAi = (bytes: Uint8Array) => {
+    const problem = checkPngBytes(parameter, bytes);
+    if (problem !== null) throw new Error(problem);
+    setPickError(null);
+    onChange(pngDataUrl(bytes));
+  };
   const describedBy =
     [
       parameter.description === undefined ? null : descriptionId,
@@ -205,21 +278,27 @@ export function CreatorImageField({
                 setPickError(null);
                 onChange(pngDataUrl(bytes));
               }}
+              ai={{
+                defaultPrompt: defaultPrompt(aiName, aiStyle),
+                defaultStyle: aiStyle,
+                size: aiSize,
+                ...(parameter.maxSize === undefined ? {} : { maxSize: parameter.maxSize }),
+                ...(aiShape === undefined ? {} : { shape: aiShape }),
+                ...aiColourProps,
+                onPick: takeAi,
+              }}
             />
             {takesAiPicture(parameter) && (
               <MakeWithAiButton
                 testId={`${testId}-ai`}
                 target={parameter.label}
-                defaultPrompt={defaultPrompt(aiName, aiStyleOf(parameter, aiName))}
-                defaultStyle={aiStyleOf(parameter, aiName)}
-                size={
-                  parameter.maxSize !== undefined && parameter.maxSize < 16 ? parameter.maxSize : 16
-                }
+                defaultPrompt={defaultPrompt(aiName, aiStyle)}
+                defaultStyle={aiStyle}
+                size={aiSize}
                 {...(parameter.maxSize === undefined ? {} : { maxSize: parameter.maxSize })}
-                onPick={(bytes) => {
-                  setPickError(null);
-                  onChange(pngDataUrl(bytes));
-                }}
+                {...(aiShape === undefined ? {} : { shape: aiShape })}
+                {...aiColourProps}
+                onPick={takeAi}
               />
             )}
             {value !== '' && (

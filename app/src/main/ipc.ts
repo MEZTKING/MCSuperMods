@@ -55,6 +55,7 @@ const NO_AI_PICTURES: IpcAiPictures = {
   clearKey: () => Promise.reject(new Error('AI pictures are not available.')),
   testKey: () => Promise.reject(new Error('AI pictures are not available.')),
   generate: () => Promise.reject(new Error('AI pictures are not available.')),
+  cost: () => Promise.reject(new Error('AI pictures are not available.')),
   cancel: async () => {},
 };
 
@@ -223,6 +224,7 @@ export function createIpcHandlers(
     [InvokeChannels.aiPicturesTestKey]: (req) => aiPictures.testKey(req.service),
     [InvokeChannels.aiPicturesGenerate]: (req) => aiPictures.generate(req),
     [InvokeChannels.aiPicturesCancel]: (req) => aiPictures.cancel(req.requestId),
+    [InvokeChannels.aiPicturesCost]: (req) => aiPictures.cost(req),
     [InvokeChannels.tryItListWorlds]: () => platform.tryItWorlds.listWorlds(),
     [InvokeChannels.tryItReadArea]: (req) => platform.tryItWorlds.readArea(req),
     [InvokeChannels.worldBackupsList]: () => platform.worldBackups.list(),

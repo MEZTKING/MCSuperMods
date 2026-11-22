@@ -34,16 +34,34 @@ export const OPENAI_STYLE_WORDS = Object.freeze({
     'A single square Minecraft block texture, seamless and tileable, flat front view filling the whole square, chunky 16 by 16 pixel art, limited palette, light from the top left, no text, no border.',
   item: 'A single Minecraft inventory item icon, one object centred on a plain background, chunky 16 by 16 pixel art, limited palette, dark outline, light from the top left, no text.',
   tool: 'A single Minecraft tool icon pointing diagonally from the bottom left to the top right, handle at the bottom left, one object centred on a plain background, chunky 16 by 16 pixel art, limited palette, dark outline, light from the top left, no text.',
+  skin: 'A single square seamless tileable Minecraft texture of the creature’s fur, hide or scales, flat, filling the whole square, chunky 16 by 16 pixel art, limited palette, no face, no text, no border.',
+  painting:
+    'A Minecraft painting: a small framed-free pixel-art scene filling the whole picture, chunky pixels, limited palette, soft muted colours, no text, no border.',
+  pattern:
+    'A single bold flat emblem or motif, one simple shape centred on a plain background, chunky pixel art, two or three shades, no text, no border.',
+  particle:
+    'A single tiny Minecraft particle sprite, one small glowing shape centred on a plain background, chunky 8 by 8 pixel art, very few colours, no text.',
 } as const);
+
+/** The size asked for a picture of `width` by `height`: square, wide or tall. */
+export function openAiSize(width: number, height: number): string {
+  if (width >= height * 1.25) return '1536x1024';
+  if (height >= width * 1.25) return '1024x1536';
+  return OPENAI_SIZE;
+}
 
 /** The request body of {@link GenerateInput}. */
 export function openAiBody(input: GenerateInput): Record<string, unknown> {
-  const transparent = input.transparent && input.style !== 'block';
+  const transparent =
+    input.transparent &&
+    input.style !== 'block' &&
+    input.style !== 'skin' &&
+    input.style !== 'painting';
   return {
     model: OPENAI_IMAGE_MODEL,
     prompt: `${input.prompt.trim()}\n\n${OPENAI_STYLE_WORDS[input.style]}`,
     n: input.count,
-    size: OPENAI_SIZE,
+    size: openAiSize(input.width ?? input.size, input.height ?? input.size),
     quality: 'low',
     background: transparent ? 'transparent' : 'opaque',
     output_format: 'png',
@@ -91,6 +109,10 @@ export const openAiProvider: PictureProvider = {
       throw pictureError('bad_response', 'the answer has no pictures');
     }
     return data.map((entry) => pngFromBase64(field(entry, 'b64_json')));
+  },
+  async cost() {
+    // OpenAI bills image output by tokens and has no free price check: no price a picture.
+    return { usd: null, balanceUsd: null };
   },
   async testKey(context) {
     try {

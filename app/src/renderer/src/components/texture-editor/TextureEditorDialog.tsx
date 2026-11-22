@@ -11,8 +11,10 @@
 import { Eraser, PaintBucket, Pencil, Pipette, Redo2, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { isSquareStyle } from '../../../../shared/ai-pictures';
 import { MakeWithAiButton } from '../ai-pictures/MakeWithAiButton';
 import { defaultPrompt, styleForTexturePath } from '../ai-pictures/prompt';
+import { shapeForTexture } from '../ai-pictures/shapes';
 import { DrawButton, drawFieldForTexture } from '../art/DrawButton';
 import type { DrawnPicture } from '../art/draw-model';
 import { Button } from '../ui/Button';
@@ -192,7 +194,12 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
   };
 
   const palette = image === null ? [] : paletteOf(image);
-  const aiStyle = styleForTexturePath(props.name.slice(props.name.indexOf(':') + 1));
+  const aiShape = image === null ? null : shapeForTexture(props.name, image.width, image.height);
+  const aiStyle =
+    aiShape !== null && !isSquareStyle(aiShape.style)
+      ? aiShape.style
+      : styleForTexturePath(props.name.slice(props.name.indexOf(':') + 1));
+  const aiShapeProps = aiShape !== null && !isSquareStyle(aiShape.style) ? { shape: aiShape } : {};
 
   /** Puts a picked AI picture (ADR 0093) on the canvas as one painter undo step. */
   const takeAiPicture = async (bytes: Uint8Array): Promise<void> => {
@@ -308,6 +315,13 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
                   target={props.name}
                   field={drawFieldForTexture(props.name, image.width, image.height)}
                   onPick={takeDrawnPicture}
+                  ai={{
+                    defaultPrompt: defaultPrompt(props.name, aiStyle),
+                    defaultStyle: aiStyle,
+                    size: image.width >= 32 ? 32 : 16,
+                    ...aiShapeProps,
+                    onPick: takeAiPicture,
+                  }}
                 />
                 <MakeWithAiButton
                   testId="texture-make-with-ai"
@@ -315,6 +329,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
                   defaultPrompt={defaultPrompt(props.name, aiStyle)}
                   defaultStyle={aiStyle}
                   size={image.width >= 32 ? 32 : 16}
+                  {...aiShapeProps}
                   onPick={takeAiPicture}
                 />
               </div>

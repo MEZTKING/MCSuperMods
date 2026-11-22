@@ -59,6 +59,11 @@ export interface DrawPictureDialogProps {
   title?: string;
   /** The pick button's words in place of "Use this picture". */
   useLabel?: string;
+  /**
+   * Another way to make the picture, offered in the footer: Very easy's **Draw it for me**
+   * offers **Make it with AI instead** when an image service has a key (ADR 0093, 2026-11-22).
+   */
+  alternative?: { label: string; testId: string; onChoose(): void };
 }
 
 const DETAILS: readonly ArtDetail[] = ['smooth', 'normal', 'rough'];
@@ -332,6 +337,15 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
                 onClick={() => dispatch({ type: 'new-looks' })}
               >
                 New looks
+              </Button>
+            )}
+            {props.alternative !== undefined && (
+              <Button
+                data-testid={props.alternative.testId}
+                disabled={saving}
+                onClick={props.alternative.onChoose}
+              >
+                {props.alternative.label}
               </Button>
             )}
             <Button
