@@ -7936,3 +7936,18 @@ Next
 
 **Next**
 - B544: add to `app/test/ai-rules.test.ts` pins of the three new lists against the plugins (as checked above) and to `ai-schema-summary.test.ts` a check that `msm:entity` shows `case swoop: {` without truncation; the root status line's runtime, JUnit, parity and e2e numbers after B541 and B542; `engine-mod/CLAUDE.md` and `app/CLAUDE.md` status lines for batch 2.
+## 2026-11-22 — executor — B570 e2e showcase path
+
+**What**
+- `app/e2e/showcase-path.spec.ts` (ADR 0118), three tests. Under SwiftShader WebGL with a new install (`MSM_E2E_NEW_INSTALL=1`): Very easy's Home with no mod shows the ten cards in order and **Pause clips**; hovering the pet card mounts exactly one canvas, in that card, and its picture has more than one colour (`readPixels` as `tryit-path` reads it); hovering the machine card moves the one canvas there (drawn too). With `page.emulateMedia({ reducedMotion: 'reduce' })` no canvas is mounted, hovered or not, and all ten cards show their stills; the portal card's play button plays it (one canvas) and pressing it again stops it. Back to normal motion the hovered card plays again. With Help > Settings > **Play showcase clips** off, no canvas, hovered or not, and all stills shown. **Make this** on "A set of wood" asks for a name prefilled "Elm Mod", makes the mod under `<MSM_HOME>/Documents/MCSuperMods/Elm Mod` and opens the Creator on "Create: Wood set".
+- In Advanced (a fresh profile without the launch notice), with WebGL: New > From starter shows the strip **See what you can make** with ten cards and one canvas at most; **Make this** on "Plants that grow" goes on to `wizard-step-2` of the Crop wizard (heading "Crop: …", the Crop name field) and the strip is gone.
+- Without the WebGL switches: every card shows its drawn still and "This computer cannot show moving pictures here.", the wood card its title and sentence, the picture is a plain picture (no play button), no **Pause clips**, no canvas when hovered; **Make this** still makes "Elm Mod" and opens the Wood set flow.
+- Verified: `pnpm build`; the spec green three times in a row under `xvfb-run -a` (16.8 to 18.9 s each, the three tests 8.5 to 10.1 s, 4.7 to 4.9 s and 3.0 to 3.6 s); the full e2e run green once (76 tests in 14.2 min); `pnpm lint`, `pnpm typecheck`.
+
+**Decisions**
+- No app change was needed: every step went through the UI as built by B566 to B569.
+- `app/CLAUDE.md` is left to the close (B572): its e2e line text is in the brief's report.
+- The sentences are checked on one card only (the wood set's); the ten titles and sentences are pinned by `showcases.test.ts`.
+
+**Next**
+- B572: the `app/CLAUDE.md` e2e line (43 spec files) and the root `CLAUDE.md` e2e count.
