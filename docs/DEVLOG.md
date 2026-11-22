@@ -6859,3 +6859,15 @@ Next
 
 **Next**
 - If another component test shows a lazy-chunk timeout under load, use `lazy-chunks.ts` the same way.
+
+## 2026-11-22 — main session — CI green after the art close; art speed check by fastest batch
+
+What
+- CI was green on c155fb7 (the art batch closed by B502, the AI helper fixes and the app-tests-under-load fix); main fast-forwarded from 67cfedc to it.
+- The run on 40d2bb1 had failed only on the art speed check: `horse_armor_layer` measured a median single draw of 5.2 ms against its 4 ms budget while CI ran every package's tests at once. The single draws are now timed like the six-draw check: ten batches of ten draws, and the fastest batch's mean must stay under the budget. A recipe that really got slower still fails; a busy machine only adds time. 80 of 80 passed three times under eight busy loops.
+
+Decisions
+- No budget changed; only the measurement (ADR 0092 D17 unchanged).
+
+Next
+- Fast-forward main again once CI is green on the newest commit. The 1.5.2 draft still waits for the user's Windows test and go.
