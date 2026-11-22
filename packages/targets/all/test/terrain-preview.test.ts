@@ -12,6 +12,7 @@ import { clientJarPath, zipEntries } from './client-jar';
  */
 const FOLDERS = [
   'dimension_type',
+  'tags/block',
   'tags/worldgen/biome',
   'tags/worldgen/feature',
   'tags/worldgen/flat_level_generator_preset',
@@ -36,10 +37,10 @@ const FOLDERS = [
   'worldgen/world_preset',
 ];
 
-/** Per target: the pinned facts and the JSON file count B574 (WS11) read from its jar. */
+/** Per target: the pinned facts and the JSON file count B574 (WS11) read from its jar, with B585's block tags. */
 const EXPECTED = {
-  'mc-26.3': { approximate: ['end'], files: 1271 },
-  'mc-26.4': { approximate: ['biome_layout', 'end'], files: 1325 },
+  'mc-26.3': { approximate: ['end'], files: 1571 },
+  'mc-26.4': { approximate: ['biome_layout', 'end'], files: 1640 },
 } as const;
 
 const DATA = 'data/minecraft/';
@@ -103,7 +104,7 @@ describe('worldgen.terrainPreview', () => {
         const folder = folderOf(name, facts.dataFolders) as string;
         counts.set(folder, (counts.get(folder) ?? 0) + 1);
       }
-      // Every folder holds files, and the total is the one WS11 measured.
+      // Every folder holds files, and the total is the one WS11 measured plus the block tags.
       for (const folder of facts.dataFolders) {
         expect(counts.get(folder) ?? 0, folder).toBeGreaterThan(0);
       }

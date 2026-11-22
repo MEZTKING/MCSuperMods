@@ -18,6 +18,12 @@
  *   names a vanilla file shows the set-up banner instead of a wrong picture.
  * - Seed, position, zoom and mode are the project's view (`view-store.ts`), shared with Try it.
  * - Drag to pan, the wheel or `+`/`-` to zoom, arrows on the focused map to pan, Home for spawn.
+ * - B585: **Structures** marks where a `random_spread` structure may start (`markers.ts`), and
+ *   **Compare with vanilla** draws vanilla's world of the same seed beside the map
+ *   (`CompareView.tsx`). The default export also picks the view of the other worldgen kinds: a
+ *   **Value map** for density functions and noises (`ValueMap.tsx`), a **Scatter** for features,
+ *   placed features, block state providers and biome additions (`Scatter.tsx`), and for a carver
+ *   the line that its caves show only in the game (limit WL4).
  */
 
 import type { Element, Project } from '@msm/plugin-api';
@@ -35,6 +41,7 @@ import {
 } from 'react';
 import type { TryItWorldsPlatform } from '../../../shared/platform';
 import { Button } from '../components/ui/Button';
+import CompareView, { compareClientFor } from './CompareView';
 import {
   COARSE_FACTOR,
   hashText,
@@ -86,7 +93,10 @@ import {
   usesClimate,
   withNamespace,
 } from './hosts';
+import { MARKER_WORDS, markerNear, setName, structureMarkers } from './markers';
+import Scatter, { BIOME_ADDITION_KIND } from './Scatter';
 import SideCut from './SideCut';
+import ValueMap from './ValueMap';
 import { type TerrainMode, type TerrainView, useTerrainView } from './view-store';
 
 const ClimateMap = lazy(() => import('../preview/ClimateMap'));
@@ -473,7 +483,27 @@ export interface WorldMapProps {
   terrain?: TerrainSessionHandle;
   /** Test hook: the saves list for Seed of one of my worlds. */
   worlds?: TryItWorldsPlatform | null;
+  /** Test hook: the client of vanilla's world for Compare with vanilla. */
+  compareClient?: TerrainClient;
 }
+
+/** Kinds drawn as a Value map (B585). */
+export const VALUE_FOLDERS: ReadonlySet<string> = new Set([
+  'worldgen/density_function',
+  'worldgen/noise',
+]);
+
+/** Kinds drawn as a Scatter (B585). */
+export const SCATTER_FOLDERS: ReadonlySet<string> = new Set([
+  'worldgen/feature',
+  'worldgen/placed_feature',
+  'worldgen/block_state_provider',
+  BIOME_ADDITION_KIND,
+]);
+
+/** The words for a carver (limit WL4). */
+export const CARVER_WORDS =
+  'Carved caves show only in the game. A carver cuts caves and ravines into the land after it is made; the preview draws the land without them.';
 
 const MODE_LABELS: Record<TerrainMode, string> = {
   biomes: 'Biomes',
@@ -492,10 +522,36 @@ interface Timing {
   readonly editMs: number;
 }
 
-/** The live world map; see the module comment. */
+/** The live view of a worldgen element: the map, a Value map, a Scatter or the carver's line. */
 export default function WorldMap(props: WorldMapProps) {
-  const { project, element, onSetup, vanillaReady } = props;
   const terrain = props.terrain ?? terrainSessionFor(props.session);
+  const folder = folderOfKind(props.element.kind);
+  const common = {
+    terrain,
+    root: props.root,
+    project: props.project,
+    element: props.element,
+    vanillaReady: props.vanillaReady,
+    onSetup: props.onSetup,
+    ...(props.worlds === undefined ? {} : { worlds: props.worlds }),
+  };
+  if (VALUE_FOLDERS.has(folder)) return <ValueMap {...common} />;
+  if (SCATTER_FOLDERS.has(folder)) return <Scatter {...common} />;
+  if (folder === 'worldgen/carver') {
+    return (
+      <div className="flex flex-col gap-2" data-testid="terrain-carver">
+        <PreviewTag />
+        <p className="text-sm">{CARVER_WORDS}</p>
+      </div>
+    );
+  }
+  return <WorldMapView {...props} terrain={terrain} />;
+}
+
+/** The live world map; see the module comment. */
+function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) {
+  const { project, element, onSetup, vanillaReady } = props;
+  const terrain = props.terrain;
   const client = terrain.client;
   const { state, error: filesError } = useSyncExternalStore(terrain.subscribe, terrain.getSnapshot);
 
@@ -753,6 +809,30 @@ export default function WorldMap(props: WorldMapProps) {
       world === null ? [] : raw.map((layer) => paintLayerOf(layer, colours, lit, world.summary)),
     [raw, colours, lit, world],
   );
+  // Structure markers (B585): where a structure may start in the view.
+  const [markersOn, setMarkersOn] = useState(false);
+  const markerResult = useMemo(() => {
+    if (!markersOn || state === null || world === null || host === undefined) return null;
+    if (world.summary.generator !== 'noise' || (mode !== 'biomes' && mode !== 'height'))
+      return null;
+    let seed: bigint;
+    try {
+      seed = BigInt(world.summary.seed);
+    } catch {
+      return null;
+    }
+    const biomeLayers = layers.filter((layer) => layer.kind === 'biomes');
+    const half = (MAP_PIXELS / 2) * zoom;
+    return structureMarkers({
+      project: filesWithHost(state.project, host),
+      vanilla: state.vanilla,
+      seed,
+      region: { x0: viewX - half, z0: viewZ - half, width: 2 * half, depth: 2 * half },
+      ...(world.summary.biomesKnown && biomeLayers.length > 0
+        ? { biomeAt: (x: number, z: number) => hoverAt(biomeLayers, x, z).biome }
+        : {}),
+    });
+  }, [markersOn, state, world, host, mode, layers, viewX, viewZ, zoom]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const shownLayers = useMemo(
     () => layers.filter((layer) => layer.kind === (mode === 'height' ? 'heights' : 'biomes')),
@@ -762,11 +842,23 @@ export default function WorldMap(props: WorldMapProps) {
     if (shown === null || (mode !== 'biomes' && mode !== 'height')) return;
     const context = canvasRef.current?.getContext('2d') ?? null;
     if (context === null) return;
-    const pixels = paintLayers(shownLayers, viewportOf(shown));
+    const viewport = viewportOf(shown);
+    const pixels = paintLayers(shownLayers, viewport);
     const image = context.createImageData(MAP_PIXELS, MAP_PIXELS);
     image.data.set(pixels);
     context.putImageData(image, 0, 0);
-  }, [shownLayers, shown, mode]);
+    for (const marker of markerResult?.markers ?? []) {
+      const px = Math.floor((marker.x - viewport.left) / viewport.zoom);
+      const py = Math.floor((marker.z - viewport.top) / viewport.zoom);
+      if (px < -3 || py < -3 || px > MAP_PIXELS + 3 || py > MAP_PIXELS + 3) continue;
+      context.fillStyle = '#000000';
+      context.fillRect(px - 3, py - 3, 7, 7);
+      context.fillStyle = '#ffffff';
+      context.fillRect(px - 2, py - 2, 5, 5);
+      context.fillStyle = '#c0392b';
+      context.fillRect(px - 1, py - 1, 3, 3);
+    }
+  }, [shownLayers, shown, mode, markerResult]);
 
   // Hover.
   const [hover, setHover] = useState<{ x: number; z: number } | null>(null);
@@ -783,6 +875,15 @@ export default function WorldMap(props: WorldMapProps) {
     };
   };
   const hovered = hover === null ? null : hoverAt(layers, hover.x, hover.z);
+
+  const markerHere =
+    hover === null || markerResult === null
+      ? null
+      : markerNear(markerResult.markers, hover.x, hover.z, 3 * zoom);
+
+  // Compare with vanilla (B585): vanilla's world in its own worker.
+  const [compareOn, setCompareOn] = useState(false);
+  const compareClient = props.compareClient ?? compareClientFor(terrain);
 
   const onPointerDown = (event: PointerEvent<HTMLCanvasElement>): void => {
     if (event.button !== 0) return;
@@ -967,8 +1068,65 @@ export default function WorldMap(props: WorldMapProps) {
                   ? 'Hover the map to see the biome and the height there.'
                   : `X ${hover.x}, Z ${hover.z}${hovered?.biome === undefined ? '' : `: ${hovered.biome}`}${
                       hovered?.height === undefined ? '' : `, land at y ${hovered.height}`
+                    }${
+                      markerHere === null
+                        ? ''
+                        : `. ${setName(markerHere.set)} may start here (chunk ${markerHere.chunkX}, ${markerHere.chunkZ}).`
                     }`}
               </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    data-testid="terrain-markers-toggle"
+                    checked={markersOn}
+                    onChange={(event) => setMarkersOn(event.target.checked)}
+                  />
+                  Structures
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    data-testid="terrain-compare"
+                    checked={compareOn && state.vanilla !== null}
+                    disabled={state.vanilla === null}
+                    onChange={(event) => setCompareOn(event.target.checked)}
+                  />
+                  Compare with vanilla
+                </label>
+              </div>
+              {markerResult === null ? null : (
+                <p className="text-xs text-muted" data-testid="terrain-markers">
+                  {markerResult.markers.length === 0
+                    ? 'No structure may start in this view.'
+                    : `${markerResult.markers.length} ${
+                        markerResult.markers.length === 1 ? 'place' : 'places'
+                      } in this view where a structure may start.`}
+                </p>
+              )}
+              {state.vanilla === null ? (
+                <div
+                  role="status"
+                  data-testid="terrain-compare-set-up"
+                  className="flex flex-wrap items-center gap-2 rounded border border-warning px-3 py-2 text-sm"
+                >
+                  <span>
+                    Compare with vanilla needs Minecraft's own land files. Set up your Minecraft
+                    folder to see vanilla's world beside yours.
+                  </span>
+                  <Button onClick={onSetup}>Set up Minecraft folder</Button>
+                </div>
+              ) : compareOn ? (
+                <CompareView
+                  client={compareClient}
+                  state={state}
+                  dimension={dimension}
+                  end={end}
+                  mode={mode === 'height' ? 'height' : 'biomes'}
+                  view={view}
+                  colours={colours}
+                />
+              ) : null}
               {lit !== null && mode === 'biomes' ? (
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span data-testid="terrain-share">
@@ -986,7 +1144,9 @@ export default function WorldMap(props: WorldMapProps) {
               ) : null}
             </>
           )}
-          <TerrainNotes lines={notes} />
+          <TerrainNotes
+            lines={markerResult === null ? notes : [...notes, MARKER_WORDS, ...markerResult.notes]}
+          />
         </>
       )}
       <output
@@ -998,6 +1158,7 @@ export default function WorldMap(props: WorldMapProps) {
         data-drawn={drawn}
         data-drawing={drawing ? 'yes' : 'no'}
         data-banner={banner ? 'yes' : 'no'}
+        data-markers={markerResult?.markers.length ?? ''}
         data-edit-ms={timing?.editMs ?? ''}
         data-debounce-ms={TERRAIN_DEBOUNCE_MS}
       >

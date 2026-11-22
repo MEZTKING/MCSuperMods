@@ -100,10 +100,11 @@ const ENVIRONMENT_ATTRIBUTES = [
  * the jar extraction keeps for the live world generation preview, sorted. Terrain: noise
  * settings, density functions, noises, surface rules and conditions, biomes, world presets,
  * multi-noise parameter lists, flat presets and dimension types; features, carvers and
- * structures; and their worldgen tags.
+ * structures; their worldgen tags; and block tags (the features' block predicates, B585).
  */
 const TERRAIN_PREVIEW_DATA_FOLDERS: readonly string[] = Object.freeze([
   'dimension_type',
+  'tags/block',
   'tags/worldgen/biome',
   'tags/worldgen/feature',
   'tags/worldgen/flat_level_generator_preset',
@@ -221,8 +222,9 @@ export const target: Target = {
     environmentAttributes: ENVIRONMENT_ATTRIBUTES,
     // terrainPreview (ADR 0119 D16; plugin API 1.21.0): the jar's `data/minecraft/` folders the
     // live world generation preview caches, from B574's WS11 list and checked against the Loom-
-    // cached client jar by `all/test/terrain-preview.test.ts` (1,325 files, 2.09 MB inflated; no
-    // `dimension` folder: vanilla's dimensions are inline in the world presets). Approximate here:
+    // cached client jar by `all/test/terrain-preview.test.ts` (1,640 files, 315 of them the block
+    // tags B585 added for the features' block predicates; no `dimension` folder: vanilla's
+    // dimensions are inline in the world presets). Approximate here:
     // the End (as on 26.3) and the biome layout (B574 WS8: 67 % of biome cells, a code change of
     // the snapshot that its data files do not show; re-measure at the next pin).
     terrainPreview: {

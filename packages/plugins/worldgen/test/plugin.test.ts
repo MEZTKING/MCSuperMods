@@ -95,6 +95,13 @@ describe('@msm/plugin-worldgen', () => {
         'worldgen/flat_level_generator_preset',
         'worldgen/material_rule',
         'worldgen/material_condition',
+        // B585: value maps, scatters and the carver's line.
+        'worldgen/density_function',
+        'worldgen/noise',
+        'worldgen/feature',
+        'worldgen/placed_feature',
+        'worldgen/block_state_provider',
+        'worldgen/carver',
       ].includes(registry);
       expect(kind.previewKind, kind.id).toBe(map ? 'worldgen_map' : undefined);
     }

@@ -26,6 +26,10 @@ export interface WorldgenFiles {
 export interface TerrainTargetFacts {
   readonly dataFolders: readonly string[];
   readonly approximate: readonly ('biome_layout' | 'end')[];
+  /** `worldgen.featureSteps`: the decoration step names, in order (features, B583). */
+  readonly featureSteps?: readonly string[];
+  /** `worldgen.vanillaFeatureOrder`: vanilla's placed features per step name, in order. */
+  readonly featureOrder?: Readonly<Record<string, readonly string[]>>;
 }
 export type TerrainSource =
   | { readonly dimension: string }

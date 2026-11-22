@@ -172,6 +172,8 @@ export const biomeAdditionKind: ElementKind = {
     ],
   },
   hiddenPaths: HIDDEN,
+  // The live Scatter of flat land in one of its biomes, the addition on or off (ADR 0119 D7, B585).
+  previewKind: 'worldgen_map',
   lower: lowerBiomeAddition,
 };
 

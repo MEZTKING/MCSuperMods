@@ -34,6 +34,10 @@ export interface WorldgenFiles {
 export interface TerrainFacts {
   readonly dataFolders: readonly string[];
   readonly approximate: readonly ('biome_layout' | 'end')[];
+  /** `worldgen.featureSteps`: the decoration step names, in order. */
+  readonly featureSteps?: readonly string[];
+  /** `worldgen.vanillaFeatureOrder`: vanilla's placed features per step name, in order. */
+  readonly featureOrder?: Readonly<Record<string, readonly string[]>>;
 }
 
 /** Which world to draw (the engine's `TerrainSource`). */

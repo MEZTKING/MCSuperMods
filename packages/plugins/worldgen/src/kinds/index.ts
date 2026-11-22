@@ -37,6 +37,33 @@ export const WORLDGEN_MAP_REGISTRIES: readonly WorldgenRegistry[] = Object.freez
 ]);
 
 /**
+ * The rest of the worldgen kinds the preview panel draws live (ADR 0119 D7, B585), also as
+ * `previewKind: 'worldgen_map'` (the panel's map picks the view by the element's kind): a
+ * **Value map** for density functions and noises, a **Scatter** of flat land for features, placed
+ * features and block state providers, and for carvers a line saying their caves show only in the
+ * game (limit WL4).
+ */
+export const WORLDGEN_VALUE_REGISTRIES: readonly WorldgenRegistry[] = Object.freeze([
+  'worldgen/density_function',
+  'worldgen/noise',
+]);
+
+/** See {@link WORLDGEN_VALUE_REGISTRIES}: the kinds drawn as a Scatter. */
+export const WORLDGEN_SCATTER_REGISTRIES: readonly WorldgenRegistry[] = Object.freeze([
+  'worldgen/feature',
+  'worldgen/placed_feature',
+  'worldgen/block_state_provider',
+]);
+
+/** Every registry with a live view in the preview panel (B582's maps and B585's views). */
+export const WORLDGEN_PREVIEW_REGISTRIES: readonly WorldgenRegistry[] = Object.freeze([
+  ...WORLDGEN_MAP_REGISTRIES,
+  ...WORLDGEN_VALUE_REGISTRIES,
+  ...WORLDGEN_SCATTER_REGISTRIES,
+  'worldgen/carver',
+]);
+
+/**
  * Creates the kind of one registry.
  *
  * @param registry - One of {@link WORLDGEN_REGISTRIES}.
@@ -61,7 +88,7 @@ export function worldgenKind(registry: WorldgenRegistry): ElementKind {
             noiseSettingsFor(WORLDGEN_DEFAULTS[registry], target),
         }
       : {}),
-    ...(WORLDGEN_MAP_REGISTRIES.includes(registry) ? { previewKind: 'worldgen_map' } : {}),
+    ...(WORLDGEN_PREVIEW_REGISTRIES.includes(registry) ? { previewKind: 'worldgen_map' } : {}),
     lower,
   };
 }

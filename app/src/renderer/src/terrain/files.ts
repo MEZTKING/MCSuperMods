@@ -11,6 +11,11 @@
  *   (no cache, or a target without the fact) is not kept: the next refresh asks again, and the
  *   views show the set-up banner meanwhile (ADR 0119 D10). The files stay in memory and in the
  *   worker; nothing here writes them anywhere.
+ * - **Biome additions** (`msm:biome_addition`, ADR 0060 D2) lower to the runtime's own folder,
+ *   `msm/<ns>/biome_addition/<path>.json`; they are passed under the folder key
+ *   {@link ADDITIONS_FOLDER} with the id `<ns>:<path>`, so the features stage places them (B583).
+ * - **Facts:** the target's `terrainPreview` (data folders, approximate parts) with its feature
+ *   steps and vanilla feature order (`worldgen.featureSteps`, `worldgen.vanillaFeatureOrder`).
  * - **Live:** a project change is picked up {@link TERRAIN_DEBOUNCE_MS} after the last edit; a
  *   new set of files is handed on only when its hash changed.
  *
@@ -27,6 +32,12 @@ export const TERRAIN_DEBOUNCE_MS = 150;
 
 /** Folders a project has that vanilla's jar does not (the vanilla dimensions are in presets). */
 const PROJECT_ONLY_FOLDERS: readonly string[] = ['dimension'];
+
+/** The folder key the engine reads biome additions under (`@msm/terrain` `ADDITIONS_FOLDER`). */
+export const ADDITIONS_FOLDER = 'msm/biome_addition';
+
+/** The kind folder of `msm:biome_addition` (its elements are lowered for the features). */
+const ADDITION_KIND_FOLDER = 'biome_addition';
 
 /** The part of an element kind `files.ts` uses. */
 export interface WorldgenKindLike {
@@ -75,10 +86,25 @@ export interface TerrainFilesState {
 /** The engine's facts from the target's fact, or empty lists on a target without it. */
 export function factsOf(target: Target): TerrainFacts {
   const fact = target.worldgen.terrainPreview;
+  const order = target.worldgen.vanillaFeatureOrder;
   return {
     dataFolders: [...(fact?.dataFolders ?? [])],
     approximate: [...(fact?.approximate ?? [])],
+    ...(target.worldgen.featureSteps === undefined
+      ? {}
+      : { featureSteps: [...target.worldgen.featureSteps] }),
+    ...(order === undefined ? {} : { featureOrder: order }),
   };
+}
+
+/**
+ * The folder key and id of a lowered biome addition (`msm/<ns>/biome_addition/<path>.json` to
+ * {@link ADDITIONS_FOLDER} and `<ns>:<path>`), or `null` for any other path.
+ */
+export function additionAndId(path: string): { folder: string; id: string } | null {
+  const match = /^msm\/([^/]+)\/biome_addition\/(.+)\.json$/.exec(path);
+  if (match === null) return null;
+  return { folder: ADDITIONS_FOLDER, id: `${match[1]}:${match[2]}` };
 }
 
 /**
@@ -249,7 +275,8 @@ export class TerrainFiles {
     for (const namespace of project?.namespaces ?? []) {
       for (const element of namespace.elements) {
         const kind = this.#session.registry.get(element.kind);
-        if (kind === undefined || !wanted.has(kind.folder)) continue;
+        if (kind === undefined) continue;
+        if (!wanted.has(kind.folder) && kind.folder !== ADDITION_KIND_FOLDER) continue;
         seen.add(loweredKey(element));
         const lowered = await this.#lower(element, kind, target, folders);
         if (lowered.problem !== null) {
@@ -286,7 +313,7 @@ export class TerrainFiles {
       const files: { folder: string; id: string; json: unknown }[] = [];
       for (const file of await kind.lower(element, target)) {
         if (file.contents instanceof Uint8Array) continue;
-        const where = folderAndId(file.path, folders);
+        const where = folderAndId(file.path, folders) ?? additionAndId(file.path);
         if (where !== null) files.push({ ...where, json: file.contents });
       }
       lowered = { element, signature, files, problem: null };

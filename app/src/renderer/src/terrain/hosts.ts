@@ -130,7 +130,7 @@ export function plainHost(
   const overworld = vanilla?.['worldgen/noise_settings']?.[OVERWORLD_SETTINGS];
   const withRule = (rule: unknown): string => {
     if (!isObject(overworld)) return OVERWORLD_SETTINGS;
-    extra['worldgen/noise_settings'] = { [HOST_ID]: { ...overworld, surface_rule: rule } };
+    extra['worldgen/noise_settings'] = { [HOST_ID]: { ...overworld, material_rule: rule } };
     return HOST_ID;
   };
   switch (folder) {
@@ -159,7 +159,7 @@ export function plainHost(
       break;
     }
     case 'worldgen/material_condition': {
-      const original = isObject(overworld) ? overworld.surface_rule : undefined;
+      const original = isObject(overworld) ? overworld.material_rule : undefined;
       const lit = {
         type: 'minecraft:condition',
         if_true: id,

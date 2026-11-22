@@ -38,7 +38,7 @@ const PROJECT = {
       generator: { type: 'minecraft:noise', settings: 'minecraft:overworld', biome_source: {} },
     },
   },
-  'worldgen/noise_settings': { 'demo:land': { surface_rule: 'demo:rocky' } },
+  'worldgen/noise_settings': { 'demo:land': { material_rule: 'demo:rocky' } },
   'worldgen/material_rule': { 'demo:rocky': { type: 'minecraft:sequence', sequence: [] } },
   'worldgen/world_preset': {
     'demo:preset': {
@@ -53,7 +53,7 @@ const PROJECT = {
 };
 
 const VANILLA = {
-  'worldgen/noise_settings': { 'minecraft:overworld': { sea_level: 63, surface_rule: 'vanilla' } },
+  'worldgen/noise_settings': { 'minecraft:overworld': { sea_level: 63, material_rule: 'vanilla' } },
 };
 
 describe('hosts', () => {
@@ -89,7 +89,7 @@ describe('hosts', () => {
     const files = filesWithHost(PROJECT, plain as NonNullable<typeof plain>);
     expect(files['worldgen/noise_settings']?.[`${HOST_NAMESPACE}:host`]).toEqual({
       sea_level: 63,
-      surface_rule: 'demo:rocky',
+      material_rule: 'demo:rocky',
     });
     // The project's own files are kept; the host's are only laid over them.
     expect(files['worldgen/noise_settings']?.['demo:land']).toBeDefined();
@@ -104,13 +104,13 @@ describe('hosts', () => {
     );
     const plain = hosts.at(-1);
     const settings = plain?.extra['worldgen/noise_settings']?.[`${HOST_NAMESPACE}:host`] as {
-      surface_rule: {
+      material_rule: {
         sequence: [{ if_true: string; then_run: { result_state: { Name: string } } }, unknown];
       };
     };
-    expect(settings.surface_rule.sequence[0].if_true).toBe('demo:high');
-    expect(settings.surface_rule.sequence[0].then_run.result_state.Name).toBe(LIT_BLOCK);
-    expect(settings.surface_rule.sequence[1]).toBe('vanilla');
+    expect(settings.material_rule.sequence[0].if_true).toBe('demo:high');
+    expect(settings.material_rule.sequence[0].then_run.result_state.Name).toBe(LIT_BLOCK);
+    expect(settings.material_rule.sequence[1]).toBe('vanilla');
   });
 
   it('a plain world for noise settings needs no vanilla file but the biome', () => {
