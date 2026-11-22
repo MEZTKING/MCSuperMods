@@ -551,3 +551,7 @@ The order follows value and risk: everyday plants and storage first (beginner-vi
 - **B522:** the AI system prompt describes `set_type` as a name only.
 - **B523:** `packages/schemas/CLAUDE.md` status line (540 types, the corpus prefixes).
 - **Labels:** Grows up/Grows down, Starts at age, Chance to grow, Lives in water, Berries, Can be climbed, Grows on, Cane/Cactus/Bamboo, Tallest/Shortest stop, Needs water beside it, Hurts when touched, Spreads with bone meal, Big/Small leaf, Grows into, Plants it takes, Pot, Own sounds, Own door sounds, Shovel flattens into, Hoe tills into, Double chest, Each player's own chest.
+
+### Wolf sound variant (main session, 2026-11-22)
+
+- `minecraft:wolf_sound_variant` is out again (ADR 0106 amendment): kinds 114, generic data kinds 35, data pack templates 73; `KINDS_AWAITING_EXAMPLES` is empty. The `DataFolderKey` stays (plugin API 1.9.0). Wherever B504's notes above say 115 or "11 kinds", read 114 and 10.

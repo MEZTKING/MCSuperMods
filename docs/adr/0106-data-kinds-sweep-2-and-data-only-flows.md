@@ -25,6 +25,10 @@ The coverage audit's section 3 also lists data-only flows never built: armour tr
 - Four more flows; the asar grows by their recipes and templates (checked by `tools/check-size`).
 - Raw shader files are unchecked text: a mistake shows only in game (guide note).
 
+## Amendment (2026-11-22, after B508)
+
+`minecraft:wolf_sound_variant` is left out of D1 again, as ADR 0064 decided: the vendored vanilla-mcdoc's `WolfSounds` and `OptionalWolfSounds` still have no `step_sound`, while the game refuses a wolf sound variant without it (B508's vanilla server run), so no file MSM writes can pass both. It returns with a vanilla-mcdoc sync that adds the field. D1 has seven generic kinds; with D2's three resource pack kinds the kinds count goes from 104 to 114.
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: shaders as unchecked raw files; the four flow names; `test_environment` and `test_instance` offered as kinds although only map makers use them.
