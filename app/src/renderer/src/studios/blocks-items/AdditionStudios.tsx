@@ -6,7 +6,9 @@
  * - "Extra drops" (`msm:loot_addition`): the loot tables, with a picker narrowed to mobs,
  *   blocks or chests, and one simple row per pool (item, count, chance, player kill only) that
  *   writes the whole pool; a pool that uses more stays with "Advanced (all fields)" (the
- *   target's pool form) and Raw JSON.
+ *   target's pool form) and Raw JSON. Its section "With and without" (B609, ADR 0120) is the
+ *   live view the preview panel shows too: the table rolled without and with the project's
+ *   additions, side by side, the added drops marked.
  *
  * Every edit is one undo step; typing in a number coalesces. Choices (steps, categories) come
  * from the schema.
@@ -27,7 +29,7 @@
 
 import type { Json, Project, ResourceLocation } from '@msm/core';
 import { ArrowDown, ArrowUp, Copy, Plus, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import type { ChangeItem } from '../../changeset/changeset';
 import {
   ThingPicker,
@@ -39,6 +41,7 @@ import {
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { isWithin, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
+import { useUiStore } from '../../store/ui-store';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { useVeryEasy } from '../very-easy';
@@ -67,6 +70,38 @@ import {
 import { asObject, choicesThrough, moved, pathSetter, pointerOf } from './blocks-items-model';
 import { useBlocksItemsStudioHost } from './host';
 import { CheckField, ProblemsAt } from './parts';
+
+/** The live views' host (B609): loaded with the section, not with the Studio. */
+const BundleLiveView = lazy(() => import('../../liveviews/BundleLiveView'));
+
+/** "With and without": the extra drops rolled on their table (the live view, B609). */
+function WithAndWithoutSection(props: StudioProps) {
+  const { project, element, target } = props;
+  const host = useBlocksItemsStudioHost();
+  const root = useUiStore((state) => state.snapshot?.root ?? null);
+  const onSetup = useCallback(
+    () =>
+      useUiStore.getState().setMessage({
+        kind: 'info',
+        text: 'Set up your Minecraft folder in Settings, under Game locations, to roll Minecraft’s own tables here.',
+      }),
+    [],
+  );
+  return (
+    <Section title="With and without" testId="extra-drops-live">
+      <Suspense fallback={<p className="text-muted text-xs">Loading the view…</p>}>
+        <BundleLiveView
+          project={project}
+          element={element}
+          vanillaAssets={host?.modelPreview?.vanilla ?? null}
+          mcVersion={target.mcVersion}
+          projectRoot={root}
+          onSetup={onSetup}
+        />
+      </Suspense>
+    </Section>
+  );
+}
 
 /** The kind of placed features (`@msm/plugin-worldgen`). */
 const PLACED_FEATURE_KIND = 'minecraft:worldgen/placed_feature';
@@ -704,6 +739,7 @@ export function ExtraDropsStudio(props: StudioProps) {
       <ProblemsAt problems={problems} pointer="" />
       {tablesSection}
       {dropsSection}
+      <WithAndWithoutSection {...props} />
     </section>
   );
 }

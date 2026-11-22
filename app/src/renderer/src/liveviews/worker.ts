@@ -15,6 +15,11 @@
  *   as the game does), one tag resolver per file set (`createTagResolver` with the target's tags
  *   folder and, when the view sent a registry list, `exists`), the target's facts, and a random
  *   source seeded from the job's seed (`seedNumber`), so the same job gives the same answer.
+ *   The loot context also lists every id of a folder the view sent (project and vanilla, B609),
+ *   which `enchant_randomly` and `enchant_with_levels` without `options` need; a folder neither
+ *   holds answers nothing, so the part is reported, not guessed.
+ * - **Enchantment providers** (B609): `enchant` rolls one on an item once, `enchant_odds` steps
+ *   through its odds as `odds` does.
  *
  * {@link answerRequest} answers one request as a function of the request and the files held;
  * {@link createLiveViewHost} queues and steps them for the worker scope and for tests.
@@ -25,12 +30,14 @@ import {
   applyItemModifier,
   createTagResolver,
   type DataLookup,
-  type EvalContext,
+  enchantmentProviderOdds,
   type LayeredLookup,
+  type LootContext,
   layeredLookup,
   lootOdds,
   NO_FILES,
   type OddsStep,
+  rollEnchantmentProvider,
   rollLoot,
   SimRandom,
   type TagResolver,
@@ -53,6 +60,9 @@ export interface LiveViewEngine {
   readonly createTagResolver: typeof createTagResolver;
   readonly testPredicate: typeof testPredicate;
   readonly applyItemModifier: typeof applyItemModifier;
+  /** Enchantment providers (B609); `@msm/sim`'s when left out. */
+  readonly rollEnchantmentProvider?: typeof rollEnchantmentProvider;
+  readonly enchantmentProviderOdds?: typeof enchantmentProviderOdds;
 }
 
 /** `@msm/sim`'s evaluators. */
@@ -62,6 +72,8 @@ export const SIM_ENGINE: LiveViewEngine = {
   createTagResolver,
   testPredicate,
   applyItemModifier,
+  rollEnchantmentProvider,
+  enchantmentProviderOdds,
 };
 
 interface DataSet {
@@ -69,6 +81,8 @@ interface DataSet {
   readonly facts: TargetFacts;
   /** One resolver a file set: each tag resolved once (B604). */
   readonly resolveTag: TagResolver;
+  /** Every id of a folder, project and vanilla, or `undefined` when neither holds it (B609). */
+  readonly ids: (folder: string) => readonly string[] | undefined;
 }
 
 /** What the worker holds between requests. */
@@ -117,12 +131,38 @@ export function existsIn(
   };
 }
 
-function contextOf(set: DataSet, seed: string): EvalContext {
+/**
+ * Every id of a folder over some file maps (the project's, vanilla's), sorted and each once, or
+ * `undefined` when none of them holds the folder.
+ */
+export function idsOf(
+  ...maps: (Readonly<Record<string, Readonly<Record<string, Json>>>> | undefined)[]
+): (folder: string) => readonly string[] | undefined {
+  const known = new Map<string, readonly string[] | undefined>();
+  return (folder) => {
+    if (known.has(folder)) return known.get(folder);
+    let ids: Set<string> | undefined;
+    for (const map of maps) {
+      const files = map !== undefined && Object.hasOwn(map, folder) ? map[folder] : undefined;
+      if (files === undefined) continue;
+      ids ??= new Set();
+      for (const id of Object.keys(files)) ids.add(vanillaFileId(id));
+    }
+    const out = ids === undefined ? undefined : [...ids].sort();
+    known.set(folder, out);
+    return out;
+  };
+}
+
+function contextOf(set: DataSet, seed: string): LootContext {
   return {
     random: new SimRandom(seedNumber(seed)),
     lookup: set.lookup,
     resolveTag: set.resolveTag,
     types: set.facts,
+    // `LootContext.ids` is typed as always answering, but the evaluator checks for none and
+    // reports the part (`missing_file`); a folder no file set holds answers `undefined` here.
+    ids: set.ids as (folder: string) => readonly string[],
   };
 }
 
@@ -166,7 +206,15 @@ function runJob(
         request.situation,
         contextOf(set, request.seed),
       );
-    case 'odds': {
+    case 'enchant':
+      return (engine.rollEnchantmentProvider ?? rollEnchantmentProvider)(
+        request.provider,
+        request.item,
+        request.situation,
+        contextOf(set, request.seed),
+      );
+    case 'odds':
+    case 'enchant_odds': {
       let last: OddsStep = { done: 0, rows: [] };
       for (const step of oddsSteps(request, set, engine, { cancelled: false })) last = step;
       return last;
@@ -174,18 +222,27 @@ function runJob(
   }
 }
 
-/** The odds of an `odds` job, step by step. */
+type SteppedRequest = Extract<JobRequest, { kind: 'odds' | 'enchant_odds' }>;
+
+/** The odds of an `odds` or `enchant_odds` job, step by step. */
 function oddsSteps(
-  request: Extract<JobRequest, { kind: 'odds' }>,
+  request: SteppedRequest,
   set: DataSet,
   engine: LiveViewEngine,
   cancel: { cancelled: boolean },
 ): Iterable<OddsStep> {
-  return engine.lootOdds(request.table, request.situation, contextOf(set, request.seed), {
-    rolls: request.rolls,
-    step: request.step,
-    cancel,
-  });
+  const options = { rolls: request.rolls, step: request.step, cancel };
+  const ctx = contextOf(set, request.seed);
+  if (request.kind === 'enchant_odds') {
+    return (engine.enchantmentProviderOdds ?? enchantmentProviderOdds)(
+      request.provider,
+      request.item,
+      request.situation,
+      ctx,
+      options,
+    );
+  }
+  return engine.lootOdds(request.table, request.situation, ctx, options);
 }
 
 /**
@@ -223,6 +280,7 @@ export function answerRequest(
           tagsFolder: request.facts.folders.data.tags,
           ...(exists === undefined ? {} : { exists }),
         }),
+        ids: idsOf(request.project, vanilla),
       });
       while (store.data.size > DATA_SETS_KEPT) {
         store.data.delete(store.data.keys().next().value as string);
@@ -263,7 +321,7 @@ export interface LiveViewHost {
 }
 
 interface OddsRun {
-  readonly request: Extract<JobRequest, { kind: 'odds' }>;
+  readonly request: SteppedRequest;
   readonly cancel: { cancelled: boolean };
   iterator: Iterator<OddsStep> | null;
   last: OddsStep;
@@ -306,12 +364,24 @@ export function createLiveViewHost(
       if (run.cancel.cancelled) return true;
       const ms = performance.now() - run.started;
       if (next.done === true) {
-        post({ token: run.request.token, kind: 'result', job: 'odds', result: run.last, ms });
+        post({
+          token: run.request.token,
+          kind: 'result',
+          job: run.request.kind,
+          result: run.last,
+          ms,
+        });
         return true;
       }
       run.last = next.value;
       if (next.value.done >= run.request.rolls) {
-        post({ token: run.request.token, kind: 'result', job: 'odds', result: next.value, ms });
+        post({
+          token: run.request.token,
+          kind: 'result',
+          job: run.request.kind,
+          result: next.value,
+          ms,
+        });
         return true;
       }
       post({ token: run.request.token, kind: 'step', step: next.value, ms });
@@ -363,6 +433,7 @@ export function createLiveViewHost(
           answerRequest(request, store, engine);
           return;
         case 'odds':
+        case 'enchant_odds':
           odds.push({
             request,
             cancel: { cancelled: false },

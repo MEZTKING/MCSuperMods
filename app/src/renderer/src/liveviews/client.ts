@@ -27,6 +27,7 @@ import type { Json, Project, TargetFacts } from '@msm/plugin-api';
 import type {
   ItemSample,
   LootRoll,
+  LootStack,
   OddsStep,
   PredicateResult,
   ResolvedTag,
@@ -42,6 +43,12 @@ export type DataFileMap = Readonly<Record<string, Readonly<Record<string, Json>>
 /** What an item modifier made. */
 export interface ModifyResult {
   readonly item: ItemSample;
+  readonly unsupported: readonly Unsupported[];
+}
+
+/** What an enchantment provider gave an item once (B609). */
+export interface EnchantResult {
+  readonly item: LootStack;
   readonly unsupported: readonly Unsupported[];
 }
 
@@ -76,7 +83,33 @@ export type LiveViewJob =
       readonly item: ItemSample;
       readonly situation: Situation;
       readonly seed: string;
+    }
+  /** An enchantment provider (inline, or the id of one) on an item, once (B609). */
+  | {
+      readonly kind: 'enchant';
+      readonly provider: Json;
+      readonly item: ItemSample;
+      readonly situation: Situation;
+      readonly seed: string;
+    }
+  /** The odds of an enchantment provider on an item, in steps as `odds` (B609). */
+  | {
+      readonly kind: 'enchant_odds';
+      readonly provider: Json;
+      readonly item: ItemSample;
+      readonly situation: Situation;
+      readonly seed: string;
+      readonly rolls: number;
+      readonly step: number;
     };
+
+/** The jobs that answer in steps. */
+export type SteppedJobKind = 'odds' | 'enchant_odds';
+
+/** Whether a job kind answers in steps (`odds`, `enchant_odds`). */
+export function isStepped(kind: string): kind is SteppedJobKind {
+  return kind === 'odds' || kind === 'enchant_odds';
+}
 
 /** A job's kind. */
 export type LiveViewJobKind = LiveViewJob['kind'];
@@ -88,6 +121,8 @@ export interface LiveViewResults {
   readonly tag: ResolvedTag;
   readonly predicate: PredicateResult;
   readonly modify: ModifyResult;
+  readonly enchant: EnchantResult;
+  readonly enchant_odds: OddsStep;
 }
 
 interface RequestBase {
@@ -320,7 +355,7 @@ export class LiveViewClient {
     if (cached !== undefined) {
       this.#cache.delete(key);
       this.#cache.set(key, cached);
-      if (job.kind === 'odds') onStep(cached as OddsStep);
+      if (isStepped(job.kind)) onStep(cached as OddsStep);
       return Promise.resolve(cached as LiveViewResults[J['kind']]);
     }
     // The worker moves a set to the end when a job names it; mirror that.
@@ -470,7 +505,7 @@ export class LiveViewClient {
         return;
       case 'result':
         if (pending.key !== null) this.#cacheSet(pending.key, answer.result);
-        if (answer.job === 'odds') pending.onStep(answer.result as OddsStep);
+        if (isStepped(answer.job)) pending.onStep(answer.result as OddsStep);
         this.#settle(answer.token, answer);
         return;
       default:

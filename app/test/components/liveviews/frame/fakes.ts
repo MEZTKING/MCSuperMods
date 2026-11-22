@@ -81,7 +81,7 @@ export function fakeEngine(calls: FakeCalls = { rolls: 0, odds: 0, tags: [] }): 
       };
     },
     applyItemModifier(_modifier, item) {
-      return { item: { ...item, count: item.count + 1 }, unsupported: [] };
+      return { item: { ...item, count: item.count + 1 }, unsupported: [], parts: [] };
     },
   };
 }

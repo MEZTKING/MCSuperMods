@@ -20,10 +20,11 @@ afterEach(cleanup);
 
 const folders = {} as unknown as ResourceFolders;
 
+// A kind whose view is still a stub (B614's); the loot table's is built (B609).
 const table: Element = {
-  id: 'demo:blocks/ruby',
-  kind: 'minecraft:loot_table',
-  data: { pools: [] },
+  id: 'demo:ruby_rule',
+  kind: 'minecraft:block_transformer',
+  data: {},
 } as unknown as Element;
 
 const project = {
@@ -36,7 +37,7 @@ const project = {
 } as unknown as Project;
 
 describe('the live view stubs (B601)', () => {
-  it('shows a selected loot table in the frame, saying not yet', async () => {
+  it('shows a selected block transformer in the frame, saying not yet', async () => {
     render(
       <PreviewPanel
         project={project}

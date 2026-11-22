@@ -8,7 +8,7 @@
 
 import type { LiveViewLoader } from '../registry';
 
-const rollIt: LiveViewLoader = () => import('./RollIt');
+const rollIt: LiveViewLoader = () => import('./loot/RollIt');
 const tryItOn: LiveViewLoader = () => import('./TryItOn');
 const enchantment: LiveViewLoader = () => import('./EnchantmentCard');
 const advancement: LiveViewLoader = () => import('./AdvancementTree');

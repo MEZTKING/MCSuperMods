@@ -8703,3 +8703,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B609, B610, B613 play `expectations.json` through `@msm/sim` (B613 owns `live-views-parity.test.ts`); B611 reads `advancements` and `registries.lines`; B612 reads `tags`.
+## 2026-11-22 — executor — B609 Roll it (Live views 2)
+
+**What**
+- `app/src/renderer/src/liveviews/data/loot/` replaces B601's `RollIt` stub (`data/index.ts` now loads `./loot/RollIt`; the old `data/RollIt.tsx` is gone). `RollIt.tsx` picks the view by kind: a loot table gets **Roll it** (one roll at the seed, "Roll again") and **The odds** (out of 1,000 rolls, steps of 100, rows by item, enchantments and durability, a bar, "How many", "Only the game knows" on uncertain rows, the parts used by level in a closed box); `WithAndWithout.tsx` rolls the table an `msm:loot_addition` names (the project's own, else Minecraft's from the jar cache) without and with every addition of the project, side by side at the same seed, rows and stacks from pools at or past `ownPools` marked "Added"; `EnchantRoll.tsx` tries an enchantment provider on a chosen item ("On which item?", kept as `sampleItem`), once and as the odds of each enchantment and level; `TrialSpawner.tsx` draws the waves for 1 to 4 players, the mobs and their shares, and rolls each `rewards[].id` and the ominous table. `Odds.tsx`, `LootParts.tsx` (`useLootBasics`, `RollSection`) and `loot-model.ts` (folders, words, the fixed odds seed) are shared. Every view sits in `LiveViewFrame` with the situation picker and seed box, the reported parts, and the lines "One roll: MSM’s own" and "Odds: checked against the game" (or the weaker level of the parts used).
+- The odds roll with a fixed seed (`ODDS_SEED`), so a new seed changes the roll and not the odds.
+- Worker and client, additive: jobs `enchant` and `enchant_odds` (`isStepped`), and the loot context's `ids` (every id of a folder over the project's and vanilla's files, `idsOf`), so `enchant_randomly`/`enchant_with_levels` without `options` work; a folder neither holds answers nothing and the part is reported.
+- The Extra drops Studio gains the section **With and without** (`extra-drops-live`, the same view through a lazy `BundleLiveView`).
+- Tests: `app/test/components/liveviews/data/loot/roll-it.test.tsx` (15, the real evaluators through the worker host): a weight edit changes the odds (first step 174 ms after the edit in the test), a new seed changes the roll and not the odds, an unsupported function is named and its row marked, the banner, a nested vanilla table, With and without with added rows, the provider, the trial spawner, the worker's `ids` and new jobs, the words. The B601 stub test now uses a block transformer; `frame/fakes.ts` gained `parts: []` (typecheck was red at a161492).
+- Measured in the running app (built app, xvfb, one loot table of two entries, two runs): opening the element to the roll 1.1 to 1.6 s (first open, worker start and jar folders); an edit of a weight to the first odds step 253 and 182 ms (150 ms debounce included), to all 1,000 rolls 281 and 202 ms.
+- Verified: `pnpm lint`, `pnpm typecheck`, app tests (320 files, 2,999 tests), `pnpm build`, `dist:dir`, check-size from an empty `app/out` (app.asar 26.4 of 32 MB, renderer 17.8 of 19 MB; new chunk `RollIt` 41 kB), e2e `smoke` and `datapack-path`; `app/out` and `app/dist` deleted.
+
+**Decisions**
+- The frame claims the odds' weakest part; the roll states its own line (about right), as the plan's "Honest" bullet puts it.
+- `furnace_smelt` gets no recipe ids (no `recipe` folder in the jar cache): it is reported, not guessed. Project items' enchantability is not given (`items`): they roll as uncertain like vanilla armour.
+
+**Next**
+- B616: the e2e path can reuse the test ids (`roll-it-stacks`, `odds-row-N` with `data-item`/`data-chance`, `with-odds`, `without-odds`, `enchant-odds-row-N`, `trial-wave-N`, `trial-reward-N`).
+- Follow-ups: `recipe` among the cache's folders for `furnace_smelt`; project item enchantability for `LootContext.items`.
