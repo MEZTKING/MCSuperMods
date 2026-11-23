@@ -363,7 +363,17 @@ function hasGeckolibMissing(problems: readonly { code: string }[]): boolean {
 /** Which importers the import dialog offers: structure files, or Blockbench models. */
 type ImportMode = 'structure' | 'blockbench';
 
-/** The dialog currently open, if any. */
+/**
+ * Settings while open (ADR 0131 D5): its own state, apart from {@link DialogState}, so it opens
+ * over whatever dialog is open and that dialog stays as it was underneath. `'ai'` lands on the AI
+ * helper's section; `focusSetting` on one line of the settings catalogue.
+ */
+interface SettingsState {
+  focus?: 'ai';
+  focusSetting?: string;
+}
+
+/** The dialog currently open, if any (Settings opens over it: {@link SettingsState}). */
 type DialogState =
   | { type: 'namespace' }
   | {
@@ -406,7 +416,6 @@ type DialogState =
   | { type: 'rename-thing'; id: ResourceLocation; name: string }
   | { type: 'import'; namespace?: string }
   | { type: 'import-files'; mode: ImportMode }
-  | { type: 'settings'; focus?: 'ai'; focusSetting?: string }
   | { type: 'remove-asset'; namespace: string; path: string }
   | {
       /** A delete that removes exported ids (ADR 0102 D5): confirm first. */
@@ -663,6 +672,10 @@ export function App({
     useUiStore.getState();
   const clearPointer = useCallback(() => useUiStore.getState().selectPointer(null), []);
   const [dialog, setDialog] = useState<DialogState | null>(null);
+  /** Settings, over the dialog (ADR 0131 D5); `null` while closed. */
+  const [settings, setSettings] = useState<SettingsState | null>(null);
+  /** The control that opened Settings: the focus goes back there when Settings closes. */
+  const settingsReturn = useRef<HTMLElement | null>(null);
   const [exporting, setExporting] = useState(false);
   /** Where "Share my mod" last saved the jar, for "Where is it?" (ADR 0083 D4). */
   const [sharedJar, setSharedJar] = useState<string | null>(null);
@@ -875,9 +888,8 @@ export function App({
   const aiKeySet = useAiPanelStore((state) => state.keyStatus?.set === true);
   const aiModel = useAiPanelStore((state) => state.settings?.model);
   // AI pictures (ADR 0093): the status of main's image services, for "Make with AI".
-  const aiPicturesHost = useAiPicturesHost(bridge.aiPictures, () =>
-    setDialog({ type: 'settings' }),
-  );
+  // Its Set up opens Settings over the painter, New texture or the Creator (ADR 0131 D5).
+  const aiPicturesHost = useAiPicturesHost(bridge.aiPictures, () => openSettings());
   // View preferences (ADR 0047): the collapsed sidebar groups.
   const collapsedGroups = usePreferences((state) => state.collapsed);
   const flowTitles = useMemo(
@@ -2615,8 +2627,11 @@ export function App({
    * `focusSetting` on one line of the settings catalogue (the search, ADR 0124 D9; B662).
    */
   const openSettings = (focus?: 'ai', focusSetting?: string): void => {
-    setDialog({
-      type: 'settings',
+    // Over the open dialog, which stays as it was (ADR 0131 D5).
+    const active = document.activeElement;
+    settingsReturn.current =
+      active instanceof HTMLElement && active !== document.body ? active : null;
+    setSettings({
       ...(focus === undefined ? {} : { focus }),
       ...(focusSetting === undefined ? {} : { focusSetting }),
     });
@@ -2626,6 +2641,13 @@ export function App({
   };
   /** Every "Open Settings" of the AI helper. */
   const openAiSettings = (): void => openSettings('ai');
+  /**
+   * Every **Set up Minecraft folder** (ADR 0131 D5): Settings over the open dialog (the painter,
+   * New texture, the Creator), which stays as it was. Stable, for the hosts' memos.
+   */
+  const openSetUpRef = useRef(() => {});
+  openSetUpRef.current = () => openSettings();
+  const openSetUp = useCallback(() => openSetUpRef.current(), []);
   const handlers: Record<MenuCommand, Action> = {
     new: newMod,
     newProjectFromStarter: () => setDialog({ type: 'new-project' }),
@@ -3190,7 +3212,7 @@ export function App({
   const dropPicturesRef = useRef<(files: File[]) => void>(() => {});
   dropPicturesRef.current = (files) => {
     const namespace = selected?.id.split(':')[0] ?? project?.namespaces[0]?.name;
-    if (namespace === undefined || dialog !== null) return;
+    if (namespace === undefined || dialog !== null || settings !== null) return;
     void Promise.all(
       files.map(async (file) => ({
         name: file.name,
@@ -3256,6 +3278,7 @@ export function App({
       if (
         command === null ||
         dialog !== null ||
+        settings !== null ||
         paletteOpen ||
         recentPickerOpen ||
         searchDoor !== null
@@ -3313,9 +3336,9 @@ export function App({
             ready: cacheReady,
             list: () => bridge.minecraft.listAssets(mcVersion, MC_TEXTURES_PREFIX),
             read: (path) => bridge.minecraft.readAsset(mcVersion, path),
-            openSetUp: () => setDialog({ type: 'settings' }),
+            openSetUp,
           },
-    [cacheReady, mcVersion, bridge],
+    [cacheReady, mcVersion, bridge, openSetUp],
   );
   /**
    * Change a Minecraft texture (ADR 0129 D4): the painter on the user's own override when the
@@ -3355,9 +3378,9 @@ export function App({
       project,
       sounds: vanillaSounds,
       readProjectAsset,
-      onSetup: () => setDialog({ type: 'settings' }),
+      onSetup: openSetUp,
     }),
-    [project, vanillaSounds, readProjectAsset],
+    [project, vanillaSounds, readProjectAsset, openSetUp],
   );
 
   /** The pictures of things: the mod's textures and the user's jar (Home, the search preview). */
@@ -3394,7 +3417,7 @@ export function App({
                   readGuidePage: (page: string) =>
                     guidePlatform.page(page).then((loaded) => loaded.markdown),
                 }),
-            onSetup: () => setDialog({ type: 'settings' }),
+            onSetup: openSetUp,
             terrainSession: session,
             projectRoot: snapshot.root,
             vanillaTools: target.items?.vanillaTools,
@@ -3410,6 +3433,7 @@ export function App({
       showcaseClips,
       guidePlatform,
       snapshot.root,
+      openSetUp,
     ],
   );
   const searchPreview = useCallback(
@@ -3553,7 +3577,7 @@ export function App({
         folders={target.folders.resource}
         readProjectAsset={readProjectAsset}
         vanilla={vanilla}
-        onSetup={() => setDialog({ type: 'settings' })}
+        onSetup={openSetUp}
         onJumpTo={(pointer) => {
           if (selected !== null) navigateTo(selected.id, pointer, null);
         }}
@@ -3598,13 +3622,14 @@ export function App({
           playAvailable={playConnected}
           onPlay={playNow}
           onTestInMinecraft={testInMinecraft}
-          onSetUpVanilla={() => setDialog({ type: 'settings' })}
+          onSetUpVanilla={openSetUp}
         />
       </Suspense>
     ) : undefined;
 
   // Whether nothing covers Home, so its one clip may play.
-  const homeClipsVisible = dialog === null && !tryItOpen && !paletteOpen && searchDoor === null;
+  const homeClipsVisible =
+    dialog === null && settings === null && !tryItOpen && !paletteOpen && searchDoor === null;
   const editorArea = (
     <EditorArea
       {...(tryItView === undefined ? {} : { tryIt: tryItView })}
@@ -4519,11 +4544,14 @@ export function App({
                   title="Install data pack"
                   message={`${dialog.message} In Settings, choose your Minecraft folder or a Prism Launcher, MultiMC or CurseForge instance.`}
                   confirmLabel="Open Settings"
-                  // The alert dialog also reports "closed" after a confirm; keep Settings open then.
+                  // The alert dialog also reports "closed" after a confirm; it holds nothing to keep.
                   onCancel={() =>
                     setDialog((current) => (current?.type === 'no-minecraft' ? null : current))
                   }
-                  onConfirm={() => setDialog({ type: 'settings' })}
+                  onConfirm={() => {
+                    setDialog((current) => (current?.type === 'no-minecraft' ? null : current));
+                    openSettings();
+                  }}
                 />
               )}
               <CommandPalette
@@ -4628,10 +4656,11 @@ export function App({
                 testId="recent-picker"
                 emptyText="No recent projects."
               />
-              {dialog?.type === 'settings' && (
+              {/* Last, so it opens over any dialog above, which stays as it was (ADR 0131 D5). */}
+              {settings !== null && (
                 <SettingsDialog
-                  focus={dialog.focus}
-                  focusSetting={dialog.focusSetting}
+                  focus={settings.focus}
+                  focusSetting={settings.focusSetting}
                   mcVersion={mcVersion ?? 'unknown'}
                   status={minecraft.status}
                   progress={minecraft.progress}
@@ -4639,7 +4668,20 @@ export function App({
                   save={saveSettings}
                   browse={browseMinecraft}
                   extract={extractAssets}
-                  onClose={() => setDialog(null)}
+                  onClose={() => setSettings(null)}
+                  onCloseAutoFocus={(event) => {
+                    // Back to the control that opened Settings; when that is gone (a picker that
+                    // closed itself), to the dialog under it.
+                    const back = settingsReturn.current;
+                    settingsReturn.current = null;
+                    const under = [...document.querySelectorAll<HTMLElement>('[role="dialog"]')]
+                      .filter((element) => element.dataset.testid !== 'settings-dialog')
+                      .at(-1);
+                    const target = back?.isConnected === true ? back : under;
+                    if (target === undefined) return;
+                    event.preventDefault();
+                    target.focus();
+                  }}
                   locations={locationList === null ? null : installTargets}
                   selectedId={selectedTargetId}
                   onSelectTarget={(id) => void chooseInstallTarget(id)}

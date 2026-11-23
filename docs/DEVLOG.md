@@ -11086,3 +11086,17 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B720 and B760 in the two free slots; B780 when a slot frees; then wave A1.
 - Ask the user: the marks of Hide and seek and Prison; PaperMC's download service as a new source and what the app names itself to it; Java for a local server.
+## 2026-11-23 — executor — B702 Settings opens over the open dialog
+
+**What**
+- Settings has its own state in `App.tsx` (`SettingsState`, ADR 0131 D5), apart from the one open dialog, and is rendered last: every opener (the menu and toolbar's Settings, the AI helper's Open Settings, the search's settings lines, and the seven set-up places: the Minecraft texture picker, the sound Play buttons' Find my Minecraft, the search preview, the live preview, Try it, Make with AI's set-up and the no-Minecraft question) opens it over whatever is open, which stays mounted and untouched. Closing Settings sends the focus back to the control that opened it, or to the dialog under it when that control is gone. The no-Minecraft question closes itself and opens Settings.
+- `SettingsDialog`: an optional `onCloseAutoFocus`, and its overlay at z-50 so the dialog under it is dimmed too.
+- While Settings is open the app's keyboard shortcuts and dropped pictures wait, and Home's clip does not play, as for any dialog.
+- New `app/test/components/settings-over-dialog.test.tsx` (six cases, all failing on the base): the painter keeps three painted pixels and three undo steps; New texture keeps its name and kind; the Minecraft texture picker keeps its search text; the painter's picker lists once the folder is set up under it; the Creator keeps its answers through a sound's Find my Minecraft; Escape closes only the top dialog. New e2e `app/e2e/settings-over-dialog-path.spec.ts`: the painter case in the built app with a stand-in jar, and the saved picture holds exactly the three pixels.
+
+**Decisions**
+- The Minecraft texture picker's own Set up still closes the picker before Settings opens (its file and `minecraft-textures-path` expect that); Settings then opens over what was under it (the painter or New texture), and the painter's picker lists once set up.
+- Other `setDialog` calls from inside dialogs are hand-offs that carry the work on (New texture or Picture to texture into the painter, the picker into the painter, a tile's choice into the Creator) or replace dialogs that hold no input (Welcome, What's new); left as they are.
+
+**Next**
+- The native menu's commands still replace an open dialog (their accelerators reach the app while a dialog is open); a later brief can make them wait or stack, as the keyboard shortcuts already wait.

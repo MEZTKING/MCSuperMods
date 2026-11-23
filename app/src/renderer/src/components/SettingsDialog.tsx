@@ -41,6 +41,11 @@ export interface SettingsDialogProps {
   extract(): Promise<string | null>;
   onClose(): void;
   /**
+   * Where the focus goes once Settings has closed (Radix's `onCloseAutoFocus`): Settings opens
+   * over any open dialog (ADR 0131 D5), so the host sends it back to the control that opened it.
+   */
+  onCloseAutoFocus?(event: Event): void;
+  /**
    * Every detected game location (ADR 0019), or `null` while they load. When omitted, the
    * Game locations section shows only the official folder override.
    */
@@ -634,11 +639,15 @@ export function SettingsDialog(props: SettingsDialogProps) {
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
+        {/* z-50 like the dialogs' content, so the dialog Settings opened over is dimmed too. */}
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Dialog.Content
           aria-describedby={undefined}
           data-testid="settings-dialog"
           ref={setContent}
+          {...(props.onCloseAutoFocus === undefined
+            ? {}
+            : { onCloseAutoFocus: props.onCloseAutoFocus })}
           onOpenAutoFocus={(event) => {
             // The key field (or the line's first control) takes the focus instead of the first field.
             if (props.focus === 'ai' && props.ai !== undefined) event.preventDefault();
