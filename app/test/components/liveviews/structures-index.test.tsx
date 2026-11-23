@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   hasLiveView,
   type LiveViewProps,
@@ -14,6 +14,16 @@ import {
 import { builtInPlugins } from '../../../src/renderer/src/plugins/built-in';
 
 afterEach(cleanup);
+
+// The three views are lazy chunks: load them before the first render, so a cold import under a busy run
+// is not measured by `waitFor`'s one-second wait.
+beforeAll(async () => {
+  await Promise.all([
+    import('../../../src/renderer/src/liveviews/structures/TemplatePoolView'),
+    import('../../../src/renderer/src/liveviews/structures/JigsawStructureView'),
+    import('../../../src/renderer/src/liveviews/structures/ProcessorListView'),
+  ]);
+}, 60_000);
 
 describe('the structures index (B635)', () => {
   it('has an entry for each of the three kinds, all declared as live_view', () => {
