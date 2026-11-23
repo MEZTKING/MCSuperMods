@@ -10010,3 +10010,16 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B631/B632: the guide's words for 3L6 and 3L7 (MSM's test picture, the stand-in values, core shaders as a compile check). The root `CLAUDE.md` e2e spec count moves by one at the batch close.
+
+## 2026-11-23 — executor — B692 the user's own check list for the AI helper
+
+**What**
+- New `docs/guide/ai-helper-check.md`: twelve steps for Windows with a real key, each with what should be seen (set-up with a wrong and a right key; the cost line against the card's figure and the real bill; "make a ruby sword" in Very easy; a vague ask; an ask MSM cannot do; a whole mod with a plan; One at a time; Change the plan; the review's pictures with Add to my mod, Show me, Undo and Put back; Ask the helper on a thing to fix; the network lost mid-run; the seconds to the first words). Linked from `docs/guide/README.md` and the site's sidebar (`docs/site/.vitepress/config.ts`). `docs/HANDOFF.md` "Waiting on the user" item 30.
+- Every bold label and quoted sentence was grepped in `app/src/renderer/src/components/ai/` (`ai-words.ts`, `ai-setup-words.ts`, `AiPlanView.tsx`, `AiChangesetReview.tsx`, `AiSeeIt.tsx`, `AiKeySetup.tsx`, `AiProposalCards.tsx`).
+
+**Decisions**
+- Step 12 asks for the seconds at the first words as read from the state line by eye, since the app has no recorded figure; B694 would measure it.
+- Site built with vitepress (no dead links) using a temporary `node_modules` symlink, removed afterwards.
+
+**Next**
+- B694 (reserve) would replace this list with a command in the app.
