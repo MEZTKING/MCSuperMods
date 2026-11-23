@@ -42,9 +42,19 @@ Selecting an item opens the Item Studio, with **Advanced (all fields)** and **Ra
 - **Throwable**: tick **Throwable** to make the item something players throw, like a snowball or a throwing knife, with its damage, speed, gravity and what happens after the throw and on a hit. See [Throwables in the Item Studio](effects-and-throwables.md#throwables-in-the-item-studio).
 - **Inventory**: **This item is** **Nothing**, **A bag that holds things** or **Works like a bundle** (see [Bags and bundles](#bags-and-bundles)).
 - **Fuel and compost**: **Burns in a furnace** with its **Burn time (seconds)**, and a **Compost chance** (see [Fuel and compost](#fuel-and-compost)).
+- **Adventure mode**: what a player in Adventure mode may do with the item (see [Adventure mode](#adventure-mode)).
 - **Events**: as for blocks, with the item's **Triggers**: on a hit, on use on a block, while held and while worn (see [Triggers](#triggers)).
 
 Status effects have a Studio of their own, the **Effect Studio** ([Status effects and throwables](effects-and-throwables.md#the-effect-studio)). Bags and bundles have the **Inventory** section; armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
+
+### Adventure mode
+
+In Adventure mode a player cannot break or place blocks at all, except with an item that names them; adventure maps use this to hand out a pickaxe that breaks only the cracked wall, or a key that fits only one lock. The Item Studio's **Adventure mode** section has two lists:
+
+- **Can break**: the blocks a player in Adventure mode can break while holding the item.
+- **Can place on**: the blocks the player can use the item on, or place it on when it is a block.
+
+**Add a block** opens the block picker (your own blocks first, then Minecraft's, by name and picture); **Add a group of blocks…** adds a whole group, such as every log. Each block has a remove button, and every change is one step for **Undo**. Easy and Very easy show names only; Advanced also shows each id. Below the lists the item's tooltip shows the lines the game adds: "Can break:" and "Can be placed on:", each followed by the blocks (the game names every block of a group; MCSuperMods names the group). The lists change nothing in Survival or Creative. They are the vanilla components `minecraft:can_break` and `minecraft:can_place_on` in the item's `msm:components`; a list written by hand with more than blocks and groups (block states, say) is shown and kept as it is, and is changed in **Advanced (all fields)** or **Raw JSON**.
 
 ## Events and actions
 

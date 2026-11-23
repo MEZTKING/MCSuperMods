@@ -40,7 +40,9 @@ public final class ComponentPassthrough {
      * {@code damage_type} by id), and {@code block_transformer} (a {@code block_transformer} registry entry, the data
      * pack's {@code data/<ns>/block_transformer/} files: an item with it transforms blocks when used, as an axe strips),
      * and {@code enchantments} (ADR 0127 D2: an item that starts enchanted names entries of the enchantment registry,
-     * vanilla's or the project's own).
+     * vanilla's or the project's own). {@code can_break} and {@code can_place_on} (ADR 0117 Y16, adventure mode) name
+     * blocks and block tags: the block registry is built in, but its tags are bound only with the data packs and the
+     * project's own blocks may not be registered yet, so a value that does not decode at once waits for them.
      */
     public static final Set<Identifier> DELAYED = Set.of(
             Identifier.withDefaultNamespace("jukebox_playable"),
@@ -50,7 +52,9 @@ public final class ComponentPassthrough {
             Identifier.withDefaultNamespace("blocks_attacks"),
             Identifier.withDefaultNamespace("damage_type"),
             Identifier.withDefaultNamespace("block_transformer"),
-            Identifier.withDefaultNamespace("enchantments"));
+            Identifier.withDefaultNamespace("enchantments"),
+            Identifier.withDefaultNamespace("can_break"),
+            Identifier.withDefaultNamespace("can_place_on"));
 
     private static RegistryAccess staticRegistries;
 

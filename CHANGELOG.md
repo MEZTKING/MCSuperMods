@@ -6,7 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.5.
+### Added
+
+- **Adventure mode lists for items.** The Item Studio has an **Adventure mode** section with **Can break** and **Can place on**: pick the blocks (your own or Minecraft's) or whole groups of blocks a player in Adventure mode may break with the item or use it on, for adventure maps. The item's tooltip shows the lines the game adds.
 
 ## [1.5.5] - 2026-11-23
 

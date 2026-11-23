@@ -214,10 +214,14 @@ export function potionNeedsJarProblem(elementId?: Element['id']): Problem {
  * The `msm:components` entries the runtime decodes once data packs are loaded (ADR 0044 D1;
  * `ComponentPassthrough.DELAYED` in `engine-mod`), so they may name data pack registry entries.
  * `enchantments` (ADR 0127 D2) lets an item start enchanted, with vanilla or project enchantments.
+ * `can_break` and `can_place_on` (ADR 0117 Y16) name block tags, bound only with the data packs,
+ * and may name the project's own blocks.
  */
 export const DELAYED_PASSTHROUGH_COMPONENTS: readonly string[] = Object.freeze([
   'block_transformer',
   'blocks_attacks',
+  'can_break',
+  'can_place_on',
   'damage_resistant',
   'damage_type',
   'enchantments',

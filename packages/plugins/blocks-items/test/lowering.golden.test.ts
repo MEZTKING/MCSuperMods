@@ -666,6 +666,26 @@ const SAMPLES: Sample[] = [
     },
   },
   {
+    // ADR 0117 Y16: the Item Studio's Adventure mode lists, the list form and the single form.
+    kind: itemKind,
+    name: 'adventure_pick',
+    id: 'example:adventure_pick',
+    data: {
+      format: 1,
+      model: 'minecraft:item/iron_pickaxe',
+      display_name: 'Adventure Pick',
+      components: {
+        'msm:components': {
+          'minecraft:can_break': [
+            { blocks: ['minecraft:stone', 'example:ruby_ore'] },
+            { blocks: '#minecraft:logs' },
+          ],
+          'minecraft:can_place_on': { blocks: ['minecraft:grass_block'] },
+        },
+      },
+    },
+  },
+  {
     kind: itemKind,
     name: 'ruby_horse_armor',
     id: 'example:ruby_horse_armor',

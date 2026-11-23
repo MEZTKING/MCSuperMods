@@ -81,6 +81,8 @@ export const ITEM_VERY_EASY_SECTIONS: readonly string[] = [
   'item-inventory',
   // B538 (ADR 0112 D1): boats.
   'item-boat',
+  // ADR 0117 Y16: Can break and Can place on, for adventure maps.
+  'item-adventure',
 ];
 
 /** The Effect Studio's sections in Very easy. */

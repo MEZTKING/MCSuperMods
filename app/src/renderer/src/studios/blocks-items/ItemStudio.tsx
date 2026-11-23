@@ -7,12 +7,15 @@
  * the events editor shared with the Block Studio, with its "Triggers" section (B239, ADR 0061
  * D1: on hit, on use on a block, while held, while worn) and "Fuel and compost" (ADR 0060 D4),
  * and the Boat section (B538, ADR 0110 D1: `BoatSection.tsx`); "Never wears out" and "Starts
- * with enchantments" with their tooltip (ADR 0127 D2, D3: `ItemWearFields.tsx`).
+ * with enchantments" with their tooltip (ADR 0127 D2, D3: `ItemWearFields.tsx`); the Adventure
+ * mode section, Can break and Can place on (ADR 0117 Y16: `AdventureSection.tsx`), whose lines
+ * join the same tooltip.
  * Choices come from the schema; everything
  * else stays behind "Advanced (all fields)".
  */
 
-import { lazy, Suspense, useState } from 'react';
+import type { JsonObject } from '@msm/plugin-api';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { ModelPicturesAi } from '../../components/ai-pictures/StudioAiPictures';
 import { typingKey } from '../../forms/context';
 import { projectHudIds } from '../controls/controls-model';
@@ -21,6 +24,7 @@ import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
+import { AdventureSection, adventureTooltipLines } from './AdventureSection';
 import { BoatSection } from './BoatSection';
 import {
   asObject,
@@ -32,7 +36,7 @@ import {
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { ItemInventorySection } from './ItemInventorySection';
-import { ItemWearFields } from './ItemWearFields';
+import { ItemWearFields, wearTooltipLines } from './ItemWearFields';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
 import { projectPortals } from './portal-model';
 import { FuelCompostFields, TriggersSection } from './triggers';
@@ -59,6 +63,10 @@ const THROWABLE_CONFLICTS: readonly (readonly [string, string])[] = [
 export function ItemStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
   const [advanced, setAdvanced] = useState(false);
+  const registries = useMemo(
+    () => props.context.registries(project, element.kind),
+    [props.context, project, element.kind],
+  );
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const events = eventNames(element.data);
@@ -82,6 +90,14 @@ export function ItemStudio(props: StudioProps) {
   }
 
   const durable = components['msm:durability'] !== undefined;
+  const itemName = typeof data.display_name === 'string' ? data.display_name : element.id;
+  const setPassthrough = (next: JsonObject | undefined) =>
+    set(['components', 'msm:components'], next);
+  // The item's tooltip as the game draws it, shared by the wear fields and Adventure mode.
+  const tooltip = [
+    ...wearTooltipLines(components, itemName),
+    ...adventureTooltipLines(project, components),
+  ];
   const general = (
     <Section title="Item" testId="item-general">
       <ModelField
@@ -267,9 +283,10 @@ export function ItemStudio(props: StudioProps) {
       {at(['components', 'msm:durability', 'max'])}
       <ItemWearFields
         components={components}
-        name={typeof data.display_name === 'string' ? data.display_name : element.id}
+        name={itemName}
         suggest={suggest}
-        setPassthrough={(next) => set(['components', 'msm:components'], next)}
+        tooltip={tooltip}
+        setPassthrough={setPassthrough}
       />
       {at(['components', 'msm:components', 'minecraft:enchantments'])}
     </Section>
@@ -466,6 +483,15 @@ export function ItemStudio(props: StudioProps) {
         suggest={suggest}
         set={set}
         replace={(next) => onChange('', next)}
+      />
+      <AdventureSection
+        project={project}
+        components={components}
+        registries={registries}
+        texturesFolder={props.target.folders.resource.textures}
+        tooltip={tooltip}
+        problems={problems}
+        setPassthrough={setPassthrough}
       />
       <FuelCompostFields
         base={[]}

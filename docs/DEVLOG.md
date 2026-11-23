@@ -10414,3 +10414,23 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B667 or B671: the result row could show the plugin's name for every third-party result (entries already carry `plugin`, the id; the name is in `ExternalPluginState`).
 - B672: the plugins guide's search data section (the limits, all or nothing, the Settings line).
+## 2026-11-23 — executor — Item Studio adventure mode fields
+
+**What**
+- The Item Studio's **Adventure mode** section (`app/src/renderer/src/studios/blocks-items/AdventureSection.tsx`, `adventure-model.ts`; ADR 0117 Y16, B562's finding): **Can break** and **Can place on**, the vanilla components `minecraft:can_break` and `minecraft:can_place_on` in the item's `msm:components`. **Add a block** opens the ThingPicker (block sort, the project's blocks first); **Add a group of blocks…** lists the block tags by name; each entry has a remove button; every change is one undo step through `pathSetter`. Names in every mode, the id after each only in Advanced; the section is on Very easy's Item list (`ITEM_VERY_EASY_SECTIONS`). A value with more than blocks and tags (block states, block entity data, the old `{ predicates }` form) is shown and kept, not edited. Problems inside either value (an unknown block at `/blocks/0`) show under the section.
+- Live view: the item's tooltip gains the game's lines, an empty line, "Can break:" / "Can be placed on:" in grey and a line per block, after the name, enchantments and "Unbreakable" (`wearTooltipLines` in `ItemWearFields.tsx`, `adventureTooltipLines`); the same tooltip is drawn under the wear fields and under the lists.
+- Written form: the blocks as one predicate `{ "blocks": [ids] }`, each tag as its own `{ "blocks": "#tag" }`; one predicate as an object, more as a list (the forms B547 measured on both targets).
+- Runtime: `can_break` and `can_place_on` join `ComponentPassthrough.DELAYED` (and the mirror `DELAYED_PASSTHROUGH_COMPONENTS`): a value that does not decode while mods initialise (a block tag is bound only with the data packs, a project block may not be registered yet) waits for the data packs instead of being a load error. `enchanted_blade.json` and `passthroughStartsEnchantedAndRejectsDynamicHolder` cover a tag and a project block.
+- Tests: `app/test/components/studios/blocks-items/adventure-section.test.tsx` (model forms; pick, group, remove, tooltip and one undo per step on a real `CommandStack`; a richer list kept; ids only in Advanced; Very easy run through `forbiddenIn`); `packages/plugins/blocks-items/test/adventure-schema.test.ts` (both targets: one predicate or a list accepted, unknown block or tag `schema.unknown-id`, the old form refused); golden `example:adventure_pick` on both targets (two new files, nothing else changed).
+- Checks: `pnpm lint`, `pnpm typecheck`; `@msm/plugin-blocks-items` 30 files, 1,146 tests plus the new schema test; the whole app suite, 402 files and 4,258 tests (`--maxWorkers=2`).
+- Guide `blocks-and-items.md` ("Adventure mode"), a line in `game-modes.md`, CHANGELOG `[Unreleased]`; the finding taken out of HANDOFF and ROADMAP (ticked there) and the coverage audit's Missing.
+
+**Decisions**
+- No `blocks-items.*` validator: the target's own component schema already checks both components inside `msm:components` (`schema.unknown-id` for an unknown block or tag, an error for the old form), and validators never repeat `schema.unknown-id`.
+- The game expands a group to its blocks in the tooltip; MSM names the group ("Logs (a group)"). The header "Can be placed on:" is the game's `item.canPlace` line as remembered, not read from the jar here (verify at implementation with a client jar).
+- The AI helper's prompt topic files list no item components, so the prompt and its pinned hash are unchanged.
+
+**Next**
+- The 26.3 Java eject's `VanillaComponents.DELAYED` (`packages/targets/mc-26.3/src/java-project/templates/vanilla-components-java.ts`) has neither `enchantments` (ADR 0127) nor these two; an ejected mod decodes them only when they decode at once.
+- `./gradlew build` and the GameTests were not run here (JDK 21 in this container); CI's `engine-mod` job runs the extended GameTest.
+- The user's in-game check: an adventure map item that breaks only stone and logs, and a block placed only on grass.

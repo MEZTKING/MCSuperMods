@@ -3,7 +3,8 @@
  * section (ADR 0127 D2, D3; `item-wear-model.ts`): the vanilla components
  * `minecraft:unbreakable` and `minecraft:enchantments` in the item's `msm:components`. Its live
  * view is the tooltip below the fields, the lines the game shows over the item (its name, each
- * starting enchantment, "Unbreakable"), redrawn on every edit.
+ * starting enchantment, "Unbreakable", and the Adventure mode lists the Studio passes in),
+ * redrawn on every edit.
  */
 
 import type { JsonObject } from '@msm/plugin-api';
@@ -34,6 +35,22 @@ export interface ItemWearFieldsProps {
   readonly suggest?: SuggestIds | undefined;
   /** Sets the item's `msm:components` (undefined removes it). */
   setPassthrough(next: JsonObject | undefined): void;
+  /**
+   * The item's whole tooltip, when the Studio adds lines of its own (the Adventure mode lists,
+   * ADR 0117 Y16); absent: {@link wearTooltipLines}.
+   */
+  tooltip?: readonly TooltipLine[] | undefined;
+}
+
+/** The tooltip lines of the item's name, starting enchantments and "Unbreakable", in order. */
+export function wearTooltipLines(components: JsonObject, name: string): TooltipLine[] {
+  return [
+    { text: name, tone: 'name' },
+    ...startingEnchantments(components).map(
+      ({ id, level }): TooltipLine => ({ text: enchantmentWords(id, level), tone: 'enchantment' }),
+    ),
+    ...(isUnbreakable(components) ? [{ text: 'Unbreakable', tone: 'note' } as const] : []),
+  ];
 }
 
 export function ItemWearFields(props: ItemWearFieldsProps) {
@@ -42,13 +59,8 @@ export function ItemWearFields(props: ItemWearFieldsProps) {
   const list = startingEnchantments(components);
   const setList = (next: readonly StartingEnchantment[]) =>
     props.setPassthrough(withPassthrough(components, ENCHANTMENTS, enchantmentsValue(next)));
-  const lines: TooltipLine[] = [
-    { text: props.name, tone: 'name' },
-    ...list.map(
-      ({ id, level }): TooltipLine => ({ text: enchantmentWords(id, level), tone: 'enchantment' }),
-    ),
-    ...(unbreakable ? [{ text: 'Unbreakable', tone: 'note' } as const] : []),
-  ];
+  const own = wearTooltipLines(components, props.name);
+  const lines = props.tooltip ?? own;
   return (
     <div className="flex flex-col gap-2" data-testid="item-wear">
       <CheckField
@@ -108,7 +120,7 @@ export function ItemWearFields(props: ItemWearFieldsProps) {
           </button>
         </div>
       </div>
-      {lines.length > 1 && (
+      {own.length > 1 && (
         <div className="flex flex-col gap-1" data-testid="item-wear-tooltip">
           <span className="text-muted text-xs">In the game, its tooltip reads:</span>
           <Tooltip inline lines={lines} />

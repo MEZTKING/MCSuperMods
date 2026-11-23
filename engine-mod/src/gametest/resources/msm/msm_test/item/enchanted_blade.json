@@ -1,6 +1,21 @@
 {
   "components": {
     "msm:components": {
+      "minecraft:can_break": [
+        {
+          "blocks": [
+            "minecraft:stone"
+          ]
+        },
+        {
+          "blocks": "#minecraft:logs"
+        }
+      ],
+      "minecraft:can_place_on": {
+        "blocks": [
+          "msm_test:chime_block"
+        ]
+      },
       "minecraft:enchantments": {
         "minecraft:sharpness": 2
       },

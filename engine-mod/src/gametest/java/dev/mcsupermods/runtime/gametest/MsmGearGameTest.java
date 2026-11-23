@@ -331,6 +331,7 @@ public class MsmGearGameTest {
      * dev.mcsupermods.runtime.registry.ComponentPassthrough#DELAYED}), so the blade starts enchanted; {@code
      * minecraft:unbreakable} decodes at once and keeps its {@code msm:durability} from wearing; {@code
      * minecraft:stored_enchantments} names the same registry but is not delayed, so it is one load error and not set.
+     * {@code minecraft:can_break} (a block and a tag) and {@code minecraft:can_place_on} (a project block) are set too.
      */
     @GameTest
     public void passthroughStartsEnchantedAndRejectsDynamicHolder(GameTestHelper helper) {
@@ -349,6 +350,12 @@ public class MsmGearGameTest {
                 && e.contains("needs a data pack registry")), "no error for a data pack registry holder: " + errors);
         helper.assertFalse(errors.stream().anyMatch(e -> e.contains("enchanted_blade.json") && e.contains("minecraft:enchantments:")),
                 "minecraft:enchantments still an error: " + errors);
+        // ADR 0117 Y16: adventure mode's lists, a block tag and a project block, through the late decoding too.
+        helper.assertTrue(blade.has(DataComponents.CAN_BREAK), "minecraft:can_break with a block tag not set");
+        helper.assertTrue(blade.has(DataComponents.CAN_PLACE_ON), "minecraft:can_place_on with a project block not set");
+        helper.assertFalse(errors.stream().anyMatch(e -> e.contains("enchanted_blade.json")
+                && (e.contains("minecraft:can_break:") || e.contains("minecraft:can_place_on:"))),
+                "an adventure mode list is an error: " + errors);
         helper.succeed();
     }
 }
