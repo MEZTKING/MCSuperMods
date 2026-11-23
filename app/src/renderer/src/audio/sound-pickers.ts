@@ -88,6 +88,11 @@ export const SOUND_PICKERS: readonly SoundPickerPlace[] = [
   },
   { file: 'forms/scalars.tsx', place: 'The schema form', via: 'SoundPlayButton' },
   {
+    file: 'liveviews/data/lines/SampleLine.tsx',
+    place: "The damage type's death lines: its hurt sound",
+    via: 'SoundPlayButton',
+  },
+  {
     file: 'liveviews/looks/instrument/InstrumentView.tsx',
     place: 'The goat horn call live view (B630)',
     via: 'SoundPlayButton',
@@ -116,6 +121,11 @@ export const SOUND_PICKERS: readonly SoundPickerPlace[] = [
     file: 'studios/rules/SlotChip.tsx',
     place: 'Rules: a sound slot (`THING_SLOTS.sound`)',
     via: 'ThingPicker',
+  },
+  {
+    file: 'studios/rules/thing-chip.tsx',
+    place: "Rules: a picked sound's Play beside its chip",
+    via: 'SoundPlayButton',
   },
   {
     file: 'studios/blocks-items/blocks-items-model.ts',

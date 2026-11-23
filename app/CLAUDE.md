@@ -39,7 +39,7 @@ Phase 2 code complete: Resource Pack Studio plus Data Pack Studio (Recipe Studio
 - Don't add template, starter or example content here: it belongs in the plugins (ADR 0020).
 - Don't hard-code version facts (recipe categories, ids); read them from the schema.
 - Don't touch Minecraft assets outside the extraction cache (`~/.msm/cache/assets/<version>/`, ADR 0011).
-- Known gaps: F2 in Monaco on Windows (unchecked); the live world map draws no carved caves or structure pieces and its Height view takes 3.4 to 3.9 s (ADR 0119 limits WL1–WL18); the data views' limits are ADR 0120's 2L1–2L12 (one roll is MSM's own, the advancement layout and dialogs about right, functions run as far as Try it understands them) and the looks' ADR 0121's 3L1–3L12 (Minecraft's sounds need the Minecraft folder, bodies are MSM's stand-ins, core shaders a compile check; the damage type's hurt sound has no Play yet); structure blocks are not editable in-app; only the first random palette is read.
+- Known gaps: F2 in Monaco on Windows (unchecked); the live world map draws no carved caves or structure pieces and its Height view takes 3.4 to 3.9 s (ADR 0119 limits WL1–WL18); the data views' limits are ADR 0120's 2L1–2L12 (one roll is MSM's own, the advancement layout and dialogs about right, functions run as far as Try it understands them) and the looks' ADR 0121's 3L1–3L12 (Minecraft's sounds need the Minecraft folder, bodies are MSM's stand-ins, core shaders a compile check); structure blocks are not editable in-app; only the first random palette is read.
 - UI labels named in `docs/guide/` must match the code; update the guide when one changes.
 
 ## Commands

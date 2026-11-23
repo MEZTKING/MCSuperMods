@@ -23,6 +23,7 @@ import {
   type VanillaFolderFiles,
 } from '../../../../src/renderer/src/liveviews/vanilla-data';
 import { DEFAULT_PREFS } from '../../../../src/renderer/src/liveviews/view-prefs';
+import { fakePlayer, fakeVanilla, oggOf, SoundHarness } from '../../audio/fake-player';
 
 afterEach(cleanup);
 
@@ -442,6 +443,72 @@ describe('the sample lines (B611)', () => {
     expect(screen.getByTestId('sample-line-missing-words').textContent).toContain(
       'death.attack.demo_other.message',
     );
+  });
+
+  it('plays the hurt sound of the damage effects through the shared Play button', async () => {
+    const fake = fakePlayer();
+    const vanilla = fakeVanilla({
+      'entity.player.hurt_on_fire': { sounds: ['damage/hit_fire'] },
+      'entity.player.hurt': { sounds: ['damage/hit1'] },
+    });
+    const burn = element('minecraft:damage_type', 'demo:burn', {
+      message_id: 'demo_burn',
+      effects: 'burning',
+    });
+    render(
+      <SoundHarness
+        player={fake.player}
+        sources={{ project: null, sounds: null, readProjectAsset: null, random: () => 0 }}
+      >
+        <SampleLine {...props(projectOf([lang, burn]), burn, { sounds: vanilla })} />
+      </SoundHarness>,
+    );
+    const play = await screen.findByTestId('sample-line-hurt-play');
+    expect(screen.queryByText(/cannot be played/)).toBeNull();
+    await waitFor(() => expect(play.getAttribute('data-state')).toBe('idle'));
+    await act(async () => {
+      fireEvent.click(play);
+    });
+    await waitFor(() => expect(fake.played).toHaveLength(1));
+    expect(vanilla.files).toEqual(['minecraft/sounds/damage/hit_fire.ogg']);
+    expect(fake.played[0]?.bytes).toEqual(oggOf('minecraft/sounds/damage/hit_fire.ogg'));
+  });
+
+  it("plays the project's own hurt sound when the project redefines it", async () => {
+    const fake = fakePlayer();
+    const vanilla = fakeVanilla({ 'entity.player.hurt': { sounds: ['damage/hit1'] } });
+    const own = element('minecraft:sounds', 'minecraft:sounds', {
+      'entity.player.hurt': { replace: true, sounds: ['demo:ouch'] },
+    });
+    const zap = element('minecraft:damage_type', 'demo:zap', { message_id: 'demo_zap' });
+    const project = {
+      ...projectOf([lang, zap]),
+      namespaces: [
+        { name: 'demo', assets: [{ path: 'sounds/ouch.ogg' }], elements: [lang, zap] },
+        { name: 'minecraft', assets: [], elements: [own] },
+      ],
+    } as unknown as Project;
+    const reads: string[] = [];
+    const readProject = async (path: string) => {
+      reads.push(path);
+      return oggOf(path);
+    };
+    render(
+      <SoundHarness
+        player={fake.player}
+        sources={{ project: null, sounds: null, readProjectAsset: null, random: () => 0 }}
+      >
+        <SampleLine {...props(project, zap, { sounds: vanilla, readProject })} />
+      </SoundHarness>,
+    );
+    const play = await screen.findByTestId('sample-line-hurt-play');
+    await act(async () => {
+      fireEvent.click(play);
+    });
+    await waitFor(() => expect(fake.played).toHaveLength(1));
+    expect(reads).toEqual(['assets/demo/sounds/ouch.ogg']);
+    expect(vanilla.files).toEqual([]);
+    expect(fake.played[0]?.bytes).toEqual(oggOf('assets/demo/sounds/ouch.ogg'));
   });
 
   it('fills a chat type’s key with its parameters in order, in its style, and follows the typed text', async () => {

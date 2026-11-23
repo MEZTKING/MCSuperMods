@@ -1,5 +1,6 @@
 import type { BlockPos, BlockState, SimEffect } from '@msm/sim';
 import { describe, expect, it, vi } from 'vitest';
+import * as resolveModule from '../../../src/renderer/src/audio/resolve';
 import {
   CAPTION_TICKS,
   CHIP_TICKS,
@@ -119,6 +120,48 @@ describe('sounds', () => {
       path: 'sounds/x/y.ogg',
     });
     expect(soundFileOf(own, 'demo:none')).toBeNull();
+  });
+
+  it('plays the same files as before now that it goes through audio/resolve.ts', () => {
+    const resolveSpy = vi.spyOn(resolveModule, 'resolveSoundEvent');
+    const demo = {
+      // The first entry wins, whatever the weights (Try it plays no random pick).
+      weighted: {
+        sounds: [
+          { name: 'demo:light', weight: 1 },
+          { name: 'demo:heavy', weight: 9 },
+        ],
+      },
+      // An empty name is skipped; a weight of 0 is not (as before).
+      zero: { sounds: ['', { name: 'demo:quiet', weight: 0 }, 'demo:loud'] },
+      // An event entry naming another namespace, followed to its own file.
+      other: { sounds: [{ name: 'other:hum', type: 'event' }] },
+      // Events chained three deep are followed; a fourth is not.
+      deep1: { sounds: [{ name: 'demo:deep2', type: 'event' }] },
+      deep2: { sounds: [{ name: 'demo:deep3', type: 'event' }] },
+      deep3: { sounds: [{ name: 'demo:deep4', type: 'event' }] },
+      deep4: { sounds: [{ name: 'demo:deep5', type: 'event' }] },
+      deep5: { sounds: ['demo:bottom'] },
+      // An event entry naming nothing falls through to the next entry.
+      fallthrough: { sounds: [{ name: 'demo:nothing', type: 'event' }, 'demo:after'] },
+      // `replace` changes nothing without vanilla's file.
+      replaced: { replace: true, sounds: ['bare/name'] },
+    };
+    const other = { hum: { sounds: ['buzz'] } };
+    const read = (namespace: string) =>
+      namespace === 'demo' ? demo : namespace === 'other' ? other : undefined;
+    const cases: [string, { namespace: string; path: string } | null][] = [
+      ['demo:weighted', { namespace: 'demo', path: 'sounds/light.ogg' }],
+      ['demo:zero', { namespace: 'demo', path: 'sounds/quiet.ogg' }],
+      ['demo:other', { namespace: 'other', path: 'sounds/buzz.ogg' }],
+      ['demo:deep2', { namespace: 'demo', path: 'sounds/bottom.ogg' }],
+      ['demo:deep1', null],
+      ['demo:fallthrough', { namespace: 'demo', path: 'sounds/after.ogg' }],
+      ['demo:replaced', { namespace: 'demo', path: 'sounds/bare/name.ogg' }],
+    ];
+    for (const [id, file] of cases) expect(soundFileOf(demo, id, read), id).toEqual(file);
+    expect(resolveSpy).toHaveBeenCalled();
+    resolveSpy.mockRestore();
   });
 });
 

@@ -24,6 +24,20 @@ export const SAMPLE = Object.freeze({
   content: 'Hello there!',
 });
 
+/**
+ * The sound a player makes when hurt by a damage type, by its `effects` (`hurt` when absent): the
+ * game's damage effects, the same on 26.3 and 26.4-snapshot-7 (both targets' sound event
+ * registries name all six). A mob hurt by it makes its own hurt sound instead.
+ */
+export const DAMAGE_EFFECT_SOUNDS: Readonly<Record<string, string>> = Object.freeze({
+  hurt: 'minecraft:entity.player.hurt',
+  thorns: 'minecraft:enchant.thorns.hit',
+  drowning: 'minecraft:entity.player.hurt_drown',
+  burning: 'minecraft:entity.player.hurt_on_fire',
+  poking: 'minecraft:entity.player.hurt_sweet_berry_bush',
+  freezing: 'minecraft:entity.player.hurt_freeze',
+});
+
 /** One form of a death line. */
 export interface DeathLine {
   /** `alone`, `mob`, `named_item` or `design` (the link form). */

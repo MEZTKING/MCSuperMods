@@ -10494,3 +10494,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Format `packages/sim/test/loot/measured.test.ts` (`pnpm exec biome check --write`) so `pnpm lint` is green again.
 - CI's `engine-mod` job: the ejected sample mod builds with the longer list.
+
+## 2026-11-23 — executor — Sound Play follow-ups
+
+**What**
+- Three of ADR 0121's sound follow-ups. A damage type's **Death lines** view plays its hurt sound: **When hurt** has the shared Play button for the event of its `effects` (`DAMAGE_EFFECT_SOUNDS` in `liveviews/data/lines/sample-lines.ts`: `hurt`, `thorns`, `drowning`, `burning`, `poking`, `freezing` to the player's hurt sounds and `enchant.thorns.hit`), so Minecraft's sound is read in place from the user's asset store and a project that redefines the event plays its own file. The note "The hurt sound cannot be played here yet." is gone.
+- Rules: a sound chip with a sound picked has a small Play button beside it (`studios/rules/thing-chip.tsx`, test id `rules-chip-<slot>-play`); it names no id, so Very easy shows none.
+- Try it's `soundFileOf` (`tryit/effects.ts`) resolves through `audio/resolve.ts` (`resolveSoundEvent`, `splitSoundId`) instead of its own walk, with the same files as before: the first file of the entries, event entries followed at most three deep, Minecraft's own `sounds.json` never read.
+- `SOUND_PICKERS` gains the two new places (27). Guide `live-views.md`, `LIVE-VIEW-AUDIT.md`'s damage type row, `app/CLAUDE.md`'s known gaps, CHANGELOG `[Unreleased]`; the three ticked in the ROADMAP (and the ADR 0120 line's hurt sound) and taken out of HANDOFF.
+- Tests: `b611-views.test.tsx` (the burning effect plays the vanilla file through a fake player; a project event with `replace` plays the project's file and reads nothing of vanilla's), `RuleBookStudio.test.tsx` (no Play before a pick, Play after, the shared player gets the picked file, Very easy names no id), `tryit/effects.test.ts` (seven cases of weights, weight 0, another namespace, chains, fall-through and `replace`, and the resolver called; the same cases pass on the old code, which fails only the resolver check). Run: those, `test/components/audio`, `test/components/liveviews`, `test/components/tryit`, the rules and Rules Studio tests and `very-easy-no-ids` (all green); `pnpm typecheck` green; `pnpm lint` has one error, in `packages/sim/test/loot/measured.test.ts` (formatting, from f102014, not touched here).
+
+**Decisions**
+- Try it keeps reading a bare file name as the event's own namespace (`demo`'s `hum` is `demo:hum`), where the shared resolver reads it as Minecraft's, as the game does: the brief asked for no change in what Try it plays, so `soundFileOf` qualifies bare names before resolving. Try it also still plays the first file rather than a weighted pick, and at the effect's volume and pitch only.
+- The effect-to-sound table lives in the app beside `EFFECT_WORDS`: it is the same on both targets (both registries name all six events), so no target fact was added. A mob hurt by the damage type makes its own sound; the view's note says so.
+
+**Next**
+- Whether Try it should follow the game for bare names, weights and entry volume and pitch (a small behaviour change, best with a sim-parity case).
+- The formatting error in `packages/sim/test/loot/measured.test.ts`.
+- ADR 0121's remaining sound follow-ups: an e2e case for a streamed sound, the Prism, MultiMC and CurseForge asset store paths on a real install.

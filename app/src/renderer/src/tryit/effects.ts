@@ -30,6 +30,7 @@ import {
   type Vec3,
 } from '@msm/sim';
 import { type SoundOut, webAudioOut } from '../audio/player';
+import { resolveSoundEvent, splitSoundId } from '../audio/resolve';
 import { AMBIENT_RANGE, type Random, seededRandom } from './ambient';
 
 export { type SoundOut, webAudioOut };
@@ -88,17 +89,38 @@ export type ReadProjectAsset = (namespace: string, path: string) => Promise<Uint
 const isRecord = (value: Json | undefined): value is JsonObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const splitId = (id: string): { namespace: string; path: string } => {
-  const colon = id.indexOf(':');
-  return colon < 0
-    ? { namespace: 'minecraft', path: id }
-    : { namespace: id.slice(0, colon), path: id.slice(colon + 1) };
-};
+/**
+ * A namespace's `sounds.json` with every bare name made the namespace's own (`hum` in `demo`'s
+ * file is `demo:hum`): Try it has always read a bare name as the event's namespace, where the
+ * shared resolver reads it as Minecraft's, as the game does. Kept so Try it plays what it did.
+ */
+function ownNames(soundsJson: JsonObject, namespace: string): JsonObject {
+  const own = (name: string): string => (name.includes(':') ? name : `${namespace}:${name}`);
+  const out: JsonObject = {};
+  for (const [path, registration] of Object.entries(soundsJson)) {
+    if (!isRecord(registration) || !Array.isArray(registration.sounds)) {
+      out[path] = registration;
+      continue;
+    }
+    out[path] = {
+      ...registration,
+      sounds: registration.sounds.map((one): Json => {
+        if (typeof one === 'string') return one === '' ? one : own(one);
+        if (isRecord(one) && typeof one.name === 'string' && one.name !== '') {
+          return { ...one, name: own(one.name) };
+        }
+        return one;
+      }),
+    };
+  }
+  return out;
+}
 
 /**
- * The `.ogg` file of a project sound event: the first entry of its `sounds` list in the
- * namespace's `sounds.json` (an event entry, `"type": "event"`, is followed once). `null` when
- * the definitions do not name one.
+ * The `.ogg` file of a project sound event: the first file of its entries as the shared resolver
+ * (`audio/resolve.ts`) lists them; an event entry (`"type": "event"`) is followed, at most three
+ * deep. `null` when the definitions do not name one. Minecraft's own `sounds.json` is never read
+ * here (Try it plays only the project's sounds, L13).
  */
 export function soundFileOf(
   soundsJson: Json | undefined,
@@ -106,16 +128,17 @@ export function soundFileOf(
   read: (namespace: string) => Json | undefined = () => undefined,
   depth = 0,
 ): { namespace: string; path: string } | null {
-  const { namespace, path } = splitId(id);
+  const { namespace, path } = splitSoundId(id);
   if (!isRecord(soundsJson)) return null;
-  const entry = soundsJson[path];
-  if (!isRecord(entry) || !Array.isArray(entry.sounds)) return null;
-  for (const one of entry.sounds) {
-    const name = typeof one === 'string' ? one : isRecord(one) ? one.name : undefined;
-    if (typeof name !== 'string' || name === '') continue;
-    if (isRecord(one) && one.type === 'event') {
+  const resolved = resolveSoundEvent(
+    `${namespace}:${path}`,
+    { [namespace]: ownNames(soundsJson, namespace) },
+    null,
+  );
+  for (const entry of resolved.entries) {
+    if (entry.type === 'event') {
       if (depth > 2) continue;
-      const next = splitId(name.includes(':') ? name : `${namespace}:${name}`);
+      const next = splitSoundId(entry.name);
       const found = soundFileOf(
         read(next.namespace),
         `${next.namespace}:${next.path}`,
@@ -125,7 +148,7 @@ export function soundFileOf(
       if (found !== null) return found;
       continue;
     }
-    const file = splitId(name.includes(':') ? name : `${namespace}:${name}`);
+    const file = splitSoundId(entry.name);
     return { namespace: file.namespace, path: `sounds/${file.path}.ogg` };
   }
   return null;
@@ -206,7 +229,7 @@ export class TryItEffects {
   /** A `sound` effect: a caption, and the sound itself when it is the project's. */
   sound(effect: SimEffect): void {
     const id = effect.id.includes(':') ? effect.id : `minecraft:${effect.id}`;
-    const { namespace } = splitId(id);
+    const { namespace } = splitSoundId(id);
     const volume = this.volumeAt(effect);
     if (namespace === 'minecraft') {
       this.caption(id, false, VANILLA_SOUND_NOTE, effect.origin);
@@ -289,7 +312,7 @@ export class TryItEffects {
       const found = this.soundsJson(namespace);
       return found instanceof Promise ? undefined : found;
     };
-    const file = soundFileOf(read(splitId(id).namespace), id, read);
+    const file = soundFileOf(read(splitSoundId(id).namespace), id, read);
     if (file === null) {
       this.caption(id, false, 'This sound is not in the project.', effect.origin);
       return;

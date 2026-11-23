@@ -2,17 +2,24 @@
  * A damage type's death lines and a chat type's sample line (B611; ADR 0120 D6): the lines the
  * game would show for sample people, built as the game builds them (B600 2S10) and drawn by MSM
  * in the data's style. The words come from the project's language files over vanilla's; a key no
- * language file names shows as the key, as it does in the game.
+ * language file names shows as the key, as it does in the game. A damage type's hurt sound has
+ * Play (ADR 0121 D2 follow-up): the event of its `effects` through the shared Play button, so
+ * Minecraft's sound is read in place from the user's own asset store and a project that
+ * redefines the event plays its own file.
  */
 
 import type { Json } from '@msm/plugin-api';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import type { ReadProjectSound } from '../../../audio/provider';
+import { SoundPlayButton } from '../../../audio/SoundPlayButton';
+import type { VanillaSoundReader } from '../../../audio/vanilla-sounds';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import type { LiveViewProps } from '../../registry';
 import { useLang, useSettled } from './lang';
 import {
   type ChatSample,
   chatLineComponent,
+  DAMAGE_EFFECT_SOUNDS,
   deathLines,
   deathMessageType,
   decorationOf,
@@ -56,7 +63,22 @@ function ChatBox({ children, testId }: { children: ReactNode; testId?: string })
 const missingKeys = (keys: readonly string[], lang: LangLookup): string[] =>
   keys.filter((key) => lang(key) === undefined);
 
-function DeathLinesView({ data, lang }: { data: Json; lang: LangLookup }) {
+/** Where the hurt sound's Play reads from: the view's own readers, else the shell's. */
+interface HurtSoundSources {
+  project: LiveViewProps['project'];
+  sounds: VanillaSoundReader | null | undefined;
+  readProjectAsset: ReadProjectSound | undefined;
+}
+
+function DeathLinesView({
+  data,
+  lang,
+  sources,
+}: {
+  data: Json;
+  lang: LangLookup;
+  sources: HurtSoundSources;
+}) {
   const lines = deathLines(data);
   const kind = deathMessageType(data);
   const missing = missingKeys([...new Set(lines.map((line) => line.key))], lang);
@@ -96,7 +118,21 @@ function DeathLinesView({ data, lang }: { data: Json; lang: LangLookup }) {
       )}
       <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-xs">
         <dt className="text-muted">When hurt</dt>
-        <dd data-testid="sample-line-effects">{`Plays ${EFFECT_WORDS[effects] ?? effects}`}</dd>
+        <dd data-testid="sample-line-effects" className="flex flex-wrap items-center gap-2">
+          {DAMAGE_EFFECT_SOUNDS[effects] !== undefined && (
+            <SoundPlayButton
+              event={DAMAGE_EFFECT_SOUNDS[effects]}
+              compact
+              project={sources.project}
+              {...(sources.sounds === undefined ? {} : { sounds: sources.sounds })}
+              {...(sources.readProjectAsset === undefined
+                ? {}
+                : { readProjectAsset: sources.readProjectAsset })}
+              testId="sample-line-hurt-play"
+            />
+          )}
+          <span>{`Plays ${EFFECT_WORDS[effects] ?? effects}`}</span>
+        </dd>
         {scaling !== null && (
           <>
             <dt className="text-muted">Difficulty</dt>
@@ -171,7 +207,14 @@ function ChatLineView({
 
 /** The view of `minecraft:damage_type` and `minecraft:chat_type`. */
 export default function SampleLine(props: LiveViewProps) {
-  const { project, element, preferences, onPreferences, vanillaAssets } = props;
+  const { project, element, preferences, onPreferences, vanillaAssets, readProject } = props;
+  const readProjectAsset = useMemo<ReadProjectSound | undefined>(
+    () =>
+      readProject === undefined
+        ? undefined
+        : (namespace: string, path: string) => readProject(`assets/${namespace}/${path}`),
+    [readProject],
+  );
   const settled = useSettled(useMemo(() => ({ project, element }), [project, element]));
   const { lookup } = useLang(settled.project, vanillaAssets);
   const [text, setText] = useState(preferences.sampleText);
@@ -191,7 +234,7 @@ export default function SampleLine(props: LiveViewProps) {
     : [
         `The names are samples: ${SAMPLE.victim} dies, a zombie or ${SAMPLE.playerKiller} holding a sword named “${SAMPLE.itemName}” kills.`,
         'In the game the player’s name can be clicked to send them a message.',
-        'The hurt sound cannot be played here yet.',
+        'The hurt sound is the one a player makes; a mob hurt by it makes its own.',
       ];
   return (
     <LiveViewFrame
@@ -219,7 +262,11 @@ export default function SampleLine(props: LiveViewProps) {
       {isChat ? (
         <ChatLineView data={data} lang={lookup} sample={sample} />
       ) : (
-        <DeathLinesView data={data} lang={lookup} />
+        <DeathLinesView
+          data={data}
+          lang={lookup}
+          sources={{ project: settled.project, sounds: props.sounds, readProjectAsset }}
+        />
       )}
     </LiveViewFrame>
   );

@@ -6,7 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.5.
+### Added
+
+- **Play in more places.** A damage type's live view plays the hurt sound it gives a player, and a sound picked in a rule has a small Play button beside it.
 
 ## [1.5.5] - 2026-11-23
 

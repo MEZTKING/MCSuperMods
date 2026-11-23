@@ -20,7 +20,7 @@ import rulesPlugin, { RULES_KIND } from '@msm/plugin-rules';
 import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { useEffect, useReducer } from 'react';
+import { type ReactNode, useEffect, useReducer } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
 import {
@@ -33,6 +33,7 @@ import { PlainProblemWordsContext } from '../../src/renderer/src/studios/rules/p
 import { getAt } from '../../src/renderer/src/studios/rules/rules-model';
 import { DISCOVERED_STUDIOS, studioFor } from '../../src/renderer/src/studios/studio-registry';
 import type { SchemaContextState } from '../../src/renderer/src/studios/use-schema-context';
+import { fakePlayer, fakeVanilla, oggOf, SoundHarness } from './audio/fake-player';
 import { element } from './fixtures';
 import { schemaIndex } from './forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from './lazy-chunks';
@@ -129,6 +130,7 @@ async function renderBook(
     focusPointer?: string | null;
     words?: (problem: Problem) => string | undefined;
     host?: BlocksItemsStudioHost;
+    wrap?: (children: ReactNode) => ReactNode;
   } = {},
 ) {
   const stack = new CommandStack(projectOf(book), { coalesceWindowMs: 60_000 });
@@ -149,15 +151,15 @@ async function renderBook(
         {tree}
       </PlainProblemWordsContext.Provider>
     );
-  render(
+  const hosted =
     options.host === undefined ? (
       worded
     ) : (
       <BlocksItemsStudioHostContext.Provider value={options.host}>
         {worded}
       </BlocksItemsStudioHostContext.Provider>
-    ),
-  );
+    );
+  render(options.wrap === undefined ? hosted : options.wrap(hosted));
   await screen.findByTestId('rule-book-studio', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
   const data = (): Json =>
     stack.state.namespaces[0]?.elements.find((entry) => entry.id === BOOK_ID)?.data ?? null;
@@ -530,5 +532,53 @@ describe('Rule book Studio', () => {
       'nothing to copy',
     );
     expect(applyChanges).not.toHaveBeenCalled();
+  });
+
+  it('shows Play beside a sound chip once a sound is picked, through the shared player', async () => {
+    const fake = fakePlayer();
+    const vanilla = fakeVanilla({ 'block.note_block.chime': { sounds: ['note/chime'] } });
+    const wrap = (children: ReactNode) => (
+      <SoundHarness
+        player={fake.player}
+        sources={{ project: null, sounds: vanilla, readProjectAsset: null, random: () => 0 }}
+      >
+        {children}
+      </SoundHarness>
+    );
+    const { data } = await renderBook(
+      {
+        counters: [],
+        format: 1,
+        rules: [
+          {
+            do: [{ step: 'play_sound' }],
+            key: 'rule',
+            when: { subject: 'demo:ruby_block', trigger: 'block_used' },
+          },
+        ],
+      },
+      { wrap },
+    );
+    // Nothing picked: no Play.
+    expect(screen.queryByTestId('rules-chip-sound-play')).toBeNull();
+    fireEvent.click(screen.getByTestId('rules-chip-sound'));
+    const picker = await screen.findByTestId('thing-picker');
+    fireEvent.click(within(picker).getByTestId('thing-minecraft:block.note_block.chime'));
+    expect(getAt(data(), '/rules/0/do/0/sound')).toBe('minecraft:block.note_block.chime');
+    const play = await screen.findByTestId('rules-chip-sound-play');
+    await waitFor(() => expect(play.getAttribute('data-state')).toBe('idle'));
+    await act(async () => {
+      fireEvent.click(play);
+    });
+    await waitFor(() => expect(fake.played).toHaveLength(1));
+    expect(vanilla.files).toEqual(['minecraft/sounds/note/chime.ogg']);
+    expect(fake.played[0]?.bytes).toEqual(oggOf('minecraft/sounds/note/chime.ogg'));
+    // Very easy keeps the button and names no id.
+    act(() => {
+      usePreferences.setState({ mode: 'very-easy' as never });
+    });
+    const shown = screen.getByTestId('rules-chip-sound-play');
+    expect(shown.getAttribute('aria-label') ?? '').not.toMatch(/minecraft:|note_block/);
+    expect(shown.getAttribute('title') ?? '').not.toMatch(/minecraft:|note_block/);
   });
 });

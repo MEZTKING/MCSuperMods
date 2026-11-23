@@ -6,12 +6,15 @@
  * or loot table the picker offers "Make a new one", which makes the thing in the book's
  * namespace and picks it in one undo step (`changeWith`, as "Make a new on-screen number").
  * Kept apart from `SlotChip.tsx` so the reading editor (`ValueEditor.tsx`) can use it too.
+ * A sound chip with a sound picked has a small Play button beside it (ADR 0121 D2 follow-up),
+ * test id `<chip's test id>-play`; it names no id, so Very easy shows none.
  *
  * @packageDocumentation
  */
 
 import type { SlotSpec } from '@msm/plugin-rules';
 import { useMemo, useState } from 'react';
+import { SoundPlayButton } from '../../audio/SoundPlayButton';
 import { ThingPicker } from '../../components/thing-picker/ThingPicker';
 import {
   PROJECT_ONLY_SORTS,
@@ -91,6 +94,14 @@ export function ThingChip(props: ThingChipProps) {
       >
         {props.label}
       </button>
+      {props.sort === 'sound' && typeof value === 'string' && value.trim() !== '' && (
+        <SoundPlayButton
+          event={value}
+          compact
+          project={env.project}
+          testId={`${props.testId}-play`}
+        />
+      )}
       {open && (
         <ThingPicker
           title={`Pick ${THING_WORDS[props.sort].one}`}
