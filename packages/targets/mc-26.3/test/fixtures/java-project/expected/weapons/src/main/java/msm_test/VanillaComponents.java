@@ -74,7 +74,17 @@ public final class VanillaComponents {
             JsonElement json, String where) {
         Codec<T> codec = type.codecOrThrow();
         Set<Identifier> missing = new TreeSet<>();
-        DataResult<T> result = codec.parse(staticOps(missing), json);
+        DataResult<T> result;
+        try {
+            result = codec.parse(staticOps(missing), json);
+        } catch (IllegalStateException unbound) {
+            // A value naming a block tag throws "Tags not bound" while mods initialise; a DELAYED one waits for the data packs.
+            if (DELAYED.contains(id)) {
+                return props.delayedComponent(type, provider -> decodeLate(owner, id, codec, json, provider));
+            }
+            LOGGER.error("{}{}", where, unbound.getMessage());
+            return props;
+        }
         if (result.result().isPresent()) {
             return props.component(type, result.result().get());
         }
@@ -93,7 +103,13 @@ public final class VanillaComponents {
 
     /** Decodes a {@link #DELAYED} component once data packs are loaded; on failure logs and leaves the component unset. */
     private static <T> T decodeLate(String owner, Identifier id, Codec<T> codec, JsonElement json, HolderLookup.Provider provider) {
-        DataResult<T> result = codec.parse(RegistryOps.create(JsonOps.INSTANCE, provider), json);
+        DataResult<T> result;
+        try {
+            result = codec.parse(RegistryOps.create(JsonOps.INSTANCE, provider), json);
+        } catch (IllegalStateException unbound) {
+            LOGGER.error("{}: msm:components: {}: {}; the component is not set", owner, id, unbound.getMessage());
+            return null;
+        }
         if (result.error().isPresent()) {
             LOGGER.error("{}: msm:components: {}: {}; the component is not set", owner, id, result.error().get().message());
             return null;

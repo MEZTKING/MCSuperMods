@@ -83,7 +83,18 @@ public final class ComponentPassthrough {
             JsonElement json, String where, List<String> errors) {
         Codec<T> codec = type.codecOrThrow();
         Set<Identifier> missing = new TreeSet<>();
-        DataResult<T> result = codec.parse(staticOps(missing), json);
+        DataResult<T> result;
+        try {
+            result = codec.parse(staticOps(missing), json);
+        } catch (IllegalStateException unbound) {
+            // A value that names a block tag (minecraft:can_break, minecraft:can_place_on) throws "Tags not bound" while
+            // mods initialise instead of returning an error; a DELAYED component then waits for the data packs.
+            if (DELAYED.contains(id)) {
+                return props.delayedComponent(type, provider -> decodeLate(raw, id, codec, json, provider));
+            }
+            error(errors, where + unbound.getMessage());
+            return props;
+        }
         if (result.result().isPresent()) {
             return props.component(type, result.result().get());
         }
@@ -102,7 +113,14 @@ public final class ComponentPassthrough {
 
     /** Decodes a {@link #DELAYED} component once data packs are loaded; on failure logs and leaves the component unset. */
     private static <T> T decodeLate(RawDefinition raw, Identifier id, Codec<T> codec, JsonElement json, HolderLookup.Provider provider) {
-        DataResult<T> result = codec.parse(RegistryOps.create(JsonOps.INSTANCE, provider), json);
+        DataResult<T> result;
+        try {
+            result = codec.parse(RegistryOps.create(JsonOps.INSTANCE, provider), json);
+        } catch (IllegalStateException unbound) {
+            MsmRuntime.LOGGER.error("[{}] {}: msm:components: {}: {}; the component is not set", MsmRuntime.MOD_ID, raw.describe(), id,
+                    unbound.getMessage());
+            return null;
+        }
         if (result.error().isPresent()) {
             MsmRuntime.LOGGER.error("[{}] {}: msm:components: {}: {}; the component is not set", MsmRuntime.MOD_ID, raw.describe(), id,
                     result.error().get().message());
