@@ -1,0 +1,621 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_hearts dummy {\"text\":\"Hearts\",\"color\":\"red\"}",
+      "scoreboard objectives setdisplay list demo.msm_hearts",
+      "scoreboard objectives add demo.msm_out_until dummy",
+      "scoreboard objectives add demo.msm_out_since dummy",
+      "scoreboard objectives add demo.msm_withdraw trigger",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/hearts/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_hearts matches 21.. run scoreboard players set @s demo.msm_hearts 20",
+      "execute store result storage demo:msm_games/game/lifesteal/hearts hp int 2 run scoreboard players get @s demo.msm_hearts",
+      "function demo:msm_games/game/lifesteal/hearts/set with storage demo:msm_games/game/lifesteal/hearts",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/apply.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "$attribute @s minecraft:max_health base set $(hp)",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/set.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_hearts 10",
+      "tag @s add demo.game.lifesteal.hearted",
+      "tag @s remove demo.game.lifesteal.ran_out",
+      "tag @s remove demo.game.lifesteal.kept_out",
+      "function demo:msm_games/game/lifesteal/hearts/apply",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/join.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/hearts/join"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "criteria": {
+        "killed_player": {
+          "conditions": {
+            "entity": {
+              "entity": "this",
+              "predicate": {
+                "minecraft:entity_type": "minecraft:player"
+              },
+              "type": "minecraft:entity_properties"
+            }
+          },
+          "trigger": "minecraft:player_killed_entity"
+        }
+      },
+      "rewards": {
+        "function": "demo:msm_games/game/lifesteal/kill_pair/killer"
+      }
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/advancement/msm_games/game/lifesteal/kill_pair.json",
+    "schema": "resource:advancement"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "advancement revoke @s only demo:msm_games/game/lifesteal/kill_pair",
+      "execute if score #lifesteal.state demo.msm_game matches 2 run function demo:msm_games/game/lifesteal/kill_pair/in_round",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/kill_pair/killer.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.lifesteal.in] run function demo:msm_games/game/lifesteal/kill_pair/pair",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/kill_pair/in_round.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #lifesteal.kill_paired demo.msm_game 0",
+      "execute store result score #lifesteal.kill_paired demo.msm_game if entity @a[tag=demo.game.lifesteal.in,tag=!demo.game.lifesteal.killed,scores={demo.msm_deaths=1..},sort=nearest,limit=1]",
+      "tag @a[tag=demo.game.lifesteal.in,tag=!demo.game.lifesteal.killed,scores={demo.msm_deaths=1..},sort=nearest,limit=1] add demo.game.lifesteal.victim",
+      "tag @a[tag=demo.game.lifesteal.victim] add demo.game.lifesteal.killed",
+      "execute if score #lifesteal.kill_paired demo.msm_game matches 1.. run function #demo:msm_games/game/lifesteal/kill_pair/scored",
+      "tag @a remove demo.game.lifesteal.victim",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/kill_pair/pair.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @a remove demo.game.lifesteal.killed",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/kill_pair/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/kill_pair/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/kill_pair/scored.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add @s demo.msm_hearts 1",
+      "function demo:msm_games/game/lifesteal/hearts/apply",
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" took a heart from \"},{\"selector\":\"@a[tag=demo.game.lifesteal.victim]\"},{\"text\":\".\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/gain.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/hearts/gain"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/kill_pair/scored.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.lifesteal.killed] run scoreboard players remove @s demo.msm_hearts 1",
+      "execute if entity @s[tag=!demo.game.lifesteal.killed] run scoreboard players remove @s demo.msm_hearts 1",
+      "tag @s remove demo.game.lifesteal.killed",
+      "execute if score @s demo.msm_hearts matches ..0 run function demo:msm_games/game/lifesteal/hearts/zero",
+      "execute if score @s demo.msm_hearts matches 1.. run function demo:msm_games/game/lifesteal/hearts/apply",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/died.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/hearts/died"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_hearts 0",
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" has no hearts left.\"}]",
+      "tag @s add demo.game.lifesteal.ran_out",
+      "execute store result score @s demo.msm_out_since run time query gametime",
+      "tag @s add demo.game.lifesteal.kept_out",
+      "execute store result score @s demo.msm_out_until run time query gametime",
+      "scoreboard players add @s demo.msm_out_until 72000",
+      "tellraw @s {\"text\":\"You are out for 60 minutes of play on the server.\"}",
+      "function demo:msm_games/game/lifesteal/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/zero.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.lifesteal.ran_out",
+      "tag @s remove demo.game.lifesteal.kept_out",
+      "scoreboard players set @s demo.msm_hearts 3",
+      "function demo:msm_games/game/lifesteal/hearts/apply",
+      "function demo:msm_games/game/lifesteal/back",
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" is back with 3 hearts.\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/return.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "criteria": {
+        "used": {
+          "conditions": {
+            "item": {
+              "items": "minecraft:red_dye",
+              "predicates": {
+                "minecraft:custom_data": "{msm_heart_demo:1b}"
+              }
+            }
+          },
+          "trigger": "minecraft:consume_item"
+        }
+      },
+      "rewards": {
+        "function": "demo:msm_games/game/lifesteal/hearts/ate"
+      }
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/advancement/msm_games/game/lifesteal/heart.json",
+    "schema": "resource:advancement"
+  },
+  {
+    "contents": {
+      "key": {
+        "D": "minecraft:diamond_block",
+        "N": "minecraft:netherite_scrap",
+        "T": "minecraft:totem_of_undying"
+      },
+      "pattern": [
+        "DND",
+        "NTN",
+        "DND"
+      ],
+      "result": {
+        "components": {
+          "minecraft:consumable": {
+            "animation": "eat",
+            "consume_seconds": 1,
+            "has_consume_particles": false
+          },
+          "minecraft:custom_data": {
+            "msm_heart_demo": true
+          },
+          "minecraft:custom_name": {
+            "italic": false,
+            "text": "Heart"
+          },
+          "minecraft:item_model": "minecraft:heart_of_the_sea"
+        },
+        "count": 1,
+        "id": "minecraft:red_dye"
+      },
+      "type": "minecraft:crafting_shaped"
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/recipe/msm_games/game/lifesteal/heart.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "advancement revoke @s only demo:msm_games/game/lifesteal/heart",
+      "execute if score #lifesteal.state demo.msm_game matches 2 run function demo:msm_games/game/lifesteal/hearts/ate/playing",
+      "execute unless score #lifesteal.state demo.msm_game matches 2 run give @s minecraft:red_dye[minecraft:custom_name={\"text\":\"Heart\",\"italic\":false},minecraft:item_model=\"minecraft:heart_of_the_sea\",minecraft:custom_data={msm_heart_demo:1b},minecraft:consumable={consume_seconds:1.0f,animation:\"eat\",has_consume_particles:false}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/ate.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.lifesteal.in] run function demo:msm_games/game/lifesteal/hearts/ate/in",
+      "execute if entity @s[tag=!demo.game.lifesteal.in] run give @s minecraft:red_dye[minecraft:custom_name={\"text\":\"Heart\",\"italic\":false},minecraft:item_model=\"minecraft:heart_of_the_sea\",minecraft:custom_data={msm_heart_demo:1b},minecraft:consumable={consume_seconds:1.0f,animation:\"eat\",has_consume_particles:false}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/ate/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_hearts matches 20.. run function demo:msm_games/game/lifesteal/hearts/ate/full",
+      "execute if score @s demo.msm_hearts matches ..19 run function demo:msm_games/game/lifesteal/hearts/ate/add",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/ate/in.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "give @s minecraft:red_dye[minecraft:custom_name={\"text\":\"Heart\",\"italic\":false},minecraft:item_model=\"minecraft:heart_of_the_sea\",minecraft:custom_data={msm_heart_demo:1b},minecraft:consumable={consume_seconds:1.0f,animation:\"eat\",has_consume_particles:false}] 1",
+      "tellraw @s {\"text\":\"You already have the most hearts, 20.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/ate/full.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add @s demo.msm_hearts 1",
+      "function demo:msm_games/game/lifesteal/hearts/apply",
+      "tellraw @s {\"text\":\"You gained a heart.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/ate/add.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_hearts matches 2.. run function demo:msm_games/game/lifesteal/hearts/take",
+      "execute if score @s demo.msm_hearts matches ..1 run tellraw @s {\"text\":\"You need at least 2 hearts to withdraw one.\"}",
+      "scoreboard players set @s demo.msm_withdraw 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/withdraw.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players remove @s demo.msm_hearts 1",
+      "function demo:msm_games/game/lifesteal/hearts/apply",
+      "give @s minecraft:red_dye[minecraft:custom_name={\"text\":\"Heart\",\"italic\":false},minecraft:item_model=\"minecraft:heart_of_the_sea\",minecraft:custom_data={msm_heart_demo:1b},minecraft:consumable={consume_seconds:1.0f,animation:\"eat\",has_consume_particles:false}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/take.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "criteria": {
+        "used": {
+          "conditions": {
+            "item": {
+              "items": "minecraft:beacon",
+              "predicates": {
+                "minecraft:custom_data": "{msm_revive_demo:1b}"
+              }
+            }
+          },
+          "trigger": "minecraft:consume_item"
+        }
+      },
+      "rewards": {
+        "function": "demo:msm_games/game/lifesteal/hearts/revive"
+      }
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/advancement/msm_games/game/lifesteal/revive.json",
+    "schema": "resource:advancement"
+  },
+  {
+    "contents": {
+      "key": {
+        "B": "minecraft:beacon",
+        "H": "minecraft:red_dye"
+      },
+      "pattern": [
+        "HHH",
+        "HBH",
+        "HHH"
+      ],
+      "result": {
+        "components": {
+          "minecraft:consumable": {
+            "animation": "eat",
+            "consume_seconds": 1,
+            "has_consume_particles": false
+          },
+          "minecraft:custom_data": {
+            "msm_revive_demo": true
+          },
+          "minecraft:custom_name": {
+            "italic": false,
+            "text": "Revive beacon"
+          }
+        },
+        "count": 1,
+        "id": "minecraft:beacon"
+      },
+      "type": "minecraft:crafting_shaped"
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/recipe/msm_games/game/lifesteal/revive.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "advancement revoke @s only demo:msm_games/game/lifesteal/revive",
+      "execute if score #lifesteal.state demo.msm_game matches 2 run function demo:msm_games/game/lifesteal/hearts/revive/playing",
+      "execute unless score #lifesteal.state demo.msm_game matches 2 run give @s minecraft:beacon[minecraft:custom_name={\"text\":\"Revive beacon\",\"italic\":false},minecraft:custom_data={msm_revive_demo:1b},minecraft:consumable={consume_seconds:1.0f,animation:\"eat\",has_consume_particles:false}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/revive.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.lifesteal.in] run function demo:msm_games/game/lifesteal/hearts/revive/pick",
+      "execute if entity @s[tag=!demo.game.lifesteal.in] run give @s minecraft:beacon[minecraft:custom_name={\"text\":\"Revive beacon\",\"italic\":false},minecraft:custom_data={msm_revive_demo:1b},minecraft:consumable={consume_seconds:1.0f,animation:\"eat\",has_consume_particles:false}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/revive/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #lifesteal.hearts_out demo.msm_game 0",
+      "execute store result score #lifesteal.hearts_out demo.msm_game if entity @a[tag=demo.game.lifesteal.ran_out]",
+      "execute if score #lifesteal.hearts_out demo.msm_game matches 0 run give @s minecraft:beacon[minecraft:custom_name={\"text\":\"Revive beacon\",\"italic\":false},minecraft:custom_data={msm_revive_demo:1b},minecraft:consumable={consume_seconds:1.0f,animation:\"eat\",has_consume_particles:false}] 1",
+      "execute if score #lifesteal.hearts_out demo.msm_game matches 0 run tellraw @s {\"text\":\"Nobody here has run out of hearts.\"}",
+      "execute if score #lifesteal.hearts_out demo.msm_game matches 1.. run function demo:msm_games/game/lifesteal/hearts/revive/bring",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/revive/pick.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #lifesteal.hearts_min demo.msm_game 2147483647",
+      "scoreboard players operation #lifesteal.hearts_min demo.msm_game < @a[tag=demo.game.lifesteal.ran_out] demo.msm_out_since",
+      "execute as @a[tag=demo.game.lifesteal.ran_out] if score @s demo.msm_out_since = #lifesteal.hearts_min demo.msm_game run function demo:msm_games/game/lifesteal/hearts/revive/back",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/revive/bring.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.lifesteal.ran_out",
+      "tag @s remove demo.game.lifesteal.kept_out",
+      "scoreboard players set @s demo.msm_hearts 3",
+      "function demo:msm_games/game/lifesteal/hearts/apply",
+      "function demo:msm_games/game/lifesteal/back",
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" was brought back with 3 hearts.\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/revive/back.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #lifesteal.hearts_now demo.msm_game run time query gametime",
+      "execute as @a[tag=demo.game.lifesteal.kept_out] if score @s demo.msm_out_until <= #lifesteal.hearts_now demo.msm_game run function demo:msm_games/game/lifesteal/hearts/return",
+      "scoreboard players enable @a[tag=demo.game.lifesteal.in] demo.msm_withdraw",
+      "execute as @a[tag=demo.game.lifesteal.in,scores={demo.msm_withdraw=1..}] run function demo:msm_games/game/lifesteal/hearts/withdraw",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/hearts/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.lifesteal.hearted] run function demo:msm_games/game/lifesteal/hearts/clear/one",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "attribute @s minecraft:max_health base set 20",
+      "scoreboard players reset @s demo.msm_hearts",
+      "tag @s remove demo.game.lifesteal.hearted",
+      "tag @s remove demo.game.lifesteal.ran_out",
+      "tag @s remove demo.game.lifesteal.kept_out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/lifesteal/hearts/clear/one.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/hearts/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/lifesteal/hearts/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/lifesteal/stopped.json",
+    "schema": "tag:function"
+  }
+]

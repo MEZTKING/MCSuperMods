@@ -1,0 +1,290 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_hearts dummy {\"text\":\"Hearts\",\"color\":\"red\"}",
+      "scoreboard objectives setdisplay list demo.msm_hearts",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spectate/hearts/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_hearts matches 11.. run scoreboard players set @s demo.msm_hearts 10",
+      "execute store result storage demo:msm_games/game/spectate/hearts hp int 2 run scoreboard players get @s demo.msm_hearts",
+      "function demo:msm_games/game/spectate/hearts/set with storage demo:msm_games/game/spectate/hearts",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/apply.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "$attribute @s minecraft:max_health base set $(hp)",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/set.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_hearts 5",
+      "tag @s add demo.game.spectate.hearted",
+      "tag @s remove demo.game.spectate.ran_out",
+      "function demo:msm_games/game/spectate/hearts/apply",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/join.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spectate/hearts/join"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spectate/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "criteria": {
+        "killed_player": {
+          "conditions": {
+            "entity": {
+              "entity": "this",
+              "predicate": {
+                "minecraft:entity_type": "minecraft:player"
+              },
+              "type": "minecraft:entity_properties"
+            }
+          },
+          "trigger": "minecraft:player_killed_entity"
+        }
+      },
+      "rewards": {
+        "function": "demo:msm_games/game/spectate/kill_pair/killer"
+      }
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/advancement/msm_games/game/spectate/kill_pair.json",
+    "schema": "resource:advancement"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "advancement revoke @s only demo:msm_games/game/spectate/kill_pair",
+      "execute if score #spectate.state demo.msm_game matches 2 run function demo:msm_games/game/spectate/kill_pair/in_round",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/kill_pair/killer.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.spectate.in] run function demo:msm_games/game/spectate/kill_pair/pair",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/kill_pair/in_round.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #spectate.kill_paired demo.msm_game 0",
+      "execute store result score #spectate.kill_paired demo.msm_game if entity @a[tag=demo.game.spectate.in,tag=!demo.game.spectate.killed,scores={demo.msm_deaths=1..},sort=nearest,limit=1]",
+      "tag @a[tag=demo.game.spectate.in,tag=!demo.game.spectate.killed,scores={demo.msm_deaths=1..},sort=nearest,limit=1] add demo.game.spectate.victim",
+      "tag @a[tag=demo.game.spectate.victim] add demo.game.spectate.killed",
+      "execute if score #spectate.kill_paired demo.msm_game matches 1.. run function #demo:msm_games/game/spectate/kill_pair/scored",
+      "tag @a remove demo.game.spectate.victim",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/kill_pair/pair.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @a remove demo.game.spectate.killed",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/kill_pair/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spectate/kill_pair/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spectate/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spectate/kill_pair/scored.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add @s demo.msm_hearts 2",
+      "function demo:msm_games/game/spectate/hearts/apply",
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" took 2 hearts from \"},{\"selector\":\"@a[tag=demo.game.spectate.victim]\"},{\"text\":\".\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/gain.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spectate/hearts/gain"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spectate/kill_pair/scored.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.spectate.killed] run scoreboard players remove @s demo.msm_hearts 2",
+      "tag @s remove demo.game.spectate.killed",
+      "execute if score @s demo.msm_hearts matches ..0 run function demo:msm_games/game/spectate/hearts/zero",
+      "execute if score @s demo.msm_hearts matches 1.. run function demo:msm_games/game/spectate/hearts/apply",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/died.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spectate/hearts/died"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spectate/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_hearts 0",
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" has no hearts left.\"}]",
+      "tag @s add demo.game.spectate.ran_out",
+      "function demo:msm_games/game/spectate/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/zero.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.spectate.hearted] run function demo:msm_games/game/spectate/hearts/clear/one",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "attribute @s minecraft:max_health base set 20",
+      "scoreboard players reset @s demo.msm_hearts",
+      "tag @s remove demo.game.spectate.hearted",
+      "tag @s remove demo.game.spectate.ran_out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spectate/hearts/clear/one.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spectate/hearts/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spectate/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spectate/hearts/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spectate/stopped.json",
+    "schema": "tag:function"
+  }
+]

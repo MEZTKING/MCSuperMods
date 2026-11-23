@@ -5,13 +5,18 @@
  * target whose folders are the data pack's own names and whose forms keep only what names an id:
  * `tag <entities> add <tag>` and `scoreboard objectives add`, every other form giving back the
  * command it runs (`[command]`) or nothing. The ids are read from the files' paths and those
- * lines, as the test reads the real lowering's. The mechanics' own files (B725, B726) are not
- * part of it.
+ * lines, as the test reads the real lowering's. The mechanics' own ids are read from their names
+ * (`MECHANIC_IDS`).
  */
 import type { Element, OutputFile, TargetFacts } from '@msm/plugin-api';
 import { lowerKit } from '../kit';
 import { GAMES_FUNCTION_ROOT, splitId } from '../shared-functions';
 import { lobbyFiles } from './lobby';
+import { headStartGeneratedIds } from './mechanics/head-start';
+import { heartsGeneratedIds } from './mechanics/hearts';
+import type { MechanicIds } from './mechanics/kill-pair';
+import { trackerGeneratedIds } from './mechanics/tracker';
+import { readGame } from './names';
 import { rolesFiles } from './roles';
 import { roundFiles } from './round';
 
@@ -51,10 +56,25 @@ function addIdsOf(files: readonly OutputFile[], add: Add): void {
   }
 }
 
-/** Adds the ids a game's round, lobby and roles write. */
+/**
+ * The ids each mechanic writes, from the mechanic and the game alone (B725: hearts with its kill
+ * pair, tracker, head start; read from their names, not lowered with the stand-in target).
+ */
+const MECHANIC_IDS: Readonly<Record<string, MechanicIds>> = Object.freeze({
+  hearts: heartsGeneratedIds,
+  tracker: trackerGeneratedIds,
+  head_start: headStartGeneratedIds,
+});
+
+/** Adds the ids a game's round, lobby, roles and mechanics write. */
 export function addGameGeneratedIds(element: Element, add: Add): void {
   const context = { element, namespace: splitId(element.id).namespace, target: STAND_IN };
   addIdsOf([...roundFiles(context), ...lobbyFiles(context), ...rolesFiles(context)], add);
+  for (const mechanic of readGame(element).mechanics) {
+    const ids = typeof mechanic.type === 'string' ? MECHANIC_IDS[mechanic.type] : undefined;
+    if (ids === undefined) continue;
+    for (const [category, list] of Object.entries(ids(mechanic, element))) add(category, ...list);
+  }
 }
 
 /** Adds the id of a kit's `give` function. */

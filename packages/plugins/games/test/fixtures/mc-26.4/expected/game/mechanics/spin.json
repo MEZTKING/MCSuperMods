@@ -1,0 +1,388 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.spin.role.hunter,tag=demo.game.spin.in] run function demo:msm_games/game/spin/tracker/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/equip.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/tracker/equip"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/tracker/equip"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #spin.tracker_has demo.msm_game run clear @s minecraft:compass[minecraft:custom_data~{msm_tracker_demo:1b}] 0",
+      "execute if score #spin.tracker_has demo.msm_game matches 0 run give @s minecraft:compass[minecraft:custom_data={msm_tracker_demo:1b}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/give.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #spin.tracker_s demo.msm_game 1",
+      "execute if score #spin.tracker_s demo.msm_game matches 5.. run function demo:msm_games/game/spin/tracker/point",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/second.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/tracker/second"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #spin.tracker_s demo.msm_game 0",
+      "scoreboard players set #spin.tracker_now_0 demo.msm_game 0",
+      "scoreboard players set #spin.tracker_now_1 demo.msm_game 0",
+      "scoreboard players set #spin.tracker_now_2 demo.msm_game 0",
+      "scoreboard players set #spin.tracker_now_3 demo.msm_game 0",
+      "scoreboard players set #spin.tracker_found demo.msm_game 0",
+      "execute in minecraft:overworld run execute as @a[tag=demo.game.spin.role.runner,tag=demo.game.spin.in,distance=0..,limit=1] run function demo:msm_games/game/spin/tracker/read/minecraft/overworld",
+      "execute in minecraft:the_nether run execute as @a[tag=demo.game.spin.role.runner,tag=demo.game.spin.in,distance=0..,limit=1] run function demo:msm_games/game/spin/tracker/read/minecraft/the_nether",
+      "execute in minecraft:the_end run execute as @a[tag=demo.game.spin.role.runner,tag=demo.game.spin.in,distance=0..,limit=1] run function demo:msm_games/game/spin/tracker/read/minecraft/the_end",
+      "execute in demo:arena run execute as @a[tag=demo.game.spin.role.runner,tag=demo.game.spin.in,distance=0..,limit=1] run function demo:msm_games/game/spin/tracker/read/demo/arena",
+      "execute if score #spin.tracker_now_0 demo.msm_game matches 1 run execute in minecraft:overworld run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/minecraft/overworld",
+      "execute if score #spin.tracker_now_0 demo.msm_game matches 0 if score #spin.tracker_found demo.msm_game matches 1 run execute in minecraft:overworld run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/current",
+      "execute if score #spin.tracker_now_1 demo.msm_game matches 1 run execute in minecraft:the_nether run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/minecraft/the_nether",
+      "execute if score #spin.tracker_now_1 demo.msm_game matches 0 if score #spin.tracker_found demo.msm_game matches 1 run execute in minecraft:the_nether run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/current",
+      "execute if score #spin.tracker_now_2 demo.msm_game matches 1 run execute in minecraft:the_end run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/minecraft/the_end",
+      "execute if score #spin.tracker_now_2 demo.msm_game matches 0 if score #spin.tracker_found demo.msm_game matches 1 run execute in minecraft:the_end run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/current",
+      "execute if score #spin.tracker_now_3 demo.msm_game matches 1 run execute in demo:arena run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/demo/arena",
+      "execute if score #spin.tracker_now_3 demo.msm_game matches 0 if score #spin.tracker_found demo.msm_game matches 1 run execute in demo:arena run function demo:msm_games/game/spin/tracker/set with storage demo:msm_games/game/spin/tracker/current",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/point.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "data modify storage demo:msm_games/game/spin/tracker/minecraft/overworld p set from entity @s Pos",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/overworld x int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/overworld p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/overworld y int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/overworld p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/overworld z int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/overworld p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/minecraft/overworld dim set value \"minecraft:overworld\"",
+      "scoreboard players set #spin.tracker_seen_0 demo.msm_game 1",
+      "scoreboard players set #spin.tracker_now_0 demo.msm_game 1",
+      "execute store result storage demo:msm_games/game/spin/tracker/current x int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/overworld p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current y int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/overworld p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current z int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/overworld p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/current dim set value \"minecraft:overworld\"",
+      "scoreboard players set #spin.tracker_found demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/read/minecraft/overworld.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "data modify storage demo:msm_games/game/spin/tracker/minecraft/the_nether p set from entity @s Pos",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/the_nether x int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_nether p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/the_nether y int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_nether p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/the_nether z int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_nether p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/minecraft/the_nether dim set value \"minecraft:the_nether\"",
+      "scoreboard players set #spin.tracker_seen_1 demo.msm_game 1",
+      "scoreboard players set #spin.tracker_now_1 demo.msm_game 1",
+      "execute store result storage demo:msm_games/game/spin/tracker/current x int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_nether p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current y int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_nether p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current z int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_nether p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/current dim set value \"minecraft:the_nether\"",
+      "scoreboard players set #spin.tracker_found demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/read/minecraft/the_nether.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "data modify storage demo:msm_games/game/spin/tracker/minecraft/the_end p set from entity @s Pos",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/the_end x int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_end p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/the_end y int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_end p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/minecraft/the_end z int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_end p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/minecraft/the_end dim set value \"minecraft:the_end\"",
+      "scoreboard players set #spin.tracker_seen_2 demo.msm_game 1",
+      "scoreboard players set #spin.tracker_now_2 demo.msm_game 1",
+      "execute store result storage demo:msm_games/game/spin/tracker/current x int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_end p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current y int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_end p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current z int 1 run data get storage demo:msm_games/game/spin/tracker/minecraft/the_end p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/current dim set value \"minecraft:the_end\"",
+      "scoreboard players set #spin.tracker_found demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/read/minecraft/the_end.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "data modify storage demo:msm_games/game/spin/tracker/demo/arena p set from entity @s Pos",
+      "execute store result storage demo:msm_games/game/spin/tracker/demo/arena x int 1 run data get storage demo:msm_games/game/spin/tracker/demo/arena p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/demo/arena y int 1 run data get storage demo:msm_games/game/spin/tracker/demo/arena p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/demo/arena z int 1 run data get storage demo:msm_games/game/spin/tracker/demo/arena p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/demo/arena dim set value \"demo:arena\"",
+      "scoreboard players set #spin.tracker_seen_3 demo.msm_game 1",
+      "scoreboard players set #spin.tracker_now_3 demo.msm_game 1",
+      "execute store result storage demo:msm_games/game/spin/tracker/current x int 1 run data get storage demo:msm_games/game/spin/tracker/demo/arena p[0]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current y int 1 run data get storage demo:msm_games/game/spin/tracker/demo/arena p[1]",
+      "execute store result storage demo:msm_games/game/spin/tracker/current z int 1 run data get storage demo:msm_games/game/spin/tracker/demo/arena p[2]",
+      "data modify storage demo:msm_games/game/spin/tracker/current dim set value \"demo:arena\"",
+      "scoreboard players set #spin.tracker_found demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/read/demo/arena.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "$execute as @a[tag=demo.game.spin.role.hunter,tag=demo.game.spin.in,distance=0..] run execute if items entity @s weapon.mainhand minecraft:compass[minecraft:custom_data~{msm_tracker_demo:1b}] run item modify entity @s weapon.mainhand {type:\"minecraft:set_components\",components:{\"minecraft:lodestone_tracker\":{target:{dimension:\"$(dim)\",pos:[I;$(x),$(y),$(z)]},tracked:false}}}",
+      "$execute as @a[tag=demo.game.spin.role.hunter,tag=demo.game.spin.in,distance=0..] run execute if items entity @s weapon.offhand minecraft:compass[minecraft:custom_data~{msm_tracker_demo:1b}] run item modify entity @s weapon.offhand {type:\"minecraft:set_components\",components:{\"minecraft:lodestone_tracker\":{target:{dimension:\"$(dim)\",pos:[I;$(x),$(y),$(z)]},tracked:false}}}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/set.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #spin.tracker_s demo.msm_game 0",
+      "scoreboard players set #spin.tracker_seen_0 demo.msm_game 0",
+      "scoreboard players set #spin.tracker_seen_1 demo.msm_game 0",
+      "scoreboard players set #spin.tracker_seen_2 demo.msm_game 0",
+      "scoreboard players set #spin.tracker_seen_3 demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/tracker/reset.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/tracker/reset"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #spin.head_start demo.msm_game 10",
+      "execute as @a[tag=demo.game.spin.role.runner,tag=demo.game.spin.in] run function demo:msm_games/game/spin/head_start/hold",
+      "tellraw @a {\"text\":\"Runner: wait 10 seconds while the others get away.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/start.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/head_start/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "attribute @s minecraft:movement_speed modifier add demo:msm_games/game/spin/head_start -1 add_multiplied_total",
+      "attribute @s minecraft:jump_strength modifier add demo:msm_games/game/spin/head_start -1 add_multiplied_total",
+      "tag @s add demo.game.spin.held",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/hold.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #spin.head_start demo.msm_game matches 1.. run function demo:msm_games/game/spin/head_start/count",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/second.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/head_start/second"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players remove #spin.head_start demo.msm_game 1",
+      "execute if score #spin.head_start demo.msm_game matches 1.. run title @a[tag=demo.game.spin.role.runner,tag=demo.game.spin.in] actionbar [{\"text\":\"You can move in \"},{\"score\":{\"name\":\"#spin.head_start\",\"objective\":\"demo.msm_game\"}},{\"text\":\" s\"}]",
+      "execute if score #spin.head_start demo.msm_game matches ..0 run function demo:msm_games/game/spin/head_start/release",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/count.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.spin.held] run function demo:msm_games/game/spin/head_start/free",
+      "tellraw @a {\"text\":\"Go! Runner can move.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/release.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "attribute @s minecraft:movement_speed modifier remove demo:msm_games/game/spin/head_start",
+      "attribute @s minecraft:jump_strength modifier remove demo:msm_games/game/spin/head_start",
+      "tag @s remove demo.game.spin.held",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/free.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #spin.head_start demo.msm_game matches 1.. run execute if entity @s[tag=demo.game.spin.role.runner,tag=demo.game.spin.in] run function demo:msm_games/game/spin/head_start/hold",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/respawned.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/head_start/respawned"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #spin.head_start demo.msm_game 0",
+      "execute as @a[tag=demo.game.spin.held] run function demo:msm_games/game/spin/head_start/free",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spin/head_start/reset.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/head_start/reset"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/head_start/reset"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spin/head_start/reset"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spin/stopped.json",
+    "schema": "tag:function"
+  }
+]
