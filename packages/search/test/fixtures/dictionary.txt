@@ -1,0 +1,4119 @@
+16x16 1
+64x64 3
+abandoned 1 p
+abcd 2
+ability 4
+able 1
+about 35 p
+above 46 p
+absorb 2 p
+absorption 2 p
+acacia 26 p
+accept 1
+accepts 1
+account 4
+across 4
+act 1
+action 27
+actions 20
+activate 6 p
+activator 1 p
+active 5 p
+actor 1
+acts 2
+adaptation 1
+add 139
+added 15
+adding 19
+addition 11
+additions 17 p
+additive 3
+address 1
+adds 53
+admire 1
+admiring 1 p
+adr 1
+adult 1
+advanced 38
+advancement 12 p
+advancements 10
+adventurer 1
+adventurers 1
+affinity 1 p
+after 82
+afterwards 5
+aga 1
+again 47
+against 17
+age 12
+ageing 6
+ages 16
+aggressive 2 p
+aggro 1 p
+agitated 1 p
+aim 2
+aimed 1
+aiming 1
+aims 1
+air 19
+alex 1
+alias 1
+aliases 1
+alight 1
+alike 1
+alive 2
+all 52
+allay 10 p
+allium 2 p
+allow 3
+allowed 5
+allows 4
+almost 1
+alone 6
+along 3
+already 35
+also 40
+alt 3
+altar 1
+alternatively 1
+always 21
+amber 10
+ambient 163 p
+amethyst 31 p
+ammo 1
+ammunition 2
+among 1
+amount 3
+amounts 1
+amphibian 1
+amphibians 1
+amphibious 2
+amplified 2
+amplifier 1
+anchor 6 p
+anchors 1
+ancient 7 p
+and 860
+andesite 11 p
+angled 1
+angler 1 p
+angry 22 p
+animal 29
+animate 1
+animated 5
+animation 19
+animations 41
+announcement 1
+announcements 1
+anoth 1
+another 81
+answer 10
+answers 20
+ant 1
+anthropic 4
+antidote 2
+anvil 12 p
+any 78
+anyone 6
+anything 15
+anyway 2
+anywhere 5
+apache 1
+apart 9
+api 41
+apiversion 3
+app 10
+appdata 2
+appear 7
+appearance 4
+appearing 1
+appears 15
+apple 4 p
+apples 3
+applied 2
+applies 9
+apply 11
+apprentice 2
+approximate 2
+approximation 1
+apron 4
+aqua 1 p
+archer 4 p
+archetype 3
+are 209
+area 15 p
+args 1
+argument 3
+arguments 1
+arm 1
+armadillo 17 p
+armorer 1 p
+armou 1
+armour 86 p
+armoured 1
+armourer 1
+arms 5 p
+around 25
+arrive 4
+arrives 1
+arrow 33 p
+arrows 14
+art 3
+arthropods 1 p
+ash 2
+ask 4
+asked 2
+asking 1
+asks 19
+aspect 1 p
+asset 2
+assets 14
+asvehicle 1
+ate 1
+atlas 3
+atlases 2
+attac 1
+attach 2 p
+attached 5 p
+attack 37 p
+attacked 1
+attacker 3
+attacks 8
+attempt 1
+attributes 2
+audio 1
+authenticationerror 1
+author 2
+authors 1
+automatic 6
+automatically 1
+available 5
+ave 1
+average 1
+avoid 2
+away 20
+awkward 8 p
+axe 21 p
+axis 5
+axolotl 13 p
+axolotls 2
+azalea 21 p
+azure 2 p
+babies 13
+baby 52 p
+back 64
+backed 1
+background 4
+backlog 1
+backpack 4 p
+backu 1
+backup 2
+backups 3
+bad 10
+badge 8
+badges 1
+badlands 5 p
+badly 2
+bag 13
+bags 3
+baked 1 p
+ball 4 p
+balls 1
+bam 1
+bamboo 66 p
+bands 1
+bane 1 p
+bang 1
+banjo 1 p
+bank 1
+banner 51 p
+banners 3
+bar 33
+bare 1
+bark 3
+barrel 6 p
+barrels 1
+barrens 1 p
+barrier 1 p
+bars 10 p
+barter 1
+barterer 1
+bartering 2
+barters 2
+basalt 13 p
+base 19 p
+basedrum 1 p
+bass 1 p
+bat 13
+batch 3
+battle 2
+bbmodel 2
+beach 2 p
+beacon 9 p
+beans 1 p
+bear 9 p
+beard 1
+bearing 1
+because 14
+become 5 p
+becomes 16
+bed 35
+bedrock 10 p
+beds 8
+bee 11
+beef 2 p
+beehive 6 p
+been 3
+bees 2
+beetle 1
+beetroot 3 p
+beetroots 2 p
+before 27
+beg 3
+begin 1 p
+beginner 2
+behave 5
+behaves 7
+behaviour 16
+behaviours 22
+behind 5
+being 6
+bell 7 p
+bells 2
+belly 1
+belong 1
+belongs 5
+below 22
+beneath 2
+beneficial 1
+bent 2
+berries 22 p
+berry 14 p
+beside 30
+besides 2
+best 2
+better 2
+between 16
+beyond 2
+big 41
+bigger 1
+biggest 2
+bill 1
+billed 1
+bills 1
+bind 9
+binding 1 p
+binds 1
+biome 132
+biomes 35
+biped 3
+biplane 5
+birch 31 p
+bird 4
+bit 2
+bite 3 p
+bites 2
+bitmap 2
+black 24 p
+blacksmith 1
+blackstone 22 p
+blade 2 p
+blank 9
+blanket 1
+blast 10 p
+blastfurnace 1 p
+blasting 4
+blaze 16 p
+blends 2
+blindness 2 p
+blink 1
+blinking 1
+blo 1
+blob 9
+block 2550 p
+blockbench 34
+blocked 4
+blocks 417 p
+blockstate 4
+blockstates 5
+bloom 1 p
+blossom 11 p
+blow 3 p
+blue 56 p
+bluer 1
+bluet 2 p
+blurs 1
+bmp 1
+boat 65 p
+boats 17
+bob 2
+bobber 4 p
+bobbing 1
+body 6
+bogged 8 p
+bolt 4 p
+bomb 3
+bone 36 p
+bonemeal 1
+bones 3
+bonus 6
+book 19 p
+books 3
+bookshelf 11 p
+boolean 1
+boom 2 p
+boomerang 4
+boost 6 p
+boot 4
+boots 11 p
+border 1
+bordure 1 p
+born 4
+borrowed 2
+borrows 1
+boss 13 p
+bossbars 1
+both 38
+bottle 24 p
+bottles 9
+bottom 15
+bought 1
+boulder 1
+bounce 6 p
+bouncy 5 p
+bow 9
+bowl 2 p
+bows 2
+box 42
+boxed 4
+boxes 3
+brain 8 p
+branching 2
+breach 1 p
+bread 3 p
+break 153 p
+breaking 11
+breaks 15
+breath 6 p
+breathe 2 p
+breathes 1
+breathing 3 p
+breed 5 p
+breedable 1
+breeding 6
+breeds 2
+breeze 19 p
+brew 6 p
+brewed 12
+brewer 1 p
+brewi 1
+brewing 21 p
+brews 2
+bri 1
+brick 47 p
+bricks 63 p
+bright 3
+brighter 1
+brightness 1
+bring 3
+brings 11
+broke 1
+broken 22
+bronze 2
+brown 26 p
+browse 1
+brush 10 p
+brushing 5 p
+brute 9 p
+bubble 18 p
+bubbles 1 p
+bucket 55 p
+bucketable 2
+buckets 6
+bud 9
+budding 1 p
+budget 2
+buggy 1
+build 29
+building 6
+builds 17
+built 23
+bulb 15 p
+bullet 3 p
+bump 1
+bundle 26 p
+bundles 3
+buoyancy 1
+buried 4 p
+burn 12 p
+burning 4
+burnout 1 p
+burns 17
+burp 1 p
+burst 6 p
+bursts 3
+bush 19 p
+bushes 2
+but 46
+butcher 2 p
+butt 1
+button 64 p
+buttons 6
+buy 2
+buys 3
+byproducts 1
+cacti 1
+cactus 12 p
+cake 27 p
+cakes 1
+calcite 6 p
+calibrated 1 p
+call 11
+called 12
+calls 14
+camel 28 p
+camera 1
+camp 2 p
+campfire 9 p
+can 133
+cancel 7
+cancelled 1
+cancelling 1
+cancels 3
+candidate 2
+candle 45 p
+candles 3
+cane 7 p
+cannon 7
+cannot 64
+cant 1 p
+canvas 1
+capped 1
+caption 1
+captions 1
+car 7
+card 15
+cards 4
+caret 1
+carpet 28 p
+carries 13
+carrot 4 p
+carrots 4 p
+carry 22
+cars 2
+cartographer 2 p
+cartography 2 p
+carts 1
+carve 1 p
+carved 1 p
+carver 3
+carvers 2
+case 6
+cast 2 p
+cat 44
+catalogue 1
+catalyst 7 p
+catch 6
+catches 1
+categor 1
+categories 2
+category 21
+cats 2
+caught 4
+cauldron 16 p
+cauldrons 5
+caused 1
+cave 29 p
+caverns 5
+caves 19 p
+ceiling 4
+ceilings 1
+celebrate 7 p
+cell 2
+cent 2
+centimetres 1
+centre 2
+certainty 2
+chain 25 p
+chainmail 5 p
+chains 3
+challenge 1 p
+chamber 1
+chambers 2 p
+chance 19
+chances 2
+change 79
+changed 15
+changelog 1
+changes 29
+changing 6
+channeling 1 p
+chapters 3
+character 1
+characters 4
+charcoal 3 p
+charge 22 p
+charged 3 p
+charges 4
+charm 2
+charms 1
+chars 1
+chases 3
+chat 22
+chats 1
+chatted 1
+cheats 3
+check 53
+checked 10
+checker 1
+checklist 3
+checklists 1
+checks 16
+checksum 1
+cherry 72 p
+chest 106 p
+chestplate 10 p
+chests 11
+chicken 25 p
+child 1
+chills 1
+chime 10 p
+chimes 5
+chiming 1
+chip 4
+chipped 1 p
+chirp 2 p
+chiseled 31 p
+chmod 1
+choice 6
+choices 3
+choose 117
+chooses 5
+choosing 7
+chorus 7 p
+chose 6
+chosen 11
+chunk 7
+chunks 8
+cinnabar 18 p
+circle 1
+circles 4
+city 1 p
+claims 1
+clash 19
+clashes 6
+clashing 1
+class 1
+classes 3
+classic 2
+clatters 1
+claude 3
+clay 7 p
+clean 3
+clear 6
+cler 1
+cleric 2 p
+click 48 p
+clicked 2
+clicking 5 p
+clicks 3 p
+client 8
+cliffs 1
+climate 9
+climb 3
+climbable 4
+climbed 1
+climbing 5
+climbs 5
+clings 1
+clip 3
+clips 4
+clock 12 p
+clone 1
+close 42 p
+closed 7 p
+closer 1 p
+closes 9
+closest 2 p
+closing 2
+clothes 4
+cloud 5 p
+clouds 1
+clucks 1
+clump 1 p
+cluster 7 p
+cmd 1
+coal 12 p
+coarse 2 p
+coast 2 p
+coat 4
+cobbled 5 p
+cobblestone 21 p
+cobweb 7 p
+cocoa 4 p
+cod 11
+code 35
+coin 1
+coins 2
+cold 3 p
+collapsed 1
+collect 3
+collector 1
+collects 1
+collides 1
+collision 3
+colon 1
+colour 87 p
+coloured 9
+colours 12
+column 16 p
+com 13
+combat 1
+combination 1
+combined 3
+come 19
+comes 20
+coming 2
+command 54 p
+commands 46
+common 2
+commonest 1
+companion 2
+companions 1
+comparator 5 p
+comparators 7
+compare 2
+compared 1
+compares 1
+compass 6 p
+compiled 1
+compiler 1
+compiles 2
+complete 5 p
+completely 1
+completion 2
+completions 1
+component 14
+components 11
+compost 6
+compostable 3
+composted 1
+composter 11 p
+composting 3
+composts 1
+computer 6
+concrete 64 p
+condition 29
+conditions 4
+conduit 7 p
+configuration 1
+configured 8
+confirmation 1
+conflict 2
+connect 1
+connection 4 p
+connections 1
+connects 3
+console 1
+const 2
+constant 1
+consumable 5
+consumables 1
+consume 1
+cont 1
+contain 1
+containe 1
+container 21
+containers 26
+contains 7
+content 19
+contents 21 p
+context 9
+continentalness 1
+continue 1
+continuous 2 p
+contract 1 p
+contribute 1
+contributes 2
+contribution 1
+contributions 1
+contributors 1
+control 3
+controlled 1
+controls 32
+conversation 1
+conversations 2
+convert 1 p
+converted 8 p
+converts 1
+cooked 9 p
+cookie 1 p
+cookies 1
+cooking 7
+cooks 4
+cooldown 11
+cools 1
+coordinates 3
+copied 6
+copies 15
+copper 204 p
+copy 18
+copying 1
+coral 47 p
+corals 1
+core 6 p
+corner 6
+corners 3
+cornflower 2 p
+corrected 1
+cost 4
+costs 4
+cosy 1 p
+cottage 3
+coul 1
+could 5
+coun 1
+count 30
+countdown 1
+counted 5
+counter 16
+counters 7
+counting 1
+counts 13
+cover 2
+covered 1
+covers 6
+cow 20
+crack 4 p
+cracked 6 p
+crackle 3 p
+cracks 1
+craft 6 p
+crafted 18
+crafter 3 p
+crafters 1
+crafting 27 p
+crafts 3
+crashed 1
+crashing 1
+crate 22
+crates 2
+creaking 23 p
+creaky 1
+cream 3 p
+create 40
+created 1
+creates 10
+creating 9
+creative 49 p
+creator 83 p
+creature 15
+creatures 4
+credit 2
+credits 2 p
+creeper 14 p
+crimson 30 p
+crit 2 p
+criterion 2
+critter 2
+crop 27 p
+cropped 1
+crops 3
+cross 8
+crossbo 1
+crossbow 12 p
+crossbows 2
+crossed 4
+crown 1
+crumble 1 p
+crusher 7
+crushes 1
+crushing 1
+crust 1
+crying 4 p
+crypt 1
+crystal 2 p
+crystals 1 p
+ctrl 26
+cube 66 p
+cubes 2
+cupboard 1
+cure 1 p
+cures 2
+curio 1
+curios 2
+current 1 p
+curse 3 p
+curseforge 5
+cushion 21 p
+custom 50
+cut 35
+cute 6 p
+cyan 22 p
+cycle 8
+daisy 2 p
+damage 38 p
+damaged 4 p
+damagetaken 1
+dandelion 6 p
+danger 1 p
+dappled 1 p
+dark 49 p
+darkens 3
+darker 1
+darkness 1 p
+darts 1
+dash 19 p
+dashboard 1
+dashes 4
+dashing 1
+data 81
+datapack 1
+dawn 1
+day 17
+daylight 2 p
+days 1
+daytime 1
+deactivate 5 p
+dead 27 p
+deadbush 1 p
+deal 1
+deals 1
+deat 1
+death 136 p
+debris 6 p
+debug 1 p
+decay 2
+decide 3
+decided 1
+decides 5
+decimal 2
+declare 1
+declares 1
+declined 1
+decorated 14 p
+decoration 2
+decorations 3
+decorator 1
+decorators 1
+dedicated 2
+deep 7 p
+deepslate 55 p
+default 38
+defaults 20
+defends 5
+define 3
+defines 3
+definition 19
+definitions 10
+deflect 1 p
+degrees 1
+delay 1
+delete 5
+deleted 3
+deletes 2
+deltas 5 p
+demand 2
+denied 1
+dense 1
+density 7 p
+depend 1
+depends 3
+deplete 1 p
+deprecated 1
+depth 2 p
+derive 1
+descend 3
+descends 1
+describe 4
+described 4
+describes 1
+description 13
+desert 14 p
+deserts 2
+design 2
+despawns 1
+destination 4
+destroy 2 p
+destroyed 2
+destructuring 1
+detach 1 p
+detail 4
+details 3
+detect 1 p
+detection 2 p
+detector 2 p
+dev 1
+deviation 1
+dialog 27
+dialogs 5
+diamond 21 p
+diamonds 1
+did 8
+didgeridoo 1 p
+die 2
+died 2
+dies 5
+differ 1
+different 16
+differently 1
+differs 2
+difficulty 2
+diffusion 2
+dig 3
+digger 1
+digging 4 p
+digits 4
+digs 4
+dimension 45 p
+dimensions 16
+dimmed 1
+diorite 9 p
+dir 1
+direction 1
+directional 2
+directions 4
+directly 4
+dirt 31 p
+disabled 4
+disagree 3
+disappear 1
+disappeared 1 p
+disc 53 p
+discount 1
+discriminator 1
+discs 2
+disk 1
+dismount 1
+dismounted 2
+dispatch 1
+dispense 1 p
+dispenser 14 p
+dispensers 4
+display 17 p
+displays 1
+dispose 1 p
+dist 1
+distance 7
+dive 1
+dives 2
+dock 4
+documents 2
+does 177
+dog 1
+doggo 1
+doing 1
+dolphin 15 p
+dolphins 1 p
+donkey 10 p
+door 57 p
+doors 4
+doorway 3
+dot 4
+dots 1
+double 17
+doubled 1
+doubles 1
+down 29 p
+downfall 1
+download 6
+downloaded 3
+downloading 1
+downloads 4
+downs 2
+drag 6
+dragging 2
+dragon 21 p
+dragonbreath 1 p
+drain 1
+drake 2
+draw 31
+drawing 21
+drawings 1
+drawn 45
+draws 35
+dream 1
+dreams 1
+dresses 1
+drew 1
+dried 11 p
+dries 4 p
+drifting 2
+drifts 3
+drink 14 p
+drinking 2
+drinks 3
+drip 5 p
+dripleaf 23 p
+dripleaves 1
+dripping 6 p
+dripstone 23 p
+drivable 1
+drive 9
+driven 1
+driver 4
+drives 4
+drivi 1
+driving 1
+drop 28 p
+dropped 7
+dropper 1 p
+dropping 1
+drops 50
+drown 4 p
+drowned 13 p
+drunk 2
+dry 9
+due 1
+dummy 1
+dune 3 p
+dungeon 3
+dungeons 1
+duplicate 11
+durability 10
+during 1
+dusk 1
+dust 22 p
+dye 20
+dyed 1
+dyes 1
+each 147
+earlier 3
+east 4
+easy 34
+eat 41
+eaten 4
+eating 3
+eats 3
+echo 3 p
+eclipse 1
+edge 7 p
+edible 2
+edit 18
+editable 2
+edited 4
+editing 3
+edition 1
+editor 26
+editors 1
+edits 7
+eff 3
+effe 1
+effect 111 p
+effectlevel 1
+effects 36
+efficiency 1 p
+egg 149
+eggs 9
+eight 16
+eighth 1
+either 6
+eject 19 p
+ejected 2
+ejecting 1
+elder 12 p
+electric 1 p
+element 72
+elements 30
+elm 3
+else 11
+elsewhere 1
+elytra 6 p
+embedded 1
+ember 12
+emerald 8 p
+emeralds 8
+emerge 1 p
+emissive 1
+emitter 3 p
+empties 7
+empty 76 p
+enchant 3 p
+enchanted 6 p
+enchanting 5 p
+enchantment 62 p
+enchantments 12
+enchants 1
+encrypted 3
+end 45
+ended 1
+ender 24 p
+enderman 8 p
+endermen 2
+endermite 7 p
+endless 3
+ends 9
+enemy 1
+engine 3
+english 6
+enough 2
+enter 3 p
+entering 1
+entit 1
+entities 101
+entitiesnear 2
+entity 1030 p
+entrance 1
+entries 11
+entry 11
+enum 1
+environment 4
+equip 16 p
+equipment 8
+equippable 1
+eraser 1
+eroded 1 p
+erosion 1
+error 14
+errors 21
+eruption 4 p
+es5 1
+esc 4
+escape 1 p
+evap 1
+evaporates 2
+eve 1
+even 3
+evenly 1
+event 69 p
+events 42
+ever 1
+every 131
+everyone 1
+everything 7
+everywhere 12
+evoker 13 p
+exa 3
+exact 3
+exactly 7
+example 310
+examples 26
+except 4
+exclusivity 1
+exe 1
+exec 1
+execute 3
+exhaust 2
+exist 34
+existing 3
+exists 4
+exit 6 p
+exits 1
+expand 1
+expect 1
+experience 14 p
+expert 1
+explain 3
+explained 2
+explains 9
+explicit 1
+explicitly 1
+explode 7 p
+exploded 1
+explodes 1
+exploding 1
+explore 2
+explorer 2 p
+explosion 11 p
+explosions 4
+explosive 3 p
+export 120
+exported 8
+exporter 1
+exporters 1
+exporting 2
+exports 16
+exposed 34 p
+express 1
+extend 1 p
+extends 1
+external 1
+extinguish 4 p
+extra 13
+extract 1
+extracted 1
+eye 7
+eyeblossom 9 p
+eyes 2
+fabr 2
+fabri 1
+fabric 139
+fabricmc 1
+face 12
+faces 12
+facing 13
+factors 1
+facts 2
+fade 3
+fades 8
+fail 7 p
+failed 4
+fails 5
+fair 2
+fall 127 p
+fallback 1
+fallbacks 1
+fallen 1
+falling 21 p
+falls 7
+false 5
+families 33
+family 3
+fan 20
+fangs 2 p
+far 15
+farm 12
+farmer 3 p
+farming 5
+farmland 6 p
+fast 17 p
+faster 6
+fatigue 1 p
+feather 3 p
+featherweight 1
+feature 31
+features 19
+fed 5
+feed 7
+feedback 4
+feeding 2
+feeds 2
+feel 3
+feels 1
+fence 45 p
+fences 3
+fermented 1 p
+fern 3 p
+fetches 1
+fetching 2
+few 35
+fewer 4
+fewest 1
+field 23 p
+fields 26 p
+fifth 1
+fight 4
+fights 8
+figure 3
+fil 1
+file 58
+files 33
+fill 35 p
+filled 4 p
+filling 1
+fills 12
+filter 6
+final 3
+finch 1
+find 12
+finds 6
+fine 3
+finely 1
+finish 4 p
+finished 7
+finishes 3
+finite 1
+fire 40 p
+fireball 4 p
+fireballs 2
+firecharge 1 p
+fired 2
+fireflies 1
+firefly 6 p
+fires 8
+firework 12 p
+firing 4
+first 88
+fish 28 p
+fisherman 2 p
+fishing 7 p
+fit 5
+fits 7
+fitted 1
+fittings 2
+five 17
+fix 11
+fixed 13
+fixtures 9
+fizz 1
+flame 16 p
+flames 1
+flammable 1
+flap 2 p
+flash 2 p
+flask 2
+flat 25 p
+flatten 1 p
+flattening 1
+flattens 1
+flavour 1
+flee 1
+flesh 1 p
+fletcher 5 p
+fletchers 2
+fletching 1 p
+flies 11
+flight 4
+flint 11 p
+flintandsteel 1 p
+float 9
+floating 1
+floats 8
+floaty 1
+floor 7
+flop 7 p
+flops 3
+flow 79 p
+flower 29 p
+flowering 8 p
+flowers 13
+flowing 11
+flown 1
+flows 33
+flui 1
+fluid 34
+fluids 30
+flute 1 p
+flutters 1
+fly 12 p
+flyer 10
+flyers 1
+flying 14 p
+focus 1
+focused 2
+fog 5
+fogs 2
+fold 1
+folded 2
+folder 53
+folders 3
+folds 1
+foliage 3
+follow 13
+following 2
+follows 28
+font 4
+fonts 4
+food 42 p
+foods 1
+foot 2 p
+footstep 1
+for 409
+forest 26 p
+forests 20
+forever 2
+forge 1
+forget 1
+forgets 1
+forking 1
+form 28
+format 2
+formats 2
+forms 5
+forth 1
+fortune 2 p
+forward 3
+forwards 1
+found 11
+four 54
+fox 16
+fragment 3 p
+frame 43 p
+framed 1
+frames 4
+free 5
+frees 1
+freeze 2 p
+fresh 1
+friend 1 p
+friendly 2
+friends 2
+frog 14 p
+froglight 8 p
+frogspawn 7 p
+from 285
+front 9
+frost 7 p
+frostbite 1
+frosted 1 p
+frozen 5 p
+fruit 6 p
+fsh 3
+fuel 37
+full 30
+fully 5
+function 52
+functions 16
+fungus 10 p
+fur 2
+furna 1
+furnace 25 p
+furnaces 1
+furniture 19
+further 4
+gallery 2
+gallop 2 p
+gamble 2
+game 181 p
+gamerule 7
+gap 2
+garden 1 p
+gas 3
+gate 30 p
+gateway 2 p
+gauge 1
+gave 3
+gear 30 p
+gec 1
+geckolib 22
+gem 6
+gems 2
+gen 1
+general 4
+generate 6
+generated 17
+generates 10
+generation 11
+generato 1
+generator 7
+generic 13 p
+gentle 5
+gently 3
+geo 6
+geometry 3
+get 28
+getcomponent 1
+getcontainer 1
+gets 18
+getting 22
+geyser 8 p
+ghast 30 p
+ghastling 4 p
+giant 2 p
+gif 1
+gift 2
+gifts 1
+gilded 6 p
+git 1
+github 12
+give 51
+given 8 p
+gives 64
+giving 3
+glass 55 p
+glazed 16 p
+glide 4
+glider 5
+gliders 1
+glistering 1 p
+glo 1
+globe 1 p
+gloom 1
+gloomy 1
+glow 37 p
+glowing 18 p
+glows 15
+glowshard 2
+glowstone 9 p
+glsl 3
+glyph 2
+gnome 1
+goal 6
+goals 4
+goat 37 p
+goats 3
+goes 23
+goggles 2 p
+gold 24 p
+golden 25 p
+goldens 1
+golem 54 p
+golems 1
+gone 3
+goo 1
+good 6
+gossip 1
+got 2
+grace 1 p
+gradient 2
+gradle 3
+gradlew 3
+granite 9 p
+granted 5
+grass 40 p
+grate 13 p
+gravel 19 p
+gravelly 1 p
+gravity 4
+green 31 p
+greet 2
+greeted 1
+greeting 1
+greetings 3
+greets 2
+grew 2
+grey 46 p
+greyed 2
+greys 1
+grid 8
+grids 1
+grind 1
+grinder 3
+grinds 4
+grindstone 2 p
+grips 1
+grou 1
+ground 32 p
+grounds 2
+group 53
+grouped 5
+groups 5
+grove 12 p
+groves 5
+grow 19 p
+growing 14 p
+growl 10 p
+grown 5
+grows 49
+growth 9 p
+grumpy 6 p
+grunts 1
+guard 3
+guardian 23 p
+guessed 1
+gui 5
+guide 3
+guitar 1 p
+gun 2
+gunpowder 4 p
+gust 4 p
+guster 2 p
+habit 1
+habits 2
+had 4
+half 35
+halves 4
+hamlet 5
+hamlets 2
+han 1
+hand 37
+handful 1
+handheld 2
+handler 11
+handlers 4
+handles 3
+handling 1
+hands 2
+hang 3
+hanging 64 p
+hangs 10
+happen 23
+happened 8
+happens 16
+happy 13 p
+hard 3
+hardens 1
+harder 2
+hardness 1
+harmful 3
+harming 2 p
+harmless 1
+harness 18 p
+harp 1 p
+harvest 2
+has 220
+hascomponent 1
+haste 4 p
+hat 2
+hatch 5 p
+hatched 2
+hav 1
+have 55
+hay 1
+haze 1
+hea 1
+head 15 p
+header 2
+heading 7
+headings 3
+heads 1
+heal 12
+healing 3 p
+heals 11
+health 18 p
+hear 5
+heard 4
+heart 19 p
+heartbeat 1 p
+heartbreak 1 p
+hearts 7
+hearty 1
+heavy 9 p
+height 19
+heights 4
+held 12
+helicopter 3
+hello 2
+helmet 17 p
+help 6
+helper 26
+helpme 2
+hem 2
+here 21
+hero 2 p
+hidden 4
+hide 7 p
+hidehud 2
+hides 2
+high 18 p
+highe 1
+higher 7
+highest 10
+highlands 1 p
+hills 8 p
+hint 1
+hiss 3 p
+hit 167
+hitbox 2
+hits 16
+hitting 2
+hoe 14
+hoglin 11 p
+hold 16
+holder 12
+holders 2
+holding 8
+holds 46
+hole 1
+home 18
+homes 1
+honest 1
+honey 13 p
+honeycomb 10 p
+honk 1
+hook 2 p
+hop 1
+hopper 12 p
+hoppers 16
+horizontal 3
+horizontally 2
+horn 37 p
+horns 4
+horse 53 p
+host 1 p
+hostile 10 p
+hot 4
+hotbar 17
+hour 1
+hours 2
+hover 10
+hovercraft 3
+hovering 4
+hovers 5
+how 84
+however 1
+howl 1 p
+https 16
+hub 1
+hud 27 p
+huge 2
+humanoid 1
+humid 1
+humidity 1
+hunger 7 p
+hungry 1
+hunt 1
+hunts 1
+hurt 158 p
+hurting 1
+hurts 10
+husk 22 p
+husks 1
+hut 3
+huts 1
+hyphae 4 p
+ice 9
+iced 1
+icon 20
+icons 6
+idea 1
+ideas 19
+identical 1
+identifier 1
+identity 1
+idle 18 p
+idles 1
+ids 25
+ign 1
+ignite 1
+igniter 5
+ignites 1
+ignore 1
+ignored 2
+ignores 5
+illusioner 9 p
+image 4
+images 1
+imitate 46 p
+immune 1
+impact 4 p
+impaling 1 p
+import 44
+importance 1
+important 1
+imported 1
+importer 1
+importing 1
+inaccuracy 2
+include 3
+included 14
+includes 5
+including 10
+incoming 1
+incompatible 2
+incorrect 1
+indented 1 p
+index 1
+indicator 1 p
+inf 1
+infect 1 p
+infested 10 p
+infinity 1 p
+info 3
+ing 1
+ingot 7 p
+ingots 8
+ingredient 13
+ingredients 2
+inhale 1 p
+inherits 1
+ink 8
+input 5
+inputs 1
+ins 1
+insert 8 p
+inside 46 p
+inspired 18
+install 32
+installed 6
+installer 2
+installing 2
+installs 4
+instance 20 p
+instances 3
+instant 5 p
+instantly 1
+instead 21
+instrument 5
+int 3
+integer 1
+intentionally 1 p
+interact 14 p
+interaction 4 p
+interactive 2
+interest 2
+interim 3
+internet 4
+interval 3
+into 98 p
+invalid 6
+inventories 2
+inventory 27
+invisibility 3 p
+iron 70 p
+island 4
+islands 10 p
+isles 2
+israining 1
+isthundering 1
+isvehicle 1
+item 2053 p
+itemgroup 1
+items 267
+its 408
+itself 34
+jack 1 p
+jacket 1
+jade 2
+jagged 4 p
+jar 136 p
+jars 3
+java 24
+javascript 1
+jdk 2
+jealous 1 p
+jigsaw 17 p
+jigsaws 1
+jitter 1
+job 13
+jobs 6
+join 9
+joined 2
+joining 2
+joins 10
+joint 1
+journeyman 1
+jpeg 1
+json 34
+judge 1
+juice 1
+jukebox 10 p
+jump 30 p
+jumping 3
+jumps 4
+jungle 35 p
+just 2
+kart 3
+karts 1
+keep 38
+keeps 40
+kelp 9 p
+kept 17
+key 63
+keyboard 2
+keyframes 1
+keyring 1
+keys 23
+kill 4
+killed 2
+kills 5
+kind 51
+kinds 16
+kit 1
+kitty 1
+knife 3
+knockback 2 p
+knocked 1
+knocking 1
+knot 1 p
+know 19
+knowing 1
+knowledge 2 p
+known 3
+knows 5
+kts 1
+kwallet 1
+labelled 1
+labels 1
+lacks 2
+ladder 8 p
+ladders 3
+laid 1
+lake 2
+lakes 9
+lamp 10 p
+land 51 p
+landing 5 p
+lands 6
+landscape 5
+lang 3
+language 8
+lantern 23 p
+lanterns 3
+lapis 4 p
+lapse 2
+large 20 p
+larger 1
+last 14
+lasts 2
+later 22
+latest 6
+launch 15 p
+launched 1
+launcher 16
+launchers 1
+launches 2
+launching 1
+lava 42 p
+lay 2
+layer 3
+layer0 1
+layers 5
+layout 15
+layouts 1
+lazuli 1 p
+lead 4 p
+leads 7
+leaf 21 p
+leafy 1
+leap 3
+leaping 3 p
+learn 1
+learns 1
+leash 1 p
+least 11
+leather 9 p
+leatherworker 2 p
+leave 21 p
+leaves 81 p
+leaving 1
+lectern 1 p
+left 26
+leg 1
+legged 4
+leggings 11 p
+legs 3
+length 5
+less 2
+let 11
+lets 15
+letter 1
+letters 6
+level 37
+levels 17
+levelup 1 p
+lever 4 p
+levitation 2 p
+librarian 2 p
+library 1
+libs 1
+licence 3
+licences 1
+license 1
+lichen 9 p
+lid 2
+lie 1
+lies 3
+life 5
+lifetime 4
+lifts 1
+light 98 p
+lighter 1
+lighting 1
+lightning 18 p
+lights 37
+like 169
+likely 2
+likes 1
+lilac 2 p
+lily 4 p
+lime 22 p
+limit 6
+limitations 3
+limits 33
+line 27
+lines 7
+lingering 13 p
+link 4
+linked 4
+linux 3
+liquid 28
+liquids 2
+list 61
+listed 21
+listen 2
+listening 3 p
+lists 56
+lit 16
+literal 1
+litter 6 p
+little 10
+live 28
+lives 9
+living 2
+llama 15 p
+load 12
+loaded 6
+loader 10
+loading 8 p
+loads 5
+lobby 1
+locate 3
+location 9
+locations 6
+locator 3
+lock 1 p
+locked 2 p
+lodestone 8 p
+log 49
+logged 2
+logic 6
+logs 16
+lone 1
+long 40 p
+longer 16
+longest 2
+look 67
+looks 51
+loom 9 p
+loop 12 p
+loops 2
+loose 1
+loot 41 p
+looting 2 p
+loottable 1
+lore 3
+lose 1
+loses 3
+lost 3
+lots 1
+loud 1
+love 1
+low 4
+lower 12
+lowers 2
+lowest 10
+loyalty 1 p
+luck 6 p
+lucky 6
+lukewarm 2 p
+lump 1
+lunge 4 p
+lure 1 p
+lush 2 p
+mac 1
+mace 8 p
+maces 1
+machine 40
+machines 25
+macos 3
+macro 1
+mad 1
+made 62
+magenta 22 p
+magic 18
+magma 13 p
+magnets 1
+main 16
+make 166
+makers 2
+makes 79
+making 5
+mall 2 p
+mana 3
+manager 1
+mangrove 39 p
+manifest 5
+manifestversion 1
+mannequin 1 p
+mansion 1 p
+many 24
+map 46
+maple 5
+mappings 1
+maps 4
+mark 2
+marked 5
+marker 3 p
+markings 1
+marks 1
+mason 3 p
+masoned 1 p
+master 5 p
+match 3
+matches 3
+material 27
+materials 1
+math 1
+matter 3
+matters 1
+maven 1
+max 3
+maxcount 1
+maxdamage 1
+maximum 2
+may 22
+mcdoc 2
+mcfunction 1
+mcmeta 6
+mcsuper 1
+mcsupermo 1
+mcsupermod 1
+mcsupermods 91
+meadow 3 p
+meadows 4
+meal 24 p
+meaning 6
+means 7
+meantime 1
+meanwhile 1
+meat 3
+medium 7 p
+meet 1
+meeting 2
+meets 2
+melee 5
+mellohi 2 p
+melon 7 p
+melons 1
+melt 1
+melts 1
+member 8
+members 3
+membrane 1 p
+memory 2
+mending 2 p
+menu 12 p
+meows 1
+merchant 12
+message 26
+messages 2
+meta 1
+metadata 11
+metal 12 p
+method 1
+metres 1
+meztking 11
+microsoft 1
+middle 7 p
+midlands 1 p
+midnight 1
+mild 2
+milk 8 p
+min 2
+mine 5
+minec 1
+minecart 16 p
+minecra 1
+minecraft 4803
+mined 4
+miner 1 p
+mineral 1
+mines 3
+mineshaft 1 p
+mini 7 p
+minimal 6
+minimum 1
+mining 3 p
+minnow 1
+minor 1
+minus 2
+minute 1
+minutes 8
+mirror 3 p
+misc 1
+miscellane 1
+mismatch 2
+missing 69
+mistake 1
+mistakes 1
+mit 1
+mix 6
+mixes 5
+mixing 11
+mixtures 1
+mob 325 p
+mobs 65
+mock 2
+mod 312
+modblocks 1
+modcommands 1
+mode 45
+modeffects 1
+model 118
+models 44
+modentities 1
+modes 2
+modified 1
+modifier 7
+modifiers 6
+modify 3
+moditems 1
+modpack 7
+modpacks 13
+modpotions 1
+modrinth 6
+mods 22
+modsounds 1
+mojang 6 p
+molten 2
+moment 10
+moments 5
+mono 2
+monster 15
+monsters 2
+monument 1 p
+mood 5 p
+moody 5 p
+moon 6
+moons 1
+moos 1
+mooshroom 7 p
+more 68
+mosaic 3 p
+moss 25 p
+mosses 1
+mossify 1
+mossy 13 p
+most 20
+mostly 1
+motion 3
+motorboat 4
+mount 11 p
+mountain 1
+mountains 8
+mounted 2
+mounts 1
+mourner 1 p
+mouse 5
+move 19 p
+moved 3
+movement 6
+movements 1
+moves 19
+moving 7 p
+mp3 1
+mrpack 1
+msm 351
+much 6
+mud 24
+muddy 6 p
+mule 11 p
+multi 8 p
+multiface 1
+multimc 1
+multiplayer 1
+multiplied 1
+multiplier 2
+multiplies 3
+multiply 1
+multishot 1 p
+mundane 1 p
+mushroom 20 p
+mushrooms 1
+music 84 p
+must 27
+muting 1
+mutton 2 p
+mycelium 2 p
+mymod 3
+mypack 2
+nam 1
+name 188 p
+named 78
+names 54
+namesp 1
+namespace 69
+naming 9
+narrow 1
+narrower 1
+natural 4
+naturally 1
+nausea 1 p
+nautilus 52 p
+nbt 5
+near 14
+nearby 7 p
+nearest 4
+nearly 1
+nectar 1 p
+need 97
+needed 19
+needs 94
+negative 1
+neighbours 1
+neither 10
+nest 2 p
+nested 4
+nests 3
+net 1
+nether 90 p
+netherite 24 p
+netherrack 6 p
+network 3
+neutral 4
+never 50
+new 184
+newer 4
+newest 7
+newly 4
+news 1
+next 51
+night 15 p
+nightfall 1
+nine 4
+noai 1
+nobody 4
+nodamage 1 p
+node 1
+noise 24
+none 20
+noon 2
+nor 4
+norm 1
+normal 9
+north 4
+nose 1
+not 259
+notches 1
+note 35 p
+noted 1
+notes 11
+nothing 63
+notice 2
+novice 3
+now 12
+noxious 3 p
+nugget 3 p
+nul 1
+number 42
+numbers 16
+nutrition 1
+nylium 7 p
+oak 95
+object 5
+objective 4
+objectives 2
+objects 2
+observer 3 p
+obsidi 1
+obsidian 10 p
+obtain 1
+ocean 13 p
+oceans 3
+ocelot 5 p
+ochre 1 p
+octaves 2
+odds 1
+off 59
+offer 6
+offered 10
+offers 19
+official 9
+offline 1
+offset 3
+often 8
+ogg 7
+oil 2
+old 17
+older 3
+omen 8 p
+ominous 8 p
+onc 1
+once 47
+one 339
+ones 17
+onion 3
+onions 1
+online 1
+only 150
+onto 6
+oozing 2 p
+opacity 1
+open 132 p
+openai 2
+opened 9
+opening 5
+opens 67
+operating 1
+operator 2
+operators 2
+option 4
+optional 15
+optionally 2
+options 14
+orange 30 p
+orb 7
+orchard 2
+orchid 2 p
+order 22
+ordinary 7
+ore 71 p
+ores 10
+org 2
+original 1
+other 86
+others 6
+otherside 2 p
+otherwise 11
+our 1
+out 74
+outgrow 1
+outline 3
+outlined 1
+output 5
+outputs 1
+outside 5
+over 49
+overlap 1
+overlay 4
+overpowered 1
+overworld 48 p
+overwrite 2
+overwritten 1
+own 286
+owner 13
+owns 1
+oxeye 2 p
+oxidised 38 p
+pace 1
+pack 65
+packages 2
+packed 7 p
+packet 1
+packs 41
+pad 4
+paddle 6 p
+paddled 1
+paddling 1
+page 6 p
+pages 1
+paid 1
+paint 21
+painted 3
+painter 5
+painting 17 p
+paintings 4
+paints 6
+pair 5
+pale 32 p
+palette 24
+panda 13 p
+pane 22 p
+panel 8
+panes 2
+pant 8 p
+paper 4 p
+parameter 5
+parameters 4
+parched 7 p
+parent 2
+parents 2
+parity 2
+parrot 49 p
+parrots 1
+part 29
+partial 1
+partic 1
+particl 1
+particle 182 p
+particles 59
+particular 1
+parts 10
+party 1
+pass 6
+passed 1
+passengers 1
+passes 5
+passive 2
+passthrough 1
+past 1
+paste 5
+patch 5
+patches 3
+patchwork 1
+path 9 p
+paths 1
+pattern 29 p
+patterns 1
+pause 7 p
+pauses 2
+payment 1
+peaceful 5
+peaks 10 p
+pearl 3 p
+pearlescent 1 p
+pedestal 2
+peek 1 p
+pencil 1
+peony 1 p
+people 4
+per 46
+permission 3
+persistent 1
+pet 21 p
+petal 1
+petals 6 p
+petrified 1 p
+pets 15
+phantom 12 p
+phases 1
+phasing 1
+photos 1
+physics 1
+pick 107 p
+pickaxe 19 p
+picked 14
+picker 12
+pickers 6
+picking 1
+pickle 2 p
+pickles 2
+picks 22
+pickup 4 p
+picky 4 p
+pictu 1
+pictur 1
+picture 92
+pictures 75
+pie 6
+piece 12
+pieces 10
+piercing 1 p
+pies 1
+pig 31 p
+piglin 33 p
+pigs 1
+pigstep 2 p
+pile 1
+pillager 7 p
+pillar 16 p
+pillars 1
+pin 1
+pine 2 p
+pink 36 p
+pinned 3
+pipes 1
+piston 6 p
+pitch 3
+pitcher 3 p
+pixel 4
+pixels 7
+pla 1
+place 197 p
+placeable 2
+placed 54
+placeholder 13
+placeholders 5
+placement 13
+placer 1
+placers 1
+places 22
+placing 8
+plain 40
+plainly 1
+plains 14 p
+plan 1
+plane 5
+planes 5
+plank 1
+planks 30 p
+planned 2
+plant 40 p
+planted 5
+planter 2
+plants 75
+plate 42 p
+plateau 1 p
+plates 2
+platform 4
+play 53 p
+playable 2
+played 1
+player 195 p
+players 59
+playing 19
+plays 32
+playsound 1
+plenty 1 p
+pling 1 p
+plop 1 p
+plugin 10
+plugins 12
+plum 1
+plume 2 p
+plums 1
+plus 14
+png 15
+pnpm 2
+pockets 2
+pod 4
+pods 2
+podzol 1 p
+point 17
+pointed 11 p
+pointer 1
+pointing 3
+points 9
+poison 9 p
+poisonous 1 p
+polar 8 p
+polished 52 p
+pollinate 1 p
+polymc 1
+ponder 1
+poof 2 p
+pool 18
+pools 4
+pop 5
+poplar 36 p
+popped 1 p
+poppies 1
+poppy 2 p
+popular 18
+porkchop 2 p
+port 1
+portal 58 p
+portals 25
+pos 6
+pose 1
+position 10
+positive 1
+possible 5
+post 4
+posts 2
+pot 30
+potato 3 p
+potatoes 3 p
+potent 11 p
+potion 89 p
+potions 24
+pots 9
+potted 48 p
+pottery 23 p
+pouch 1
+pour 4
+pours 3
+powder 33 p
+power 11 p
+powered 7 p
+powering 1
+practice 1
+pre 1
+precipice 2 p
+precipitation 1
+predicate 7
+predicates 11
+prefer 2
+prepare 7 p
+preselect 1
+present 2
+preset 23
+presets 5
+press 33
+pressed 2
+presses 5
+pressing 2
+pressure 40 p
+preview 39
+previews 1
+previous 1
+price 3
+prices 3
+prickly 1
+primed 2 p
+prints 3
+priority 2
+prism 14
+prismarine 12 p
+prismlauncher 2
+privacy 1
+private 3
+prize 1 p
+problem 12
+problems 58
+process 2
+processor 5
+processors 1
+produce 8
+product 2
+profession 9
+program 3
+programs 1
+progress 3
+progression 1
+project 147
+projectile 5 p
+projectiles 3
+projection 1
+projects 10
+promise 1
+prompt 1
+propagule 2 p
+propeller 1
+properties 2
+property 2
+proportions 2
+proposed 2
+proposes 5
+protect 1
+protection 6 p
+protects 1
+prove 1
+provider 14
+providers 2
+provides 1
+proxy 1
+publish 1
+puff 6
+puffer 6 p
+pufferfish 4 p
+puglin 6 p
+pull 3
+pulled 2
+pulls 1
+pulse 1
+pumpkin 8 p
+punch 1 p
+puppy 1
+purple 25 p
+purpose 1
+purpur 4 p
+purr 4 p
+purreow 3 p
+purrs 1
+push 13 p
+pushed 1
+pushes 1
+put 28
+puts 20
+pyramid 2 p
+quarter 1
+quartz 14 p
+question 5
+questions 10
+quick 15 p
+quickest 1
+quickly 1
+quiet 1
+quietly 1
+quiver 1
+quota 1
+quoted 1
+quotes 1
+rabbit 12 p
+racing 1
+radius 2
+raft 8 p
+raid 4 p
+rail 5 p
+rain 5 p
+raining 2
+rains 2
+rainy 2
+raise 1
+raised 2
+raiser 1 p
+raises 1
+rally 1
+ram 4
+ramp 1
+ran 1
+random 31
+range 25
+ranged 8
+rare 5 p
+rarely 1
+rarer 1
+rarity 1
+rate 2
+rather 3
+ravager 12 p
+raw 26
+raycast 2
+raycasts 1
+rdpk 1
+reach 8
+reached 3
+reaches 4
+react 3
+read 26
+readily 1
+reading 3
+readme 10
+reads 29
+ready 13 p
+real 13
+really 1
+realm 4
+reappeared 1 p
+reason 3
+reasoning 1
+reasons 1
+rebind 1
+rebuild 1
+rebuilt 1
+receives 4
+recent 2
+recipe 68 p
+recipes 62
+recolours 2
+record 2
+recording 1
+recovers 1
+recovery 1 p
+rectangle 1
+red 57
+redo 4
+redrawn 2
+redraws 1
+redstone 30 p
+reduce 1
+reduced 1 p
+reduces 1
+reed 3
+reference 8
+refill 1
+refills 2
+reflection 1
+refuels 1
+refuse 2
+refused 8
+refuses 7
+regenerating 1
+regeneration 7 p
+register 2
+registered 12
+registers 3
+registries 1
+registry 1
+regular 2 p
+reinforced 1 p
+reinstall 1
+reject 1 p
+rejected 1
+relative 1
+release 8
+released 4
+releases 3
+relic 2 p
+reload 16
+reloaded 1
+reloads 3
+remembered 1
+remembers 8
+remove 41 p
+removed 6
+removeeffect 1
+removes 11
+removing 3
+rename 19
+renamed 4
+renames 1
+renaming 1
+render 1
+renderer 12
+renderers 2
+reopen 3
+reopened 1
+reopens 2
+repaint 1
+repair 5 p
+repaired 3
+repairs 1
+repeat 6
+repeated 1
+repeater 1 p
+repeating 1 p
+repeats 4
+replace 9
+replaceables 1
+replaced 2
+replaces 16
+replacing 6
+report 3
+reported 34
+reports 10
+repository 6
+reputation 3
+request 3
+requests 2
+required 2
+reserved 3
+reset 3 p
+resin 17 p
+resistance 8 p
+resistant 1
+resonate 2 p
+resource 23
+respawn 7 p
+respawned 1
+respawns 1
+respiration 1 p
+rest 18
+restart 13
+restarts 1
+restock 4
+restocking 3
+restocks 9
+restored 3
+restores 5
+rests 1
+restyle 2
+result 15 p
+results 2
+retexture 5
+retreat 3 p
+retrieve 1 p
+retro 2
+retrodiffusion 1
+return 4 p
+returning 1
+returns 2
+reusable 2
+reuse 2
+reuses 3
+reverse 2 p
+reversed 1
+reverts 1
+review 2
+revise 1
+reward 4
+rewarded 2 p
+rewards 2
+rewrite 1
+rewrites 2
+rhino 2
+rib 1
+ribbon 2
+rich 1
+ridden 6
+ride 14
+rideable 5
+rider 2
+riders 3
+rides 6
+riding 17 p
+right 40
+rights 1
+rigid 2
+rings 3
+ripe 3
+ripens 2
+riptide 4 p
+rise 2
+rises 3
+rising 4
+river 3 p
+rivers 3
+road 2
+roadside 2
+roar 2 p
+rock 3
+rocket 11 p
+rod 21
+roll 6 p
+rolled 1
+roof 6
+roofs 1
+room 2
+roost 2
+roosting 2
+roosts 2
+root 7
+rooted 6 p
+roots 27 p
+rope 1
+rose 3 p
+rot 1
+rotate 2 p
+rotation 1
+rotors 1
+rotten 1 p
+rough 1
+round 7
+rounded 1
+rounds 1
+route 2
+row 21
+rows 17
+royal 10 p
+rubies 5
+ruby 29
+rubyy 1
+rug 2
+ruin 1
+ruins 1 p
+rul 1
+rule 77
+rules 115 p
+run 60
+runcommand 1
+runfunction 1
+rung 2
+running 6
+runs 61
+runt 1
+runtime 46
+sac 5
+sad 6
+saddle 19 p
+saddled 3
+saddles 1
+safe 2
+said 3
+sal 1
+sale 1
+salmon 9 p
+same 100
+sample 13
+sampler 1
+samples 2
+sand 36 p
+sandbox 1
+sandboxed 2
+sandstone 20 p
+sandy 1
+sapling 46 p
+saplings 6
+sapphire 2
+sash 1
+satchel 2
+saturation 4 p
+savanna 5 p
+savannas 1
+save 15
+saved 18
+saves 13
+saving 3
+say 16
+saying 1
+says 67
+scaffold 1
+scaffolding 10 p
+scale 12
+scaled 2
+scales 1
+scaling 1
+scatter 3
+scatters 3
+scenting 1 p
+schedule 4
+scheduled 3
+schedules 1
+schem 4
+schema 14
+schemas 1
+schematic 1
+schematics 3
+school 1
+schools 3
+scoop 2
+score 5
+scoreboard 10
+scores 1
+scrap 1 p
+scrape 3 p
+scrapes 6
+scraping 2
+scratch 1
+scream 2 p
+screaming 8 p
+screech 1 p
+screen 68
+screens 1
+screenshot 3
+screenshots 2
+script 51 p
+scripted 5
+scripting 29
+scripts 50
+scroll 3
+scrolls 2
+scrubs 1
+sculk 41 p
+scute 5 p
+sea 17
+seagrass 2 p
+seams 1
+search 1
+searching 1 p
+seaside 1
+seat 11
+seater 1
+seats 11
+second 40
+seconds 40
+section 42
+sections 5
+see 84
+seed 6 p
+seeds 12 p
+seek 1
+seen 7
+sees 5
+select 21 p
+selectable 1
+selected 4
+selectedslot 1
+selecting 10
+selection 1
+selector 1
+selectors 1
+self 5
+sell 1
+selling 1
+sells 10
+semantic 1
+semver 2
+send 5
+sendmessage 1
+sends 13
+sensor 10 p
+sent 10
+sentence 3
+sentences 1
+sentry 1 p
+separate 9
+separation 1
+sepia 1
+server 16
+servers 1
+service 5
+services 1
+set 144
+setblock 2
+setdamagetaken 1
+setfuel 1
+setgamerule 1
+sethud 2
+sets 20
+setting 22
+settings 50 p
+setup 1
+setweather 1
+seven 6
+seventeen 1
+several 9
+shaded 2
+shader 6 p
+shaders 5
+shades 1
+shading 1
+shake 1 p
+shale 2
+shamble 2 p
+shap 1
+shape 22
+shaped 8
+shapeless 2
+shaper 1 p
+shapes 5
+shard 9 p
+shards 2
+share 22
+shared 4
+shares 3
+sharpness 1 p
+shatter 1 p
+sheaf 1 p
+shear 6 p
+shears 5 p
+sheep 7 p
+shelf 30 p
+shell 5 p
+shells 2
+shelter 1 p
+shepherd 2 p
+sherd 27 p
+sherds 1
+shield 8 p
+shields 2
+shift 15
+shines 1
+shipped 1
+ships 2
+shoot 20 p
+shooter 1
+shooting 2
+shoots 12
+shore 1 p
+short 11 p
+shortcut 1
+shortcuts 2
+shorter 1
+shortest 4
+shot 3
+shots 3
+should 7
+shoulder 10
+shoulders 1
+shovel 16 p
+shovels 1
+show 52
+showcase 3
+showcased 1
+showhud 2
+showing 2
+shown 31
+shows 126
+shriek 2 p
+shrieker 7 p
+shrink 1
+shrinks 1
+shroomlight 7 p
+shrub 3 p
+shulker 40 p
+shutter 4 p
+side 30
+sidebar 16
+sides 15
+sideways 1
+sight 1
+sign 87 p
+signal 11 p
+signed 2
+signs 7
+silence 1 p
+silent 2
+silk 4 p
+silver 2
+silverfish 8 p
+similar 2
+simple 14
+simpler 2
+simulation 2
+since 4
+sing 1
+single 12 p
+sinks 3
+sit 13
+site 11
+sites 2
+sits 12
+sitting 1
+six 25
+sixteen 3
+sixteenth 1
+size 36
+skeleton 36 p
+skies 1
+skims 1
+skin 29
+skins 9
+skipped 4
+skips 1
+skull 7 p
+sky 29
+skyblock 3 p
+slab 115 p
+slabs 5
+slash 1
+slate 1
+sleep 5 p
+sleeping 6
+sleeps 2
+sleeves 1
+slept 1
+slice 7 p
+slices 2
+slide 2 p
+slider 2
+sliders 1
+slides 1
+sliding 4 p
+slim 2
+slime 25 p
+slopes 3 p
+slot 13
+slots 21
+slow 20 p
+slowly 8
+slowness 4 p
+slows 5
+small 87 p
+smaller 3
+smallest 2
+smartscreen 1
+smash 4 p
+smelting 10
+smelts 4
+smite 1 p
+smithing 28 p
+smoke 9 p
+smoker 6 p
+smoking 3
+smooth 16 p
+snapshot 7
+snare 1 p
+sne 1
+sneak 11 p
+sneaking 12
+sneaks 1
+sneeze 3 p
+sniff 2 p
+sniffer 19 p
+sniffing 1 p
+snip 1 p
+snort 1 p
+snout 1 p
+snow 30 p
+snowball 8 p
+snowballs 1
+snowfall 1
+snowflake 1 p
+snowy 12 p
+sodium 1
+soft 1
+softly 1
+soil 10 p
+solid 9
+some 16
+someone 14
+something 87
+sometime 1
+sometimes 3
+somewhere 1
+song 9
+sonic 3 p
+sooner 2
+sou 1
+soul 27 p
+sound 2042 p
+sounds 38
+soup 1 p
+source 22
+sources 5
+south 4
+space 6
+spacing 2
+spark 9 p
+sparkle 4
+sparkles 13
+sparse 2 p
+spawn 174 p
+spawned 5
+spawner 30 p
+spawning 8 p
+spawnparticle 2
+spawns 33
+spear 22 p
+spears 2
+spectating 2
+spectator 3
+spectral 3 p
+speed 40 p
+spell 4 p
+spells 1
+spending 1
+spends 1
+spider 11 p
+spike 7 p
+spikes 1 p
+spin 5 p
+spine 2
+spins 1
+spiny 4
+spiral 1
+spire 1 p
+spirit 1
+spit 4 p
+splash 23 p
+split 2
+sponge 18 p
+spore 10 p
+spot 7
+spots 2
+spread 15 p
+spreads 10
+spring 2
+sprint 1
+sprinting 1
+sprites 3
+sprout 1
+sprouts 6 p
+spruce 26 p
+spyglass 4 p
+square 5
+squeals 1
+squid 14 p
+squirt 2 p
+squish 6 p
+src 3
+sta 1
+stab 1
+stack 13
+stackable 1
+stacks 6
+staff 2
+stage 10
+stages 14
+stained 32 p
+stairs 118 p
+stal 2 p
+stalk 7
+stalks 2
+stamina 2
+stand 34 p
+standalone 1
+standard 1
+standing 15
+stands 14
+star 5 p
+stare 1 p
+stars 2
+start 51 p
+started 25
+starter 25
+starters 29
+starting 10
+starts 61
+stat 14
+state 16
+states 4
+statistic 9
+statistics 9
+stats 4
+statue 14 p
+status 32
+stay 10
+stays 19
+steal 4
+steel 8 p
+steer 7
+steered 1
+steering 1
+stem 25 p
+stems 1
+step 225 p
+stepped 3
+stepper 1
+stepping 1
+steps 18
+stereo 1
+stew 3 p
+stews 1
+stick 6 p
+sticks 3
+sticky 3 p
+still 25
+sting 2 p
+stock 2
+stone 85 p
+stonecut 2
+stonecutter 5 p
+stonecutting 6
+stones 1
+stony 3 p
+stood 1
+stool 1
+stop 22 p
+stopped 6
+stopping 1
+stops 19
+storage 30
+store 3
+stored 4
+stores 7
+storms 1
+stormy 1
+story 2
+stove 1
+strad 2 p
+straight 2
+strand 7
+strands 5
+straw 12 p
+stray 12 p
+stream 2
+streams 1
+streets 1
+strength 9 p
+stretched 2
+stretching 1
+strider 12 p
+strikes 1
+string 3 p
+strings 1
+strip 5 p
+strippable 1
+stripped 29 p
+stripping 3
+strips 1
+strolls 1
+strong 15 p
+stronger 7
+structure 45 p
+structures 33
+studio 78
+studios 6
+stunned 1 p
+sturdy 2
+stutter 1
+style 22
+styles 2
+subject 1
+submenu 1
+subset 4
+success 1 p
+such 55
+sugar 7 p
+suit 1
+sulfur 84 p
+summary 8
+summon 5 p
+summoned 1
+summons 1
+sums 1
+sun 4
+sunflower 3 p
+sunken 1
+sunrise 1
+superflat 4
+supplies 1
+supply 2
+support 1
+supported 2
+supports 2
+sure 4
+surface 18
+surfaces 1
+surprise 7
+survival 1
+survive 1
+survives 1
+suspicious 14 p
+swag 1 p
+swamp 5 p
+swamps 4
+swap 4 p
+swapping 1
+swaps 2
+sway 1 p
+sweep 2 p
+sweeping 1 p
+sweet 10 p
+swift 1 p
+swiftness 4 p
+swim 23 p
+swimmer 3
+swimmers 1
+swimming 4
+swims 8
+swinging 1
+swings 1
+swirl 3
+swirling 1
+switch 20
+switched 4
+switcher 1
+switches 1
+switching 2
+swoop 2 p
+swooping 3
+swoops 3
+sword 25 p
+swords 1
+symbols 2
+system 2
+tab 50
+table 36 p
+tables 12
+tabs 20
+tadpole 9 p
+tag 89
+tags 55
+taiga 9 p
+taigas 2
+take 23 p
+taken 7 p
+takeoff 2 p
+takes 51
+taking 1
+talk 1
+talks 2
+tall 22 p
+taller 3
+tallest 1
+tame 16
+tameable 8
+tamed 11
+tames 2
+taming 12
+tank 10
+tanks 3
+target 36 p
+targeting 2
+targets 12
+tear 4 p
+tears 2 p
+teleport 10 p
+teleporting 1
+teleports 1
+tell 8
+tells 3
+temperate 1
+temperature 2
+template 69 p
+templates 34
+temurin 1
+ten 6
+tendril 1 p
+tenth 1
+terminal 2
+terminator 1
+terminators 1
+terracotta 35 p
+terrain 20
+test 44 p
+tested 2
+testing 14
+tests 6
+text 30 p
+texture 85 p
+textured 1
+textures 40
+tha 1
+than 29
+that 554
+the 1001
+their 70
+theirs 1
+them 147
+theme 2
+themed 3
+themselves 4
+then 82
+there 62
+therefore 2
+these 24
+they 73
+thick 2 p
+thin 7
+thing 258
+things 68
+thinking 1
+third 3
+thirteen 3
+thirty 1
+this 324
+thorns 2 p
+those 14
+though 1
+three 47
+thresholds 1
+throttle 2
+through 54
+throw 19 p
+throwab 1
+throwable 14
+throwables 15
+thrower 1
+throwing 2
+thrown 12 p
+throws 5
+thumbnail 1
+thunder 3 p
+thundering 1
+thunders 2
+thunderstorm 1
+tic 1
+tick 45
+ticks 20
+tide 1 p
+tie 2
+tied 1 p
+tier 10
+tile 10 p
+tiles 12 p
+till 1 p
+tilling 1
+tilt 2 p
+tilted 1
+time 60
+timed 2
+timeline 7
+timelines 3
+timers 1
+times 15
+tinker 1
+tint 8
+tinted 5 p
+tiny 1
+tip 3
+tipped 9 p
+tipping 2
+tips 5
+title 14
+titles 2
+tnt 7
+toast 3 p
+together 11
+toggle 2
+tokens 1
+told 5
+tongue 1 p
+tonic 1
+too 30
+took 2
+tool 26
+toolbar 37
+tools 19
+toolsmith 3 p
+tooltips 1
+top 33
+torch 18 p
+torches 2
+torchflower 4 p
+total 1
+totem 8 p
+totems 2
+touch 5 p
+touche 1
+touched 2
+touches 7
+tough 2
+towards 4
+tower 1
+towering 2
+track 2
+tracking 1
+trade 30 p
+traded 1
+trader 35 p
+traders 21
+trades 34
+trading 7
+trail 1 p
+trails 1
+trains 1
+transcript 1
+transform 1
+transformer 4
+transition 2 p
+translate 1
+translation 1
+translations 1
+translucent 1
+transparent 1
+transpiled 2
+trapdoor 42 p
+trapdoors 3
+trapped 1 p
+travel 13 p
+travelled 1
+travellers 1
+travelling 1
+travels 3
+tray 1
+treasure 2 p
+treat 1
+treats 2
+tree 30
+trees 9
+trial 28 p
+tricks 1
+trident 13 p
+tried 2
+tries 2
+trigg 1
+trigger 17 p
+triggering 1
+triggers 9
+trim 32 p
+trims 2
+trip 1
+tripwire 6 p
+tropical 8 p
+troubleshooting 14
+trousers 1
+true 11
+trumpet 4 p
+trunk 3
+trust 1
+truth 1
+try 51
+trying 2
+tube 8 p
+tuff 30 p
+tulip 8 p
+tunnels 3
+turn 17 p
+turned 3
+turning 1
+turns 48
+turret 6
+turtle 23 p
+tutorial 1
+tutorials 1
+twenty 1
+twice 13
+twin 5
+twinkle 2 p
+twinkles 1
+twisting 3 p
+twitch 1 p
+two 87
+typ 1
+type 121
+typed 12
+typeof 1
+types 63
+typescript 2
+typings 3
+ue000 2
+ultra 1 p
+unavailable 1
+unbound 1
+unbreaking 1 p
+unchanged 2
+undeclared 1
+undefined 2
+under 125 p
+underground 5
+underlined 1
+underneath 1
+underside 1
+understands 1
+underwater 12 p
+undo 25
+undoable 1
+undying 4 p
+unequip 6 p
+unevenly 1
+unfinished 2
+unfreeze 1 p
+uniforms 1
+union 1
+unique 2
+unknown 77
+unles 1
+unless 13
+unlike 1
+unlock 1
+unlocks 1
+unluck 1 p
+unpowered 1
+unroll 2 p
+unsaved 1
+unsupported 1
+untick 3
+untied 1 p
+until 72
+untouched 5
+unuse 1 p
+unused 7
+update 10
+updates 6
+upgrade 8 p
+upgrades 2
+upright 1
+upscale 1
+upside 2
+upward 1
+upwards 6 p
+url 1
+usage 2
+usages 2
+use 149
+used 69
+useful 1
+user 3
+userprofile 1
+uses 96
+using 34 p
+usual 10
+usually 3
+utilities 3
+valid 3
+validates 1
+validation 1
+validator 1
+valley 7 p
+valleys 1
+value 36
+values 14
+vanilla 235
+vanish 1
+vanishing 1 p
+variables 2
+variant 39
+variants 22
+variations 3
+vault 20 p
+vegetal 1
+vehicle 50 p
+vehicles 47
+vein 9 p
+velocity 3
+verdant 1 p
+version 53
+versioning 1
+versions 22
+vertex 2
+vertical 1
+very 33
+vex 9
+vibration 1 p
+view 22
+village 20 p
+villager 73 p
+villagers 33
+vindicator 7 p
+vine 11 p
+vines 26 p
+violet 1
+visible 1
+vision 7 p
+visit 3
+visits 1
+visual 2
+vitest 1
+void 5 p
+volume 4
+vorbis 2
+vsh 3
+wades 1
+wait 8 p
+waits 12
+wakes 1
+walk 24
+walked 1
+walker 2 p
+walking 2
+walks 9
+wall 115 p
+walls 13
+wand 6 p
+wander 5
+wandering 21 p
+wanders 4
+wands 2
+want 12
+ward 3 p
+warden 24 p
+wares 4
+warm 7 p
+warn 2 p
+warning 14 p
+warnings 7
+warns 6
+warped 32 p
+wart 10 p
+was 20
+wastes 5 p
+watch 4
+water 93 p
+waterlog 1
+waterlogged 2
+waterlogging 2
+wav 1
+wave 3
+wax 5
+waxable 2
+waxed 72 p
+waxes 3
+waxing 7
+way 30
+wayfinder 1 p
+waypoint 4
+waypoints 1
+ways 13
+weak 1 p
+weaker 1
+weakness 3 p
+weapon 11 p
+weapons 6
+weaponsmith 2 p
+wear 4
+wearing 3
+wears 6
+weather 12 p
+weathered 39 p
+weathering 11
+weaving 2 p
+webgl 2
+webp 1
+website 1
+weeping 9 p
+weight 9
+weighted 6 p
+weights 1
+weirdness 1
+welcome 4
+well 7
+wells 1
+were 4
+west 4
+wet 13
+what 191
+whatever 7
+whats 1
+whe 1
+wheat 5 p
+wheel 1
+wheels 1
+when 293
+whenever 1
+where 80
+wherever 3
+whether 19
+which 76
+whichever 1
+while 72
+whine 8 p
+whirl 1 p
+whirlpool 2 p
+white 31 p
+who 14
+whoever 3
+whole 43
+whoosh 1
+whose 36
+why 9
+wide 9
+width 2
+wild 6 p
+wildflowers 1 p
+will 9
+willow 1
+win 2
+wind 11 p
+window 21
+windows 9
+windswept 4 p
+wings 5
+wins 5
+wire 1 p
+wired 1
+wiring 1
+wishes 1
+wishlist 2
+wisp 1
+wit 1
+witch 10 p
+with 592 p
+wither 24 p
+within 8
+without 92 p
+wizard 3
+wizards 1
+wobble 3
+woke 1
+wolf 71 p
+wololo 1 p
+wolves 1
+wood 125 p
+wooded 1 p
+wooden 25 p
+woodland 1 p
+woods 5
+woody 3
+wool 53 p
+word 2
+words 23
+work 58 p
+workbench 3
+worked 1
+worker 2
+worki 1
+working 11
+works 53
+world 151 p
+worldedit 2
+worldgen 106
+worlds 38
+worn 14
+worried 1 p
+worse 1
+worth 3
+would 13
+wrapper 1
+writable 1 p
+write 18
+writes 21
+writing 2
+written 9 p
+wron 1
+wrong 11
+wrote 1
+www 1
+x64 1
+xylophone 2 p
+yearn 1
+yellow 26 p
+yellower 1
+yes 6
+yet 29
+you 301
+your 300
+yours 13
+yourself 7
+zero 6
+zip 10
+zips 1
+zoglin 9 p
+zombie 63 p
+zombies 7
+zombified 9 p
+zoom 3

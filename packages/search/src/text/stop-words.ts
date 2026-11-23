@@ -1,0 +1,83 @@
+/**
+ * Stop words (ADR 0124 D4): dropped from matching after the intent words are read. Language
+ * only, and the search's own: a plugin cannot add one (D13). Words a later step reads keep
+ * their place in the token list: `no`, `not` and `without` (yes or no answers), `like`, `from`
+ * and `of` (D7's clash rules) are read from the words before this list drops them, and `no`,
+ * `not`, `without`, `off`, `on` and `all` are not stop words at all.
+ */
+
+export const STOP_WORDS: ReadonlySet<string> = new Set(
+  [
+    'a',
+    'about',
+    'am',
+    'an',
+    'and',
+    'any',
+    'are',
+    'as',
+    'at',
+    'be',
+    'been',
+    'but',
+    'by',
+    'can',
+    'could',
+    'did',
+    'do',
+    'does',
+    'for',
+    'from',
+    'how',
+    'i',
+    'id',
+    'im',
+    'in',
+    'into',
+    'is',
+    'it',
+    'its',
+    'just',
+    'like',
+    'me',
+    'mine',
+    'my',
+    'of',
+    'or',
+    'please',
+    'really',
+    'should',
+    'so',
+    'some',
+    'that',
+    'the',
+    'these',
+    'this',
+    'those',
+    'to',
+    'up',
+    'very',
+    'wanna',
+    'want',
+    'was',
+    'we',
+    'were',
+    'what',
+    'whats',
+    'when',
+    'where',
+    'which',
+    'who',
+    'why',
+    'will',
+    'with',
+    'would',
+    'you',
+    'your',
+  ].sort(),
+);
+
+/** Whether a normalised word is a stop word. */
+export function isStopWord(word: string): boolean {
+  return STOP_WORDS.has(word);
+}
