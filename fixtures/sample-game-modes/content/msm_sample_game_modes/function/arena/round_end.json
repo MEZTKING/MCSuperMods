@@ -1,0 +1,17 @@
+{
+  "data": {
+    "lines": [
+      "# Runs when the round of Arena ends (the timer's on_end)",
+      "title @a title {\"text\":\"Round over\",\"color\":\"gold\"}",
+      "execute as @a[scores={msm_sample_game_modes.arena.points=5..}] run tellraw @a [{\"selector\":\"@s\"},{\"text\":\" wins the round!\",\"color\":\"gold\"}]",
+      "function msm_sample_game_modes:msm_games/area/arena/arena/reset"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:arena/round_end",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Ends a round, run by the timer when the time is up: names the players with 5 or more defeats and rebuilds the arena. Run msm_sample_game_modes:arena/start again for the next round."
+  }
+}

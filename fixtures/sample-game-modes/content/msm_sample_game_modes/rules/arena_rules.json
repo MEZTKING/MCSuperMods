@@ -1,0 +1,65 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "step": "join_team",
+            "team": "msm_sample_game_modes:arena/red"
+          }
+        ],
+        "key": "join_red",
+        "name": "Players who walk into the arena join the red team",
+        "when": {
+          "subject": "msm_sample_game_modes:arena/arena",
+          "trigger": "area_entered"
+        }
+      },
+      {
+        "do": [
+          {
+            "amount": 1,
+            "objective": "msm_sample_game_modes:arena/points",
+            "step": "add_to_score",
+            "who": "every_player"
+          }
+        ],
+        "key": "round_point",
+        "name": "Everyone gets a point when the round ends",
+        "when": {
+          "subject": "msm_sample_game_modes:arena/round",
+          "trigger": "timer_ended"
+        }
+      },
+      {
+        "do": [
+          {
+            "step": "show_message",
+            "text": [
+              "Underground at last!"
+            ],
+            "who": "every_player"
+          }
+        ],
+        "key": "phase_two",
+        "name": "Say so when the one block goes underground",
+        "when": {
+          "options": {
+            "phase": 2
+          },
+          "subject": "msm_sample_game_modes:one_block/magic_block",
+          "trigger": "one_block_broken"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:arena_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Rules on the games pieces: a player who walks into the arena joins the red team, every player gets a point when the round ends, and every player is told when the one block reaches its second phase. They reach the games functions through the function bridge, so they need the Fabric mod jar export."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:birch_sapling"
+    },
+    "max_uses": 8,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 1,
+      "id": "minecraft:emerald"
+    },
+    "xp": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:wandering_trader/sky_survival_birch_sapling",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "A trade for the sky: the wandering trader sells 1 birch sapling for an emerald, up to eight times."
+  }
+}

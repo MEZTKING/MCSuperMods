@@ -282,6 +282,20 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-mobs-and-commands.golden.test.ts
           test -f "$RUNNER_TEMP/sample-mobs-commands/msm_sample_mobs.jar"
           cat "$RUNNER_TEMP/sample-mobs-commands/fabric-facts.json"
+      # Game modes (ADRs 0113-0117, ADR 0117 D5, B559): the library's Skyblock, One block, Arena
+      # game and Lucky block flows in one project (a void World Type with its island placed at the
+      # first join, a one block, two teams, the points on the sidebar, a round timer, two areas
+      # with a reset, goals), a rule book on the games pieces (the function bridge) and the lucky
+      # block's. Besides the content jar the export writes the vanilla data pack with packs.json
+      # and the same pack as a mod of its own for the parity run "as a vanilla pack".
+      - name: Export the sample game modes with the real runtime
+        run: |
+          MSM_SAMPLE_GAME_MODES_OUT="$RUNNER_TEMP/sample-game-modes" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-game-modes.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-game-modes/msm_sample_game_modes.jar"
+          test -f "$RUNNER_TEMP/sample-game-modes/msm_sample_game_modes_pack.jar"
+          cat "$RUNNER_TEMP/sample-game-modes/fabric-facts.json"
+          cat "$RUNNER_TEMP/sample-game-modes/packs.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -453,6 +467,16 @@ jobs:
           --forbid-line MixinTransformerError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
+      # The sample game modes (B559): the lucky block and its item, the two rule books' scripts and
+      # the function bridge's signal command; the games kinds are plain data pack files.
+      - name: Headless Fabric server check (sample game modes)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-game-modes/msm_sample_game_modes.jar"
+          --facts "$RUNNER_TEMP/sample-game-modes/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 1 command(s)'
+          --work "$RUNNER_TEMP/fabric-server"
+          --cache ~/.cache/msm-fabric-server
       # The sample mobs and commands (B541): the bed and the planks (2 blocks), their items, the
       # boat, the twelve spawn eggs and the fish bucket (16 items), the twelve mobs, the script, and
       # the lines of batch 2: two fluids with two cauldrons and one bottle, the villager type, the
@@ -548,6 +572,16 @@ jobs:
           node tools/run-fabric-server/vanilla-packs.ts
           --packs "$RUNNER_TEMP/library-packs/packs.json"
           --work "$RUNNER_TEMP/vanilla-packs"
+          --cache ~/.cache/msm-fabric-server
+      # The sample game modes' vanilla data pack (B559) on a vanilla server: every games function
+      # loads; the function bridge's three functions name the mod jar's command and are the only
+      # ones expected to fail to load (packs.json's skippedFunctions); the lucky block's recipe is
+      # left out by the vanilla pack safety rule.
+      - name: Headless vanilla server check (sample game modes data pack)
+        run: >-
+          node tools/run-fabric-server/vanilla-packs.ts
+          --packs "$RUNNER_TEMP/sample-game-modes/packs.json"
+          --work "$RUNNER_TEMP/vanilla-packs-game-modes"
           --cache ~/.cache/msm-fabric-server
       - name: Build the parity GameTests
         working-directory: engine-mod
@@ -1119,6 +1153,32 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-mobs-commands-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Game modes (B559, ADR 0117 D5): SampleGameModesParityTest (7 tests: the world type, world
+      # start, goals, teams, sidebar and boss bar at load; the island placed once at the first join
+      # and the kit once, the home island area entered and reset; the one block through two phases;
+      # the round timer ending and running round_end; the arena entered and reset; a kill scored on
+      # the sidebar; the lucky block's rule) on the content jar of every version, with the rule
+      # books' effects, and on the vanilla data pack as a mod of its own (--no-runtime: the GameTest
+      # server makes its own world and reads no datapacks folder), where the rules' effects are
+      # checked absent and the lucky block unregistered. No ejected run: games are data pack files.
+      - name: Parity GameTests (sample game modes, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-game-modes/msm_sample_game_modes.jar"
+          --facts "$RUNNER_TEMP/sample-game-modes/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_game_modes_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-game-modes-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample game modes, vanilla data pack)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-game-modes/msm_sample_game_modes_pack.jar"
+          --facts "$RUNNER_TEMP/sample-game-modes/fabric-facts.json" --no-runtime
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_game_modes_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-game-modes-pack.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -1237,6 +1297,14 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-game-modes-mc${{ matrix.mc }}
+          path: |
+            ${{ runner.temp }}/sample-game-modes/msm_sample_game_modes.jar
+            ${{ runner.temp }}/sample-game-modes/msm_sample_game_modes.zip
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -1279,6 +1347,8 @@ jobs:
             ${{ runner.temp }}/vanilla-templates/crash-reports
             ${{ runner.temp }}/vanilla-packs/*.log
             ${{ runner.temp }}/vanilla-packs/server/crash-reports
+            ${{ runner.temp }}/vanilla-packs-game-modes/*.log
+            ${{ runner.temp }}/vanilla-packs-game-modes/server/crash-reports
             ${{ runner.temp }}/fabric-server-mob/run-fabric-server.log
             ${{ runner.temp }}/fabric-server-mob/crash-reports
             ${{ runner.temp }}/fabric-server-parity/run-fabric-server.log

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "minecraft:gravel"
+    ],
+    "result": {
+      "count": 1,
+      "id": "minecraft:sand"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:sky_survival/sand_from_gravel",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "One gravel crafts into sand, for glass, cactus and sugar cane."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_sample_game_modes:block/lucky_block"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:block/lucky_block",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "A full cube with the same picture on every side: MSM's drawn lucky block, with a question mark on it."
+  }
+}

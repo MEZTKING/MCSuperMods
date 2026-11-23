@@ -1,0 +1,32 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "items": [
+            {
+              "items": "minecraft:cobblestone"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "description": "Get a piece of cobblestone",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:cobblestone"
+      },
+      "title": "Rock Solid"
+    },
+    "parent": "msm_sample_game_modes:sky_survival/goals/get_wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:sky_survival/goals/get_cobblestone",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "A goal: get a piece of cobblestone. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:inventory_changed) is met."
+  }
+}

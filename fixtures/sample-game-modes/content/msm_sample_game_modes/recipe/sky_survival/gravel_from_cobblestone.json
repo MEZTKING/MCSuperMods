@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "minecraft:cobblestone"
+    ],
+    "result": {
+      "count": 1,
+      "id": "minecraft:gravel"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:sky_survival/gravel_from_cobblestone",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "One cobblestone crafts into gravel, which the sky has none of: for flint, and for sand by the next recipe."
+  }
+}

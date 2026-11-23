@@ -1,0 +1,50 @@
+{
+  "data": {
+    "difficulty": "normal",
+    "game_mode": "survival",
+    "game_rules": {},
+    "goals": "msm_sample_game_modes:sky_survival/goals/root",
+    "new_player": {
+      "effects": [
+        {
+          "effect": "minecraft:slow_falling",
+          "hide_particles": true,
+          "seconds": 10
+        }
+      ],
+      "items": [
+        {
+          "count": 3,
+          "item": "minecraft:bread"
+        }
+      ],
+      "message": "Welcome to Sky Survival! Everything you need is in the chest. Do not fall!"
+    },
+    "spawn_radius": 0,
+    "start": {
+      "at": [
+        0,
+        64,
+        0
+      ],
+      "spawn": [
+        5,
+        3,
+        3
+      ],
+      "structure": "msm_sample_game_modes:sky_survival/island"
+    },
+    "world": {
+      "end": "vanilla",
+      "nether": "vanilla",
+      "type": "void"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:sky_survival",
+  "kind": "msm:world_setup",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "How the world starts: a World Type called Sky Survival of empty sky (void), listed on the Create New World screen, with the island msm_sample_game_modes:sky_survival/island, placed with its corner at 0 64 0 when the first player joins, the spawn on its grass. Players start in survival on normal difficulty; each new player gets a welcome and ten seconds of slow falling, once. The welcome names the goals tab. Mobs spawn on what players build, as on plains (the sky biome of the game kits); the Nether is as normal. Everything lowers to plain data pack files. Each new player also gets a kit of three bread, once (added to the flow's answers for the fixture)."
+  }
+}

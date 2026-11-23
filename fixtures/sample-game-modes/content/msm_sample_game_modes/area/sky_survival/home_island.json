@@ -1,0 +1,35 @@
+{
+  "data": {
+    "dimension": "minecraft:overworld",
+    "from": [
+      0,
+      64,
+      0
+    ],
+    "name": "Home island",
+    "reset": {
+      "structures": [
+        {
+          "at": [
+            0,
+            64,
+            0
+          ],
+          "structure": "msm_sample_game_modes:sky_survival/island"
+        }
+      ]
+    },
+    "to": [
+      9,
+      72,
+      9
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:sky_survival/home_island",
+  "kind": "msm:area",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "The start island's box. Resetting it removes the mobs and items on it and places the island again, as it was at the start (its chest refills once more). It also knows when players walk on or off."
+  }
+}

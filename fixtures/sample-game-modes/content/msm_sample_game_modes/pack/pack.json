@@ -1,0 +1,13 @@
+{
+  "data": {
+    "pack": {
+      "description": "MSM Sample Game Modes: Sky Survival, a Skyblock"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_game_modes:pack",
+  "kind": "minecraft:pack_mcmeta",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z"
+  }
+}
