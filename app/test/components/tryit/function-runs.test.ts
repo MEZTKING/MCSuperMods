@@ -54,10 +54,19 @@ function outputs(): OutputFile[] {
 const tags = (made: TryItArea) => made.source.functions.state.tags.get(holderOf(PLAYER));
 const score = (made: TryItArea) => made.source.functions.state.score(holderOf(PLAYER), 'lv');
 
+/** Try it's own area, which takes Run in Try it's requests. */
+const tryItArea = () =>
+  new TryItArea({
+    files: toSimFiles(outputs()),
+    target: TARGET,
+    vanillaData: null,
+    takesFunctionRuns: true,
+  });
+
 describe('Run in Try it', () => {
   it('runs the function at the next tick, after the load functions of a new area', () => {
     runInTryIt(`${NS}:count`);
-    const made = new TryItArea({ files: toSimFiles(outputs()), target: TARGET, vanillaData: null });
+    const made = tryItArea();
     // A new area: the request is taken, the run waits for the tick (the load tag first).
     expect(takeFunctionRuns()).toEqual([]);
     expect(tags(made)?.has('counted') ?? false).toBe(false);
@@ -71,7 +80,7 @@ describe('Run in Try it', () => {
   });
 
   it('runs on an existing area with its next files, stepping a paused clock, with macro values', () => {
-    const made = new TryItArea({ files: toSimFiles(outputs()), target: TARGET, vanillaData: null });
+    const made = tryItArea();
     made.clock.step();
     made.clock.pause();
     runInTryIt(`${NS}:greet`, '{word:"hello"}');
@@ -83,12 +92,31 @@ describe('Run in Try it', () => {
   });
 
   it('says so when the function is not in the project', () => {
-    const made = new TryItArea({ files: toSimFiles(outputs()), target: TARGET, vanillaData: null });
+    const made = tryItArea();
     runInTryIt(`${NS}:nope`);
     made.setFiles(toSimFiles(outputs()));
     made.clock.step();
     expect(made.whatHappened.map((line) => line.text)).toContain(
       `There is no function ${NS}:nope in the project.`,
+    );
+    made.dispose();
+  });
+
+  it('is left for Try it by any other area, such as a Showcase clip or a land still', () => {
+    runInTryIt(`${NS}:count`);
+    // A clip's silent area made while the request waits (the gallery's land stills do, at any
+    // time): it neither takes nor runs the request.
+    const clip = new TryItArea({ files: toSimFiles(outputs()), target: TARGET, vanillaData: null });
+    clip.setFiles(toSimFiles(outputs()));
+    clip.clock.step();
+    expect(score(clip)).toBeUndefined();
+    clip.dispose();
+    // Try it's own area made afterwards still runs it.
+    const made = tryItArea();
+    made.clock.step();
+    expect(score(made)).toBe(1);
+    expect(made.whatHappened.map((line) => line.text)).toContain(
+      `Ran 2 commands from function ${NS}:count.`,
     );
     made.dispose();
   });

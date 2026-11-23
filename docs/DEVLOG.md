@@ -11057,3 +11057,17 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Apply the worker routing (orchestrator, at merge with B712), then B643's e2e.
 - Engine follow-ups in `packages/terrain/src/structures/processors/`: defaults in block state tests, `isFullBlock` for air and the sea lantern.
+
+## 2026-11-23 — executor — Try it e2e failures after one mode
+
+**What**
+- Two `app/e2e/tryit-path.spec.ts` tests failed on CI at 0908ea4 (run 45217643145, first try and retry). Both are fixed in the app; the spec is unchanged.
+- **The ground picker** (`tryit-path.spec.ts:267`, the click on Island): the picker sat inside the picture, which beside the 17rem tools column is only about 290 px wide at the e2e window (1200 by 800). There `lg:grid-cols-4` (a window breakpoint) laid the seven grounds in four columns of about 65 px, a list 361 px tall in a 448 px panel, and the chosen ground's settings had their own scroller below it, squeezed to 6 px locally (and to nothing on CI, where the one-mode toolbar's two rows leave a little less height). Measured in the app: list 207 to 568, scroller at 575 with height 6 at 1200 by 773; height 0 at 1200 by 673, where the test fails locally the same way. Fix: `tryit/GroundPicker.tsx` scrolls the list and the chosen ground's settings as one body between the title and the buttons, with columns by the panel's own width (`repeat(auto-fill,minmax(8rem,1fr))`); `tryit/TryItView.tsx` places the picker over the picture and the tools (the grid is `relative`), not inside the picture, which at 900 px wide is 22 px. The spec passes at 1200 by 800, 1200 by 650, 900 by 800 and 900 by 650 (a scratch copy with `setSize`, deleted).
+- **Run in Try it** (`tryit-path.spec.ts:1213`, no "from function …noted." line): CI's page snapshot shows What happened with "Nothing yet.", so the run was never made, not worded differently. Every `TryItArea` took the waiting Run in Try it requests in its constructor, and the gallery's land stills (`showcase/land-still.ts`) make a silent `ClipPlayer` area one after another in the background, still running after Home has gone: instrumented locally, three land-still areas were made in the second before the click and three more after it, before Try it's own area. One of them made in between took the request and ran it in its own area. Fix: `TryItAreaOptions.takesFunctionRuns` (default false), passed only by `TryItView`'s area, so clip and still areas never take a request. Test: `app/test/components/tryit/function-runs.test.ts` "is left for Try it by any other area" (fails without the fix).
+
+**Decisions**
+- No spec words changed: neither failure came from a word the one-mode change replaced.
+- The picker over the picture and the tools rather than only the picture: it is a dialog, and the tools are not used while it is open.
+
+**Next**
+- The Try it view gets about 560 px between the element list and the dock at 1200 px and 260 px at 900 px, and the toolbar wraps to two rows (three at 900 px): ADR 0131's one row (B700) gives Try it back some height; the first-run card and the hold picker are still inside the picture.

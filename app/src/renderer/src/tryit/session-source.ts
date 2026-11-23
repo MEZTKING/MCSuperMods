@@ -293,6 +293,13 @@ export interface TryItAreaOptions {
    * preload bridge when there is one; `null` reads none.
    */
   readonly vanillaData?: VanillaDataReader | null;
+  /**
+   * Whether this is Try it's own area, which takes the Function editor's Run in Try it requests
+   * (B613) when it is made and with each new files. Default false: the Showcase's clips and the
+   * gallery's land stills make silent areas of their own, at any time, and one of them taking a
+   * request lost the run.
+   */
+  readonly takesFunctionRuns?: boolean;
 }
 
 /** The vanilla data folders Try it's functions read (B613). */
@@ -370,8 +377,11 @@ export class TryItArea {
   /** How vanilla's data files are read (B613), and for which version they were last asked. */
   private readonly vanillaReader: ((mcVersion: string) => VanillaDataReader | null) | null;
   private vanillaVersion: string | null = null;
+  /** Whether this area takes Run in Try it's requests (Try it's own area). */
+  private readonly takesRuns: boolean;
 
   constructor(options: TryItAreaOptions) {
+    this.takesRuns = options.takesFunctionRuns === true;
     this.filesNow = options.files;
     this.targetNow = options.target;
     const seed = options.seed ?? 1;
@@ -455,9 +465,11 @@ export class TryItArea {
 
   /**
    * Takes the Function editor's Run in Try it requests (B613): they run at the next tick, after
-   * the load functions; a paused clock steps once so they run now.
+   * the load functions; a paused clock steps once so they run now. Only Try it's own area takes
+   * them (`takesFunctionRuns`); any other area leaves them waiting.
    */
   takeFunctionRuns(): void {
+    if (!this.takesRuns) return;
     const runs = takeWaitingRuns();
     if (runs.length === 0) return;
     this.pendingRuns.push(...runs);

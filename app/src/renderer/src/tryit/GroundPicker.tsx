@@ -824,33 +824,43 @@ export function GroundPicker(props: GroundPickerProps) {
           <X size={16} aria-hidden />
         </button>
       </div>
-      <div role="radiogroup" aria-label="Ground" className="grid grid-cols-2 gap-1 lg:grid-cols-4">
-        {GROUND_CHOICES.map((entry) => (
-          // biome-ignore lint/a11y/useSemanticElements: a button row reads better than radios here.
-          <button
-            key={entry.kind}
-            type="button"
-            role="radio"
-            aria-checked={kind === entry.kind}
-            data-testid={`tryit-ground-${entry.kind}`}
-            className={`flex cursor-pointer flex-col rounded border p-1 text-left hover:bg-bg ${kind === entry.kind ? 'border-accent' : 'border-border'}`}
-            onClick={() => {
-              setKind(entry.kind);
-              setError(null);
-              setConfirming(false);
-            }}
-          >
-            <span className="font-medium">{entry.label}</span>
-            <span className="text-xs text-muted">{entry.line}</span>
-          </button>
-        ))}
-      </div>
-      <div className="min-h-0 flex-1 overflow-auto">
-        {kind === 'quick' && quickPanel}
-        {kind === 'world' && worldPanel}
-        {kind === 'generated' && generatedPanel}
-        {kind === 'void' && voidPanel}
-        {kind === 'structure' && structurePanel}
+      {/* The list and the chosen ground's settings scroll as one, under the title and above the
+          buttons: beside the tools the panel is narrow, and seven grounds with their lines fill
+          its height, so a scroller of the settings alone was squeezed to nothing. The columns
+          follow the panel's own width, not the window's. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
+        <div
+          role="radiogroup"
+          aria-label="Ground"
+          className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-1"
+        >
+          {GROUND_CHOICES.map((entry) => (
+            // biome-ignore lint/a11y/useSemanticElements: a button row reads better than radios here.
+            <button
+              key={entry.kind}
+              type="button"
+              role="radio"
+              aria-checked={kind === entry.kind}
+              data-testid={`tryit-ground-${entry.kind}`}
+              className={`flex cursor-pointer flex-col rounded border p-1 text-left hover:bg-bg ${kind === entry.kind ? 'border-accent' : 'border-border'}`}
+              onClick={() => {
+                setKind(entry.kind);
+                setError(null);
+                setConfirming(false);
+              }}
+            >
+              <span className="font-medium">{entry.label}</span>
+              <span className="text-xs text-muted">{entry.line}</span>
+            </button>
+          ))}
+        </div>
+        <div>
+          {kind === 'quick' && quickPanel}
+          {kind === 'world' && worldPanel}
+          {kind === 'generated' && generatedPanel}
+          {kind === 'void' && voidPanel}
+          {kind === 'structure' && structurePanel}
+        </div>
       </div>
       {busy !== null && (
         <p role="status" data-testid="tryit-ground-progress" className="text-muted">

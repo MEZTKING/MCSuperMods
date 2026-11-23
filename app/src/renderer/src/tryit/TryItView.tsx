@@ -421,6 +421,7 @@ export default function TryItView(props: TryItViewProps) {
               audio: audioOut(),
               ruleBooks,
               ...(scriptsFor === undefined ? {} : { scripts: scriptsFor }),
+              takesFunctionRuns: true,
             }),
             root,
           );
@@ -973,7 +974,7 @@ export default function TryItView(props: TryItViewProps) {
           Try it could not read the project: {error}
         </p>
       )}
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="relative grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_17rem]">
         <div className="flex min-h-0 min-w-0 flex-col">
           <div
             ref={wrapperRef}
@@ -1191,41 +1192,6 @@ export default function TryItView(props: TryItViewProps) {
                 onCloseChat={() => setChat(null)}
                 onChanged={rerender}
                 onFocusBack={() => wrapperRef.current?.focus({ preventScroll: true })}
-              />
-            )}
-            {groundsOpen !== null && area !== null && (
-              <GroundPicker
-                initial={groundsOpen}
-                {...(lastQuick === undefined ? {} : { quick: lastQuick })}
-                hasChanges={area.hasChanges}
-                worlds={worlds}
-                {...(props.vanillaBlockIds === undefined
-                  ? {}
-                  : { blockIds: props.vanillaBlockIds })}
-                pictures={
-                  vanilla === null
-                    ? null
-                    : { vanilla: (path: string) => vanilla.readAsset(path).catch(() => null) }
-                }
-                texturesFolder={area.target.folders.resource.textures}
-                generated={
-                  generated.picker === null || requestedSource === null
-                    ? generated.picker
-                    : {
-                        ...generated.picker,
-                        initial:
-                          generated.picker.sources.find(
-                            (source) => source.key === requestedSource,
-                          ) ?? generated.picker.initial,
-                      }
-                }
-                games={pickerGames}
-                onApply={applyGround}
-                onClose={() => {
-                  setGroundsOpen(null);
-                  setRequestedSource(null);
-                  wrapperRef.current?.focus({ preventScroll: true });
-                }}
               />
             )}
             {pickerOpen && (
@@ -1581,6 +1547,40 @@ export default function TryItView(props: TryItViewProps) {
             </dl>
           </details>
         </aside>
+        {/* The ground picker covers the picture and the tools: beside the tools the picture alone
+            can be very narrow (B405's picker inside it was squeezed to a sliver at 900 px). */}
+        {groundsOpen !== null && area !== null && (
+          <GroundPicker
+            initial={groundsOpen}
+            {...(lastQuick === undefined ? {} : { quick: lastQuick })}
+            hasChanges={area.hasChanges}
+            worlds={worlds}
+            {...(props.vanillaBlockIds === undefined ? {} : { blockIds: props.vanillaBlockIds })}
+            pictures={
+              vanilla === null
+                ? null
+                : { vanilla: (path: string) => vanilla.readAsset(path).catch(() => null) }
+            }
+            texturesFolder={area.target.folders.resource.textures}
+            generated={
+              generated.picker === null || requestedSource === null
+                ? generated.picker
+                : {
+                    ...generated.picker,
+                    initial:
+                      generated.picker.sources.find((source) => source.key === requestedSource) ??
+                      generated.picker.initial,
+                  }
+            }
+            games={pickerGames}
+            onApply={applyGround}
+            onClose={() => {
+              setGroundsOpen(null);
+              setRequestedSource(null);
+              wrapperRef.current?.focus({ preventScroll: true });
+            }}
+          />
+        )}
       </div>
       {readout !== null && <StateReadout readout={readout} />}
     </section>
