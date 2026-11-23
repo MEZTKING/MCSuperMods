@@ -1,0 +1,252 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run execute unless block 10 64 0 #minecraft:beds[part=foot] run function demo:msm_games/game/bases/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/died/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #bases.bed.0 demo.msm_game 0",
+      "tellraw @a {\"text\":\"Red's bed was broken: its players no longer come back.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/lost/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run execute unless block -10 64 0 #minecraft:beds[part=foot] run function demo:msm_games/game/bases/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/died/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #bases.bed.1 demo.msm_game 0",
+      "tellraw @a {\"text\":\"Blue's bed was broken: its players no longer come back.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/lost/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run spawnpoint @s[team=demo.red] 10 65 2",
+      "execute in minecraft:overworld run spawnpoint @s[team=demo.blue] -10 65 2",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/spawn.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #bases.bed.0 demo.msm_game 1",
+      "scoreboard players set #bases.bed.1 demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #bases.bed.0 demo.msm_game matches 1 run execute in minecraft:overworld run execute unless block 10 64 0 #minecraft:beds[part=foot] run function demo:msm_games/game/bases/team_base/lost/0",
+      "execute if score #bases.bed.1 demo.msm_game matches 1 run execute in minecraft:overworld run execute unless block -10 64 0 #minecraft:beds[part=foot] run function demo:msm_games/game/bases/team_base/lost/1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[team=demo.red] run function demo:msm_games/game/bases/team_base/died/0",
+      "execute if entity @s[team=demo.blue] run function demo:msm_games/game/bases/team_base/died/1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/team_base/died.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/team_base/spawn"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/team_base/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/team_base/second"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/team_base/died"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_died matches 1.. run function demo:msm_games/game/bases/elimination/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/elimination/died.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/bases/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/elimination/out.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/elimination/died"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run worldborder center 0 0",
+      "execute in minecraft:overworld run worldborder set 300",
+      "execute in minecraft:overworld run worldborder set 50 600s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/border/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run worldborder set 300",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/border/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/border/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/border/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/border/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.bases.in,tag=!demo.game.bases.own_kit] run function demo:msm_games/kit/hunter_kit/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/bases/kit_on/respawn.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/bases/kit_on/respawn"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/bases/player_respawned.json",
+    "schema": "tag:function"
+  }
+]

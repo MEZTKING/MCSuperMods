@@ -1,0 +1,293 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.spleef.floor.ready",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/floor/ready.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.spleef.floor.ready,tag=demo.game.spleef.in,tag=!demo.game.spleef.dead] run function demo:msm_games/game/spleef/floor/tool",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/floor/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.spleef.floor.ready",
+      "gamemode adventure @s",
+      "give @s minecraft:diamond_shovel[minecraft:can_break={blocks:\"minecraft:snow_block\"}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/floor/tool.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamerule block_drops true",
+      "tag @a remove demo.game.spleef.floor.ready",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/floor/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/ready"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/ready"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/ready"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/player_back.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamerule block_drops false",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/floor/start.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run fill 0 64 0 31 64 31 minecraft:snow_block",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/floor/rebuild.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/floor/rebuild"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run execute as @a[tag=demo.game.spleef.in,tag=!demo.game.spleef.dead,gamemode=!spectator,x=-30000000,y=-4096,z=-30000000,dx=60000000,dy=4155,dz=60000000] run function demo:msm_games/game/spleef/fall_out/fell",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/fall_out/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" fell out.\"}]",
+      "function demo:msm_games/game/spleef/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/fall_out/fell.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/fall_out/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.spleef.in,tag=!demo.game.spleef.own_kit] run function demo:msm_games/kit/captain_kit/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/kit_on/start.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/kit_on/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #spleef.time demo.msm_game matches 60 run execute in minecraft:overworld run worldborder set 16 120s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/border/second.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/border/second"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run worldborder center 16 16",
+      "execute in minecraft:overworld run worldborder set 64",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/border/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run worldborder set 64",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/spleef/border/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/border/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/border/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/spleef/border/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/spleef/stopped.json",
+    "schema": "tag:function"
+  }
+]

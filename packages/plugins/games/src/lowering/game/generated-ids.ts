@@ -12,9 +12,17 @@ import type { Element, OutputFile, TargetFacts } from '@msm/plugin-api';
 import { lowerKit } from '../kit';
 import { GAMES_FUNCTION_ROOT, splitId } from '../shared-functions';
 import { lobbyFiles } from './lobby';
+import { borderGeneratedIds } from './mechanics/border';
+import { eliminationGeneratedIds } from './mechanics/elimination';
+import { fallOutGeneratedIds } from './mechanics/fall-out';
+import { floorGeneratedIds } from './mechanics/floor';
+import { generatorsGeneratedIds } from './mechanics/generators';
 import { headStartGeneratedIds } from './mechanics/head-start';
 import { heartsGeneratedIds } from './mechanics/hearts';
 import type { MechanicIds } from './mechanics/kill-pair';
+import { kitOnGeneratedIds } from './mechanics/kit-on';
+import { shopGeneratedIds } from './mechanics/shop';
+import { teamBaseGeneratedIds } from './mechanics/team-base';
 import { trackerGeneratedIds } from './mechanics/tracker';
 import { readGame } from './names';
 import { rolesFiles } from './roles';
@@ -58,12 +66,22 @@ function addIdsOf(files: readonly OutputFile[], add: Add): void {
 
 /**
  * The ids each mechanic writes, from the mechanic and the game alone (B725: hearts with its kill
- * pair, tracker, head start; read from their names, not lowered with the stand-in target).
+ * pair, tracker, head start; B726: the other eight; read from their names, not lowered with the
+ * stand-in target).
  */
 const MECHANIC_IDS: Readonly<Record<string, MechanicIds>> = Object.freeze({
   hearts: heartsGeneratedIds,
   tracker: trackerGeneratedIds,
   head_start: headStartGeneratedIds,
+  // B726: elimination, falling out, the floor, team bases, generators, shops, the border, kits.
+  elimination: eliminationGeneratedIds,
+  fall_out: fallOutGeneratedIds,
+  floor: floorGeneratedIds,
+  team_base: teamBaseGeneratedIds,
+  generators: generatorsGeneratedIds,
+  shop: shopGeneratedIds,
+  border: borderGeneratedIds,
+  kit_on: kitOnGeneratedIds,
 });
 
 /** Adds the ids a game's round, lobby, roles and mechanics write. */

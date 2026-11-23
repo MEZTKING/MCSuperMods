@@ -98,6 +98,13 @@ export const GAME_RESERVED_OBJECTIVE_PATHS: readonly string[] = Object.freeze([
   'msm_out_until',
   'msm_out_since',
   'msm_withdraw',
+  // B726: where a player started (falling out sends them back), the respawn wait, the shop's
+  // trigger.
+  'msm_fall_x',
+  'msm_fall_y',
+  'msm_fall_z',
+  'msm_respawn',
+  'msm_shop',
 ]);
 
 /** The function of a kit `<ns>:<path>` that gives it to `@s`: `<ns>:msm_games/kit/<path>/give`. */

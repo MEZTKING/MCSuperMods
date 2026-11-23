@@ -1,0 +1,1145 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld if block 40 64 40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/wait",
+      "execute in minecraft:overworld run execute unless block 40 64 40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/died/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.bed.0 demo.msm_game 0",
+      "tellraw @a {\"text\":\"Red's bed was broken: its players no longer come back.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/lost/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld if block -40 64 40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/wait",
+      "execute in minecraft:overworld run execute unless block -40 64 40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/died/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.bed.1 demo.msm_game 0",
+      "tellraw @a {\"text\":\"Blue's bed was broken: its players no longer come back.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/lost/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld if block 40 64 -40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/wait",
+      "execute in minecraft:overworld run execute unless block 40 64 -40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/died/2.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.bed.2 demo.msm_game 0",
+      "tellraw @a {\"text\":\"Green's bed was broken: its players no longer come back.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/lost/2.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld if block -40 64 -40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/wait",
+      "execute in minecraft:overworld run execute unless block -40 64 -40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/died/3.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.bed.3 demo.msm_game 0",
+      "tellraw @a {\"text\":\"Yellow's bed was broken: its players no longer come back.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/lost/3.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_respawn dummy",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamemode spectator @s",
+      "tag @s add demo.game.beds.team_base.waiting",
+      "scoreboard players set @s demo.msm_respawn 5",
+      "tellraw @s {\"text\":\"You come back at your base in 5 seconds.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/wait.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.beds.team_base.waiting",
+      "gamemode survival @s",
+      "execute in minecraft:overworld run tp @s[team=demo.red] 40.5 65 43.5",
+      "execute in minecraft:overworld run tp @s[team=demo.blue] -39.5 65 43.5",
+      "execute in minecraft:overworld run tp @s[team=demo.green] 40.5 65 -36.5",
+      "execute in minecraft:overworld run tp @s[team=demo.yellow] -39.5 65 -36.5",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/back.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.beds.team_base.waiting",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/left.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamemode survival @a[tag=demo.game.beds.team_base.waiting]",
+      "tag @a remove demo.game.beds.team_base.waiting",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/left"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/player_out.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run spawnpoint @s[team=demo.red] 40 65 43",
+      "execute in minecraft:overworld run spawnpoint @s[team=demo.blue] -40 65 43",
+      "execute in minecraft:overworld run spawnpoint @s[team=demo.green] 40 65 -37",
+      "execute in minecraft:overworld run spawnpoint @s[team=demo.yellow] -40 65 -37",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/spawn.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.bed.0 demo.msm_game 1",
+      "scoreboard players set #beds.bed.1 demo.msm_game 1",
+      "scoreboard players set #beds.bed.2 demo.msm_game 1",
+      "scoreboard players set #beds.bed.3 demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #beds.bed.0 demo.msm_game matches 1 run execute in minecraft:overworld run execute unless block 40 64 40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/lost/0",
+      "execute if score #beds.bed.1 demo.msm_game matches 1 run execute in minecraft:overworld run execute unless block -40 64 40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/lost/1",
+      "execute if score #beds.bed.2 demo.msm_game matches 1 run execute in minecraft:overworld run execute unless block 40 64 -40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/lost/2",
+      "execute if score #beds.bed.3 demo.msm_game matches 1 run execute in minecraft:overworld run execute unless block -40 64 -40 #minecraft:beds[part=foot] run function demo:msm_games/game/beds/team_base/lost/3",
+      "scoreboard players remove @a[tag=demo.game.beds.team_base.waiting] demo.msm_respawn 1",
+      "execute as @a[tag=demo.game.beds.team_base.waiting,tag=demo.game.beds.in,scores={demo.msm_respawn=..0}] run function demo:msm_games/game/beds/team_base/back",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[team=demo.red] run function demo:msm_games/game/beds/team_base/died/0",
+      "execute if entity @s[team=demo.blue] run function demo:msm_games/game/beds/team_base/died/1",
+      "execute if entity @s[team=demo.green] run function demo:msm_games/game/beds/team_base/died/2",
+      "execute if entity @s[team=demo.yellow] run function demo:msm_games/game/beds/team_base/died/3",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/team_base/died.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/spawn"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/second"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/team_base/died"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.0 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=43.5,y=64,z=40.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:iron_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..47 run summon minecraft:item 43.5 64 40.5 {Item:{id:\"minecraft:iron_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.1 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=37.5,y=64,z=40.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:gold_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..15 run summon minecraft:item 37.5 64 40.5 {Item:{id:\"minecraft:gold_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.2 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=-36.5,y=64,z=40.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:iron_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..47 run summon minecraft:item -36.5 64 40.5 {Item:{id:\"minecraft:iron_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/2.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.3 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=-42.5,y=64,z=40.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:gold_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..15 run summon minecraft:item -42.5 64 40.5 {Item:{id:\"minecraft:gold_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/3.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.4 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=43.5,y=64,z=-39.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:iron_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..47 run summon minecraft:item 43.5 64 -39.5 {Item:{id:\"minecraft:iron_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/4.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.5 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=37.5,y=64,z=-39.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:gold_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..15 run summon minecraft:item 37.5 64 -39.5 {Item:{id:\"minecraft:gold_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/5.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.6 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=-36.5,y=64,z=-39.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:iron_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..47 run summon minecraft:item -36.5 64 -39.5 {Item:{id:\"minecraft:iron_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/6.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.7 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=-42.5,y=64,z=-39.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:gold_ingot\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..15 run summon minecraft:item -42.5 64 -39.5 {Item:{id:\"minecraft:gold_ingot\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/7.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.8 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=10.5,y=70,z=0.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:diamond\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..3 run summon minecraft:item 10.5 70 0.5 {Item:{id:\"minecraft:diamond\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/8.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.9 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=-9.5,y=70,z=0.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:diamond\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..3 run summon minecraft:item -9.5 70 0.5 {Item:{id:\"minecraft:diamond\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/9.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.10 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=0.5,y=72,z=0.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:emerald\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..1 run summon minecraft:item 0.5 72 0.5 {Item:{id:\"minecraft:emerald\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/10.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.11 demo.msm_game 0",
+      "scoreboard players set #beds.generator.count demo.msm_game 0",
+      "execute as @e[type=minecraft:item,x=0.5,y=72,z=4.5,distance=..1.5,sort=nearest,limit=1,nbt={Item:{id:\"minecraft:emerald\"}}] run execute store result score #beds.generator.count demo.msm_game run data get entity @s Item.count",
+      "execute if score #beds.generator.count demo.msm_game matches ..1 run summon minecraft:item 0.5 72 4.5 {Item:{id:\"minecraft:emerald\",count:1},Motion:[0.0d,0.0d,0.0d]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/11.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #beds.generator.0 demo.msm_game 1",
+      "execute if score #beds.generator.0 demo.msm_game matches 1.. run execute if entity @a[tag=demo.game.beds.in,team=demo.red] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/0",
+      "scoreboard players add #beds.generator.1 demo.msm_game 1",
+      "execute if score #beds.generator.1 demo.msm_game matches 6.. run execute if entity @a[tag=demo.game.beds.in,team=demo.red] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/1",
+      "scoreboard players add #beds.generator.2 demo.msm_game 1",
+      "execute if score #beds.generator.2 demo.msm_game matches 1.. run execute if entity @a[tag=demo.game.beds.in,team=demo.blue] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/2",
+      "scoreboard players add #beds.generator.3 demo.msm_game 1",
+      "execute if score #beds.generator.3 demo.msm_game matches 6.. run execute if entity @a[tag=demo.game.beds.in,team=demo.blue] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/3",
+      "scoreboard players add #beds.generator.4 demo.msm_game 1",
+      "execute if score #beds.generator.4 demo.msm_game matches 1.. run execute if entity @a[tag=demo.game.beds.in,team=demo.green] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/4",
+      "scoreboard players add #beds.generator.5 demo.msm_game 1",
+      "execute if score #beds.generator.5 demo.msm_game matches 6.. run execute if entity @a[tag=demo.game.beds.in,team=demo.green] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/5",
+      "scoreboard players add #beds.generator.6 demo.msm_game 1",
+      "execute if score #beds.generator.6 demo.msm_game matches 1.. run execute if entity @a[tag=demo.game.beds.in,team=demo.yellow] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/6",
+      "scoreboard players add #beds.generator.7 demo.msm_game 1",
+      "execute if score #beds.generator.7 demo.msm_game matches 6.. run execute if entity @a[tag=demo.game.beds.in,team=demo.yellow] run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/7",
+      "scoreboard players add #beds.generator.8 demo.msm_game 1",
+      "execute if score #beds.generator.8 demo.msm_game matches 30.. run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/8",
+      "scoreboard players add #beds.generator.9 demo.msm_game 1",
+      "execute if score #beds.generator.9 demo.msm_game matches 30.. run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/9",
+      "scoreboard players add #beds.generator.10 demo.msm_game 1",
+      "execute if score #beds.generator.10 demo.msm_game matches 60.. run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/10",
+      "scoreboard players add #beds.generator.11 demo.msm_game 1",
+      "execute if score #beds.generator.11 demo.msm_game matches 60.. run execute in minecraft:overworld run function demo:msm_games/game/beds/generators/11",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.generator.0 demo.msm_game 0",
+      "scoreboard players set #beds.generator.1 demo.msm_game 0",
+      "scoreboard players set #beds.generator.2 demo.msm_game 0",
+      "scoreboard players set #beds.generator.3 demo.msm_game 0",
+      "scoreboard players set #beds.generator.4 demo.msm_game 0",
+      "scoreboard players set #beds.generator.5 demo.msm_game 0",
+      "scoreboard players set #beds.generator.6 demo.msm_game 0",
+      "scoreboard players set #beds.generator.7 demo.msm_game 0",
+      "scoreboard players set #beds.generator.8 demo.msm_game 0",
+      "scoreboard players set #beds.generator.9 demo.msm_game 0",
+      "scoreboard players set #beds.generator.10 demo.msm_game 0",
+      "scoreboard players set #beds.generator.11 demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=43.5,y=64,z=40.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=37.5,y=64,z=40.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=-36.5,y=64,z=40.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=-42.5,y=64,z=40.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=43.5,y=64,z=-39.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=37.5,y=64,z=-39.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=-36.5,y=64,z=-39.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=-42.5,y=64,z=-39.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=10.5,y=70,z=0.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=-9.5,y=70,z=0.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=0.5,y=72,z=0.5,distance=..2]",
+      "execute in minecraft:overworld run kill @e[type=minecraft:item,x=0.5,y=72,z=4.5,distance=..2]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/generators/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/generators/second"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/generators/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/generators/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.beds.shop.menu",
+      "tag @s add demo.game.beds.shop.1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/tag.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.beds.shop.opening] run function demo:msm_games/game/beds/shop/1/open",
+      "kill @s",
+      "execute in minecraft:overworld run summon minecraft:interaction 43.5 65 43.5",
+      "execute in minecraft:overworld run execute as @e[type=minecraft:interaction,x=43.5,y=65,z=43.5,distance=..0.1,tag=!demo.game.beds.shop.menu] run function demo:msm_games/game/beds/shop/1/tag",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/opened.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[team=demo.red] run function demo:msm_games/game/beds/shop/1/menu",
+      "execute if entity @s[team=!demo.red] run tellraw @s {\"text\":\"Red shop sells only to its own team.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/open.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players enable @s demo.msm_shop",
+      "dialog show @s {type:\"minecraft:multi_action\",title:{text:\"Red shop\"},actions:[{label:{text:\"1 Stone Sword for 4 Iron Ingot\"},action:{type:\"minecraft:run_command\",command:\"trigger demo.msm_shop set 101\"}},{label:{text:\"1 Shears for 3 Gold Ingot\"},action:{type:\"minecraft:run_command\",command:\"trigger demo.msm_shop set 102\"}}]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/menu.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.shop.have.0 demo.msm_game 0",
+      "execute store result score #beds.shop.have.0 demo.msm_game run clear @s minecraft:iron_ingot 0",
+      "execute if score #beds.shop.have.0 demo.msm_game matches 4.. run function demo:msm_games/game/beds/shop/1/pay/0",
+      "execute unless score #beds.shop.have.0 demo.msm_game matches 4.. run tellraw @s {\"text\":\"You need 4 Iron Ingot for that.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/buy/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "clear @s minecraft:iron_ingot 4",
+      "give @s minecraft:stone_sword[minecraft:custom_name={text:\"Team sword\",italic:false},minecraft:unbreakable={}] 1",
+      "function demo:msm_games/game/beds/shop/1/menu",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/pay/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.shop.have.0 demo.msm_game 0",
+      "execute store result score #beds.shop.have.0 demo.msm_game run clear @s minecraft:gold_ingot 0",
+      "execute if score #beds.shop.have.0 demo.msm_game matches 3.. run function demo:msm_games/game/beds/shop/1/pay/1",
+      "execute unless score #beds.shop.have.0 demo.msm_game matches 3.. run tellraw @s {\"text\":\"You need 3 Gold Ingot for that.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/buy/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "clear @s minecraft:gold_ingot 3",
+      "give @s minecraft:shears 1",
+      "function demo:msm_games/game/beds/shop/1/menu",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/1/pay/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.beds.shop.menu",
+      "tag @s add demo.game.beds.shop.2",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/2/tag.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.beds.shop.opening] run function demo:msm_games/game/beds/shop/2/open",
+      "kill @s",
+      "execute in minecraft:overworld run summon minecraft:interaction 0.5 65 -7.5",
+      "execute in minecraft:overworld run execute as @e[type=minecraft:interaction,x=0.5,y=65,z=-7.5,distance=..0.1,tag=!demo.game.beds.shop.menu] run function demo:msm_games/game/beds/shop/2/tag",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/2/opened.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/beds/shop/2/menu",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/2/open.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players enable @s demo.msm_shop",
+      "dialog show @s {type:\"minecraft:multi_action\",title:{text:\"Block shop\"},actions:[{label:{text:\"12 End Stone for 2 Iron Ingot and 1 Gold Ingot\"},action:{type:\"minecraft:run_command\",command:\"trigger demo.msm_shop set 201\"}}]}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/2/menu.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.shop.have.0 demo.msm_game 0",
+      "execute store result score #beds.shop.have.0 demo.msm_game run clear @s minecraft:iron_ingot 0",
+      "scoreboard players set #beds.shop.have.1 demo.msm_game 0",
+      "execute store result score #beds.shop.have.1 demo.msm_game run clear @s minecraft:gold_ingot 0",
+      "execute if score #beds.shop.have.0 demo.msm_game matches 2.. if score #beds.shop.have.1 demo.msm_game matches 1.. run function demo:msm_games/game/beds/shop/2/pay/0",
+      "execute unless score #beds.shop.have.0 demo.msm_game matches 2.. run tellraw @s {\"text\":\"You need 2 Iron Ingot for that.\"}",
+      "execute unless score #beds.shop.have.1 demo.msm_game matches 1.. run tellraw @s {\"text\":\"You need 1 Gold Ingot for that.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/2/buy/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "clear @s minecraft:iron_ingot 2",
+      "clear @s minecraft:gold_ingot 1",
+      "give @s minecraft:end_stone 12",
+      "function demo:msm_games/game/beds/shop/2/menu",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/2/pay/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run kill @e[type=minecraft:villager,tag=demo.game.beds.shop.0]",
+      "execute in minecraft:overworld run summon minecraft:villager 0.5 65 8.5 {Tags:[\"demo.game.beds.shop.0\"],NoAI:1b,Invulnerable:1b,Silent:1b,PersistenceRequired:1b,VillagerData:{profession:\"minecraft:armorer\",level:5,type:\"minecraft:plains\"},Offers:{Recipes:[{buy:{id:\"minecraft:iron_ingot\",count:4},sell:{id:\"minecraft:stone_sword\",count:1,components:{\"minecraft:custom_name\":{text:\"Team sword\",italic:false},\"minecraft:unbreakable\":{}}},maxUses:2147483647,rewardExp:0b,xp:0},{buy:{id:\"minecraft:gold_ingot\",count:2},buyB:{id:\"minecraft:iron_ingot\",count:1},sell:{id:\"minecraft:white_wool\",count:16},maxUses:2147483647,rewardExp:0b,xp:0}]}}",
+      "execute in minecraft:overworld run kill @e[type=minecraft:interaction,tag=demo.game.beds.shop.1]",
+      "execute in minecraft:overworld run summon minecraft:interaction 43.5 65 43.5",
+      "execute in minecraft:overworld run execute as @e[type=minecraft:interaction,x=43.5,y=65,z=43.5,distance=..0.1,tag=!demo.game.beds.shop.menu] run function demo:msm_games/game/beds/shop/1/tag",
+      "execute in minecraft:overworld run kill @e[type=minecraft:interaction,tag=demo.game.beds.shop.2]",
+      "execute in minecraft:overworld run summon minecraft:interaction 0.5 65 -7.5",
+      "execute in minecraft:overworld run execute as @e[type=minecraft:interaction,x=0.5,y=65,z=-7.5,distance=..0.1,tag=!demo.game.beds.shop.menu] run function demo:msm_games/game/beds/shop/2/tag",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/make.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/shop/make"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_shop trigger",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/shop/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @e[type=minecraft:interaction,tag=demo.game.beds.shop.menu] run function demo:msm_games/game/beds/shop/hit",
+      "execute as @a[scores={demo.msm_shop=1..}] run function demo:msm_games/game/beds/shop/buy",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute on attacker run tag @s add demo.game.beds.shop.opening",
+      "execute if entity @s[tag=demo.game.beds.shop.1] run execute if entity @a[tag=demo.game.beds.shop.opening] run function demo:msm_games/game/beds/shop/1/opened",
+      "execute if entity @s[tag=demo.game.beds.shop.2] run execute if entity @a[tag=demo.game.beds.shop.opening] run function demo:msm_games/game/beds/shop/2/opened",
+      "tag @a remove demo.game.beds.shop.opening",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/hit.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_shop matches 101 run function demo:msm_games/game/beds/shop/1/buy/0",
+      "execute if score @s demo.msm_shop matches 102 run function demo:msm_games/game/beds/shop/1/buy/1",
+      "execute if score @s demo.msm_shop matches 201 run function demo:msm_games/game/beds/shop/2/buy/0",
+      "scoreboard players set @s demo.msm_shop 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/shop/buy.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/shop/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run worldborder center 0 0",
+      "execute in minecraft:overworld run worldborder set 200",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/border/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run worldborder set 200",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/border/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/border/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/border/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/border/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.beds.in,tag=!demo.game.beds.own_kit] run function demo:msm_games/kit/hunter_kit/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/kit_on/start.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/kit_on/start"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.beds.in,tag=!demo.game.beds.own_kit] run function demo:msm_games/kit/runner_kit/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/kit_on/respawn.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/kit_on/respawn"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run execute as @a[tag=demo.game.beds.in,tag=!demo.game.beds.dead,gamemode=!spectator,x=-30000000,y=-4096,z=-30000000,dx=60000000,dy=4115,dz=60000000] run function demo:msm_games/game/beds/fall_out/fell",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/fall_out/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "kill @s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/fall_out/fell.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/fall_out/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #beds.elimination.left demo.msm_game 3",
+      "scoreboard players operation #beds.elimination.left demo.msm_game -= @s demo.msm_died",
+      "tellraw @s [{\"text\":\"Lives left: \"},{\"score\":{\"name\":\"#beds.elimination.left\",\"objective\":\"demo.msm_game\"}},{\"text\":\" of 3.\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/elimination/lives_left.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_died matches 3.. run function demo:msm_games/game/beds/elimination/out",
+      "execute if score @s demo.msm_died matches ..2 run function demo:msm_games/game/beds/elimination/lives_left",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/elimination/died.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tellraw @a [{\"selector\":\"@s\"},{\"text\":\" is out of the round.\"}]",
+      "tag @s add demo.game.beds.elimination.to_lobby",
+      "function demo:msm_games/game/beds/out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/elimination/out.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/elimination/died"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.beds.elimination.to_lobby] run function demo:msm_games/game/beds/elimination/to_lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/elimination/respawned.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.beds.elimination.to_lobby",
+      "execute in minecraft:overworld run tp @s 0.5 120 0.5",
+      "gamemode adventure @s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/elimination/to_lobby.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @a remove demo.game.beds.elimination.to_lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/beds/elimination/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/elimination/respawned"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/elimination/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/beds/elimination/clear"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/beds/stopped.json",
+    "schema": "tag:function"
+  }
+]

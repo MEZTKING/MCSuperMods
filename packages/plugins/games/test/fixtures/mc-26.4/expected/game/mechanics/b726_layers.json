@@ -1,0 +1,267 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.layers.floor.ready",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/floor/ready.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.layers.floor.ready,tag=demo.game.layers.in,tag=!demo.game.layers.dead] run function demo:msm_games/game/layers/floor/tool",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/floor/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.layers.floor.ready",
+      "gamemode adventure @s",
+      "give @s minecraft:netherite_shovel[minecraft:can_break={blocks:\"minecraft:snow_block\"}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/floor/tool.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @a remove demo.game.layers.floor.ready",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/floor/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/floor/ready"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/floor/ready"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/floor/ready"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/player_back.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/floor/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/floor/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/floor/end"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run fill -100 10 -50 -1 11 49 minecraft:snow_block",
+      "execute in minecraft:overworld run fill 0 10 -50 99 11 49 minecraft:snow_block",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/floor/rebuild.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/floor/rebuild"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run execute as @a[tag=demo.game.layers.in,tag=!demo.game.layers.dead,gamemode=!spectator,x=-30000000,y=-4096,z=-30000000,dx=60000000,dy=4095,dz=60000000] run function demo:msm_games/game/layers/fall_out/fell",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/fall_out/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/layers/fall_out/back",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/fall_out/fell.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/fall_out/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_fall_x dummy",
+      "scoreboard objectives add demo.msm_fall_y dummy",
+      "scoreboard objectives add demo.msm_fall_z dummy",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/fall_out/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/fall_out/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score @s demo.msm_fall_x run data get entity @s Pos[0]",
+      "execute store result score @s demo.msm_fall_y run data get entity @s Pos[1]",
+      "execute store result score @s demo.msm_fall_z run data get entity @s Pos[2]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/fall_out/mark.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score @s demo.msm_fall_x matches -2147483648.. run function demo:msm_games/game/layers/fall_out/back/go",
+      "execute unless score @s demo.msm_fall_x matches -2147483648.. run kill @s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/fall_out/back.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result storage demo:msm_games/game/layers/fall_out x int 1 run scoreboard players get @s demo.msm_fall_x",
+      "execute store result storage demo:msm_games/game/layers/fall_out y int 1 run scoreboard players get @s demo.msm_fall_y",
+      "execute store result storage demo:msm_games/game/layers/fall_out z int 1 run scoreboard players get @s demo.msm_fall_z",
+      "function demo:msm_games/game/layers/fall_out/back/tp with storage demo:msm_games/game/layers/fall_out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/fall_out/back/go.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "$tp @s $(x) $(y) $(z)",
+      "execute at @s run tp @s ~0.5 ~ ~0.5",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/layers/fall_out/back/tp.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/layers/fall_out/mark"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/layers/player_in.json",
+    "schema": "tag:function"
+  }
+]
