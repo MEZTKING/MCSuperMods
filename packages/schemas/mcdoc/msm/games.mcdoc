@@ -1,15 +1,18 @@
 // MSM game kits, the element data of the games plugin's six kinds (ADR 0113 D2 to D7, frozen by
 // B549): `msm:world_setup`, `msm:one_block`, `msm:team`, `msm:objective`, `msm:timer` and
-// `msm:area`. They are editor-only: `@msm/plugin-games` lowers them to plain data pack files
+// `msm:area`, and the Game and map Studio's `msm:game` and `msm:kit` (ADR 0132 D1 to D3, B722).
+// They are editor-only: `@msm/plugin-games` lowers them to plain data pack files
 // (functions, function tags, advancements, predicates, structure sets, world presets,
 // dimensions, biomes and lang), so the runtime never reads this format and the conformance
 // corpus has no games files. Positions are block positions `[x, y, z]`. Names that the game
-// shows (teams, objectives, areas, phases, timers) are plain text. Checks the schema cannot make
+// shows (teams, objectives, areas, phases, timers, games, roles, kits) are plain text. A game
+// names the project's own teams, areas, timers, objectives and kits by their element ids. Checks the schema cannot make
 // (one world setup per project, at most four one-block positions, area boxes ordered, structures
 // that exist and fit, criteria and game rule names from the target's facts) are the plugin
 // validators'.
 
 use super::definition::BossBarColour
+use super::definition::VanillaComponents
 
 // ---------------------------------------------------------------------------------------------
 // Shared
@@ -452,4 +455,622 @@ struct Area {
 	to: BlockPos,
 	/// How the area is reset.
 	reset?: AreaReset,
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:kit (ADR 0132 D3, B722)
+// ---------------------------------------------------------------------------------------------
+
+/// One stack of a kit's inventory.
+struct KitStack {
+	/// The item.
+	item: #[id="item"] string,
+	/// How many, 1 to 99.
+	count: int @ 1..99,
+	/// The slot, as `/item replace` names it (such as `hotbar.0` or `inventory.5`); absent means
+	/// the first free slot.
+	slot?: string @ 1..,
+	/// Vanilla data components by id (such as a name, enchantments or `can_break`), each in its
+	/// vanilla JSON form.
+	components?: VanillaComponents,
+}
+
+/// One piece of armour, or the item in the off hand.
+struct KitPiece {
+	/// The item.
+	item: #[id="item"] string,
+	/// How many, 1 to 99; defaults to 1. Only the off hand holds more than one.
+	count?: int @ 1..99,
+	/// Vanilla data components by id, each in its vanilla JSON form.
+	components?: VanillaComponents,
+}
+
+/// The armour a kit puts on. Each slot is optional; an empty slot is left as it is.
+struct KitArmour {
+	/// The helmet.
+	head?: KitPiece,
+	/// The chestplate (or elytra).
+	chest?: KitPiece,
+	/// The leggings.
+	legs?: KitPiece,
+	/// The boots.
+	feet?: KitPiece,
+}
+
+/// A kit (ADR 0132 D3): items, armour, the off hand and effects given to a player in one go.
+/// It lowers to one `give` function; a game hands it out at the start or at a respawn
+/// (the `kit_on` mechanic, or a role's `kit`) and a Rules step can give it too.
+struct Kit {
+	/// The kit's name, as players see it.
+	name: string @ 1..,
+	/// The items, put in the inventory in order.
+	items: [KitStack] @ ..36,
+	/// The armour put on.
+	armour?: KitArmour,
+	/// The item put in the off hand.
+	off_hand?: KitPiece,
+	/// Effects given with the kit.
+	effects?: [KitEffect] @ ..16,
+	/// Whether the player's inventory, armour, off hand and effects are cleared before the kit is
+	/// given.
+	clear_first: boolean,
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:game (ADR 0132 D1, D2, B722)
+// ---------------------------------------------------------------------------------------------
+
+/// The game type a game started from (the catalogue's cards). A type is a set of mechanics with
+/// defaults; changing the mechanics never changes the type, which only names where the game
+/// came from.
+enum(string) GameType {
+	/// Kill a player to take a heart.
+	Lifesteal = "lifesteal",
+	/// One runner beats the game while hunters track them.
+	Manhunt = "manhunt",
+	/// Protect your team's bed, buy gear, break the others' beds.
+	BedWars = "bed_wars",
+	/// Your own sky island with loot chests; last one standing wins.
+	SkyBattles = "sky_battles",
+	/// Break the floor under the others.
+	Spleef = "spleef",
+	/// The floor disappears behind you as you run.
+	TntRun = "tnt_run",
+	/// Hiders blend in; seekers have a timer.
+	HideAndSeek = "hide_and_seek",
+	/// One murderer, one detective, everyone else survives.
+	MurderMystery = "murder_mystery",
+	/// Build to a theme against the clock, then vote.
+	BuildBattle = "build_battle",
+	/// Checkpoints, a timer and a leaderboard.
+	Parkour = "parkour",
+	/// Loot chests in an arena and a shrinking border.
+	SurvivalGames = "survival_games",
+	/// No natural healing and a shrinking border.
+	Uhc = "uhc",
+	/// Take the other team's banner to your base.
+	CaptureTheFlag = "capture_the_flag",
+	/// Hold the hill to score.
+	KingOfTheHill = "king_of_the_hill",
+	/// One on one with a chosen kit.
+	Duels = "duels",
+	/// A tiny island in the void.
+	Skyblock = "skyblock",
+	/// One block that refills with something new.
+	OneBlock = "one_block",
+	/// Mine, sell and rank up.
+	Prison = "prison",
+	/// An empty game, made from nothing.
+	Custom = "custom",
+}
+
+/// How many players the game is for.
+struct PlayerCount {
+	/// The fewest players a round needs, 1 to 100. A round with one player is a practice round.
+	min: int @ 1..100,
+	/// The most players a round takes, 1 to 100; no smaller than `min` (checked by the plugin
+	/// validators).
+	max: int @ 1..100,
+}
+
+/// Whether the game is played in rounds or goes on for ever.
+enum(string) RoundKind {
+	/// One long game with no end, such as a Lifesteal server.
+	Endless = "endless",
+	/// Rounds that start, are won and end.
+	Rounds = "rounds",
+}
+
+/// What starts a round.
+enum(string) RoundStart {
+	/// A command, a Rules step or a button (the game's `start` function).
+	Command = "command",
+	/// Enough players are in the lobby (`players.min`); the countdown then runs.
+	EnoughPlayers = "enough_players",
+	/// The world starts.
+	WorldStart = "world_start",
+}
+
+/// What happens when a round ends.
+enum(string) RoundAfter {
+	/// Everyone goes back to the lobby.
+	Lobby = "lobby",
+	/// Everyone stays where they are and the game stops.
+	Stay = "stay",
+	/// The next round starts at once.
+	NextRound = "next_round",
+}
+
+/// The kinds of win condition (ADR 0132 D2).
+enum(string) WinType {
+	/// The last player, or the last team, still in wins.
+	LastStanding = "last_standing",
+	/// The round ends when every player of a role is out, such as the runner of a hunt.
+	RoleDies = "role_dies",
+	/// The first player to get an advancement wins, such as killing the dragon.
+	Advancement = "advancement",
+	/// The first player or team to reach a score wins.
+	ScoreTarget = "score_target",
+	/// The round ends when a timer runs out.
+	TimerEnds = "timer_ends",
+}
+
+/// Who is counted: single players or whole teams.
+enum(string) WinBy {
+	Players = "players",
+	Teams = "teams",
+}
+
+/// Who wins when the time runs out.
+enum(string) TimeUpWinner {
+	/// Nobody: a draw.
+	Nobody = "nobody",
+	/// Everyone still in.
+	StillIn = "still_in",
+	/// The player or team with the highest score of `objective`.
+	TopScore = "top_score",
+	/// The players of `role`.
+	Role = "role",
+}
+
+/// Fields of a `last_standing` win.
+dispatch msm:game_win[last_standing] to struct LastStandingWin {
+	/// Whether the last player or the last team wins.
+	by: WinBy,
+}
+
+/// Fields of a `role_dies` win.
+dispatch msm:game_win[role_dies] to struct RoleDiesWin {
+	/// The role whose players being out ends the round (an `id` of the game's `roles`).
+	role: string @ 1..,
+	/// The role that wins then (an `id` of the game's `roles`).
+	winner: string @ 1..,
+}
+
+/// Fields of an `advancement` win.
+dispatch msm:game_win[advancement] to struct AdvancementWin {
+	/// The advancement, such as `minecraft:end/kill_dragon` or one of the project's own.
+	advancement: #[id="advancement"] string,
+	/// Only players of this role count (an `id` of the game's `roles`); absent means anyone.
+	role?: string @ 1..,
+}
+
+/// Fields of a `score_target` win.
+dispatch msm:game_win[score_target] to struct ScoreTargetWin {
+	/// The score counted (an `msm:objective` id of the project).
+	objective: string @ 1..,
+	/// The score to reach, 1 or more.
+	target: int @ 1..,
+	/// Whether a player's own score or the sum of a team's scores counts.
+	by: WinBy,
+}
+
+/// Fields of a `timer_ends` win.
+dispatch msm:game_win[timer_ends] to struct TimerEndsWin {
+	/// The timer (an `msm:timer` id of the project); absent means the round's `length`.
+	timer?: string @ 1..,
+	/// Who wins when it runs out.
+	winner: TimeUpWinner,
+	/// The score compared, for the winner `top_score` (an `msm:objective` id of the project).
+	objective?: string @ 1..,
+	/// The winning role, for the winner `role` (an `id` of the game's `roles`).
+	role?: string @ 1..,
+}
+
+/// One way a round is won. The first condition met ends the round.
+struct WinCondition {
+	/// The kind of condition.
+	type: WinType,
+	...msm:game_win[[type]],
+}
+
+/// How a round runs.
+struct Round {
+	/// Rounds, or one endless game.
+	kind: RoundKind,
+	/// What starts a round.
+	start: RoundStart,
+	/// The countdown before a round starts, 0 to 600 seconds.
+	countdown: int @ 0..600,
+	/// The longest a round lasts, 1 to 86,400 seconds; absent means no time limit.
+	length?: int @ 1..86400,
+	/// Where players are spread when a round starts (an `msm:area` id of the project); absent
+	/// means they stay where they are.
+	play_area?: string @ 1..,
+	/// How the round is won. An endless game may have none; a game in rounds needs a way to end
+	/// (checked by the plugin validators).
+	win: [WinCondition] @ ..8,
+	/// What happens when a round ends.
+	after: RoundAfter,
+}
+
+/// How players are put into teams in the lobby.
+enum(string) LobbyTeams {
+	/// Split evenly at random when the round starts.
+	Auto = "auto",
+	/// Each player picks a team.
+	Pick = "pick",
+	/// No teams.
+	None = "none",
+}
+
+/// Where players wait before a round.
+struct Lobby {
+	/// Where players wait.
+	spawn: BlockPos,
+	/// The lobby's area (an `msm:area` id of the project); players who walk out of it are put
+	/// back.
+	area?: string @ 1..,
+	/// A building placed for the lobby.
+	building?: AreaStructure,
+	/// How players are put into teams.
+	teams: LobbyTeams,
+}
+
+/// A role players are dealt when a round starts, such as the runner and the hunters.
+struct Role {
+	/// The role's id, used by the game's other fields: lower case letters, digits and `_`.
+	id: string @ 1..32,
+	/// The role's name, as players see it.
+	name: string @ 1..,
+	/// How many players get the role, 1 to 100, or `rest` for everyone not dealt another role
+	/// (at most one role is `rest`, checked by the plugin validators).
+	count: (int @ 1..100 | "rest"),
+	/// The team the role's players join (an `msm:team` id of the project).
+	team?: string @ 1..,
+	/// The kit the role's players get at the start and at a respawn (an `msm:kit` id of the
+	/// project), in place of `kit_on`'s.
+	kit?: string @ 1..,
+}
+
+/// The mechanics a game can have (ADR 0132 D2), in the Game Studio's order. Each is one lowering
+/// file and one Studio section.
+enum(string) MechanicType {
+	/// Hearts move from the loser to the winner of a fight (Lifesteal).
+	Hearts = "hearts",
+	/// A compass that points at a role's players (Manhunt).
+	Tracker = "tracker",
+	/// One role waits while the others get away.
+	HeadStart = "head_start",
+	/// Players are out after a number of deaths.
+	Elimination = "elimination",
+	/// Players below a height have fallen out.
+	FallOut = "fall_out",
+	/// A floor that players break, rebuilt each round (Spleef).
+	Floor = "floor",
+	/// Each team has a base with a bed; no bed, no respawn.
+	TeamBase = "team_base",
+	/// Places that drop items every few seconds.
+	Generators = "generators",
+	/// Traders or menus that sell gear for items.
+	Shop = "shop",
+	/// A world border.
+	Border = "border",
+	/// Which kit players get at the start and at a respawn.
+	KitOn = "kit_on",
+}
+
+/// What happens to a player with no hearts left.
+enum(string) HeartsAtZero {
+	/// They watch as a spectator until the next round.
+	Spectate = "spectate",
+	/// They are kept out for a time (`kept_out_seconds`), counted while the server runs.
+	KeptOut = "kept_out",
+	/// They start again with `start_again_hearts` hearts.
+	StartAgain = "start_again",
+}
+
+/// What a death that is not a kill by another player does.
+enum(string) OtherDeaths {
+	/// Takes a heart away without giving it to anyone.
+	LoseHeart = "lose_heart",
+	/// Changes nothing.
+	Keep = "keep",
+}
+
+/// A crafting recipe in vanilla's shaped form.
+struct ShapedRecipe {
+	/// One to three rows of one to three characters; a space is an empty slot.
+	pattern: [string @ 1..3] @ 1..3,
+	/// The item each character of `pattern` stands for.
+	key: struct {
+		[string]: #[id="item"] string,
+	},
+}
+
+/// An item made for a game (a Heart, a revive item): a vanilla item with a name and a look.
+struct GameItem {
+	/// The vanilla item it is made from, such as `minecraft:red_dye`.
+	item: #[id="item"] string,
+	/// Its name, as players see it.
+	name: string @ 1..,
+	/// The look: an item model id, such as `minecraft:heart_of_the_sea`; absent means the
+	/// item's own.
+	model?: string @ 1..,
+	/// The recipe that makes it; absent means it cannot be crafted.
+	recipe?: ShapedRecipe,
+}
+
+/// The item that brings back a player who ran out of hearts.
+struct ReviveItem {
+	/// The item.
+	item: GameItem,
+	/// How many hearts the player comes back with, 1 to 512.
+	hearts: int @ 1..512,
+}
+
+/// Fields of the `hearts` mechanic. A heart adds room for health, not health itself.
+dispatch msm:game_mechanic[hearts] to struct HeartsMechanic {
+	/// The hearts each player starts with, 1 to 512.
+	start: int @ 1..512,
+	/// The most hearts a player can have, 1 to 512.
+	most: int @ 1..512,
+	/// The hearts taken from the loser and given to the winner of a kill, 1 to 100. Only kills by
+	/// another player count.
+	per_kill: int @ 1..100,
+	/// What a death that is not a kill by another player does; defaults to `lose_heart`.
+	other_deaths?: OtherDeaths,
+	/// What happens to a player with no hearts left.
+	at_zero: HeartsAtZero,
+	/// How long a player is kept out, for `kept_out`: 1 to 2,592,000 seconds of the server
+	/// running (time does not pass while the server is off).
+	kept_out_seconds?: int @ 1..2592000,
+	/// The hearts a player starts again with, for `start_again`, 1 to 512.
+	start_again_hearts?: int @ 1..512,
+	/// The Heart item: using it adds a heart; absent means there is none.
+	heart_item?: GameItem,
+	/// Whether players can turn one of their hearts into a Heart item with `/trigger` (never
+	/// below 1 heart). Needs `heart_item`.
+	withdraw: boolean,
+	/// The revive item; absent means there is none.
+	revive?: ReviveItem,
+}
+
+/// Where a tracker points when its target is in another dimension.
+enum(string) TrackerOtherDimension {
+	/// At the target's last place in the holder's dimension.
+	LastPlace = "last_place",
+	/// Nowhere: the needle spins.
+	Spin = "spin",
+}
+
+/// Fields of the `tracker` mechanic: a compass that points at the nearest player of a role.
+dispatch msm:game_mechanic[tracker] to struct TrackerMechanic {
+	/// The role that holds the compass (an `id` of the game's `roles`).
+	holder: string @ 1..,
+	/// The role it points at (an `id` of the game's `roles`).
+	target: string @ 1..,
+	/// How often it is pointed again, 1 to 60 seconds.
+	every_seconds: int @ 1..60,
+	/// Where it points when the target is in another dimension.
+	other_dimension: TrackerOtherDimension,
+	/// The compass's name, as players see it; absent means the plain compass name.
+	name?: string @ 1..,
+}
+
+/// Fields of the `head_start` mechanic: a role is held still while the others get away.
+dispatch msm:game_mechanic[head_start] to struct HeadStartMechanic {
+	/// The role held (an `id` of the game's `roles`).
+	held: string @ 1..,
+	/// How long, 1 to 600 seconds.
+	seconds: int @ 1..600,
+	/// Whether the held players are also blinded.
+	blind: boolean,
+}
+
+/// What a player who is out does.
+enum(string) OutAction {
+	/// Watches as a spectator.
+	Spectate = "spectate",
+	/// Goes back to the lobby.
+	Lobby = "lobby",
+}
+
+/// Fields of the `elimination` mechanic: players are out after a number of deaths.
+dispatch msm:game_mechanic[elimination] to struct EliminationMechanic {
+	/// The deaths a player has before they are out, 1 to 100.
+	lives: int @ 1..100,
+	/// What a player who is out does.
+	out: OutAction,
+	/// Whether everyone is told when a player is out.
+	announce: boolean,
+}
+
+/// What happens to a player who falls out.
+enum(string) FallOutAction {
+	/// They are out of the round.
+	Out = "out",
+	/// They die (and respawn if the game lets them).
+	Die = "die",
+	/// They are put back at the round's start.
+	Back = "back",
+}
+
+/// Fields of the `fall_out` mechanic: a player below a height has fallen out.
+dispatch msm:game_mechanic[fall_out] to struct FallOutMechanic {
+	/// The height a player falls below, -2,048 to 2,048.
+	below_y: int @ -2048..2048,
+	/// What happens to them.
+	action: FallOutAction,
+}
+
+/// Fields of the `floor` mechanic: a floor players break under each other, rebuilt each round.
+dispatch msm:game_mechanic[floor] to struct FloorMechanic {
+	/// The floor's box (an `msm:area` id of the project).
+	area: string @ 1..,
+	/// The floor's block, such as `minecraft:snow_block`.
+	block: #[id="block"] string,
+	/// The tool each player gets that breaks only the floor's block, such as
+	/// `minecraft:diamond_shovel` (a fast tool breaks at once).
+	tool: #[id="item"] string,
+	/// Whether broken floor blocks drop as items.
+	drops: boolean,
+	/// A building placed to rebuild the floor in place of filling the box with `block` (for a
+	/// patterned floor, or one over 32,768 blocks).
+	structure?: #[id="structure"] string,
+}
+
+/// One team's base.
+struct TeamBase {
+	/// The team (an `msm:team` id of the project).
+	team: string @ 1..,
+	/// The foot of the team's bed.
+	bed: BlockPos,
+	/// Where the team's players respawn while the bed stands.
+	spawn: BlockPos,
+}
+
+/// Fields of the `team_base` mechanic: while a team's bed stands its players respawn at their
+/// base; once it is broken, a player who dies is out.
+dispatch msm:game_mechanic[team_base] to struct TeamBaseMechanic {
+	/// The bases, one per team.
+	bases: [TeamBase] @ 1..16,
+	/// How long a player waits as a spectator before respawning, 0 to 60 seconds.
+	respawn_seconds: int @ 0..60,
+}
+
+/// A place that drops an item every few seconds.
+struct Generator {
+	/// Where the items drop.
+	at: BlockPos,
+	/// The item dropped.
+	item: #[id="item"] string,
+	/// How often, 1 to 3,600 seconds.
+	every_seconds: int @ 1..3600,
+	/// The most items left lying there before it stops, 1 to 64.
+	cap: int @ 1..64,
+	/// The team it belongs to (an `msm:team` id of the project); absent means everyone's.
+	team?: string @ 1..,
+}
+
+/// Fields of the `generators` mechanic.
+dispatch msm:game_mechanic[generators] to struct GeneratorsMechanic {
+	/// The generators.
+	generators: [Generator] @ 1..64,
+}
+
+/// How a shop is shown.
+enum(string) ShopWay {
+	/// A trader that stands still and cannot be hurt.
+	Trader = "trader",
+	/// A menu with a buy button for each offer.
+	Menu = "menu",
+}
+
+/// An item stack paid or bought in a shop.
+struct ShopStack {
+	/// The item.
+	item: #[id="item"] string,
+	/// How many, 1 to 99.
+	count: int @ 1..99,
+	/// Vanilla data components by id, each in its vanilla JSON form (for what is bought).
+	components?: VanillaComponents,
+}
+
+/// One thing a shop sells.
+struct ShopOffer {
+	/// What it costs.
+	cost: ShopStack,
+	/// A second cost, paid with the first.
+	cost_b?: ShopStack,
+	/// What the player gets.
+	gives: ShopStack,
+}
+
+/// A shop.
+struct Shop {
+	/// The shop's name, as players see it.
+	name: string @ 1..,
+	/// Where the trader stands, or the menu's sign or button is.
+	at: BlockPos,
+	/// How it is shown.
+	way: ShopWay,
+	/// The team it serves (an `msm:team` id of the project); absent means everyone.
+	team?: string @ 1..,
+	/// What it sells.
+	offers: [ShopOffer] @ 1..64,
+}
+
+/// Fields of the `shop` mechanic.
+dispatch msm:game_mechanic[shop] to struct ShopMechanic {
+	/// The shops.
+	shops: [Shop] @ 1..32,
+}
+
+/// How a border shrinks during a round.
+struct BorderShrink {
+	/// The size it shrinks to, in blocks across, 1 or more.
+	to: int @ 1..59999968,
+	/// How long the shrinking takes, 1 to 86,400 seconds.
+	seconds: int @ 1..86400,
+	/// How long after the round starts it begins, 0 to 86,400 seconds; defaults to 0.
+	after_seconds?: int @ 0..86400,
+}
+
+/// Fields of the `border` mechanic: a world border round the game.
+dispatch msm:game_mechanic[border] to struct BorderMechanic {
+	/// The size, in blocks across, 1 to 59,999,968.
+	size: int @ 1..59999968,
+	/// The centre `[x, z]`; defaults to `[0, 0]`.
+	centre?: [int] @ 2,
+	/// How it shrinks; absent means it stays the same size.
+	shrink?: BorderShrink,
+}
+
+/// Fields of the `kit_on` mechanic: which kit players get. A player whose role has a `kit` gets
+/// the role's kit in place of these.
+dispatch msm:game_mechanic[kit_on] to struct KitOnMechanic {
+	/// The kit given when a round starts (an `msm:kit` id of the project).
+	start?: string @ 1..,
+	/// The kit given at a respawn (an `msm:kit` id of the project).
+	respawn?: string @ 1..,
+}
+
+/// One mechanic of a game, with its settings.
+struct Mechanic {
+	/// The mechanic.
+	type: MechanicType,
+	...msm:game_mechanic[[type]],
+}
+
+/// One whole game (ADR 0132 D1): its type, round, lobby, roles and mechanics. It lowers to data
+/// pack files only, and at most one is in a mod (checked by the plugin validators). Teams,
+/// areas, timers, objectives and kits are the project's own elements, named here by their ids.
+struct Game {
+	/// The game type it started from.
+	type: GameType,
+	/// The game's name, as players see it.
+	name: string @ 1..,
+	/// The dimension the game's places are in; defaults to `minecraft:overworld`.
+	dimension?: #[id="dimension"] string,
+	/// How many players it is for.
+	players: PlayerCount,
+	/// How a round runs.
+	round: Round,
+	/// Where players wait before a round; absent means there is no lobby.
+	lobby?: Lobby,
+	/// The roles players are dealt; absent means every player plays the same part.
+	roles?: [Role] @ ..16,
+	/// The game's mechanics, each at most once (checked by the plugin validators).
+	mechanics: [Mechanic] @ ..32,
 }

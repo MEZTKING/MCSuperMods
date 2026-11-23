@@ -19528,6 +19528,70 @@
       ],
       "kind": "struct"
     },
+    "::msm::games::<anonymous 1>": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::AdvancementWin": {
+      "fields": [
+        {
+          "desc": "The advancement, such as `minecraft:end/kill_dragon` or one of the project's own.",
+          "key": "advancement",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "advancement"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Only players of this role count (an `id` of the game's `roles`); absent means anyone.",
+          "key": "role",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::games::Area": {
       "fields": [
         {
@@ -19664,6 +19728,96 @@
         "min": 3
       }
     },
+    "::msm::games::BorderMechanic": {
+      "fields": [
+        {
+          "desc": "The size, in blocks across, 1 to 59,999,968.",
+          "key": "size",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 59999968,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The centre `[x, z]`; defaults to `[0, 0]`.",
+          "key": "centre",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "int"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "How it shrinks; absent means it stays the same size.",
+          "key": "shrink",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BorderShrink"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::BorderShrink": {
+      "fields": [
+        {
+          "desc": "The size it shrinks to, in blocks across, 1 or more.",
+          "key": "to",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 59999968,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How long the shrinking takes, 1 to 86,400 seconds.",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 86400,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How long after the round starts it begins, 0 to 86,400 seconds; defaults to 0.",
+          "key": "after_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 86400,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::games::CollisionRule": {
       "enumKind": "string",
       "kind": "enum",
@@ -19707,6 +19861,89 @@
           "value": "hard"
         }
       ]
+    },
+    "::msm::games::EliminationMechanic": {
+      "fields": [
+        {
+          "desc": "The deaths a player has before they are out, 1 to 100.",
+          "key": "lives",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "What a player who is out does.",
+          "key": "out",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::OutAction"
+          }
+        },
+        {
+          "desc": "Whether everyone is told when a player is out.",
+          "key": "announce",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::FallOutAction": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "They are out of the round.",
+          "identifier": "Out",
+          "value": "out"
+        },
+        {
+          "desc": "They die (and respawn if the game lets them).",
+          "identifier": "Die",
+          "value": "die"
+        },
+        {
+          "desc": "They are put back at the round's start.",
+          "identifier": "Back",
+          "value": "back"
+        }
+      ]
+    },
+    "::msm::games::FallOutMechanic": {
+      "fields": [
+        {
+          "desc": "The height a player falls below, -2,048 to 2,048.",
+          "key": "below_y",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 2048,
+              "min": -2048
+            }
+          }
+        },
+        {
+          "desc": "What happens to them.",
+          "key": "action",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::FallOutAction"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::games::FixedNumberFormat": {
       "fields": [
@@ -19759,6 +19996,260 @@
       ],
       "kind": "struct"
     },
+    "::msm::games::FloorMechanic": {
+      "fields": [
+        {
+          "desc": "The floor's box (an `msm:area` id of the project).",
+          "key": "area",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The floor's block, such as `minecraft:snow_block`.",
+          "key": "block",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The tool each player gets that breaks only the floor's block, such as\n`minecraft:diamond_shovel` (a fast tool breaks at once).",
+          "key": "tool",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Whether broken floor blocks drop as items.",
+          "key": "drops",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "A building placed to rebuild the floor in place of filling the box with `block` (for a\npatterned floor, or one over 32,768 blocks).",
+          "key": "structure",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "structure"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Game": {
+      "fields": [
+        {
+          "desc": "The game type it started from.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::GameType"
+          }
+        },
+        {
+          "desc": "The game's name, as players see it.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The dimension the game's places are in; defaults to `minecraft:overworld`.",
+          "key": "dimension",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dimension"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many players it is for.",
+          "key": "players",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::PlayerCount"
+          }
+        },
+        {
+          "desc": "How a round runs.",
+          "key": "round",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::Round"
+          }
+        },
+        {
+          "desc": "Where players wait before a round; absent means there is no lobby.",
+          "key": "lobby",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::Lobby"
+          }
+        },
+        {
+          "desc": "The roles players are dealt; absent means every player plays the same part.",
+          "key": "roles",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::Role"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16
+            }
+          }
+        },
+        {
+          "desc": "The game's mechanics, each at most once (checked by the plugin validators).",
+          "key": "mechanics",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::Mechanic"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::GameItem": {
+      "fields": [
+        {
+          "desc": "The vanilla item it is made from, such as `minecraft:red_dye`.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Its name, as players see it.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The look: an item model id, such as `minecraft:heart_of_the_sea`; absent means the\nitem's own.",
+          "key": "model",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The recipe that makes it; absent means it cannot be crafted.",
+          "key": "recipe",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ShapedRecipe"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::games::GameMode": {
       "enumKind": "string",
       "kind": "enum",
@@ -19778,6 +20269,107 @@
         {
           "identifier": "Spectator",
           "value": "spectator"
+        }
+      ]
+    },
+    "::msm::games::GameType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Kill a player to take a heart.",
+          "identifier": "Lifesteal",
+          "value": "lifesteal"
+        },
+        {
+          "desc": "One runner beats the game while hunters track them.",
+          "identifier": "Manhunt",
+          "value": "manhunt"
+        },
+        {
+          "desc": "Protect your team's bed, buy gear, break the others' beds.",
+          "identifier": "BedWars",
+          "value": "bed_wars"
+        },
+        {
+          "desc": "Your own sky island with loot chests; last one standing wins.",
+          "identifier": "SkyBattles",
+          "value": "sky_battles"
+        },
+        {
+          "desc": "Break the floor under the others.",
+          "identifier": "Spleef",
+          "value": "spleef"
+        },
+        {
+          "desc": "The floor disappears behind you as you run.",
+          "identifier": "TntRun",
+          "value": "tnt_run"
+        },
+        {
+          "desc": "Hiders blend in; seekers have a timer.",
+          "identifier": "HideAndSeek",
+          "value": "hide_and_seek"
+        },
+        {
+          "desc": "One murderer, one detective, everyone else survives.",
+          "identifier": "MurderMystery",
+          "value": "murder_mystery"
+        },
+        {
+          "desc": "Build to a theme against the clock, then vote.",
+          "identifier": "BuildBattle",
+          "value": "build_battle"
+        },
+        {
+          "desc": "Checkpoints, a timer and a leaderboard.",
+          "identifier": "Parkour",
+          "value": "parkour"
+        },
+        {
+          "desc": "Loot chests in an arena and a shrinking border.",
+          "identifier": "SurvivalGames",
+          "value": "survival_games"
+        },
+        {
+          "desc": "No natural healing and a shrinking border.",
+          "identifier": "Uhc",
+          "value": "uhc"
+        },
+        {
+          "desc": "Take the other team's banner to your base.",
+          "identifier": "CaptureTheFlag",
+          "value": "capture_the_flag"
+        },
+        {
+          "desc": "Hold the hill to score.",
+          "identifier": "KingOfTheHill",
+          "value": "king_of_the_hill"
+        },
+        {
+          "desc": "One on one with a chosen kit.",
+          "identifier": "Duels",
+          "value": "duels"
+        },
+        {
+          "desc": "A tiny island in the void.",
+          "identifier": "Skyblock",
+          "value": "skyblock"
+        },
+        {
+          "desc": "One block that refills with something new.",
+          "identifier": "OneBlock",
+          "value": "one_block"
+        },
+        {
+          "desc": "Mine, sell and rank up.",
+          "identifier": "Prison",
+          "value": "prison"
+        },
+        {
+          "desc": "An empty game, made from nothing.",
+          "identifier": "Custom",
+          "value": "custom"
         }
       ]
     },
@@ -19867,6 +20459,402 @@
           "type": {
             "kind": "reference",
             "path": "::msm::games::OtherDimension"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Generator": {
+      "fields": [
+        {
+          "desc": "Where the items drop.",
+          "key": "at",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "The item dropped.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How often, 1 to 3,600 seconds.",
+          "key": "every_seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 3600,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The most items left lying there before it stops, 1 to 64.",
+          "key": "cap",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The team it belongs to (an `msm:team` id of the project); absent means everyone's.",
+          "key": "team",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::GeneratorsMechanic": {
+      "fields": [
+        {
+          "desc": "The generators.",
+          "key": "generators",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::Generator"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::HeadStartMechanic": {
+      "fields": [
+        {
+          "desc": "The role held (an `id` of the game's `roles`).",
+          "key": "held",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How long, 1 to 600 seconds.",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 600,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether the held players are also blinded.",
+          "key": "blind",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::HeartsAtZero": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "They watch as a spectator until the next round.",
+          "identifier": "Spectate",
+          "value": "spectate"
+        },
+        {
+          "desc": "They are kept out for a time (`kept_out_seconds`), counted while the server runs.",
+          "identifier": "KeptOut",
+          "value": "kept_out"
+        },
+        {
+          "desc": "They start again with `start_again_hearts` hearts.",
+          "identifier": "StartAgain",
+          "value": "start_again"
+        }
+      ]
+    },
+    "::msm::games::HeartsMechanic": {
+      "fields": [
+        {
+          "desc": "The hearts each player starts with, 1 to 512.",
+          "key": "start",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 512,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The most hearts a player can have, 1 to 512.",
+          "key": "most",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 512,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The hearts taken from the loser and given to the winner of a kill, 1 to 100. Only kills by\nanother player count.",
+          "key": "per_kill",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "What a death that is not a kill by another player does; defaults to `lose_heart`.",
+          "key": "other_deaths",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::OtherDeaths"
+          }
+        },
+        {
+          "desc": "What happens to a player with no hearts left.",
+          "key": "at_zero",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::HeartsAtZero"
+          }
+        },
+        {
+          "desc": "How long a player is kept out, for `kept_out`: 1 to 2,592,000 seconds of the server\nrunning (time does not pass while the server is off).",
+          "key": "kept_out_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 2592000,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The hearts a player starts again with, for `start_again`, 1 to 512.",
+          "key": "start_again_hearts",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 512,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The Heart item: using it adds a heart; absent means there is none.",
+          "key": "heart_item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::GameItem"
+          }
+        },
+        {
+          "desc": "Whether players can turn one of their hearts into a Heart item with `/trigger` (never\nbelow 1 heart). Needs `heart_item`.",
+          "key": "withdraw",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "The revive item; absent means there is none.",
+          "key": "revive",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ReviveItem"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Kit": {
+      "fields": [
+        {
+          "desc": "The kit's name, as players see it.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The items, put in the inventory in order.",
+          "key": "items",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::KitStack"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 36
+            }
+          }
+        },
+        {
+          "desc": "The armour put on.",
+          "key": "armour",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::KitArmour"
+          }
+        },
+        {
+          "desc": "The item put in the off hand.",
+          "key": "off_hand",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::KitPiece"
+          }
+        },
+        {
+          "desc": "Effects given with the kit.",
+          "key": "effects",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::KitEffect"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16
+            }
+          }
+        },
+        {
+          "desc": "Whether the player's inventory, armour, off hand and effects are cleared before the kit is\ngiven.",
+          "key": "clear_first",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::KitArmour": {
+      "fields": [
+        {
+          "desc": "The helmet.",
+          "key": "head",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::KitPiece"
+          }
+        },
+        {
+          "desc": "The chestplate (or elytra).",
+          "key": "chest",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::KitPiece"
+          }
+        },
+        {
+          "desc": "The leggings.",
+          "key": "legs",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::KitPiece"
+          }
+        },
+        {
+          "desc": "The boots.",
+          "key": "feet",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::KitPiece"
           }
         }
       ],
@@ -19979,6 +20967,316 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::games::KitOnMechanic": {
+      "fields": [
+        {
+          "desc": "The kit given when a round starts (an `msm:kit` id of the project).",
+          "key": "start",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The kit given at a respawn (an `msm:kit` id of the project).",
+          "key": "respawn",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::KitPiece": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many, 1 to 99; defaults to 1. Only the off hand holds more than one.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 99,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Vanilla data components by id, each in its vanilla JSON form.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VanillaComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::KitStack": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many, 1 to 99.",
+          "key": "count",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 99,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The slot, as `/item replace` names it (such as `hotbar.0` or `inventory.5`); absent means\nthe first free slot.",
+          "key": "slot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Vanilla data components by id (such as a name, enchantments or `can_break`), each in its\nvanilla JSON form.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VanillaComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::LastStandingWin": {
+      "fields": [
+        {
+          "desc": "Whether the last player or the last team wins.",
+          "key": "by",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::WinBy"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Lobby": {
+      "fields": [
+        {
+          "desc": "Where players wait.",
+          "key": "spawn",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "The lobby's area (an `msm:area` id of the project); players who walk out of it are put\nback.",
+          "key": "area",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "A building placed for the lobby.",
+          "key": "building",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::AreaStructure"
+          }
+        },
+        {
+          "desc": "How players are put into teams.",
+          "key": "teams",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::LobbyTeams"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::LobbyTeams": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Split evenly at random when the round starts.",
+          "identifier": "Auto",
+          "value": "auto"
+        },
+        {
+          "desc": "Each player picks a team.",
+          "identifier": "Pick",
+          "value": "pick"
+        },
+        {
+          "desc": "No teams.",
+          "identifier": "None",
+          "value": "none"
+        }
+      ]
+    },
+    "::msm::games::Mechanic": {
+      "fields": [
+        {
+          "desc": "The mechanic.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::MechanicType"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["type"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:game_mechanic"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::MechanicType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Hearts move from the loser to the winner of a fight (Lifesteal).",
+          "identifier": "Hearts",
+          "value": "hearts"
+        },
+        {
+          "desc": "A compass that points at a role's players (Manhunt).",
+          "identifier": "Tracker",
+          "value": "tracker"
+        },
+        {
+          "desc": "One role waits while the others get away.",
+          "identifier": "HeadStart",
+          "value": "head_start"
+        },
+        {
+          "desc": "Players are out after a number of deaths.",
+          "identifier": "Elimination",
+          "value": "elimination"
+        },
+        {
+          "desc": "Players below a height have fallen out.",
+          "identifier": "FallOut",
+          "value": "fall_out"
+        },
+        {
+          "desc": "A floor that players break, rebuilt each round (Spleef).",
+          "identifier": "Floor",
+          "value": "floor"
+        },
+        {
+          "desc": "Each team has a base with a bed; no bed, no respawn.",
+          "identifier": "TeamBase",
+          "value": "team_base"
+        },
+        {
+          "desc": "Places that drop items every few seconds.",
+          "identifier": "Generators",
+          "value": "generators"
+        },
+        {
+          "desc": "Traders or menus that sell gear for items.",
+          "identifier": "Shop",
+          "value": "shop"
+        },
+        {
+          "desc": "A world border.",
+          "identifier": "Border",
+          "value": "border"
+        },
+        {
+          "desc": "Which kit players get at the start and at a respawn.",
+          "identifier": "KitOn",
+          "value": "kit_on"
+        }
+      ]
     },
     "::msm::games::NameTagVisibility": {
       "enumKind": "string",
@@ -20477,6 +21775,22 @@
       ],
       "kind": "struct"
     },
+    "::msm::games::OtherDeaths": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Takes a heart away without giving it to anyone.",
+          "identifier": "LoseHeart",
+          "value": "lose_heart"
+        },
+        {
+          "desc": "Changes nothing.",
+          "identifier": "Keep",
+          "value": "keep"
+        }
+      ]
+    },
     "::msm::games::OtherDimension": {
       "enumKind": "string",
       "kind": "enum",
@@ -20490,6 +21804,615 @@
           "desc": "Empty: a flat dimension with no layers. A void End needs an End portal frame in the start\nstructure to be reached.",
           "identifier": "Void",
           "value": "void"
+        }
+      ]
+    },
+    "::msm::games::OutAction": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Watches as a spectator.",
+          "identifier": "Spectate",
+          "value": "spectate"
+        },
+        {
+          "desc": "Goes back to the lobby.",
+          "identifier": "Lobby",
+          "value": "lobby"
+        }
+      ]
+    },
+    "::msm::games::PlayerCount": {
+      "fields": [
+        {
+          "desc": "The fewest players a round needs, 1 to 100. A round with one player is a practice round.",
+          "key": "min",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The most players a round takes, 1 to 100; no smaller than `min` (checked by the plugin\nvalidators).",
+          "key": "max",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::ReviveItem": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::GameItem"
+          }
+        },
+        {
+          "desc": "How many hearts the player comes back with, 1 to 512.",
+          "key": "hearts",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 512,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Role": {
+      "fields": [
+        {
+          "desc": "The role's id, used by the game's other fields: lower case letters, digits and `_`.",
+          "key": "id",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The role's name, as players see it.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How many players get the role, 1 to 100, or `rest` for everyone not dealt another role\n(at most one role is `rest`, checked by the plugin validators).",
+          "key": "count",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 100,
+                  "min": 1
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "rest"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "desc": "The team the role's players join (an `msm:team` id of the project).",
+          "key": "team",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The kit the role's players get at the start and at a respawn (an `msm:kit` id of the\nproject), in place of `kit_on`'s.",
+          "key": "kit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::RoleDiesWin": {
+      "fields": [
+        {
+          "desc": "The role whose players being out ends the round (an `id` of the game's `roles`).",
+          "key": "role",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The role that wins then (an `id` of the game's `roles`).",
+          "key": "winner",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Round": {
+      "fields": [
+        {
+          "desc": "Rounds, or one endless game.",
+          "key": "kind",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::RoundKind"
+          }
+        },
+        {
+          "desc": "What starts a round.",
+          "key": "start",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::RoundStart"
+          }
+        },
+        {
+          "desc": "The countdown before a round starts, 0 to 600 seconds.",
+          "key": "countdown",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 600,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The longest a round lasts, 1 to 86,400 seconds; absent means no time limit.",
+          "key": "length",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 86400,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Where players are spread when a round starts (an `msm:area` id of the project); absent\nmeans they stay where they are.",
+          "key": "play_area",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How the round is won. An endless game may have none; a game in rounds needs a way to end\n(checked by the plugin validators).",
+          "key": "win",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::WinCondition"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 8
+            }
+          }
+        },
+        {
+          "desc": "What happens when a round ends.",
+          "key": "after",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::RoundAfter"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::RoundAfter": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Everyone goes back to the lobby.",
+          "identifier": "Lobby",
+          "value": "lobby"
+        },
+        {
+          "desc": "Everyone stays where they are and the game stops.",
+          "identifier": "Stay",
+          "value": "stay"
+        },
+        {
+          "desc": "The next round starts at once.",
+          "identifier": "NextRound",
+          "value": "next_round"
+        }
+      ]
+    },
+    "::msm::games::RoundKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "One long game with no end, such as a Lifesteal server.",
+          "identifier": "Endless",
+          "value": "endless"
+        },
+        {
+          "desc": "Rounds that start, are won and end.",
+          "identifier": "Rounds",
+          "value": "rounds"
+        }
+      ]
+    },
+    "::msm::games::RoundStart": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A command, a Rules step or a button (the game's `start` function).",
+          "identifier": "Command",
+          "value": "command"
+        },
+        {
+          "desc": "Enough players are in the lobby (`players.min`); the countdown then runs.",
+          "identifier": "EnoughPlayers",
+          "value": "enough_players"
+        },
+        {
+          "desc": "The world starts.",
+          "identifier": "WorldStart",
+          "value": "world_start"
+        }
+      ]
+    },
+    "::msm::games::ScoreTargetWin": {
+      "fields": [
+        {
+          "desc": "The score counted (an `msm:objective` id of the project).",
+          "key": "objective",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The score to reach, 1 or more.",
+          "key": "target",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether a player's own score or the sum of a team's scores counts.",
+          "key": "by",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::WinBy"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::ShapedRecipe": {
+      "fields": [
+        {
+          "desc": "One to three rows of one to three characters; a space is an empty slot.",
+          "key": "pattern",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "max": 3,
+                "min": 1
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The item each character of `pattern` stands for.",
+          "key": "key",
+          "kind": "pair",
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "attributes": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "item"
+                        }
+                      }
+                    }
+                  ],
+                  "kind": "string"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Shop": {
+      "fields": [
+        {
+          "desc": "The shop's name, as players see it.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Where the trader stands, or the menu's sign or button is.",
+          "key": "at",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "How it is shown.",
+          "key": "way",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ShopWay"
+          }
+        },
+        {
+          "desc": "The team it serves (an `msm:team` id of the project); absent means everyone.",
+          "key": "team",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "What it sells.",
+          "key": "offers",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::ShopOffer"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::ShopMechanic": {
+      "fields": [
+        {
+          "desc": "The shops.",
+          "key": "shops",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::Shop"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::ShopOffer": {
+      "fields": [
+        {
+          "desc": "What it costs.",
+          "key": "cost",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ShopStack"
+          }
+        },
+        {
+          "desc": "A second cost, paid with the first.",
+          "key": "cost_b",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ShopStack"
+          }
+        },
+        {
+          "desc": "What the player gets.",
+          "key": "gives",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ShopStack"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::ShopStack": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many, 1 to 99.",
+          "key": "count",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 99,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Vanilla data components by id, each in its vanilla JSON form (for what is bought).",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VanillaComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::ShopWay": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A trader that stands still and cannot be hurt.",
+          "identifier": "Trader",
+          "value": "trader"
+        },
+        {
+          "desc": "A menu with a buy button for each offer.",
+          "identifier": "Menu",
+          "value": "menu"
         }
       ]
     },
@@ -20674,6 +22597,76 @@
       ],
       "kind": "struct"
     },
+    "::msm::games::TeamBase": {
+      "fields": [
+        {
+          "desc": "The team (an `msm:team` id of the project).",
+          "key": "team",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The foot of the team's bed.",
+          "key": "bed",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "Where the team's players respawn while the bed stands.",
+          "key": "spawn",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::TeamBaseMechanic": {
+      "fields": [
+        {
+          "desc": "The bases, one per team.",
+          "key": "bases",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::TeamBase"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How long a player waits as a spectator before respawning, 0 to 60 seconds.",
+          "key": "respawn_seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 60,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::games::TeamColour": {
       "enumKind": "string",
       "kind": "enum",
@@ -20745,6 +22738,32 @@
         {
           "identifier": "Reset",
           "value": "reset"
+        }
+      ]
+    },
+    "::msm::games::TimeUpWinner": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Nobody: a draw.",
+          "identifier": "Nobody",
+          "value": "nobody"
+        },
+        {
+          "desc": "Everyone still in.",
+          "identifier": "StillIn",
+          "value": "still_in"
+        },
+        {
+          "desc": "The player or team with the highest score of `objective`.",
+          "identifier": "TopScore",
+          "value": "top_score"
+        },
+        {
+          "desc": "The players of `role`.",
+          "identifier": "Role",
+          "value": "role"
         }
       ]
     },
@@ -20854,6 +22873,59 @@
         }
       ]
     },
+    "::msm::games::TimerEndsWin": {
+      "fields": [
+        {
+          "desc": "The timer (an `msm:timer` id of the project); absent means the round's `length`.",
+          "key": "timer",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Who wins when it runs out.",
+          "key": "winner",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::TimeUpWinner"
+          }
+        },
+        {
+          "desc": "The score compared, for the winner `top_score` (an `msm:objective` id of the project).",
+          "key": "objective",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The winning role, for the winner `role` (an `id` of the game's `roles`).",
+          "key": "role",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::games::TimerShow": {
       "enumKind": "string",
       "kind": "enum",
@@ -20885,6 +22957,86 @@
           "desc": "When the world first starts.",
           "identifier": "WorldStart",
           "value": "world_start"
+        }
+      ]
+    },
+    "::msm::games::TrackerMechanic": {
+      "fields": [
+        {
+          "desc": "The role that holds the compass (an `id` of the game's `roles`).",
+          "key": "holder",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The role it points at (an `id` of the game's `roles`).",
+          "key": "target",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How often it is pointed again, 1 to 60 seconds.",
+          "key": "every_seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 60,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Where it points when the target is in another dimension.",
+          "key": "other_dimension",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::TrackerOtherDimension"
+          }
+        },
+        {
+          "desc": "The compass's name, as players see it; absent means the plain compass name.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::TrackerOtherDimension": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "At the target's last place in the holder's dimension.",
+          "identifier": "LastPlace",
+          "value": "last_place"
+        },
+        {
+          "desc": "Nowhere: the needle spins.",
+          "identifier": "Spin",
+          "value": "spin"
         }
       ]
     },
@@ -20961,6 +23113,78 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::games::WinBy": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Players",
+          "value": "players"
+        },
+        {
+          "identifier": "Teams",
+          "value": "teams"
+        }
+      ]
+    },
+    "::msm::games::WinCondition": {
+      "fields": [
+        {
+          "desc": "The kind of condition.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::WinType"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["type"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:game_win"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::WinType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The last player, or the last team, still in wins.",
+          "identifier": "LastStanding",
+          "value": "last_standing"
+        },
+        {
+          "desc": "The round ends when every player of a role is out, such as the runner of a hunt.",
+          "identifier": "RoleDies",
+          "value": "role_dies"
+        },
+        {
+          "desc": "The first player to get an advancement wins, such as killing the dragon.",
+          "identifier": "Advancement",
+          "value": "advancement"
+        },
+        {
+          "desc": "The first player or team to reach a score wins.",
+          "identifier": "ScoreTarget",
+          "value": "score_target"
+        },
+        {
+          "desc": "The round ends when a timer runs out.",
+          "identifier": "TimerEnds",
+          "value": "timer_ends"
+        }
+      ]
     },
     "::msm::games::WorldSetup": {
       "fields": [
@@ -29843,6 +32067,52 @@
         "path": "::msm::definition::HolderLayoutFields"
       }
     },
+    "msm:game_mechanic": {
+      "border": {
+        "kind": "reference",
+        "path": "::msm::games::BorderMechanic"
+      },
+      "elimination": {
+        "kind": "reference",
+        "path": "::msm::games::EliminationMechanic"
+      },
+      "fall_out": {
+        "kind": "reference",
+        "path": "::msm::games::FallOutMechanic"
+      },
+      "floor": {
+        "kind": "reference",
+        "path": "::msm::games::FloorMechanic"
+      },
+      "generators": {
+        "kind": "reference",
+        "path": "::msm::games::GeneratorsMechanic"
+      },
+      "head_start": {
+        "kind": "reference",
+        "path": "::msm::games::HeadStartMechanic"
+      },
+      "hearts": {
+        "kind": "reference",
+        "path": "::msm::games::HeartsMechanic"
+      },
+      "kit_on": {
+        "kind": "reference",
+        "path": "::msm::games::KitOnMechanic"
+      },
+      "shop": {
+        "kind": "reference",
+        "path": "::msm::games::ShopMechanic"
+      },
+      "team_base": {
+        "kind": "reference",
+        "path": "::msm::games::TeamBaseMechanic"
+      },
+      "tracker": {
+        "kind": "reference",
+        "path": "::msm::games::TrackerMechanic"
+      }
+    },
     "msm:game_rule_kind": {
       "boolean": {
         "kind": "reference",
@@ -29851,6 +32121,28 @@
       "integer": {
         "kind": "reference",
         "path": "::msm::definition::IntegerGameRule"
+      }
+    },
+    "msm:game_win": {
+      "advancement": {
+        "kind": "reference",
+        "path": "::msm::games::AdvancementWin"
+      },
+      "last_standing": {
+        "kind": "reference",
+        "path": "::msm::games::LastStandingWin"
+      },
+      "role_dies": {
+        "kind": "reference",
+        "path": "::msm::games::RoleDiesWin"
+      },
+      "score_target": {
+        "kind": "reference",
+        "path": "::msm::games::ScoreTargetWin"
+      },
+      "timer_ends": {
+        "kind": "reference",
+        "path": "::msm::games::TimerEndsWin"
       }
     },
     "msm:games_number_format": {
@@ -30490,5 +32782,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:dc257b14cd618bfd5460964909766cbb42e484ab97ff7266c26665cea575c429"
+  "ref": "msm-mcdoc:sha256:6b4a11c835f73e840a11e76868797f073a1c8f48b837812443770b4a9a5b6185"
 }

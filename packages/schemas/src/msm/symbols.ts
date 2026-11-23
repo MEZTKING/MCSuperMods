@@ -66,6 +66,9 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  *   `msm:timer` and `msm:area` (ADR 0113 D2 to D7, `games.mcdoc`). Editor-only: the games plugin
  *   lowers them to plain data pack files, so no runtime definition exists and the conformance
  *   corpus has no games files.
+ * - `game`, `kit`: element data of the Game and map Studio's kinds `msm:game` (a whole game:
+ *   type, round, lobby, roles and mechanics) and `msm:kit` (ADR 0132 D1 to D3, B722), also in
+ *   `games.mcdoc` and editor-only like their six sisters.
  * - `machineRecipe`: a machine recipe file `data/<ns>/recipe/<path>.json` whose `type` is a
  *   machine block's id (ADR 0075 D2, D8); vanilla's recipe dispatch does not know such types.
  */
@@ -119,6 +122,8 @@ export const MSM_SCHEMA_REFS = {
   objective: 'msm:objective',
   timer: 'msm:timer',
   area: 'msm:area',
+  game: 'msm:game',
+  kit: 'msm:kit',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -172,6 +177,8 @@ export const MSM_TYPE_PATHS = {
   objective: '::msm::games::Objective',
   timer: '::msm::games::Timer',
   area: '::msm::games::Area',
+  game: '::msm::games::Game',
+  kit: '::msm::games::Kit',
   action: '::msm::action::Action',
 } as const;
 
@@ -226,6 +233,8 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.objective]: MSM_TYPE_PATHS.objective,
   [MSM_SCHEMA_REFS.timer]: MSM_TYPE_PATHS.timer,
   [MSM_SCHEMA_REFS.area]: MSM_TYPE_PATHS.area,
+  [MSM_SCHEMA_REFS.game]: MSM_TYPE_PATHS.game,
+  [MSM_SCHEMA_REFS.kit]: MSM_TYPE_PATHS.kit,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

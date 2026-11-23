@@ -11213,3 +11213,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B762 starts from this commit (`server/`). B763 wires `ensureInstance` and `listManaged` in main with `createNodeInstallFileSystem({ rename: true })` and runs them one at a time per launcher folder.
+
+## 2026-11-23 — executor — B722 Format: `msm:game` and `msm:kit`
+
+**What**
+- `packages/schemas/mcdoc/msm/games.mcdoc` gained `::msm::games::Game` and `::msm::games::Kit` (ADR 0132 D1 to D3), with a doc comment in plain words on every field: a game's `type` (the 18 catalogue types and `custom`), `name`, `dimension?`, `players { min, max }`, `round { kind, start, countdown, length?, play_area?, win, after }` with the win conditions on the new dispatcher `msm:game_win` (`last_standing`, `role_dies`, `advancement`, `score_target`, `timer_ends`), `lobby? { spawn, area?, building?, teams }`, `roles? [{ id, name, count | "rest", team?, kit? }]` and `mechanics` on the new dispatcher `msm:game_mechanic` (one struct for each of D2's eleven mechanics); a kit's `name`, `items`, `armour?`, `off_hand?`, `effects?`, `clear_first`. Item components use the existing `VanillaComponents` passthrough, so the target checks them. `symbols.json` regenerated (700 types).
+- `MSM_SCHEMA_REFS.game` / `kit`, their type paths and aliases in `packages/schemas/src/msm/symbols.ts`; `kinds/game.ts` and `kinds/kit.ts` use them and carry real default data (an empty game in rounds won by the last player still in; a stone sword and bread kit).
+- Cases in `packages/schemas/test/games-schema.test.ts` (the games kinds' corpus, since they are editor-only): the smallest and the fullest game and kit, a valid and an invalid case per mechanic and per kind of win (pinned to the schema's enums, so a new mechanic without cases fails), role counts, lobby, kit slots, and on both targets the components checked against the target's own. `packages/plugins/games/test/kinds-game-kit.test.ts`: the refs, the default data on both targets, the flags still off.
+
+**Decisions**
+- `GAME_KIND_LISTED` and `KIT_KIND_LISTED` stay `false` (orchestrator): they flip in B724 once lowering gives files; the files' comments say so.
+- The fall-out mechanic's field is `action`, not `then` (Biome refuses a `then` property). Additions to the brief's outline, each optional: the game's `dimension`, the round's `play_area`; the mock-up's Heart and revive items are `GameItem` (base item, name, model, shaped recipe).
+- Positions are typed in the game's `dimension`; project elements (teams, areas, timers, objectives, kits) are named by element id strings, vanilla things (`advancement`, `structure`, `item`, `block`) by registry ids.
+
+**Next**
+- B724 to B726 lower these fields; B732 builds the sections on them; B723's facts in parallel.
