@@ -918,7 +918,8 @@ describe('the prompt in topic files (B681)', () => {
   // (`src/prompt/live-views.ts`: the kinds with a live view, their labels and the limits). B553
   // moved it for Rules 3's 25 catalogue ids for games, ADR 0127 for the step `set_on_fire`, and B558
   // for Try it's games grounds ("Empty sky", "One of my buildings") and the commands `place` and `random`.
-  const PINNED = 'f2184869b0eb1b14e32c083c842bbbc4c563dabe948c6355b0226b269b17dfc0';
+  // B557 moved it for the Home tile "Make a game" and the drawn recipes lucky_block, flag and timer.
+  const PINNED = '20a2fa82d8a679c61906090638ac2aa71d271a377eb5960f0fbcbeacb5f496ad';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');

@@ -40,7 +40,7 @@
   "kind": "minecraft:worldgen/world_preset",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "The World Type Cloud Realm: an empty sky, all of it the cherry grove biome. Choose it under More > World Type when creating a world. The Nether and the End are the vanilla ones. The start island, its chest and the things you start with come from the Skyblock flow; until MSM has it, this makes the empty world only. Players start in the air and fall: play it in Creative, or build a start island with the Structure Studio. Open it to see the world on the live map.",
+    "notes": "The World Type Cloud Realm: an empty sky, all of it the cherry grove biome. Choose it under More > World Type when creating a world. The Nether and the End are the vanilla ones. This makes the empty world only: the Skyblock flow, under Games, makes the start island, its chest and the things you start with. Players start in the air and fall: play it in Creative, or build a start island with the Structure Studio. Open it to see the world on the live map.",
     "tags": [
       "example",
       "worlds"

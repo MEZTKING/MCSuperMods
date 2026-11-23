@@ -914,7 +914,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'world-empty-sky',
     'Empty sky with a start island',
-    'A World Type of empty sky, for a Skyblock: the biome of the sky. The start island, its chest and what you start with come from the Skyblock flow; until MSM has it, this makes the empty world only. Choose it under More > World Type when creating a world.',
+    'A World Type of empty sky, for a Skyblock: the biome of the sky. This makes the empty world only: the Skyblock flow, under Games, makes the start island, its chest and what you start with. Choose it under More > World Type when creating a world.',
     'content',
     ['datapack', 'resourcepack'],
     worldEmptySkyBundle,
@@ -922,7 +922,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       parameters: WORLD_EMPTY_SKY_PARAMETERS,
       creator: {
         group: 'worlds',
-        blurb: 'An empty world of sky; the start island comes with Skyblock.',
+        blurb: 'An empty world of sky; the Skyblock flow adds the start island.',
       },
     },
   ),

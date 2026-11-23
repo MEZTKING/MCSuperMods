@@ -15,8 +15,13 @@ import {
   bundleWorld,
   CREATOR_MAP_TAB,
   CreatorPreview,
+  creatorWorldPlan,
 } from '../../src/renderer/src/components/creator/CreatorPreview';
-import type { CreatorTab } from '../../src/renderer/src/components/creator/creator-model';
+import {
+  CREATOR_GROUPS,
+  type CreatorTab,
+  creatorFlows,
+} from '../../src/renderer/src/components/creator/creator-model';
 import { bundlePreviewProject } from '../../src/renderer/src/preview/bundle-source';
 import { TerrainFiles, type TerrainFilesState } from '../../src/renderer/src/terrain/files';
 import { hostsFor } from '../../src/renderer/src/terrain/hosts';
@@ -43,7 +48,11 @@ afterEach(() => {
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target as Target;
 
 function islands(values: Record<string, Json> = {}): ContentBundle {
-  const flow = libraryStarters.find((entry) => entry.id === 'world-islands') as ProjectStarter;
+  return flowBundle('world-islands', values);
+}
+
+function flowBundle(id: string, values: Record<string, Json> = {}): ContentBundle {
+  const flow = libraryStarters.find((entry) => entry.id === id) as ProjectStarter;
   const defaults = Object.fromEntries(
     (flow.parameters ?? []).map((parameter) => [parameter.id, parameter.default]),
   );
@@ -183,5 +192,60 @@ describe("the Creator's memory session", () => {
     expect(states.length).toBe(2);
     expect(states[1]?.filesHash).not.toBe(state.filesHash);
     files.dispose();
+  });
+});
+
+describe('game flows on the Map tab (B557)', () => {
+  it('lists every flow group, Games after Worlds, so the eight game flows are shown', () => {
+    const groups = CREATOR_GROUPS.map((entry) => entry.group);
+    expect(groups.indexOf('games')).toBe(groups.indexOf('worlds') + 1);
+    const flows = creatorFlows(libraryStarters, target);
+    for (const flow of flows) expect(groups).toContain(flow.group);
+    expect(flows.filter((flow) => flow.group === 'games').map((flow) => flow.starter.id)).toEqual(
+      expect.arrayContaining(['skyblock', 'one-block', 'sky-islands']),
+    );
+  });
+
+  it.each([
+    ['skyblock', {}],
+    ['one-block', {}],
+    ['sky-islands', {}],
+  ] as const)("draws the %s flow's World Type from its world setup", async (id, values) => {
+    const bundle = flowBundle(id, values);
+    const world = bundleWorld(bundle);
+    expect(world?.kind).toBe('msm:world_setup');
+    const preview = bundlePreviewProject(project, bundle);
+    const element = preview.namespaces
+      .flatMap((ns) => ns.elements)
+      .find((entry) => entry.kind === world?.kind && entry.id === world?.id);
+    expect(element).toBeDefined();
+    const plan = creatorWorldPlan(preview, element as never, target);
+    expect(plan.draw).toBe(true);
+    if (!plan.draw) return;
+    expect(plan.preset.kind).toBe('minecraft:worldgen/world_preset');
+    // The lowered preset is laid over the project in memory; the project is untouched.
+    const ids = plan.project.namespaces.flatMap((ns) => ns.elements.map((e) => e.id));
+    expect(ids).toContain(plan.preset.id);
+    expect(project.namespaces[0]?.elements).toHaveLength(0);
+    // The tab shows and hands that preset to the map.
+    const onTabChange = vi.fn();
+    render(
+      <CreatorPreview
+        {...props}
+        bundle={bundle}
+        tab={'map' as CreatorTab}
+        onTabChange={onTabChange}
+      />,
+    );
+    expect(screen.getByTestId('creator-tab-map')).toBeTruthy();
+    expect(await screen.findByTestId('creator-map-stub')).toBeTruthy();
+    const drawn = shown.at(-1) as { element: { id: string; kind: string }; project: Project };
+    expect(drawn.element.kind).toBe('minecraft:worldgen/world_preset');
+    expect(drawn.element.id).toBe(plan.preset.id);
+  });
+
+  it("has no Map tab for a game played in the game's own world", () => {
+    const bundle = flowBundle('one-block', { world: 'vanilla' });
+    expect(bundleWorld(bundle)).toBeNull();
   });
 });

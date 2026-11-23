@@ -21,6 +21,7 @@ import {
   piecesText,
   RULES_ENTRY_FORMS,
   RULES_SIGNAL_FIELD,
+  rulesGeneratedIds,
   STEPS,
   signalLiteral,
   VALUES,
@@ -278,6 +279,38 @@ describe('the function bridge (ADR 0115 D5)', () => {
     expect(script).toContain('"enter+demo+arena"');
     expect(script).toContain('"break2+demo+magic_block"');
     expect(script).toContain('e.id !== "demo:msm_signal"');
+  });
+
+  it('names the functions and the command it adds for the host (B557 follow-up)', () => {
+    const rules = book([
+      areaRule('a'),
+      areaRule('b'),
+      {
+        do: [{ seconds: 1, step: 'set_weather', weather: 'clear' }],
+        key: 'c',
+        when: { options: { phase: 2 }, subject: 'demo:magic_block', trigger: 'one_block_broken' },
+      },
+    ]);
+    const elements = [...PROJECT, rules];
+    const expanded = applyPatches(elements, expandRules({ elements, target }).patches).find(
+      (e) => e.id === 'demo:rules',
+    );
+    if (expanded === undefined) throw new Error('no book');
+    const ids = rulesGeneratedIds(expanded.data);
+    expect(ids).toEqual({
+      function: [
+        'demo:msm_rules/signal/area/arena/entered',
+        'demo:msm_rules/signal/one_block/magic_block/broken/2',
+      ],
+      command: ['msm_signal_demo'],
+    });
+    // Every function the bridge lowers is named, and nothing else.
+    const lowered = lowerRuleBook(expanded, target)
+      .map((file) => /^data\/([^/]+)\/function\/(.+)\.mcfunction$/.exec(file.path))
+      .flatMap((match) => (match === null ? [] : [`${match[1]}:${match[2]}`]))
+      .sort();
+    expect(lowered).toEqual(ids.function);
+    expect(rulesGeneratedIds(rules.data)).toEqual({ function: [], command: [] });
   });
 
   it('makes nothing without a script runtime or a signal rule', () => {

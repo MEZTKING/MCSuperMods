@@ -185,6 +185,9 @@ export const ART_RECIPE_NAMES = [
   'particle_orb',
   'particle_puff',
   'particle_leaf',
+  'lucky_block',
+  'flag',
+  'timer',
 ] as const;
 
 /** Most a `create_texture` seed may be. */

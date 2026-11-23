@@ -197,7 +197,8 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B682: propose_plan is called first only for a whole mod or more
+  // The hash last changed with B557: create_texture's recipe list gained the lucky block, flag
+  // and timer of the game flows (ADR 0117 D2). Before that with B682: propose_plan is called first only for a whole mod or more
   // than three main things (ADR 0125 D2), and no description says "placeholder" or "changeset"
   // (D13). Before that with B539: create_texture's recipe list gained the boat, the boat
   // bodies and the villager clothes (ADR 0110, ADR 0107 D5, ADR 0112 D2). Before that with B518:
@@ -211,7 +212,7 @@ describe('tool catalogue is frozen (ADR 0055 D11)', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '876e9238d5d821a8299a3ee9ee05f4c0d5dc10980320e932571deae622c3263d',
+      '5cbb15ca47e3876b7f40b13aa5655606c8a7d1a37f8ad020cb6111271341ac24',
     );
   });
 });

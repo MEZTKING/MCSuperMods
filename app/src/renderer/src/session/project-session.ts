@@ -182,6 +182,7 @@ import {
   rewriteSoundEventProblems,
   type SchemaContext,
   UNREGISTERED_SOUND_EVENT,
+  withExpandedRuleBooks,
 } from './schema-context';
 import {
   checkRuleScript,
@@ -2898,16 +2899,19 @@ export class ProjectSession {
     const packager =
       prepare === undefined ? exporter : await prepare(exporter, project, lowered, context.target);
     const info = await this.#platform.app.info();
-    const validateText = this.#textValidator(project, context.target, ruleScripts);
+    // B557 follow-up: the registry view and the checker see the expanded rule books, so the ids
+    // and the command the rules expander's output lowers (Rules' function bridge) are known.
+    const known = withExpandedRuleBooks(project, lowered);
+    const validateText = this.#textValidator(known, context.target, ruleScripts);
     const exportReport = await runExport({
       project: lowered,
       registry: this.registry,
       target: context.target,
       schemaIndex: context.schemaIndex,
-      registries: context.registries(project),
+      registries: context.registries(known),
       // ADR 0057 D3: `msm` layer files take project sound event keys as `sound_event` ids;
       // vanilla files keep the plain view, where a bare key is an unregistered sound event.
-      registriesFor: (file) => context.registries(project, outputKindFor(file)),
+      registriesFor: (file) => context.registries(known, outputKindFor(file)),
       rewriteSchemaProblems: (file, problems, data, registries) =>
         registries === undefined
           ? problems

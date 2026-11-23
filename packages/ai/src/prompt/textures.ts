@@ -54,6 +54,7 @@ export const TEXTURE_PROMPT_RECIPES: Readonly<
     ['lichen', 'a lichen over a face, the second colour its glowing specks'],
     ['dripleaf', 'a dripleaf, finish top, side or stem'],
     ['pot', 'the clay of a flower pot'],
+    ['lucky_block', 'a lucky block, the second colour its mark, finish question or star'],
   ),
   items: rows(
     ['gem', 'a gem'],
@@ -99,6 +100,8 @@ export const TEXTURE_PROMPT_RECIPES: Readonly<
     ['pottery_sherd', 'a pottery sherd'],
     ['glider', 'a glider item'],
     ['boat', 'a boat item in the wood colour, finish boat or chest (a chest boat)'],
+    ['flag', 'a flag on a pole'],
+    ['timer', 'a stopwatch'],
   ),
   worn: rows(
     ['armor_layer_1', 'worn helmet, chestplate and boots, 64 by 32'],

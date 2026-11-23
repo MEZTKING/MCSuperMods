@@ -66,6 +66,22 @@ export function generatedSignals(data: Json): { namespace: string; signals: Sign
   return { namespace: field.namespace, signals };
 }
 
+/**
+ * What the bridge on an expanded book's copy adds to the project (B557 follow-up): the functions
+ * it lowers (`function`, for the registry view, as the games kinds' hook tags name them) and the
+ * signal command's literal (`command`, for the mcfunction checker, which knows only vanilla's
+ * commands). Read from the expander's own output, so the host keeps no list of its own; empty
+ * lists for a book without the bridge. Sorted, without duplicates.
+ */
+export function rulesGeneratedIds(data: Json): { function: string[]; command: string[] } {
+  const bridge = generatedSignals(data);
+  if (bridge === undefined || bridge.signals.length === 0) return { function: [], command: [] };
+  return {
+    function: [...new Set(bridge.signals.map(signalFunctionId))].sort(),
+    command: [signalLiteral(bridge.namespace)],
+  };
+}
+
 const split = (id: string): { namespace: string; path: string } => {
   const colon = id.indexOf(':');
   return { namespace: id.slice(0, colon), path: id.slice(colon + 1) };

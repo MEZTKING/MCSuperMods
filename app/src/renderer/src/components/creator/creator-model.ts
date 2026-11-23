@@ -43,6 +43,7 @@ export const CREATOR_GROUPS: readonly { group: CreatorGroup; title: string }[] =
   { group: 'magic', title: 'Magic' },
   { group: 'scripts', title: 'Scripts' },
   { group: 'worlds', title: 'Worlds' },
+  { group: 'games', title: 'Games' },
 ];
 
 /** The preview tabs, in order, with their labels (`creator-tab-<id>`). */

@@ -30,6 +30,7 @@ import {
   vehicleItemPicture,
 } from '@msm/plugin-entities';
 import { GAMES_CHECKER_CATEGORIES, GAMES_KIND_IDS, gamesGeneratedIds } from '@msm/plugin-games';
+import { RULES_KIND, rulesGeneratedIds } from '@msm/plugin-rules';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -216,7 +217,10 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * (`gamesGeneratedIds`, B551b): its functions in `function`, its function tags (and
  * `minecraft:load`, `minecraft:tick`) in `tag/function`, an area's predicate in `predicate` and
  * a world setup's preset, sky biome, first-join advancement, start structure and
- * `#minecraft:normal` entry; its plain names are in {@link gamesCheckerIds}.
+ * `#minecraft:normal` entry; its plain names are in {@link gamesCheckerIds}. The expanded copy of
+ * the rule book that carries Rules' function bridge (ADR 0115 D5) registers the functions the
+ * bridge lowers (`rulesGeneratedIds`, B557 follow-up); a saved book carries none, so the export
+ * passes {@link withExpandedRuleBooks}.
  * Only registries with at least one id appear. Sorted,
  * namespaced, without duplicates.
  *
@@ -239,6 +243,10 @@ export function dataRegistryIds(
     for (const element of namespace.elements) {
       const registered = kinds.registryFor(element.kind);
       if (!element.kind.startsWith(MINECRAFT_PREFIX)) {
+        // The expanded rule book with the function bridge: the functions it lowers (B557).
+        if (element.kind === RULES_KIND) {
+          for (const id of rulesGeneratedIds(element.data).function) add('function', id);
+        }
         // A games kind (no registry of its own): the ids its lowering writes (B551b).
         if (GAMES_KINDS.has(element.kind)) {
           for (const [registry, id] of gamesExtraIds(element)) add(registry, id);
@@ -295,6 +303,39 @@ export function dataRegistryIds(
     }
   }
   return sortedRecord(new Map([...map].map(([name, ids]) => [name, [...ids]])));
+}
+
+/**
+ * `project` with each rule book replaced by its copy in `expanded` (the expansion the export
+ * lowers), so the registry view and the mcfunction checker know what the rules expander's output
+ * lowers, such as the function bridge and its signal command (B557 follow-up), while every other
+ * element stays the project's own (an export may lower fewer, as the vanilla packs leave potions
+ * out). `project` itself when no book changed.
+ *
+ * @param project - The project as saved.
+ * @param expanded - Its expansion.
+ */
+export function withExpandedRuleBooks(project: Project, expanded: Project): Project {
+  const books = new Map<string, Element>();
+  for (const namespace of expanded.namespaces) {
+    for (const element of namespace.elements) {
+      if (element.kind === RULES_KIND) books.set(element.id, element);
+    }
+  }
+  let changed = false;
+  const namespaces = project.namespaces.map((namespace) => {
+    let swapped = false;
+    const elements = namespace.elements.map((element) => {
+      const copy = element.kind === RULES_KIND ? books.get(element.id) : undefined;
+      if (copy === undefined || copy === element) return element;
+      swapped = true;
+      return copy;
+    });
+    if (!swapped) return namespace;
+    changed = true;
+    return { ...namespace, elements };
+  });
+  return changed ? { ...project, namespaces } : project;
 }
 
 const BLOCK_REGISTRY = 'block';

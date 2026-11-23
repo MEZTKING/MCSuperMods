@@ -88,6 +88,7 @@ export const APP_MAP_TILES = Object.freeze([
   'Make a portal',
   'Make a building',
   'Change drops and trades',
+  'Make a game',
   'Change how Minecraft looks',
   'Make a painting or pattern',
   'Make a sound or music',

@@ -7,7 +7,8 @@
  * crafting grids; Live (B615, ADR 0120 D7) draws the live view of each thing the flow makes
  * (`liveviews/LiveThings.tsx`, a lazy chunk), one at a time with the others in a strip, over the
  * bundle laid over the project, so mobs, vehicles, particles, liquids, trades and extra drops
- * are seen before anything is made; Map (B587, ADR 0119 D11) draws the world a world or dimension flow makes,
+ * are seen before anything is made; Map (B587, ADR 0119 D11) draws the world a world or dimension flow makes
+ * (and a game flow's `msm:world_setup` World Type, lowered in memory as its Studio does; B557),
  * live as the answers change (`terrain/LiveMap.tsx`, a lazy chunk; from the bundle in memory,
  * never written to disk), with the map's Preview tag and notes; Armour shows the two layer textures and the humanoid armour geometry in the
  * geo renderer, and horse and wolf armour layers as flat textures; Stats puts the numbers in
@@ -21,7 +22,8 @@
  */
 
 import type { Project } from '@msm/core';
-import type { ContentBundle, Element } from '@msm/plugin-api';
+import type { ContentBundle, Element, TargetFacts } from '@msm/plugin-api';
+import { lowerWorldSetup } from '@msm/plugin-games';
 import { targetById } from '@msm/targets';
 import { Tabs } from 'radix-ui';
 import { lazy, type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -45,6 +47,7 @@ import type { GeoScene } from '../../preview/geo/subject';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 import { hasWebGL } from '../../preview/webgl';
 import { useUiStore } from '../../store/ui-store';
+import { WORLD_SETUP_KIND, type WorldMapPlan, worldMapPlan } from '../../studios/games/games-model';
 import { RecipeGridView } from '../recipe-grid/RecipeGridView';
 import { tabTriggerClass } from '../ui/Button';
 import { CreatorCards } from './CreatorCards';
@@ -130,13 +133,55 @@ export const CREATOR_MAP_TAB = { id: 'map', label: 'Map' } as const;
 /** The kinds a world or dimension flow makes, in the order the Map tab looks for them. */
 const WORLD_KINDS = ['minecraft:worldgen/world_preset', 'minecraft:dimension'] as const;
 
-/** The world a bundle makes (its first world preset, else its first dimension), or `null`. */
+/** The world type of a `msm:world_setup`'s data (`world.type`), or `''`. */
+function worldSetupType(data: unknown): string {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) return '';
+  const world = (data as { world?: unknown }).world;
+  if (typeof world !== 'object' || world === null || Array.isArray(world)) return '';
+  const type = (world as { type?: unknown }).type;
+  return typeof type === 'string' ? type : '';
+}
+
+/**
+ * The world a bundle makes: its first world preset, else its first dimension, else its first
+ * `msm:world_setup` whose world is not the game's own ("As normal"; a game flow's World Type,
+ * B557), or `null`.
+ */
 export function bundleWorld(bundle: ContentBundle): { kind: string; id: string } | null {
   for (const kind of WORLD_KINDS) {
     const entry = bundle.elements.find((element) => element.kind === kind);
     if (entry !== undefined) return { kind, id: entry.id };
   }
-  return null;
+  const setup = bundle.elements.find(
+    (element) => element.kind === WORLD_SETUP_KIND && worldSetupType(element.data) !== 'vanilla',
+  );
+  return setup === undefined ? null : { kind: WORLD_SETUP_KIND, id: setup.id };
+}
+
+/**
+ * What the Map tab draws for `element` of `preview` (the bundle laid over the project): a world
+ * preset or dimension as it is; a `msm:world_setup` by its World Type, lowered in memory and laid
+ * over the project, as the World Setup Studio's map does (B557).
+ */
+export function creatorWorldPlan(
+  preview: Project,
+  element: Element,
+  target: TargetFacts,
+): WorldMapPlan {
+  if (element.kind !== WORLD_SETUP_KIND) return { draw: true, project: preview, preset: element };
+  let lowered: ReturnType<typeof lowerWorldSetup> | Error;
+  try {
+    lowered = lowerWorldSetup(element, target);
+  } catch (error) {
+    lowered = error instanceof Error ? error : new Error(String(error));
+  }
+  return worldMapPlan({
+    project: preview,
+    element,
+    lowered,
+    folders: target.worldgen.terrainPreview?.dataFolders ?? [],
+    bundled: bundlePreviewProject,
+  });
 }
 
 /** The Map tab: the world the flow makes, drawn from the bundle laid over the project. */
@@ -161,9 +206,15 @@ function WorldTab(props: {
   }, [preview, props.world.kind, props.world.id]);
   const targetId = props.project.targets[0];
   const target = targetId === undefined ? undefined : targetById(targetId)?.target;
-  if (element === null || target === undefined) {
+  const plan = useMemo(
+    (): WorldMapPlan | null =>
+      element === null || target === undefined ? null : creatorWorldPlan(preview, element, target),
+    [preview, element, target],
+  );
+  if (plan === null || target === undefined) {
     return <Empty>This flow's world cannot be drawn here.</Empty>;
   }
+  if (!plan.draw) return <Empty>{plan.why}</Empty>;
   return (
     <div className="flex flex-col gap-2" data-testid="creator-map">
       <p className="text-xs text-muted">
@@ -172,9 +223,9 @@ function WorldTab(props: {
       <Suspense fallback={<Empty>Loading the map…</Empty>}>
         <LiveMap
           owner="creator"
-          project={preview}
+          project={plan.project}
           target={target}
-          element={element}
+          element={plan.preset}
           mode="element"
           root={root}
           vanillaReady={props.vanillaReady}

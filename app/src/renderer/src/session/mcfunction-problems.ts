@@ -12,8 +12,9 @@
  */
 
 import type { Element, Problem, Project, ResourceLocation } from '@msm/core';
-import { outputFileBytes } from '@msm/exporters';
+import { commandLiteralsOf, outputFileBytes } from '@msm/exporters';
 import type { OutputFile, Target } from '@msm/plugin-api';
+import { RULES_KIND, rulesGeneratedIds } from '@msm/plugin-rules';
 import type { McfunctionCompletion, McfunctionProblem } from '../../../shared/platform';
 import { dataRegistryIds, gamesCheckerIds } from './schema-context';
 
@@ -139,6 +140,52 @@ export function mcfunctionProjectIds(project: Project): Record<string, string[]>
   return ids;
 }
 
+/**
+ * The commands of the project's own, by their literals: the names and aliases of its
+ * `msm:command` elements (ADR 0096 D1) and the signal command of Rules' function bridge on an
+ * expanded rule book (`msm_signal_<ns>`, ADR 0115 D5; `rulesGeneratedIds`, B557 follow-up). The
+ * mod jar adds them; the checker knows only vanilla's command tree, so
+ * {@link maskProjectCommands} hides their calls from it. Sorted, without duplicates.
+ */
+export function projectCommandLiterals(project: Project): string[] {
+  const elements = project.namespaces.flatMap((namespace) => namespace.elements);
+  const out = new Set(commandLiteralsOf(elements));
+  for (const element of elements) {
+    if (element.kind !== RULES_KIND) continue;
+    for (const literal of rulesGeneratedIds(element.data).command) out.add(literal);
+  }
+  return [...out].sort();
+}
+
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * `source` with each call of a project command (one of `literals`, at the start of a line or
+ * after `run`) and the rest of its line written as a vanilla command the checker accepts:
+ * `say` and filler, or `list` for a bare literal. Text before the call, and so every range the
+ * checker reports there, is unchanged; a project command's own arguments are left to the mod
+ * jar, which checks them when the function loads. Comment and macro lines are kept as they are.
+ *
+ * @param source - The function's text.
+ * @param literals - The project's command literals ({@link projectCommandLiterals}).
+ */
+export function maskProjectCommands(source: string, literals: readonly string[]): string {
+  if (literals.length === 0) return source;
+  const call = new RegExp(`(^\\s*/?|\\brun\\s+)(${literals.map(escapeRegExp).join('|')})(?=\\s|$)`);
+  return source
+    .split('\n')
+    .map((line) => {
+      if (/^\s*[#$]/.test(line)) return line;
+      const match = call.exec(line);
+      if (match === null) return line;
+      const start = match.index + (match[1] as string).length;
+      const rest = line.slice(start + (match[2] as string).length).trim();
+      const filler = 'x'.repeat(Math.max(1, line.length - start - 4));
+      return `${line.slice(0, start)}${rest === '' ? 'list' : `say ${filler}`}`;
+    })
+    .join('\n');
+}
+
 /** The lines of a function element, or `undefined` when its data is not `{ lines: string[] }`. */
 export function functionLines(element: Element): string[] | undefined {
   const data = element.data;
@@ -213,7 +260,8 @@ const decoder = new TextDecoder('utf-8');
 
 /**
  * The export gate's `validateText` over `checker` (ADR 0014): `mcfunction` files are checked
- * with the project's ids; problems carry the output `file`, the function's `elementId` and
+ * with the project's ids, calls of the project's own commands masked
+ * ({@link maskProjectCommands}); problems carry the output `file`, the function's `elementId` and
  * `path: /lines/<n>` with a `range` within that line. Other languages yield no problems.
  *
  * @param checker - The injected checker.
@@ -226,9 +274,13 @@ export function mcfunctionTextValidator(
   target: Target,
 ): (file: OutputFile) => Promise<Problem[]> {
   const projectIds = mcfunctionProjectIds(project);
+  const commands = projectCommandLiterals(project);
   return async (file) => {
     if (file.language !== 'mcfunction') return [];
-    const source = decoder.decode(outputFileBytes(file)).replace(/\n$/, '');
+    const source = maskProjectCommands(
+      decoder.decode(outputFileBytes(file)).replace(/\n$/, ''),
+      commands,
+    );
     const problems = await checker.check(source, { uri: `file:///msm/${file.path}`, projectIds });
     const elementId = functionIdOfOutput(file.path, target);
     return problems.map((problem) => toProblem(problem, elementId, file.path));

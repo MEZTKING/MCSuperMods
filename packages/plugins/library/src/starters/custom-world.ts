@@ -11,8 +11,8 @@
  * - **Caves only**: rock with caverns and tunnels, a roof or an open top, the rock, lakes of
  *   water or lava and glowing patches on the cave roofs, with a dimension type of its own.
  * - **Empty sky with a start island**: an empty world of sky. The start island, its chest and
- *   kit are the game modes plan's Skyblock flow (ADR 0114); until MSM has it, this flow makes the
- *   empty world only and says so, and Home's tile hands over to Skyblock once it exists.
+ *   kit are the Skyblock flow's (ADR 0114, B557, Creator group `games`); this flow makes the
+ *   empty world only and says so, and Home's tile hands over to Skyblock.
  *
  * The land is MSM's own recipe in every flow, not a copy of a vanilla file: each flow writes its
  * own noises (`<ns>:<id>/noise/<name>`), density functions (`<ns>:<id>/<name>`), noise settings
@@ -1255,7 +1255,7 @@ const SKY_BIOMES: readonly { value: string; label: string }[] = [
 
 /** The words that say where the start island comes from (ADR 0119 D11, ADR 0114). */
 export const START_ISLAND_WORDS =
-  'The start island, its chest and the things you start with come from the Skyblock flow; until MSM has it, this makes the empty world only.';
+  'This makes the empty world only: the Skyblock flow, under Games, makes the start island, its chest and the things you start with.';
 
 export const WORLD_EMPTY_SKY_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   nameParameter('Sky World'),

@@ -23,6 +23,7 @@ export {
   generatedSignals,
   lowerSignals,
   RULES_SIGNAL_FIELD,
+  rulesGeneratedIds,
 } from './signal';
 
 /**
