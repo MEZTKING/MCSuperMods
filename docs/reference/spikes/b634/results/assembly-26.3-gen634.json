@@ -1,0 +1,1764 @@
+{
+ "b634:back": {
+  "by_depth": {
+   "0:b634:hub_back": 841,
+   "1:b634:arm_fb": 3364
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_back",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 4205
+  },
+  "join_checks": {
+   "child.target!=parent.name": 3364,
+   "facing opposite": 3364,
+   "name==target": 3364,
+   "parent sp 0 pp 0": 3364,
+   "top same": 3364
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 841
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 4205
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1051,
+   "CLOCKWISE_90": 1058,
+   "COUNTERCLOCKWISE_90": 1055,
+   "NONE": 1041
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 210,
+   "0,0,CLOCKWISE_90": 217,
+   "0,0,COUNTERCLOCKWISE_90": 214,
+   "0,0,NONE": 200
+  },
+  "starts": 841,
+  "templates": {
+   "b634:arm_fb": 3364,
+   "b634:hub_back": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_d16": {
+  "by_depth": {
+   "0:b634:cstart": 85,
+   "1:b634:seg": 85,
+   "2:b634:seg": 85,
+   "3:b634:seg": 85
+  },
+  "depth_max_hist": {
+   "3": 85
+  },
+  "dim": "d_chain",
+  "extent_h_max": 16.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 340
+  },
+  "join_checks": {
+   "child.target!=parent.name": 85,
+   "child.target==parent.name": 170,
+   "facing opposite": 255,
+   "name==target": 255,
+   "parent sp 0 pp 0": 255,
+   "top same": 255
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 85
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 340
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 72,
+   "CLOCKWISE_90": 76,
+   "COUNTERCLOCKWISE_90": 108,
+   "NONE": 84
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 18,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 27,
+   "0,0,NONE": 21
+  },
+  "starts": 85,
+  "templates": {
+   "b634:cstart": 85,
+   "b634:seg": 255
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_d32": {
+  "by_depth": {
+   "0:b634:cstart": 78,
+   "1:b634:seg": 78,
+   "2:b634:seg": 78,
+   "3:b634:seg": 78,
+   "4:b634:seg": 78,
+   "5:b634:seg": 78,
+   "6:b634:seg": 78
+  },
+  "depth_max_hist": {
+   "6": 78
+  },
+  "dim": "d_chain",
+  "extent_h_max": 31.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 546
+  },
+  "join_checks": {
+   "child.target!=parent.name": 78,
+   "child.target==parent.name": 390,
+   "facing opposite": 468,
+   "name==target": 468,
+   "parent sp 0 pp 0": 468,
+   "top same": 468
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 78
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 546
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 182,
+   "CLOCKWISE_90": 105,
+   "COUNTERCLOCKWISE_90": 119,
+   "NONE": 140
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 26,
+   "0,0,CLOCKWISE_90": 15,
+   "0,0,COUNTERCLOCKWISE_90": 17,
+   "0,0,NONE": 20
+  },
+  "starts": 78,
+  "templates": {
+   "b634:cstart": 78,
+   "b634:seg": 468
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s1": {
+  "by_depth": {
+   "0:b634:cstart": 76,
+   "1:b634:seg": 76,
+   "2:b634:cap": 76
+  },
+  "depth_max_hist": {
+   "2": 76
+  },
+  "dim": "d_chain",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 228
+  },
+  "join_checks": {
+   "child.target!=parent.name": 76,
+   "child.target==parent.name": 76,
+   "facing opposite": 152,
+   "name==target": 152,
+   "parent sp 0 pp 0": 152,
+   "top same": 152
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 76
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 228
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 54,
+   "CLOCKWISE_90": 66,
+   "COUNTERCLOCKWISE_90": 69,
+   "NONE": 39
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 18,
+   "0,0,CLOCKWISE_90": 22,
+   "0,0,COUNTERCLOCKWISE_90": 23,
+   "0,0,NONE": 13
+  },
+  "starts": 76,
+  "templates": {
+   "b634:cap": 76,
+   "b634:cstart": 76,
+   "b634:seg": 76
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s2": {
+  "by_depth": {
+   "0:b634:cstart": 77,
+   "1:b634:seg": 77,
+   "2:b634:seg": 77,
+   "3:b634:cap": 77
+  },
+  "depth_max_hist": {
+   "3": 77
+  },
+  "dim": "d_chain",
+  "extent_h_max": 13.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 308
+  },
+  "join_checks": {
+   "child.target!=parent.name": 77,
+   "child.target==parent.name": 154,
+   "facing opposite": 231,
+   "name==target": 231,
+   "parent sp 0 pp 0": 231,
+   "top same": 231
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 77
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 308
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 76,
+   "CLOCKWISE_90": 88,
+   "COUNTERCLOCKWISE_90": 88,
+   "NONE": 56
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 19,
+   "0,0,CLOCKWISE_90": 22,
+   "0,0,COUNTERCLOCKWISE_90": 22,
+   "0,0,NONE": 14
+  },
+  "starts": 77,
+  "templates": {
+   "b634:cap": 77,
+   "b634:cstart": 77,
+   "b634:seg": 154
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s20": {
+  "by_depth": {
+   "0:b634:cstart": 79,
+   "10:b634:seg": 79,
+   "11:b634:seg": 79,
+   "12:b634:seg": 79,
+   "13:b634:seg": 79,
+   "14:b634:seg": 79,
+   "15:b634:seg": 79,
+   "16:b634:seg": 79,
+   "17:b634:seg": 79,
+   "18:b634:seg": 79,
+   "19:b634:seg": 79,
+   "1:b634:seg": 79,
+   "20:b634:seg": 79,
+   "21:b634:cap": 79,
+   "2:b634:seg": 79,
+   "3:b634:seg": 79,
+   "4:b634:seg": 79,
+   "5:b634:seg": 79,
+   "6:b634:seg": 79,
+   "7:b634:seg": 79,
+   "8:b634:seg": 79,
+   "9:b634:seg": 79
+  },
+  "depth_max_hist": {
+   "21": 79
+  },
+  "dim": "d_chain",
+  "extent_h_max": 103.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 1738
+  },
+  "join_checks": {
+   "child.target!=parent.name": 79,
+   "child.target==parent.name": 1580,
+   "facing opposite": 1659,
+   "name==target": 1659,
+   "parent sp 0 pp 0": 1659,
+   "top same": 1659
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "22": 79
+  },
+  "pieces_max": 22,
+  "pieces_mean": 22,
+  "pieces_min": 22,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 1738
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 374,
+   "CLOCKWISE_90": 418,
+   "COUNTERCLOCKWISE_90": 462,
+   "NONE": 484
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 17,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 21,
+   "0,0,NONE": 22
+  },
+  "starts": 79,
+  "templates": {
+   "b634:cap": 79,
+   "b634:cstart": 79,
+   "b634:seg": 1580
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s3": {
+  "by_depth": {
+   "0:b634:cstart": 72,
+   "1:b634:seg": 72,
+   "2:b634:seg": 72,
+   "3:b634:seg": 72,
+   "4:b634:cap": 72
+  },
+  "depth_max_hist": {
+   "4": 72
+  },
+  "dim": "d_chain",
+  "extent_h_max": 18.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 360
+  },
+  "join_checks": {
+   "child.target!=parent.name": 72,
+   "child.target==parent.name": 216,
+   "facing opposite": 288,
+   "name==target": 288,
+   "parent sp 0 pp 0": 288,
+   "top same": 288
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 72
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 360
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 100,
+   "CLOCKWISE_90": 95,
+   "COUNTERCLOCKWISE_90": 95,
+   "NONE": 70
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 20,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 19,
+   "0,0,NONE": 14
+  },
+  "starts": 72,
+  "templates": {
+   "b634:cap": 72,
+   "b634:cstart": 72,
+   "b634:seg": 216
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s7": {
+  "by_depth": {
+   "0:b634:cstart": 77,
+   "1:b634:seg": 77,
+   "2:b634:seg": 77,
+   "3:b634:seg": 77,
+   "4:b634:seg": 77,
+   "5:b634:seg": 77,
+   "6:b634:seg": 77,
+   "7:b634:seg": 77,
+   "8:b634:cap": 77
+  },
+  "depth_max_hist": {
+   "8": 77
+  },
+  "dim": "d_chain",
+  "extent_h_max": 38.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 693
+  },
+  "join_checks": {
+   "child.target!=parent.name": 77,
+   "child.target==parent.name": 539,
+   "facing opposite": 616,
+   "name==target": 616,
+   "parent sp 0 pp 0": 616,
+   "top same": 616
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "9": 77
+  },
+  "pieces_max": 9,
+  "pieces_mean": 9,
+  "pieces_min": 9,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 693
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 153,
+   "CLOCKWISE_90": 234,
+   "COUNTERCLOCKWISE_90": 162,
+   "NONE": 144
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 17,
+   "0,0,CLOCKWISE_90": 26,
+   "0,0,COUNTERCLOCKWISE_90": 18,
+   "0,0,NONE": 16
+  },
+  "starts": 77,
+  "templates": {
+   "b634:cap": 77,
+   "b634:cstart": 77,
+   "b634:seg": 539
+  },
+  "vertical_joins": {}
+ },
+ "b634:grid": {
+  "by_depth": {
+   "0:b634:grid": 82,
+   "1:b634:grid": 328,
+   "2:b634:grid": 656,
+   "3:b634:grid": 984,
+   "4:b634:grid": 1312,
+   "5:b634:grid": 1640,
+   "6:b634:grid": 1968,
+   "7:b634:grid": 2296
+  },
+  "depth_max_hist": {
+   "7": 82
+  },
+  "dim": "d_grid",
+  "extent_h_max": 37.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 9266
+  },
+  "join_checks": {
+   "child.target==parent.name": 9184,
+   "facing opposite": 9184,
+   "name==target": 9184,
+   "parent sp 0 pp 0": 9184,
+   "top same": 9184
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "113": 82
+  },
+  "pieces_max": 113,
+  "pieces_mean": 113,
+  "pieces_min": 113,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 9266
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 2247,
+   "CLOCKWISE_90": 2343,
+   "COUNTERCLOCKWISE_90": 2279,
+   "NONE": 2397
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_90": 38,
+   "0,0,NONE": 44
+  },
+  "starts": 82,
+  "templates": {
+   "b634:grid": 9266
+  },
+  "vertical_joins": {}
+ },
+ "b634:grid20": {
+  "by_depth": {
+   "0:b634:grid": 68,
+   "10:b634:grid": 2720,
+   "11:b634:grid": 2992,
+   "12:b634:grid": 3264,
+   "13:b634:grid": 3536,
+   "14:b634:grid": 3808,
+   "15:b634:grid": 4080,
+   "16:b634:grid": 4352,
+   "17:b634:grid": 4624,
+   "18:b634:grid": 4896,
+   "19:b634:grid": 5168,
+   "1:b634:grid": 272,
+   "20:b634:grid": 5440,
+   "2:b634:grid": 544,
+   "3:b634:grid": 816,
+   "4:b634:grid": 1088,
+   "5:b634:grid": 1360,
+   "6:b634:grid": 1632,
+   "7:b634:grid": 1904,
+   "8:b634:grid": 2176,
+   "9:b634:grid": 2448
+  },
+  "depth_max_hist": {
+   "20": 68
+  },
+  "dim": "d_grid",
+  "extent_h_max": 102.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 57188
+  },
+  "join_checks": {
+   "child.target==parent.name": 57120,
+   "facing opposite": 57120,
+   "name==target": 57120,
+   "parent sp 0 pp 0": 57120,
+   "top same": 57120
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "841": 68
+  },
+  "pieces_max": 841,
+  "pieces_mean": 841,
+  "pieces_min": 841,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 57188
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 14318,
+   "CLOCKWISE_90": 14121,
+   "COUNTERCLOCKWISE_90": 14532,
+   "NONE": 14217
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 36,
+   "0,0,COUNTERCLOCKWISE_90": 32
+  },
+  "starts": 68,
+  "templates": {
+   "b634:grid": 57188
+  },
+  "vertical_joins": {}
+ },
+ "b634:joint": {
+  "by_depth": {
+   "0:b634:vhub": 841,
+   "1:b634:tower_a": 1682,
+   "1:b634:tower_r": 1682
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_joint",
+  "extent_h_max": 4.0,
+  "extent_v_max": 6,
+  "ground_level_delta": {
+   "-2": 3364,
+   "1": 841
+  },
+  "join_checks": {
+   "child.target==parent.name": 3364,
+   "facing opposite": 3364,
+   "name==target": 3364,
+   "parent sp 0 pp 0": 3364
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 841
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 3364,
+   "-61": 841
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1023,
+   "CLOCKWISE_90": 1077,
+   "COUNTERCLOCKWISE_90": 1071,
+   "NONE": 1034
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 210,
+   "0,0,CLOCKWISE_90": 217,
+   "0,0,COUNTERCLOCKWISE_90": 214,
+   "0,0,NONE": 200
+  },
+  "starts": 841,
+  "templates": {
+   "b634:tower_a": 1682,
+   "b634:tower_r": 1682,
+   "b634:vhub": 841
+  },
+  "vertical_joins": {
+   "parent joint aligned child joint aligned -> b634:tower_a: child top == parent top, rel turn 0": 841,
+   "parent joint aligned child joint rollable -> b634:tower_r: child top == parent top, rel turn 0": 841,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top != parent top, rel turn 1": 202,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top != parent top, rel turn 2": 212,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top != parent top, rel turn 3": 213,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top == parent top, rel turn 0": 214,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top != parent top, rel turn 1": 217,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top != parent top, rel turn 2": 204,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top != parent top, rel turn 3": 217,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top == parent top, rel turn 0": 203
+  }
+ },
+ "b634:match": {
+  "by_depth": {
+   "0:b634:hub_match": 841,
+   "1:b634:arm_ok": 1088,
+   "1:b634:arm_tgt": 1095,
+   "1:b634:arm_two": 1181
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_match",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 4205
+  },
+  "join_checks": {
+   "child.target!=parent.name": 1095,
+   "child.target==parent.name": 2269,
+   "facing opposite": 3364,
+   "name==target": 3364,
+   "parent sp 0 pp 0": 3364,
+   "top same": 3364
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 841
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 4205
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1062,
+   "CLOCKWISE_90": 1062,
+   "COUNTERCLOCKWISE_90": 1034,
+   "NONE": 1047
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 210,
+   "0,0,CLOCKWISE_90": 217,
+   "0,0,COUNTERCLOCKWISE_90": 214,
+   "0,0,NONE": 200
+  },
+  "starts": 841,
+  "templates": {
+   "b634:arm_ok": 1088,
+   "b634:arm_tgt": 1095,
+   "b634:arm_two": 1181,
+   "b634:hub_match": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:misc": {
+  "by_depth": {
+   "0:b634:mhub": 841,
+   "0:minecraft:feature_pool_element": 841,
+   "1:minecraft:list_pool_element": 841
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_misc",
+  "extent_h_max": 7.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "-2": 841,
+   "1": 1682
+  },
+  "join_checks": {
+   "child.target!=parent.name": 841,
+   "facing opposite": 841,
+   "name==target": 841,
+   "parent sp 0 pp 0": 841,
+   "top same": 841
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 841
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 841,
+   "-61": 1682
+  },
+  "problems": {
+   "piece 1 has no parent jigsaw": 410,
+   "piece 2 has no parent jigsaw": 431
+  },
+  "rotations": {
+   "CLOCKWISE_180": 630,
+   "CLOCKWISE_90": 622,
+   "COUNTERCLOCKWISE_90": 645,
+   "NONE": 626
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 210,
+   "0,0,CLOCKWISE_90": 217,
+   "0,0,COUNTERCLOCKWISE_90": 214,
+   "0,0,NONE": 200
+  },
+  "starts": 841,
+  "templates": {
+   "b634:mhub": 841,
+   "list": 841,
+   "minecraft:feature_pool_element": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:phub_ce": {
+  "by_depth": {
+   "0:b634:phub_ce": 92,
+   "1:b634:parm": 92,
+   "1:b634:parm_hi": 92,
+   "2:b634:pbig": 92
+  },
+  "depth_max_hist": {
+   "2": 92
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 92,
+   "1": 276
+  },
+  "join_checks": {
+   "child.target!=parent.name": 276,
+   "facing opposite": 276,
+   "name==target": 276,
+   "parent sp 0 pp 0": 276,
+   "top same": 184
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 92
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 92,
+   "-61": 276
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 31,
+   "CLOCKWISE_90": 109,
+   "COUNTERCLOCKWISE_90": 205,
+   "NONE": 23
+  },
+  "start_rel_pos": {
+   "0,0,COUNTERCLOCKWISE_90": 92
+  },
+  "starts": 92,
+  "templates": {
+   "b634:parm": 92,
+   "b634:parm_hi": 92,
+   "b634:pbig": 92,
+   "b634:phub_ce": 92
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 29,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 20,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 25,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 18
+  }
+ },
+ "b634:phub_eq": {
+  "by_depth": {
+   "0:b634:phub_eq": 75,
+   "1:b634:parm": 150,
+   "2:b634:pbig": 75
+  },
+  "depth_max_hist": {
+   "2": 75
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 75,
+   "1": 225
+  },
+  "join_checks": {
+   "child.target!=parent.name": 225,
+   "facing opposite": 225,
+   "name==target": 225,
+   "parent sp 0 pp 0": 225,
+   "top same": 150
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 75
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 75,
+   "-61": 225
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 95,
+   "CLOCKWISE_90": 15,
+   "COUNTERCLOCKWISE_90": 21,
+   "NONE": 169
+  },
+  "start_rel_pos": {
+   "0,0,NONE": 75
+  },
+  "starts": 75,
+  "templates": {
+   "b634:parm": 150,
+   "b634:pbig": 75,
+   "b634:phub_eq": 75
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 17,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 18,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 19,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 21
+  }
+ },
+ "b634:phub_pe": {
+  "by_depth": {
+   "0:b634:phub_pe": 92,
+   "1:b634:parm": 184,
+   "2:b634:pbig": 92
+  },
+  "depth_max_hist": {
+   "2": 92
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 92,
+   "1": 276
+  },
+  "join_checks": {
+   "child.target!=parent.name": 276,
+   "facing opposite": 276,
+   "name==target": 276,
+   "parent sp 0 pp 0": 184,
+   "parent sp 0 pp 1": 92,
+   "top same": 184
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 92
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 92,
+   "-61": 276
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 28,
+   "CLOCKWISE_90": 211,
+   "COUNTERCLOCKWISE_90": 108,
+   "NONE": 21
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_90": 92
+  },
+  "starts": 92,
+  "templates": {
+   "b634:parm": 184,
+   "b634:pbig": 92,
+   "b634:phub_pe": 92
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 28,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 16,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 21,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 27
+  }
+ },
+ "b634:phub_pw": {
+  "by_depth": {
+   "0:b634:phub_pw": 83,
+   "1:b634:parm": 166,
+   "2:b634:pbig": 83
+  },
+  "depth_max_hist": {
+   "2": 83
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 83,
+   "1": 249
+  },
+  "join_checks": {
+   "child.target!=parent.name": 249,
+   "facing opposite": 249,
+   "name==target": 249,
+   "parent sp 0 pp 0": 166,
+   "parent sp 0 pp 1": 83,
+   "top same": 166
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 83
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 83,
+   "-61": 249
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 182,
+   "CLOCKWISE_90": 21,
+   "COUNTERCLOCKWISE_90": 21,
+   "NONE": 108
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 83
+  },
+  "starts": 83,
+  "templates": {
+   "b634:parm": 166,
+   "b634:pbig": 83,
+   "b634:phub_pw": 83
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 21,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 16,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 21,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 25
+  }
+ },
+ "b634:shell": {
+  "by_depth": {
+   "0:b634:shell": 284,
+   "1:b634:inner": 284
+  },
+  "depth_max_hist": {
+   "1": 284
+  },
+  "dim": "d_shell",
+  "extent_h_max": 4.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-1": 284,
+   "1": 284
+  },
+  "join_checks": {
+   "child.target!=parent.name": 284,
+   "facing opposite": 284,
+   "name==target": 284,
+   "parent sp 0 pp 0": 284
+  },
+  "overlap_pairs": {
+   "(one box inside the other)": 284,
+   "b634:shell x b634:inner": 284
+  },
+  "overlaps": 284,
+  "pieces_hist": {
+   "2": 284
+  },
+  "pieces_max": 2,
+  "pieces_mean": 2,
+  "pieces_min": 2,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-59": 284,
+   "-61": 284
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 143,
+   "CLOCKWISE_90": 147,
+   "COUNTERCLOCKWISE_90": 141,
+   "NONE": 137
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 76,
+   "0,0,CLOCKWISE_90": 68,
+   "0,0,COUNTERCLOCKWISE_90": 74,
+   "0,0,NONE": 66
+  },
+  "starts": 284,
+  "templates": {
+   "b634:inner": 284,
+   "b634:shell": 284
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:inner: child top != parent top, rel turn 1": 74,
+   "parent joint rollable child joint rollable -> b634:inner: child top != parent top, rel turn 2": 70,
+   "parent joint rollable child joint rollable -> b634:inner: child top != parent top, rel turn 3": 82,
+   "parent joint rollable child joint rollable -> b634:inner: child top == parent top, rel turn 0": 58
+  }
+ },
+ "b634:shell_big": {
+  "by_depth": {
+   "0:b634:shell_big": 295,
+   "1:b634:inner_big": 295
+  },
+  "depth_max_hist": {
+   "1": 295
+  },
+  "dim": "d_shell",
+  "extent_h_max": 4.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-1": 295,
+   "1": 295
+  },
+  "join_checks": {
+   "child.target!=parent.name": 295,
+   "facing opposite": 295,
+   "name==target": 295,
+   "parent sp 0 pp 0": 295
+  },
+  "overlap_pairs": {
+   "(one box inside the other)": 295,
+   "b634:shell_big x b634:inner_big": 295
+  },
+  "overlaps": 295,
+  "pieces_hist": {
+   "2": 295
+  },
+  "pieces_max": 2,
+  "pieces_mean": 2,
+  "pieces_min": 2,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-59": 295,
+   "-61": 295
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 144,
+   "CLOCKWISE_90": 156,
+   "COUNTERCLOCKWISE_90": 144,
+   "NONE": 146
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 79,
+   "0,0,CLOCKWISE_90": 80,
+   "0,0,COUNTERCLOCKWISE_90": 68,
+   "0,0,NONE": 68
+  },
+  "starts": 295,
+  "templates": {
+   "b634:inner_big": 295,
+   "b634:shell_big": 295
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:inner_big: child top != parent top, rel turn 1": 74,
+   "parent joint rollable child joint rollable -> b634:inner_big: child top != parent top, rel turn 2": 54,
+   "parent joint rollable child joint rollable -> b634:inner_big: child top != parent top, rel turn 3": 86,
+   "parent joint rollable child joint rollable -> b634:inner_big: child top == parent top, rel turn 0": 81
+  }
+ },
+ "b634:shell_tall": {
+  "by_depth": {
+   "0:b634:shell_tall": 262
+  },
+  "depth_max_hist": {
+   "0": 262
+  },
+  "dim": "d_shell",
+  "extent_h_max": 4.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "1": 262
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 262
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 262
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 55,
+   "CLOCKWISE_90": 69,
+   "COUNTERCLOCKWISE_90": 72,
+   "NONE": 66
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 55,
+   "0,0,CLOCKWISE_90": 69,
+   "0,0,COUNTERCLOCKWISE_90": 72,
+   "0,0,NONE": 66
+  },
+  "starts": 262,
+  "templates": {
+   "b634:shell_tall": 262
+  },
+  "vertical_joins": {}
+ },
+ "b634:vchain_d116": {
+  "by_depth": {
+   "0:b634:vstart": 77,
+   "10:b634:vseg": 77,
+   "11:b634:vseg": 77,
+   "12:b634:vseg": 77,
+   "13:b634:vseg": 77,
+   "14:b634:vseg": 77,
+   "15:b634:vseg": 77,
+   "16:b634:vseg": 77,
+   "17:b634:vseg": 77,
+   "18:b634:vseg": 77,
+   "19:b634:vseg": 77,
+   "1:b634:vseg": 77,
+   "20:b634:vseg": 77,
+   "2:b634:vseg": 77,
+   "3:b634:vseg": 77,
+   "4:b634:vseg": 77,
+   "5:b634:vseg": 77,
+   "6:b634:vseg": 77,
+   "7:b634:vseg": 77,
+   "8:b634:vseg": 77,
+   "9:b634:vseg": 77
+  },
+  "depth_max_hist": {
+   "20": 77
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 102,
+  "ground_level_delta": {
+   "-12": 77,
+   "-17": 77,
+   "-2": 77,
+   "-22": 77,
+   "-27": 77,
+   "-32": 77,
+   "-37": 77,
+   "-42": 77,
+   "-47": 77,
+   "-52": 77,
+   "-57": 77,
+   "-62": 77,
+   "-67": 77,
+   "-7": 77,
+   "-72": 77,
+   "-77": 77,
+   "-82": 77,
+   "-87": 77,
+   "-92": 77,
+   "-97": 77,
+   "1": 77
+  },
+  "join_checks": {
+   "child.target!=parent.name": 77,
+   "child.target==parent.name": 1463,
+   "facing opposite": 1540,
+   "name==target": 1540,
+   "parent sp 0 pp 0": 1540
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "21": 77
+  },
+  "pieces_max": 21,
+  "pieces_mean": 21,
+  "pieces_min": 21,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-28": 77,
+   "-33": 77,
+   "-38": 77,
+   "-43": 77,
+   "-48": 77,
+   "-53": 77,
+   "-58": 77,
+   "-61": 77
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 385,
+   "CLOCKWISE_90": 397,
+   "COUNTERCLOCKWISE_90": 403,
+   "NONE": 432
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 25,
+   "0,0,CLOCKWISE_90": 16,
+   "0,0,COUNTERCLOCKWISE_90": 14,
+   "0,0,NONE": 22
+  },
+  "starts": 77,
+  "templates": {
+   "b634:vseg": 1540,
+   "b634:vstart": 77
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 362,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 428,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 380,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 370
+  }
+ },
+ "b634:vchain_d16": {
+  "by_depth": {
+   "0:b634:vstart": 71,
+   "1:b634:vseg": 71,
+   "2:b634:vseg": 71,
+   "3:b634:vseg": 71
+  },
+  "depth_max_hist": {
+   "3": 71
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-12": 71,
+   "-2": 71,
+   "-7": 71,
+   "1": 71
+  },
+  "join_checks": {
+   "child.target!=parent.name": 71,
+   "child.target==parent.name": 142,
+   "facing opposite": 213,
+   "name==target": 213,
+   "parent sp 0 pp 0": 213
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 71
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-48": 71,
+   "-53": 71,
+   "-58": 71,
+   "-61": 71
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 52,
+   "CLOCKWISE_90": 82,
+   "COUNTERCLOCKWISE_90": 77,
+   "NONE": 73
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 12,
+   "0,0,CLOCKWISE_90": 23,
+   "0,0,COUNTERCLOCKWISE_90": 22,
+   "0,0,NONE": 14
+  },
+  "starts": 71,
+  "templates": {
+   "b634:vseg": 213,
+   "b634:vstart": 71
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 49,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 54,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 53,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 57
+  }
+ },
+ "b634:vchain_h16": {
+  "by_depth": {
+   "0:b634:vstart": 61,
+   "10:b634:vseg": 61,
+   "11:b634:vseg": 61,
+   "12:b634:vseg": 61,
+   "13:b634:vseg": 61,
+   "14:b634:vseg": 61,
+   "15:b634:vseg": 61,
+   "16:b634:vseg": 61,
+   "17:b634:vseg": 61,
+   "18:b634:vseg": 61,
+   "19:b634:vseg": 61,
+   "1:b634:vseg": 61,
+   "20:b634:vseg": 61,
+   "2:b634:vseg": 61,
+   "3:b634:vseg": 61,
+   "4:b634:vseg": 61,
+   "5:b634:vseg": 61,
+   "6:b634:vseg": 61,
+   "7:b634:vseg": 61,
+   "8:b634:vseg": 61,
+   "9:b634:vseg": 61
+  },
+  "depth_max_hist": {
+   "20": 61
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 102,
+  "ground_level_delta": {
+   "-12": 61,
+   "-17": 61,
+   "-2": 61,
+   "-22": 61,
+   "-27": 61,
+   "-32": 61,
+   "-37": 61,
+   "-42": 61,
+   "-47": 61,
+   "-52": 61,
+   "-57": 61,
+   "-62": 61,
+   "-67": 61,
+   "-7": 61,
+   "-72": 61,
+   "-77": 61,
+   "-82": 61,
+   "-87": 61,
+   "-92": 61,
+   "-97": 61,
+   "1": 61
+  },
+  "join_checks": {
+   "child.target!=parent.name": 61,
+   "child.target==parent.name": 1159,
+   "facing opposite": 1220,
+   "name==target": 1220,
+   "parent sp 0 pp 0": 1220
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "21": 61
+  },
+  "pieces_max": 21,
+  "pieces_mean": 21,
+  "pieces_min": 21,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-28": 61,
+   "-33": 61,
+   "-38": 61,
+   "-43": 61,
+   "-48": 61,
+   "-53": 61,
+   "-58": 61,
+   "-61": 61
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 293,
+   "CLOCKWISE_90": 336,
+   "COUNTERCLOCKWISE_90": 328,
+   "NONE": 324
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 15,
+   "0,0,CLOCKWISE_90": 13,
+   "0,0,COUNTERCLOCKWISE_90": 14,
+   "0,0,NONE": 19
+  },
+  "starts": 61,
+  "templates": {
+   "b634:vseg": 1220,
+   "b634:vstart": 61
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 315,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 301,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 284,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 320
+  }
+ },
+ "b634:vchain_v16": {
+  "by_depth": {
+   "0:b634:vstart": 88,
+   "1:b634:vseg": 88,
+   "2:b634:vseg": 88,
+   "3:b634:vseg": 88
+  },
+  "depth_max_hist": {
+   "3": 88
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-12": 88,
+   "-2": 88,
+   "-7": 88,
+   "1": 88
+  },
+  "join_checks": {
+   "child.target!=parent.name": 88,
+   "child.target==parent.name": 176,
+   "facing opposite": 264,
+   "name==target": 264,
+   "parent sp 0 pp 0": 264
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 88
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-48": 88,
+   "-53": 88,
+   "-58": 88,
+   "-61": 88
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 78,
+   "CLOCKWISE_90": 96,
+   "COUNTERCLOCKWISE_90": 77,
+   "NONE": 101
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 23,
+   "0,0,CLOCKWISE_90": 23,
+   "0,0,COUNTERCLOCKWISE_90": 17,
+   "0,0,NONE": 25
+  },
+  "starts": 88,
+  "templates": {
+   "b634:vseg": 264,
+   "b634:vstart": 88
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 68,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 58,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 75,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 63
+  }
+ },
+ "b634:weights": {
+  "by_depth": {
+   "0:b634:hub_w": 841,
+   "1:b634:arm_w1": 687,
+   "1:b634:arm_w3": 2003
+  },
+  "depth_max_hist": {
+   "0": 1,
+   "1": 840
+  },
+  "dim": "d_weights",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 3531
+  },
+  "join_checks": {
+   "child.target!=parent.name": 2690,
+   "facing opposite": 2690,
+   "name==target": 2690,
+   "parent sp 0 pp 0": 2690,
+   "top same": 2690
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 1,
+   "2": 23,
+   "3": 113,
+   "4": 375,
+   "5": 329
+  },
+  "pieces_max": 5,
+  "pieces_mean": 4.199,
+  "pieces_min": 1,
+  "pieces_sd": 0.779,
+  "posy": {
+   "-61": 3531
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 881,
+   "CLOCKWISE_90": 884,
+   "COUNTERCLOCKWISE_90": 881,
+   "NONE": 885
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 210,
+   "0,0,CLOCKWISE_90": 217,
+   "0,0,COUNTERCLOCKWISE_90": 214,
+   "0,0,NONE": 200
+  },
+  "starts": 841,
+  "templates": {
+   "b634:arm_w1": 687,
+   "b634:arm_w3": 2003,
+   "b634:hub_w": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:whub": {
+  "by_depth": {
+   "0:b634:whub": 284,
+   "1:b634:narrow": 284,
+   "1:b634:wide": 284
+  },
+  "depth_max_hist": {
+   "1": 284
+  },
+  "dim": "d_wide",
+  "extent_h_max": 6.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 852
+  },
+  "join_checks": {
+   "child.target!=parent.name": 568,
+   "facing opposite": 568,
+   "name==target": 568,
+   "parent sp 0 pp 0": 568,
+   "top same": 568
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 284
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 852
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 208,
+   "CLOCKWISE_90": 216,
+   "COUNTERCLOCKWISE_90": 210,
+   "NONE": 218
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 76,
+   "0,0,CLOCKWISE_90": 68,
+   "0,0,COUNTERCLOCKWISE_90": 74,
+   "0,0,NONE": 66
+  },
+  "starts": 284,
+  "templates": {
+   "b634:narrow": 284,
+   "b634:whub": 284,
+   "b634:wide": 284
+  },
+  "vertical_joins": {}
+ },
+ "b634:whub_spl": {
+  "by_depth": {
+   "0:b634:whub_spl": 295,
+   "1:b634:narrow": 295,
+   "1:b634:wide": 295
+  },
+  "depth_max_hist": {
+   "1": 295
+  },
+  "dim": "d_wide",
+  "extent_h_max": 6.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 885
+  },
+  "join_checks": {
+   "child.target!=parent.name": 590,
+   "facing opposite": 590,
+   "name==target": 590,
+   "parent sp 0 pp 0": 295,
+   "parent sp 1 pp 0": 295,
+   "top same": 590
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 295
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 885
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 215,
+   "CLOCKWISE_90": 216,
+   "COUNTERCLOCKWISE_90": 228,
+   "NONE": 226
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 79,
+   "0,0,CLOCKWISE_90": 80,
+   "0,0,COUNTERCLOCKWISE_90": 68,
+   "0,0,NONE": 68
+  },
+  "starts": 295,
+  "templates": {
+   "b634:narrow": 295,
+   "b634:whub_spl": 295,
+   "b634:wide": 295
+  },
+  "vertical_joins": {}
+ },
+ "b634:whub_spr": {
+  "by_depth": {
+   "0:b634:whub_spr": 262,
+   "1:b634:narrow": 262,
+   "1:b634:wide": 262
+  },
+  "depth_max_hist": {
+   "1": 262
+  },
+  "dim": "d_wide",
+  "extent_h_max": 6.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 786
+  },
+  "join_checks": {
+   "child.target!=parent.name": 524,
+   "facing opposite": 524,
+   "name==target": 524,
+   "parent sp 0 pp 0": 262,
+   "parent sp 1 pp 0": 262,
+   "top same": 524
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 262
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 786
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 187,
+   "CLOCKWISE_90": 213,
+   "COUNTERCLOCKWISE_90": 210,
+   "NONE": 176
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 55,
+   "0,0,CLOCKWISE_90": 69,
+   "0,0,COUNTERCLOCKWISE_90": 72,
+   "0,0,NONE": 66
+  },
+  "starts": 262,
+  "templates": {
+   "b634:narrow": 262,
+   "b634:whub_spr": 262,
+   "b634:wide": 262
+  },
+  "vertical_joins": {}
+ }
+}

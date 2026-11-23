@@ -1,0 +1,2892 @@
+{
+ "age0": {
+  "changed": {
+   "chiseled_stone_bricks": {
+    "(same)": 0.417,
+    "cracked_stone_bricks": 0.167,
+    "n": 12,
+    "stone_brick_stairs": 0.417
+   },
+   "cobblestone_stairs": {
+    "(same)": 0.333,
+    "n": 12,
+    "stone_brick_slab": 0.167,
+    "stone_slab": 0.5
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "obsidian": {
+    "(same)": 0.833,
+    "crying_obsidian": 0.167,
+    "n": 6
+   },
+   "stone": {
+    "(same)": 0.508,
+    "cracked_stone_bricks": 0.278,
+    "n": 396,
+    "stone_brick_stairs": 0.215
+   },
+   "stone_brick_stairs": {
+    "(same)": 0.389,
+    "n": 18,
+    "stone_brick_slab": 0.278,
+    "stone_slab": 0.333
+   },
+   "stone_bricks": {
+    "(same)": 0.583,
+    "cracked_stone_bricks": 0.083,
+    "n": 12,
+    "stone_brick_stairs": 0.333
+   },
+   "stone_stairs": {
+    "(same)": 0.5,
+    "n": 12,
+    "stone_brick_slab": 0.25,
+    "stone_slab": 0.25
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_wall",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "tuff"
+  ]
+ },
+ "age100": {
+  "changed": {
+   "chiseled_stone_bricks": {
+    "(same)": 0.5,
+    "mossy_stone_brick_stairs": 0.417,
+    "mossy_stone_bricks": 0.083,
+    "n": 12
+   },
+   "cobblestone_slab": {
+    "mossy_stone_brick_slab": 1.0,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "(same)": 0.75,
+    "mossy_stone_brick_slab": 0.083,
+    "mossy_stone_brick_stairs": 0.167,
+    "n": 12
+   },
+   "cobblestone_wall": {
+    "mossy_stone_brick_wall": 1.0,
+    "n": 12
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "obsidian": {
+    "(same)": 0.833,
+    "crying_obsidian": 0.167,
+    "n": 6
+   },
+   "smooth_stone_slab": {
+    "mossy_stone_brick_slab": 1.0,
+    "n": 12
+   },
+   "stone": {
+    "(same)": 0.487,
+    "mossy_stone_brick_stairs": 0.25,
+    "mossy_stone_bricks": 0.263,
+    "n": 396
+   },
+   "stone_brick_slab": {
+    "mossy_stone_brick_slab": 1.0,
+    "n": 12
+   },
+   "stone_brick_stairs": {
+    "(same)": 0.667,
+    "mossy_stone_brick_slab": 0.111,
+    "mossy_stone_brick_stairs": 0.222,
+    "n": 18
+   },
+   "stone_brick_wall": {
+    "mossy_stone_brick_wall": 1.0,
+    "n": 12
+   },
+   "stone_bricks": {
+    "(same)": 0.5,
+    "mossy_stone_brick_stairs": 0.333,
+    "mossy_stone_bricks": 0.167,
+    "n": 12
+   },
+   "stone_slab": {
+    "mossy_stone_brick_slab": 1.0,
+    "n": 12
+   },
+   "stone_stairs": {
+    "(same)": 0.167,
+    "mossy_stone_brick_slab": 0.5,
+    "mossy_stone_brick_stairs": 0.333,
+    "n": 12
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "stone_button",
+   "stone_pressure_plate",
+   "tuff"
+  ]
+ },
+ "age50": {
+  "changed": {
+   "chiseled_stone_bricks": {
+    "(same)": 0.5,
+    "cracked_stone_bricks": 0.25,
+    "mossy_stone_brick_stairs": 0.167,
+    "n": 12,
+    "stone_brick_stairs": 0.083
+   },
+   "cobblestone_slab": {
+    "(same)": 0.583,
+    "mossy_stone_brick_slab": 0.417,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "(same)": 0.5,
+    "mossy_stone_brick_stairs": 0.167,
+    "n": 12,
+    "stone_slab": 0.333
+   },
+   "cobblestone_wall": {
+    "(same)": 0.083,
+    "mossy_stone_brick_wall": 0.917,
+    "n": 12
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "smooth_stone_slab": {
+    "(same)": 0.5,
+    "mossy_stone_brick_slab": 0.5,
+    "n": 12
+   },
+   "stone": {
+    "(same)": 0.449,
+    "cracked_stone_bricks": 0.157,
+    "mossy_stone_brick_stairs": 0.149,
+    "mossy_stone_bricks": 0.129,
+    "n": 396,
+    "stone_brick_stairs": 0.116
+   },
+   "stone_brick_slab": {
+    "(same)": 0.583,
+    "mossy_stone_brick_slab": 0.417,
+    "n": 12
+   },
+   "stone_brick_stairs": {
+    "(same)": 0.722,
+    "mossy_stone_brick_slab": 0.056,
+    "mossy_stone_brick_stairs": 0.111,
+    "n": 18,
+    "stone_brick_slab": 0.111
+   },
+   "stone_brick_wall": {
+    "(same)": 0.417,
+    "mossy_stone_brick_wall": 0.583,
+    "n": 12
+   },
+   "stone_bricks": {
+    "(same)": 0.667,
+    "mossy_stone_bricks": 0.083,
+    "n": 12,
+    "stone_brick_stairs": 0.25
+   },
+   "stone_slab": {
+    "(same)": 0.417,
+    "mossy_stone_brick_slab": 0.583,
+    "n": 12
+   },
+   "stone_stairs": {
+    "(same)": 0.583,
+    "mossy_stone_brick_slab": 0.083,
+    "n": 12,
+    "stone_slab": 0.333
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "stone_button",
+   "stone_pressure_plate",
+   "tuff"
+  ]
+ },
+ "air": {
+  "changed": {
+   "andesite": {
+    "air": 1.0,
+    "n": 12
+   },
+   "blackstone": {
+    "air": 1.0,
+    "n": 6
+   },
+   "bricks": {
+    "air": 1.0,
+    "n": 6
+   },
+   "chest": {
+    "air": 1.0,
+    "n": 6
+   },
+   "chiseled_stone_bricks": {
+    "air": 1.0,
+    "n": 12
+   },
+   "cobbled_deepslate": {
+    "air": 1.0,
+    "n": 6
+   },
+   "cobblestone": {
+    "air": 1.0,
+    "n": 12
+   },
+   "cobblestone_slab": {
+    "air": 1.0,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "air": 1.0,
+    "n": 12
+   },
+   "cobblestone_wall": {
+    "air": 1.0,
+    "n": 12
+   },
+   "cracked_deepslate_bricks": {
+    "air": 1.0,
+    "n": 6
+   },
+   "cracked_stone_bricks": {
+    "air": 1.0,
+    "n": 12
+   },
+   "deepslate_bricks": {
+    "air": 1.0,
+    "n": 6
+   },
+   "dirt": {
+    "air": 1.0,
+    "n": 6
+   },
+   "gold_block": {
+    "(same)": 0.5,
+    "air": 0.5,
+    "n": 12
+   },
+   "granite": {
+    "air": 1.0,
+    "n": 12
+   },
+   "gravel": {
+    "air": 1.0,
+    "n": 6
+   },
+   "iron_bars": {
+    "air": 1.0,
+    "n": 6
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "mossy_cobblestone": {
+    "air": 1.0,
+    "n": 12
+   },
+   "mossy_stone_bricks": {
+    "air": 1.0,
+    "n": 12
+   },
+   "oak_log": {
+    "air": 1.0,
+    "n": 12
+   },
+   "oak_planks": {
+    "air": 1.0,
+    "n": 12
+   },
+   "obsidian": {
+    "air": 1.0,
+    "n": 6
+   },
+   "polished_andesite": {
+    "air": 1.0,
+    "n": 12
+   },
+   "polished_blackstone_bricks": {
+    "air": 1.0,
+    "n": 6
+   },
+   "sand": {
+    "air": 1.0,
+    "n": 6
+   },
+   "sandstone": {
+    "air": 1.0,
+    "n": 6
+   },
+   "smooth_stone": {
+    "air": 1.0,
+    "n": 12
+   },
+   "smooth_stone_slab": {
+    "air": 1.0,
+    "n": 12
+   },
+   "stone": {
+    "(same)": 0.97,
+    "air": 0.03,
+    "n": 396
+   },
+   "stone_brick_slab": {
+    "air": 1.0,
+    "n": 12
+   },
+   "stone_brick_stairs": {
+    "air": 1.0,
+    "n": 18
+   },
+   "stone_brick_wall": {
+    "air": 1.0,
+    "n": 12
+   },
+   "stone_bricks": {
+    "air": 1.0,
+    "n": 12
+   },
+   "stone_button": {
+    "air": 1.0,
+    "n": 12
+   },
+   "stone_pressure_plate": {
+    "air": 1.0,
+    "n": 12
+   },
+   "stone_slab": {
+    "air": 1.0,
+    "n": 12
+   },
+   "stone_stairs": {
+    "air": 1.0,
+    "n": 12
+   },
+   "tuff": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "diamond_block",
+   "emerald_block"
+  ]
+ },
+ "air_legacy": {
+  "changed": {
+   "air": {
+    "glass": 1.0,
+    "n": 744
+   },
+   "andesite": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "blackstone": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "bricks": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "chest": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "chiseled_stone_bricks": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "cobbled_deepslate": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "cobblestone": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "cobblestone_slab": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "cobblestone_wall": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "cracked_deepslate_bricks": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "cracked_stone_bricks": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "deepslate_bricks": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "dirt": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "gold_block": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 12
+   },
+   "granite": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "gravel": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "iron_bars": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "jigsaw": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "mossy_cobblestone": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "mossy_stone_bricks": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "oak_log": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "oak_planks": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "obsidian": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "polished_andesite": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "polished_blackstone_bricks": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "sand": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "sandstone": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "smooth_stone": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "smooth_stone_slab": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "stone": {
+    "(same)": 0.97,
+    "glass": 0.03,
+    "n": 396
+   },
+   "stone_brick_slab": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "stone_brick_stairs": {
+    "glass": 1.0,
+    "n": 18
+   },
+   "stone_brick_wall": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "stone_bricks": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "stone_button": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "stone_pressure_plate": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "stone_slab": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "stone_stairs": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "tuff": {
+    "glass": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "diamond_block",
+   "emerald_block"
+  ]
+ },
+ "blackstone": {
+  "changed": {
+   "chiseled_stone_bricks": {
+    "chiseled_polished_blackstone": 1.0,
+    "n": 12
+   },
+   "cobblestone": {
+    "blackstone": 1.0,
+    "n": 12
+   },
+   "cobblestone_slab": {
+    "blackstone_slab": 1.0,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "blackstone_stairs": 1.0,
+    "n": 12
+   },
+   "cobblestone_wall": {
+    "blackstone_wall": 1.0,
+    "n": 12
+   },
+   "cracked_stone_bricks": {
+    "cracked_polished_blackstone_bricks": 1.0,
+    "n": 12
+   },
+   "iron_bars": {
+    "iron_chain": 1.0,
+    "n": 6
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "mossy_cobblestone": {
+    "blackstone": 1.0,
+    "n": 12
+   },
+   "mossy_stone_bricks": {
+    "n": 12,
+    "polished_blackstone_bricks": 1.0
+   },
+   "smooth_stone_slab": {
+    "n": 12,
+    "polished_blackstone_slab": 1.0
+   },
+   "stone": {
+    "n": 396,
+    "polished_blackstone": 1.0
+   },
+   "stone_brick_slab": {
+    "n": 12,
+    "polished_blackstone_brick_slab": 1.0
+   },
+   "stone_brick_stairs": {
+    "n": 18,
+    "polished_blackstone_brick_stairs": 1.0
+   },
+   "stone_brick_wall": {
+    "n": 12,
+    "polished_blackstone_brick_wall": 1.0
+   },
+   "stone_bricks": {
+    "n": 12,
+    "polished_blackstone_bricks": 1.0
+   },
+   "stone_slab": {
+    "n": 12,
+    "polished_blackstone_slab": 1.0
+   },
+   "stone_stairs": {
+    "n": 12,
+    "polished_blackstone_stairs": 1.0
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "cobbled_deepslate",
+   "cracked_deepslate_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "stone_button",
+   "stone_pressure_plate",
+   "tuff"
+  ]
+ },
+ "capped": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "(same)": 0.924,
+    "glowstone": 0.076,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "capped_u": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "(same)": 0.952,
+    "glowstone": 0.048,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "gravity": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "gravity_m1": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 4
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "ignore": {
+  "changed": {
+   "air": {
+    "glass": 1.0,
+    "n": 744
+   },
+   "jigsaw": {
+    "glass": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "glass": 1.0,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "inline": {
+  "changed": {
+   "cobblestone": {
+    "emerald_ore": 1.0,
+    "n": 12
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "jigsawrep": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "lava": {
+  "changed": {
+   "air": {
+    "lava": 1.0,
+    "n": 744
+   },
+   "chest": {
+    "lava": 1.0,
+    "n": 6
+   },
+   "cobblestone_slab": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "cobblestone_wall": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "iron_bars": {
+    "lava": 1.0,
+    "n": 6
+   },
+   "jigsaw": {
+    "lava": 1.0,
+    "n": 6
+   },
+   "sand": {
+    "lava": 1.0,
+    "n": 6
+   },
+   "smooth_stone_slab": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "stone_brick_slab": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "stone_brick_stairs": {
+    "lava": 0.667,
+    "n": 18,
+    "sand": 0.333
+   },
+   "stone_brick_wall": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "stone_button": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "stone_pressure_plate": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "stone_slab": {
+    "lava": 1.0,
+    "n": 12
+   },
+   "stone_stairs": {
+    "lava": 1.0,
+    "n": 12
+   }
+  },
+  "unchanged_inputs": [
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sandstone",
+   "smooth_stone",
+   "stone",
+   "stone_bricks",
+   "tuff"
+  ]
+ },
+ "legacy": {
+  "changed": {
+   "air": {
+    "glass": 1.0,
+    "n": 744
+   },
+   "jigsaw": {
+    "glass": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "loot": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "chest": "chest nbt keys ['LootTable', 'LootTableSeed', 'components', 'id', 'keepPacked', 'x', 'y', 'z'] loot minecraft:chests/simple_dungeon name None",
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "none": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "chest": "chest nbt keys ['Items', 'components', 'id', 'keepPacked', 'x', 'y', 'z'] loot None name None",
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "none_lava": {
+  "changed": {
+   "air": {
+    "lava": 1.0,
+    "n": 744
+   },
+   "jigsaw": {
+    "lava": 1.0,
+    "n": 6
+   },
+   "stone_button": {
+    "lava": 1.0,
+    "n": 12
+   }
+  },
+  "unchanged_inputs": [
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "nop": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "protected": {
+  "changed": {
+   "air": {
+    "(same)": 0.629,
+    "bedrock": 0.371,
+    "n": 744
+   },
+   "andesite": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "chest": {
+    "bedrock": 1.0,
+    "n": 6
+   },
+   "chiseled_stone_bricks": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "cobbled_deepslate": {
+    "(same)": 0.833,
+    "bedrock": 0.167,
+    "n": 6
+   },
+   "cobblestone_slab": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "(same)": 0.083,
+    "bedrock": 0.917,
+    "n": 12
+   },
+   "cobblestone_wall": {
+    "(same)": 0.167,
+    "bedrock": 0.833,
+    "n": 12
+   },
+   "cracked_stone_bricks": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "diamond_block": {
+    "(same)": 0.833,
+    "bedrock": 0.167,
+    "n": 6
+   },
+   "emerald_block": {
+    "(same)": 0.167,
+    "bedrock": 0.833,
+    "n": 6
+   },
+   "gold_block": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "granite": {
+    "(same)": 0.083,
+    "bedrock": 0.917,
+    "n": 12
+   },
+   "iron_bars": {
+    "(same)": 0.833,
+    "bedrock": 0.167,
+    "n": 6
+   },
+   "jigsaw": {
+    "bedrock": 1.0,
+    "n": 6
+   },
+   "mossy_cobblestone": {
+    "(same)": 0.167,
+    "bedrock": 0.833,
+    "n": 12
+   },
+   "mossy_stone_bricks": {
+    "(same)": 0.083,
+    "bedrock": 0.917,
+    "n": 12
+   },
+   "oak_log": {
+    "(same)": 0.083,
+    "bedrock": 0.917,
+    "n": 12
+   },
+   "oak_planks": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "obsidian": {
+    "bedrock": 1.0,
+    "n": 6
+   },
+   "polished_andesite": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "polished_blackstone_bricks": {
+    "(same)": 0.167,
+    "bedrock": 0.833,
+    "n": 6
+   },
+   "sand": {
+    "bedrock": 1.0,
+    "n": 6
+   },
+   "sandstone": {
+    "(same)": 0.167,
+    "bedrock": 0.833,
+    "n": 6
+   },
+   "smooth_stone": {
+    "(same)": 0.167,
+    "bedrock": 0.833,
+    "n": 12
+   },
+   "smooth_stone_slab": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "stone": {
+    "(same)": 0.636,
+    "bedrock": 0.364,
+    "n": 396
+   },
+   "stone_brick_slab": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "stone_brick_stairs": {
+    "(same)": 0.333,
+    "bedrock": 0.667,
+    "n": 18
+   },
+   "stone_brick_wall": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "stone_button": {
+    "(same)": 0.917,
+    "bedrock": 0.083,
+    "n": 12
+   },
+   "stone_pressure_plate": {
+    "(same)": 0.083,
+    "bedrock": 0.917,
+    "n": 12
+   },
+   "tuff": {
+    "bedrock": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "blackstone",
+   "bricks",
+   "cobblestone",
+   "cracked_deepslate_bricks",
+   "deepslate_bricks",
+   "dirt",
+   "gravel",
+   "stone_bricks",
+   "stone_slab",
+   "stone_stairs"
+  ]
+ },
+ "rot50": {
+  "changed": {
+   "air": {
+    "(same)": 0.524,
+    "glass": 0.476,
+    "n": 744
+   },
+   "andesite": {
+    "(same)": 0.833,
+    "glass": 0.167,
+    "n": 12
+   },
+   "blackstone": {
+    "(same)": 0.667,
+    "glass": 0.333,
+    "n": 6
+   },
+   "bricks": {
+    "(same)": 0.667,
+    "glass": 0.333,
+    "n": 6
+   },
+   "chest": {
+    "(same)": 0.833,
+    "glass": 0.167,
+    "n": 6
+   },
+   "chiseled_stone_bricks": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 12
+   },
+   "cobbled_deepslate": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 6
+   },
+   "cobblestone": {
+    "(same)": 0.417,
+    "glass": 0.583,
+    "n": 12
+   },
+   "cobblestone_slab": {
+    "(same)": 0.667,
+    "glass": 0.333,
+    "n": 12
+   },
+   "cobblestone_stairs": {
+    "glass": 1.0,
+    "n": 12
+   },
+   "cobblestone_wall": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 12
+   },
+   "cracked_deepslate_bricks": {
+    "(same)": 0.167,
+    "glass": 0.833,
+    "n": 6
+   },
+   "cracked_stone_bricks": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 12
+   },
+   "deepslate_bricks": {
+    "(same)": 0.167,
+    "glass": 0.833,
+    "n": 6
+   },
+   "diamond_block": {
+    "(same)": 0.167,
+    "glass": 0.833,
+    "n": 6
+   },
+   "dirt": {
+    "(same)": 0.167,
+    "glass": 0.833,
+    "n": 6
+   },
+   "emerald_block": {
+    "(same)": 0.333,
+    "glass": 0.667,
+    "n": 6
+   },
+   "gold_block": {
+    "(same)": 0.583,
+    "glass": 0.417,
+    "n": 12
+   },
+   "granite": {
+    "(same)": 0.583,
+    "glass": 0.417,
+    "n": 12
+   },
+   "gravel": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 6
+   },
+   "iron_bars": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 6
+   },
+   "jigsaw": {
+    "air": 0.167,
+    "glass": 0.833,
+    "n": 6
+   },
+   "mossy_cobblestone": {
+    "(same)": 0.583,
+    "glass": 0.417,
+    "n": 12
+   },
+   "mossy_stone_bricks": {
+    "(same)": 0.417,
+    "glass": 0.583,
+    "n": 12
+   },
+   "oak_log": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 12
+   },
+   "oak_planks": {
+    "(same)": 0.167,
+    "glass": 0.833,
+    "n": 12
+   },
+   "obsidian": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 6
+   },
+   "polished_andesite": {
+    "(same)": 0.667,
+    "glass": 0.333,
+    "n": 12
+   },
+   "polished_blackstone_bricks": {
+    "(same)": 0.167,
+    "glass": 0.833,
+    "n": 6
+   },
+   "sand": {
+    "(same)": 0.333,
+    "glass": 0.667,
+    "n": 6
+   },
+   "sandstone": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 6
+   },
+   "smooth_stone": {
+    "(same)": 0.583,
+    "glass": 0.417,
+    "n": 12
+   },
+   "smooth_stone_slab": {
+    "(same)": 0.333,
+    "glass": 0.667,
+    "n": 12
+   },
+   "stone": {
+    "(same)": 0.505,
+    "glass": 0.495,
+    "n": 396
+   },
+   "stone_brick_slab": {
+    "(same)": 0.333,
+    "glass": 0.667,
+    "n": 12
+   },
+   "stone_brick_stairs": {
+    "(same)": 0.5,
+    "glass": 0.5,
+    "n": 18
+   },
+   "stone_brick_wall": {
+    "(same)": 0.667,
+    "glass": 0.333,
+    "n": 12
+   },
+   "stone_bricks": {
+    "(same)": 0.417,
+    "glass": 0.583,
+    "n": 12
+   },
+   "stone_button": {
+    "(same)": 0.667,
+    "glass": 0.333,
+    "n": 12
+   },
+   "stone_pressure_plate": {
+    "(same)": 0.333,
+    "glass": 0.667,
+    "n": 12
+   },
+   "stone_slab": {
+    "(same)": 0.25,
+    "glass": 0.75,
+    "n": 12
+   },
+   "stone_stairs": {
+    "(same)": 0.583,
+    "glass": 0.417,
+    "n": 12
+   },
+   "tuff": {
+    "(same)": 0.667,
+    "glass": 0.333,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": []
+ },
+ "rot50_tag": {
+  "changed": {
+   "chiseled_stone_bricks": {
+    "(same)": 0.333,
+    "glass": 0.667,
+    "n": 12
+   },
+   "cracked_stone_bricks": {
+    "(same)": 0.417,
+    "glass": 0.583,
+    "n": 12
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "mossy_stone_bricks": {
+    "(same)": 0.417,
+    "glass": 0.583,
+    "n": 12
+   },
+   "stone_bricks": {
+    "(same)": 0.583,
+    "glass": 0.417,
+    "n": 12
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_allof": {
+  "changed": {
+   "chiseled_stone_bricks": {
+    "copper_block": 1.0,
+    "n": 12
+   },
+   "cracked_stone_bricks": {
+    "copper_block": 1.0,
+    "n": 12
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "mossy_stone_bricks": {
+    "copper_block": 1.0,
+    "n": 12
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_anyof": {
+  "changed": {
+   "granite": {
+    "copper_block": 1.0,
+    "n": 12
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "tuff": {
+    "copper_block": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs"
+  ]
+ },
+ "rule_block": {
+  "changed": {
+   "cobblestone": {
+    "emerald_ore": 1.0,
+    "n": 12
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_height": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "(same)": 0.03,
+    "iron_block": 0.97,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_loc": {
+  "changed": {
+   "air": {
+    "n": 744,
+    "tnt": 0.925,
+    "water": 0.075
+   },
+   "andesite": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "blackstone": {
+    "n": 6,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "bricks": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "chest": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "chiseled_stone_bricks": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "cobbled_deepslate": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "cobblestone": {
+    "n": 12,
+    "tnt": 0.833,
+    "water": 0.167
+   },
+   "cobblestone_slab": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "cobblestone_stairs": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "cobblestone_wall": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "cracked_deepslate_bricks": {
+    "n": 6,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "cracked_stone_bricks": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "deepslate_bricks": {
+    "n": 6,
+    "tnt": 0.5,
+    "water": 0.5
+   },
+   "diamond_block": {
+    "n": 6,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "dirt": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "emerald_block": {
+    "n": 6,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "gold_block": {
+    "n": 12,
+    "tnt": 0.75,
+    "water": 0.25
+   },
+   "granite": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "gravel": {
+    "n": 6,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "iron_bars": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "jigsaw": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "mossy_cobblestone": {
+    "n": 12,
+    "tnt": 0.833,
+    "water": 0.167
+   },
+   "mossy_stone_bricks": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "oak_log": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "oak_planks": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "obsidian": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "polished_andesite": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "polished_blackstone_bricks": {
+    "n": 6,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "sand": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "sandstone": {
+    "n": 6,
+    "tnt": 1.0
+   },
+   "smooth_stone": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "smooth_stone_slab": {
+    "n": 12,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "stone": {
+    "n": 396,
+    "tnt": 0.909,
+    "water": 0.091
+   },
+   "stone_brick_slab": {
+    "n": 12,
+    "tnt": 0.667,
+    "water": 0.333
+   },
+   "stone_brick_stairs": {
+    "n": 18,
+    "tnt": 1.0
+   },
+   "stone_brick_wall": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "stone_bricks": {
+    "n": 12,
+    "tnt": 0.833,
+    "water": 0.167
+   },
+   "stone_button": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "stone_pressure_plate": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "stone_slab": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "stone_stairs": {
+    "n": 12,
+    "tnt": 1.0
+   },
+   "tuff": {
+    "n": 6,
+    "tnt": 1.0
+   }
+  },
+  "unchanged_inputs": []
+ },
+ "rule_lpos": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "(same)": 0.225,
+    "coal_block": 0.775,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_pos": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "(same)": 0.697,
+    "coal_block": 0.303,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_rand": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "(same)": 0.73,
+    "diamond_ore": 0.27,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_rstate": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone_brick_stairs": {
+    "(same)": 0.722,
+    "lapis_block": 0.278,
+    "n": 18
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_state": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone_brick_stairs": {
+    "(same)": 0.333,
+    "lapis_block": 0.667,
+    "n": 18
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_tag": {
+  "changed": {
+   "chiseled_stone_bricks": {
+    "n": 12,
+    "redstone_block": 1.0
+   },
+   "cracked_stone_bricks": {
+    "n": 12,
+    "redstone_block": 1.0
+   },
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "mossy_stone_bricks": {
+    "n": 12,
+    "redstone_block": 1.0
+   },
+   "stone_bricks": {
+    "n": 12,
+    "redstone_block": 1.0
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "rule_two": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "iron_block": 1.0,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "static": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   }
+  },
+  "chest": "chest nbt keys ['CustomName', 'Items', 'components', 'id', 'keepPacked', 'x', 'y', 'z'] loot None name b634",
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ },
+ "two_lists": {
+  "changed": {
+   "jigsaw": {
+    "air": 1.0,
+    "n": 6
+   },
+   "stone": {
+    "gold_ore": 1.0,
+    "n": 396
+   }
+  },
+  "unchanged_inputs": [
+   "air",
+   "andesite",
+   "blackstone",
+   "bricks",
+   "chest",
+   "chiseled_stone_bricks",
+   "cobbled_deepslate",
+   "cobblestone",
+   "cobblestone_slab",
+   "cobblestone_stairs",
+   "cobblestone_wall",
+   "cracked_deepslate_bricks",
+   "cracked_stone_bricks",
+   "deepslate_bricks",
+   "diamond_block",
+   "dirt",
+   "emerald_block",
+   "gold_block",
+   "granite",
+   "gravel",
+   "iron_bars",
+   "mossy_cobblestone",
+   "mossy_stone_bricks",
+   "oak_log",
+   "oak_planks",
+   "obsidian",
+   "polished_andesite",
+   "polished_blackstone_bricks",
+   "sand",
+   "sandstone",
+   "smooth_stone",
+   "smooth_stone_slab",
+   "stone_brick_slab",
+   "stone_brick_stairs",
+   "stone_brick_wall",
+   "stone_bricks",
+   "stone_button",
+   "stone_pressure_plate",
+   "stone_slab",
+   "stone_stairs",
+   "tuff"
+  ]
+ }
+}

@@ -1,0 +1,1772 @@
+{
+ "26.3": {
+  "block_entity_modifiers_used": {
+   "minecraft:append_loot": 4
+  },
+  "jigsaw_structures": [
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_bamboo_jungle",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_birch_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_cherry_grove",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_dappled_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_flower_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_meadow",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_old_growth_birch_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_old_growth_pine_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_old_growth_spruce_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_pale_garden",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_savanna",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_snowy_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_sparse_jungle",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_swamp",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_windswept_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_wooded_badlands",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "ancient_city",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_jigsaw_name",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 116,
+    "pool_aliases": false,
+    "project": null,
+    "size": 7,
+    "start_height": {
+     "absolute": -27
+    },
+    "start_jigsaw_name": "minecraft:city_anchor",
+    "terrain_adaptation": "beard_box",
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": null,
+    "id": "bastion_remnant",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": null,
+    "size": 6,
+    "start_height": {
+     "absolute": 33
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": null,
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": null,
+    "id": "pillager_outpost",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 7,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "trail_ruins",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 7,
+    "start_height": {
+     "absolute": -15
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "bury",
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": 10,
+    "id": "trial_chambers",
+    "keys": [
+     "biomes",
+     "dimension_padding",
+     "liquid_settings",
+     "max_distance_from_center",
+     "pool_aliases",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": "ignore_waterlogging",
+    "max_distance_from_center": 116,
+    "pool_aliases": true,
+    "project": null,
+    "size": 20,
+    "start_height": {
+     "max_inclusive": {
+      "absolute": -20
+     },
+     "min_inclusive": {
+      "absolute": -40
+     },
+     "type": "minecraft:uniform"
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "encapsulate",
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_desert",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_plains",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_savanna",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_snowy",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   }
+  ],
+  "largest_file_bytes": 80375,
+  "median_file_bytes": 1669,
+  "pool_element_types": {
+   "(in list) minecraft:legacy_single_pool_element": 2,
+   "(in list) minecraft:single_pool_element": 4,
+   "minecraft:empty_pool_element": 31,
+   "minecraft:feature_pool_element": 57,
+   "minecraft:legacy_single_pool_element": 1663,
+   "minecraft:list_pool_element": 3,
+   "minecraft:single_pool_element": 527
+  },
+  "pool_keys": {
+   "elements": 245,
+   "fallback": 245
+  },
+  "pos_rule_tests_used": {
+   "minecraft:axis_aligned_linear_pos": 1
+  },
+  "processor_lists": 40,
+  "processor_types_used": {
+   "minecraft:block_rot": 6,
+   "minecraft:capped": 4,
+   "minecraft:protected_blocks": 7,
+   "minecraft:rule": 35
+  },
+  "projections": {
+   "None": 31,
+   "rigid": 2067,
+   "terrain_matching": 183
+  },
+  "python_read_and_gunzip_all_seconds": 0.12,
+  "rule_tests_used": {
+   "loc:minecraft:always_true": 154,
+   "loc:minecraft:block_match": 10,
+   "minecraft:always_true": 1,
+   "minecraft:block_match": 23,
+   "minecraft:blockstate_match": 8,
+   "minecraft:random_block_match": 123,
+   "minecraft:tag_match": 9
+  },
+  "structure_folders": {
+   "(top)": 1,
+   "abandoned_camp": 297,
+   "ancient_city": 58,
+   "bastion": 167,
+   "desert_well": 2,
+   "end_city": 20,
+   "fossil": 16,
+   "igloo": 3,
+   "nether_fossils": 14,
+   "pillager_outpost": 11,
+   "ruined_portal": 13,
+   "shipwreck": 20,
+   "spring": 10,
+   "trail_ruins": 84,
+   "trial_chambers": 191,
+   "underwater_ruin": 48,
+   "village": 483,
+   "woodland_mansion": 73
+  },
+  "structure_nbt_compressed_bytes": 2782235,
+  "structure_nbt_count": 1511,
+  "structure_nbt_file_bytes": 4236847,
+  "structure_nbt_inflated_nbt_bytes": 45290384,
+  "structure_other_files": 0,
+  "structure_types_in_data": {
+   "minecraft:buried_treasure": 1,
+   "minecraft:desert_pyramid": 1,
+   "minecraft:end_city": 1,
+   "minecraft:fortress": 1,
+   "minecraft:igloo": 1,
+   "minecraft:jigsaw": 28,
+   "minecraft:jungle_temple": 1,
+   "minecraft:mineshaft": 2,
+   "minecraft:nether_fossil": 1,
+   "minecraft:ocean_monument": 1,
+   "minecraft:ocean_ruin": 2,
+   "minecraft:ruined_portal": 7,
+   "minecraft:shipwreck": 2,
+   "minecraft:stronghold": 1,
+   "minecraft:swamp_hut": 1,
+   "minecraft:woodland_mansion": 1
+  },
+  "template_pools": 245,
+  "zip_compress_types": {
+   "8": 1511
+  },
+  "zip_entries_total": 34227
+ },
+ "26.4-snapshot-7": {
+  "block_entity_modifiers_used": {
+   "minecraft:append_loot": 4
+  },
+  "jigsaw_structures": [
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_bamboo_jungle",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_birch_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_cherry_grove",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_dappled_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_flower_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_meadow",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_old_growth_birch_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_old_growth_pine_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_old_growth_spruce_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_pale_garden",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_savanna",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_snowy_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_sparse_jungle",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_swamp",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_windswept_forest",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "abandoned_camp_wooded_badlands",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 2,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "ancient_city",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_jigsaw_name",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 116,
+    "pool_aliases": false,
+    "project": null,
+    "size": 7,
+    "start_height": {
+     "absolute": -27
+    },
+    "start_jigsaw_name": "minecraft:city_anchor",
+    "terrain_adaptation": "beard_box",
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": null,
+    "id": "bastion_remnant",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": null,
+    "size": 6,
+    "start_height": {
+     "absolute": 33
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": null,
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": null,
+    "id": "pillager_outpost",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 7,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "trail_ruins",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 7,
+    "start_height": {
+     "absolute": -15
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "bury",
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": 10,
+    "id": "trial_chambers",
+    "keys": [
+     "biomes",
+     "dimension_padding",
+     "liquid_settings",
+     "max_distance_from_center",
+     "pool_aliases",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": "ignore_waterlogging",
+    "max_distance_from_center": 116,
+    "pool_aliases": true,
+    "project": null,
+    "size": 20,
+    "start_height": {
+     "max_inclusive": {
+      "absolute": -20
+     },
+     "min_inclusive": {
+      "absolute": -40
+     },
+     "type": "minecraft:uniform"
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "encapsulate",
+    "use_expansion_hack": false
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_desert",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_plains",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_savanna",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_snowy",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   },
+   {
+    "dimension_padding": null,
+    "id": "village_taiga",
+    "keys": [
+     "biomes",
+     "max_distance_from_center",
+     "project_start_to_heightmap",
+     "size",
+     "spawn_overrides",
+     "start_height",
+     "start_pool",
+     "step",
+     "terrain_adaptation",
+     "type",
+     "use_expansion_hack"
+    ],
+    "liquid_settings": null,
+    "max_distance_from_center": 80,
+    "pool_aliases": false,
+    "project": "WORLD_SURFACE_WG",
+    "size": 6,
+    "start_height": {
+     "absolute": 0
+    },
+    "start_jigsaw_name": null,
+    "terrain_adaptation": "beard_thin",
+    "use_expansion_hack": true
+   }
+  ],
+  "largest_file_bytes": 80373,
+  "median_file_bytes": 1667,
+  "pool_element_types": {
+   "(in list) minecraft:legacy_single_pool_element": 2,
+   "(in list) minecraft:single_pool_element": 4,
+   "minecraft:empty_pool_element": 31,
+   "minecraft:feature_pool_element": 57,
+   "minecraft:legacy_single_pool_element": 1663,
+   "minecraft:list_pool_element": 3,
+   "minecraft:single_pool_element": 527
+  },
+  "pool_keys": {
+   "elements": 245,
+   "fallback": 245
+  },
+  "pos_rule_tests_used": {
+   "minecraft:axis_aligned_linear_pos": 1
+  },
+  "processor_lists": 40,
+  "processor_types_used": {
+   "minecraft:block_rot": 6,
+   "minecraft:capped": 4,
+   "minecraft:protected_blocks": 7,
+   "minecraft:rule": 35
+  },
+  "projections": {
+   "None": 31,
+   "rigid": 2067,
+   "terrain_matching": 183
+  },
+  "python_read_and_gunzip_all_seconds": 0.12,
+  "rule_tests_used": {
+   "loc:minecraft:always_true": 154,
+   "loc:minecraft:block_match": 10,
+   "minecraft:always_true": 1,
+   "minecraft:block_match": 23,
+   "minecraft:blockstate_match": 8,
+   "minecraft:random_block_match": 123,
+   "minecraft:tag_match": 9
+  },
+  "structure_folders": {
+   "(top)": 1,
+   "abandoned_camp": 297,
+   "ancient_city": 58,
+   "bastion": 167,
+   "desert_well": 2,
+   "end_city": 20,
+   "fossil": 16,
+   "igloo": 3,
+   "nether_fossils": 14,
+   "pillager_outpost": 11,
+   "ruined_portal": 13,
+   "shipwreck": 20,
+   "spring": 10,
+   "trail_ruins": 84,
+   "trial_chambers": 191,
+   "underwater_ruin": 48,
+   "village": 483,
+   "woodland_mansion": 73
+  },
+  "structure_nbt_compressed_bytes": 2779065,
+  "structure_nbt_count": 1511,
+  "structure_nbt_file_bytes": 4233493,
+  "structure_nbt_inflated_nbt_bytes": 45289282,
+  "structure_other_files": 0,
+  "structure_types_in_data": {
+   "minecraft:buried_treasure": 1,
+   "minecraft:desert_pyramid": 1,
+   "minecraft:end_city": 1,
+   "minecraft:fortress": 1,
+   "minecraft:igloo": 1,
+   "minecraft:jigsaw": 28,
+   "minecraft:jungle_temple": 1,
+   "minecraft:mineshaft": 2,
+   "minecraft:nether_fossil": 1,
+   "minecraft:ocean_monument": 1,
+   "minecraft:ocean_ruin": 2,
+   "minecraft:ruined_portal": 7,
+   "minecraft:shipwreck": 2,
+   "minecraft:stronghold": 1,
+   "minecraft:swamp_hut": 1,
+   "minecraft:woodland_mansion": 1
+  },
+  "template_pools": 245,
+  "zip_compress_types": {
+   "8": 1511
+  },
+  "zip_entries_total": 35051
+ }
+}

@@ -1,0 +1,111 @@
+{
+ "d_proj": {},
+ "d_ta": {
+  "b634:taf_beard_box": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 3,
+   "n": 24,
+   "posy": -57,
+   "ring_solid": 0
+  },
+  "b634:taf_beard_thin": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 3,
+   "n": 34,
+   "posy": -57,
+   "ring_solid": 0
+  },
+  "b634:taf_bury": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 3,
+   "n": 27,
+   "posy": -57,
+   "ring_solid": 0
+  },
+  "b634:taf_encapsulate": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 3,
+   "n": 28,
+   "posy": -57,
+   "ring_solid": 0
+  },
+  "b634:taf_none": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 3,
+   "n": 30,
+   "posy": -57,
+   "ring_solid": 0
+  }
+ },
+ "n_proj": {
+  "b634:proj_rg": {
+   "bb_y": {
+    "63..63 posy 63 gld 0": 156,
+    "69..69 posy 69 gld 0": 4
+   },
+   "distinct_y": 1,
+   "distinct_y_max": 1,
+   "n": 160,
+   "on_land_share": 0.994,
+   "wool_cols": 26
+  },
+  "b634:proj_tm": {
+   "bb_y": {
+    "63..63 posy 63 gld 1": 161,
+    "68..68 posy 68 gld 1": 3
+   },
+   "distinct_y": 1.104,
+   "distinct_y_max": 7,
+   "n": 164,
+   "on_land_share": 1.0,
+   "wool_cols": 26
+  }
+ },
+ "n_ta": {
+  "b634:ta_beard_box": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0,
+   "n": 32,
+   "posy": 67.062,
+   "ring_solid": 25.844
+  },
+  "b634:ta_beard_thin": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0,
+   "n": 34,
+   "posy": 66.853,
+   "ring_solid": 27.588
+  },
+  "b634:ta_bury": {
+   "above_solid": 196,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0,
+   "n": 38,
+   "posy": 67.053,
+   "ring_solid": 815.079
+  },
+  "b634:ta_encapsulate": {
+   "above_solid": 196,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0,
+   "n": 33,
+   "posy": 66.788,
+   "ring_solid": 840
+  },
+  "b634:ta_none": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 9.51,
+   "n": 32,
+   "posy": 68.344,
+   "ring_solid": 6.5
+  }
+ }
+}

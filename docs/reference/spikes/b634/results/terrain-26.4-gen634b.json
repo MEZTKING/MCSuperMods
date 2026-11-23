@@ -1,0 +1,47 @@
+{
+ "d_proj": {},
+ "d_ta": {},
+ "n_proj": {},
+ "n_ta": {
+  "b634:ta_beard_box": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0.324,
+   "n": 34,
+   "posy": 69.853,
+   "ring_solid": 41.529
+  },
+  "b634:ta_beard_thin": {
+   "above_solid": 0,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0,
+   "n": 31,
+   "posy": 73.065,
+   "ring_solid": 44.548
+  },
+  "b634:ta_bury": {
+   "above_solid": 196,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0,
+   "n": 30,
+   "posy": 68,
+   "ring_solid": 830.467
+  },
+  "b634:ta_encapsulate": {
+   "above_solid": 196,
+   "inside_not_glass": 0,
+   "mean_gap_under": 0,
+   "n": 32,
+   "posy": 71.656,
+   "ring_solid": 840
+  },
+  "b634:ta_none": {
+   "above_solid": 0.262,
+   "inside_not_glass": 0,
+   "mean_gap_under": 7.121,
+   "n": 42,
+   "posy": 69.357,
+   "ring_solid": 9.048
+  }
+ }
+}

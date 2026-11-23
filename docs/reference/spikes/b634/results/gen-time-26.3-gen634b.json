@@ -1,0 +1,30 @@
+{
+ "start_s": 39.9,
+ "dims": {
+  "d_proj": {
+   "chunks": 1024,
+   "load_s": 7.6,
+   "save_s": 12.4
+  },
+  "d_ta": {
+   "chunks": 1024,
+   "load_s": 6.7,
+   "save_s": 10.2
+  },
+  "n_proj": {
+   "chunks": 1024,
+   "load_s": 160.5,
+   "save_s": 22.2
+  },
+  "n_ta": {
+   "chunks": 2304,
+   "load_s": 156.2,
+   "save_s": 12.1
+  },
+  "d_vill": {
+   "chunks": 4096,
+   "load_s": 21.9,
+   "save_s": 14.6
+  }
+ }
+}

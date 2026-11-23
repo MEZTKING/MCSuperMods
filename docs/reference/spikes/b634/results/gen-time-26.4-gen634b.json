@@ -1,0 +1,25 @@
+{
+ "start_s": 18.0,
+ "dims": {
+  "n_ta": {
+   "chunks": 2304,
+   "load_s": 27.4,
+   "save_s": 9.6
+  },
+  "r2_dist": {
+   "chunks": 1024,
+   "load_s": 4.5,
+   "save_s": 3.3
+  },
+  "r2_start": {
+   "chunks": 1024,
+   "load_s": 3.4,
+   "save_s": 2.8
+  },
+  "r2_s0": {
+   "chunks": 1024,
+   "load_s": 4.0,
+   "save_s": 4.7
+  }
+ }
+}

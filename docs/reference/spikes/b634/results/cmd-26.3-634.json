@@ -1,0 +1,3228 @@
+{
+ "align": {
+  "jigsaw_at - pos = (0, -1, 0) rot CLOCKWISE_180": 52,
+  "jigsaw_at - pos = (0, -1, 0) rot CLOCKWISE_90": 56,
+  "jigsaw_at - pos = (0, -1, 0) rot COUNTERCLOCKWISE_90": 47,
+  "jigsaw_at - pos = (0, -1, 0) rot NONE": 43
+ },
+ "asm": {
+  "jigsaw b634:cstart b634:start 0": {
+   "console": [
+    "System chat: ...634:start 0 2012 -60 816<--[HERE]",
+    "System chat: ...634:start 0 1916 -60 816<--[HERE]"
+   ],
+   "counts": [
+    {},
+    {}
+   ],
+   "seconds": [
+    0.004,
+    0.0
+   ]
+  },
+  "jigsaw b634:cstart b634:start 1": {
+   "console": [
+    "System chat: Generated jigsaw at 1724, -60, 816",
+    "System chat: Generated jigsaw at 1820, -60, 816"
+   ],
+   "counts": [
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 1
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 1
+    }
+   ],
+   "seconds": [
+    0.015,
+    0.001
+   ]
+  },
+  "jigsaw b634:cstart b634:start 20": {
+   "console": [
+    "System chat: Generated jigsaw at 2204, -60, 912"
+   ],
+   "counts": [
+    {
+     "gold_block": 1,
+     "red_wool": 9
+    }
+   ],
+   "seconds": [
+    0.004
+   ]
+  },
+  "jigsaw b634:cstart b634:start 21": {
+   "console": [
+    "System chat: ...634:start 21 1148 -60 1008<--[HERE]"
+   ],
+   "counts": [
+    {}
+   ],
+   "seconds": [
+    0.0
+   ]
+  },
+  "jigsaw b634:cstart b634:start 3": {
+   "console": [
+    "System chat: Generated jigsaw at 1340, -60, 816",
+    "System chat: Generated jigsaw at 1532, -60, 816",
+    "System chat: Generated jigsaw at 1436, -60, 816",
+    "System chat: Generated jigsaw at 1628, -60, 816"
+   ],
+   "counts": [
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    }
+   ],
+   "seconds": [
+    0.002,
+    0.001,
+    0.001,
+    0.005
+   ]
+  },
+  "jigsaw b634:cstart b634:start 7": {
+   "console": [
+    "System chat: Generated jigsaw at 2108, -60, 816",
+    "System chat: Generated jigsaw at 2204, -60, 816"
+   ],
+   "counts": [
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 7
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 7
+    }
+   ],
+   "seconds": [
+    0.003,
+    0.002
+   ]
+  },
+  "jigsaw b634:cstart b634:zzz 3": {
+   "console": [
+    "System chat: Failed to generate jigsaw"
+   ],
+   "counts": [
+    {
+     "blue_wool": 1,
+     "red_wool": 10
+    }
+   ],
+   "seconds": [
+    0.001
+   ]
+  },
+  "jigsaw b634:grid_start b634:g 7": {
+   "console": [
+    "System chat: Generated jigsaw at 1916, -60, 912",
+    "System chat: Generated jigsaw at 2012, -60, 912",
+    "System chat: Generated jigsaw at 1724, -60, 912",
+    "System chat: Generated jigsaw at 1820, -60, 912"
+   ],
+   "counts": [
+    {
+     "red_wool": 113
+    },
+    {
+     "red_wool": 113
+    },
+    {
+     "red_wool": 113
+    },
+    {
+     "red_wool": 113
+    }
+   ],
+   "seconds": [
+    0.019,
+    0.02,
+    0.017,
+    0.02
+   ]
+  },
+  "jigsaw b634:hub_match b634:hub 1": {
+   "console": [
+    "System chat: Generated jigsaw at 1436, -60, 912",
+    "System chat: Generated jigsaw at 1532, -60, 912",
+    "System chat: Generated jigsaw at 1148, -60, 912",
+    "System chat: Generated jigsaw at 1340, -60, 912",
+    "System chat: Generated jigsaw at 1244, -60, 912",
+    "System chat: Generated jigsaw at 1628, -60, 912"
+   ],
+   "counts": [
+    {
+     "cyan_wool": 1,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "orange_wool": 2,
+     "red_wool": 2
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 1
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 1
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 1
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "orange_wool": 2
+    }
+   ],
+   "seconds": [
+    0.022,
+    0.013,
+    0.003,
+    0.002,
+    0.022,
+    0.015
+   ]
+  },
+  "structure b634:back": {
+   "console": [
+    "System chat: Generated structure \"b634:back\" at 2108, -60, 432",
+    "System chat: Generated structure \"b634:back\" at 2204, -60, 432",
+    "System chat: Generated structure \"b634:back\" at 1148, -60, 528",
+    "System chat: Generated structure \"b634:back\" at 1340, -60, 528",
+    "System chat: Generated structure \"b634:back\" at 1244, -60, 528",
+    "System chat: Generated structure \"b634:back\" at 1436, -60, 528"
+   ],
+   "counts": [
+    {
+     "brown_wool": 4,
+     "gold_block": 1
+    },
+    {
+     "brown_wool": 4,
+     "gold_block": 1
+    },
+    {
+     "brown_wool": 4,
+     "gold_block": 1
+    },
+    {
+     "brown_wool": 4,
+     "gold_block": 1
+    },
+    {
+     "brown_wool": 4,
+     "gold_block": 1
+    },
+    {
+     "brown_wool": 4,
+     "gold_block": 1
+    }
+   ],
+   "seconds": [
+    0.025,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001
+   ]
+  },
+  "structure b634:chain_s0": {
+   "console": [
+    "System chat: Failed to place structure"
+   ],
+   "counts": [
+    {},
+    {}
+   ],
+   "seconds": [
+    0.016,
+    0.021
+   ]
+  },
+  "structure b634:chain_s1": {
+   "console": [
+    "System chat: Generated structure \"b634:chain_s1\" at 1148, -60, 432",
+    "System chat: Generated structure \"b634:chain_s1\" at 2204, -60, 336",
+    "System chat: Generated structure \"b634:chain_s1\" at 1244, -60, 432",
+    "System chat: Generated structure \"b634:chain_s1\" at 2108, -60, 336"
+   ],
+   "counts": [
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 1
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 1
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 1
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 1
+    }
+   ],
+   "seconds": [
+    0.017,
+    0.018,
+    0.018,
+    0.019
+   ]
+  },
+  "structure b634:chain_s3": {
+   "console": [
+    "System chat: Generated structure \"b634:chain_s3\" at 2012, -60, 336",
+    "System chat: Generated structure \"b634:chain_s3\" at 1916, -60, 336",
+    "System chat: Generated structure \"b634:chain_s3\" at 1820, -60, 336",
+    "System chat: Generated structure \"b634:chain_s3\" at 1724, -60, 336"
+   ],
+   "counts": [
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    }
+   ],
+   "seconds": [
+    0.02,
+    0.017,
+    0.018,
+    0.001
+   ]
+  },
+  "structure b634:grid": {
+   "console": [
+    "System chat: Generated structure \"b634:grid\" at 1628, -60, 432",
+    "System chat: Generated structure \"b634:grid\" at 1724, -60, 432",
+    "System chat: Generated structure \"b634:grid\" at 1532, -60, 432",
+    "System chat: Generated structure \"b634:grid\" at 2012, -60, 432",
+    "System chat: Generated structure \"b634:grid\" at 1916, -60, 432",
+    "System chat: Generated structure \"b634:grid\" at 1820, -60, 432"
+   ],
+   "counts": [
+    {
+     "red_wool": 113
+    },
+    {
+     "red_wool": 114
+    },
+    {
+     "red_wool": 112
+    },
+    {
+     "red_wool": 113
+    },
+    {
+     "red_wool": 113
+    },
+    {
+     "red_wool": 113
+    }
+   ],
+   "seconds": [
+    0.036,
+    0.033,
+    0.017,
+    0.017,
+    0.015,
+    0.019
+   ]
+  },
+  "structure b634:joint": {
+   "console": [
+    "System chat: Generated structure \"b634:joint\" at 2108, -60, 624",
+    "System chat: Generated structure \"b634:joint\" at 2204, -60, 624",
+    "System chat: Generated structure \"b634:joint\" at 1244, -60, 720",
+    "System chat: Generated structure \"b634:joint\" at 1148, -60, 720",
+    "System chat: Generated structure \"b634:joint\" at 1916, -60, 624",
+    "System chat: Generated structure \"b634:joint\" at 2012, -60, 624"
+   ],
+   "counts": [
+    {
+     "blue_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    },
+    {
+     "blue_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    },
+    {
+     "blue_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    },
+    {
+     "blue_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    },
+    {
+     "blue_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    },
+    {
+     "blue_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    }
+   ],
+   "seconds": [
+    0.003,
+    0.002,
+    0.006,
+    0.017,
+    0.002,
+    0.002
+   ]
+  },
+  "structure b634:match": {
+   "console": [
+    "System chat: Generated structure \"b634:match\" at 2012, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 2108, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1244, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1340, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1724, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1628, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1436, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1820, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1532, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1148, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 1916, -60, 48",
+    "System chat: Generated structure \"b634:match\" at 2204, -60, 48"
+   ],
+   "counts": [
+    {
+     "cyan_wool": 1,
+     "gold_block": 1,
+     "orange_wool": 2,
+     "red_wool": 1
+    },
+    {
+     "cyan_wool": 1,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 1
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 1
+    },
+    {
+     "cyan_wool": 1,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "red_wool": 2
+    },
+    {
+     "cyan_wool": 1,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "orange_wool": 2,
+     "red_wool": 2
+    },
+    {
+     "cyan_wool": 1,
+     "gold_block": 1,
+     "red_wool": 3
+    },
+    {
+     "cyan_wool": 2,
+     "gold_block": 1,
+     "orange_wool": 1,
+     "red_wool": 1
+    },
+    {
+     "cyan_wool": 1,
+     "gold_block": 1,
+     "orange_wool": 2,
+     "red_wool": 1
+    }
+   ],
+   "seconds": [
+    0.037,
+    0.002,
+    0.001,
+    0.003,
+    0.019,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.003
+   ]
+  },
+  "structure b634:misc": {
+   "console": [
+    "System chat: Generated structure \"b634:misc\" at 1628, -60, 624",
+    "System chat: Generated structure \"b634:misc\" at 1820, -60, 624",
+    "System chat: Generated structure \"b634:misc\" at 1724, -60, 624",
+    "System chat: Generated structure \"b634:misc\" at 1532, -60, 624"
+   ],
+   "counts": [
+    {
+     "emerald_block": 1,
+     "gold_block": 1,
+     "red_wool": 1,
+     "white_wool": 1
+    },
+    {
+     "emerald_block": 1,
+     "gold_block": 1,
+     "red_wool": 1,
+     "white_wool": 1
+    },
+    {
+     "emerald_block": 1,
+     "gold_block": 1,
+     "red_wool": 1,
+     "white_wool": 1
+    },
+    {
+     "emerald_block": 1,
+     "gold_block": 1,
+     "red_wool": 1,
+     "white_wool": 1
+    }
+   ],
+   "seconds": [
+    0.008,
+    0.017,
+    0.001,
+    0.001
+   ]
+  },
+  "structure b634:phub_eq": {
+   "console": [
+    "System chat: Generated structure \"b634:phub_eq\" at 1820, -60, 720",
+    "System chat: Generated structure \"b634:phub_eq\" at 1532, -60, 720",
+    "System chat: Generated structure \"b634:phub_eq\" at 1724, -60, 720",
+    "System chat: Generated structure \"b634:phub_eq\" at 1436, -60, 720",
+    "System chat: Generated structure \"b634:phub_eq\" at 1340, -60, 720",
+    "System chat: Generated structure \"b634:phub_eq\" at 1628, -60, 720"
+   ],
+   "counts": [
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    }
+   ],
+   "seconds": [
+    0.018,
+    0.021,
+    0.021,
+    0.01,
+    0.017,
+    0.01
+   ]
+  },
+  "structure b634:phub_pe": {
+   "console": [
+    "System chat: Generated structure \"b634:phub_pe\" at 1244, -60, 816",
+    "System chat: Generated structure \"b634:phub_pe\" at 1916, -60, 720",
+    "System chat: Generated structure \"b634:phub_pe\" at 2108, -60, 720",
+    "System chat: Generated structure \"b634:phub_pe\" at 2012, -60, 720",
+    "System chat: Generated structure \"b634:phub_pe\" at 2204, -60, 720",
+    "System chat: Generated structure \"b634:phub_pe\" at 1148, -60, 816"
+   ],
+   "counts": [
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "magenta_wool": 1,
+     "red_wool": 2
+    }
+   ],
+   "seconds": [
+    0.028,
+    0.029,
+    0.02,
+    0.011,
+    0.025,
+    0.007
+   ]
+  },
+  "structure b634:shell": {
+   "console": [
+    "System chat: Generated structure \"b634:shell\" at 1628, -60, 528",
+    "System chat: Generated structure \"b634:shell\" at 1820, -60, 528",
+    "System chat: Generated structure \"b634:shell\" at 1724, -60, 528",
+    "System chat: Generated structure \"b634:shell\" at 1532, -60, 528"
+   ],
+   "counts": [
+    {
+     "gold_block": 1,
+     "red_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "red_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "red_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "red_wool": 1
+    }
+   ],
+   "seconds": [
+    0.028,
+    0.025,
+    0.027,
+    0.002
+   ]
+  },
+  "structure b634:shell_big": {
+   "console": [
+    "System chat: Generated structure \"b634:shell_big\" at 2012, -60, 528",
+    "System chat: Generated structure \"b634:shell_big\" at 2204, -60, 528",
+    "System chat: Generated structure \"b634:shell_big\" at 1916, -60, 528",
+    "System chat: Generated structure \"b634:shell_big\" at 2108, -60, 528"
+   ],
+   "counts": [
+    {
+     "blue_wool": 1,
+     "gold_block": 1
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1
+    },
+    {
+     "blue_wool": 1,
+     "gold_block": 1
+    }
+   ],
+   "seconds": [
+    0.007,
+    0.005,
+    0.003,
+    0.007
+   ]
+  },
+  "structure b634:shell_tall": {
+   "console": [
+    "System chat: Generated structure \"b634:shell_tall\" at 1244, -60, 624",
+    "System chat: Generated structure \"b634:shell_tall\" at 1148, -60, 624",
+    "System chat: Generated structure \"b634:shell_tall\" at 1340, -60, 624",
+    "System chat: Generated structure \"b634:shell_tall\" at 1436, -60, 624"
+   ],
+   "counts": [
+    {
+     "gold_block": 1
+    },
+    {
+     "gold_block": 1
+    },
+    {
+     "gold_block": 1
+    },
+    {
+     "gold_block": 1
+    }
+   ],
+   "seconds": [
+    0.025,
+    0.002,
+    0.003,
+    0.002
+   ]
+  },
+  "structure b634:weights": {
+   "console": [
+    "System chat: Generated structure \"b634:weights\" at 1628, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1340, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1244, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1436, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1724, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1820, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1532, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1148, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 1916, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 2012, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 2204, -60, 144",
+    "System chat: Generated structure \"b634:weights\" at 2108, -60, 144"
+   ],
+   "counts": [
+    {
+     "gold_block": 1,
+     "lime_wool": 4
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 3
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 2,
+     "pink_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 2,
+     "pink_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 3,
+     "pink_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 4
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 2,
+     "pink_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "pink_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 2,
+     "pink_wool": 2
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 3,
+     "pink_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "lime_wool": 2,
+     "pink_wool": 1
+    }
+   ],
+   "seconds": [
+    0.019,
+    0.001,
+    0.001,
+    0.001,
+    0.002,
+    0.029,
+    0.02,
+    0.028,
+    0.017,
+    0.019,
+    0.02,
+    0.018
+   ]
+  },
+  "structure b634:whub": {
+   "console": [
+    "System chat: Generated structure \"b634:whub\" at 1340, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1724, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1628, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1532, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1148, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1436, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 2012, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1820, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1916, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 1244, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 2108, -60, 240",
+    "System chat: Generated structure \"b634:whub\" at 2204, -60, 240"
+   ],
+   "counts": [
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    }
+   ],
+   "seconds": [
+    0.02,
+    0.025,
+    0.016,
+    0.018,
+    0.018,
+    0.023,
+    0.016,
+    0.017,
+    0.021,
+    0.017,
+    0.016,
+    0.021
+   ]
+  },
+  "structure b634:whub_spl": {
+   "console": [
+    "System chat: Generated structure \"b634:whub_spl\" at 1532, -60, 336",
+    "System chat: Generated structure \"b634:whub_spl\" at 1148, -60, 336",
+    "System chat: Generated structure \"b634:whub_spl\" at 1244, -60, 336",
+    "System chat: Generated structure \"b634:whub_spl\" at 1628, -60, 336",
+    "System chat: Generated structure \"b634:whub_spl\" at 1436, -60, 336",
+    "System chat: Generated structure \"b634:whub_spl\" at 1340, -60, 336"
+   ],
+   "counts": [
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    },
+    {
+     "gold_block": 1,
+     "light_blue_wool": 1,
+     "magenta_wool": 1
+    }
+   ],
+   "seconds": [
+    0.015,
+    0.001,
+    0.018,
+    0.001,
+    0.019,
+    0.018
+   ]
+  }
+ },
+ "asm_twice": {
+  "b634:grid": {
+   "blocks_first": 0,
+   "blocks_second": 2938,
+   "same": 0
+  },
+  "b634:match": {
+   "blocks_first": 0,
+   "blocks_second": 114,
+   "same": 0
+  },
+  "b634:whub": {
+   "blocks_first": 0,
+   "blocks_second": 74,
+   "same": 0
+  }
+ },
+ "proc": {
+  "age0": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:cracked_stone_bricks": 2,
+   "minecraft:chiseled_stone_bricks -> minecraft:stone_brick_stairs": 4,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 7,
+   "minecraft:cobblestone_stairs -> minecraft:stone_brick_slab": 2,
+   "minecraft:cobblestone_stairs -> minecraft:stone_slab": 3,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:cracked_stone_bricks": 99,
+   "minecraft:stone -> minecraft:stone": 194,
+   "minecraft:stone -> minecraft:stone_brick_stairs": 103,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_slab": 1,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 11,
+   "minecraft:stone_brick_stairs -> minecraft:stone_slab": 6,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:cracked_stone_bricks": 2,
+   "minecraft:stone_bricks -> minecraft:stone_brick_stairs": 4,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 6,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_brick_slab": 5,
+   "minecraft:stone_stairs -> minecraft:stone_slab": 2,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 5,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "age100": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 8,
+   "minecraft:chiseled_stone_bricks -> minecraft:mossy_stone_brick_stairs": 1,
+   "minecraft:chiseled_stone_bricks -> minecraft:mossy_stone_bricks": 3,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:mossy_stone_brick_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 6,
+   "minecraft:cobblestone_stairs -> minecraft:mossy_stone_brick_slab": 2,
+   "minecraft:cobblestone_stairs -> minecraft:mossy_stone_brick_stairs": 4,
+   "minecraft:cobblestone_wall -> minecraft:mossy_stone_brick_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:mossy_stone_brick_slab": 12,
+   "minecraft:stone -> minecraft:mossy_stone_brick_stairs": 114,
+   "minecraft:stone -> minecraft:mossy_stone_bricks": 115,
+   "minecraft:stone -> minecraft:stone": 167,
+   "minecraft:stone_brick_slab -> minecraft:mossy_stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:mossy_stone_brick_slab": 4,
+   "minecraft:stone_brick_stairs -> minecraft:mossy_stone_brick_stairs": 2,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 12,
+   "minecraft:stone_brick_wall -> minecraft:mossy_stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:mossy_stone_brick_stairs": 3,
+   "minecraft:stone_bricks -> minecraft:mossy_stone_bricks": 3,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 6,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:mossy_stone_brick_slab": 12,
+   "minecraft:stone_stairs -> minecraft:mossy_stone_brick_slab": 5,
+   "minecraft:stone_stairs -> minecraft:mossy_stone_brick_stairs": 2,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 5,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "age50": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 7,
+   "minecraft:chiseled_stone_bricks -> minecraft:cracked_stone_bricks": 1,
+   "minecraft:chiseled_stone_bricks -> minecraft:mossy_stone_brick_stairs": 1,
+   "minecraft:chiseled_stone_bricks -> minecraft:mossy_stone_bricks": 2,
+   "minecraft:chiseled_stone_bricks -> minecraft:stone_brick_stairs": 1,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 3,
+   "minecraft:cobblestone_slab -> minecraft:mossy_stone_brick_slab": 9,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 5,
+   "minecraft:cobblestone_stairs -> minecraft:mossy_stone_brick_slab": 4,
+   "minecraft:cobblestone_stairs -> minecraft:stone_brick_slab": 2,
+   "minecraft:cobblestone_stairs -> minecraft:stone_slab": 1,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 6,
+   "minecraft:cobblestone_wall -> minecraft:mossy_stone_brick_wall": 6,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:mossy_stone_brick_slab": 6,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 6,
+   "minecraft:stone -> minecraft:cracked_stone_bricks": 49,
+   "minecraft:stone -> minecraft:mossy_stone_brick_stairs": 48,
+   "minecraft:stone -> minecraft:mossy_stone_bricks": 54,
+   "minecraft:stone -> minecraft:stone": 189,
+   "minecraft:stone -> minecraft:stone_brick_stairs": 56,
+   "minecraft:stone_brick_slab -> minecraft:mossy_stone_brick_slab": 5,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 7,
+   "minecraft:stone_brick_stairs -> minecraft:mossy_stone_brick_slab": 3,
+   "minecraft:stone_brick_stairs -> minecraft:mossy_stone_brick_stairs": 2,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_slab": 1,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 11,
+   "minecraft:stone_brick_stairs -> minecraft:stone_slab": 1,
+   "minecraft:stone_brick_wall -> minecraft:mossy_stone_brick_wall": 7,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 5,
+   "minecraft:stone_bricks -> minecraft:cracked_stone_bricks": 1,
+   "minecraft:stone_bricks -> minecraft:mossy_stone_bricks": 1,
+   "minecraft:stone_bricks -> minecraft:stone_brick_stairs": 2,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 8,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:mossy_stone_brick_slab": 9,
+   "minecraft:stone_slab -> minecraft:stone_slab": 3,
+   "minecraft:stone_stairs -> minecraft:mossy_stone_brick_slab": 1,
+   "minecraft:stone_stairs -> minecraft:mossy_stone_brick_stairs": 1,
+   "minecraft:stone_stairs -> minecraft:stone_brick_slab": 2,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 8,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "air": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:air": 12,
+   "minecraft:blackstone -> minecraft:air": 6,
+   "minecraft:bricks -> minecraft:air": 6,
+   "minecraft:chest -> minecraft:air": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:air": 12,
+   "minecraft:cobbled_deepslate -> minecraft:air": 6,
+   "minecraft:cobblestone -> minecraft:air": 12,
+   "minecraft:cobblestone_slab -> minecraft:air": 12,
+   "minecraft:cobblestone_stairs -> minecraft:air": 12,
+   "minecraft:cobblestone_wall -> minecraft:air": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:air": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:air": 12,
+   "minecraft:deepslate_bricks -> minecraft:air": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:air": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:air": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 6,
+   "minecraft:granite -> minecraft:air": 12,
+   "minecraft:gravel -> minecraft:air": 6,
+   "minecraft:iron_bars -> minecraft:air": 6,
+   "minecraft:mossy_cobblestone -> minecraft:air": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:air": 12,
+   "minecraft:oak_log -> minecraft:air": 12,
+   "minecraft:oak_planks -> minecraft:air": 12,
+   "minecraft:obsidian -> minecraft:air": 6,
+   "minecraft:polished_andesite -> minecraft:air": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:air": 6,
+   "minecraft:sand -> minecraft:air": 6,
+   "minecraft:sandstone -> minecraft:air": 6,
+   "minecraft:smooth_stone -> minecraft:air": 12,
+   "minecraft:smooth_stone_slab -> minecraft:air": 12,
+   "minecraft:stone -> minecraft:air": 12,
+   "minecraft:stone -> minecraft:stone": 384,
+   "minecraft:stone_brick_slab -> minecraft:air": 12,
+   "minecraft:stone_brick_stairs -> minecraft:air": 18,
+   "minecraft:stone_brick_wall -> minecraft:air": 12,
+   "minecraft:stone_bricks -> minecraft:air": 12,
+   "minecraft:stone_button -> minecraft:air": 12,
+   "minecraft:stone_pressure_plate -> minecraft:air": 12,
+   "minecraft:stone_slab -> minecraft:air": 12,
+   "minecraft:stone_stairs -> minecraft:air": 12,
+   "minecraft:tuff -> minecraft:air": 6
+  },
+  "air_legacy": {
+   "jigsaw -> minecraft:glass": 6,
+   "minecraft:air -> minecraft:glass": 744,
+   "minecraft:andesite -> minecraft:glass": 12,
+   "minecraft:blackstone -> minecraft:glass": 6,
+   "minecraft:bricks -> minecraft:glass": 6,
+   "minecraft:chest -> minecraft:glass": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:glass": 12,
+   "minecraft:cobbled_deepslate -> minecraft:glass": 6,
+   "minecraft:cobblestone -> minecraft:glass": 12,
+   "minecraft:cobblestone_slab -> minecraft:glass": 12,
+   "minecraft:cobblestone_stairs -> minecraft:glass": 12,
+   "minecraft:cobblestone_wall -> minecraft:glass": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:glass": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:glass": 12,
+   "minecraft:deepslate_bricks -> minecraft:glass": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:glass": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:glass": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 6,
+   "minecraft:granite -> minecraft:glass": 12,
+   "minecraft:gravel -> minecraft:glass": 6,
+   "minecraft:iron_bars -> minecraft:glass": 6,
+   "minecraft:mossy_cobblestone -> minecraft:glass": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:glass": 12,
+   "minecraft:oak_log -> minecraft:glass": 12,
+   "minecraft:oak_planks -> minecraft:glass": 12,
+   "minecraft:obsidian -> minecraft:glass": 6,
+   "minecraft:polished_andesite -> minecraft:glass": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:glass": 6,
+   "minecraft:sand -> minecraft:glass": 6,
+   "minecraft:sandstone -> minecraft:glass": 6,
+   "minecraft:smooth_stone -> minecraft:glass": 12,
+   "minecraft:smooth_stone_slab -> minecraft:glass": 12,
+   "minecraft:stone -> minecraft:glass": 12,
+   "minecraft:stone -> minecraft:stone": 384,
+   "minecraft:stone_brick_slab -> minecraft:glass": 12,
+   "minecraft:stone_brick_stairs -> minecraft:glass": 18,
+   "minecraft:stone_brick_wall -> minecraft:glass": 12,
+   "minecraft:stone_bricks -> minecraft:glass": 12,
+   "minecraft:stone_button -> minecraft:glass": 12,
+   "minecraft:stone_pressure_plate -> minecraft:glass": 12,
+   "minecraft:stone_slab -> minecraft:glass": 12,
+   "minecraft:stone_stairs -> minecraft:glass": 12,
+   "minecraft:tuff -> minecraft:glass": 6
+  },
+  "blackstone": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_polished_blackstone": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:blackstone": 12,
+   "minecraft:cobblestone_slab -> minecraft:blackstone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:blackstone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:blackstone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_polished_blackstone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_chain": 6,
+   "minecraft:mossy_cobblestone -> minecraft:blackstone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:polished_blackstone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:polished_blackstone_slab": 12,
+   "minecraft:stone -> minecraft:polished_blackstone": 396,
+   "minecraft:stone_brick_slab -> minecraft:polished_blackstone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:polished_blackstone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:polished_blackstone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:polished_blackstone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:polished_blackstone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:polished_blackstone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "capped": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:glowstone": 30,
+   "minecraft:stone -> minecraft:stone": 366,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "capped_u": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:glowstone": 26,
+   "minecraft:stone -> minecraft:stone": 370,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "gravity": {
+   "(not found)": 3,
+   "jigsaw -> minecraft:air": 3,
+   "minecraft:air -> minecraft:air": 372,
+   "minecraft:andesite -> minecraft:andesite": 6,
+   "minecraft:blackstone -> minecraft:blackstone": 3,
+   "minecraft:bricks -> minecraft:bricks": 3,
+   "minecraft:chest -> minecraft:chest": 3,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 6,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 3,
+   "minecraft:cobblestone -> minecraft:cobblestone": 6,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 6,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 6,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 6,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 3,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 6,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 3,
+   "minecraft:diamond_block -> minecraft:diamond_block": 3,
+   "minecraft:dirt -> minecraft:dirt": 3,
+   "minecraft:emerald_block -> minecraft:emerald_block": 3,
+   "minecraft:gold_block -> minecraft:gold_block": 6,
+   "minecraft:granite -> minecraft:granite": 6,
+   "minecraft:gravel -> minecraft:gravel": 3,
+   "minecraft:iron_bars -> minecraft:iron_bars": 3,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 6,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 6,
+   "minecraft:oak_log -> minecraft:oak_log": 6,
+   "minecraft:oak_planks -> minecraft:oak_planks": 6,
+   "minecraft:obsidian -> minecraft:obsidian": 3,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 6,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 3,
+   "minecraft:sand -> minecraft:sand": 3,
+   "minecraft:sandstone -> minecraft:sandstone": 3,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 6,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 6,
+   "minecraft:stone -> minecraft:stone": 198,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 6,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 9,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 6,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 6,
+   "minecraft:stone_button -> minecraft:stone_button": 6,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 6,
+   "minecraft:stone_slab -> minecraft:stone_slab": 6,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 6,
+   "minecraft:tuff -> minecraft:tuff": 3,
+   "origin y -60 (cmd y -50)": 3
+  },
+  "gravity_m1": {
+   "(not found)": 2,
+   "jigsaw -> minecraft:air": 4,
+   "minecraft:air -> minecraft:air": 496,
+   "minecraft:andesite -> minecraft:andesite": 8,
+   "minecraft:blackstone -> minecraft:blackstone": 4,
+   "minecraft:bricks -> minecraft:bricks": 4,
+   "minecraft:chest -> minecraft:chest": 4,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 8,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 4,
+   "minecraft:cobblestone -> minecraft:cobblestone": 8,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 8,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 8,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 8,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 4,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 8,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 4,
+   "minecraft:diamond_block -> minecraft:diamond_block": 4,
+   "minecraft:dirt -> minecraft:dirt": 4,
+   "minecraft:emerald_block -> minecraft:emerald_block": 4,
+   "minecraft:gold_block -> minecraft:gold_block": 8,
+   "minecraft:granite -> minecraft:granite": 8,
+   "minecraft:gravel -> minecraft:gravel": 4,
+   "minecraft:iron_bars -> minecraft:iron_bars": 4,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 8,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 8,
+   "minecraft:oak_log -> minecraft:oak_log": 8,
+   "minecraft:oak_planks -> minecraft:oak_planks": 8,
+   "minecraft:obsidian -> minecraft:obsidian": 4,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 8,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 4,
+   "minecraft:sand -> minecraft:sand": 4,
+   "minecraft:sandstone -> minecraft:sandstone": 4,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 8,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 8,
+   "minecraft:stone -> minecraft:stone": 264,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 8,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 12,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 8,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 8,
+   "minecraft:stone_button -> minecraft:stone_button": 8,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 8,
+   "minecraft:stone_slab -> minecraft:stone_slab": 8,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 8,
+   "minecraft:tuff -> minecraft:tuff": 4,
+   "origin y -61 (cmd y -50)": 4
+  },
+  "ignore": {
+   "jigsaw -> minecraft:glass": 6,
+   "minecraft:air -> minecraft:glass": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:glass": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "inline": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:emerald_ore": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "jigsawrep": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "lava": {
+   "jigsaw -> minecraft:lava": 6,
+   "minecraft:air -> minecraft:lava": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:lava": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:lava": 12,
+   "minecraft:cobblestone_stairs -> minecraft:lava": 12,
+   "minecraft:cobblestone_wall -> minecraft:lava": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:lava": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:lava": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:lava": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:lava": 12,
+   "minecraft:stone_brick_stairs -> minecraft:lava": 12,
+   "minecraft:stone_brick_stairs -> minecraft:sand": 6,
+   "minecraft:stone_brick_wall -> minecraft:lava": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:lava": 12,
+   "minecraft:stone_pressure_plate -> minecraft:lava": 12,
+   "minecraft:stone_slab -> minecraft:lava": 12,
+   "minecraft:stone_stairs -> minecraft:lava": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "legacy": {
+   "jigsaw -> minecraft:glass": 6,
+   "minecraft:air -> minecraft:glass": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "loot": {
+   "chest nbt keys ['LootTable', 'LootTableSeed', 'components', 'id', 'keepPacked', 'x', 'y', 'z'] loot minecraft:chests/simple_dungeon name None": 6,
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "none": {
+   "chest nbt keys ['Items', 'components', 'id', 'keepPacked', 'x', 'y', 'z'] loot None name None": 6,
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "nop": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "protected": {
+   "jigsaw -> minecraft:bedrock": 6,
+   "minecraft:air -> minecraft:air": 468,
+   "minecraft:air -> minecraft:bedrock": 276,
+   "minecraft:andesite -> minecraft:andesite": 10,
+   "minecraft:andesite -> minecraft:bedrock": 2,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:bedrock": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:bedrock": 2,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 10,
+   "minecraft:cobbled_deepslate -> minecraft:bedrock": 2,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 4,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:bedrock": 2,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 10,
+   "minecraft:cobblestone_stairs -> minecraft:bedrock": 10,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 2,
+   "minecraft:cobblestone_wall -> minecraft:bedrock": 8,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 4,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:bedrock": 2,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 10,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:bedrock": 2,
+   "minecraft:diamond_block -> minecraft:diamond_block": 4,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:bedrock": 4,
+   "minecraft:emerald_block -> minecraft:emerald_block": 2,
+   "minecraft:gold_block -> minecraft:bedrock": 2,
+   "minecraft:gold_block -> minecraft:gold_block": 10,
+   "minecraft:granite -> minecraft:bedrock": 10,
+   "minecraft:granite -> minecraft:granite": 2,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:bedrock": 2,
+   "minecraft:iron_bars -> minecraft:iron_bars": 4,
+   "minecraft:mossy_cobblestone -> minecraft:bedrock": 8,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 4,
+   "minecraft:mossy_stone_bricks -> minecraft:bedrock": 10,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 2,
+   "minecraft:oak_log -> minecraft:bedrock": 10,
+   "minecraft:oak_log -> minecraft:oak_log": 2,
+   "minecraft:oak_planks -> minecraft:bedrock": 2,
+   "minecraft:oak_planks -> minecraft:oak_planks": 10,
+   "minecraft:obsidian -> minecraft:bedrock": 6,
+   "minecraft:polished_andesite -> minecraft:bedrock": 2,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 10,
+   "minecraft:polished_blackstone_bricks -> minecraft:bedrock": 4,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 2,
+   "minecraft:sand -> minecraft:bedrock": 6,
+   "minecraft:sandstone -> minecraft:bedrock": 4,
+   "minecraft:sandstone -> minecraft:sandstone": 2,
+   "minecraft:smooth_stone -> minecraft:bedrock": 8,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 4,
+   "minecraft:smooth_stone_slab -> minecraft:bedrock": 2,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 10,
+   "minecraft:stone -> minecraft:bedrock": 144,
+   "minecraft:stone -> minecraft:stone": 252,
+   "minecraft:stone_brick_slab -> minecraft:bedrock": 2,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 10,
+   "minecraft:stone_brick_stairs -> minecraft:bedrock": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 6,
+   "minecraft:stone_brick_wall -> minecraft:bedrock": 2,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 10,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:bedrock": 2,
+   "minecraft:stone_button -> minecraft:stone_button": 10,
+   "minecraft:stone_pressure_plate -> minecraft:bedrock": 10,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 2,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:bedrock": 6
+  },
+  "rot50": {
+   "jigsaw -> minecraft:air": 3,
+   "jigsaw -> minecraft:glass": 3,
+   "minecraft:air -> minecraft:air": 377,
+   "minecraft:air -> minecraft:glass": 367,
+   "minecraft:andesite -> minecraft:andesite": 8,
+   "minecraft:andesite -> minecraft:glass": 4,
+   "minecraft:blackstone -> minecraft:blackstone": 4,
+   "minecraft:blackstone -> minecraft:glass": 2,
+   "minecraft:bricks -> minecraft:bricks": 5,
+   "minecraft:bricks -> minecraft:glass": 1,
+   "minecraft:chest -> minecraft:chest": 3,
+   "minecraft:chest -> minecraft:glass": 3,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 5,
+   "minecraft:chiseled_stone_bricks -> minecraft:glass": 7,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 4,
+   "minecraft:cobbled_deepslate -> minecraft:glass": 2,
+   "minecraft:cobblestone -> minecraft:cobblestone": 9,
+   "minecraft:cobblestone -> minecraft:glass": 3,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 8,
+   "minecraft:cobblestone_slab -> minecraft:glass": 4,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 3,
+   "minecraft:cobblestone_stairs -> minecraft:glass": 9,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 3,
+   "minecraft:cobblestone_wall -> minecraft:glass": 9,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 2,
+   "minecraft:cracked_deepslate_bricks -> minecraft:glass": 4,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 7,
+   "minecraft:cracked_stone_bricks -> minecraft:glass": 5,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 3,
+   "minecraft:deepslate_bricks -> minecraft:glass": 3,
+   "minecraft:diamond_block -> minecraft:diamond_block": 4,
+   "minecraft:diamond_block -> minecraft:glass": 2,
+   "minecraft:dirt -> minecraft:dirt": 4,
+   "minecraft:dirt -> minecraft:glass": 2,
+   "minecraft:emerald_block -> minecraft:emerald_block": 4,
+   "minecraft:emerald_block -> minecraft:glass": 2,
+   "minecraft:gold_block -> minecraft:glass": 7,
+   "minecraft:gold_block -> minecraft:gold_block": 5,
+   "minecraft:granite -> minecraft:glass": 6,
+   "minecraft:granite -> minecraft:granite": 6,
+   "minecraft:gravel -> minecraft:glass": 3,
+   "minecraft:gravel -> minecraft:gravel": 3,
+   "minecraft:iron_bars -> minecraft:glass": 5,
+   "minecraft:iron_bars -> minecraft:iron_bars": 1,
+   "minecraft:mossy_cobblestone -> minecraft:glass": 8,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 4,
+   "minecraft:mossy_stone_bricks -> minecraft:glass": 5,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 7,
+   "minecraft:oak_log -> minecraft:glass": 7,
+   "minecraft:oak_log -> minecraft:oak_log": 5,
+   "minecraft:oak_planks -> minecraft:glass": 8,
+   "minecraft:oak_planks -> minecraft:oak_planks": 4,
+   "minecraft:obsidian -> minecraft:glass": 6,
+   "minecraft:polished_andesite -> minecraft:glass": 7,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 5,
+   "minecraft:polished_blackstone_bricks -> minecraft:glass": 1,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 5,
+   "minecraft:sand -> minecraft:glass": 2,
+   "minecraft:sand -> minecraft:sand": 4,
+   "minecraft:sandstone -> minecraft:glass": 1,
+   "minecraft:sandstone -> minecraft:sandstone": 5,
+   "minecraft:smooth_stone -> minecraft:glass": 5,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 7,
+   "minecraft:smooth_stone_slab -> minecraft:glass": 3,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 9,
+   "minecraft:stone -> minecraft:glass": 194,
+   "minecraft:stone -> minecraft:stone": 202,
+   "minecraft:stone_brick_slab -> minecraft:glass": 4,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 8,
+   "minecraft:stone_brick_stairs -> minecraft:glass": 7,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 11,
+   "minecraft:stone_brick_wall -> minecraft:glass": 9,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 3,
+   "minecraft:stone_bricks -> minecraft:glass": 6,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 6,
+   "minecraft:stone_button -> minecraft:glass": 6,
+   "minecraft:stone_button -> minecraft:stone_button": 6,
+   "minecraft:stone_pressure_plate -> minecraft:glass": 5,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 7,
+   "minecraft:stone_slab -> minecraft:glass": 6,
+   "minecraft:stone_slab -> minecraft:stone_slab": 6,
+   "minecraft:stone_stairs -> minecraft:glass": 4,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 8,
+   "minecraft:tuff -> minecraft:glass": 2,
+   "minecraft:tuff -> minecraft:tuff": 4
+  },
+  "rot50_tag": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 5,
+   "minecraft:chiseled_stone_bricks -> minecraft:glass": 7,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 10,
+   "minecraft:cracked_stone_bricks -> minecraft:glass": 2,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:glass": 8,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 4,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:glass": 7,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 5,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "rule_allof": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:copper_block": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:copper_block": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:copper_block": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "rule_anyof": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:copper_block": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:copper_block": 6
+  },
+  "rule_block": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:emerald_ore": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "rule_height": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6,
+   "y0 local x 0 other": 48,
+   "y0 local x 1 other": 48,
+   "y0 local x 2 other": 48,
+   "y0 local x 3 other": 48,
+   "y0 local x 4 other": 48,
+   "y0 local x 5 other": 48,
+   "y0 local x 6 other": 48,
+   "y0 local x 7 other": 48,
+   "y0 manhattan 0 other": 6,
+   "y0 manhattan 1 other": 12,
+   "y0 manhattan 10 other": 30,
+   "y0 manhattan 11 other": 24,
+   "y0 manhattan 12 other": 18,
+   "y0 manhattan 13 other": 12,
+   "y0 manhattan 14 other": 6,
+   "y0 manhattan 2 other": 18,
+   "y0 manhattan 3 other": 24,
+   "y0 manhattan 4 other": 30,
+   "y0 manhattan 5 other": 36,
+   "y0 manhattan 6 other": 42,
+   "y0 manhattan 7 other": 48,
+   "y0 manhattan 8 other": 42,
+   "y0 manhattan 9 other": 36,
+   "y0 world dx -1 other": 48,
+   "y0 world dx -2 other": 48,
+   "y0 world dx -3 other": 48,
+   "y0 world dx -4 other": 24,
+   "y0 world dx 0 other": 48,
+   "y0 world dx 1 other": 48,
+   "y0 world dx 2 other": 48,
+   "y0 world dx 3 other": 48,
+   "y0 world dx 4 other": 24
+  },
+  "rule_loc": {
+   "jigsaw -> minecraft:tnt": 6,
+   "minecraft:air -> minecraft:tnt": 702,
+   "minecraft:air -> minecraft:water": 42,
+   "minecraft:andesite -> minecraft:tnt": 12,
+   "minecraft:blackstone -> minecraft:tnt": 5,
+   "minecraft:blackstone -> minecraft:water": 1,
+   "minecraft:bricks -> minecraft:tnt": 6,
+   "minecraft:chest -> minecraft:tnt": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:tnt": 12,
+   "minecraft:cobbled_deepslate -> minecraft:tnt": 6,
+   "minecraft:cobblestone -> minecraft:tnt": 11,
+   "minecraft:cobblestone -> minecraft:water": 1,
+   "minecraft:cobblestone_slab -> minecraft:tnt": 12,
+   "minecraft:cobblestone_stairs -> minecraft:tnt": 12,
+   "minecraft:cobblestone_wall -> minecraft:tnt": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:tnt": 5,
+   "minecraft:cracked_deepslate_bricks -> minecraft:water": 1,
+   "minecraft:cracked_stone_bricks -> minecraft:tnt": 12,
+   "minecraft:deepslate_bricks -> minecraft:tnt": 3,
+   "minecraft:deepslate_bricks -> minecraft:water": 3,
+   "minecraft:diamond_block -> minecraft:tnt": 4,
+   "minecraft:diamond_block -> minecraft:water": 2,
+   "minecraft:dirt -> minecraft:tnt": 6,
+   "minecraft:emerald_block -> minecraft:tnt": 5,
+   "minecraft:emerald_block -> minecraft:water": 1,
+   "minecraft:gold_block -> minecraft:tnt": 9,
+   "minecraft:gold_block -> minecraft:water": 3,
+   "minecraft:granite -> minecraft:tnt": 12,
+   "minecraft:gravel -> minecraft:tnt": 4,
+   "minecraft:gravel -> minecraft:water": 2,
+   "minecraft:iron_bars -> minecraft:tnt": 6,
+   "minecraft:mossy_cobblestone -> minecraft:tnt": 11,
+   "minecraft:mossy_cobblestone -> minecraft:water": 1,
+   "minecraft:mossy_stone_bricks -> minecraft:tnt": 12,
+   "minecraft:oak_log -> minecraft:tnt": 12,
+   "minecraft:oak_planks -> minecraft:tnt": 12,
+   "minecraft:obsidian -> minecraft:tnt": 6,
+   "minecraft:polished_andesite -> minecraft:tnt": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:tnt": 5,
+   "minecraft:polished_blackstone_bricks -> minecraft:water": 1,
+   "minecraft:sand -> minecraft:tnt": 6,
+   "minecraft:sandstone -> minecraft:tnt": 6,
+   "minecraft:smooth_stone -> minecraft:tnt": 12,
+   "minecraft:smooth_stone_slab -> minecraft:tnt": 8,
+   "minecraft:smooth_stone_slab -> minecraft:water": 4,
+   "minecraft:stone -> minecraft:tnt": 367,
+   "minecraft:stone -> minecraft:water": 29,
+   "minecraft:stone_brick_slab -> minecraft:tnt": 8,
+   "minecraft:stone_brick_slab -> minecraft:water": 4,
+   "minecraft:stone_brick_stairs -> minecraft:tnt": 18,
+   "minecraft:stone_brick_wall -> minecraft:tnt": 12,
+   "minecraft:stone_bricks -> minecraft:tnt": 11,
+   "minecraft:stone_bricks -> minecraft:water": 1,
+   "minecraft:stone_button -> minecraft:tnt": 12,
+   "minecraft:stone_pressure_plate -> minecraft:tnt": 12,
+   "minecraft:stone_slab -> minecraft:tnt": 12,
+   "minecraft:stone_stairs -> minecraft:tnt": 12,
+   "minecraft:tuff -> minecraft:tnt": 6
+  },
+  "rule_lpos": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:coal_block": 309,
+   "minecraft:stone -> minecraft:stone": 87,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6,
+   "y0 local x 0 coal": 47,
+   "y0 local x 0 other": 1,
+   "y0 local x 1 coal": 40,
+   "y0 local x 1 other": 8,
+   "y0 local x 2 coal": 34,
+   "y0 local x 2 other": 14,
+   "y0 local x 3 coal": 36,
+   "y0 local x 3 other": 12,
+   "y0 local x 4 coal": 29,
+   "y0 local x 4 other": 19,
+   "y0 local x 5 coal": 36,
+   "y0 local x 5 other": 12,
+   "y0 local x 6 coal": 36,
+   "y0 local x 6 other": 12,
+   "y0 local x 7 coal": 41,
+   "y0 local x 7 other": 7,
+   "y0 manhattan 0 coal": 6,
+   "y0 manhattan 1 coal": 12,
+   "y0 manhattan 10 coal": 20,
+   "y0 manhattan 10 other": 10,
+   "y0 manhattan 11 coal": 17,
+   "y0 manhattan 11 other": 7,
+   "y0 manhattan 12 coal": 13,
+   "y0 manhattan 12 other": 5,
+   "y0 manhattan 13 coal": 9,
+   "y0 manhattan 13 other": 3,
+   "y0 manhattan 14 coal": 6,
+   "y0 manhattan 2 coal": 18,
+   "y0 manhattan 3 coal": 23,
+   "y0 manhattan 3 other": 1,
+   "y0 manhattan 4 coal": 23,
+   "y0 manhattan 4 other": 7,
+   "y0 manhattan 5 coal": 29,
+   "y0 manhattan 5 other": 7,
+   "y0 manhattan 6 coal": 29,
+   "y0 manhattan 6 other": 13,
+   "y0 manhattan 7 coal": 36,
+   "y0 manhattan 7 other": 12,
+   "y0 manhattan 8 coal": 30,
+   "y0 manhattan 8 other": 12,
+   "y0 manhattan 9 coal": 28,
+   "y0 manhattan 9 other": 8,
+   "y0 world dx -1 coal": 28,
+   "y0 world dx -1 other": 20,
+   "y0 world dx -2 coal": 36,
+   "y0 world dx -2 other": 12,
+   "y0 world dx -3 coal": 41,
+   "y0 world dx -3 other": 7,
+   "y0 world dx -4 coal": 15,
+   "y0 world dx -4 other": 1,
+   "y0 world dx 0 coal": 31,
+   "y0 world dx 0 other": 17,
+   "y0 world dx 1 coal": 38,
+   "y0 world dx 1 other": 10,
+   "y0 world dx 2 coal": 37,
+   "y0 world dx 2 other": 11,
+   "y0 world dx 3 coal": 43,
+   "y0 world dx 3 other": 5,
+   "y0 world dx 4 coal": 30,
+   "y0 world dx 4 other": 2
+  },
+  "rule_pos": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:coal_block": 122,
+   "minecraft:stone -> minecraft:stone": 274,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6,
+   "y0 local x 0 coal": 20,
+   "y0 local x 0 other": 28,
+   "y0 local x 1 coal": 15,
+   "y0 local x 1 other": 33,
+   "y0 local x 2 coal": 12,
+   "y0 local x 2 other": 36,
+   "y0 local x 3 coal": 12,
+   "y0 local x 3 other": 36,
+   "y0 local x 4 coal": 11,
+   "y0 local x 4 other": 37,
+   "y0 local x 5 coal": 9,
+   "y0 local x 5 other": 39,
+   "y0 local x 6 coal": 21,
+   "y0 local x 6 other": 27,
+   "y0 local x 7 coal": 16,
+   "y0 local x 7 other": 32,
+   "y0 manhattan 0 coal": 5,
+   "y0 manhattan 0 other": 1,
+   "y0 manhattan 1 coal": 6,
+   "y0 manhattan 1 other": 6,
+   "y0 manhattan 10 coal": 8,
+   "y0 manhattan 10 other": 22,
+   "y0 manhattan 11 coal": 7,
+   "y0 manhattan 11 other": 17,
+   "y0 manhattan 12 coal": 4,
+   "y0 manhattan 12 other": 14,
+   "y0 manhattan 13 coal": 5,
+   "y0 manhattan 13 other": 7,
+   "y0 manhattan 14 coal": 5,
+   "y0 manhattan 14 other": 1,
+   "y0 manhattan 2 coal": 4,
+   "y0 manhattan 2 other": 14,
+   "y0 manhattan 3 coal": 10,
+   "y0 manhattan 3 other": 14,
+   "y0 manhattan 4 coal": 9,
+   "y0 manhattan 4 other": 21,
+   "y0 manhattan 5 coal": 7,
+   "y0 manhattan 5 other": 29,
+   "y0 manhattan 6 coal": 12,
+   "y0 manhattan 6 other": 30,
+   "y0 manhattan 7 coal": 12,
+   "y0 manhattan 7 other": 36,
+   "y0 manhattan 8 coal": 17,
+   "y0 manhattan 8 other": 25,
+   "y0 manhattan 9 coal": 5,
+   "y0 manhattan 9 other": 31,
+   "y0 world dx -1 coal": 8,
+   "y0 world dx -1 other": 40,
+   "y0 world dx -2 coal": 14,
+   "y0 world dx -2 other": 34,
+   "y0 world dx -3 coal": 23,
+   "y0 world dx -3 other": 25,
+   "y0 world dx -4 coal": 12,
+   "y0 world dx -4 other": 12,
+   "y0 world dx 0 other": 48,
+   "y0 world dx 1 coal": 7,
+   "y0 world dx 1 other": 41,
+   "y0 world dx 2 coal": 12,
+   "y0 world dx 2 other": 36,
+   "y0 world dx 3 coal": 22,
+   "y0 world dx 3 other": 26,
+   "y0 world dx 4 coal": 18,
+   "y0 world dx 4 other": 6
+  },
+  "rule_rand": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:diamond_ore": 115,
+   "minecraft:stone -> minecraft:stone": 281,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "rule_rstate": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:lapis_block": 5,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 13,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "rule_state": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:lapis_block": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 6,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "rule_tag": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:redstone_block": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:redstone_block": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:redstone_block": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:redstone_block": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "rule_two": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:iron_block": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "static": {
+   "chest nbt keys ['CustomName', 'Items', 'components', 'id', 'keepPacked', 'x', 'y', 'z'] loot None name b634": 6,
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:stone": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  },
+  "two_lists": {
+   "jigsaw -> minecraft:air": 6,
+   "minecraft:air -> minecraft:air": 744,
+   "minecraft:andesite -> minecraft:andesite": 12,
+   "minecraft:blackstone -> minecraft:blackstone": 6,
+   "minecraft:bricks -> minecraft:bricks": 6,
+   "minecraft:chest -> minecraft:chest": 6,
+   "minecraft:chiseled_stone_bricks -> minecraft:chiseled_stone_bricks": 12,
+   "minecraft:cobbled_deepslate -> minecraft:cobbled_deepslate": 6,
+   "minecraft:cobblestone -> minecraft:cobblestone": 12,
+   "minecraft:cobblestone_slab -> minecraft:cobblestone_slab": 12,
+   "minecraft:cobblestone_stairs -> minecraft:cobblestone_stairs": 12,
+   "minecraft:cobblestone_wall -> minecraft:cobblestone_wall": 12,
+   "minecraft:cracked_deepslate_bricks -> minecraft:cracked_deepslate_bricks": 6,
+   "minecraft:cracked_stone_bricks -> minecraft:cracked_stone_bricks": 12,
+   "minecraft:deepslate_bricks -> minecraft:deepslate_bricks": 6,
+   "minecraft:diamond_block -> minecraft:diamond_block": 6,
+   "minecraft:dirt -> minecraft:dirt": 6,
+   "minecraft:emerald_block -> minecraft:emerald_block": 6,
+   "minecraft:gold_block -> minecraft:gold_block": 12,
+   "minecraft:granite -> minecraft:granite": 12,
+   "minecraft:gravel -> minecraft:gravel": 6,
+   "minecraft:iron_bars -> minecraft:iron_bars": 6,
+   "minecraft:mossy_cobblestone -> minecraft:mossy_cobblestone": 12,
+   "minecraft:mossy_stone_bricks -> minecraft:mossy_stone_bricks": 12,
+   "minecraft:oak_log -> minecraft:oak_log": 12,
+   "minecraft:oak_planks -> minecraft:oak_planks": 12,
+   "minecraft:obsidian -> minecraft:obsidian": 6,
+   "minecraft:polished_andesite -> minecraft:polished_andesite": 12,
+   "minecraft:polished_blackstone_bricks -> minecraft:polished_blackstone_bricks": 6,
+   "minecraft:sand -> minecraft:sand": 6,
+   "minecraft:sandstone -> minecraft:sandstone": 6,
+   "minecraft:smooth_stone -> minecraft:smooth_stone": 12,
+   "minecraft:smooth_stone_slab -> minecraft:smooth_stone_slab": 12,
+   "minecraft:stone -> minecraft:gold_ore": 396,
+   "minecraft:stone_brick_slab -> minecraft:stone_brick_slab": 12,
+   "minecraft:stone_brick_stairs -> minecraft:stone_brick_stairs": 18,
+   "minecraft:stone_brick_wall -> minecraft:stone_brick_wall": 12,
+   "minecraft:stone_bricks -> minecraft:stone_bricks": 12,
+   "minecraft:stone_button -> minecraft:stone_button": 12,
+   "minecraft:stone_pressure_plate -> minecraft:stone_pressure_plate": 12,
+   "minecraft:stone_slab -> minecraft:stone_slab": 12,
+   "minecraft:stone_stairs -> minecraft:stone_stairs": 12,
+   "minecraft:tuff -> minecraft:tuff": 6
+  }
+ },
+ "proc_raw": [
+  {
+   "out": [
+    "System chat: Generated jigsaw at 16, -50, 784"
+   ],
+   "proc": "gravity",
+   "rep": 0
+  },
+  {
+   "out": [
+    "System chat: Generated jigsaw at 112, -50, 784"
+   ],
+   "proc": "gravity",
+   "rep": 3
+  },
+  {
+   "out": [
+    "System chat: Generated jigsaw at 144, -50, 784"
+   ],
+   "proc": "gravity",
+   "rep": 4
+  },
+  {
+   "out": [
+    "System chat: Generated jigsaw at 80, -50, 816"
+   ],
+   "proc": "gravity_m1",
+   "rep": 2
+  },
+  {
+   "out": [
+    "System chat: Generated jigsaw at 112, -50, 816"
+   ],
+   "proc": "gravity_m1",
+   "rep": 3
+  }
+ ],
+ "speed": [
+  {
+   "out": [
+    "System chat: Generated structure \"minecraft:village_plains\" at 6000, -60, 6000"
+   ],
+   "pos": [
+    6000,
+    -60,
+    6000
+   ],
+   "seconds": 0.607,
+   "what": "minecraft:village_plains"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"minecraft:village_plains\" at 6400, -60, 6400"
+   ],
+   "pos": [
+    6400,
+    -60,
+    6400
+   ],
+   "seconds": 1.232,
+   "what": "minecraft:village_plains"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"minecraft:village_plains\" at 6800, -60, 6800"
+   ],
+   "pos": [
+    6800,
+    -60,
+    6800
+   ],
+   "seconds": 0.193,
+   "what": "minecraft:village_plains"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"minecraft:village_plains\" at 7200, -60, 7200"
+   ],
+   "pos": [
+    7200,
+    -60,
+    7200
+   ],
+   "seconds": 0.396,
+   "what": "minecraft:village_plains"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:grid20\" at 6000, -60, 7600"
+   ],
+   "pos": [
+    6000,
+    -60,
+    7600
+   ],
+   "seconds": 0.234,
+   "what": "b634:grid20"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:grid20\" at 6400, -60, 8000"
+   ],
+   "pos": [
+    6400,
+    -60,
+    8000
+   ],
+   "seconds": 0.131,
+   "what": "b634:grid20"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:grid20\" at 6800, -60, 8400"
+   ],
+   "pos": [
+    6800,
+    -60,
+    8400
+   ],
+   "seconds": 0.161,
+   "what": "b634:grid20"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:grid\" at 6000, -60, 8800"
+   ],
+   "pos": [
+    6000,
+    -60,
+    8800
+   ],
+   "seconds": 0.107,
+   "what": "b634:grid"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:grid\" at 6400, -60, 9200"
+   ],
+   "pos": [
+    6400,
+    -60,
+    9200
+   ],
+   "seconds": 0.052,
+   "what": "b634:grid"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:grid\" at 6800, -60, 9600"
+   ],
+   "pos": [
+    6800,
+    -60,
+    9600
+   ],
+   "seconds": 0.299,
+   "what": "b634:grid"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:chain_s20\" at 6000, -60, 10000"
+   ],
+   "pos": [
+    6000,
+    -60,
+    10000
+   ],
+   "seconds": 0.026,
+   "what": "b634:chain_s20"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:chain_s20\" at 6400, -60, 10400"
+   ],
+   "pos": [
+    6400,
+    -60,
+    10400
+   ],
+   "seconds": 0.054,
+   "what": "b634:chain_s20"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"b634:chain_s20\" at 6800, -60, 10800"
+   ],
+   "pos": [
+    6800,
+    -60,
+    10800
+   ],
+   "seconds": 0.006,
+   "what": "b634:chain_s20"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"minecraft:trial_chambers\" at 6000, -60, 11200"
+   ],
+   "pos": [
+    6000,
+    -60,
+    11200
+   ],
+   "seconds": 1.359,
+   "what": "minecraft:trial_chambers"
+  },
+  {
+   "out": [
+    "System chat: Generated structure \"minecraft:trial_chambers\" at 6400, -60, 11600"
+   ],
+   "pos": [
+    6400,
+    -60,
+    11600
+   ],
+   "seconds": 0.151,
+   "what": "minecraft:trial_chambers"
+  }
+ ],
+ "template": {
+  "cw90": {
+   "jigsaw_cell": [
+    "minecraft:jigsaw",
+    {
+     "orientation": "up_east"
+    }
+   ],
+   "kept_glass": 0,
+   "origin_minus_pos": [
+    0,
+    0,
+    0
+   ],
+   "rot": "CLOCKWISE_90",
+   "stone_cells": 66
+  },
+  "int50_seed7_a": {
+   "jigsaw_cell": [
+    "minecraft:glass",
+    {}
+   ],
+   "kept_glass": 41,
+   "origin_minus_pos": [
+    0,
+    0,
+    0
+   ],
+   "rot": "NONE",
+   "stone_cells": 66
+  },
+  "int50_seed7_b": {
+   "jigsaw_cell": [
+    "minecraft:glass",
+    {}
+   ],
+   "kept_glass": 41,
+   "origin_minus_pos": [
+    0,
+    0,
+    0
+   ],
+   "rot": "NONE",
+   "stone_cells": 66
+  },
+  "int50_seed8": {
+   "jigsaw_cell": [
+    "minecraft:glass",
+    {}
+   ],
+   "kept_glass": 31,
+   "origin_minus_pos": [
+    0,
+    0,
+    0
+   ],
+   "rot": "NONE",
+   "stone_cells": 66
+  },
+  "raw": {
+   "jigsaw_cell": [
+    "minecraft:jigsaw",
+    {
+     "orientation": "up_north"
+    }
+   ],
+   "kept_glass": 0,
+   "origin_minus_pos": [
+    0,
+    0,
+    0
+   ],
+   "rot": "NONE",
+   "stone_cells": 66
+  },
+  "seed7_a_vs_b_equal_cells": "256/256",
+  "seed7_vs_seed8_equal_cells": "128/256"
+ },
+ "twice": {
+  "age50": {
+   "cells": 256,
+   "cells_equal": 62,
+   "rot_first": "NONE",
+   "rot_second": "CLOCKWISE_180"
+  },
+  "rot50": {
+   "cells": 256,
+   "cells_equal": 98,
+   "rot_first": "NONE",
+   "rot_second": "COUNTERCLOCKWISE_90"
+  },
+  "rule_rand": {
+   "cells": 256,
+   "cells_equal": 62,
+   "rot_first": "NONE",
+   "rot_second": "NONE"
+  }
+ }
+}

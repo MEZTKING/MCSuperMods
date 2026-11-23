@@ -10595,3 +10595,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - Root `CLAUDE.md` still says plugin API 1.25.0. ADRs 0113 (D8 and its findings) and 0115 (D1 and its findings) still describe the plain text and fallback forms. The orchestrator can update both.
+
+## 2026-11-23 — executor — B634 jigsaw and processors spike
+
+**What**
+- Answered 4S1–4S10 of `docs/PLAN-live-views.md` (batch 4, ADR 0122) on the real dedicated server for 26.3 and 26.4-snapshot-7: a throwaway data pack of MSM's own templates, pools, jigsaw structures, sets, processor lists and 18 test dimensions; structures generated naturally and read back from the saved structure starts (each assembly rebuilt into a tree from the fixture's jigsaws), and placed with `place jigsaw`, `place structure` and `place template` and read back from the blocks; decode probes per field; the jar's 1,511 structure files counted, sized and timed at run time; a throwaway JavaScript assembler from the observed rules timed. Report and evidence in `docs/reference/spikes/b634/` (README and `results/`); index line in `docs/reference/spikes/README.md`.
+- Clean room: `javap` signatures of `JigsawStructure` and its `MaxDistance` only; registries from the server's own `--reports` at run time; no Mojang method body read; no vanilla file kept. The spike's scripts, packs, worlds, reports and the copied fflate were deleted.
+
+**Decisions**
+- The jigsaw rules J1–J20 for B637 and the processor verdicts for B638 (18 rows applied, 4 about right: `block_age`, the two position predicates, `lava_submerged_block`; `clear`, `passthrough` and 26.4's `corner_constraint` named) are in the README, each with its fixture and numbers.
+- Tolerance for the parity test: exact for joins, overlaps, depth, distance, the deterministic fixtures and the priority winners; shares at |z| ≤ 4 and means within 4 standard errors over at least 200 assemblies against the game's 841 starts, seeds 634 and 635. 26.3 and 26.4 assemble identically at the same seed.
+- B636: one binary pattern `^data/minecraft/structure/.+\.nbt$` in bulk (+4.2 MB, under 0.35 s); the JSON folders are already cached.
+- A stall seen once in round 1 was the spike's own readiness check (`execute if loaded`), not the game: the chunks were complete; size 0 simply makes no structure.
+
+**Next**
+- The orchestrator: the README's "Findings for the plan" (terrain adaptation is flat on a flat floor, so 4L5 and B648 widen; placement priority is the parent's; two distance references; size 0 validator line; one structure per set in B639; a piece count beside B558's `cut` for B642); then B635 and B636.

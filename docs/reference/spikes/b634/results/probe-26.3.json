@@ -1,0 +1,27 @@
+{
+ "startup_s": 21.7,
+ "forceload": [
+  "Saving chunks for level 'ServerLevel[probe]'/minecraft:overworld",
+  "Saving chunks for level 'ServerLevel[probe]'/minecraft:the_end",
+  "Saving chunks for level 'ServerLevel[probe]'/minecraft:the_nether",
+  "System chat: Marked 4 chunks in minecraft:overworld from [0, 0] to [1, 1] to be force loaded"
+ ],
+ "setblock": [
+  "System chat: Changed the block at 4, -50, 4"
+ ],
+ "data_get": [
+  "System chat: 4, -50, 4 has the following block data: {components: {}, joint: \"rollable\", name: \"minecraft:empty\", pool: \"minecraft:empty\", final_state: \"minecraft:air\", placement_priority: 0, x: 4, selection_priority: 0, y: -50, z: 4, id: \"minecraft:jigsaw\", target: \"minecraft:empty\"}"
+ ],
+ "setblock_up": [
+  "System chat: Changed the block at 6, -50, 4"
+ ],
+ "data_get_up": [
+  "System chat: 6, -50, 4 has the following block data: {components: {}, joint: \"rollable\", name: \"minecraft:empty\", pool: \"minecraft:empty\", final_state: \"minecraft:air\", placement_priority: 0, x: 6, selection_priority: 0, y: -50, z: 4, id: \"minecraft:jigsaw\", target: \"minecraft:empty\"}"
+ ],
+ "help_place": [
+  "System chat: /place feature <feature> [<pos>]",
+  "System chat: /place jigsaw <pool> <target> <max_depth> [<position>]",
+  "System chat: /place structure <structure> [<pos>]",
+  "System chat: /place template <template> [<pos>]"
+ ]
+}

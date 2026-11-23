@@ -1,0 +1,4068 @@
+{
+ "b634:back": {
+  "by_depth": {
+   "0:b634:hub_back": 841,
+   "1:b634:arm_fb": 3364
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_back",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 4205
+  },
+  "join_checks": {
+   "child.target!=parent.name": 3364,
+   "facing opposite": 3364,
+   "name==target": 3364,
+   "parent sp 0 pp 0": 3364,
+   "top same": 3364
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 841
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 4205
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1065,
+   "CLOCKWISE_90": 1062,
+   "COUNTERCLOCKWISE_90": 1031,
+   "NONE": 1047
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 224,
+   "0,0,CLOCKWISE_90": 221,
+   "0,0,COUNTERCLOCKWISE_90": 190,
+   "0,0,NONE": 206
+  },
+  "starts": 841,
+  "templates": {
+   "b634:arm_fb": 3364,
+   "b634:hub_back": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain2_d15": {
+  "by_depth": {
+   "0:b634:cstart2": 78,
+   "1:b634:seg2": 78,
+   "2:b634:seg2": 78,
+   "3:b634:seg2": 78,
+   "4:b634:seg2": 78,
+   "5:b634:seg2": 78,
+   "6:b634:seg2": 78,
+   "7:b634:seg2": 78
+  },
+  "depth_max_hist": {
+   "7": 78
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 15.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 624
+  },
+  "join_checks": {
+   "child.target!=parent.name": 546,
+   "facing opposite": 546,
+   "name==target": 546,
+   "parent sp 0 pp 0": 546,
+   "top same": 546
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 78
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 624
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 168,
+   "CLOCKWISE_90": 184,
+   "COUNTERCLOCKWISE_90": 152,
+   "NONE": 120
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 21,
+   "0,0,CLOCKWISE_90": 23,
+   "0,0,COUNTERCLOCKWISE_90": 19,
+   "0,0,NONE": 15
+  },
+  "starts": 78,
+  "templates": {
+   "b634:cstart2": 78,
+   "b634:seg2": 546
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain2_d16": {
+  "by_depth": {
+   "0:b634:cstart2": 97,
+   "1:b634:seg2": 97,
+   "2:b634:seg2": 97,
+   "3:b634:seg2": 97,
+   "4:b634:seg2": 97,
+   "5:b634:seg2": 97,
+   "6:b634:seg2": 97,
+   "7:b634:seg2": 97
+  },
+  "depth_max_hist": {
+   "7": 97
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 15.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 776
+  },
+  "join_checks": {
+   "child.target!=parent.name": 679,
+   "facing opposite": 679,
+   "name==target": 679,
+   "parent sp 0 pp 0": 679,
+   "top same": 679
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 97
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 776
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 208,
+   "CLOCKWISE_90": 216,
+   "COUNTERCLOCKWISE_90": 144,
+   "NONE": 208
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 26,
+   "0,0,CLOCKWISE_90": 27,
+   "0,0,COUNTERCLOCKWISE_90": 18,
+   "0,0,NONE": 26
+  },
+  "starts": 97,
+  "templates": {
+   "b634:cstart2": 97,
+   "b634:seg2": 679
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain4_d16": {
+  "by_depth": {
+   "0:b634:cstart4": 106,
+   "1:b634:seg2": 106,
+   "2:b634:seg2": 106,
+   "3:b634:seg2": 106,
+   "4:b634:seg2": 106,
+   "5:b634:seg2": 106,
+   "6:b634:seg2": 106,
+   "7:b634:seg2": 106
+  },
+  "depth_max_hist": {
+   "7": 106
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 15.5,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 848
+  },
+  "join_checks": {
+   "child.target!=parent.name": 742,
+   "facing opposite": 742,
+   "name==target": 742,
+   "parent sp 0 pp 0": 742,
+   "top same": 742
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 106
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 848
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 200,
+   "CLOCKWISE_90": 248,
+   "COUNTERCLOCKWISE_90": 184,
+   "NONE": 216
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 25,
+   "0,0,CLOCKWISE_90": 31,
+   "0,0,COUNTERCLOCKWISE_90": 23,
+   "0,0,NONE": 27
+  },
+  "starts": 106,
+  "templates": {
+   "b634:cstart4": 106,
+   "b634:seg2": 742
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain4_d17": {
+  "by_depth": {
+   "0:b634:cstart4": 86,
+   "1:b634:seg2": 86,
+   "2:b634:seg2": 86,
+   "3:b634:seg2": 86,
+   "4:b634:seg2": 86,
+   "5:b634:seg2": 86,
+   "6:b634:seg2": 86,
+   "7:b634:seg2": 86,
+   "8:b634:seg2": 46
+  },
+  "depth_max_hist": {
+   "7": 40,
+   "8": 46
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 17.5,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 734
+  },
+  "join_checks": {
+   "child.target!=parent.name": 648,
+   "facing opposite": 648,
+   "name==target": 648,
+   "parent sp 0 pp 0": 648,
+   "top same": 648
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 40,
+   "9": 46
+  },
+  "pieces_max": 9,
+  "pieces_mean": 8.535,
+  "pieces_min": 8,
+  "pieces_sd": 0.499,
+  "posy": {
+   "-61": 734
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 248,
+   "CLOCKWISE_90": 182,
+   "COUNTERCLOCKWISE_90": 123,
+   "NONE": 181
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 28,
+   "0,0,CLOCKWISE_90": 22,
+   "0,0,COUNTERCLOCKWISE_90": 14,
+   "0,0,NONE": 22
+  },
+  "starts": 86,
+  "templates": {
+   "b634:cstart4": 86,
+   "b634:seg2": 648
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_d16": {
+  "by_depth": {
+   "0:b634:cstart": 70,
+   "1:b634:seg": 70,
+   "2:b634:seg": 70,
+   "3:b634:seg": 70
+  },
+  "depth_max_hist": {
+   "3": 70
+  },
+  "dim": "d_chain",
+  "extent_h_max": 16.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 280
+  },
+  "join_checks": {
+   "child.target!=parent.name": 70,
+   "child.target==parent.name": 140,
+   "facing opposite": 210,
+   "name==target": 210,
+   "parent sp 0 pp 0": 210,
+   "top same": 210
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 70
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 280
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 76,
+   "CLOCKWISE_90": 92,
+   "COUNTERCLOCKWISE_90": 52,
+   "NONE": 60
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 19,
+   "0,0,CLOCKWISE_90": 23,
+   "0,0,COUNTERCLOCKWISE_90": 13,
+   "0,0,NONE": 15
+  },
+  "starts": 70,
+  "templates": {
+   "b634:cstart": 70,
+   "b634:seg": 210
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_d32": {
+  "by_depth": {
+   "0:b634:cstart": 65,
+   "1:b634:seg": 65,
+   "2:b634:seg": 65,
+   "3:b634:seg": 65,
+   "4:b634:seg": 65,
+   "5:b634:seg": 65,
+   "6:b634:seg": 65
+  },
+  "depth_max_hist": {
+   "6": 65
+  },
+  "dim": "d_chain",
+  "extent_h_max": 31.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 455
+  },
+  "join_checks": {
+   "child.target!=parent.name": 65,
+   "child.target==parent.name": 325,
+   "facing opposite": 390,
+   "name==target": 390,
+   "parent sp 0 pp 0": 390,
+   "top same": 390
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 65
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 455
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 119,
+   "CLOCKWISE_90": 140,
+   "COUNTERCLOCKWISE_90": 98,
+   "NONE": 98
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 17,
+   "0,0,CLOCKWISE_90": 20,
+   "0,0,COUNTERCLOCKWISE_90": 14,
+   "0,0,NONE": 14
+  },
+  "starts": 65,
+  "templates": {
+   "b634:cstart": 65,
+   "b634:seg": 390
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s1": {
+  "by_depth": {
+   "0:b634:cstart": 83,
+   "1:b634:seg": 83,
+   "2:b634:cap": 83
+  },
+  "depth_max_hist": {
+   "2": 83
+  },
+  "dim": "d_chain",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 249
+  },
+  "join_checks": {
+   "child.target!=parent.name": 83,
+   "child.target==parent.name": 83,
+   "facing opposite": 166,
+   "name==target": 166,
+   "parent sp 0 pp 0": 166,
+   "top same": 166
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 83
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 249
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 81,
+   "CLOCKWISE_90": 69,
+   "COUNTERCLOCKWISE_90": 51,
+   "NONE": 48
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 27,
+   "0,0,CLOCKWISE_90": 23,
+   "0,0,COUNTERCLOCKWISE_90": 17,
+   "0,0,NONE": 16
+  },
+  "starts": 83,
+  "templates": {
+   "b634:cap": 83,
+   "b634:cstart": 83,
+   "b634:seg": 83
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s2": {
+  "by_depth": {
+   "0:b634:cstart": 80,
+   "1:b634:seg": 80,
+   "2:b634:seg": 80,
+   "3:b634:cap": 80
+  },
+  "depth_max_hist": {
+   "3": 80
+  },
+  "dim": "d_chain",
+  "extent_h_max": 13.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 320
+  },
+  "join_checks": {
+   "child.target!=parent.name": 80,
+   "child.target==parent.name": 160,
+   "facing opposite": 240,
+   "name==target": 240,
+   "parent sp 0 pp 0": 240,
+   "top same": 240
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 80
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 320
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 80,
+   "CLOCKWISE_90": 56,
+   "COUNTERCLOCKWISE_90": 92,
+   "NONE": 92
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 20,
+   "0,0,CLOCKWISE_90": 14,
+   "0,0,COUNTERCLOCKWISE_90": 23,
+   "0,0,NONE": 23
+  },
+  "starts": 80,
+  "templates": {
+   "b634:cap": 80,
+   "b634:cstart": 80,
+   "b634:seg": 160
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s20": {
+  "by_depth": {
+   "0:b634:cstart": 85,
+   "10:b634:seg": 85,
+   "11:b634:seg": 85,
+   "12:b634:seg": 85,
+   "13:b634:seg": 85,
+   "14:b634:seg": 85,
+   "15:b634:seg": 85,
+   "16:b634:seg": 85,
+   "17:b634:seg": 85,
+   "18:b634:seg": 85,
+   "19:b634:seg": 85,
+   "1:b634:seg": 85,
+   "20:b634:seg": 85,
+   "21:b634:cap": 85,
+   "2:b634:seg": 85,
+   "3:b634:seg": 85,
+   "4:b634:seg": 85,
+   "5:b634:seg": 85,
+   "6:b634:seg": 85,
+   "7:b634:seg": 85,
+   "8:b634:seg": 85,
+   "9:b634:seg": 85
+  },
+  "depth_max_hist": {
+   "21": 85
+  },
+  "dim": "d_chain",
+  "extent_h_max": 103.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 1870
+  },
+  "join_checks": {
+   "child.target!=parent.name": 85,
+   "child.target==parent.name": 1700,
+   "facing opposite": 1785,
+   "name==target": 1785,
+   "parent sp 0 pp 0": 1785,
+   "top same": 1785
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "22": 85
+  },
+  "pieces_max": 22,
+  "pieces_mean": 22,
+  "pieces_min": 22,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 1870
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 418,
+   "CLOCKWISE_90": 594,
+   "COUNTERCLOCKWISE_90": 396,
+   "NONE": 462
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 19,
+   "0,0,CLOCKWISE_90": 27,
+   "0,0,COUNTERCLOCKWISE_90": 18,
+   "0,0,NONE": 21
+  },
+  "starts": 85,
+  "templates": {
+   "b634:cap": 85,
+   "b634:cstart": 85,
+   "b634:seg": 1700
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s3": {
+  "by_depth": {
+   "0:b634:cstart": 82,
+   "1:b634:seg": 82,
+   "2:b634:seg": 82,
+   "3:b634:seg": 82,
+   "4:b634:cap": 82
+  },
+  "depth_max_hist": {
+   "4": 82
+  },
+  "dim": "d_chain",
+  "extent_h_max": 18.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 410
+  },
+  "join_checks": {
+   "child.target!=parent.name": 82,
+   "child.target==parent.name": 246,
+   "facing opposite": 328,
+   "name==target": 328,
+   "parent sp 0 pp 0": 328,
+   "top same": 328
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 82
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 410
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 130,
+   "CLOCKWISE_90": 100,
+   "COUNTERCLOCKWISE_90": 85,
+   "NONE": 95
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 26,
+   "0,0,CLOCKWISE_90": 20,
+   "0,0,COUNTERCLOCKWISE_90": 17,
+   "0,0,NONE": 19
+  },
+  "starts": 82,
+  "templates": {
+   "b634:cap": 82,
+   "b634:cstart": 82,
+   "b634:seg": 246
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain_s7": {
+  "by_depth": {
+   "0:b634:cstart": 86,
+   "1:b634:seg": 86,
+   "2:b634:seg": 86,
+   "3:b634:seg": 86,
+   "4:b634:seg": 86,
+   "5:b634:seg": 86,
+   "6:b634:seg": 86,
+   "7:b634:seg": 86,
+   "8:b634:cap": 86
+  },
+  "depth_max_hist": {
+   "8": 86
+  },
+  "dim": "d_chain",
+  "extent_h_max": 38.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 774
+  },
+  "join_checks": {
+   "child.target!=parent.name": 86,
+   "child.target==parent.name": 602,
+   "facing opposite": 688,
+   "name==target": 688,
+   "parent sp 0 pp 0": 688,
+   "top same": 688
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "9": 86
+  },
+  "pieces_max": 9,
+  "pieces_mean": 9,
+  "pieces_min": 9,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 774
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 189,
+   "CLOCKWISE_90": 171,
+   "COUNTERCLOCKWISE_90": 171,
+   "NONE": 243
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 21,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 19,
+   "0,0,NONE": 27
+  },
+  "starts": 86,
+  "templates": {
+   "b634:cap": 86,
+   "b634:cstart": 86,
+   "b634:seg": 602
+  },
+  "vertical_joins": {}
+ },
+ "b634:fb_s5": {
+  "by_depth": {
+   "0:b634:fbstart": 94,
+   "1:b634:seg": 94,
+   "2:b634:seg": 94,
+   "3:b634:seg": 94,
+   "4:b634:seg": 94,
+   "5:b634:seg": 94,
+   "6:b634:cap": 94
+  },
+  "depth_max_hist": {
+   "6": 94
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 28.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 658
+  },
+  "join_checks": {
+   "child.target!=parent.name": 94,
+   "child.target==parent.name": 470,
+   "facing opposite": 564,
+   "name==target": 564,
+   "parent sp 0 pp 0": 564,
+   "top same": 564
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 94
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 658
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 161,
+   "CLOCKWISE_90": 133,
+   "COUNTERCLOCKWISE_90": 168,
+   "NONE": 196
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 23,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 24,
+   "0,0,NONE": 28
+  },
+  "starts": 94,
+  "templates": {
+   "b634:cap": 94,
+   "b634:fbstart": 94,
+   "b634:seg": 470
+  },
+  "vertical_joins": {}
+ },
+ "b634:grid": {
+  "by_depth": {
+   "0:b634:grid": 47,
+   "1:b634:grid": 188,
+   "2:b634:grid": 376,
+   "3:b634:grid": 564,
+   "4:b634:grid": 752,
+   "5:b634:grid": 940,
+   "6:b634:grid": 1128,
+   "7:b634:grid": 1316
+  },
+  "depth_max_hist": {
+   "7": 47
+  },
+  "dim": "d_grid",
+  "extent_h_max": 37.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 5311
+  },
+  "join_checks": {
+   "child.target==parent.name": 5264,
+   "facing opposite": 5264,
+   "name==target": 5264,
+   "parent sp 0 pp 0": 5264,
+   "top same": 5264
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "113": 47
+  },
+  "pieces_max": 113,
+  "pieces_mean": 113,
+  "pieces_min": 113,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 5311
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1332,
+   "CLOCKWISE_90": 1340,
+   "COUNTERCLOCKWISE_90": 1319,
+   "NONE": 1320
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_90": 21,
+   "0,0,NONE": 26
+  },
+  "starts": 47,
+  "templates": {
+   "b634:grid": 5311
+  },
+  "vertical_joins": {}
+ },
+ "b634:grid20": {
+  "by_depth": {
+   "0:b634:grid": 53,
+   "10:b634:grid": 2120,
+   "11:b634:grid": 2332,
+   "12:b634:grid": 2544,
+   "13:b634:grid": 2756,
+   "14:b634:grid": 2968,
+   "15:b634:grid": 3180,
+   "16:b634:grid": 3392,
+   "17:b634:grid": 3604,
+   "18:b634:grid": 3816,
+   "19:b634:grid": 4028,
+   "1:b634:grid": 212,
+   "20:b634:grid": 4240,
+   "2:b634:grid": 424,
+   "3:b634:grid": 636,
+   "4:b634:grid": 848,
+   "5:b634:grid": 1060,
+   "6:b634:grid": 1272,
+   "7:b634:grid": 1484,
+   "8:b634:grid": 1696,
+   "9:b634:grid": 1908
+  },
+  "depth_max_hist": {
+   "20": 53
+  },
+  "dim": "d_grid",
+  "extent_h_max": 102.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 44573
+  },
+  "join_checks": {
+   "child.target==parent.name": 44520,
+   "facing opposite": 44520,
+   "name==target": 44520,
+   "parent sp 0 pp 0": 44520,
+   "top same": 44520
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "841": 53
+  },
+  "pieces_max": 841,
+  "pieces_mean": 841,
+  "pieces_min": 841,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 44573
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 11196,
+   "CLOCKWISE_90": 11187,
+   "COUNTERCLOCKWISE_90": 10993,
+   "NONE": 11197
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 24,
+   "0,0,COUNTERCLOCKWISE_90": 29
+  },
+  "starts": 53,
+  "templates": {
+   "b634:grid": 44573
+  },
+  "vertical_joins": {}
+ },
+ "b634:joint": {
+  "by_depth": {
+   "0:b634:vhub": 841,
+   "1:b634:tower_a": 1682,
+   "1:b634:tower_r": 1682
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_joint",
+  "extent_h_max": 4.0,
+  "extent_v_max": 6,
+  "ground_level_delta": {
+   "-2": 3364,
+   "1": 841
+  },
+  "join_checks": {
+   "child.target==parent.name": 3364,
+   "facing opposite": 3364,
+   "name==target": 3364,
+   "parent sp 0 pp 0": 3364
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 841
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 3364,
+   "-61": 841
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1117,
+   "CLOCKWISE_90": 1052,
+   "COUNTERCLOCKWISE_90": 1003,
+   "NONE": 1033
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 224,
+   "0,0,CLOCKWISE_90": 221,
+   "0,0,COUNTERCLOCKWISE_90": 190,
+   "0,0,NONE": 206
+  },
+  "starts": 841,
+  "templates": {
+   "b634:tower_a": 1682,
+   "b634:tower_r": 1682,
+   "b634:vhub": 841
+  },
+  "vertical_joins": {
+   "parent joint aligned child joint aligned -> b634:tower_a: child top == parent top, rel turn 0": 841,
+   "parent joint aligned child joint rollable -> b634:tower_r: child top == parent top, rel turn 0": 841,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top != parent top, rel turn 1": 186,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top != parent top, rel turn 2": 201,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top != parent top, rel turn 3": 228,
+   "parent joint rollable child joint aligned -> b634:tower_a: child top == parent top, rel turn 0": 226,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top != parent top, rel turn 1": 208,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top != parent top, rel turn 2": 171,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top != parent top, rel turn 3": 230,
+   "parent joint rollable child joint rollable -> b634:tower_r: child top == parent top, rel turn 0": 232
+  }
+ },
+ "b634:match": {
+  "by_depth": {
+   "0:b634:hub_match": 841,
+   "1:b634:arm_ok": 1072,
+   "1:b634:arm_tgt": 1136,
+   "1:b634:arm_two": 1156
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_match",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 4205
+  },
+  "join_checks": {
+   "child.target!=parent.name": 1136,
+   "child.target==parent.name": 2228,
+   "facing opposite": 3364,
+   "name==target": 3364,
+   "parent sp 0 pp 0": 3364,
+   "top same": 3364
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 841
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 4205
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1056,
+   "CLOCKWISE_90": 1054,
+   "COUNTERCLOCKWISE_90": 1069,
+   "NONE": 1026
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 224,
+   "0,0,CLOCKWISE_90": 221,
+   "0,0,COUNTERCLOCKWISE_90": 190,
+   "0,0,NONE": 206
+  },
+  "starts": 841,
+  "templates": {
+   "b634:arm_ok": 1072,
+   "b634:arm_tgt": 1136,
+   "b634:arm_two": 1156,
+   "b634:hub_match": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:misc": {
+  "by_depth": {
+   "0:b634:mhub": 841,
+   "0:minecraft:feature_pool_element": 841,
+   "1:minecraft:list_pool_element": 841
+  },
+  "depth_max_hist": {
+   "1": 841
+  },
+  "dim": "d_misc",
+  "extent_h_max": 7.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "-2": 841,
+   "1": 1682
+  },
+  "join_checks": {
+   "child.target!=parent.name": 841,
+   "facing opposite": 841,
+   "name==target": 841,
+   "parent sp 0 pp 0": 841,
+   "top same": 841
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 841
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 841,
+   "-61": 1682
+  },
+  "problems": {
+   "piece 1 has no parent jigsaw": 402,
+   "piece 2 has no parent jigsaw": 439
+  },
+  "rotations": {
+   "CLOCKWISE_180": 641,
+   "CLOCKWISE_90": 607,
+   "COUNTERCLOCKWISE_90": 627,
+   "NONE": 648
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 224,
+   "0,0,CLOCKWISE_90": 221,
+   "0,0,COUNTERCLOCKWISE_90": 190,
+   "0,0,NONE": 206
+  },
+  "starts": 841,
+  "templates": {
+   "b634:mhub": 841,
+   "list": 841,
+   "minecraft:feature_pool_element": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:phub_ce": {
+  "by_depth": {
+   "0:b634:phub_ce": 86,
+   "1:b634:parm": 86,
+   "1:b634:parm_hi": 86,
+   "2:b634:pbig": 86
+  },
+  "depth_max_hist": {
+   "2": 86
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 86,
+   "1": 258
+  },
+  "join_checks": {
+   "child.target!=parent.name": 258,
+   "facing opposite": 258,
+   "name==target": 258,
+   "parent sp 0 pp 0": 258,
+   "top same": 172
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 86
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 86,
+   "-61": 258
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 15,
+   "CLOCKWISE_90": 106,
+   "COUNTERCLOCKWISE_90": 200,
+   "NONE": 23
+  },
+  "start_rel_pos": {
+   "0,0,COUNTERCLOCKWISE_90": 86
+  },
+  "starts": 86,
+  "templates": {
+   "b634:parm": 86,
+   "b634:parm_hi": 86,
+   "b634:pbig": 86,
+   "b634:phub_ce": 86
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 19,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 28,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 19,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 20
+  }
+ },
+ "b634:phub_eq": {
+  "by_depth": {
+   "0:b634:phub_eq": 68,
+   "1:b634:parm": 136,
+   "2:b634:pbig": 68
+  },
+  "depth_max_hist": {
+   "2": 68
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 68,
+   "1": 204
+  },
+  "join_checks": {
+   "child.target!=parent.name": 204,
+   "facing opposite": 204,
+   "name==target": 204,
+   "parent sp 0 pp 0": 204,
+   "top same": 136
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 68
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 68,
+   "-61": 204
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 88,
+   "CLOCKWISE_90": 23,
+   "COUNTERCLOCKWISE_90": 8,
+   "NONE": 153
+  },
+  "start_rel_pos": {
+   "0,0,NONE": 68
+  },
+  "starts": 68,
+  "templates": {
+   "b634:parm": 136,
+   "b634:pbig": 68,
+   "b634:phub_eq": 68
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 18,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 13,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 13,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 24
+  }
+ },
+ "b634:phub_pe": {
+  "by_depth": {
+   "0:b634:phub_pe": 105,
+   "1:b634:parm": 210,
+   "2:b634:pbig": 105
+  },
+  "depth_max_hist": {
+   "2": 105
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 105,
+   "1": 315
+  },
+  "join_checks": {
+   "child.target!=parent.name": 315,
+   "facing opposite": 315,
+   "name==target": 315,
+   "parent sp 0 pp 0": 210,
+   "parent sp 0 pp 1": 105,
+   "top same": 210
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 105
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 105,
+   "-61": 315
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 21,
+   "CLOCKWISE_90": 233,
+   "COUNTERCLOCKWISE_90": 135,
+   "NONE": 31
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_90": 105
+  },
+  "starts": 105,
+  "templates": {
+   "b634:parm": 210,
+   "b634:pbig": 105,
+   "b634:phub_pe": 105
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 21,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 30,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 31,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 23
+  }
+ },
+ "b634:phub_pw": {
+  "by_depth": {
+   "0:b634:phub_pw": 83,
+   "1:b634:parm": 166,
+   "2:b634:pbig": 83
+  },
+  "depth_max_hist": {
+   "2": 83
+  },
+  "dim": "d_pp",
+  "extent_h_max": 31.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-2": 83,
+   "1": 249
+  },
+  "join_checks": {
+   "child.target!=parent.name": 249,
+   "facing opposite": 249,
+   "name==target": 249,
+   "parent sp 0 pp 0": 166,
+   "parent sp 0 pp 1": 83,
+   "top same": 166
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 83
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-58": 83,
+   "-61": 249
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 193,
+   "CLOCKWISE_90": 19,
+   "COUNTERCLOCKWISE_90": 27,
+   "NONE": 93
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 83
+  },
+  "starts": 83,
+  "templates": {
+   "b634:parm": 166,
+   "b634:pbig": 83,
+   "b634:phub_pw": 83
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 1": 19,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 2": 27,
+   "parent joint rollable child joint rollable -> b634:pbig: child top != parent top, rel turn 3": 27,
+   "parent joint rollable child joint rollable -> b634:pbig: child top == parent top, rel turn 0": 10
+  }
+ },
+ "b634:proj_rg": {
+  "by_depth": {
+   "0:b634:hub_rg": 106,
+   "1:b634:strip": 424
+  },
+  "depth_max_hist": {
+   "1": 106
+  },
+  "dim": "n_proj",
+  "extent_h_max": 12.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "0": 424,
+   "1": 106
+  },
+  "join_checks": {
+   "child.target!=parent.name": 424,
+   "facing opposite": 424,
+   "name==target": 424,
+   "parent sp 0 pp 0": 424,
+   "top same": 424
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 106
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "62": 92,
+   "63": 369,
+   "64": 6,
+   "65": 8,
+   "70": 5,
+   "71": 7,
+   "72": 12,
+   "75": 5
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 159,
+   "CLOCKWISE_90": 106,
+   "COUNTERCLOCKWISE_90": 159,
+   "NONE": 106
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 53,
+   "0,0,COUNTERCLOCKWISE_90": 53
+  },
+  "starts": 106,
+  "templates": {
+   "b634:hub_rg": 106,
+   "b634:strip": 424
+  },
+  "vertical_joins": {}
+ },
+ "b634:proj_tm": {
+  "by_depth": {
+   "0:b634:hub_tm": 107,
+   "0:b634:strip": 18,
+   "1:b634:strip": 410
+  },
+  "depth_max_hist": {
+   "1": 107
+  },
+  "dim": "n_proj",
+  "extent_h_max": 12.0,
+  "extent_v_max": 6,
+  "ground_level_delta": {
+   "1": 535
+  },
+  "join_checks": {
+   "child.target!=parent.name": 410,
+   "facing opposite": 410,
+   "name==target": 410,
+   "parent sp 0 pp 0": 410,
+   "top same": 410
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 107
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "62": 95,
+   "63": 379,
+   "68": 3,
+   "70": 10,
+   "71": 18,
+   "72": 11,
+   "73": 6,
+   "90": 3
+  },
+  "problems": {
+   "piece 1 has no parent jigsaw": 4,
+   "piece 2 has no parent jigsaw": 5,
+   "piece 3 has no parent jigsaw": 4,
+   "piece 4 has no parent jigsaw": 5
+  },
+  "rotations": {
+   "CLOCKWISE_180": 107,
+   "CLOCKWISE_90": 172,
+   "COUNTERCLOCKWISE_90": 107,
+   "NONE": 149
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_90": 65,
+   "0,0,NONE": 42
+  },
+  "starts": 107,
+  "templates": {
+   "b634:hub_tm": 107,
+   "b634:strip": 428
+  },
+  "vertical_joins": {}
+ },
+ "b634:projf_rg": {
+  "by_depth": {
+   "0:b634:hub_rg": 168,
+   "1:b634:strip": 672
+  },
+  "depth_max_hist": {
+   "1": 168
+  },
+  "dim": "d_proj",
+  "extent_h_max": 12.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "0": 672,
+   "1": 168
+  },
+  "join_checks": {
+   "child.target!=parent.name": 672,
+   "facing opposite": 672,
+   "name==target": 672,
+   "parent sp 0 pp 0": 672,
+   "top same": 672
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 168
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-60": 672,
+   "-61": 168
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 256,
+   "CLOCKWISE_90": 168,
+   "COUNTERCLOCKWISE_90": 248,
+   "NONE": 168
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 88,
+   "0,0,COUNTERCLOCKWISE_90": 80
+  },
+  "starts": 168,
+  "templates": {
+   "b634:hub_rg": 168,
+   "b634:strip": 672
+  },
+  "vertical_joins": {}
+ },
+ "b634:projf_tm": {
+  "by_depth": {
+   "0:b634:hub_tm": 193,
+   "1:b634:strip": 772
+  },
+  "depth_max_hist": {
+   "1": 193
+  },
+  "dim": "d_proj",
+  "extent_h_max": 12.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 965
+  },
+  "join_checks": {
+   "child.target!=parent.name": 772,
+   "facing opposite": 772,
+   "name==target": 772,
+   "parent sp 0 pp 0": 772,
+   "top same": 772
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 193
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-60": 772,
+   "-61": 193
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 193,
+   "CLOCKWISE_90": 291,
+   "COUNTERCLOCKWISE_90": 193,
+   "NONE": 288
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_90": 98,
+   "0,0,NONE": 95
+  },
+  "starts": 193,
+  "templates": {
+   "b634:hub_tm": 193,
+   "b634:strip": 772
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_abs": {
+  "by_depth": {
+   "0:b634:hub_match": 160,
+   "1:b634:arm_ok": 219,
+   "1:b634:arm_tgt": 218,
+   "1:b634:arm_two": 203
+  },
+  "depth_max_hist": {
+   "1": 160
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 800
+  },
+  "join_checks": {
+   "child.target!=parent.name": 218,
+   "child.target==parent.name": 422,
+   "facing opposite": 640,
+   "name==target": 640,
+   "parent sp 0 pp 0": 640,
+   "top same": 640
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 160
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-51": 800
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 186,
+   "CLOCKWISE_90": 216,
+   "COUNTERCLOCKWISE_90": 206,
+   "NONE": 192
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 34,
+   "0,0,CLOCKWISE_90": 43,
+   "0,0,COUNTERCLOCKWISE_90": 38,
+   "0,0,NONE": 45
+  },
+  "starts": 160,
+  "templates": {
+   "b634:arm_ok": 219,
+   "b634:arm_tgt": 218,
+   "b634:arm_two": 203,
+   "b634:hub_match": 160
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_named": {
+  "by_depth": {
+   "0:b634:hub_match": 161,
+   "1:b634:arm_ok": 217,
+   "1:b634:arm_tgt": 215,
+   "1:b634:arm_two": 212
+  },
+  "depth_max_hist": {
+   "1": 161
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 805
+  },
+  "join_checks": {
+   "child.target!=parent.name": 215,
+   "child.target==parent.name": 429,
+   "facing opposite": 644,
+   "name==target": 644,
+   "parent sp 0 pp 0": 644,
+   "top same": 644
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 161
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 805
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 209,
+   "CLOCKWISE_90": 192,
+   "COUNTERCLOCKWISE_90": 197,
+   "NONE": 207
+  },
+  "start_rel_pos": {
+   "-3,-6,NONE": 11,
+   "-3,0,NONE": 10,
+   "-6,-3,NONE": 12,
+   "-6,3,COUNTERCLOCKWISE_90": 15,
+   "3,0,CLOCKWISE_180": 14,
+   "6,-3,CLOCKWISE_90": 14
+  },
+  "starts": 161,
+  "templates": {
+   "b634:arm_ok": 217,
+   "b634:arm_tgt": 215,
+   "b634:arm_two": 212,
+   "b634:hub_match": 161
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_proj0": {
+  "by_depth": {
+   "0:b634:hub_match": 174,
+   "1:b634:arm_ok": 195,
+   "1:b634:arm_tgt": 260,
+   "1:b634:arm_two": 241
+  },
+  "depth_max_hist": {
+   "1": 174
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 870
+  },
+  "join_checks": {
+   "child.target!=parent.name": 260,
+   "child.target==parent.name": 436,
+   "facing opposite": 696,
+   "name==target": 696,
+   "parent sp 0 pp 0": 696,
+   "top same": 696
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 174
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 870
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 244,
+   "CLOCKWISE_90": 194,
+   "COUNTERCLOCKWISE_90": 212,
+   "NONE": 220
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 59,
+   "0,0,CLOCKWISE_90": 43,
+   "0,0,COUNTERCLOCKWISE_90": 38,
+   "0,0,NONE": 34
+  },
+  "starts": 174,
+  "templates": {
+   "b634:arm_ok": 195,
+   "b634:arm_tgt": 260,
+   "b634:arm_two": 241,
+   "b634:hub_match": 174
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_proj5": {
+  "by_depth": {
+   "0:b634:hub_match": 165,
+   "1:b634:arm_ok": 212,
+   "1:b634:arm_tgt": 222,
+   "1:b634:arm_two": 226
+  },
+  "depth_max_hist": {
+   "1": 165
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 825
+  },
+  "join_checks": {
+   "child.target!=parent.name": 222,
+   "child.target==parent.name": 438,
+   "facing opposite": 660,
+   "name==target": 660,
+   "parent sp 0 pp 0": 660,
+   "top same": 660
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 165
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-56": 825
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 205,
+   "CLOCKWISE_90": 205,
+   "COUNTERCLOCKWISE_90": 213,
+   "NONE": 202
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 42,
+   "0,0,CLOCKWISE_90": 45,
+   "0,0,COUNTERCLOCKWISE_90": 39,
+   "0,0,NONE": 39
+  },
+  "starts": 165,
+  "templates": {
+   "b634:arm_ok": 212,
+   "b634:arm_tgt": 222,
+   "b634:arm_two": 226,
+   "b634:hub_match": 165
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_uniform": {
+  "by_depth": {
+   "0:b634:hub_match": 181,
+   "1:b634:arm_ok": 204,
+   "1:b634:arm_tgt": 275,
+   "1:b634:arm_two": 245
+  },
+  "depth_max_hist": {
+   "1": 181
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 905
+  },
+  "join_checks": {
+   "child.target!=parent.name": 275,
+   "child.target==parent.name": 449,
+   "facing opposite": 724,
+   "name==target": 724,
+   "parent sp 0 pp 0": 724,
+   "top same": 724
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 181
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-21": 60,
+   "-23": 55,
+   "-27": 85,
+   "-28": 45,
+   "-30": 65,
+   "-32": 65,
+   "-33": 65,
+   "-34": 55
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 217,
+   "CLOCKWISE_90": 233,
+   "COUNTERCLOCKWISE_90": 224,
+   "NONE": 231
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 45,
+   "0,0,CLOCKWISE_90": 44,
+   "0,0,COUNTERCLOCKWISE_90": 48,
+   "0,0,NONE": 44
+  },
+  "starts": 181,
+  "templates": {
+   "b634:arm_ok": 204,
+   "b634:arm_tgt": 275,
+   "b634:arm_two": 245,
+   "b634:hub_match": 181
+  },
+  "vertical_joins": {}
+ },
+ "b634:shell": {
+  "by_depth": {
+   "0:b634:shell": 258,
+   "1:b634:inner": 258
+  },
+  "depth_max_hist": {
+   "1": 258
+  },
+  "dim": "d_shell",
+  "extent_h_max": 4.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-1": 258,
+   "1": 258
+  },
+  "join_checks": {
+   "child.target!=parent.name": 258,
+   "facing opposite": 258,
+   "name==target": 258,
+   "parent sp 0 pp 0": 258
+  },
+  "overlap_pairs": {
+   "(one box inside the other)": 258,
+   "b634:shell x b634:inner": 258
+  },
+  "overlaps": 258,
+  "pieces_hist": {
+   "2": 258
+  },
+  "pieces_max": 2,
+  "pieces_mean": 2,
+  "pieces_min": 2,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-59": 258,
+   "-61": 258
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 149,
+   "CLOCKWISE_90": 134,
+   "COUNTERCLOCKWISE_90": 108,
+   "NONE": 125
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 75,
+   "0,0,CLOCKWISE_90": 71,
+   "0,0,COUNTERCLOCKWISE_90": 51,
+   "0,0,NONE": 61
+  },
+  "starts": 258,
+  "templates": {
+   "b634:inner": 258,
+   "b634:shell": 258
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:inner: child top != parent top, rel turn 1": 57,
+   "parent joint rollable child joint rollable -> b634:inner: child top != parent top, rel turn 2": 65,
+   "parent joint rollable child joint rollable -> b634:inner: child top != parent top, rel turn 3": 63,
+   "parent joint rollable child joint rollable -> b634:inner: child top == parent top, rel turn 0": 73
+  }
+ },
+ "b634:shell_big": {
+  "by_depth": {
+   "0:b634:shell_big": 282,
+   "1:b634:inner_big": 282
+  },
+  "depth_max_hist": {
+   "1": 282
+  },
+  "dim": "d_shell",
+  "extent_h_max": 4.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "-1": 282,
+   "1": 282
+  },
+  "join_checks": {
+   "child.target!=parent.name": 282,
+   "facing opposite": 282,
+   "name==target": 282,
+   "parent sp 0 pp 0": 282
+  },
+  "overlap_pairs": {
+   "(one box inside the other)": 282,
+   "b634:shell_big x b634:inner_big": 282
+  },
+  "overlaps": 282,
+  "pieces_hist": {
+   "2": 282
+  },
+  "pieces_max": 2,
+  "pieces_mean": 2,
+  "pieces_min": 2,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-59": 282,
+   "-61": 282
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 152,
+   "CLOCKWISE_90": 144,
+   "COUNTERCLOCKWISE_90": 136,
+   "NONE": 132
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 73,
+   "0,0,CLOCKWISE_90": 76,
+   "0,0,COUNTERCLOCKWISE_90": 64,
+   "0,0,NONE": 69
+  },
+  "starts": 282,
+  "templates": {
+   "b634:inner_big": 282,
+   "b634:shell_big": 282
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:inner_big: child top != parent top, rel turn 1": 72,
+   "parent joint rollable child joint rollable -> b634:inner_big: child top != parent top, rel turn 2": 75,
+   "parent joint rollable child joint rollable -> b634:inner_big: child top != parent top, rel turn 3": 66,
+   "parent joint rollable child joint rollable -> b634:inner_big: child top == parent top, rel turn 0": 69
+  }
+ },
+ "b634:shell_tall": {
+  "by_depth": {
+   "0:b634:shell_tall": 301
+  },
+  "depth_max_hist": {
+   "0": 301
+  },
+  "dim": "d_shell",
+  "extent_h_max": 4.0,
+  "extent_v_max": 5,
+  "ground_level_delta": {
+   "1": 301
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 301
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 301
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 76,
+   "CLOCKWISE_90": 74,
+   "COUNTERCLOCKWISE_90": 75,
+   "NONE": 76
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 76,
+   "0,0,CLOCKWISE_90": 74,
+   "0,0,COUNTERCLOCKWISE_90": 75,
+   "0,0,NONE": 76
+  },
+  "starts": 301,
+  "templates": {
+   "b634:shell_tall": 301
+  },
+  "vertical_joins": {}
+ },
+ "b634:ta_beard_box": {
+  "by_depth": {
+   "0:b634:float": 60
+  },
+  "depth_max_hist": {
+   "0": 60
+  },
+  "dim": "n_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 60
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 60
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "66": 43,
+   "67": 1,
+   "68": 2,
+   "71": 3,
+   "74": 3,
+   "75": 2,
+   "78": 2,
+   "79": 1
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 16,
+   "CLOCKWISE_90": 16,
+   "COUNTERCLOCKWISE_90": 17,
+   "NONE": 11
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 16,
+   "0,0,CLOCKWISE_90": 16,
+   "0,0,COUNTERCLOCKWISE_90": 17,
+   "0,0,NONE": 11
+  },
+  "starts": 60,
+  "templates": {
+   "b634:float": 60
+  },
+  "vertical_joins": {}
+ },
+ "b634:ta_beard_thin": {
+  "by_depth": {
+   "0:b634:float": 78
+  },
+  "depth_max_hist": {
+   "0": 78
+  },
+  "dim": "n_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 78
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 78
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "110": 1,
+   "66": 57,
+   "67": 3,
+   "69": 3,
+   "72": 3,
+   "73": 2,
+   "74": 2,
+   "75": 4
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 17,
+   "CLOCKWISE_90": 25,
+   "COUNTERCLOCKWISE_90": 19,
+   "NONE": 17
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 17,
+   "0,0,CLOCKWISE_90": 25,
+   "0,0,COUNTERCLOCKWISE_90": 19,
+   "0,0,NONE": 17
+  },
+  "starts": 78,
+  "templates": {
+   "b634:float": 78
+  },
+  "vertical_joins": {}
+ },
+ "b634:ta_bury": {
+  "by_depth": {
+   "0:b634:float": 70
+  },
+  "depth_max_hist": {
+   "0": 70
+  },
+  "dim": "n_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 70
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 70
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "66": 55,
+   "67": 3,
+   "68": 2,
+   "74": 2,
+   "75": 3,
+   "84": 1,
+   "85": 1,
+   "91": 1
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 19,
+   "CLOCKWISE_90": 15,
+   "COUNTERCLOCKWISE_90": 24,
+   "NONE": 12
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 19,
+   "0,0,CLOCKWISE_90": 15,
+   "0,0,COUNTERCLOCKWISE_90": 24,
+   "0,0,NONE": 12
+  },
+  "starts": 70,
+  "templates": {
+   "b634:float": 70
+  },
+  "vertical_joins": {}
+ },
+ "b634:ta_encapsulate": {
+  "by_depth": {
+   "0:b634:float": 62
+  },
+  "depth_max_hist": {
+   "0": 62
+  },
+  "dim": "n_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 62
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 62
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "101": 1,
+   "66": 51,
+   "67": 1,
+   "68": 2,
+   "72": 2,
+   "73": 1,
+   "77": 1,
+   "92": 1
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 19,
+   "CLOCKWISE_90": 14,
+   "COUNTERCLOCKWISE_90": 16,
+   "NONE": 13
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 19,
+   "0,0,CLOCKWISE_90": 14,
+   "0,0,COUNTERCLOCKWISE_90": 16,
+   "0,0,NONE": 13
+  },
+  "starts": 62,
+  "templates": {
+   "b634:float": 62
+  },
+  "vertical_joins": {}
+ },
+ "b634:ta_none": {
+  "by_depth": {
+   "0:b634:float": 72
+  },
+  "depth_max_hist": {
+   "0": 72
+  },
+  "dim": "n_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 72
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 72
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "66": 59,
+   "74": 1,
+   "75": 1,
+   "76": 3,
+   "82": 1,
+   "90": 1,
+   "91": 1,
+   "93": 1
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 12,
+   "CLOCKWISE_90": 35,
+   "COUNTERCLOCKWISE_90": 10,
+   "NONE": 15
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 12,
+   "0,0,CLOCKWISE_90": 35,
+   "0,0,COUNTERCLOCKWISE_90": 10,
+   "0,0,NONE": 15
+  },
+  "starts": 72,
+  "templates": {
+   "b634:float": 72
+  },
+  "vertical_joins": {}
+ },
+ "b634:taf_beard_box": {
+  "by_depth": {
+   "0:b634:float": 72
+  },
+  "depth_max_hist": {
+   "0": 72
+  },
+  "dim": "d_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 72
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 72
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-57": 72
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 14,
+   "CLOCKWISE_90": 20,
+   "COUNTERCLOCKWISE_90": 16,
+   "NONE": 22
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 14,
+   "0,0,CLOCKWISE_90": 20,
+   "0,0,COUNTERCLOCKWISE_90": 16,
+   "0,0,NONE": 22
+  },
+  "starts": 72,
+  "templates": {
+   "b634:float": 72
+  },
+  "vertical_joins": {}
+ },
+ "b634:taf_beard_thin": {
+  "by_depth": {
+   "0:b634:float": 73
+  },
+  "depth_max_hist": {
+   "0": 73
+  },
+  "dim": "d_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 73
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 73
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-57": 73
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 17,
+   "CLOCKWISE_90": 19,
+   "COUNTERCLOCKWISE_90": 15,
+   "NONE": 22
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 17,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 15,
+   "0,0,NONE": 22
+  },
+  "starts": 73,
+  "templates": {
+   "b634:float": 73
+  },
+  "vertical_joins": {}
+ },
+ "b634:taf_bury": {
+  "by_depth": {
+   "0:b634:float": 75
+  },
+  "depth_max_hist": {
+   "0": 75
+  },
+  "dim": "d_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 75
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 75
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-57": 75
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 18,
+   "CLOCKWISE_90": 29,
+   "COUNTERCLOCKWISE_90": 13,
+   "NONE": 15
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 18,
+   "0,0,CLOCKWISE_90": 29,
+   "0,0,COUNTERCLOCKWISE_90": 13,
+   "0,0,NONE": 15
+  },
+  "starts": 75,
+  "templates": {
+   "b634:float": 75
+  },
+  "vertical_joins": {}
+ },
+ "b634:taf_encapsulate": {
+  "by_depth": {
+   "0:b634:float": 71
+  },
+  "depth_max_hist": {
+   "0": 71
+  },
+  "dim": "d_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 71
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 71
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-57": 71
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 17,
+   "CLOCKWISE_90": 14,
+   "COUNTERCLOCKWISE_90": 21,
+   "NONE": 19
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 17,
+   "0,0,CLOCKWISE_90": 14,
+   "0,0,COUNTERCLOCKWISE_90": 21,
+   "0,0,NONE": 19
+  },
+  "starts": 71,
+  "templates": {
+   "b634:float": 71
+  },
+  "vertical_joins": {}
+ },
+ "b634:taf_none": {
+  "by_depth": {
+   "0:b634:float": 70
+  },
+  "depth_max_hist": {
+   "0": 70
+  },
+  "dim": "d_ta",
+  "extent_h_max": 3.0,
+  "extent_v_max": 3,
+  "ground_level_delta": {
+   "1": 70
+  },
+  "join_checks": {},
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 70
+  },
+  "pieces_max": 1,
+  "pieces_mean": 1,
+  "pieces_min": 1,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-57": 70
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 22,
+   "CLOCKWISE_90": 16,
+   "COUNTERCLOCKWISE_90": 15,
+   "NONE": 17
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 22,
+   "0,0,CLOCKWISE_90": 16,
+   "0,0,COUNTERCLOCKWISE_90": 15,
+   "0,0,NONE": 17
+  },
+  "starts": 70,
+  "templates": {
+   "b634:float": 70
+  },
+  "vertical_joins": {}
+ },
+ "b634:vchain4_d15": {
+  "by_depth": {
+   "0:b634:vstart4": 91,
+   "1:b634:vseg2": 91,
+   "2:b634:vseg2": 91,
+   "3:b634:vseg2": 91,
+   "4:b634:vseg2": 91,
+   "5:b634:vseg2": 91,
+   "6:b634:vseg2": 91
+  },
+  "depth_max_hist": {
+   "6": 91
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 15,
+  "ground_level_delta": {
+   "-11": 91,
+   "-13": 91,
+   "-3": 91,
+   "-5": 91,
+   "-7": 91,
+   "-9": 91,
+   "1": 91
+  },
+  "join_checks": {
+   "child.target!=parent.name": 546,
+   "facing opposite": 546,
+   "name==target": 546,
+   "parent sp 0 pp 0": 546
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 91
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-47": 91,
+   "-49": 91,
+   "-51": 91,
+   "-53": 91,
+   "-55": 91,
+   "-57": 91,
+   "-61": 91
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 169,
+   "CLOCKWISE_90": 153,
+   "COUNTERCLOCKWISE_90": 164,
+   "NONE": 151
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 27,
+   "0,0,CLOCKWISE_90": 23,
+   "0,0,COUNTERCLOCKWISE_90": 22,
+   "0,0,NONE": 19
+  },
+  "starts": 91,
+  "templates": {
+   "b634:vseg2": 546,
+   "b634:vstart4": 91
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 129,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 156,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 131,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 130
+  }
+ },
+ "b634:vchain4_d16": {
+  "by_depth": {
+   "0:b634:vstart4": 101,
+   "1:b634:vseg2": 101,
+   "2:b634:vseg2": 101,
+   "3:b634:vseg2": 101,
+   "4:b634:vseg2": 101,
+   "5:b634:vseg2": 101,
+   "6:b634:vseg2": 101,
+   "7:b634:vseg2": 101
+  },
+  "depth_max_hist": {
+   "7": 101
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-11": 101,
+   "-13": 101,
+   "-15": 101,
+   "-3": 101,
+   "-5": 101,
+   "-7": 101,
+   "-9": 101,
+   "1": 101
+  },
+  "join_checks": {
+   "child.target!=parent.name": 707,
+   "facing opposite": 707,
+   "name==target": 707,
+   "parent sp 0 pp 0": 707
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 101
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-45": 101,
+   "-47": 101,
+   "-49": 101,
+   "-51": 101,
+   "-53": 101,
+   "-55": 101,
+   "-57": 101,
+   "-61": 101
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 192,
+   "CLOCKWISE_90": 206,
+   "COUNTERCLOCKWISE_90": 217,
+   "NONE": 193
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 28,
+   "0,0,CLOCKWISE_90": 24,
+   "0,0,COUNTERCLOCKWISE_90": 28,
+   "0,0,NONE": 21
+  },
+  "starts": 101,
+  "templates": {
+   "b634:vseg2": 707,
+   "b634:vstart4": 101
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 164,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 179,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 173,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 191
+  }
+ },
+ "b634:vchain6_d16": {
+  "by_depth": {
+   "0:b634:vstart6": 94,
+   "1:b634:vseg2": 94,
+   "2:b634:vseg2": 94,
+   "3:b634:vseg2": 94,
+   "4:b634:vseg2": 94,
+   "5:b634:vseg2": 94,
+   "6:b634:vseg2": 94
+  },
+  "depth_max_hist": {
+   "6": 94
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-11": 94,
+   "-13": 94,
+   "-15": 94,
+   "-5": 94,
+   "-7": 94,
+   "-9": 94,
+   "1": 94
+  },
+  "join_checks": {
+   "child.target!=parent.name": 564,
+   "facing opposite": 564,
+   "name==target": 564,
+   "parent sp 0 pp 0": 564
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 94
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-45": 94,
+   "-47": 94,
+   "-49": 94,
+   "-51": 94,
+   "-53": 94,
+   "-55": 94,
+   "-61": 94
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 193,
+   "CLOCKWISE_90": 161,
+   "COUNTERCLOCKWISE_90": 129,
+   "NONE": 175
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 26,
+   "0,0,CLOCKWISE_90": 26,
+   "0,0,COUNTERCLOCKWISE_90": 18,
+   "0,0,NONE": 24
+  },
+  "starts": 94,
+  "templates": {
+   "b634:vseg2": 564,
+   "b634:vstart6": 94
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 140,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 152,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 122,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 150
+  }
+ },
+ "b634:vchain6_d17": {
+  "by_depth": {
+   "0:b634:vstart6": 94,
+   "1:b634:vseg2": 94,
+   "2:b634:vseg2": 94,
+   "3:b634:vseg2": 94,
+   "4:b634:vseg2": 94,
+   "5:b634:vseg2": 94,
+   "6:b634:vseg2": 94
+  },
+  "depth_max_hist": {
+   "6": 94
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-11": 94,
+   "-13": 94,
+   "-15": 94,
+   "-5": 94,
+   "-7": 94,
+   "-9": 94,
+   "1": 94
+  },
+  "join_checks": {
+   "child.target!=parent.name": 564,
+   "facing opposite": 564,
+   "name==target": 564,
+   "parent sp 0 pp 0": 564
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 94
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-45": 94,
+   "-47": 94,
+   "-49": 94,
+   "-51": 94,
+   "-53": 94,
+   "-55": 94,
+   "-61": 94
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 168,
+   "CLOCKWISE_90": 169,
+   "COUNTERCLOCKWISE_90": 162,
+   "NONE": 159
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 20,
+   "0,0,CLOCKWISE_90": 26,
+   "0,0,COUNTERCLOCKWISE_90": 24,
+   "0,0,NONE": 24
+  },
+  "starts": 94,
+  "templates": {
+   "b634:vseg2": 564,
+   "b634:vstart6": 94
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 151,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 142,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 141,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 130
+  }
+ },
+ "b634:vchain_d116": {
+  "by_depth": {
+   "0:b634:vstart": 66,
+   "10:b634:vseg": 66,
+   "11:b634:vseg": 66,
+   "12:b634:vseg": 66,
+   "13:b634:vseg": 66,
+   "14:b634:vseg": 66,
+   "15:b634:vseg": 66,
+   "16:b634:vseg": 66,
+   "17:b634:vseg": 66,
+   "18:b634:vseg": 66,
+   "19:b634:vseg": 66,
+   "1:b634:vseg": 66,
+   "20:b634:vseg": 66,
+   "2:b634:vseg": 66,
+   "3:b634:vseg": 66,
+   "4:b634:vseg": 66,
+   "5:b634:vseg": 66,
+   "6:b634:vseg": 66,
+   "7:b634:vseg": 66,
+   "8:b634:vseg": 66,
+   "9:b634:vseg": 66
+  },
+  "depth_max_hist": {
+   "20": 66
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 102,
+  "ground_level_delta": {
+   "-12": 66,
+   "-17": 66,
+   "-2": 66,
+   "-22": 66,
+   "-27": 66,
+   "-32": 66,
+   "-37": 66,
+   "-42": 66,
+   "-47": 66,
+   "-52": 66,
+   "-57": 66,
+   "-62": 66,
+   "-67": 66,
+   "-7": 66,
+   "-72": 66,
+   "-77": 66,
+   "-82": 66,
+   "-87": 66,
+   "-92": 66,
+   "-97": 66,
+   "1": 66
+  },
+  "join_checks": {
+   "child.target!=parent.name": 66,
+   "child.target==parent.name": 1254,
+   "facing opposite": 1320,
+   "name==target": 1320,
+   "parent sp 0 pp 0": 1320
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "21": 66
+  },
+  "pieces_max": 21,
+  "pieces_mean": 21,
+  "pieces_min": 21,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-28": 66,
+   "-33": 66,
+   "-38": 66,
+   "-43": 66,
+   "-48": 66,
+   "-53": 66,
+   "-58": 66,
+   "-61": 66
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 338,
+   "CLOCKWISE_90": 353,
+   "COUNTERCLOCKWISE_90": 328,
+   "NONE": 367
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 16,
+   "0,0,CLOCKWISE_90": 20,
+   "0,0,COUNTERCLOCKWISE_90": 14,
+   "0,0,NONE": 16
+  },
+  "starts": 66,
+  "templates": {
+   "b634:vseg": 1320,
+   "b634:vstart": 66
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 306,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 343,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 328,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 343
+  }
+ },
+ "b634:vchain_d16": {
+  "by_depth": {
+   "0:b634:vstart": 82,
+   "1:b634:vseg": 82,
+   "2:b634:vseg": 82,
+   "3:b634:vseg": 82
+  },
+  "depth_max_hist": {
+   "3": 82
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-12": 82,
+   "-2": 82,
+   "-7": 82,
+   "1": 82
+  },
+  "join_checks": {
+   "child.target!=parent.name": 82,
+   "child.target==parent.name": 164,
+   "facing opposite": 246,
+   "name==target": 246,
+   "parent sp 0 pp 0": 246
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 82
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-48": 82,
+   "-53": 82,
+   "-58": 82,
+   "-61": 82
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 74,
+   "CLOCKWISE_90": 85,
+   "COUNTERCLOCKWISE_90": 84,
+   "NONE": 85
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 26,
+   "0,0,CLOCKWISE_90": 14,
+   "0,0,COUNTERCLOCKWISE_90": 19,
+   "0,0,NONE": 23
+  },
+  "starts": 82,
+  "templates": {
+   "b634:vseg": 246,
+   "b634:vstart": 82
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 51,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 48,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 79,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 68
+  }
+ },
+ "b634:vchain_h16": {
+  "by_depth": {
+   "0:b634:vstart": 75,
+   "10:b634:vseg": 75,
+   "11:b634:vseg": 75,
+   "12:b634:vseg": 75,
+   "13:b634:vseg": 75,
+   "14:b634:vseg": 75,
+   "15:b634:vseg": 75,
+   "16:b634:vseg": 75,
+   "17:b634:vseg": 75,
+   "18:b634:vseg": 75,
+   "19:b634:vseg": 75,
+   "1:b634:vseg": 75,
+   "20:b634:vseg": 75,
+   "2:b634:vseg": 75,
+   "3:b634:vseg": 75,
+   "4:b634:vseg": 75,
+   "5:b634:vseg": 75,
+   "6:b634:vseg": 75,
+   "7:b634:vseg": 75,
+   "8:b634:vseg": 75,
+   "9:b634:vseg": 75
+  },
+  "depth_max_hist": {
+   "20": 75
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 102,
+  "ground_level_delta": {
+   "-12": 75,
+   "-17": 75,
+   "-2": 75,
+   "-22": 75,
+   "-27": 75,
+   "-32": 75,
+   "-37": 75,
+   "-42": 75,
+   "-47": 75,
+   "-52": 75,
+   "-57": 75,
+   "-62": 75,
+   "-67": 75,
+   "-7": 75,
+   "-72": 75,
+   "-77": 75,
+   "-82": 75,
+   "-87": 75,
+   "-92": 75,
+   "-97": 75,
+   "1": 75
+  },
+  "join_checks": {
+   "child.target!=parent.name": 75,
+   "child.target==parent.name": 1425,
+   "facing opposite": 1500,
+   "name==target": 1500,
+   "parent sp 0 pp 0": 1500
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "21": 75
+  },
+  "pieces_max": 21,
+  "pieces_mean": 21,
+  "pieces_min": 21,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-28": 75,
+   "-33": 75,
+   "-38": 75,
+   "-43": 75,
+   "-48": 75,
+   "-53": 75,
+   "-58": 75,
+   "-61": 75
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 413,
+   "CLOCKWISE_90": 385,
+   "COUNTERCLOCKWISE_90": 416,
+   "NONE": 361
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 19,
+   "0,0,CLOCKWISE_90": 22,
+   "0,0,COUNTERCLOCKWISE_90": 18,
+   "0,0,NONE": 16
+  },
+  "starts": 75,
+  "templates": {
+   "b634:vseg": 1500,
+   "b634:vstart": 75
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 362,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 408,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 360,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 370
+  }
+ },
+ "b634:vchain_v16": {
+  "by_depth": {
+   "0:b634:vstart": 67,
+   "1:b634:vseg": 67,
+   "2:b634:vseg": 67,
+   "3:b634:vseg": 67
+  },
+  "depth_max_hist": {
+   "3": 67
+  },
+  "dim": "d_chain",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-12": 67,
+   "-2": 67,
+   "-7": 67,
+   "1": 67
+  },
+  "join_checks": {
+   "child.target!=parent.name": 67,
+   "child.target==parent.name": 134,
+   "facing opposite": 201,
+   "name==target": 201,
+   "parent sp 0 pp 0": 201
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "4": 67
+  },
+  "pieces_max": 4,
+  "pieces_mean": 4,
+  "pieces_min": 4,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-48": 67,
+   "-53": 67,
+   "-58": 67,
+   "-61": 67
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 54,
+   "CLOCKWISE_90": 71,
+   "COUNTERCLOCKWISE_90": 76,
+   "NONE": 67
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 14,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 18,
+   "0,0,NONE": 16
+  },
+  "starts": 67,
+  "templates": {
+   "b634:vseg": 201,
+   "b634:vstart": 67
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 1": 53,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 2": 56,
+   "parent joint rollable child joint rollable -> b634:vseg: child top != parent top, rel turn 3": 45,
+   "parent joint rollable child joint rollable -> b634:vseg: child top == parent top, rel turn 0": 47
+  }
+ },
+ "b634:weights": {
+  "by_depth": {
+   "0:b634:hub_w": 841,
+   "1:b634:arm_w1": 629,
+   "1:b634:arm_w3": 2054
+  },
+  "depth_max_hist": {
+   "0": 2,
+   "1": 839
+  },
+  "dim": "d_weights",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 3524
+  },
+  "join_checks": {
+   "child.target!=parent.name": 2683,
+   "facing opposite": 2683,
+   "name==target": 2683,
+   "parent sp 0 pp 0": 2683,
+   "top same": 2683
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "1": 2,
+   "2": 20,
+   "3": 142,
+   "4": 329,
+   "5": 348
+  },
+  "pieces_max": 5,
+  "pieces_mean": 4.19,
+  "pieces_min": 1,
+  "pieces_sd": 0.814,
+  "posy": {
+   "-61": 3524
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 887,
+   "CLOCKWISE_90": 894,
+   "COUNTERCLOCKWISE_90": 877,
+   "NONE": 866
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 224,
+   "0,0,CLOCKWISE_90": 221,
+   "0,0,COUNTERCLOCKWISE_90": 190,
+   "0,0,NONE": 206
+  },
+  "starts": 841,
+  "templates": {
+   "b634:arm_w1": 629,
+   "b634:arm_w3": 2054,
+   "b634:hub_w": 841
+  },
+  "vertical_joins": {}
+ },
+ "b634:whub": {
+  "by_depth": {
+   "0:b634:whub": 258,
+   "1:b634:narrow": 258,
+   "1:b634:wide": 258
+  },
+  "depth_max_hist": {
+   "1": 258
+  },
+  "dim": "d_wide",
+  "extent_h_max": 6.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 774
+  },
+  "join_checks": {
+   "child.target!=parent.name": 516,
+   "facing opposite": 516,
+   "name==target": 516,
+   "parent sp 0 pp 0": 516,
+   "top same": 516
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 258
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 774
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 197,
+   "CLOCKWISE_90": 173,
+   "COUNTERCLOCKWISE_90": 193,
+   "NONE": 211
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 75,
+   "0,0,CLOCKWISE_90": 71,
+   "0,0,COUNTERCLOCKWISE_90": 51,
+   "0,0,NONE": 61
+  },
+  "starts": 258,
+  "templates": {
+   "b634:narrow": 258,
+   "b634:whub": 258,
+   "b634:wide": 258
+  },
+  "vertical_joins": {}
+ },
+ "b634:whub_spl": {
+  "by_depth": {
+   "0:b634:whub_spl": 282,
+   "1:b634:narrow": 282,
+   "1:b634:wide": 282
+  },
+  "depth_max_hist": {
+   "1": 282
+  },
+  "dim": "d_wide",
+  "extent_h_max": 6.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 846
+  },
+  "join_checks": {
+   "child.target!=parent.name": 564,
+   "facing opposite": 564,
+   "name==target": 564,
+   "parent sp 0 pp 0": 282,
+   "parent sp 1 pp 0": 282,
+   "top same": 564
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 282
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 846
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 211,
+   "CLOCKWISE_90": 204,
+   "COUNTERCLOCKWISE_90": 216,
+   "NONE": 215
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 73,
+   "0,0,CLOCKWISE_90": 76,
+   "0,0,COUNTERCLOCKWISE_90": 64,
+   "0,0,NONE": 69
+  },
+  "starts": 282,
+  "templates": {
+   "b634:narrow": 282,
+   "b634:whub_spl": 282,
+   "b634:wide": 282
+  },
+  "vertical_joins": {}
+ },
+ "b634:whub_spr": {
+  "by_depth": {
+   "0:b634:whub_spr": 301,
+   "1:b634:narrow": 301,
+   "1:b634:wide": 301
+  },
+  "depth_max_hist": {
+   "1": 301
+  },
+  "dim": "d_wide",
+  "extent_h_max": 6.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 903
+  },
+  "join_checks": {
+   "child.target!=parent.name": 602,
+   "facing opposite": 602,
+   "name==target": 602,
+   "parent sp 0 pp 0": 301,
+   "parent sp 1 pp 0": 301,
+   "top same": 602
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "3": 301
+  },
+  "pieces_max": 3,
+  "pieces_mean": 3,
+  "pieces_min": 3,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 903
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 228,
+   "CLOCKWISE_90": 224,
+   "COUNTERCLOCKWISE_90": 223,
+   "NONE": 228
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 76,
+   "0,0,CLOCKWISE_90": 74,
+   "0,0,COUNTERCLOCKWISE_90": 75,
+   "0,0,NONE": 76
+  },
+  "starts": 301,
+  "templates": {
+   "b634:narrow": 301,
+   "b634:whub_spr": 301,
+   "b634:wide": 301
+  },
+  "vertical_joins": {}
+ },
+ "minecraft:pillager_outpost": {
+  "dim": "d_vill",
+  "extent_h_max": 23.5,
+  "extent_v_max": 29,
+  "ground_level_delta": {
+   "0": 804,
+   "1": 355
+  },
+  "junctions_per_piece": {
+   "1": 875,
+   "3": 22,
+   "4": 123,
+   "5": 98,
+   "6": 35,
+   "7": 5,
+   "8": 1
+  },
+  "overlap_pairs": {
+   "(one box inside the other)": 875,
+   "minecraft:pillager_outpost/base_plate x ?": 71,
+   "minecraft:pillager_outpost/feature_plate x minecraft:pillager_outpost/feature_cage1": 125,
+   "minecraft:pillager_outpost/feature_plate x minecraft:pillager_outpost/feature_cage2": 96,
+   "minecraft:pillager_outpost/feature_plate x minecraft:pillager_outpost/feature_cage_with_allays": 96,
+   "minecraft:pillager_outpost/feature_plate x minecraft:pillager_outpost/feature_logs": 80,
+   "minecraft:pillager_outpost/feature_plate x minecraft:pillager_outpost/feature_targets": 227,
+   "minecraft:pillager_outpost/feature_plate x minecraft:pillager_outpost/feature_tent1": 85,
+   "minecraft:pillager_outpost/feature_plate x minecraft:pillager_outpost/feature_tent2": 95
+  },
+  "overlaps": 875,
+  "pieces_hist": {
+   "13": 2,
+   "14": 6,
+   "15": 16,
+   "16": 16,
+   "17": 14,
+   "18": 9,
+   "19": 7,
+   "20": 1
+  },
+  "pieces_max": 20,
+  "pieces_mean": 16.324,
+  "pieces_min": 13,
+  "pieces_sd": 1.59,
+  "posy": {
+   "-60": 1017,
+   "-61": 142
+  },
+  "rotations": {
+   "CLOCKWISE_180": 292,
+   "CLOCKWISE_90": 284,
+   "COUNTERCLOCKWISE_90": 303,
+   "NONE": 280
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 16,
+   "0,0,CLOCKWISE_90": 18,
+   "0,0,COUNTERCLOCKWISE_90": 20,
+   "0,0,NONE": 17
+  },
+  "starts": 71,
+  "templates": {
+   "list": 71,
+   "minecraft:pillager_outpost/base_plate": 71,
+   "minecraft:pillager_outpost/feature_cage1": 125,
+   "minecraft:pillager_outpost/feature_cage2": 96,
+   "minecraft:pillager_outpost/feature_cage_with_allays": 96,
+   "minecraft:pillager_outpost/feature_logs": 80,
+   "minecraft:pillager_outpost/feature_plate": 213,
+   "minecraft:pillager_outpost/feature_targets": 227,
+   "minecraft:pillager_outpost/feature_tent1": 85,
+   "minecraft:pillager_outpost/feature_tent2": 95
+  }
+ },
+ "minecraft:trial_chambers": {
+  "dim": "d_vill",
+  "extent_h_max": 96.0,
+  "extent_v_max": 63,
+  "ground_level_delta": {
+   "-1": 2015,
+   "-10": 410,
+   "-11": 339,
+   "-12": 326,
+   "-13": 780,
+   "-14": 290,
+   "-15": 173,
+   "-16": 113,
+   "-17": 209,
+   "-18": 503,
+   "-19": 224,
+   "-2": 505,
+   "-20": 934,
+   "-21": 244,
+   "-22": 87,
+   "-23": 92,
+   "-24": 82,
+   "-25": 786,
+   "-26": 252,
+   "-27": 234,
+   "-28": 13,
+   "-29": 82,
+   "-3": 2363,
+   "-30": 158,
+   "-31": 89,
+   "-32": 65,
+   "-33": 3,
+   "-34": 1,
+   "-35": 149,
+   "-36": 76,
+   "-37": 141,
+   "-38": 7,
+   "-39": 12,
+   "-4": 127,
+   "-40": 41,
+   "-41": 14,
+   "-42": 43,
+   "-43": 15,
+   "-44": 19,
+   "-45": 9,
+   "-46": 9,
+   "-47": 15,
+   "-48": 8,
+   "-49": 11,
+   "-5": 251,
+   "-50": 2,
+   "-51": 3,
+   "-52": 18,
+   "-53": 12,
+   "-54": 12,
+   "-55": 3,
+   "-56": 2,
+   "-57": 3,
+   "-6": 760,
+   "-7": 558,
+   "-8": 3210,
+   "-9": 314,
+   "0": 751,
+   "1": 455,
+   "10": 94,
+   "11": 40,
+   "12": 57,
+   "13": 64,
+   "14": 32,
+   "15": 65,
+   "16": 21,
+   "17": 50,
+   "18": 58,
+   "19": 14,
+   "2": 187,
+   "20": 17,
+   "21": 14,
+   "22": 10,
+   "23": 20,
+   "24": 5,
+   "25": 11,
+   "26": 3,
+   "3": 88,
+   "4": 203,
+   "5": 45,
+   "6": 23,
+   "7": 25,
+   "8": 251,
+   "9": 68
+  },
+  "junctions_per_piece": {
+   "1": 15106,
+   "10": 131,
+   "11": 73,
+   "12": 115,
+   "13": 71,
+   "14": 65,
+   "15": 45,
+   "16": 41,
+   "17": 25,
+   "18": 28,
+   "19": 35,
+   "2": 2397,
+   "20": 34,
+   "21": 21,
+   "22": 17,
+   "23": 19,
+   "24": 9,
+   "25": 7,
+   "26": 4,
+   "27": 1,
+   "28": 1,
+   "3": 791,
+   "35": 1,
+   "36": 2,
+   "37": 3,
+   "38": 8,
+   "39": 9,
+   "4": 161,
+   "40": 12,
+   "41": 4,
+   "42": 4,
+   "43": 3,
+   "5": 114,
+   "6": 308,
+   "7": 83,
+   "8": 96,
+   "9": 43
+  },
+  "overlap_pairs": {
+   "(one box inside the other)": 20159,
+   "minecraft:trial_chambers/chamber/chamber_1 x minecraft:trial_chambers/dispensers/wall_dispenser": 320,
+   "minecraft:trial_chambers/chamber/chamber_8 x minecraft:trial_chambers/dispensers/wall_dispenser": 605,
+   "minecraft:trial_chambers/chamber/chamber_8 x minecraft:trial_chambers/spawner/connectors/slow_ranged": 292,
+   "minecraft:trial_chambers/chamber/pedestal x minecraft:trial_chambers/dispensers/wall_dispenser": 507,
+   "minecraft:trial_chambers/chamber/pedestal x minecraft:trial_chambers/reward/vault": 393,
+   "minecraft:trial_chambers/chamber/slanted x minecraft:trial_chambers/reward/vault": 310,
+   "minecraft:trial_chambers/corridor/straight_2 x minecraft:trial_chambers/decor/undecorated_pot": 370,
+   "minecraft:trial_chambers/corridor/straight_3 x minecraft:trial_chambers/decor/undecorated_pot": 325,
+   "minecraft:trial_chambers/corridor/straight_4 x minecraft:trial_chambers/decor/undecorated_pot": 450,
+   "minecraft:trial_chambers/corridor/straight_5 x minecraft:trial_chambers/decor/undecorated_pot": 427,
+   "minecraft:trial_chambers/corridor/straight_8 x minecraft:trial_chambers/decor/undecorated_pot": 361
+  },
+  "overlaps": 20159,
+  "pieces_hist": {
+   "189": 1,
+   "192": 1,
+   "195": 1,
+   "196": 1,
+   "198": 1,
+   "207": 1,
+   "214": 1,
+   "224": 2,
+   "225": 2,
+   "226": 1,
+   "228": 1,
+   "229": 2,
+   "232": 1,
+   "233": 4,
+   "234": 1,
+   "235": 2,
+   "236": 1,
+   "237": 2,
+   "239": 1,
+   "241": 2,
+   "242": 1,
+   "244": 2,
+   "246": 2,
+   "247": 1,
+   "248": 1,
+   "249": 1,
+   "251": 1,
+   "255": 1,
+   "257": 1,
+   "259": 1,
+   "261": 3,
+   "263": 1,
+   "264": 1,
+   "265": 1,
+   "266": 1,
+   "267": 1,
+   "268": 1,
+   "269": 3,
+   "270": 1,
+   "271": 2,
+   "272": 4,
+   "278": 1,
+   "279": 1,
+   "280": 1,
+   "281": 1,
+   "282": 1,
+   "284": 1,
+   "285": 1,
+   "286": 1,
+   "289": 2,
+   "291": 1,
+   "301": 1,
+   "306": 1,
+   "309": 1,
+   "315": 2,
+   "320": 1,
+   "326": 1
+  },
+  "pieces_max": 326,
+  "pieces_mean": 254.962,
+  "pieces_min": 189,
+  "pieces_sd": 30.428,
+  "posy": {
+   "-12": 834,
+   "-15": 840,
+   "-17": 723,
+   "-18": 782,
+   "-20": 721,
+   "-21": 807,
+   "-23": 741,
+   "-24": 750
+  },
+  "rotations": {
+   "CLOCKWISE_180": 4974,
+   "CLOCKWISE_90": 5020,
+   "COUNTERCLOCKWISE_90": 4864,
+   "NONE": 5029
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 21,
+   "0,0,CLOCKWISE_90": 24,
+   "0,0,COUNTERCLOCKWISE_90": 15,
+   "0,0,NONE": 18
+  },
+  "starts": 78,
+  "templates": {
+   "minecraft:trial_chambers/chamber/addon/c1_breeze": 38,
+   "minecraft:trial_chambers/chamber/addon/full_corner_column": 10,
+   "minecraft:trial_chambers/chamber/addon/full_stacked_walkway": 48,
+   "minecraft:trial_chambers/chamber/addon/full_stacked_walkway_2": 43,
+   "minecraft:trial_chambers/chamber/addon/grate_bridge": 25,
+   "minecraft:trial_chambers/chamber/addon/hanging_platform": 300,
+   "minecraft:trial_chambers/chamber/addon/lower_staircase_down": 64,
+   "minecraft:trial_chambers/chamber/addon/short_grate_platform": 59,
+   "minecraft:trial_chambers/chamber/addon/short_platform": 58,
+   "minecraft:trial_chambers/chamber/assembly": 46,
+   "minecraft:trial_chambers/chamber/assembly/cover_1": 36,
+   "minecraft:trial_chambers/chamber/assembly/cover_2": 44,
+   "minecraft:trial_chambers/chamber/assembly/cover_3": 64,
+   "minecraft:trial_chambers/chamber/assembly/cover_4": 53,
+   "minecraft:trial_chambers/chamber/assembly/cover_5": 51,
+   "minecraft:trial_chambers/chamber/assembly/cover_6": 49,
+   "minecraft:trial_chambers/chamber/assembly/cover_7": 119,
+   "minecraft:trial_chambers/chamber/assembly/full_column": 23,
+   "minecraft:trial_chambers/chamber/assembly/hanging_1": 85,
+   "minecraft:trial_chambers/chamber/assembly/hanging_2": 41,
+   "minecraft:trial_chambers/chamber/assembly/hanging_3": 111,
+   "minecraft:trial_chambers/chamber/assembly/hanging_4": 66,
+   "minecraft:trial_chambers/chamber/assembly/hanging_5": 180,
+   "minecraft:trial_chambers/chamber/assembly/left_staircase_1": 18,
+   "minecraft:trial_chambers/chamber/assembly/left_staircase_2": 10,
+   "minecraft:trial_chambers/chamber/assembly/left_staircase_3": 8,
+   "minecraft:trial_chambers/chamber/assembly/platform_1": 38,
+   "minecraft:trial_chambers/chamber/assembly/right_staircase_1": 9,
+   "minecraft:trial_chambers/chamber/assembly/right_staircase_2": 8,
+   "minecraft:trial_chambers/chamber/assembly/right_staircase_3": 9,
+   "minecraft:trial_chambers/chamber/assembly/spawner_1": 29,
+   "minecraft:trial_chambers/chamber/chamber_1": 38,
+   "minecraft:trial_chambers/chamber/chamber_2": 26,
+   "minecraft:trial_chambers/chamber/chamber_4": 31,
+   "minecraft:trial_chambers/chamber/chamber_8": 73,
+   "minecraft:trial_chambers/chamber/entrance_cap": 528,
+   "minecraft:trial_chambers/chamber/eruption": 40,
+   "minecraft:trial_chambers/chamber/eruption/breeze_slice_1": 40,
+   "minecraft:trial_chambers/chamber/eruption/center_1": 40,
+   "minecraft:trial_chambers/chamber/eruption/quadrant_1": 29,
+   "minecraft:trial_chambers/chamber/eruption/quadrant_2": 37,
+   "minecraft:trial_chambers/chamber/eruption/quadrant_3": 28,
+   "minecraft:trial_chambers/chamber/eruption/quadrant_4": 35,
+   "minecraft:trial_chambers/chamber/eruption/quadrant_5": 31,
+   "minecraft:trial_chambers/chamber/eruption/slice_1": 48,
+   "minecraft:trial_chambers/chamber/eruption/slice_2": 33,
+   "minecraft:trial_chambers/chamber/eruption/slice_3": 39,
+   "minecraft:trial_chambers/chamber/pedestal": 32,
+   "minecraft:trial_chambers/chamber/pedestal/center_1": 32,
+   "minecraft:trial_chambers/chamber/pedestal/ominous_slice_1": 32,
+   "minecraft:trial_chambers/chamber/pedestal/slice_1": 13,
+   "minecraft:trial_chambers/chamber/pedestal/slice_2": 33,
+   "minecraft:trial_chambers/chamber/pedestal/slice_3": 31,
+   "minecraft:trial_chambers/chamber/pedestal/slice_4": 54,
+   "minecraft:trial_chambers/chamber/pedestal/slice_5": 34,
+   "minecraft:trial_chambers/chamber/slanted": 40,
+   "minecraft:trial_chambers/chamber/slanted/center": 40,
+   "minecraft:trial_chambers/chamber/slanted/hallway_1": 59,
+   "minecraft:trial_chambers/chamber/slanted/hallway_2": 52,
+   "minecraft:trial_chambers/chamber/slanted/hallway_3": 49,
+   "minecraft:trial_chambers/chamber/slanted/ominous_upper_arm_1": 40,
+   "minecraft:trial_chambers/chamber/slanted/quadrant_1": 34,
+   "minecraft:trial_chambers/chamber/slanted/quadrant_2": 103,
+   "minecraft:trial_chambers/chamber/slanted/quadrant_3": 123,
+   "minecraft:trial_chambers/chamber/slanted/quadrant_4": 23,
+   "minecraft:trial_chambers/chamber/slanted/ramp_1": 24,
+   "minecraft:trial_chambers/chamber/slanted/ramp_2": 34,
+   "minecraft:trial_chambers/chamber/slanted/ramp_3": 37,
+   "minecraft:trial_chambers/chamber/slanted/ramp_4": 25,
+   "minecraft:trial_chambers/chests/connectors/supply": 16,
+   "minecraft:trial_chambers/chests/supply": 16,
+   "minecraft:trial_chambers/corridor/addon/arrow_dispenser": 14,
+   "minecraft:trial_chambers/corridor/addon/bridge_lower": 26,
+   "minecraft:trial_chambers/corridor/addon/chandelier_upper": 18,
+   "minecraft:trial_chambers/corridor/addon/decoration_upper": 16,
+   "minecraft:trial_chambers/corridor/addon/display_1": 15,
+   "minecraft:trial_chambers/corridor/addon/display_2": 15,
+   "minecraft:trial_chambers/corridor/addon/display_3": 14,
+   "minecraft:trial_chambers/corridor/addon/head_upper": 7,
+   "minecraft:trial_chambers/corridor/addon/ladder_to_middle": 21,
+   "minecraft:trial_chambers/corridor/addon/open_walkway": 100,
+   "minecraft:trial_chambers/corridor/addon/open_walkway_upper": 18,
+   "minecraft:trial_chambers/corridor/addon/reward_upper": 16,
+   "minecraft:trial_chambers/corridor/addon/staircase": 35,
+   "minecraft:trial_chambers/corridor/addon/walled_walkway": 51,
+   "minecraft:trial_chambers/corridor/atrium/bogged_relief": 37,
+   "minecraft:trial_chambers/corridor/atrium/breeze_relief": 46,
+   "minecraft:trial_chambers/corridor/atrium/grand_staircase_1": 29,
+   "minecraft:trial_chambers/corridor/atrium/grand_staircase_2": 25,
+   "minecraft:trial_chambers/corridor/atrium/grand_staircase_3": 24,
+   "minecraft:trial_chambers/corridor/atrium/spider_relief": 37,
+   "minecraft:trial_chambers/corridor/atrium/spiral_relief": 36,
+   "minecraft:trial_chambers/corridor/atrium_1": 78,
+   "minecraft:trial_chambers/corridor/end_1": 42,
+   "minecraft:trial_chambers/corridor/end_2": 36,
+   "minecraft:trial_chambers/corridor/entrance_1": 24,
+   "minecraft:trial_chambers/corridor/entrance_2": 20,
+   "minecraft:trial_chambers/corridor/entrance_3": 34,
+   "minecraft:trial_chambers/corridor/first_plate": 78,
+   "minecraft:trial_chambers/corridor/second_plate": 78,
+   "minecraft:trial_chambers/corridor/straight_1": 48,
+   "minecraft:trial_chambers/corridor/straight_2": 76,
+   "minecraft:trial_chambers/corridor/straight_3": 89,
+   "minecraft:trial_chambers/corridor/straight_4": 97,
+   "minecraft:trial_chambers/corridor/straight_5": 87,
+   "minecraft:trial_chambers/corridor/straight_6": 87,
+   "minecraft:trial_chambers/corridor/straight_7": 40,
+   "minecraft:trial_chambers/corridor/straight_8": 100,
+   "minecraft:trial_chambers/decor/barrel": 510,
+   "minecraft:trial_chambers/decor/black_bed": 19,
+   "minecraft:trial_chambers/decor/blue_bed": 26,
+   "minecraft:trial_chambers/decor/brown_bed": 13,
+   "minecraft:trial_chambers/decor/candle_1": 265,
+   "minecraft:trial_chambers/decor/candle_2": 252,
+   "minecraft:trial_chambers/decor/candle_3": 248,
+   "minecraft:trial_chambers/decor/candle_4": 276,
+   "minecraft:trial_chambers/decor/cyan_bed": 17,
+   "minecraft:trial_chambers/decor/dead_bush_pot": 510,
+   "minecraft:trial_chambers/decor/disposal": 798,
+   "minecraft:trial_chambers/decor/empty_pot": 464,
+   "minecraft:trial_chambers/decor/flow_pot": 229,
+   "minecraft:trial_chambers/decor/gray_bed": 15,
+   "minecraft:trial_chambers/decor/green_bed": 25,
+   "minecraft:trial_chambers/decor/guster_pot": 250,
+   "minecraft:trial_chambers/decor/light_blue_bed": 19,
+   "minecraft:trial_chambers/decor/light_gray_bed": 22,
+   "minecraft:trial_chambers/decor/lime_bed": 24,
+   "minecraft:trial_chambers/decor/magenta_bed": 13,
+   "minecraft:trial_chambers/decor/orange_bed": 20,
+   "minecraft:trial_chambers/decor/pink_bed": 5,
+   "minecraft:trial_chambers/decor/purple_bed": 19,
+   "minecraft:trial_chambers/decor/red_bed": 15,
+   "minecraft:trial_chambers/decor/scrape_pot": 278,
+   "minecraft:trial_chambers/decor/undecorated_pot": 2572,
+   "minecraft:trial_chambers/decor/white_bed": 21,
+   "minecraft:trial_chambers/decor/yellow_bed": 18,
+   "minecraft:trial_chambers/dispensers/chamber": 41,
+   "minecraft:trial_chambers/dispensers/floor_dispenser": 47,
+   "minecraft:trial_chambers/dispensers/wall_dispenser": 1935,
+   "minecraft:trial_chambers/hallway/cache_1": 16,
+   "minecraft:trial_chambers/hallway/corner_staircase": 5,
+   "minecraft:trial_chambers/hallway/corner_staircase_down": 17,
+   "minecraft:trial_chambers/hallway/corridor_connector_1": 20,
+   "minecraft:trial_chambers/hallway/encounter_2": 1,
+   "minecraft:trial_chambers/hallway/encounter_3": 1,
+   "minecraft:trial_chambers/hallway/left_corner": 16,
+   "minecraft:trial_chambers/hallway/long_straight_staircase": 4,
+   "minecraft:trial_chambers/hallway/long_straight_staircase_down": 15,
+   "minecraft:trial_chambers/hallway/lower_hallway_connector": 78,
+   "minecraft:trial_chambers/hallway/right_corner": 12,
+   "minecraft:trial_chambers/hallway/rubble": 12,
+   "minecraft:trial_chambers/hallway/rubble_chamber": 162,
+   "minecraft:trial_chambers/hallway/rubble_chamber_thin": 27,
+   "minecraft:trial_chambers/hallway/straight": 21,
+   "minecraft:trial_chambers/hallway/straight_staircase": 4,
+   "minecraft:trial_chambers/hallway/straight_staircase_down": 13,
+   "minecraft:trial_chambers/hallway/trapped_staircase": 47,
+   "minecraft:trial_chambers/hallway/upper_hallway_connector": 115,
+   "minecraft:trial_chambers/intersection/intersection_1": 39,
+   "minecraft:trial_chambers/intersection/intersection_2": 18,
+   "minecraft:trial_chambers/intersection/intersection_3": 21,
+   "minecraft:trial_chambers/reward/ominous_vault": 528,
+   "minecraft:trial_chambers/reward/vault": 1529,
+   "minecraft:trial_chambers/spawner/breeze/breeze": 197,
+   "minecraft:trial_chambers/spawner/connectors/breeze": 197,
+   "minecraft:trial_chambers/spawner/connectors/melee": 265,
+   "minecraft:trial_chambers/spawner/connectors/ranged": 421,
+   "minecraft:trial_chambers/spawner/connectors/slow_ranged": 292,
+   "minecraft:trial_chambers/spawner/connectors/small_melee": 211,
+   "minecraft:trial_chambers/spawner/melee/husk": 120,
+   "minecraft:trial_chambers/spawner/melee/spider": 78,
+   "minecraft:trial_chambers/spawner/melee/zombie": 67,
+   "minecraft:trial_chambers/spawner/ranged/poison_skeleton": 138,
+   "minecraft:trial_chambers/spawner/ranged/skeleton": 161,
+   "minecraft:trial_chambers/spawner/ranged/stray": 122,
+   "minecraft:trial_chambers/spawner/slow_ranged/poison_skeleton": 80,
+   "minecraft:trial_chambers/spawner/slow_ranged/skeleton": 112,
+   "minecraft:trial_chambers/spawner/slow_ranged/stray": 100,
+   "minecraft:trial_chambers/spawner/small_melee/baby_zombie": 45,
+   "minecraft:trial_chambers/spawner/small_melee/cave_spider": 52,
+   "minecraft:trial_chambers/spawner/small_melee/silverfish": 43,
+   "minecraft:trial_chambers/spawner/small_melee/slime": 71
+  }
+ },
+ "minecraft:village_plains": {
+  "dim": "d_vill",
+  "extent_h_max": 80.5,
+  "extent_v_max": 13,
+  "ground_level_delta": {
+   "-1": 517,
+   "-4": 26,
+   "0": 2853,
+   "1": 4236,
+   "4": 20
+  },
+  "junctions_per_piece": {
+   "1": 4399,
+   "10": 22,
+   "11": 19,
+   "2": 1195,
+   "3": 1236,
+   "4": 268,
+   "5": 181,
+   "6": 160,
+   "7": 105,
+   "8": 49,
+   "9": 18
+  },
+  "overlap_pairs": {
+   "(one box inside the other)": 4691,
+   "minecraft:village/plains/houses/plains_animal_pen_3 x ?": 85,
+   "minecraft:village/plains/houses/plains_small_house_2 x minecraft:village/plains/villagers/unemployed": 66,
+   "minecraft:village/plains/streets/corner_01 x ?": 101,
+   "minecraft:village/plains/streets/straight_01 x ?": 219,
+   "minecraft:village/plains/streets/straight_01 x minecraft:village/plains/plains_lamp_1": 146,
+   "minecraft:village/plains/streets/straight_03 x ?": 67,
+   "minecraft:village/plains/streets/straight_03 x minecraft:village/plains/villagers/unemployed": 109,
+   "minecraft:village/plains/streets/straight_04 x minecraft:village/plains/villagers/unemployed": 89,
+   "minecraft:village/plains/streets/straight_06 x ?": 176,
+   "minecraft:village/plains/streets/straight_06 x minecraft:village/plains/plains_lamp_1": 77,
+   "minecraft:village/plains/streets/straight_06 x minecraft:village/plains/villagers/unemployed": 67
+  },
+  "overlaps": 4691,
+  "pieces_hist": {
+   "39": 1,
+   "53": 1,
+   "58": 1,
+   "61": 1,
+   "63": 1,
+   "64": 1,
+   "65": 1,
+   "66": 1,
+   "67": 2,
+   "69": 1,
+   "72": 1,
+   "74": 1,
+   "75": 3,
+   "76": 1,
+   "79": 2,
+   "80": 2,
+   "81": 1,
+   "82": 2,
+   "83": 1,
+   "85": 1,
+   "89": 1,
+   "90": 2,
+   "91": 1,
+   "93": 2,
+   "94": 1,
+   "95": 1,
+   "96": 1,
+   "98": 4,
+   "99": 1,
+   "102": 3,
+   "103": 1,
+   "107": 1,
+   "108": 1,
+   "109": 1,
+   "110": 2,
+   "111": 2,
+   "114": 1,
+   "116": 1,
+   "117": 1,
+   "120": 1,
+   "122": 1,
+   "123": 1,
+   "125": 2,
+   "126": 1,
+   "127": 4,
+   "128": 3,
+   "132": 2,
+   "136": 1,
+   "146": 1,
+   "153": 1,
+   "154": 1,
+   "155": 1,
+   "157": 1,
+   "160": 1
+  },
+  "pieces_max": 160,
+  "pieces_mean": 100.684,
+  "pieces_min": 39,
+  "pieces_sd": 27.178,
+  "posy": {
+   "-56": 26,
+   "-59": 517,
+   "-60": 2853,
+   "-61": 4236,
+   "-64": 20
+  },
+  "rotations": {
+   "CLOCKWISE_180": 1958,
+   "CLOCKWISE_90": 1887,
+   "COUNTERCLOCKWISE_90": 1883,
+   "NONE": 1924
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 19,
+   "0,0,CLOCKWISE_90": 17,
+   "0,0,COUNTERCLOCKWISE_90": 20,
+   "0,0,NONE": 20
+  },
+  "starts": 76,
+  "templates": {
+   "minecraft:feature_pool_element": 861,
+   "minecraft:village/common/animals/cat_black": 17,
+   "minecraft:village/common/animals/cat_british": 21,
+   "minecraft:village/common/animals/cat_calico": 15,
+   "minecraft:village/common/animals/cat_jellie": 12,
+   "minecraft:village/common/animals/cat_persian": 21,
+   "minecraft:village/common/animals/cat_ragdoll": 20,
+   "minecraft:village/common/animals/cat_red": 14,
+   "minecraft:village/common/animals/cat_siamese": 20,
+   "minecraft:village/common/animals/cat_tabby": 18,
+   "minecraft:village/common/animals/cat_white": 12,
+   "minecraft:village/common/animals/cows_1": 45,
+   "minecraft:village/common/animals/horses_1": 13,
+   "minecraft:village/common/animals/horses_2": 7,
+   "minecraft:village/common/animals/horses_3": 10,
+   "minecraft:village/common/animals/horses_4": 11,
+   "minecraft:village/common/animals/horses_5": 11,
+   "minecraft:village/common/animals/pigs_1": 55,
+   "minecraft:village/common/animals/sheep_1": 9,
+   "minecraft:village/common/animals/sheep_2": 7,
+   "minecraft:village/common/iron_golem": 76,
+   "minecraft:village/common/well_bottom": 20,
+   "minecraft:village/plains/houses/plains_accessory_1": 73,
+   "minecraft:village/plains/houses/plains_animal_pen_1": 67,
+   "minecraft:village/plains/houses/plains_animal_pen_2": 10,
+   "minecraft:village/plains/houses/plains_animal_pen_3": 55,
+   "minecraft:village/plains/houses/plains_armorer_house_1": 38,
+   "minecraft:village/plains/houses/plains_big_house_1": 20,
+   "minecraft:village/plains/houses/plains_butcher_shop_1": 6,
+   "minecraft:village/plains/houses/plains_butcher_shop_2": 2,
+   "minecraft:village/plains/houses/plains_cartographer_1": 24,
+   "minecraft:village/plains/houses/plains_fletcher_house_1": 26,
+   "minecraft:village/plains/houses/plains_large_farm_1": 13,
+   "minecraft:village/plains/houses/plains_library_1": 2,
+   "minecraft:village/plains/houses/plains_library_2": 22,
+   "minecraft:village/plains/houses/plains_masons_house_1": 47,
+   "minecraft:village/plains/houses/plains_medium_house_1": 13,
+   "minecraft:village/plains/houses/plains_medium_house_2": 19,
+   "minecraft:village/plains/houses/plains_meeting_point_4": 14,
+   "minecraft:village/plains/houses/plains_meeting_point_5": 9,
+   "minecraft:village/plains/houses/plains_shepherds_house_1": 4,
+   "minecraft:village/plains/houses/plains_small_farm_1": 139,
+   "minecraft:village/plains/houses/plains_small_house_1": 98,
+   "minecraft:village/plains/houses/plains_small_house_2": 119,
+   "minecraft:village/plains/houses/plains_small_house_3": 101,
+   "minecraft:village/plains/houses/plains_small_house_4": 90,
+   "minecraft:village/plains/houses/plains_small_house_5": 28,
+   "minecraft:village/plains/houses/plains_small_house_6": 46,
+   "minecraft:village/plains/houses/plains_small_house_7": 94,
+   "minecraft:village/plains/houses/plains_stable_1": 6,
+   "minecraft:village/plains/houses/plains_stable_2": 3,
+   "minecraft:village/plains/houses/plains_tannery_1": 30,
+   "minecraft:village/plains/houses/plains_temple_3": 10,
+   "minecraft:village/plains/houses/plains_temple_4": 35,
+   "minecraft:village/plains/houses/plains_tool_smith_1": 17,
+   "minecraft:village/plains/houses/plains_weaponsmith_1": 20,
+   "minecraft:village/plains/plains_lamp_1": 418,
+   "minecraft:village/plains/streets/corner_01": 51,
+   "minecraft:village/plains/streets/corner_02": 88,
+   "minecraft:village/plains/streets/corner_03": 233,
+   "minecraft:village/plains/streets/crossroad_01": 73,
+   "minecraft:village/plains/streets/crossroad_02": 31,
+   "minecraft:village/plains/streets/crossroad_03": 76,
+   "minecraft:village/plains/streets/crossroad_04": 212,
+   "minecraft:village/plains/streets/crossroad_05": 205,
+   "minecraft:village/plains/streets/crossroad_06": 212,
+   "minecraft:village/plains/streets/straight_01": 123,
+   "minecraft:village/plains/streets/straight_02": 207,
+   "minecraft:village/plains/streets/straight_03": 404,
+   "minecraft:village/plains/streets/straight_04": 425,
+   "minecraft:village/plains/streets/straight_05": 142,
+   "minecraft:village/plains/streets/straight_06": 111,
+   "minecraft:village/plains/streets/turn_01": 111,
+   "minecraft:village/plains/terminators/terminator_01": 278,
+   "minecraft:village/plains/terminators/terminator_02": 481,
+   "minecraft:village/plains/terminators/terminator_03": 198,
+   "minecraft:village/plains/terminators/terminator_04": 196,
+   "minecraft:village/plains/town_centers/plains_fountain_01": 11,
+   "minecraft:village/plains/town_centers/plains_meeting_point_1": 20,
+   "minecraft:village/plains/town_centers/plains_meeting_point_2": 23,
+   "minecraft:village/plains/town_centers/plains_meeting_point_3": 22,
+   "minecraft:village/plains/villagers/baby": 69,
+   "minecraft:village/plains/villagers/nitwit": 48,
+   "minecraft:village/plains/villagers/unemployed": 589
+  }
+ }
+}

@@ -1,0 +1,40 @@
+{
+ "26.3": {
+  "structure_files": 1511,
+  "cache_bytes_as_stored": 4236847,
+  "nbt_inflated_bytes": 45290384,
+  "unzip_filter_ms_runs": [
+   326,
+   128,
+   125,
+   118,
+   144
+  ],
+  "gunzip_all_ms": 307,
+  "preview_models_textures_unzip_ms": 178,
+  "preview_models_textures_files": 9269,
+  "village_files": 483,
+  "village_bytes": 772286,
+  "plains_village_folder_unzip_ms": 34,
+  "plains_village_files": 115
+ },
+ "26.4-snapshot-7": {
+  "structure_files": 1511,
+  "cache_bytes_as_stored": 4233493,
+  "nbt_inflated_bytes": 45289282,
+  "unzip_filter_ms_runs": [
+   139,
+   70,
+   85,
+   92,
+   67
+  ],
+  "gunzip_all_ms": 275,
+  "preview_models_textures_unzip_ms": 96,
+  "preview_models_textures_files": 9424,
+  "village_files": 483,
+  "village_bytes": 771274,
+  "plains_village_folder_unzip_ms": 50,
+  "plains_village_files": 115
+ }
+}

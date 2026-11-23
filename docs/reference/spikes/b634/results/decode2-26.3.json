@@ -1,0 +1,29 @@
+{
+ "corner_bad_corners": {
+  "loads": true,
+  "errors": [
+   "[09:06:04] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "corner_bad_type": {
+  "loads": true,
+  "errors": [
+   "[09:06:18] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "unknown_key": {
+  "loads": true,
+  "errors": [
+   "[09:06:31] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "height_match_bad": {
+  "loads": false,
+  "errors": [
+   "[09:06:41] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: No key max_inclusive in MapLike[{\"predicate_type\":\"minecraft:height_match\",\"min_inclusive\":\"x\"}]; Not a number: \"x\""
+  ]
+ }
+}

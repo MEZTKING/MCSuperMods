@@ -1,0 +1,26 @@
+{
+ "26.3": {
+  "templates": 1511,
+  "largest_volume": 69312,
+  "largest_side_max": 48,
+  "largest_height": 48,
+  "templates_wider_than_48": 0,
+  "templates_taller_than_32": 6,
+  "plains_village_templates": 104,
+  "plains_village_mean_blocks": 156.0,
+  "plains_village_max_blocks": 630,
+  "max_blocks_any": 14331
+ },
+ "26.4-snapshot-7": {
+  "templates": 1511,
+  "largest_volume": 69312,
+  "largest_side_max": 48,
+  "largest_height": 48,
+  "templates_wider_than_48": 0,
+  "templates_taller_than_32": 6,
+  "plains_village_templates": 104,
+  "plains_village_mean_blocks": 156.0,
+  "plains_village_max_blocks": 630,
+  "max_blocks_any": 14331
+ }
+}

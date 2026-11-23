@@ -1,0 +1,35 @@
+{
+ "start_s": 21.6,
+ "dims": {
+  "d_proj": {
+   "chunks": 1024,
+   "load_s": 6.6,
+   "save_s": 11.0
+  },
+  "d_ta": {
+   "chunks": 1024,
+   "load_s": 3.1,
+   "save_s": 11.1
+  },
+  "n_proj": {
+   "chunks": 1024,
+   "load_s": 44.5,
+   "save_s": 9.8
+  },
+  "n_ta": {
+   "chunks": 2304,
+   "load_s": 66.5,
+   "save_s": 15.6
+  },
+  "r2_dist": {
+   "chunks": 1024,
+   "load_s": 4.7,
+   "save_s": 13.2
+  },
+  "r2_start": {
+   "chunks": 1024,
+   "load_s": 4.5,
+   "save_s": 11.4
+  }
+ }
+}

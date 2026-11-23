@@ -1,0 +1,1023 @@
+{
+ "b634:chain2_d15": {
+  "by_depth": {
+   "0:b634:cstart2": 94,
+   "1:b634:seg2": 94,
+   "2:b634:seg2": 94,
+   "3:b634:seg2": 94,
+   "4:b634:seg2": 94,
+   "5:b634:seg2": 94,
+   "6:b634:seg2": 94,
+   "7:b634:seg2": 94
+  },
+  "depth_max_hist": {
+   "7": 94
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 15.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 752
+  },
+  "join_checks": {
+   "child.target!=parent.name": 658,
+   "facing opposite": 658,
+   "name==target": 658,
+   "parent sp 0 pp 0": 658,
+   "top same": 658
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 94
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 752
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 224,
+   "CLOCKWISE_90": 176,
+   "COUNTERCLOCKWISE_90": 176,
+   "NONE": 176
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 28,
+   "0,0,CLOCKWISE_90": 22,
+   "0,0,COUNTERCLOCKWISE_90": 22,
+   "0,0,NONE": 22
+  },
+  "starts": 94,
+  "templates": {
+   "b634:cstart2": 94,
+   "b634:seg2": 658
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain2_d16": {
+  "by_depth": {
+   "0:b634:cstart2": 101,
+   "1:b634:seg2": 101,
+   "2:b634:seg2": 101,
+   "3:b634:seg2": 101,
+   "4:b634:seg2": 101,
+   "5:b634:seg2": 101,
+   "6:b634:seg2": 101,
+   "7:b634:seg2": 101
+  },
+  "depth_max_hist": {
+   "7": 101
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 15.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 808
+  },
+  "join_checks": {
+   "child.target!=parent.name": 707,
+   "facing opposite": 707,
+   "name==target": 707,
+   "parent sp 0 pp 0": 707,
+   "top same": 707
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 101
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 808
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 208,
+   "CLOCKWISE_90": 216,
+   "COUNTERCLOCKWISE_90": 176,
+   "NONE": 208
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 26,
+   "0,0,CLOCKWISE_90": 27,
+   "0,0,COUNTERCLOCKWISE_90": 22,
+   "0,0,NONE": 26
+  },
+  "starts": 101,
+  "templates": {
+   "b634:cstart2": 101,
+   "b634:seg2": 707
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain4_d16": {
+  "by_depth": {
+   "0:b634:cstart4": 87,
+   "1:b634:seg2": 87,
+   "2:b634:seg2": 87,
+   "3:b634:seg2": 87,
+   "4:b634:seg2": 87,
+   "5:b634:seg2": 87,
+   "6:b634:seg2": 87,
+   "7:b634:seg2": 87
+  },
+  "depth_max_hist": {
+   "7": 87
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 15.5,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 696
+  },
+  "join_checks": {
+   "child.target!=parent.name": 609,
+   "facing opposite": 609,
+   "name==target": 609,
+   "parent sp 0 pp 0": 609,
+   "top same": 609
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 87
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 696
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 144,
+   "CLOCKWISE_90": 176,
+   "COUNTERCLOCKWISE_90": 216,
+   "NONE": 160
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 18,
+   "0,0,CLOCKWISE_90": 22,
+   "0,0,COUNTERCLOCKWISE_90": 27,
+   "0,0,NONE": 20
+  },
+  "starts": 87,
+  "templates": {
+   "b634:cstart4": 87,
+   "b634:seg2": 609
+  },
+  "vertical_joins": {}
+ },
+ "b634:chain4_d17": {
+  "by_depth": {
+   "0:b634:cstart4": 91,
+   "1:b634:seg2": 91,
+   "2:b634:seg2": 91,
+   "3:b634:seg2": 91,
+   "4:b634:seg2": 91,
+   "5:b634:seg2": 91,
+   "6:b634:seg2": 91,
+   "7:b634:seg2": 91,
+   "8:b634:seg2": 41
+  },
+  "depth_max_hist": {
+   "7": 50,
+   "8": 41
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 17.5,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 769
+  },
+  "join_checks": {
+   "child.target!=parent.name": 678,
+   "facing opposite": 678,
+   "name==target": 678,
+   "parent sp 0 pp 0": 678,
+   "top same": 678
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 50,
+   "9": 41
+  },
+  "pieces_max": 9,
+  "pieces_mean": 8.451,
+  "pieces_min": 8,
+  "pieces_sd": 0.498,
+  "posy": {
+   "-61": 769
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 183,
+   "CLOCKWISE_90": 181,
+   "COUNTERCLOCKWISE_90": 202,
+   "NONE": 203
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 21,
+   "0,0,CLOCKWISE_90": 22,
+   "0,0,COUNTERCLOCKWISE_90": 23,
+   "0,0,NONE": 25
+  },
+  "starts": 91,
+  "templates": {
+   "b634:cstart4": 91,
+   "b634:seg2": 678
+  },
+  "vertical_joins": {}
+ },
+ "b634:fb_s5": {
+  "by_depth": {
+   "0:b634:fbstart": 91,
+   "1:b634:seg": 91,
+   "2:b634:seg": 91,
+   "3:b634:seg": 91,
+   "4:b634:seg": 91,
+   "5:b634:seg": 91,
+   "6:b634:cap": 91
+  },
+  "depth_max_hist": {
+   "6": 91
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 28.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 637
+  },
+  "join_checks": {
+   "child.target!=parent.name": 91,
+   "child.target==parent.name": 455,
+   "facing opposite": 546,
+   "name==target": 546,
+   "parent sp 0 pp 0": 546,
+   "top same": 546
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 91
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 637
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 98,
+   "CLOCKWISE_90": 196,
+   "COUNTERCLOCKWISE_90": 161,
+   "NONE": 182
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 14,
+   "0,0,CLOCKWISE_90": 28,
+   "0,0,COUNTERCLOCKWISE_90": 23,
+   "0,0,NONE": 26
+  },
+  "starts": 91,
+  "templates": {
+   "b634:cap": 91,
+   "b634:fbstart": 91,
+   "b634:seg": 455
+  },
+  "vertical_joins": {}
+ },
+ "b634:proj_rg": {
+  "by_depth": {
+   "0:b634:hub_rg": 885,
+   "1:b634:strip": 3540
+  },
+  "depth_max_hist": {
+   "1": 885
+  },
+  "dim": "d_proj",
+  "extent_h_max": 12.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "0": 3540,
+   "1": 885
+  },
+  "join_checks": {
+   "child.target!=parent.name": 3540,
+   "facing opposite": 3540,
+   "name==target": 3540,
+   "parent sp 0 pp 0": 3540,
+   "top same": 3540
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 885
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-60": 700,
+   "-61": 175,
+   "62": 398,
+   "63": 1663,
+   "64": 310,
+   "65": 131,
+   "66": 126,
+   "69": 126
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 1299,
+   "CLOCKWISE_90": 885,
+   "COUNTERCLOCKWISE_90": 1356,
+   "NONE": 885
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 414,
+   "0,0,COUNTERCLOCKWISE_90": 471
+  },
+  "starts": 885,
+  "templates": {
+   "b634:hub_rg": 885,
+   "b634:strip": 3540
+  },
+  "vertical_joins": {}
+ },
+ "b634:proj_tm": {
+  "by_depth": {
+   "0:b634:hub_tm": 927,
+   "0:b634:strip": 628,
+   "1:b634:strip": 3080
+  },
+  "depth_max_hist": {
+   "0": 54,
+   "1": 873
+  },
+  "dim": "d_proj",
+  "extent_h_max": 12.0,
+  "extent_v_max": 42,
+  "ground_level_delta": {
+   "1": 4635
+  },
+  "join_checks": {
+   "child.target!=parent.name": 3080,
+   "facing opposite": 3080,
+   "name==target": 3080,
+   "parent sp 0 pp 0": 3080,
+   "top same": 3080
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 927
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-60": 744,
+   "-61": 186,
+   "62": 431,
+   "63": 1738,
+   "64": 360,
+   "65": 167,
+   "66": 111,
+   "68": 113
+  },
+  "problems": {
+   "piece 1 has no parent jigsaw": 147,
+   "piece 2 has no parent jigsaw": 163,
+   "piece 3 has no parent jigsaw": 165,
+   "piece 4 has no parent jigsaw": 153
+  },
+  "rotations": {
+   "CLOCKWISE_180": 927,
+   "CLOCKWISE_90": 1384,
+   "COUNTERCLOCKWISE_90": 927,
+   "NONE": 1397
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_90": 457,
+   "0,0,NONE": 470
+  },
+  "starts": 927,
+  "templates": {
+   "b634:hub_tm": 927,
+   "b634:strip": 3708
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_abs": {
+  "by_depth": {
+   "0:b634:hub_match": 178,
+   "1:b634:arm_ok": 207,
+   "1:b634:arm_tgt": 243,
+   "1:b634:arm_two": 262
+  },
+  "depth_max_hist": {
+   "1": 178
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 890
+  },
+  "join_checks": {
+   "child.target!=parent.name": 243,
+   "child.target==parent.name": 469,
+   "facing opposite": 712,
+   "name==target": 712,
+   "parent sp 0 pp 0": 712,
+   "top same": 712
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 178
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-51": 890
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 223,
+   "CLOCKWISE_90": 228,
+   "COUNTERCLOCKWISE_90": 221,
+   "NONE": 218
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 47,
+   "0,0,CLOCKWISE_90": 41,
+   "0,0,COUNTERCLOCKWISE_90": 48,
+   "0,0,NONE": 42
+  },
+  "starts": 178,
+  "templates": {
+   "b634:arm_ok": 207,
+   "b634:arm_tgt": 243,
+   "b634:arm_two": 262,
+   "b634:hub_match": 178
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_named": {
+  "by_depth": {
+   "0:b634:hub_match": 172,
+   "1:b634:arm_ok": 233,
+   "1:b634:arm_tgt": 235,
+   "1:b634:arm_two": 220
+  },
+  "depth_max_hist": {
+   "1": 172
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 860
+  },
+  "join_checks": {
+   "child.target!=parent.name": 235,
+   "child.target==parent.name": 453,
+   "facing opposite": 688,
+   "name==target": 688,
+   "parent sp 0 pp 0": 688,
+   "top same": 688
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 172
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 860
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 204,
+   "CLOCKWISE_90": 201,
+   "COUNTERCLOCKWISE_90": 224,
+   "NONE": 231
+  },
+  "start_rel_pos": {
+   "-3,0,NONE": 13,
+   "-3,6,COUNTERCLOCKWISE_90": 16,
+   "-6,-3,NONE": 15,
+   "0,-3,NONE": 16,
+   "0,3,COUNTERCLOCKWISE_90": 15,
+   "6,3,CLOCKWISE_180": 12
+  },
+  "starts": 172,
+  "templates": {
+   "b634:arm_ok": 233,
+   "b634:arm_tgt": 235,
+   "b634:arm_two": 220,
+   "b634:hub_match": 172
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_proj0": {
+  "by_depth": {
+   "0:b634:hub_match": 163,
+   "1:b634:arm_ok": 220,
+   "1:b634:arm_tgt": 198,
+   "1:b634:arm_two": 234
+  },
+  "depth_max_hist": {
+   "1": 163
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 815
+  },
+  "join_checks": {
+   "child.target!=parent.name": 198,
+   "child.target==parent.name": 454,
+   "facing opposite": 652,
+   "name==target": 652,
+   "parent sp 0 pp 0": 652,
+   "top same": 652
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 163
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-61": 815
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 211,
+   "CLOCKWISE_90": 212,
+   "COUNTERCLOCKWISE_90": 194,
+   "NONE": 198
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 46,
+   "0,0,CLOCKWISE_90": 45,
+   "0,0,COUNTERCLOCKWISE_90": 41,
+   "0,0,NONE": 31
+  },
+  "starts": 163,
+  "templates": {
+   "b634:arm_ok": 220,
+   "b634:arm_tgt": 198,
+   "b634:arm_two": 234,
+   "b634:hub_match": 163
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_proj5": {
+  "by_depth": {
+   "0:b634:hub_match": 163,
+   "1:b634:arm_ok": 213,
+   "1:b634:arm_tgt": 208,
+   "1:b634:arm_two": 231
+  },
+  "depth_max_hist": {
+   "1": 163
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 815
+  },
+  "join_checks": {
+   "child.target!=parent.name": 208,
+   "child.target==parent.name": 444,
+   "facing opposite": 652,
+   "name==target": 652,
+   "parent sp 0 pp 0": 652,
+   "top same": 652
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 163
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-56": 815
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 190,
+   "CLOCKWISE_90": 222,
+   "COUNTERCLOCKWISE_90": 211,
+   "NONE": 192
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 36,
+   "0,0,CLOCKWISE_90": 52,
+   "0,0,COUNTERCLOCKWISE_90": 36,
+   "0,0,NONE": 39
+  },
+  "starts": 163,
+  "templates": {
+   "b634:arm_ok": 213,
+   "b634:arm_tgt": 208,
+   "b634:arm_two": 231,
+   "b634:hub_match": 163
+  },
+  "vertical_joins": {}
+ },
+ "b634:s1_uniform": {
+  "by_depth": {
+   "0:b634:hub_match": 165,
+   "1:b634:arm_ok": 211,
+   "1:b634:arm_tgt": 221,
+   "1:b634:arm_two": 228
+  },
+  "depth_max_hist": {
+   "1": 165
+  },
+  "dim": "r2_start",
+  "extent_h_max": 8.0,
+  "extent_v_max": 2,
+  "ground_level_delta": {
+   "1": 825
+  },
+  "join_checks": {
+   "child.target!=parent.name": 221,
+   "child.target==parent.name": 439,
+   "facing opposite": 660,
+   "name==target": 660,
+   "parent sp 0 pp 0": 660,
+   "top same": 660
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "5": 165
+  },
+  "pieces_max": 5,
+  "pieces_mean": 5,
+  "pieces_min": 5,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-21": 50,
+   "-22": 55,
+   "-23": 55,
+   "-26": 50,
+   "-27": 50,
+   "-28": 65,
+   "-32": 45,
+   "-38": 55
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 191,
+   "CLOCKWISE_90": 205,
+   "COUNTERCLOCKWISE_90": 214,
+   "NONE": 215
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 44,
+   "0,0,CLOCKWISE_90": 36,
+   "0,0,COUNTERCLOCKWISE_90": 45,
+   "0,0,NONE": 40
+  },
+  "starts": 165,
+  "templates": {
+   "b634:arm_ok": 211,
+   "b634:arm_tgt": 221,
+   "b634:arm_two": 228,
+   "b634:hub_match": 165
+  },
+  "vertical_joins": {}
+ },
+ "b634:vchain4_d15": {
+  "by_depth": {
+   "0:b634:vstart4": 89,
+   "1:b634:vseg2": 89,
+   "2:b634:vseg2": 89,
+   "3:b634:vseg2": 89,
+   "4:b634:vseg2": 89,
+   "5:b634:vseg2": 89,
+   "6:b634:vseg2": 89
+  },
+  "depth_max_hist": {
+   "6": 89
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 15,
+  "ground_level_delta": {
+   "-11": 89,
+   "-13": 89,
+   "-3": 89,
+   "-5": 89,
+   "-7": 89,
+   "-9": 89,
+   "1": 89
+  },
+  "join_checks": {
+   "child.target!=parent.name": 534,
+   "facing opposite": 534,
+   "name==target": 534,
+   "parent sp 0 pp 0": 534
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 89
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-47": 89,
+   "-49": 89,
+   "-51": 89,
+   "-53": 89,
+   "-55": 89,
+   "-57": 89,
+   "-61": 89
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 163,
+   "CLOCKWISE_90": 166,
+   "COUNTERCLOCKWISE_90": 131,
+   "NONE": 163
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 27,
+   "0,0,CLOCKWISE_90": 26,
+   "0,0,COUNTERCLOCKWISE_90": 19,
+   "0,0,NONE": 17
+  },
+  "starts": 89,
+  "templates": {
+   "b634:vseg2": 534,
+   "b634:vstart4": 89
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 146,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 108,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 125,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 155
+  }
+ },
+ "b634:vchain4_d16": {
+  "by_depth": {
+   "0:b634:vstart4": 84,
+   "1:b634:vseg2": 84,
+   "2:b634:vseg2": 84,
+   "3:b634:vseg2": 84,
+   "4:b634:vseg2": 84,
+   "5:b634:vseg2": 84,
+   "6:b634:vseg2": 84,
+   "7:b634:vseg2": 84
+  },
+  "depth_max_hist": {
+   "7": 84
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-11": 84,
+   "-13": 84,
+   "-15": 84,
+   "-3": 84,
+   "-5": 84,
+   "-7": 84,
+   "-9": 84,
+   "1": 84
+  },
+  "join_checks": {
+   "child.target!=parent.name": 588,
+   "facing opposite": 588,
+   "name==target": 588,
+   "parent sp 0 pp 0": 588
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "8": 84
+  },
+  "pieces_max": 8,
+  "pieces_mean": 8,
+  "pieces_min": 8,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-45": 84,
+   "-47": 84,
+   "-49": 84,
+   "-51": 84,
+   "-53": 84,
+   "-55": 84,
+   "-57": 84,
+   "-61": 84
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 158,
+   "CLOCKWISE_90": 167,
+   "COUNTERCLOCKWISE_90": 161,
+   "NONE": 186
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 23,
+   "0,0,CLOCKWISE_90": 19,
+   "0,0,COUNTERCLOCKWISE_90": 22,
+   "0,0,NONE": 20
+  },
+  "starts": 84,
+  "templates": {
+   "b634:vseg2": 588,
+   "b634:vstart4": 84
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 162,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 140,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 156,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 130
+  }
+ },
+ "b634:vchain6_d16": {
+  "by_depth": {
+   "0:b634:vstart6": 99,
+   "1:b634:vseg2": 99,
+   "2:b634:vseg2": 99,
+   "3:b634:vseg2": 99,
+   "4:b634:vseg2": 99,
+   "5:b634:vseg2": 99,
+   "6:b634:vseg2": 99
+  },
+  "depth_max_hist": {
+   "6": 99
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-11": 99,
+   "-13": 99,
+   "-15": 99,
+   "-5": 99,
+   "-7": 99,
+   "-9": 99,
+   "1": 99
+  },
+  "join_checks": {
+   "child.target!=parent.name": 594,
+   "facing opposite": 594,
+   "name==target": 594,
+   "parent sp 0 pp 0": 594
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 99
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-45": 99,
+   "-47": 99,
+   "-49": 99,
+   "-51": 99,
+   "-53": 99,
+   "-55": 99,
+   "-61": 99
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 183,
+   "CLOCKWISE_90": 176,
+   "COUNTERCLOCKWISE_90": 183,
+   "NONE": 151
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 27,
+   "0,0,CLOCKWISE_90": 24,
+   "0,0,COUNTERCLOCKWISE_90": 29,
+   "0,0,NONE": 19
+  },
+  "starts": 99,
+  "templates": {
+   "b634:vseg2": 594,
+   "b634:vstart6": 99
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 135,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 161,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 161,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 137
+  }
+ },
+ "b634:vchain6_d17": {
+  "by_depth": {
+   "0:b634:vstart6": 105,
+   "1:b634:vseg2": 105,
+   "2:b634:vseg2": 105,
+   "3:b634:vseg2": 105,
+   "4:b634:vseg2": 105,
+   "5:b634:vseg2": 105,
+   "6:b634:vseg2": 105
+  },
+  "depth_max_hist": {
+   "6": 105
+  },
+  "dim": "r2_dist",
+  "extent_h_max": 1.0,
+  "extent_v_max": 17,
+  "ground_level_delta": {
+   "-11": 105,
+   "-13": 105,
+   "-15": 105,
+   "-5": 105,
+   "-7": 105,
+   "-9": 105,
+   "1": 105
+  },
+  "join_checks": {
+   "child.target!=parent.name": 630,
+   "facing opposite": 630,
+   "name==target": 630,
+   "parent sp 0 pp 0": 630
+  },
+  "overlap_pairs": {},
+  "overlaps": 0,
+  "pieces_hist": {
+   "7": 105
+  },
+  "pieces_max": 7,
+  "pieces_mean": 7,
+  "pieces_min": 7,
+  "pieces_sd": 0.0,
+  "posy": {
+   "-45": 105,
+   "-47": 105,
+   "-49": 105,
+   "-51": 105,
+   "-53": 105,
+   "-55": 105,
+   "-61": 105
+  },
+  "problems": {},
+  "rotations": {
+   "CLOCKWISE_180": 167,
+   "CLOCKWISE_90": 197,
+   "COUNTERCLOCKWISE_90": 181,
+   "NONE": 190
+  },
+  "start_rel_pos": {
+   "0,0,CLOCKWISE_180": 26,
+   "0,0,CLOCKWISE_90": 27,
+   "0,0,COUNTERCLOCKWISE_90": 27,
+   "0,0,NONE": 25
+  },
+  "starts": 105,
+  "templates": {
+   "b634:vseg2": 630,
+   "b634:vstart6": 105
+  },
+  "vertical_joins": {
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 1": 161,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 2": 149,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top != parent top, rel turn 3": 165,
+   "parent joint rollable child joint rollable -> b634:vseg2: child top == parent top, rel turn 0": 155
+  }
+ }
+}

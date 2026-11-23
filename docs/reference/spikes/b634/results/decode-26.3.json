@@ -1,0 +1,143 @@
+{
+ "size_20": {
+  "loads": true,
+  "errors": [
+   "[08:57:18] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "size_21": {
+  "loads": false,
+  "errors": [
+   "[08:57:33] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: Value 21 outside of range [0:20]"
+  ]
+ },
+ "size_0": {
+  "loads": true,
+  "errors": [
+   "[08:57:43] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "dist_128": {
+  "loads": true,
+  "errors": [
+   "[08:57:56] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "dist_129": {
+  "loads": false,
+  "errors": [
+   "[08:58:11] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: Failed to parse either. First: Not a JSON object: 129; Second: Value 129 outside of range [1:128]"
+  ]
+ },
+ "dist_obj_v4064": {
+  "loads": true,
+  "errors": [
+   "[08:58:21] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "dist_obj_v4065": {
+  "loads": false,
+  "errors": [
+   "[08:58:35] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: Value must be within range [1;4064]: 4065"
+  ]
+ },
+ "padding": {
+  "loads": true,
+  "errors": [
+   "[08:58:43] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "liquid": {
+  "loads": true,
+  "errors": [
+   "[08:58:59] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "alias": {
+  "loads": true,
+  "errors": [
+   "[08:59:14] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "weight_150": {
+  "loads": true,
+  "errors": [
+   "[08:59:31] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "weight_151": {
+  "loads": false,
+  "errors": [
+   "[08:59:45] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: Value 151 outside of range [1:150]"
+  ]
+ },
+ "weight_0": {
+  "loads": false,
+  "errors": [
+   "[08:59:57] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: Value 0 outside of range [1:150]"
+  ]
+ },
+ "no_projection": {
+  "loads": false,
+  "errors": [
+   "[09:00:05] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: No key projection in MapLike[{\"element_type\":\"minecraft:single_pool_element\",\"location\":\"minecraft:empty\",\"processors\":\"minecraft:empty\"}]"
+  ]
+ },
+ "corner_constraint": {
+  "loads": true,
+  "errors": [
+   "[09:00:15] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "override_liquid": {
+  "loads": true,
+  "errors": [
+   "[09:00:30] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "name_field": {
+  "loads": true,
+  "errors": [
+   "[09:00:46] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "blockstate_name_form": {
+  "loads": false,
+  "errors": [
+   "[09:01:03] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: Failed to parse either. First: Not a string: {\"Name\":\"minecraft:stone\"}; Second: No key id in MapLike[{\"Name\":\"minecraft:stone\"}]"
+  ]
+ },
+ "blockstate_string": {
+  "loads": true,
+  "errors": [
+   "[09:01:14] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "rule_output_nbt": {
+  "loads": true,
+  "errors": [
+   "[09:01:28] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ }
+}

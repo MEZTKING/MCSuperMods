@@ -1,0 +1,35 @@
+{
+ "corner_bad_corners": {
+  "loads": false,
+  "errors": [
+   "[09:06:48] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: List is too short: 0, expected range [1-10]"
+  ]
+ },
+ "corner_bad_type": {
+  "loads": false,
+  "errors": [
+   "[09:06:56] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: Not a json array: \"nonsense\""
+  ]
+ },
+ "unknown_key": {
+  "loads": true,
+  "errors": [
+   "[09:07:06] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically"
+  ]
+ },
+ "height_match_bad": {
+  "loads": false,
+  "errors": [
+   "[09:07:21] [ServerMain/INFO]: Found new data pack file/b634p, loading it automatically",
+   ">> Errors in element b634p:p:",
+   "java.lang.IllegalStateException: Failed to parse b634p:p from pack file/b634p",
+   "Caused by: java.lang.IllegalStateException: No key max_inclusive in MapLike[{\"predicate_type\":\"minecraft:height_match\",\"min_inclusive\":\"x\"}]; Not a number: \"x\""
+  ]
+ }
+}

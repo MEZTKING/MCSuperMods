@@ -1,0 +1,95 @@
+{
+ "start_s": 29.8,
+ "dims": {
+  "d_match": {
+   "chunks": 1024,
+   "load_s": 6.5,
+   "save_s": 7.4
+  },
+  "d_weights": {
+   "chunks": 1024,
+   "load_s": 6.0,
+   "save_s": 7.0
+  },
+  "d_back": {
+   "chunks": 1024,
+   "load_s": 3.7,
+   "save_s": 6.9
+  },
+  "d_joint": {
+   "chunks": 1024,
+   "load_s": 3.4,
+   "save_s": 4.4
+  },
+  "d_chain": {
+   "chunks": 1024,
+   "load_s": 3.3,
+   "save_s": 1.9
+  },
+  "d_wide": {
+   "chunks": 1024,
+   "load_s": 2.8,
+   "save_s": 2.4
+  },
+  "d_pp": {
+   "chunks": 2304,
+   "load_s": 6.9,
+   "save_s": 7.7
+  },
+  "d_shell": {
+   "chunks": 1024,
+   "load_s": 3.4,
+   "save_s": 5.9
+  },
+  "d_misc": {
+   "chunks": 1024,
+   "load_s": 3.4,
+   "save_s": 2.4
+  },
+  "d_grid": {
+   "chunks": 1024,
+   "load_s": 7.3,
+   "save_s": 2.5
+  },
+  "d_proj": {
+   "chunks": 1024,
+   "load_s": 3.1,
+   "save_s": 2.6
+  },
+  "d_ta": {
+   "chunks": 1024,
+   "load_s": 23.5,
+   "save_s": 2.1
+  },
+  "d_vill": {
+   "chunks": 4096,
+   "load_s": 44.8,
+   "save_s": 11.9
+  },
+  "n_proj": {
+   "chunks": 1024,
+   "load_s": 39.1,
+   "save_s": 3.4
+  },
+  "n_ta": {
+   "chunks": 2304,
+   "load_s": 50.4,
+   "save_s": 6.0
+  },
+  "r2_dist": {
+   "chunks": 1024,
+   "load_s": 24.0,
+   "save_s": 1.9
+  },
+  "r2_start": {
+   "chunks": 1024,
+   "load_s": 24.1,
+   "save_s": 2.4
+  },
+  "r2_s0": {
+   "chunks": 1024,
+   "load_s": 23.6,
+   "save_s": 2.4
+  }
+ }
+}

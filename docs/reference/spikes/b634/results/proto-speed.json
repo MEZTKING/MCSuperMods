@@ -1,0 +1,41 @@
+{
+ "26.3": {
+  "village_files": 125,
+  "village_template_blocks": 42613,
+  "unzip_ms": 136,
+  "parse_ms": 246,
+  "village_assembly_ms_median": 14.1,
+  "village_assembly_ms_max": 60.1,
+  "village_pieces_median": 54,
+  "village_pieces_min": 29,
+  "village_pieces_max": 90,
+  "note": "feature elements counted as empty; terrain matching flat"
+ },
+ "26.4-snapshot-7": {
+  "village_files": 125,
+  "village_template_blocks": 42613,
+  "unzip_ms": 33,
+  "parse_ms": 72,
+  "village_assembly_ms_median": 4.7,
+  "village_assembly_ms_max": 12.7,
+  "village_pieces_median": 54,
+  "village_pieces_min": 29,
+  "village_pieces_max": 90,
+  "note": "feature elements counted as empty; terrain matching flat"
+ },
+ "grid size 7 dist 40": {
+  "pieces": 113,
+  "ms_median": 7.4,
+  "ms_max": 18.4
+ },
+ "grid size 20 dist 116": {
+  "pieces": 841,
+  "ms_median": 80.8,
+  "ms_max": 358.6
+ },
+ "grid size 4 dist 116": {
+  "pieces": 41,
+  "ms_median": 0.4,
+  "ms_max": 6.1
+ }
+}
