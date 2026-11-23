@@ -133,6 +133,7 @@ import type { ChangeOptions } from './forms';
 import { builtInPlugins } from './plugins/built-in';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
 import type { SearchActionHost, SearchStartMod } from './search/actions';
+import { type AskAiDraft, askAi, NO_KEY_LINE } from './search/ask-ai';
 import type { SearchClient } from './search/client';
 import type { ResultPreviewHost } from './search/ResultPreview';
 import type { SearchActionOptions } from './search/SearchPanel';
@@ -402,7 +403,7 @@ type DialogState =
   | { type: 'whats-new'; version: string; notes?: string }
   | { type: 'welcome' }
   | { type: 'modpacks' }
-  | { type: 'ai-start'; parent?: string }
+  | { type: 'ai-start'; parent?: string; draft?: AskAiDraft }
   | {
       type: 'paint';
       namespace: string;
@@ -1696,6 +1697,8 @@ export function App({
   const [paletteOpen, setPaletteOpen] = useState(false);
   /** The open search panel (ADR 0124 D10): its door and the letters typed on the door. */
   const [searchDoor, setSearchDoor] = useState<{ door: SearchDoor; text: string } | null>(null);
+  /** The panel's one quiet line after Ask the AI helper opened nothing (B669's `askAi`). */
+  const [searchAiLine, setSearchAiLine] = useState<string | null>(null);
   /** Where focus was when the search opened; it goes back there on close (D11). */
   const searchReturn = useRef<HTMLElement | null>(null);
   /** The caret's location when the palette opened (for "Go to definition"). */
@@ -1808,15 +1811,26 @@ export function App({
       aiController.open();
       return;
     }
+    newProjectWithAi();
+  };
+  /**
+   * New project with the AI helper; `draft` (the search's Ask the AI helper, B669) fills the
+   * description and keeps its context block for the first message.
+   */
+  const newProjectWithAi = (draft?: AskAiDraft): void => {
+    const start = draft === undefined ? {} : { draft };
     // Very easy asks only the mod's name, in the folder its New uses (ADR 0125 D5).
     const ask = bridge.project.defaultParent;
     if (usePreferences.getState().mode !== 'very-easy' || ask === undefined) {
-      setDialog({ type: 'ai-start' });
+      setDialog({ type: 'ai-start', ...start });
       return;
     }
     ask().then(
-      (parent) => setDialog(parent === '' ? { type: 'ai-start' } : { type: 'ai-start', parent }),
-      () => setDialog({ type: 'ai-start' }),
+      (parent) =>
+        setDialog(
+          parent === '' ? { type: 'ai-start', ...start } : { type: 'ai-start', parent, ...start },
+        ),
+      () => setDialog({ type: 'ai-start', ...start }),
     );
   };
   /** Starts the new project (in `folder` when the dialog asked a name); a text is a failure. */
@@ -1824,6 +1838,7 @@ export function App({
     description: string,
     pictures: readonly AiPicture[] = [],
     folder?: string,
+    contextBlock?: string,
   ): Promise<string | null> => {
     if (aiController === null) {
       setDialog(null);
@@ -1841,7 +1856,14 @@ export function App({
     if (session.snapshot.project === null) return null;
     aiController.open();
     // A whole new mod runs as a build (ADR 0125 D2).
-    void aiController.send(description, [], pictures, { size: 'build' });
+    void aiController.send(
+      description,
+      contextBlock === undefined ? [] : [contextBlock],
+      pictures,
+      {
+        size: 'build',
+      },
+    );
     return null;
   };
   /** The helper's tab: opened or closed with a mod open, New project with the AI helper without. */
@@ -2722,19 +2744,6 @@ export function App({
         direct,
       );
     });
-  /** **Ask the AI helper** with the words (ADR 0124 D12): opened, prefilled, not sent. */
-  const askAiWith = (text?: string): void => {
-    if (aiController === null) {
-      setMessage({ kind: 'error', text: 'The AI helper is not available.' });
-      return;
-    }
-    if (session.snapshot.project === null) {
-      buildWithAi();
-      return;
-    }
-    aiController.open();
-    if (text !== undefined && text !== '') aiController.setDraft({ ...aiController.draft(), text });
-  };
   /** The sort of a vanilla id by the target's registries, as the search's vanilla layer has it. */
   const vanillaSort = (id: string): VanillaSort | undefined => {
     const client = searchClient.current;
@@ -2889,7 +2898,7 @@ export function App({
       }
       setDialog({ type: 'new-texture', namespace: ownNamespace });
     },
-    askAi: askAiWith,
+    askAi: buildWithAi,
     copyText: (text) => {
       const clipboard = typeof navigator === 'undefined' ? undefined : navigator.clipboard;
       if (clipboard === undefined) {
@@ -2921,10 +2930,36 @@ export function App({
     (hit: SearchHit) => searchActions?.canFixSearchHit(session, hit) ?? false,
     [session],
   );
-  const onSearchAskAi = useCallback((text: string) => {
-    setSearchDoor(null);
-    searchHostRef.current.askAi(text);
-  }, []);
+  const newProjectWithAiRef = useRef(newProjectWithAi);
+  newProjectWithAiRef.current = newProjectWithAi;
+  /**
+   * **Ask the AI helper** (ADR 0124 D12): the helper's panel waits with the words and the hints,
+   * or New project with the AI helper with no mod; nothing is sent. When nothing opens (no key,
+   * no helper) the panel stays and shows the outcome's quiet line.
+   */
+  const onSearchAskAi = useCallback(
+    (text: string, hits: readonly SearchHit[]) => {
+      setSearchAiLine(null);
+      void askAi(text, hits, {
+        controller: aiController,
+        newProjectWithAi: (draft) => {
+          // The panel closes first, so New project with the AI helper never sits under it.
+          setSearchDoor(null);
+          newProjectWithAiRef.current(draft);
+        },
+      }).then((outcome) => {
+        if (outcome.status === 'unavailable') setSearchAiLine(outcome.line);
+        else setSearchDoor(null);
+      });
+    },
+    [aiController],
+  );
+  useEffect(() => {
+    if (searchDoor === null) setSearchAiLine(null);
+  }, [searchDoor]);
+  /** A third-party plugin's name for its search results (B670); built-in plugins have none. */
+  const searchPluginName = (id: string): string | undefined =>
+    session.externalPlugins.find((plugin) => plugin.id === id)?.name;
   const searchText = searchWords(uiMode);
   /** The large bar of the start surfaces (Home, the empty editor area). */
   const startSearchBar = (testId: string) => (
@@ -3918,8 +3953,14 @@ export function App({
                 ai={bridge.ai}
                 model={aiModel}
                 parent={dialog.parent ?? null}
+                {...(dialog.draft === undefined
+                  ? {}
+                  : {
+                      initialText: dialog.draft.text,
+                      contextLabel: dialog.draft.context?.label ?? null,
+                    })}
                 onStart={(description, pictures, folder) =>
-                  startWithAi(description, pictures, folder)
+                  startWithAi(description, pictures, folder, dialog.draft?.context?.block)
                 }
                 onKeyReady={() => void aiController?.refreshKey()}
                 onClose={() => setDialog(null)}
@@ -4237,6 +4278,12 @@ export function App({
                         onClose={closeSearch}
                         onWishlist={onSearchWish}
                         {...(aiController !== null && aiKeySet ? { onAskAi: onSearchAskAi } : {})}
+                        {...(searchAiLine !== null
+                          ? { askAiLine: searchAiLine }
+                          : aiController !== null && !aiKeySet
+                            ? { askAiLine: NO_KEY_LINE }
+                            : {})}
+                        pluginName={searchPluginName}
                         minecraftNames={cacheReady}
                         canFix={canFixSearch}
                       />

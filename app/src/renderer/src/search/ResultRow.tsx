@@ -56,6 +56,8 @@ export interface ResultRowProps {
   readonly hit: SearchHit;
   readonly understood: Understood;
   readonly mode: SearchMode;
+  /** The third-party plugin the result comes from (B670); absent for built-in results. */
+  readonly pluginName?: string | undefined;
   /** The option's id (the field's `aria-activedescendant`). */
   readonly id: string;
   readonly active: boolean;
@@ -71,6 +73,7 @@ export function ResultRow({
   hit,
   understood,
   mode,
+  pluginName,
   id,
   active,
   motion,
@@ -135,6 +138,11 @@ export function ResultRow({
         {text.behaviour !== null && (
           <span className="break-words text-muted text-xs" data-testid="search-row-behaviour">
             {text.behaviour}
+          </span>
+        )}
+        {pluginName !== undefined && !(text.detail ?? '').endsWith(`From ${pluginName}.`) && (
+          <span className="text-muted text-xs" data-testid="search-row-plugin">
+            From {pluginName}
           </span>
         )}
         {text.reason !== null && (

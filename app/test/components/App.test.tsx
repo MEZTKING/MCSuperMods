@@ -33,6 +33,7 @@ import {
 import { registerCaretReader } from '../../src/renderer/src/components/function-editor/caret';
 import { BLOCKBENCH_IMPORT_NOTE } from '../../src/renderer/src/components/ImportFilesDialog';
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
+import { HINTS_LEAD, NO_KEY_LINE } from '../../src/renderer/src/search/ask-ai';
 import { recordInstallBackups } from '../../src/renderer/src/session/install-backups';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { registerPendingEdit } from '../../src/renderer/src/session/pending-edits';
@@ -2167,6 +2168,75 @@ describe('App search doors (ADR 0124 D10, B667)', () => {
     await user.type(within(palette).getByTestId('command-palette-input'), 'search everything');
     await user.click(await within(palette).findByTestId('command-searchEverything'));
     expect(await screen.findByTestId('search-dialog')).toBeTruthy();
+  }, 40_000);
+});
+
+describe('App search: Ask the AI helper (ADR 0124 D12, B669)', () => {
+  it('with a mod opens the panel with the words and the hints, and starts no run', async () => {
+    const ai = fakeAi();
+    await renderApp({ ai });
+    const user = userEvent.setup();
+    await waitFor(() => expect(useAiPanelStore.getState().keyStatus?.set).toBe(true));
+    await act(() => {
+      fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    });
+    await user.type(await screen.findByTestId('search-field'), 'blue sword');
+    await screen.findByTestId('search-row-flow:weapon', {}, { timeout: 20_000 });
+    await user.click(await screen.findByTestId('search-ask-ai'));
+    await waitFor(() => expect(screen.queryByTestId('search-dialog')).toBeNull());
+    expect(useUiStore.getState().rightDock).toBe('assistant');
+    const input = (await screen.findByTestId('ai-input')) as HTMLTextAreaElement;
+    expect(input.value).toBe('blue sword');
+    expect((await screen.findByTestId('ai-context')).textContent).toContain(
+      'What the search found',
+    );
+    expect(ai.starts).toHaveLength(0);
+  }, 40_000);
+
+  it('with no mod opens New project with the AI helper and sends the hints with the first message', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const ai = fakeAi();
+    const harness = await renderApp({ ai, noProject: true, defaultParent: '/docs/MCSuperMods' });
+    const user = userEvent.setup();
+    await waitFor(() => expect(useAiPanelStore.getState().keyStatus?.set).toBe(true));
+    await user.click(await screen.findByTestId('home-search-field'));
+    await user.type(await screen.findByTestId('search-field'), 'blue sword');
+    await screen.findByTestId('search-row-flow:weapon', {}, { timeout: 20_000 });
+    await user.click(await screen.findByTestId('search-ask-ai'));
+    const dialog = await screen.findByTestId('ai-start-dialog');
+    expect(screen.queryByTestId('search-dialog')).toBeNull();
+    expect((within(dialog).getByTestId('ai-start-input') as HTMLTextAreaElement).value).toBe(
+      'blue sword',
+    );
+    expect(within(dialog).getByTestId('ai-start-context').textContent).toContain(
+      'What the search found',
+    );
+    expect(ai.starts).toHaveLength(0);
+    await user.type(within(dialog).getByTestId('ai-start-name'), 'Blue Mod');
+    await user.click(within(dialog).getByRole('button', { name: 'Make my mod' }));
+    await waitFor(() => expect(harness.session.snapshot.root).toBe('/docs/MCSuperMods/Blue Mod'));
+    await waitFor(() => expect(ai.starts.length).toBe(1));
+    const start = ai.starts[0];
+    expect(start?.text).toBe('blue sword');
+    expect(start?.mode).toBe('build');
+    // The project block first, then the search's hints.
+    expect(start?.contextBlocks).toHaveLength(2);
+    expect(start?.contextBlocks[1]).toContain(HINTS_LEAD);
+    expect(start?.contextBlocks[1]).toMatch(/- flow \S+ \(add_starter\)/);
+  }, 40_000);
+
+  it('without a key shows only the quiet line, no Ask the AI helper row', async () => {
+    const ai = fakeAi({ set: false, tail: null });
+    await renderApp({ ai });
+    const user = userEvent.setup();
+    await waitFor(() => expect(useAiPanelStore.getState().keyStatus?.set).toBe(false));
+    await act(() => {
+      fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    });
+    await user.type(await screen.findByTestId('search-field'), 'blue sword');
+    await screen.findByTestId('search-row-flow:weapon', {}, { timeout: 20_000 });
+    expect(screen.queryByTestId('search-ask-ai')).toBeNull();
+    expect(screen.getByTestId('search-ask-ai-line').textContent).toBe(NO_KEY_LINE);
   }, 40_000);
 });
 

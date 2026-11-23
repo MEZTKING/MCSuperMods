@@ -10512,3 +10512,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - Whether Try it should follow the game for bare names, weights and entry volume and pitch (a small behaviour change, best with a sim-parity case).
 - The formatting error in `packages/sim/test/loot/measured.test.ts`.
 - ADR 0121's remaining sound follow-ups: an e2e case for a streamed sound, the Prism, MultiMC and CurseForge asset store paths on a real install.
+## 2026-11-23 — executor — Ask the helper from search
+
+**What**
+- `App.tsx`: the search panel's **Ask the AI helper** now calls B669's `askAi(text, hits, { controller: aiController, newProjectWithAi })`; the stopgap `askAiWith` is gone (the search host's `askAi`, used by Home's helper tile and a result's Ask button, is `buildWithAi`). With a mod open the helper's panel waits with the words and the hints chip "What the search found", the search closes and no run starts; with no mod the search closes first and New project with the AI helper opens with the words as its description. When nothing opens the panel stays and shows the outcome's line (`searchAiLine`, cleared when the search closes).
+- `newProjectWithAi(draft?)` split out of `buildWithAi` (Very easy still asks the mod's name); the `ai-start` dialog state carries the draft; `startWithAi` takes an optional context block and sends it after the project block with the first message (`AiController.send` already takes context blocks, so `ai-controller.ts` is unchanged).
+- `AiStartDialog`: `initialText` and `contextLabel` (a small line "What the search found goes with it." under the description, `ai-start-context`).
+- `SearchPanel`: `askAiLine` (the one quiet line, `search-ask-ai-line`, shown once words are typed) and `pluginName(id)`; App passes `NO_KEY_LINE` when the helper has no key (the Ask row stays hidden without a key, as B667 had it) and the names from the session's external plugin states. `ResultRow`: a third-party result shows "From <name>" (`search-row-plugin`) unless its sentence already ends so (B670's doors); built-in results unchanged.
+- Tests: `App.test.tsx` (with a mod: the panel's input and context chip, no run; with no mod in Very easy: the dialog with the words and the context line, then the first message carries the hints block after the project block; without a key: the quiet line and no Ask row), `SearchPanel.test.tsx` (the plugin name on a third-party row only; the quiet line).
+- Checks: `pnpm lint`, `pnpm typecheck`; app `test/components/App.test.tsx`, `test/components/search`, `test/ai-*`, `test/components/ai` (`--maxWorkers=2`). No build or e2e (not needed for these unit-level paths; disk).
+
+**Decisions**
+- The quiet line needed a panel prop (`SearchPanel.tsx`, outside the named owner files); it is two props and one paragraph.
+- No key: the line stands in for the row from the start rather than after a press, since the row is hidden without a key.
+- The dialog says that the search's hints go with the first message instead of showing the block: the user sees what is sent in the helper's transcript.
+
+**Next**
+- B671: test ids `search-ask-ai-line`, `search-row-plugin`, `ai-start-context`.
+- B672: the guide can say Ask the AI helper from search fills New project with the AI helper when no mod is open.

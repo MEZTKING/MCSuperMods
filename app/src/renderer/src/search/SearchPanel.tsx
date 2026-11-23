@@ -86,6 +86,13 @@ export interface SearchPanelProps {
   readonly onWishlist?: (text: string) => void;
   /** **Ask the AI helper**, the last row (B669). */
   readonly onAskAi?: (text: string, hits: readonly SearchHit[]) => void;
+  /**
+   * The one quiet line about the helper (D12): without a key it stands where **Ask the AI
+   * helper** would, and after an ask that opened nothing it says why (`askAi`'s outcome).
+   */
+  readonly askAiLine?: string;
+  /** A third-party plugin's name by its id, shown on its results (B670); `undefined` for built-ins. */
+  readonly pluginName?: (id: string) => string | undefined;
   /** Whether Minecraft's own names are read from the user's jar (else the set-up line). */
   readonly minecraftNames?: boolean;
   /** Whether a Thing to fix has a one-step fix (**Fix it**). */
@@ -207,6 +214,8 @@ export function SearchPanel(props: SearchPanelProps) {
     onClose,
     onWishlist,
     onAskAi,
+    askAiLine,
+    pluginName,
     minecraftNames,
     canFix,
     delayMs = 60,
@@ -567,6 +576,11 @@ export function SearchPanel(props: SearchPanelProps) {
                     hit={option.hit}
                     understood={answer?.understood ?? { chips: [] }}
                     mode={mode}
+                    pluginName={
+                      option.hit.entry.plugin === undefined
+                        ? undefined
+                        : pluginName?.(option.hit.entry.plugin)
+                    }
                     active={option.id === activeId}
                     motion={motion}
                     onHover={() => setActiveId(option.id)}
@@ -620,6 +634,11 @@ export function SearchPanel(props: SearchPanelProps) {
           />
         )}
       </div>
+      {askAiLine !== undefined && asked !== '' && (
+        <p className="text-muted text-xs" data-testid="search-ask-ai-line">
+          {askAiLine}
+        </p>
+      )}
       {showsMinecraft && (
         <p className="text-muted text-xs" data-testid="search-minecraft-folder">
           {words.minecraftFolder}

@@ -39,6 +39,13 @@ export interface AiStartDialogProps {
    * mod's name and starts in `<parent>/<name>`. Omitted: the host asks for a folder.
    */
   parent?: string | null | undefined;
+  /** The description to start with (the search's Ask the AI helper; B669). */
+  initialText?: string | undefined;
+  /**
+   * The label of a context block the host sends with the first message (the search's hints),
+   * shown under the description so the user knows it goes too; `null` or absent for none.
+   */
+  contextLabel?: string | null | undefined;
   /**
    * Starts with the description and the pictures (screenshots) to send with it, in `folder`
    * when the dialog asked a name. A returned text is a failure shown in the dialog.
@@ -58,11 +65,13 @@ export function AiStartDialog({
   ai,
   model = DEFAULT_AI_SETTINGS.model,
   parent = null,
+  initialText = '',
+  contextLabel = null,
   onStart,
   onKeyReady,
   onClose,
 }: AiStartDialogProps) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(initialText);
   const [name, setName] = useState('');
   const [pictures, setPictures] = useState<AiPicture[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -177,6 +186,11 @@ export function AiStartDialog({
           void addPictures(files);
         }}
       />
+      {contextLabel !== null && (
+        <p className="text-muted text-xs" data-testid="ai-start-context">
+          {contextLabel} goes with it.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-1.5">
         <input
           ref={fileInput}

@@ -16,6 +16,7 @@ import {
   BLUE_SWORD_HIT,
   blueSword,
   CLOSEST,
+  entry,
   fakeQuery,
   GUIDE,
   hit,
@@ -418,5 +419,40 @@ describe('reduced motion', () => {
     } finally {
       matchMedia.mockRestore();
     }
+  });
+});
+
+describe('SearchPanel: third-party plugins and the helper line (B670, B669)', () => {
+  const plugged = (request: SearchRequest): SearchAnswer | null =>
+    request.text === 'howdy'
+      ? {
+          understood: { chips: [] },
+          confident: true,
+          best: [
+            hit(entry('entry:sample:greeting', 'template', 'Greeting', { plugin: 'sample' })),
+            hit(entry('template:item_sword', 'template', 'Sword template', { plugin: 'items' })),
+          ],
+          sections: [],
+        }
+      : NOTHING;
+
+  it("shows a third-party plugin's name on its row and nothing on a built-in one", async () => {
+    const { user, field } = setup({
+      table: plugged,
+      pluginName: (id) => (id === 'sample' ? 'Sample Plugin' : undefined),
+    });
+    await typed(user, field, 'howdy');
+    const own = await screen.findByTestId('search-row-entry:sample:greeting');
+    expect(within(own).getByTestId('search-row-plugin').textContent).toBe('From Sample Plugin');
+    const builtIn = screen.getByTestId('search-row-template:item_sword');
+    expect(within(builtIn).queryByTestId('search-row-plugin')).toBeNull();
+  });
+
+  it('shows the quiet helper line once words are typed, with no Ask the AI helper row', async () => {
+    const { user, field } = setup({ askAiLine: 'Add a key first.' });
+    expect(screen.queryByTestId('search-ask-ai-line')).toBeNull();
+    await typed(user, field, 'blue sword');
+    expect(screen.getByTestId('search-ask-ai-line').textContent).toBe('Add a key first.');
+    expect(screen.queryByTestId('search-ask-ai')).toBeNull();
   });
 });
