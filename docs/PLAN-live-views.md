@@ -1,6 +1,6 @@
 # Plan: Live views 2 to 4
 
-**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data; accepted with findings at B618, 2026-11-23), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds; accepted with findings at B633, 2026-11-23) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), the last Proposed. **Batches 2 and 3 are closed** (B600–B618, B619–B633); batch 4 is next, with its spike B634. Live world generation is closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md) accepted with findings). Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
+**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data; accepted with findings at B618, 2026-11-23), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds; accepted with findings at B633, 2026-11-23) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), the last Proposed. **Batches 2 and 3 are closed** (B600–B618, B619–B633); batch 4 is under way: its spike B634 has reported (answers below the limits). Live world generation is closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md) accepted with findings). Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
 
 Working plan for the rest of the user's standing rule of 2026-11-22, **Everything visible live** ([ADR 0119 D1](adr/0119-live-worldgen-preview.md)). The audit [`docs/LIVE-VIEW-AUDIT.md`](LIVE-VIEW-AUDIT.md) (B575) counted 118 kinds when this plan was written: 28 had a live view, 9 were exempt, 81 needed one. Fourteen of those were live world generation's (B574–B592, closed at B591 into ADR 0119) and now have one, so the audit stands at 42, 9 and 67. This plan closes the other 67 in three batches, plus the two surfaces that are not kinds: the Creator's flows that show nothing of what they make, and the AI helper's proposals, seen only as JSON. Written 2026-11-22 by the orchestrator at 505d7c3 (branch `ccr-d077e76e-4gnbx2`). Every "today" claim was checked against the code at that commit or is the audit's; what was not checked says "(verify at implementation)".
 
@@ -393,6 +393,20 @@ Batch 3 is closed (B633, 2026-11-23): its fact table 3F1–3F12, the spike's ans
 | 4L7 | **Mobs and chest contents in pieces are listed, not placed.** | Try it's limits. | A count; chests show Roll it from batch 2. | Play. |
 | 4L8 | **Big structures are cut in Try it.** | The area's size. | A line; the panel shows the whole. | — |
 | 4L9 | **Very large assemblies stop at a piece limit.** | Time. | "Stopped at 500 pieces." | Raise the limit in the view. |
+
+### The spike's answers (B634, 2026-11-23; evidence in `docs/reference/spikes/b634/`)
+
+Both targets assemble identically at the same seed (634); the differences are the registry rename `rule_test` to `rule_test_type` (26.4) and `corner_constraint`, read by 26.4 only. These change the briefs below:
+
+- **4L5** now reads: on a flat floor, terrain matching and all five terrain adaptations do nothing (reserve B648 covers both on generated land).
+- **B635, B638:** carry the `rule_test_type` rename and 26.4's `corner_constraint` (named only, 4L4).
+- **B636:** one binary path pattern, `^data/minecraft/structure/.+\.nbt$` (1,511 files, 4.2 MB, extracted in bulk in 67 to 326 ms; cache schema 6 to 7), not a new data folder; parse templates once.
+- **B637:** the rules as observed (no overlap but a child wholly inside its parent; horizontal distance from the start box's centre with truncating division, vertical from the start height; a piece at depth `size` fills its jigsaws from the fallback pool only; size 0 makes nothing; jigsaws shuffled then sorted by selection priority; expansion by the **parent's** placement priority only; the structure and start rotation from one draw); cache parsed templates per pool; tests for both distance references.
+- **B638:** 11 processor types; 18 rows exact, 4 about right (`block_age`, the two position predicates, `lava_submerged_block`), 3 named (`clear`, `passthrough`, `corner_constraint`).
+- **B639:** one expectation set serves both versions (recorded per version); one structure per structure set; the place commands for single checks only; tolerance exact for joins, overlaps, depth, distance and priority winners, statistical (|z| at most 4, means within 4 standard errors, at least 200 assemblies) for the rest.
+- **B642:** flatten, crop a window around the start piece, and show "N of M pieces shown" beside B558's `cut`.
+- **B644:** placement priority is described as the parent jigsaw's.
+- **4L9's 500-piece stop stays** (the largest vanilla structure measured: 340 pieces). A validator for a pool `size` of 0 is a follow-up outside this plan.
 
 ### Briefs
 
