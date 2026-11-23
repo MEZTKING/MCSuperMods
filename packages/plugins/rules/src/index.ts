@@ -49,6 +49,7 @@ export default definePlugin({
   id: 'msm.rules',
   apiVersion: '^1.0.0',
   contributes: {
+    searchData: () => import('./search').then((m) => m.SEARCH),
     elementKinds: [...rulesKinds],
     elementTemplates: [...rulesTemplates],
     validators: [...rulesValidators],
