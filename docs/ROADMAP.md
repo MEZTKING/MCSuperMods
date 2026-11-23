@@ -1053,3 +1053,13 @@ Not committed; each needs an ADR before work starts.
 - [ ] B715 split Structure and Template pool
 - [ ] B644 live views 4 words and guide
 - [ ] B645 close of live views 4
+
+### Other loaders and servers (proposed, user 2026-11-23: "slowly we can start adding support for other mod loaders that are needed that cant be done in fabric")
+
+To be planned by the orchestrator with an ADR before any code; one target at a time, each behind the same `Target`/exporter seams as Minecraft versions (version facts stay in `packages/targets`, loader facts beside them).
+
+- [ ] **Paper (server plugins)** first: community game modes (Lifesteal, Bed Wars-style, minigames, lobbies) run on Paper servers with no client mod; a Paper exporter for the games kinds, Rules and commands, and a small `msm_runtime` for Paper (Bukkit API) where a data pack is not enough (economy, disguises, per-player worlds). Spigot compatibility where free.
+- [ ] **NeoForge** second: the large modpack ecosystem; a NeoForge content jar and a NeoForge port of `msm_runtime` (shared Java core with per-loader seams, Mojang names as now), GameTests and parity on both loaders.
+- [ ] **Quilt**: check that Fabric jars load (they should); document, no separate exporter unless a gap is found.
+- [ ] **Forge (legacy)**: only for older Minecraft versions if a target for them is ever added; not for 26.x.
+- [ ] Per loader: what Fabric cannot do that it can (to be listed in the ADR from evidence), the Studios that change (export dialog, Play/Test in Minecraft, modpacks), and the coverage audit's new column.
