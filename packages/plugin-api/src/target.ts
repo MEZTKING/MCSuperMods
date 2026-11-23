@@ -1447,6 +1447,15 @@ export interface TargetFacts {
    * need them. Since 1.22.0 (ADR 0113 D8).
    */
   scoreboard?: ScoreboardFacts;
+  /**
+   * The sixteen dye colours as the game draws them on banners and shields: dye name (as in
+   * {@link BlockFacts.dyeColours}, without a namespace) to `#rrggbb` in lower case, the colour a
+   * white pattern layer is multiplied by. Measured on screen (ADR 0121 D5, the B619 spike, 3S6),
+   * because not every version has an accessor for it. Optional: a target without it leaves a
+   * view that needs the values to say so, and an external plugin reading it must handle its
+   * absence. Since 1.25.0.
+   */
+  dyes?: Readonly<Record<string, string>>;
 }
 
 /**

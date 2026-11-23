@@ -1726,6 +1726,29 @@ export const target: Target = {
   },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).
+  // dyes (ADR 0121 D5; plugin API 1.25.0): the sixteen dye colours a banner or shield pattern
+  // layer is multiplied by, in the order of `blocks.dyeColours`. Verified 2026-11-23 by the B619
+  // spike: 26.3's `DyeColor.getTextureDiffuseColor()` read by the spike's client GameTest
+  // (`docs/reference/spikes/b619/results/client-26.3.json`, `dyes.textureDiffuseColor`), and each
+  // banner layer of a white pattern measured on screen within 5.4 of 255 (3S6).
+  dyes: {
+    white: '#f9fffe',
+    orange: '#f9801d',
+    magenta: '#c74ebd',
+    light_blue: '#3ab3da',
+    yellow: '#fed83d',
+    lime: '#80c71f',
+    pink: '#f38baa',
+    gray: '#474f52',
+    light_gray: '#9d9d97',
+    cyan: '#169c9c',
+    purple: '#8932b8',
+    blue: '#3c44aa',
+    brown: '#835432',
+    green: '#5e7c16',
+    red: '#b02e26',
+    black: '#1d1d21',
+  },
   fabric: {
     loader: '0.20.1',
     api: '0.165.2+26.3',

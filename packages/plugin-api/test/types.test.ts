@@ -1124,4 +1124,14 @@ describe('1.0.0 additions', () => {
     const older: Target = { ...testTarget, javaProject: generator };
     expect(older.loadJavaProject).toBeUndefined();
   });
+  it('types the dye colour values on target facts (1.25.0)', () => {
+    expectTypeOf<TargetFacts['dyes']>().toEqualTypeOf<
+      Readonly<Record<string, string>> | undefined
+    >();
+    const facts: TargetFacts = { ...testTarget, dyes: { white: '#f9fffe', black: '#1d1d21' } };
+    expect(facts.dyes?.white).toBe('#f9fffe');
+    // A 1.24.0-shaped target without the values stays assignable.
+    const older: TargetFacts = { ...testTarget };
+    expect(older.dyes).toBeUndefined();
+  });
 });

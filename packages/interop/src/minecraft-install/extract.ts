@@ -7,9 +7,59 @@ import { isProjectRelativePath } from '@msm/plugin-api';
 import { unzipSync } from 'fflate';
 
 /**
+ * The texture folders below `assets/minecraft/textures/` the looks and sounds views read (ADR 0121
+ * D3; the B619 spike's 3S4 list): mob bodies, banner, shield, pot and equipment layers, paintings,
+ * trims and palettes, effect icons, particles, font pages and the GUI sprites of the locator bar,
+ * the effect frames and the creative screen. Every `.png` and `.png.mcmeta` below each, in
+ * subfolders too.
+ */
+const LOOKS_TEXTURE_FOLDERS = [
+  'entity/wolf',
+  'entity/cat',
+  'entity/pig',
+  'entity/cow',
+  'entity/chicken',
+  'entity/frog',
+  'entity/nautilus',
+  'entity/villager',
+  'entity/sulfur_cube',
+  'entity/banner',
+  'entity/shield',
+  'entity/decorated_pot',
+  'entity/equipment',
+  'painting',
+  'trims',
+  'palettes',
+  'mob_effect',
+  'particle',
+  'font',
+  'gui/sprites/hud/locator_bar_dot',
+  'gui/sprites/container/creative_inventory',
+  'gui/container/creative_inventory',
+] as const;
+
+/**
+ * The entries of the looks and sounds views (ADR 0121 D3, schema 6): the texture folders above,
+ * the locator bar and effect frame sprites, and the asset JSON and shader files of fonts, particle
+ * descriptions, waypoint styles, equipment, post effects and shaders. Sounds, `sounds.json` and
+ * the unifont archives are not in the jar: they come from the launcher's asset store on demand
+ * (`asset-index.ts`), never from this cache.
+ */
+export const LOOKS_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
+  new RegExp(
+    `^assets/minecraft/textures/(?:${LOOKS_TEXTURE_FOLDERS.join('|')})/.+\\.png(?:\\.mcmeta)?$`,
+  ),
+  /^assets\/minecraft\/textures\/gui\/sprites\/hud\/(?:locator_bar_[^/]+|effect_background[^/]*)\.png(?:\.mcmeta)?$/,
+  /^assets\/minecraft\/textures\/gui\/sprites\/container\/inventory\/effect_background[^/]*\.png(?:\.mcmeta)?$/,
+  /^assets\/minecraft\/(?:font|particles|waypoint_style|equipment|post_effect)\/.+\.json$/,
+  /^assets\/minecraft\/shaders\/.+\.(?:vsh|fsh|glsl|json)$/,
+]);
+
+/**
  * The jar entries previews need: vanilla models, block and item definitions, block and item
- * textures with their animation sidecars (`.png.mcmeta`), the English lang file and the vanilla
- * placed feature files (the only `data/` entries).
+ * textures with their animation sidecars (`.png.mcmeta`), the English lang file, the vanilla
+ * placed feature files (the only `data/` entries) and, since schema 6, the looks and sounds
+ * views' entries ({@link LOOKS_ASSET_PATTERNS}).
  */
 export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   /^assets\/minecraft\/(?:models|blockstates|items)\/.+\.json$/,
@@ -18,6 +68,7 @@ export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   /^assets\/minecraft\/lang\/en_us\.json$/,
   // Vanilla placed features, read by the World addition Studio's "Make my own copy".
   /^data\/minecraft\/worldgen\/placed_feature\/[^/]+\.json$/,
+  ...LOOKS_ASSET_PATTERNS,
 ]);
 
 /**

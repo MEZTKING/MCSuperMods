@@ -43,6 +43,7 @@ export const InvokeChannels = {
   minecraftWorldgenFiles: 'msm:v1:minecraft:worldgenFiles',
   minecraftDataFiles: 'msm:v1:minecraft:dataFiles',
   minecraftNames: 'msm:v1:minecraft:names',
+  minecraftAssetObject: 'msm:v1:minecraft:assetObject',
   minecraftInstallResourcePack: 'msm:v1:minecraft:installResourcePack',
   minecraftListWorlds: 'msm:v1:minecraft:listWorlds',
   minecraftInstallDataPack: 'msm:v1:minecraft:installDataPack',

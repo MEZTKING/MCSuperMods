@@ -18,6 +18,7 @@ import {
   type FileFilter,
   type LaunchNotice,
   LIVE_VIEW_DATA_FOLDERS,
+  LOOKS_DATA_FOLDERS,
   type PlatformAdapter,
   type RecentProject,
   type RecentProjectView,
@@ -276,10 +277,11 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     dataFoldersFor: (mcVersion) =>
       builtInTargets.find((bundle) => bundle.target.mcVersion === mcVersion)?.target.worldgen
         .terrainPreview?.dataFolders ?? null,
-    // ADR 0120 D11: the live views' folders, for every built-in target's version.
+    // ADR 0120 D11 and ADR 0121 D3: the live views' and the looks views' folders, for every
+    // built-in target's version.
     liveViewDataFoldersFor: (mcVersion) =>
       builtInTargets.some((bundle) => bundle.target.mcVersion === mcVersion)
-        ? LIVE_VIEW_DATA_FOLDERS
+        ? [...LIVE_VIEW_DATA_FOLDERS, ...LOOKS_DATA_FOLDERS]
         : null,
     resolvedBiomeLists: (mcVersion) =>
       readResolvedBiomeLists({ mcVersion, managedGameDir: playGameDir }),

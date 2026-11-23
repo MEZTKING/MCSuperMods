@@ -332,13 +332,39 @@ export interface AssetCacheInfoView {
   jarPath: string;
   /**
    * The `data/minecraft/` folders kept for the world generation preview (schema 4) and the live
-   * views (schema 5, {@link LIVE_VIEW_DATA_FOLDERS}), sorted.
+   * views (schema 5, {@link LIVE_VIEW_DATA_FOLDERS}; schema 6, {@link LOOKS_DATA_FOLDERS}), sorted.
    */
   dataFolders: string[];
   fileCount: number;
+  /** The total size of the cached files in bytes (schema 6): the cache size reported. */
+  byteCount: number;
   extractedAt: string;
-  schemaVersion: 5;
+  schemaVersion: 6;
 }
+
+/** Why an object of the launcher's asset store could not be read (ADR 0121 D3). */
+export type AssetObjectFailureView =
+  /** No launcher MSM found holds the version, or its store has no `assets/` folder. */
+  | 'not_set_up'
+  /** The version JSON or its asset index is missing or unreadable. */
+  | 'no_index'
+  /** The index does not list the key. */
+  | 'not_listed'
+  /** The key is not one MSM reads, or the file lies outside the store. */
+  | 'not_allowed'
+  /** Larger than 16 MB. */
+  | 'too_large'
+  /** Listed, but the file is not there. */
+  | 'missing';
+
+/**
+ * The answer of `minecraft:assetObject`: the bytes of one object of the user's own asset store
+ * (vanilla's `sounds.json`, a sound, a unifont archive), read on demand and never cached, copied
+ * or exported; or why not.
+ */
+export type AssetObjectAnswer =
+  | { ok: true; bytes: Uint8Array }
+  | { ok: false; reason: AssetObjectFailureView };
 
 /**
  * Mirrors `WorldgenFileMap` in `@msm/terrain` (ADR 0119 D4): registry folder key
@@ -494,6 +520,45 @@ export const LIVE_VIEW_DATA_FOLDERS: readonly string[] = Object.freeze([
   'tags/potion',
   'tags/timeline',
   'trial_spawner',
+]);
+
+/**
+ * The `data/minecraft/` folders of the client jar the looks and sounds views read (ADR 0121 D3;
+ * the B619 spike's list for B621), kept in the local cache beside {@link LIVE_VIEW_DATA_FOLDERS}
+ * from schema 6: the mob variants and sound variants, the sulfur cube archetypes, paintings,
+ * banner, trim and pot patterns, trim materials, jukebox songs, instruments, timelines and world
+ * clocks, and `block_sound_set` (the snapshot target only; a jar without it extracts nothing for
+ * it). Tags of paintings, banner patterns and instruments are already among the live views'
+ * folders.
+ *
+ * Not a version fact, for the reason {@link LIVE_VIEW_DATA_FOLDERS} gives; the files stay in the
+ * user's cache and are never committed, bundled, exported, written into a project or sent to
+ * the AI helper.
+ */
+export const LOOKS_DATA_FOLDERS: readonly string[] = Object.freeze([
+  'banner_pattern',
+  'block_sound_set',
+  'cat_sound_variant',
+  'cat_variant',
+  'chicken_sound_variant',
+  'chicken_variant',
+  'cow_sound_variant',
+  'cow_variant',
+  'decorated_pot_pattern',
+  'frog_variant',
+  'instrument',
+  'jukebox_song',
+  'painting_variant',
+  'pig_sound_variant',
+  'pig_variant',
+  'sulfur_cube_archetype',
+  'timeline',
+  'trim_material',
+  'trim_pattern',
+  'wolf_sound_variant',
+  'wolf_variant',
+  'world_clock',
+  'zombie_nautilus_variant',
 ]);
 
 /**
@@ -1208,6 +1273,14 @@ export interface PlatformAdapter {
      * always provides it; optional so that test doubles written before it may omit it.
      */
     readNames?(targetId: string): Promise<VanillaNames | null>;
+    /**
+     * One object of the launcher's asset store of `mcVersion` by its index key (ADR 0121 D3,
+     * B621): `minecraft/sounds.json`, `minecraft/sounds/**.ogg`, `minecraft/font/unifont*.zip` or
+     * `minecraft/font/include/unifont*.json`, at most 16 MB, read on demand from the user's own
+     * Minecraft folder and never cached, copied or exported. The preload always provides it;
+     * optional so that test doubles written before it may omit it.
+     */
+    readAssetObject?(mcVersion: string, key: string): Promise<AssetObjectAnswer>;
     /** Writes a resource pack zip into `<gameDir>/resourcepacks/` of the selected location. */
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
     /** Lists worlds in `<gameDir>/saves/` of the selected location, most recently played first. */

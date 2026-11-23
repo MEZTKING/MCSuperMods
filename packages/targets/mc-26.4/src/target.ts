@@ -1885,6 +1885,29 @@ export const target: Target = {
   // Verified 2026-11-05: meta.fabricmc.net lists Loader 0.20.1 for 26.4-snapshot-7, and
   // 0.165.4+26.4 is the newest Fabric API for 26.4 on maven.fabricmc.net (ADR 0037 D2). Loom
   // 1.19.3 handles the snapshot (B151).
+  // dyes (ADR 0121 D5; plugin API 1.25.0): the sixteen dye colours a banner or shield pattern
+  // layer is multiplied by, in the order of `blocks.dyeColours`. Verified 2026-11-23 by the B619
+  // spike: 26.4-snapshot-7's `DyeColor` has no colour accessor, so these are 26.3's
+  // values, which this version's banners draw within 5.2 of 255 on all sixteen dyes (3S6,
+  // `docs/reference/spikes/b619/results/3s5-3s6-looks-26.4.json`).
+  dyes: {
+    white: '#f9fffe',
+    orange: '#f9801d',
+    magenta: '#c74ebd',
+    light_blue: '#3ab3da',
+    yellow: '#fed83d',
+    lime: '#80c71f',
+    pink: '#f38baa',
+    gray: '#474f52',
+    light_gray: '#9d9d97',
+    cyan: '#169c9c',
+    purple: '#8932b8',
+    blue: '#3c44aa',
+    brown: '#835432',
+    green: '#5e7c16',
+    red: '#b02e26',
+    black: '#1d1d21',
+  },
   fabric: {
     loader: '0.20.1',
     api: '0.165.4+26.4',

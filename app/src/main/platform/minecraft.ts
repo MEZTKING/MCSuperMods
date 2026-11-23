@@ -3,7 +3,9 @@
  * asset extraction into `<msmHome>/cache/assets/<version>/` from any launcher's jar store,
  * cached asset reads for the renderer, the cached vanilla worldgen files of a version in one
  * answer for the live world generation preview (ADR 0119 D4), the cached vanilla data files of
- * some folders in one answer for the live views (ADR 0120 D11), installing resource packs into the
+ * some folders in one answer for the live views (ADR 0120 D11), one object of the launcher's asset
+ * store by its index key on demand (sounds and the unifont archives, ADR 0121 D3; never cached or
+ * copied), installing resource packs into the
  * selected game location, listing its worlds and installing data packs into a world's
  * `datapacks/` folder.
  *
@@ -19,11 +21,14 @@ import { realpath, stat } from 'node:fs/promises';
 import { dirname, normalize } from 'node:path';
 import {
   type AssetCacheInfo,
+  type AssetIndex,
   assetCacheDir,
   extractPreviewAssets,
+  findAssetStore,
   findClientJar,
   type GameLocation,
   type InstallFileSystem,
+  isAllowedAssetKey,
   isPathInside,
   isSafeSegment,
   joinInstallPath,
@@ -33,6 +38,8 @@ import {
   PREVIEW_ASSET_PATTERNS,
   pickVersionJar,
   readAssetCacheInfo,
+  readAssetIndex,
+  readAssetObject,
   readCachedDataFiles,
   readLevelName,
   readOutdatedAssetCacheInfo,
@@ -43,6 +50,7 @@ import { sha1Hex } from '@msm/interop/node';
 import { assertProjectRelativePath, isProjectRelativePath } from '@msm/plugin-api';
 import type { MinecraftProgress } from '../../shared/ipc-channels';
 import type {
+  AssetObjectAnswer,
   GameLocationList,
   MinecraftStatus,
   ResolvedBiomeListsView,
@@ -126,6 +134,14 @@ export interface MinecraftService {
    * large or not a JSON object.
    */
   readLangNames(mcVersion: string): Promise<VanillaNames | null>;
+  /**
+   * One object of the launcher's asset store by its index key (ADR 0121 D3; B619 3S1): vanilla's
+   * `sounds.json`, a sound file or a unifont archive of the installed `mcVersion`, read from the
+   * store of the launcher whose jar serves the version. Only the keys `isAllowedAssetKey` allows,
+   * at most `ASSET_OBJECT_MAX_BYTES`, and only a file whose real path lies inside the store's
+   * `objects/` folder. The bytes are answered and never cached, copied or exported.
+   */
+  readAssetObject(mcVersion: string, key: string): Promise<AssetObjectAnswer>;
   installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
   /**
    * Worlds in `<gameDir>/saves/` of the selected location that contain `level.dat`, most
@@ -223,6 +239,11 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
   const modifiedAt = deps.modifiedAt ?? defaultModifiedAt;
   const resolveReal = deps.realpath ?? ((path: string) => realpath(path));
   const running = new Map<string, Promise<AssetCacheInfo>>();
+  /**
+   * The asset indexes parsed lately, by path (a few milliseconds each to parse; B619 3S1). Only
+   * the index is kept, never an object it names.
+   */
+  const indexes = new Map<string, AssetIndex>();
   /** The world generation preview's folders (read by `readWorldgenFiles`). */
   const foldersFor = (mcVersion: string): readonly string[] =>
     deps.dataFoldersFor?.(mcVersion) ?? [];
@@ -528,6 +549,30 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
         throw new Error('The cached en_us.json is outside the asset cache.');
       }
       return parseLangNames(await fs.readFile(realFile), cache.info.version);
+    },
+
+    async readAssetObject(mcVersion, key) {
+      if (!isAllowedAssetKey(key)) return { ok: false, reason: 'not_allowed' };
+      let match: Awaited<ReturnType<typeof findClientJar>>;
+      try {
+        const { locations, selected } = await deps.locations.resolve();
+        match = await findClientJar(fs, locations, selected, mcVersion);
+      } catch {
+        match = null;
+      }
+      if (match === null) return { ok: false, reason: 'not_set_up' };
+      const found = await findAssetStore(fs, match.launcher, match.root, match.versionId);
+      if (!found.ok) return { ok: false, reason: found.reason };
+      let index = indexes.get(found.store.indexPath);
+      if (index === undefined) {
+        const read = await readAssetIndex(fs, found.store);
+        if (read === null) return { ok: false, reason: 'no_index' };
+        index = read;
+        indexes.set(found.store.indexPath, read);
+        // Two versions at most (the two targets).
+        while (indexes.size > 2) indexes.delete(indexes.keys().next().value as string);
+      }
+      return readAssetObject(fs, found.store, index, key);
     },
 
     async installResourcePack(fileName, data) {

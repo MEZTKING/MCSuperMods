@@ -5,6 +5,7 @@ import {
   AI_KEY_MAX,
   AI_TEXT_MAX,
   AI_TOOL_RESULT_MAX,
+  ASSET_OBJECT_MAX_BYTES,
   DATA_FILES_MAX,
   EventChannels,
   EXPORT_TREE_MAX_FILES,
@@ -374,8 +375,9 @@ const samples: Record<
         jarPath: '/home/a/.minecraft/versions/1.0/1.0.jar',
         dataFolders: ['loot_table', 'worldgen/noise'],
         fileCount: 3,
+        byteCount: 1024,
         extractedAt: 'now',
-        schemaVersion: 5,
+        schemaVersion: 6,
       },
       {
         version: '1.0',
@@ -383,8 +385,9 @@ const samples: Record<
         jarPath: '/j.jar',
         dataFolders: [],
         fileCount: 3,
+        byteCount: 1024,
         extractedAt: 'now',
-        schemaVersion: 4,
+        schemaVersion: 5,
       },
     ],
   },
@@ -956,6 +959,16 @@ const samples: Record<
     request: [undefined, { path: '/etc' }],
     response: [undefined, 'done'],
   },
+  [InvokeChannels.minecraftAssetObject]: {
+    request: [
+      { mcVersion: '1.0', key: 'minecraft/sounds/mob/made_up/hum1.ogg' },
+      { mcVersion: '1.0', key: 'minecraft/sounds/../lang/de_de.json' },
+    ],
+    response: [
+      { ok: true, bytes: new Uint8Array([1, 2, 3]) },
+      { ok: false, reason: 'outside' },
+    ],
+  },
   [InvokeChannels.minecraftNames]: {
     request: [{ targetId: 'mc-26.3' }, { targetId: '../mc-26.3' }],
     response: [
@@ -1175,6 +1188,50 @@ describe('IPC contract', () => {
     expect(answer({ 'worldgen/noise': {} })).toBe(true);
     expect(answer({ 'worldgen/noise': many })).toBe(false);
     expect(answer({ '': {} })).toBe(false);
+  });
+
+  it('bounds the asset store read: its keys, answers and size (ADR 0121 D3, B621)', () => {
+    const { request, response } = ipcContract[InvokeChannels.minecraftAssetObject];
+    const asks = (key: unknown) => request.safeParse({ mcVersion: '1.0', key }).success;
+    for (const key of [
+      'minecraft/sounds.json',
+      'minecraft/sounds/mob/wolf/bark1.ogg',
+      'minecraft/font/unifont_jp.zip',
+    ]) {
+      expect(asks(key), key).toBe(true);
+    }
+    for (const key of [
+      '',
+      '/minecraft/sounds.json',
+      'minecraft/sounds/../x.ogg',
+      'minecraft//x.ogg',
+      'minecraft/sounds/./x.ogg',
+      'realms/sounds.json',
+      'minecraft\\sounds.json',
+      'minecraft/Sounds.json',
+      `minecraft/${'a'.repeat(600)}`,
+    ]) {
+      expect(asks(key), key).toBe(false);
+    }
+    expect(request.safeParse({ mcVersion: '..', key: 'minecraft/sounds.json' }).success).toBe(
+      false,
+    );
+    expect(response.safeParse({ ok: true, bytes: new Uint8Array(4) }).success).toBe(true);
+    expect(
+      response.safeParse({ ok: true, bytes: new Uint8Array(ASSET_OBJECT_MAX_BYTES + 1) }).success,
+    ).toBe(false);
+    for (const reason of [
+      'not_set_up',
+      'no_index',
+      'not_listed',
+      'not_allowed',
+      'too_large',
+      'missing',
+    ]) {
+      expect(response.safeParse({ ok: false, reason }).success, reason).toBe(true);
+    }
+    expect(response.safeParse({ ok: false, reason: 'nope' }).success).toBe(false);
+    expect(response.safeParse({ ok: true, bytes: 'x' }).success).toBe(false);
   });
 
   it('bounds the live views data answer and its folder keys (ADR 0120 D11)', () => {

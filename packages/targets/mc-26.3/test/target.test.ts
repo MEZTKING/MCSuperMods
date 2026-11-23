@@ -896,4 +896,27 @@ describe('target mc-26.3', () => {
     expect(forms?.worldborder_set_over_seconds).toBe('worldborder set <width> <seconds>s');
     expect(forms?.random_value).toBe('random value <min>..<max> [sequence]');
   });
+  it('sets the dye colour values B619 measured (ADR 0121 D5; plugin API 1.25.0)', async () => {
+    const dyes = target.dyes ?? {};
+    // Keyed by the dye names, in the game's order.
+    expect(Object.keys(dyes)).toEqual([...(target.blocks?.dyeColours ?? [])]);
+    for (const value of Object.values(dyes)) expect(value).toMatch(/^#[0-9a-f]{6}$/);
+    expect(dyes.white).toBe('#f9fffe');
+    expect(dyes.black).toBe('#1d1d21');
+    expect(dyes.red).toBe('#b02e26');
+    // The spike's reading of 26.3's DyeColor (26.4 has no accessor and draws the same values).
+    const spike = JSON.parse(
+      await readFile(
+        new URL('../../../../docs/reference/spikes/b619/results/client-26.3.json', import.meta.url),
+        'utf8',
+      ),
+    ) as { 'dyes.textureDiffuseColor': Record<string, string> };
+    const measured = Object.fromEntries(
+      Object.entries(spike['dyes.textureDiffuseColor']).map(([name, hex]) => [
+        name,
+        hex.toLowerCase(),
+      ]),
+    );
+    expect(dyes).toEqual(measured);
+  });
 });

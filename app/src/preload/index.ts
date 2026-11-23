@@ -143,6 +143,8 @@ const bridge: MsmBridge = {
     readDataFiles: (mcVersion, folders) =>
       ipcRenderer.invoke(InvokeChannels.minecraftDataFiles, { mcVersion, folders: [...folders] }),
     readNames: (targetId) => ipcRenderer.invoke(InvokeChannels.minecraftNames, { targetId }),
+    readAssetObject: (mcVersion, key) =>
+      ipcRenderer.invoke(InvokeChannels.minecraftAssetObject, { mcVersion, key }),
     installResourcePack: (fileName, data) =>
       ipcRenderer.invoke(InvokeChannels.minecraftInstallResourcePack, { fileName, data }),
     listWorlds: () => ipcRenderer.invoke(InvokeChannels.minecraftListWorlds),

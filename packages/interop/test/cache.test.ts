@@ -38,7 +38,9 @@ describe('asset cache', () => {
     const dir = assetCacheDir('/msm', '9.1');
     const files = extractPreviewAssets(buildSyntheticJar());
     const info = await writeAssetCache(fs, dir, files, INFO);
-    expect(info).toEqual({ ...INFO, fileCount: 8, schemaVersion: 5 });
+    const byteCount = files.reduce((sum, file) => sum + file.data.byteLength, 0);
+    expect(byteCount).toBeGreaterThan(0);
+    expect(info).toEqual({ ...INFO, byteCount, fileCount: 8, schemaVersion: 6 });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);
     for (const [path, data] of Object.entries(KEPT_ENTRIES)) {
       expect(await fs.readFile(`${dir}/${path}`)).toEqual(data);
@@ -60,7 +62,7 @@ describe('asset cache', () => {
     const fs = new MemoryInstallFileSystem();
     fs.seed('/c/cache.json', 'not json');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 6 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 7 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
     // A Phase 1 cache (schema 1) has no `.png.mcmeta` sidecars, so it is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 1 }));
@@ -74,11 +76,18 @@ describe('asset cache', () => {
     // Schema 4 has no live view data folders (ADR 0120 D11), so it too is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 4 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    // Schema 5 has no looks and sounds views' textures (ADR 0121 D3), so it too is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 5 }));
-    expect(await readAssetCacheInfo(fs, '/c')).toEqual({ ...INFO, fileCount: 1, schemaVersion: 5 });
-    // Schema 5 needs the jar path and the folder list.
-    const { jarPath: _jarPath, ...withoutJarPath } = INFO;
-    fs.seed('/c/cache.json', JSON.stringify({ ...withoutJarPath, fileCount: 1, schemaVersion: 5 }));
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    const current = { ...INFO, byteCount: 10, fileCount: 1, schemaVersion: 6 };
+    fs.seed('/c/cache.json', JSON.stringify(current));
+    expect(await readAssetCacheInfo(fs, '/c')).toEqual(current);
+    // Schema 6 needs the jar path, the folder list and the byte count.
+    const { jarPath: _jarPath, ...withoutJarPath } = current;
+    fs.seed('/c/cache.json', JSON.stringify(withoutJarPath));
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    const { byteCount: _byteCount, ...withoutByteCount } = current;
+    fs.seed('/c/cache.json', JSON.stringify(withoutByteCount));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
     fs.seed('/c/cache.json', '[]');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
@@ -131,7 +140,7 @@ describe('outdated asset caches (ADR 0119 D4)', () => {
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
     await writeAssetCache(fs, '/c', [], INFO);
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 0, schemaVersion: 6 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 0, schemaVersion: 7 }));
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
     fs.seed('/c/cache.json', JSON.stringify({ version: 1, jarSha1: 'x', schemaVersion: 2 }));
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();

@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.25.0 — 2026-11-23
+
+The dye colour values (ADR 0121 D5, measured by the B619 spike). `API_VERSION` is `1.25.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `TargetFacts.dyes?: Readonly<Record<string, string>>`: the sixteen dyes, name (`white` ... `black`, the names of `BlockFacts.dyeColours`) to `#rrggbb` in lower case, the colour a banner or shield pattern layer is multiplied by. Measured on screen on both built-in targets, which draw the same values; the snapshot target has no accessor for them in the game's code, so the values are a fact rather than something read from the jar.
+
+### Migration from 1.24.0
+
+None. A plugin that reads `dyes` should declare `^1.25.0` or handle its absence.
+
 ## 1.24.0 — 2026-11-23
 
 The Java project generator loaded on first use (ADR 0126). `API_VERSION` is `1.24.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

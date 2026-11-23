@@ -31,19 +31,26 @@ export interface AssetCacheInfo {
    */
   dataFolders: string[];
   fileCount: number;
+  /**
+   * The total size of the cached files in bytes, `cache.json` left out (schema 6): the cache
+   * size the host reports.
+   */
+  byteCount: number;
   /** ISO 8601 timestamp supplied by the caller. */
   extractedAt: string;
   /**
    * Cache layout version. 2 added `.png.mcmeta` sidecars (B43), 3 the placed features, 4 the
    * worldgen data folders with `jarPath` and `dataFolders` (B577), 5 the live views' data
    * folders: loot tables, advancements, predicates, enchantments, dialogs and the other tags
-   * (B603, ADR 0120 D11); a cache with any other value is invalid, so it is extracted again.
+   * (B603, ADR 0120 D11), 6 the looks and sounds views' textures, asset JSON, shaders and data
+   * folders with `byteCount` (B621, ADR 0121 D3); a cache with any other value is invalid, so it
+   * is extracted again.
    */
   schemaVersion: typeof ASSET_CACHE_SCHEMA_VERSION;
 }
 
 /** The current {@link AssetCacheInfo.schemaVersion}. */
-export const ASSET_CACHE_SCHEMA_VERSION = 5;
+export const ASSET_CACHE_SCHEMA_VERSION = 6;
 
 /**
  * What an older or otherwise outdated `cache.json` still tells: the version and jar it came
@@ -229,7 +236,7 @@ export async function writeAssetCache(
   fs: InstallFileSystem,
   dir: string,
   files: readonly ExtractedFile[],
-  info: Omit<AssetCacheInfo, 'fileCount' | 'schemaVersion'>,
+  info: Omit<AssetCacheInfo, 'byteCount' | 'fileCount' | 'schemaVersion'>,
 ): Promise<AssetCacheInfo> {
   for (const file of files) {
     if (!isProjectRelativePath(file.path) || file.path === ASSET_CACHE_INFO_FILE) {
@@ -249,6 +256,7 @@ export async function writeAssetCache(
     await fs.writeFile(joinInstallPath(dir, ...file.path.split('/')), file.data);
   }
   const complete: AssetCacheInfo = {
+    byteCount: files.reduce((sum, file) => sum + file.data.byteLength, 0),
     dataFolders: [...new Set(info.dataFolders)].sort(),
     extractedAt: info.extractedAt,
     fileCount: files.length,
@@ -277,6 +285,9 @@ function isAssetCacheInfo(value: unknown): value is AssetCacheInfo {
     typeof record.fileCount === 'number' &&
     Number.isInteger(record.fileCount) &&
     record.fileCount >= 0 &&
+    typeof record.byteCount === 'number' &&
+    Number.isInteger(record.byteCount) &&
+    record.byteCount >= 0 &&
     record.schemaVersion === ASSET_CACHE_SCHEMA_VERSION
   );
 }

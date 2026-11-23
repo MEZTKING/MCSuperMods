@@ -113,8 +113,9 @@ const assetCacheInfo = z
     jarPath: z.string().max(4096),
     dataFolders: z.array(z.string().max(256)).max(256),
     fileCount: z.number().int().nonnegative(),
+    byteCount: z.number().int().nonnegative(),
     extractedAt: z.string(),
-    schemaVersion: z.literal(5),
+    schemaVersion: z.literal(6),
   })
   .strict();
 /** The most worldgen files one answer may carry (both targets have about 1,300; ADR 0119 D4). */
@@ -164,6 +165,41 @@ const vanillaDataFiles = z
     fileCount: z.number().int().nonnegative().max(DATA_FILES_MAX),
   })
   .strict();
+/** The largest object `minecraft:assetObject` answers (16 MB; B619 3S1). */
+export const ASSET_OBJECT_MAX_BYTES = 16 * 1024 * 1024;
+/** An asset store index key such as `minecraft/sounds/mob/wolf/bark1.ogg`; main checks it further. */
+const assetKey = z
+  .string()
+  .min(1)
+  .max(512)
+  .regex(/^minecraft\/[a-z0-9_./-]+$/)
+  .refine((value) => !value.split('/').some((part) => part === '' || /^\.+$/.test(part)), {
+    message: 'Not an index key',
+  });
+const assetObjectAnswer = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      bytes: z.custom<Uint8Array>(
+        (value) => value instanceof Uint8Array && value.byteLength <= ASSET_OBJECT_MAX_BYTES,
+        { message: 'Expected a Uint8Array of at most 16 MB' },
+      ),
+    })
+    .strict(),
+  z
+    .object({
+      ok: z.literal(false),
+      reason: z.enum([
+        'not_set_up',
+        'no_index',
+        'not_listed',
+        'not_allowed',
+        'too_large',
+        'missing',
+      ]),
+    })
+    .strict(),
+]);
 /** A built-in target id (main looks it up; an unknown one is refused there). */
 const knownTargetId = z
   .string()
@@ -1308,6 +1344,10 @@ export const ipcContract = {
   [InvokeChannels.minecraftNames]: {
     request: z.object({ targetId: knownTargetId }).strict(),
     response: vanillaNames.nullable(),
+  },
+  [InvokeChannels.minecraftAssetObject]: {
+    request: z.object({ mcVersion, key: assetKey }).strict(),
+    response: assetObjectAnswer,
   },
   [InvokeChannels.minecraftInstallResourcePack]: {
     request: z
