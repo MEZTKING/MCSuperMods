@@ -18,7 +18,7 @@ You should see "The key works. You can start." Only the last four characters of 
 
 ## 2. The typical cost against the real line
 
-The set-up card (and **Settings**, **AI helper**, **Model**) gives the typical cost of a first question for your model, for example about $0.27 on Claude Opus 5.5. Write that figure down. Then ask one small question, such as "Make a ruby sword", and let it finish.
+The set-up card (and **Settings**, **AI helper**, **Model**) gives the typical cost of a first question for your model, for example about $0.29 on Claude Opus 5.5 in November 2026. Write that figure down. Then ask one small question, such as "Make a ruby sword", and let it finish.
 
 You should see, under the conversation, a line such as "This chat has cost about $0.11 so far." Compare it with the card's figure and with your Anthropic account's usage page (it can take a few minutes to update). Write down all three. The line is an estimate, so a difference of a few cents is normal; one that is several times larger or smaller is worth reporting. See [What it costs](ai-helper.md#what-it-costs).
 

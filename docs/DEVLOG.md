@@ -10298,3 +10298,23 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - A small app brief: pickers for the seven games slot types in the Rule book Studio (Sonnet or Opus at medium), and the `can_break` / `can_place_on` fields with it or after.
 - B560's quirks fix (in progress at this close; `play.ts`, `ImportFilesDialog.tsx`, `built-in-commands.ts`) lands with its own DEVLOG entry.
 - Live views 3 carries on (its close, B633, updates the audit's rows); AI helper 2 and search everything continue.
+
+## 2026-11-23 — orchestrator — B693 close of AI helper clarity
+
+**What**
+- Reviewed ADR 0125 against the merged code of B680–B692 and the later topic briefs (B617, the B553 merge, B561, Try it's commands, B632): `packages/ai/src/prompt/` (26 topic files and `index.ts`), `models.ts`, `loop.ts`, `errors.ts`; `app/src/renderer/src/components/ai/`, `ai/schema-summary.ts`, `ai/context-blocks.ts`; the truth tests `app/test/ai-prompt-truth.test.ts` and its three siblings; e2e `ai-clarity-path` beside `ai-path`. ADR 0125 is **Accepted with findings (2026-11-23)**: each decision's outcome (D1–D12 done, D13 done in four words files, D14 unchanged), open items, the prompt budget's growth from 96,000 to 104,000 with the reason for each of the five raises, a recommendation for later plans, the plan's findings F1–F21 with their outcome (19 fixed, F17 fixed where a user reads it, F19 partly), and the vetoable defaults in its Status.
+- ADR 0041 marked amended by ADR 0125 (D6 modes, D7 limits, D8 the panel), in its Status and at each of the three decisions. ADR 0126's two mentions of the plan now name the closed plan and ADR 0125.
+- `docs/PLAN-ai-helper-2.md` deleted. DESIGN section 8, "AI helper": a paragraph **Made clear** (no renumbering; 19 H2). ROADMAP: the add-on "AI helper 2: clarity" done with its waves ticked, the later topics, reserves, the user's check and follow-ups; a Milestone Log row. HANDOFF: the plan closed (head, Where things stand, In progress, item 26's defaults, Next 3a); item 30 (B692's check list) stays in "Waiting on the user". `docs/LIVE-VIEW-AUDIT.md`: only the AI helper's proposals row (See it, the cards, Show me, the open naming items).
+- `docs/guide/ai-helper.md`'s cost: the app shows the current figure, worked out from the prompt and the price table; at the close `typicalCost` computes on Opus 5.5 about $0.29 for a first question and $0.05 for a follow-up (prefix 126,090 characters, 31,809 tokens at four characters a token; Sonnet 5.5 $0.15 and $0.02, Haiku 5.5 under a cent), checked by running `models.ts` under Node. `docs/guide/ai-helper-check.md`'s example figure moved from $0.27 to $0.29.
+- Root `CLAUDE.md` (ADR 0125 accepted, a sentence for AI helper 2, Next; 70 lines) and `docs/CLAUDE.md` status (44 lines).
+- Checks by hand: 19 H2 headings in DESIGN.md, the new anchors in ADR 0125 and every `DESIGN.md#` link resolve, no emojis, British English, line limits. No suite run (docs only).
+
+**Decisions**
+- The prompt budget stays at 104,000. Later plans keep a raise line per topic (topic size, prompt before and after, the orchestrator's confirmation), and the next raise that would pass 108,000 is preceded by a trim pass of `packages/ai/src/prompt/` back under 100,000 with the truth tests green (a vetoable default in ADR 0125's Status). The search plan's B669 and B672 take the next line. Topics behind a read tool (B695) stay after B694.
+- D13's words stay in four files (`ai-words.ts`, `ai-setup-words.ts`, `proposal-things.ts`'s `CARD_WORDS`, `AiPlanView.tsx`'s and `AiLimitsPopover.tsx`'s), each swept by tests; gathering them is a follow-up, not a fix.
+- The guide no longer prints a figure as fact: it says where the app shows the current one and gives November 2026's as an example, since every topic raise moves it.
+
+**Next**
+- Ask the user HANDOFF "Waiting on the user" items 26 (ADR 0125's vetoable defaults) and 30 (the twelve-step check with a real key, with the real cost of one question against the card's figure: `CHARS_PER_TOKEN` may be a third low).
+- A small app brief (Sonnet or Opus at medium) for ADR 0125's open items: See it's names in step with the cards and no ids in its rename line in Very easy, the Item Studio's ids after Show me in Very easy, the deprecated `setMode` and `conversation.plan` removed (with Explain's prefill), a panel line that chats are not kept after closing.
+- Reserves B694–B696 only on the user's word; search everything and Live views 3 continue.
