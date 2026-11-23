@@ -66,9 +66,13 @@ describe('the looks index (B620)', () => {
   });
 
   it('shows the frame with Not yet for a stub, and keeps B615 views where they were', async () => {
-    const View = liveViewComponent('minecraft:font');
+    const View = liveViewComponent('minecraft:jukebox_song');
     expect(View).not.toBeNull();
-    const element = { id: 'demo:f', kind: 'minecraft:font', data: {} } as unknown as Element;
+    const element = {
+      id: 'demo:f',
+      kind: 'minecraft:jukebox_song',
+      data: {},
+    } as unknown as Element;
     const project = {
       formatVersion: 1,
       name: 'D',
