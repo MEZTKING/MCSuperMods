@@ -24,8 +24,6 @@ import {
   forbiddenIn,
   statusWords,
   toolLine,
-  type UiMode,
-  WORDS_MODES,
   wordsFor,
 } from '../../src/renderer/src/components/ai/ai-words';
 import { lineDiff } from '../../src/renderer/src/components/ai/line-diff';
@@ -36,7 +34,6 @@ import {
   latestPlan,
   useAiStore,
 } from '../../src/renderer/src/store/ai-store';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import type { AppSettingsView } from '../../src/shared/platform';
 import { aiSession, aiStateFixtures, type FakeAi, fakeAi } from './ai-fixtures';
@@ -102,7 +99,6 @@ beforeEach(() => {
     focusRequest: 0,
   });
   useUiStore.setState({ snapshot: null, rightDock: 'problems' });
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 afterEach(cleanup);
@@ -364,54 +360,32 @@ describe('AiPanel', () => {
     expect(screen.queryByTestId('ai-context')).toBeNull();
   });
 
-  it.each(['advanced', 'easy'] as const)(
-    'shows the context block by mode, in the box and in the conversation (%s)',
-    async (mode) => {
-      usePreferences.setState({ mode });
-      const s = await setup();
-      await screen.findByTestId('ai-input');
-      const block = 'Problem `schema.type` on `demo:greet`: Expected a string.';
-      act(() =>
-        s.controller.setDraft({
-          text: 'Explain it.',
-          context: {
-            label: mode === 'advanced' ? 'Problem schema.type on demo:greet' : 'About: Greet',
-            block,
-          },
-        }),
-      );
-      await screen.findByTestId('ai-context');
-      if (mode === 'advanced') {
-        // Advanced shows the block as before, with nothing to open.
-        expect(screen.getByTestId('ai-context-block').textContent).toBe(block);
-        expect(screen.queryByTestId('ai-context-show')).toBeNull();
-      } else {
-        expect(screen.queryByTestId('ai-context-block')).toBeNull();
-        const show = screen.getByTestId('ai-context-show');
-        expect(show.textContent).toBe('See exactly what is sent');
-        expect(show.getAttribute('aria-expanded')).toBe('false');
-        await s.user.click(show);
-        expect(screen.getByTestId('ai-context-block').textContent).toBe(block);
-      }
-      await s.user.click(screen.getByTestId('ai-send'));
-      await waitFor(() => expect(s.ai.starts).toHaveLength(1));
-      const user = screen
-        .getByTestId('ai-transcript')
-        .querySelector<HTMLElement>('[data-role="user"]');
-      const sent = user?.querySelector<HTMLElement>('[data-testid$="-context-0"]');
-      if (mode === 'advanced') {
-        expect(sent?.tagName).toBe('DETAILS');
-        expect(sent?.textContent).toContain(SENT_CONTEXT_WORDS.advanced);
-        expect(sent?.textContent).toContain(block);
-      } else {
-        expect(sent?.textContent).toContain('About: Greet');
-        expect(sent?.textContent).not.toContain('demo:greet');
-        const show = sent?.querySelector<HTMLElement>('[data-testid$="-context-0-show"]');
-        if (show) await s.user.click(show);
-        expect(sent?.textContent).toContain(block);
-      }
-    },
-  );
+  it('shows the context block when asked, in the box and in the conversation', async () => {
+    const s = await setup();
+    await screen.findByTestId('ai-input');
+    const block = 'Problem `schema.type` on `demo:greet`: Expected a string.';
+    act(() =>
+      s.controller.setDraft({ text: 'Explain it.', context: { label: 'About: Greet', block } }),
+    );
+    await screen.findByTestId('ai-context');
+    expect(screen.queryByTestId('ai-context-block')).toBeNull();
+    const show = screen.getByTestId('ai-context-show');
+    expect(show.textContent).toBe('See exactly what is sent');
+    expect(show.getAttribute('aria-expanded')).toBe('false');
+    await s.user.click(show);
+    expect(screen.getByTestId('ai-context-block').textContent).toBe(block);
+    await s.user.click(screen.getByTestId('ai-send'));
+    await waitFor(() => expect(s.ai.starts).toHaveLength(1));
+    const user = screen
+      .getByTestId('ai-transcript')
+      .querySelector<HTMLElement>('[data-role="user"]');
+    const sent = user?.querySelector<HTMLElement>('[data-testid$="-context-0"]');
+    expect(sent?.textContent).toContain('About: Greet');
+    expect(sent?.textContent).not.toContain('demo:greet');
+    const again = sent?.querySelector<HTMLElement>('[data-testid$="-context-0-show"]');
+    if (again) await s.user.click(again);
+    expect(sent?.textContent).toContain(block);
+  });
 
   it('labels a sent block in plain words only when its chip label holds no id', () => {
     rememberContextLabel('block one', 'About: Ruby Sword');
@@ -439,28 +413,20 @@ describe('AiPanel', () => {
     await act(async () => {
       s.controller.modelChanged('claude-sonnet-5-5');
     });
-    expect(lastMessage('notice').textContent).toBe('Start a new conversation to use Sonnet 5.5.');
+    expect(lastMessage('notice').textContent).toBe('Start a new chat to use Sonnet 5.5.');
   });
 });
 
 describe('AI helper panel helpers', () => {
-  it('summarises tool entries in Advanced', () => {
-    expect(toolLine({ name: 'read_element', input: { id: 'ruby:ruby_ore' } }, 'advanced')).toBe(
-      'Read `ruby:ruby_ore`',
-    );
+  it('summarises only the plain tool entries', () => {
+    expect(toolLine({ name: 'read_element', input: { id: 'ruby:ruby_ore' } })).toBeNull();
     expect(
-      toolLine({ name: 'create_elements', input: { elements: [{}, {}, {}, {}] } }, 'advanced'),
-    ).toBe('Proposed 4 elements');
-    expect(
-      toolLine(
-        {
-          name: 'run_checks',
-          input: { scope: 'pending' },
-          result: JSON.stringify({ counts: { error: 1, warning: 1, info: 0 } }),
-        },
-        'advanced',
-      ),
-    ).toBe('Checked: 2 problems');
+      toolLine({
+        name: 'run_checks',
+        input: { scope: 'pending' },
+        result: JSON.stringify({ counts: { error: 1, warning: 1, info: 0 } }),
+      }),
+    ).toBe('Checked: 2 problems to fix');
   });
 
   it('formats the usage line', () => {
@@ -506,35 +472,36 @@ function primaries(): HTMLElement[] {
   return [...screen.getByTestId('ai-panel').querySelectorAll<HTMLElement>('[data-primary="true"]')];
 }
 
-describe('AiPanel by state and mode', () => {
+describe('AiPanel by state', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  for (const mode of WORDS_MODES) {
-    it.each(AI_STATUS_STATES)(`draws the state line of %s in ${mode}`, async (state) => {
+  {
+    it.each(AI_STATUS_STATES)('draws the state line of %s', async (state) => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       vi.setSystemTime(12_000);
-      usePreferences.setState({ mode });
       await setup();
       const conversation = aiStateFixtures()[state];
       await show(conversation);
       const line = screen.getByTestId('ai-status');
       expect(line.dataset.state).toBe(state);
-      const expected = statusWords(conversationStatus(conversation, 12_000), mode);
+      const expected = statusWords(conversationStatus(conversation, 12_000));
       expect(screen.getByTestId('ai-status-text').textContent).toBe(expected.text);
       const buttons = within(line).queryAllByRole('button');
       expect(buttons.length).toBeLessThanOrEqual(1);
       if (expected.action !== null) expect(buttons[0]?.textContent).toBe(expected.action.label);
-      // No Chat or Build switch in any mode.
+      // No Chat or Build switch.
       expect(screen.queryByTestId('ai-mode-chat')).toBeNull();
       expect(screen.queryByTestId('ai-mode-build')).toBeNull();
       // Exactly one primary button (a waiting plan's or step's own, B686).
       expect(primaries()).toHaveLength(1);
       // The message box stays usable while the user's answer is awaited.
       expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).disabled).toBe(false);
-      expect(screen.getByTestId('ai-new-conversation').textContent).toBe(wordsFor(mode).newChat);
-      expect(screen.queryByTestId('ai-limits') !== null).toBe(mode === 'advanced');
+      expect(screen.getByTestId('ai-new-conversation').textContent).toBe(wordsFor().newChat);
+      // The run limits wait in the panel's More options (ADR 0130 D3).
+      expect(screen.queryByTestId('ai-limits')).toBeNull();
+      expect(screen.getByTestId('more-options-ai-panel')).toBeTruthy();
     });
   }
 
@@ -570,7 +537,6 @@ describe('AiPanel by state and mode', () => {
   });
 
   it('fills the box from an example ask without sending, and a whole mod runs as a build', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
     const s = await setup();
     const empty = await screen.findByTestId('ai-empty');
     expect(empty.textContent).toContain('What would you like to make?');
@@ -586,10 +552,9 @@ describe('AiPanel by state and mode', () => {
     expect(s.ai.starts[0]?.text).toMatch(/^Make a whole mod/);
   });
 
-  it.each(WORDS_MODES)(
-    'says a new chat is not kept after closing the app in %s (F19)',
-    async (mode) => {
-      usePreferences.setState({ mode });
+  it(
+    'says a new chat is not kept after closing the app (F19)',
+    async () => {
       await setup();
       const empty = await screen.findByTestId('ai-empty');
       const line = within(empty).getByTestId('ai-not-saved');
@@ -648,7 +613,6 @@ describe('AiPanel by state and mode', () => {
   });
 
   it('offers Show me, Undo and Put back on an Apply only when the host handles them', async () => {
-    usePreferences.setState({ mode: 'easy' });
     const onShowMe = vi.fn();
     const s = await setup(fakeAi(), {
       onShowMe,
@@ -725,31 +689,27 @@ describe('AiPanel by state and mode', () => {
     expect(primaries().map((button) => button.dataset.testid)).toEqual(['ai-send']);
   });
 
-  it.each(['very-easy', 'easy', 'advanced'] as const)(
-    'shows thinking and tool lines as %s allows',
-    async (mode: UiMode) => {
-      usePreferences.setState({ mode });
-      const s = await setup();
-      const runId = await sendMessage(s, 'Make a sword');
-      await s.ai.emit(runId, { type: 'thinking_delta', text: 'A sword it is.' });
-      await s.ai.emit(runId, { type: 'text_delta', text: 'Here it is.' });
-      await s.ai.emit(runId, {
-        type: 'tool_request',
-        request: {
-          requestId: 'r1',
-          toolUseId: 't1',
-          name: 'read_element',
-          input: { id: 'demo:greet' },
-        },
-      });
-      await s.ai.waitForResults(1);
-      expect(screen.queryAllByTestId(/^ai-thinking-/)).toHaveLength(mode === 'very-easy' ? 0 : 1);
-      const tools = screen
-        .getAllByTestId(/^ai-message-\d+$/)
-        .filter((entry) => entry.dataset.role === 'tool');
-      expect(tools).toHaveLength(mode === 'advanced' ? 1 : 0);
-    },
-  );
+  it('shows no thinking and no technical tool lines', async () => {
+    const s = await setup();
+    const runId = await sendMessage(s, 'Make a sword');
+    await s.ai.emit(runId, { type: 'thinking_delta', text: 'A sword it is.' });
+    await s.ai.emit(runId, { type: 'text_delta', text: 'Here it is.' });
+    await s.ai.emit(runId, {
+      type: 'tool_request',
+      request: {
+        requestId: 'r1',
+        toolUseId: 't1',
+        name: 'read_element',
+        input: { id: 'demo:greet' },
+      },
+    });
+    await s.ai.waitForResults(1);
+    expect(screen.queryAllByTestId(/^ai-thinking-/)).toHaveLength(0);
+    const tools = screen
+      .getAllByTestId(/^ai-message-\d+$/)
+      .filter((entry) => entry.dataset.role === 'tool');
+    expect(tools).toHaveLength(0);
+  });
 
   it('follows the newest entry, and says New below once the user has scrolled up', async () => {
     const s = await setup();

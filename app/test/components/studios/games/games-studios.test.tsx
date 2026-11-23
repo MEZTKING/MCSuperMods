@@ -26,13 +26,13 @@ import { ElementForm } from '../../../../src/renderer/src/studios/ElementForm';
 import { studios } from '../../../../src/renderer/src/studios/games/studios';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import {
-  AREA_VERY_EASY_SECTIONS,
-  OBJECTIVE_VERY_EASY_SECTIONS,
-  ONE_BLOCK_VERY_EASY_SECTIONS,
-  TEAM_VERY_EASY_SECTIONS,
-  TIMER_VERY_EASY_SECTIONS,
-  WORLD_SETUP_VERY_EASY_SECTIONS,
-} from '../../../../src/renderer/src/studios/very-easy';
+  AREA_COMMON_SECTIONS,
+  OBJECTIVE_COMMON_SECTIONS,
+  ONE_BLOCK_COMMON_SECTIONS,
+  TEAM_COMMON_SECTIONS,
+  TIMER_COMMON_SECTIONS,
+  WORLD_SETUP_COMMON_SECTIONS,
+} from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -150,7 +150,7 @@ const SAMPLES: readonly {
   {
     kind: 'msm:world_setup',
     studio: 'world-setup',
-    sections: WORLD_SETUP_VERY_EASY_SECTIONS,
+    sections: WORLD_SETUP_COMMON_SECTIONS,
     data: {
       world: { type: 'void', nether: 'vanilla', end: 'void' },
       start: { structure: 'demo:island', spawn: [2, 1, 2] },
@@ -164,14 +164,14 @@ const SAMPLES: readonly {
       },
     },
   },
-  { kind: 'msm:one_block', studio: 'one-block', sections: ONE_BLOCK_VERY_EASY_SECTIONS },
-  { kind: 'msm:team', studio: 'team', sections: TEAM_VERY_EASY_SECTIONS },
-  { kind: 'msm:objective', studio: 'objective', sections: OBJECTIVE_VERY_EASY_SECTIONS },
-  { kind: 'msm:timer', studio: 'timer', sections: TIMER_VERY_EASY_SECTIONS },
+  { kind: 'msm:one_block', studio: 'one-block', sections: ONE_BLOCK_COMMON_SECTIONS },
+  { kind: 'msm:team', studio: 'team', sections: TEAM_COMMON_SECTIONS },
+  { kind: 'msm:objective', studio: 'objective', sections: OBJECTIVE_COMMON_SECTIONS },
+  { kind: 'msm:timer', studio: 'timer', sections: TIMER_COMMON_SECTIONS },
   {
     kind: 'msm:area',
     studio: 'area',
-    sections: AREA_VERY_EASY_SECTIONS,
+    sections: AREA_COMMON_SECTIONS,
     data: {
       name: 'Arena',
       dimension: 'minecraft:overworld',

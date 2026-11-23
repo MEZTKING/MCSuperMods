@@ -21,13 +21,12 @@ import {
   planPictureWords,
   planWhat,
 } from '../../src/renderer/src/components/ai/AiPlanView';
-import { AiUsageLine, usageText } from '../../src/renderer/src/components/ai/AiUsageLine';
 import {
-  forbiddenIn,
-  type UiMode,
-  WORDS_MODES,
-  wordsFor,
-} from '../../src/renderer/src/components/ai/ai-words';
+  AiUsageLine,
+  usageDetail,
+  usageText,
+} from '../../src/renderer/src/components/ai/AiUsageLine';
+import { costDetails, forbiddenIn, wordsFor } from '../../src/renderer/src/components/ai/ai-words';
 import {
   type AiConversation,
   type AiPlanState,
@@ -85,7 +84,6 @@ function projectOf(elements: { id: string; kind: string; data: unknown }[]): Pro
 
 function renderPlan(
   conversation: AiConversation,
-  mode: UiMode,
   extra: { closed?: boolean; project?: Project | null; plan?: AiPlanState } = {},
 ) {
   const onDecide = vi.fn<(decision: PlanDecision) => void>();
@@ -98,7 +96,6 @@ function renderPlan(
       checkpoint={conversation.checkpoint}
       onDecide={onDecide}
       onCheckpoint={onCheckpoint}
-      mode={mode}
       conversation={conversation}
       project={extra.project ?? null}
       {...(extra.closed === undefined ? {} : { closed: extra.closed })}
@@ -120,24 +117,18 @@ function readable(root: HTMLElement): string[] {
 }
 
 describe('the plan (ADR 0125 wording table)', () => {
-  it.each(WORDS_MODES)('draws the waiting plan in %s', (mode) => {
-    renderPlan(planned(), mode);
+  it('draws the waiting plan', () => {
+    renderPlan(planned());
     const plan = screen.getByTestId('ai-plan');
-    const words = wordsFor(mode).plan;
+    const words = wordsFor().plan;
     expect(plan.textContent).toContain(words.heading);
     expect(screen.getByTestId('ai-plan-title').textContent).toBe('Ruby tools');
     const sword = screen.getByTestId('ai-plan-item-sword-name').textContent;
     const pick = screen.getByTestId('ai-plan-item-pick-name').textContent;
     const ore = screen.getByTestId('ai-plan-item-ore-name').textContent;
-    if (mode === 'advanced') {
-      expect(sword).toBe('Ruby Sword, a weapon (msm:item demo:ruby_sword)');
-      expect(pick).toBe('Ruby Pickaxe, a tool (msm:item demo:ruby_pickaxe)');
-      expect(ore).toBe('Ruby ore, a block (msm:block demo:ruby_ore)');
-    } else {
-      expect(sword).toBe('Ruby Sword, a weapon');
-      expect(pick).toBe('Ruby Pickaxe, a tool');
-      expect(ore).toBe('Ruby ore, a block');
-    }
+    expect(sword).toBe('Ruby Sword, a weapon');
+    expect(pick).toBe('Ruby Pickaxe, a tool');
+    expect(ore).toBe('Ruby ore, a block');
     expect(screen.getByTestId('ai-plan-build-all').textContent).toBe('Make all of it');
     expect(screen.getByTestId('ai-plan-step').textContent).toBe('One at a time');
     expect(screen.getByTestId('ai-plan-revise').textContent).toBe('Change the plan');
@@ -154,29 +145,24 @@ describe('the plan (ADR 0125 wording table)', () => {
     }
   });
 
-  it.each(['very-easy', 'easy'] as const)('shows no id or forbidden word in %s', (mode) => {
-    renderPlan(planned(), mode);
+  it('shows no id or forbidden word', () => {
+    renderPlan(planned());
     const found = readable(screen.getByTestId('ai-plan')).flatMap((text) => forbiddenIn(text));
     expect(found).toEqual([]);
   });
 
-  it('names the pictures by purpose, or by the id in Advanced', () => {
-    renderPlan(planned(), 'very-easy');
+  it('names the pictures by purpose', () => {
+    renderPlan(planned());
     expect(screen.getByTestId('ai-plan-pictures').textContent).toBe(
       'Pictures: The sword, Ruby ore',
     );
-    cleanup();
-    renderPlan(planned(), 'advanced');
-    expect(screen.getByTestId('ai-plan-pictures').textContent).toBe(
-      'Pictures: demo:item/ruby_sword, demo:block/ruby_ore',
-    );
-    expect(planPictureWords({ namespace: 'a', path: 'x/blue_gem', purpose: ' ' }, 'easy')).toBe(
+    expect(planPictureWords({ namespace: 'a', path: 'x/blue_gem', purpose: ' ' })).toBe(
       'Blue gem',
     );
   });
 
   it('answers Make all of it with the lines left in', async () => {
-    const s = renderPlan(planned(), 'very-easy');
+    const s = renderPlan(planned());
     await s.user.click(screen.getByTestId('ai-plan-item-ore-remove'));
     expect(screen.queryByTestId('ai-plan-item-ore')).toBeNull();
     await s.user.click(screen.getByTestId('ai-plan-build-all'));
@@ -188,14 +174,14 @@ describe('the plan (ADR 0125 wording table)', () => {
   });
 
   it('answers One at a time', async () => {
-    const s = renderPlan(planned(), 'easy');
+    const s = renderPlan(planned());
     await s.user.click(screen.getByTestId('ai-plan-step'));
     expect(s.onDecide.mock.calls[0]?.[0].decision).toBe('step');
     expect(s.onDecide.mock.calls[0]?.[0].items).toHaveLength(3);
   });
 
   it('opens "What should be different?" with Change the plan and sends the comments', async () => {
-    const s = renderPlan(planned(), 'very-easy');
+    const s = renderPlan(planned());
     await s.user.click(screen.getByTestId('ai-plan-revise'));
     expect(screen.getByTestId('ai-plan-change').textContent).toContain('What should be different?');
     const send = screen.getByTestId('ai-plan-revise-send') as HTMLButtonElement;
@@ -212,7 +198,7 @@ describe('the plan (ADR 0125 wording table)', () => {
   });
 
   it('disables Make all of it and One at a time when every line is left out', async () => {
-    const s = renderPlan(planned(), 'easy');
+    const s = renderPlan(planned());
     for (const id of ['sword', 'pick', 'ore']) {
       await s.user.click(screen.getByTestId(`ai-plan-item-${id}-remove`));
     }
@@ -232,7 +218,7 @@ describe('the plan (ADR 0125 wording table)', () => {
       { completedItemIds: ['sword', 'pick', 'ore'], summary: 'The tools are made.' },
       'r',
     );
-    renderPlan(stepping, 'very-easy');
+    renderPlan(stepping);
     expect(screen.getByTestId('ai-plan-item-sword').dataset.done).toBe('true');
     expect(screen.getByTestId('ai-plan-item-pick').dataset.done).toBe('true');
     expect(screen.getByTestId('ai-plan-item-ore').dataset.done).toBe('false');
@@ -242,7 +228,7 @@ describe('the plan (ADR 0125 wording table)', () => {
     const project = projectOf([
       { id: 'demo:ruby_ore', kind: 'msm:block', data: { display_name: 'Ruby Rock' } },
     ]);
-    renderPlan(stepping, 'very-easy', { project });
+    renderPlan(stepping, { project });
     expect(screen.getByTestId('ai-plan-item-ore').dataset.done).toBe('true');
     expect(screen.getByTestId('ai-plan-item-ore-name').textContent).toBe('Ruby Rock, a block');
   });
@@ -260,20 +246,20 @@ describe('the plan (ADR 0125 wording table)', () => {
     const plan = latestPlan(stepping);
     if (plan === null) throw new Error('No plan.');
     expect(plan.completed).toEqual(['sword', 'pick', 'ore']);
-    expect(planLines(plan, stepping, null, 'easy').map((line) => line.ticked)).toEqual([
+    expect(planLines(plan, stepping, null).map((line) => line.ticked)).toEqual([
       false,
       false,
       false,
     ]);
   });
 
-  it.each(WORDS_MODES)('asks Keep going or Stop at a step in %s', async (mode) => {
+  it('asks Keep going or Stop at a step', async () => {
     const stepping = reachCheckpoint(
       decidePlan(planned(), { decision: 'step', items: PLAN.items, comments: '' }),
       { completedItemIds: ['sword'], summary: 'The sword is made.' },
       'r',
     );
-    const s = renderPlan(stepping, mode);
+    const s = renderPlan(stepping);
     expect(screen.queryByTestId('ai-plan-build-all')).toBeNull();
     const step = screen.getByTestId('ai-checkpoint');
     expect(step.textContent).toContain('The sword is made.');
@@ -291,7 +277,7 @@ describe('the plan (ADR 0125 wording table)', () => {
       { completedItemIds: ['sword', 'ore'], summary: 'Made.' },
       'r',
     );
-    renderPlan(decided, 'very-easy', { closed: true });
+    renderPlan(decided, { closed: true });
     const line = screen.getByTestId('ai-plan');
     expect(line.dataset.closed).toBe('true');
     expect(line.textContent).toBe('Plan: Ruby tools. 1 of 3 made.');
@@ -302,7 +288,7 @@ describe('the plan (ADR 0125 wording table)', () => {
     const conversation = planned();
     const plan = latestPlan(conversation);
     if (plan === null) throw new Error('No plan.');
-    renderPlan(conversation, 'easy', {
+    renderPlan(conversation, {
       closed: true,
       plan: { ...plan, status: 'cancelled' },
     });
@@ -313,7 +299,7 @@ describe('the plan (ADR 0125 wording table)', () => {
     const conversation = planned();
     const plan = latestPlan(conversation);
     if (plan === null) throw new Error('No plan.');
-    renderPlan(conversation, 'easy', { plan: { ...plan, status: 'cancelled' } });
+    renderPlan(conversation, { plan: { ...plan, status: 'cancelled' } });
     expect(screen.getByTestId('ai-plan-state').textContent).toBe(PLAN_VIEW_WORDS.cancelled);
   });
 
@@ -365,44 +351,33 @@ const NORMAL: AiUsage = {
   requests: 4,
 };
 
-function renderCost(usage: AiUsage, mode: UiMode) {
-  return render(
-    <AiUsageLine usage={usage} model="claude-opus-5-5" checkedOn="2026-11-22" mode={mode} />,
-  );
+function renderCost(usage: AiUsage) {
+  return render(<AiUsageLine usage={usage} model="claude-opus-5-5" checkedOn="2026-11-22" />);
 }
 
 describe('the cost line (ADR 0125 D8)', () => {
-  it.each(WORDS_MODES)('shows nothing before the first message in %s', (mode) => {
-    const { container } = renderCost(ZERO, mode);
+  it('shows nothing before the first message', () => {
+    const { container } = renderCost(ZERO);
     expect(container.textContent).toBe('');
     expect(screen.queryByTestId('ai-usage')).toBeNull();
   });
 
-  it.each(['very-easy', 'easy'] as const)('says the cost as one sentence in %s', (mode) => {
-    renderCost(TINY, mode);
+  it('says the cost as one sentence', () => {
+    renderCost(TINY);
     expect(screen.getByTestId('ai-usage').textContent).toBe(
       'This chat has cost less than $0.01 so far.',
     );
     expect(screen.getByTestId('ai-usage').getAttribute('title')).toBeNull();
     cleanup();
-    renderCost(NORMAL, mode);
+    renderCost(NORMAL);
     const line = screen.getByTestId('ai-usage');
     expect(line.textContent).toBe('This chat has cost about $0.11 so far.');
     expect(readable(line).flatMap((text) => forbiddenIn(text))).toEqual([]);
   });
 
-  it('adds the tokens, requests and model in Advanced', () => {
-    renderCost(TINY, 'advanced');
-    expect(screen.getByTestId('ai-usage').textContent).toBe(
-      'This chat has cost less than $0.01 so far (10 in / 5 out, 1 request, Opus 5.5).',
-    );
-    cleanup();
-    renderCost(NORMAL, 'advanced');
-    const line = screen.getByTestId('ai-usage');
-    expect(line.textContent).toBe(
-      'This chat has cost about $0.11 so far (12,431 in / 3,210 out, 4 requests, Opus 5.5).',
-    );
-    expect(line.getAttribute('title')).toContain('prices checked on 2026-11-22');
+  it('gives the tokens, requests and model for the More options', () => {
+    expect(costDetails(TINY, 'claude-opus-5-5')).toBe('10 in / 5 out, 1 request, Opus 5.5.');
+    expect(usageDetail(NORMAL, '2026-11-22')).toContain('prices checked on 2026-11-22');
   });
 
   it('formats the usage in figures', () => {
@@ -415,21 +390,7 @@ describe('the cost line (ADR 0125 D8)', () => {
 describe('the run limits (ADR 0125 D10)', () => {
   const limits: AiRunLimits = DEFAULT_AI_SETTINGS.limits.chat;
 
-  it.each(['very-easy', 'easy'] as const)('are not shown in %s', (mode) => {
-    const { container } = render(
-      <AiLimitsPopover
-        limits={limits}
-        overridden={false}
-        onChange={() => {}}
-        onReset={() => {}}
-        mode={mode}
-      />,
-    );
-    expect(container.textContent).toBe('');
-    expect(screen.queryByTestId('ai-limits')).toBeNull();
-  });
-
-  it('say in Advanced that Settings holds the defaults and a stopped run carries on', async () => {
+  it('say that Settings holds the defaults and a stopped run carries on', async () => {
     const onChange = vi.fn<(limits: AiRunLimits) => void>();
     const onReset = vi.fn();
     render(
@@ -438,7 +399,6 @@ describe('the run limits (ADR 0125 D10)', () => {
         overridden={true}
         onChange={onChange}
         onReset={onReset}
-        mode="advanced"
       />,
     );
     const user = userEvent.setup();

@@ -20,7 +20,7 @@ import {
   withAdventureList,
 } from '../../../../src/renderer/src/studios/blocks-items/adventure-model';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { ITEM_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
+import { ITEM_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { renderOnStack, schemaState } from './harness';
@@ -205,7 +205,7 @@ describe('Item Studio: Adventure mode', () => {
   });
 
   it('shows no ids in Very easy', () => {
-    expect(ITEM_VERY_EASY_SECTIONS).toContain('item-adventure');
+    expect(ITEM_COMMON_SECTIONS).toContain('item-adventure');
     const subject = pick('demo:easy_pick');
     (subject.data as Record<string, Json>).components = {
       'msm:components': {

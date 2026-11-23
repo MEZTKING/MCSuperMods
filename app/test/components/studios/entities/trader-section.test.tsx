@@ -37,7 +37,7 @@ import {
   updateTradeChange,
 } from '../../../../src/renderer/src/studios/entities/trade-model';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { MOB_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
+import { MOB_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { projectOf, renderOnStack, schemaState } from '../blocks-items/harness';
@@ -358,7 +358,7 @@ describe('Storage and Shoulder sections', () => {
 
 describe('Very easy', () => {
   it('shows the Trader, Storage and Shoulder sections and hides the rest of the advanced ones', async () => {
-    expect(MOB_VERY_EASY_SECTIONS).toEqual(
+    expect(MOB_COMMON_SECTIONS).toEqual(
       expect.arrayContaining(['entity-trader', 'entity-storage', 'entity-shoulder']),
     );
     const before = usePreferences.getState().mode;

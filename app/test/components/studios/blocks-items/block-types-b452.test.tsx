@@ -47,7 +47,7 @@ import {
   withWaterloggable,
 } from '../../../../src/renderer/src/studios/blocks-items/WaterloggingSwitch';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { BLOCK_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
+import { BLOCK_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { projectOf, renderOnStack, schemaState } from './harness';
@@ -163,7 +163,7 @@ describe('Type picker groups and pictures', () => {
 
   it('lists the new types in the Very easy sections', () => {
     for (const id of ['block-cake', 'block-berry-bush', 'block-stem', 'block-weathering']) {
-      expect(BLOCK_VERY_EASY_SECTIONS).toContain(id);
+      expect(BLOCK_COMMON_SECTIONS).toContain(id);
     }
   });
 });

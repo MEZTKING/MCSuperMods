@@ -2,20 +2,18 @@
  * A map of the app's places and buttons (ADR 0125 D6, B682), so "where is my sword?" or "how do
  * I give this to a friend?" gets the app's own words. Every label is an exported constant; the
  * app's truth test (B683) finds each one in the app: in the constants the components export
- * (`MAKE_TILES`, `UI_MODES`, `PLAY_CONTROL_LABELS`, `DRAW`, `MAKE_WITH_AI`, `SHOWCASES`'s heading,
+ * (`MAKE_TILES`, `PLAY_CONTROL_LABELS`, `DRAW_IT_FOR_ME_BUTTON`, `MAKE_IT_WITH_AI`, `SHOWCASES`'s heading,
  * the command titles) or in the markup of the component named beside it.
  *
- * The review of the helper's own proposals is left out on purpose: its headings and buttons
- * change with the mode in AI helper 2's wave 2 (B685, B688), so the prompt does not name them.
+ * The review of the helper's own proposals is left out on purpose (B685, B688): the prompt does
+ * not name its headings and buttons. There is one view since ADR 0130.
  */
 import { quoted } from './core';
 
 /** The labels the map names, by place, with the component or constant each comes from. */
 export const APP_MAP_LABELS = Object.freeze({
-  /** `UI_MODES` labels (`store/preferences.ts`), the toolbar's mode switch. */
-  modes: Object.freeze(['Very easy', 'Easy', 'Advanced']),
-  /** Very easy's toolbar (`Toolbar.tsx` `VeryEasyToolbar`; Play and Reload from `PLAY_CONTROL_LABELS`). */
-  veryEasyToolbar: Object.freeze([
+  /** The toolbar (`Toolbar.tsx`; Play and Reload from `PLAY_CONTROL_LABELS`). */
+  toolbar: Object.freeze([
     'Home',
     'Undo',
     'Redo',
@@ -24,8 +22,12 @@ export const APP_MAP_LABELS = Object.freeze({
     'Reload',
     'Share my mod',
     'AI helper',
-    'Help',
   ]),
+  /** The disclosure at the bottom of each part of a thing (`MoreOptions.tsx`). */
+  moreOptions: 'More options',
+  /** A thing's last part and its raw text (`EditorArea.tsx`). */
+  whereItGoes: 'Where it goes',
+  editAsRawText: 'Edit as raw text',
   /** Home's headings (`MakeTiles.tsx`, `MyThings.tsx`). */
   makeSomething: 'Make something',
   myThings: 'My things',
@@ -37,21 +39,19 @@ export const APP_MAP_LABELS = Object.freeze({
   showcase: 'See what you can make',
   showcaseButtons: Object.freeze(['Make this', 'See the example']),
   showShowcase: 'Show what you can make',
-  /** Very easy's problems (`ThingsToFix.tsx`). */
+  /** The problems bar (`ThingsToFix.tsx`). */
   thingsToFix: 'Things to fix',
   nothingToFix: 'Nothing to fix',
   thingsToFixButtons: Object.freeze(['Show me', 'Fix it:', 'Show details']),
   /** Play's menu (`PLAY_CONTROL_LABELS`). */
   playMenu: Object.freeze(['New test world', 'Restart']),
-  /** The right-hand panel of Easy and Advanced (`RightDock.tsx`). */
+  /** The right-hand panel (`RightDock.tsx`). */
   dockTabs: Object.freeze(['Preview', 'Problems', 'AI helper']),
-  /** An element's header in Easy and Advanced (`EditorArea.tsx`). */
+  /** An open thing's header (`EditorArea.tsx`). */
   elementHeader: Object.freeze(['Edit in Creator', 'Preview', 'Ask AI']),
-  /** The picture buttons (`DrawButton.tsx` `DRAW`, `DRAW_IT_FOR_ME_BUTTON`; `MakeWithAiButton.tsx`). */
-  draw: 'Draw…',
-  drawVeryEasy: 'Draw it for me',
-  makeWithAi: 'Make with AI',
-  makeWithAiVeryEasy: 'Make it with AI',
+  /** The picture buttons (`DrawButton.tsx` `DRAW_IT_FOR_ME_BUTTON`; `MakeWithAiButton.tsx`). */
+  draw: 'Draw it for me',
+  makeWithAi: 'Make it with AI',
   setUpAiPictures: 'Set up AI pictures in Settings',
   /** Settings' section of the picture service (`AiPicturesSettingsSection.tsx`). */
   aiPictures: 'AI pictures',
@@ -59,7 +59,7 @@ export const APP_MAP_LABELS = Object.freeze({
   aiPictureService: 'Retro Diffusion',
   /** The Help menu's Wishlist (`main/menu.ts`) and the command palette's title. */
   wishlist: 'Wishlist…',
-  /** The Easy and Advanced export of the mod jar (`main/menu.ts`). */
+  /** The export of the mod jar (`main/menu.ts`). */
   exportJar: 'Export Fabric Mod Jar…',
 } as const);
 
@@ -101,4 +101,4 @@ export const APP_MAP_TILES = Object.freeze([
 
 const M = APP_MAP_LABELS;
 
-export const APP_MAP = `- The app, by its labels: the toolbar's mode switch has ${quoted(M.modes)}. Very easy's toolbar has ${quoted(M.veryEasyToolbar)}; Easy and Advanced have the full toolbar and menus ("${M.exportJar}" makes the jar). Home has "${M.makeSomething}", tiles that open the Creator (plain questions with a live picture) or another maker: ${quoted(APP_MAP_TILES)}; then "${M.myThings}", a card per thing, which opens it, with a menu of ${quoted(M.thingMenu)} (the first only for things a Creator flow made). An empty mod shows "${M.showcase}", clips with ${quoted(M.showcaseButtons)}, later folded under "${M.showShowcase}". "${M.surprise}" makes a random mod to start from. Very easy lists problems under "${M.thingsToFix}" ("${M.nothingToFix}" when none) with ${quoted(M.thingsToFixButtons)}; Easy and Advanced have the right-hand tabs ${quoted(M.dockTabs)}, and an element's header has ${quoted(M.elementHeader)} ("Preview" is the live view: models, pictures, the world map). "Play" saves, builds and starts Minecraft in a test world (its menu: ${quoted(M.playMenu)}); "Reload" sends changes into the running game and says when one needs a restart. "Share my mod" saves the mod as one file friends put in their mods folder next to Fabric API. Picture fields have "${M.draw}" ("${M.drawVeryEasy}" in Very easy), MSM's own drawing, and "${M.makeWithAi}" ("${M.makeWithAiVeryEasy}"), which asks the AI picture service set up in Settings, "${M.aiPictures}" (${M.aiPictureService} by default; its own key and cost; until then "${M.setUpAiPictures}"); you cannot make AI pictures yourself. What note_missing_feature notes is in the Wishlist (Help, "${M.wishlist}").`;
+export const APP_MAP = `- The app, by its labels: one view for everyone. The toolbar has ${quoted(M.toolbar)} beside New, Open, Save and the exports, and the menus have the rest ("${M.exportJar}" makes the jar). Every part of an open thing ends in "${M.moreOptions}" with its rarer settings, ids and raw values; its last part "${M.whereItGoes}" holds what uses it and, under its "${M.moreOptions}", "${M.editAsRawText}". Home has "${M.makeSomething}", tiles that open the Creator (plain questions with a live picture) or another maker: ${quoted(APP_MAP_TILES)}; then "${M.myThings}", a card per thing, which opens it, with a menu of ${quoted(M.thingMenu)} (the first only for things a Creator flow made). An empty mod shows "${M.showcase}", clips with ${quoted(M.showcaseButtons)}, later folded under "${M.showShowcase}". "${M.surprise}" makes a random mod to start from. Problems are listed under "${M.thingsToFix}" ("${M.nothingToFix}" when none) with ${quoted(M.thingsToFixButtons)}; the right-hand tabs are ${quoted(M.dockTabs)}, and an open thing's header has ${quoted(M.elementHeader)} ("Preview" is the live view: models, pictures, the world map). "Play" saves, builds and starts Minecraft in a test world (its menu: ${quoted(M.playMenu)}); "Reload" sends changes into the running game and says when one needs a restart. "Share my mod" saves the mod as one file friends put in their mods folder next to Fabric API. Picture fields have "${M.draw}", MSM's own drawing, and "${M.makeWithAi}", which asks the AI picture service set up in Settings, "${M.aiPictures}" (${M.aiPictureService} by default; its own key and cost; until then "${M.setUpAiPictures}"); you cannot make AI pictures yourself. What note_missing_feature notes is in the Wishlist (Help, "${M.wishlist}").`;

@@ -30,8 +30,6 @@ export interface AiProjectContext {
   hasModElement: boolean;
   /** A one-paragraph summary of the pending changeset, or an empty string. */
   pendingSummary: string;
-  /** The app's view, when known: what the user sees and how plainly the helper speaks (D6). */
-  view?: 'very-easy' | 'easy' | 'advanced';
   /** The mod's display name, when known. */
   modName?: string;
   /** The element open in the editor, when there is one. */
@@ -46,7 +44,6 @@ export function projectContextBlock(context: AiProjectContext): string {
   const lines = [
     '<project_context>',
     `Target: ${context.targetId} (Minecraft ${context.mcVersion})`,
-    ...(context.view === undefined ? [] : [`View: ${context.view}`]),
     ...(context.modName === undefined ? [] : [`Mod: ${context.modName}`]),
     ...(context.open === undefined
       ? []

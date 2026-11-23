@@ -33,7 +33,6 @@ import {
   PROMPT_FLOWS,
   PROMPT_KINDS,
   PROMPT_NOT_AVAILABLE,
-  PROMPT_VIEWS,
   type PromptAbsence,
   type PromptFlow,
   projectContextBlock,
@@ -72,7 +71,6 @@ import {
   structFields,
   type TruthSources,
   truthSources,
-  uiModesOf,
   WORLD_MAP_SOURCE_DIRS,
 } from './ai-prompt-truth-sources';
 
@@ -490,20 +488,17 @@ function checkAppMap(sources: TruthSources): string[] {
     if (value !== label) problems.push(`"${label}" is not ${name} of ${path} (${String(value)})`);
   };
   const M = APP_MAP_LABELS;
-  const uiModes = uiModesOf(file(F.preferences));
   const play = playLabelsOf(file(F.playStore));
-  // The mode switch: UI_MODES' labels, read from the store's source as written.
-  if (JSON.stringify(M.modes) !== JSON.stringify(uiModes.map((mode) => mode.label))) {
-    problems.push('the modes are not UI_MODES');
-  }
-  inMarkup(M.modes, F.preferences);
-  // Very easy's toolbar: its own buttons, Try it, and Play and Reload from PLAY_CONTROL_LABELS.
-  for (const label of M.veryEasyToolbar) {
+  // The toolbar: its own buttons, Try it, and Play and Reload from PLAY_CONTROL_LABELS.
+  for (const label of M.toolbar) {
     if (label === play.play || label === play.reload) {
       inMarkup(label, F.playStore);
     } else inMarkup(label, F.toolbar);
   }
-  if (!M.veryEasyToolbar.includes(play.play ?? '')) problems.push('no Play in the toolbar');
+  if (!M.toolbar.includes(play.play ?? '')) problems.push('no Play in the toolbar');
+  // More options and Where it goes (ADR 0130 D3, D4).
+  inMarkup(M.moreOptions, F.moreOptions);
+  inMarkup([M.whereItGoes, M.editAsRawText], F.editorArea);
   inMarkup(M.playMenu, F.playStore);
   if (M.playMenu[0] !== play.newWorld || M.playMenu[1] !== play.restart) {
     problems.push('the Play menu is not PLAY_CONTROL_LABELS');
@@ -521,10 +516,8 @@ function checkAppMap(sources: TruthSources): string[] {
   inMarkup([M.thingsToFix, M.nothingToFix, ...M.thingsToFixButtons], F.thingsToFix);
   inMarkup(M.dockTabs, F.rightDock);
   inMarkup(M.elementHeader, F.editorArea);
-  constant(M.draw, F.drawButton, 'DRAW');
-  constant(M.drawVeryEasy, F.drawButton, 'DRAW_IT_FOR_ME_BUTTON');
-  constant(M.makeWithAi, F.makeWithAiButton, 'MAKE_WITH_AI');
-  constant(M.makeWithAiVeryEasy, F.makeWithAiButton, 'MAKE_IT_WITH_AI');
+  constant(M.draw, F.drawButton, 'DRAW_IT_FOR_ME_BUTTON');
+  constant(M.makeWithAi, F.makeWithAiButton, 'MAKE_IT_WITH_AI');
   constant(M.setUpAiPictures, F.makeWithAiButton, 'SET_UP_AI_PICTURES');
   inMarkup(M.aiPictures, F.aiPicturesSettings);
   // The default picture service is the one the prompt names.
@@ -615,12 +608,8 @@ function checkTextures(sources: TruthSources): string[] {
   return problems;
 }
 
-function checkSpeaking(facts: PromptFacts, sources: TruthSources): string[] {
+function checkSpeaking(facts: PromptFacts, _sources: TruthSources): string[] {
   const problems: string[] = [];
-  const modes = uiModesOf(sources.files[SOURCE_FILES.preferences] ?? '').map((mode) => mode.mode);
-  if (modes.length === 0 || JSON.stringify(PROMPT_VIEWS) !== JSON.stringify(modes)) {
-    problems.push('the View values are not the modes of UI_MODES');
-  }
   const block = projectContextBlock({
     targetId: 'mc-26.3',
     mcVersion: '26.3',
@@ -628,7 +617,6 @@ function checkSpeaking(facts: PromptFacts, sources: TruthSources): string[] {
     kindCounts: { 'msm:item': 1 },
     hasModElement: true,
     pendingSummary: '',
-    view: 'easy',
     modName: 'Ruby Mod',
     open: { name: 'Ruby Sword', id: 'demo:ruby_sword', kind: 'msm:item' },
   });
@@ -969,7 +957,7 @@ describe('the prompt against the code (ADR 0125 D7)', () => {
     expect(checkTextures(sources)).toEqual([]);
   });
 
-  it("explains the context's View, Mod and Open lines as projectContextBlock writes them", () => {
+  it("explains the context's Mod and Open lines as projectContextBlock writes them", () => {
     expect(checkSpeaking(facts, sources)).toEqual([]);
   });
 

@@ -63,7 +63,7 @@ import {
 import { DISCOVERED_STUDIOS } from '../../../../src/renderer/src/studios/studio-registry';
 import type { StudioProps } from '../../../../src/renderer/src/studios/types';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { BLOCK_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
+import { BLOCK_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -205,7 +205,7 @@ describe('the ADR 0103 types in the model', () => {
       'block-flower-pot',
       'block-sounds',
     ]) {
-      expect(BLOCK_VERY_EASY_SECTIONS).toContain(id);
+      expect(BLOCK_COMMON_SECTIONS).toContain(id);
     }
   });
 });

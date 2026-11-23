@@ -19,7 +19,6 @@ import {
   PROMPT_FLOWS,
   PROMPT_KINDS,
   PROMPT_NOT_AVAILABLE,
-  PROMPT_VIEWS,
   projectContextBlock,
   RULES_PROMPT_CANCELLABLE,
   RULES_PROMPT_IDS,
@@ -832,7 +831,7 @@ describe('systemPrompt textures (ADR 0092 D15)', () => {
       const text = systemPrompt(mode);
       expect(text).toContain('Minecraft-like style');
       expect(text).toContain('never copied, traced or recoloured');
-      expect(text).toContain('"Draw…"');
+      expect(text).toContain('"Draw it for me"');
       expect(text).not.toMatch(/placeholder/i);
     }
   });
@@ -927,7 +926,9 @@ describe('the prompt in topic files (B681)', () => {
   // B669 moved it for search_library: a starter is found with the user's words before listing
   // (ADR 0124 D12).
   // ADR 0129 D4 moved it for Home's tile Change a Minecraft texture in the app map.
-  const PINNED = 'a63c6f4e37a8249b3f3d2e55b2ff47f1178c730ed74a16818ee1ca9f49cf260a';
+  // ADR 0130 moved it for one mode: the app map's toolbar, More options, Where it goes and Edit as
+  // raw text, the picture buttons' one set of words, and how to speak without a View line.
+  const PINNED = 'ee09a0ebaa70fc957e0368924d315c59f19914a82fcd9415675a9cfded2b4725';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -946,15 +947,13 @@ describe('the prompt in topic files (B681)', () => {
     const plain = projectContextBlock(base).split('\n');
     const full = projectContextBlock({
       ...base,
-      view: 'very-easy',
       modName: 'My Mod',
       open: { id: 'a:ruby', kind: 'msm:item', name: 'Ruby' },
     }).split('\n');
-    expect(full.length).toBe(plain.length + 3);
-    expect(full).toContain('View: very-easy');
+    expect(full.length).toBe(plain.length + 2);
     expect(full).toContain('Mod: My Mod');
     expect(full).toContain('Open: Ruby (a:ruby, msm:item)');
-    expect(full.filter((l) => !/^(View|Mod|Open): /.test(l))).toEqual(plain);
+    expect(full.filter((l) => !/^(Mod|Open): /.test(l))).toEqual(plain);
   });
 });
 
@@ -1037,8 +1036,7 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
     expect(rest).not.toMatch(/not available|still missing|not offered/i);
   });
 
-  it('says how to speak by the View, Mod and Open lines, and never "the changeset" (D6)', () => {
-    for (const view of PROMPT_VIEWS) expect(text, view).toContain(`"${view}"`);
+  it('says how to speak by the Mod and Open lines, and never "the changeset" (D6)', () => {
     for (const line of PROMPT_CONTEXT_LINES) expect(text, line).toContain(`"${line}"`);
     expect(text).toContain('"this" or "it" means');
     expect(text).toContain('no ids, kind ids, file paths, field names or JSON unless asked');
@@ -1053,7 +1051,6 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
       kindCounts: {},
       hasModElement: false,
       pendingSummary: '',
-      view: 'easy',
       modName: 'Gem Mod',
       open: { id: 'a:b', kind: 'msm:item', name: 'B' },
     });

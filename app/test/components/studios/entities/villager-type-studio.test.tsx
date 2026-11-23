@@ -39,9 +39,9 @@ import {
 } from '../../../../src/renderer/src/studios/picture-copies';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import {
-  ITEM_VERY_EASY_SECTIONS,
-  PROFESSION_VERY_EASY_SECTIONS,
-} from '../../../../src/renderer/src/studios/very-easy';
+  ITEM_COMMON_SECTIONS,
+  PROFESSION_COMMON_SECTIONS,
+} from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -227,12 +227,12 @@ describe('Boat section', () => {
 
 describe('Very easy lists', () => {
   it('keeps the job, pictures and trades of a profession, and the boat of an item', async () => {
-    expect(PROFESSION_VERY_EASY_SECTIONS).toEqual([
+    expect(PROFESSION_COMMON_SECTIONS).toEqual([
       'profession-job',
       'profession-pictures',
       'profession-trades',
     ]);
-    expect(ITEM_VERY_EASY_SECTIONS).toContain('item-boat');
+    expect(ITEM_COMMON_SECTIONS).toContain('item-boat');
     const before = usePreferences.getState().mode;
     usePreferences.setState({ mode: 'very-easy' as never });
     try {

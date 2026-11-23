@@ -101,7 +101,7 @@ export interface TruthSources {
 
 /** The app and engine files the checks read as text. */
 export const SOURCE_FILES = Object.freeze({
-  preferences: 'app/src/renderer/src/store/preferences.ts',
+  moreOptions: 'app/src/renderer/src/components/ui/MoreOptions.tsx',
   playStore: 'app/src/renderer/src/store/play-store.ts',
   toolbar: 'app/src/renderer/src/components/Toolbar.tsx',
   tiles: 'app/src/renderer/src/components/home/tiles.ts',
@@ -217,13 +217,6 @@ export function constBlock(source: string, name: string): string {
   if (start < 0) return '';
   const end = source.slice(start).search(/^[\]}]\)?;/m);
   return end < 0 ? source.slice(start) : source.slice(start, start + end);
-}
-
-/** `UI_MODES` of `store/preferences.ts`: each mode's id and label. */
-export function uiModesOf(source: string): { mode: string; label: string }[] {
-  return [...constBlock(source, 'UI_MODES').matchAll(/mode: '([a-z-]+)',\s*label: '([^']+)'/g)].map(
-    (match) => ({ mode: match[1] as string, label: match[2] as string }),
-  );
 }
 
 /** `PLAY_CONTROL_LABELS` of `store/play-store.ts`, by key. */

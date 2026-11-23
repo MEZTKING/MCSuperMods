@@ -25,7 +25,7 @@ import {
 } from '../../../../src/renderer/src/studios/entities/HabitsSection';
 import { MOVEMENT_MODES } from '../../../../src/renderer/src/studios/entities/mob-kinds';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { MOB_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
+import { MOB_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { renderOnStack, schemaState } from '../blocks-items/harness';
@@ -237,7 +237,7 @@ describe('Trader section, batch 2', () => {
 
 describe('Very easy', () => {
   it('shows the Bucket and Habits sections', () => {
-    expect(MOB_VERY_EASY_SECTIONS).toEqual(
+    expect(MOB_COMMON_SECTIONS).toEqual(
       expect.arrayContaining(['entity-bucket', 'entity-habits']),
     );
     const before = usePreferences.getState().mode;

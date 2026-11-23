@@ -11,6 +11,7 @@ import {
   appliedWords,
   applyFailedWords,
   closedPlanWords,
+  costDetails,
   costSentence,
   discardedWords,
   doneSentence,
@@ -26,8 +27,6 @@ import {
   reviewHeading,
   statusWords,
   toolLine,
-  type UiMode,
-  WORDS_MODES,
   wordsFor,
 } from '../src/renderer/src/components/ai/ai-words';
 import type { AiAppliedStep, AiDisplayMessage } from '../src/renderer/src/store/ai-store';
@@ -119,9 +118,9 @@ const SAMPLE_INPUTS: Record<string, unknown> = {
   note_missing_feature: { title: 'Set the player’s speed', request: 'x', missing: 'y' },
 };
 
-/** Every string the conversation can show in `mode`. */
-function everyString(mode: UiMode): string[] {
-  const strings = [...leaves(wordsFor(mode))];
+/** Every string the conversation can show. */
+function everyString(): string[] {
+  const strings = [...leaves(wordsFor())];
   for (const state of AI_STATUS_STATES) {
     for (const action of [null, ...AI_STATUS_ACTIONS]) {
       for (const failure of state === 'stopped' || state === 'failed' ? FAILURES : [undefined]) {
@@ -129,24 +128,24 @@ function everyString(mode: UiMode): string[] {
           action,
           ...(failure === undefined ? {} : { failure }),
         });
-        const words = statusWords(status, mode);
+        const words = statusWords(status);
         strings.push(words.text, ...(words.action === null ? [] : [words.action.label]));
       }
     }
     if (state === 'idle') {
-      strings.push(statusWords(statusOf('idle', { empty: true }), mode).text);
+      strings.push(statusWords(statusOf('idle', { empty: true })).text);
       for (const applied of steps()) {
-        strings.push(statusWords(statusOf('idle', { applied }), mode).text);
+        strings.push(statusWords(statusOf('idle', { applied })).text);
       }
     }
     if (state === 'making' || state === 'ready') {
-      strings.push(statusWords(statusOf(state, { things: 0, changes: 1 }), mode).text);
-      strings.push(statusWords(statusOf(state, { things: 0, changes: 0 }), mode).text);
+      strings.push(statusWords(statusOf(state, { things: 0, changes: 1 })).text);
+      strings.push(statusWords(statusOf(state, { things: 0, changes: 0 })).text);
     }
   }
-  for (const failure of FAILURES) strings.push(doneSentence(failure, mode));
+  for (const failure of FAILURES) strings.push(doneSentence(failure));
   for (const step of steps()) {
-    const words = appliedWords(step, mode);
+    const words = appliedWords(step);
     strings.push(words.text, ...words.actions.map((action) => action.label));
   }
   const notice = (
@@ -160,53 +159,40 @@ function everyString(mode: UiMode): string[] {
     ...extra,
   });
   for (const kind of ['cancelled', 'limit', 'refusal', 'max_tokens', 'no_key', 'error'] as const) {
-    const words = noticeWords(notice(kind), mode);
+    const words = noticeWords(notice(kind));
     strings.push(words.text, ...words.actions.map((action) => action.label));
   }
   strings.push(
-    noticeWords(
-      notice('fallback', { text: 'claude-opus-5-5 declined this request; x answered.' }),
-      mode,
-    ).text,
+    noticeWords(notice('fallback', { text: 'claude-opus-5-5 declined this request; x answered.' }))
+      .text,
   );
   for (const name of AI_TOOL_NAMES) {
     for (const result of [undefined, '{"counts":{"error":0}}', '{"counts":{"error":2}}']) {
-      const line = toolLine(
-        { name, input: SAMPLE_INPUTS[name] ?? {}, ...(result === undefined ? {} : { result }) },
-        mode,
-      );
+      const line = toolLine({
+        name,
+        input: SAMPLE_INPUTS[name] ?? {},
+        ...(result === undefined ? {} : { result }),
+      });
       if (line !== null) strings.push(line);
     }
   }
   strings.push(
-    readySentence(2, 6, mode),
-    readySentence(0, 1, mode),
-    nothingAppliedWords(0, mode),
-    nothingAppliedWords(2, mode),
-    discardedWords(mode),
-    applyFailedWords('ENOENT: demo:x', mode),
-    modelChangeWords('Opus 5.5', mode),
-    fallbackWords('claude-opus-5-5', 'claude-sonnet-5-5', mode),
+    readySentence(2, 6),
+    readySentence(0, 1),
+    nothingAppliedWords(0),
+    nothingAppliedWords(2),
+    discardedWords(),
+    applyFailedWords('ENOENT: demo:x'),
+    modelChangeWords('Opus 5.5'),
+    fallbackWords(),
     closedPlanWords('Ruby tools', 2, 3, true),
     closedPlanWords('Ruby tools', 0, 3, false),
-    reviewHeading({ things: 2, files: 6, kept: 9, total: 9 }, mode),
-    explainChip(
-      { code: 'blocks-items.missing-texture', elementId: 'demo:ruby_sword' },
-      'Ruby Sword',
-      'A picture is missing.',
-      mode,
-    ),
+    reviewHeading({ things: 2 }),
+    explainChip('Ruby Sword', 'A picture is missing.'),
+    planLineWords({ name: 'Ruby Pickaxe', what: 'Tool' }),
   );
-  if (mode !== 'advanced') {
-    strings.push(
-      planLineWords(
-        { name: 'Ruby Pickaxe', what: 'Tool', kind: 'msm:item', elementId: 'demo:ruby_pickaxe' },
-        mode,
-      ),
-    );
-  }
   for (const model of AI_MODEL_IDS) {
-    const sentence = costSentence(usage, model, mode);
+    const sentence = costSentence(usage, model);
     if (sentence !== null) strings.push(sentence);
   }
   strings.push(...EXAMPLE_ASKS.map((ask) => ask.text));
@@ -214,8 +200,8 @@ function everyString(mode: UiMode): string[] {
 }
 
 describe('ai-words', () => {
-  it('shows no forbidden word and no id in any Very easy string', () => {
-    const strings = everyString('very-easy');
+  it('shows no forbidden word and no id in any string', () => {
+    const strings = everyString();
     expect(strings.length).toBeGreaterThan(200);
     const offending = strings
       .map((text) => ({ text, found: forbiddenIn(text) }))
@@ -223,20 +209,18 @@ describe('ai-words', () => {
     expect(offending).toEqual([]);
   });
 
-  it('has a non-empty line for every state in every mode', () => {
-    for (const mode of WORDS_MODES) {
-      for (const state of AI_STATUS_STATES) {
-        expect(statusWords(statusOf(state), mode).text.trim(), `${mode} ${state}`).not.toBe('');
-      }
-      for (const action of AI_STATUS_ACTIONS) {
-        expect(wordsFor(mode).actions[action].trim(), `${mode} ${action}`).not.toBe('');
-      }
-      for (const text of everyString(mode)) {
-        expect(text.trim(), mode).not.toBe('');
-        // British English without emojis.
-        expect(text, mode).not.toMatch(/\p{Extended_Pictographic}/u);
-        expect(text, mode).not.toMatch(/\b(color|behavior|favorite|armor)\b/i);
-      }
+  it('has a non-empty line for every state', () => {
+    for (const state of AI_STATUS_STATES) {
+      expect(statusWords(statusOf(state)).text.trim(), state).not.toBe('');
+    }
+    for (const action of AI_STATUS_ACTIONS) {
+      expect(wordsFor().actions[action].trim(), action).not.toBe('');
+    }
+    for (const text of everyString()) {
+      expect(text.trim()).not.toBe('');
+      // British English without emojis.
+      expect(text).not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(text).not.toMatch(/\b(color|behavior|favorite|armor)\b/i);
     }
   });
 
@@ -247,45 +231,30 @@ describe('ai-words', () => {
   });
 
   it('says the wording table’s words', () => {
-    const veryEasy = wordsFor('very-easy');
-    const advanced = wordsFor('advanced');
-    expect(veryEasy.emptyTitle).toBe('What would you like to make?');
-    expect(veryEasy.newChat).toBe('New chat');
-    expect(veryEasy.showThinking).toBe(false);
-    expect(wordsFor('easy').showThinking).toBe(true);
-    expect(veryEasy.review.add).toBe('Add to my mod');
-    expect(advanced.review.add).toBe('Apply');
-    expect(veryEasy.review.throwAway).toBe('Throw away');
-    expect(advanced.review.throwAway).toBe('Discard');
-    expect(advanced.review.pictures).toBe('Textures');
-    expect(veryEasy.explain).toBe('Ask the helper');
-    expect(advanced.emptyExtra).toBe('Ask about a problem or an element.');
+    const words = wordsFor();
+    expect(words.emptyTitle).toBe('What would you like to make?');
+    expect(words.newChat).toBe('New chat');
+    expect(words.showThinking).toBe(false);
+    expect(words.review.add).toBe('Add to my mod');
+    expect(words.review.throwAway).toBe('Throw away');
+    expect(words.explain).toBe('Ask the helper');
     expect(EXAMPLE_ASKS).toHaveLength(4);
     expect(EXAMPLE_ASKS.filter((ask) => ask.size === 'build')).toHaveLength(1);
-    expect(reviewHeading({ things: 2, files: 6, kept: 9, total: 9 }, 'easy')).toBe(
-      'Ready to add: 2 things, 6 files behind them',
+    expect(reviewHeading({ things: 2 })).toBe('Ready to add: 2 things');
+    expect(planLineWords({ name: 'Ruby Pickaxe', what: 'Tool' })).toBe('Ruby Pickaxe, a tool');
+    expect(explainChip('Ruby Sword', 'A picture is missing.')).toBe(
+      'About: Ruby Sword, a picture is missing',
     );
-    expect(reviewHeading({ things: 2, files: 6, kept: 9, total: 9 }, 'advanced')).toBe(
-      'Proposed changes (9 of 9 kept)',
-    );
-    expect(
-      planLineWords(
-        { name: 'Ruby Pickaxe', what: 'Tool', kind: 'msm:item', elementId: 'demo:ruby_pickaxe' },
-        'advanced',
-      ),
-    ).toBe('Ruby Pickaxe, a tool (msm:item demo:ruby_pickaxe)');
-    expect(
-      explainChip({ code: 'x.missing' }, 'Ruby Sword', 'A picture is missing.', 'very-easy'),
-    ).toBe('About: Ruby Sword, a picture is missing');
-    expect(costSentence({ ...usage, requests: 0 }, 'claude-opus-5-5', 'easy')).toBeNull();
-    expect(costSentence(usage, 'claude-opus-5-5', 'very-easy')).toMatch(
+    expect(costSentence({ ...usage, requests: 0 }, 'claude-opus-5-5')).toBeNull();
+    expect(costSentence(usage, 'claude-opus-5-5')).toMatch(
       /^This chat has cost (about \$\d+\.\d\d|less than \$0\.01) so far\.$/,
     );
+    expect(costDetails(usage, 'claude-opus-5-5')).toMatch(/ in \/ .* out, /);
   });
 
   it('words the failures with their one action', () => {
-    const words = (errorClass: string, mode: UiMode = 'very-easy') =>
-      noticeWords({ seq: 0, role: 'notice', kind: 'error', text: '', errorClass }, mode);
+    const words = (errorClass: string) =>
+      noticeWords({ seq: 0, role: 'notice', kind: 'error', text: '', errorClass });
     expect(words('AuthenticationError')).toEqual({
       text: 'Your key was not accepted.',
       actions: [{ id: 'check-key', label: 'Check my key' }],
@@ -308,36 +277,23 @@ describe('ai-words', () => {
       id: 'new-chat',
       label: 'New chat',
     });
-    expect(words('AuthenticationError', 'advanced').text).toBe(
-      'Your key was not accepted. (AuthenticationError)',
-    );
-    expect(doneSentence({ reason: 'refusal', explanation: 'Not this.' }, 'advanced')).toBe(
-      "The helper would not do that. Try asking another way. Anthropic's reason: Not this.",
-    );
-    expect(doneSentence({ reason: 'refusal', explanation: 'Not this.' }, 'easy')).toBe(
+    expect(doneSentence({ reason: 'refusal', explanation: 'Not this.' })).toBe(
       'The helper would not do that. Try asking another way.',
     );
   });
 
-  it('shows only the plain tool lines in Very easy and Easy, and every line in Advanced', () => {
-    const line = (name: string, mode: UiMode, result?: string) =>
-      toolLine(
-        { name, input: SAMPLE_INPUTS[name] ?? {}, ...(result === undefined ? {} : { result }) },
-        mode,
-      );
-    expect(line('create_elements', 'very-easy')).toBe('Made Ruby Sword');
-    expect(line('run_checks', 'easy', '{"counts":{"error":0}}')).toBe('Checked: no problems');
-    expect(line('note_missing_feature', 'very-easy')).toBe(
-      'Wrote down a wish: Set the player’s speed',
-    );
-    expect(line('checkpoint', 'easy')).toBe('Finished: The sword is made.');
-    expect(line('read_element', 'very-easy')).toBeNull();
-    expect(line('run_checks', 'very-easy')).toBeNull();
-    for (const name of AI_TOOL_NAMES) {
-      expect(line(name, 'advanced'), name).not.toBeNull();
-      expect(line(name, 'advanced'), name).not.toMatch(/^Used /);
-    }
-    expect(line('read_element', 'advanced')).toBe('Read `demo:ruby_sword`');
-    expect(line('checkpoint', 'advanced')).toBe('Finished a step: The sword is made.');
+  it('shows only the plain tool lines', () => {
+    const line = (name: string, result?: string) =>
+      toolLine({
+        name,
+        input: SAMPLE_INPUTS[name] ?? {},
+        ...(result === undefined ? {} : { result }),
+      });
+    expect(line('create_elements')).toBe('Made Ruby Sword');
+    expect(line('run_checks', '{"counts":{"error":0}}')).toBe('Checked: no problems');
+    expect(line('note_missing_feature')).toBe('Wrote down a wish: Set the player’s speed');
+    expect(line('checkpoint')).toBe('Finished: The sword is made.');
+    expect(line('read_element')).toBeNull();
+    expect(line('run_checks')).toBeNull();
   });
 });

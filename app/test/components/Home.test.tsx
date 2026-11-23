@@ -21,7 +21,7 @@ import { ASK_THE_HELPER, ThingsToFix } from '../../src/renderer/src/components/T
 import { Toolbar, type ToolbarProps } from '../../src/renderer/src/components/Toolbar';
 import { WelcomeDialog } from '../../src/renderer/src/components/WelcomeDialog';
 import { isUiMode, UI_MODES, usePreferences } from '../../src/renderer/src/store/preferences';
-import { sectionShown } from '../../src/renderer/src/studios/very-easy';
+import { commonSection } from '../../src/renderer/src/studios/plain';
 
 afterEach(() => {
   cleanup();
@@ -586,12 +586,12 @@ describe('the three modes', () => {
   });
 
   it('keeps the Rules section and drops the events on every subject Studio list', async () => {
-    const lists = await import('../../src/renderer/src/studios/very-easy');
+    const lists = await import('../../src/renderer/src/studios/plain');
     for (const list of [
-      lists.BLOCK_VERY_EASY_SECTIONS,
-      lists.ITEM_VERY_EASY_SECTIONS,
-      lists.EFFECT_VERY_EASY_SECTIONS,
-      lists.MOB_VERY_EASY_SECTIONS,
+      lists.BLOCK_COMMON_SECTIONS,
+      lists.ITEM_COMMON_SECTIONS,
+      lists.EFFECT_COMMON_SECTIONS,
+      lists.MOB_COMMON_SECTIONS,
     ]) {
       expect(list).toContain('rules-section');
       expect(list).not.toContain('msm-events');
@@ -601,10 +601,10 @@ describe('the three modes', () => {
 
   it('hides sections not on a Very easy list, and none without one', () => {
     const list = new Set(['block-type']);
-    expect(sectionShown(list, 'block-type')).toBe(true);
-    expect(sectionShown(list, 'msm-events')).toBe(false);
-    expect(sectionShown(null, 'msm-events')).toBe(true);
-    expect(sectionShown(list, undefined)).toBe(true);
+    expect(commonSection(list, 'block-type')).toBe(true);
+    expect(commonSection(list, 'msm-events')).toBe(false);
+    expect(commonSection(null, 'msm-events')).toBe(true);
+    expect(commonSection(list, undefined)).toBe(true);
   });
 });
 
@@ -651,7 +651,7 @@ describe('New mod (a name only)', () => {
 describe('Studio sections in Very easy', () => {
   it('shows only the listed sections inside a Very easy list and every section outside it', async () => {
     const { Section } = await import('../../src/renderer/src/studios/worldgen/parts');
-    const { VeryEasySectionsContext } = await import('../../src/renderer/src/studios/very-easy');
+    const { CommonSectionsContext } = await import('../../src/renderer/src/studios/plain');
     const { RulesSlot } = await import('../../src/renderer/src/studios/RulesSlot');
     const studio = (
       <>
@@ -667,9 +667,9 @@ describe('Studio sections in Very easy', () => {
       </>
     );
     render(
-      <VeryEasySectionsContext.Provider value={new Set(['block-type'])}>
+      <CommonSectionsContext.Provider value={new Set(['block-type'])}>
         {studio}
-      </VeryEasySectionsContext.Provider>,
+      </CommonSectionsContext.Provider>,
     );
     expect(screen.getByTestId('block-type')).toBeTruthy();
     expect(screen.queryByTestId('msm-events')).toBeNull();

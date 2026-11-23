@@ -144,7 +144,6 @@ export {
   PROMPT_FLOWS,
   PROMPT_KINDS,
   PROMPT_NOT_AVAILABLE,
-  PROMPT_VIEWS,
   type PromptAbsence,
   type PromptFlow,
   projectContextBlock,

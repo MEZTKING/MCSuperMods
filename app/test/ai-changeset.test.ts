@@ -500,13 +500,8 @@ describe('proposal things (B688)', () => {
       problems: [],
       conflict: 'An element demo:gem already exists.',
     };
-    expect(notAddedWords(conflicted, 'very-easy')).toBe(
-      'Not added: your mod already has one with this name.',
-    );
-    expect(notAddedWords(conflicted, 'advanced')).toBe(
-      'Not added: An element demo:gem already exists.',
-    );
+    expect(notAddedWords(conflicted)).toBe('Not added: your mod already has one with this name.');
     const { conflict: _conflict, ...fitting } = conflicted;
-    expect(notAddedWords(fitting, 'easy')).toBeUndefined();
+    expect(notAddedWords(fitting)).toBeUndefined();
   });
 });

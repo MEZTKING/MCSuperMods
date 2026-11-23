@@ -37,7 +37,7 @@ import {
 import { withGameRuleKind } from '../../../../src/renderer/src/studios/scripting/GameRuleStudio';
 import { statCriterionOf } from '../../../../src/renderer/src/studios/scripting/StatStudio';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { FLUID_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
+import { FLUID_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -162,7 +162,7 @@ describe('Fluid Studio, batch 2', () => {
   });
 
   it('shows its beginner sections in Very easy, with no ids', async () => {
-    expect(FLUID_VERY_EASY_SECTIONS).toEqual(
+    expect(FLUID_COMMON_SECTIONS).toEqual(
       expect.arrayContaining(['fluid-mixing', 'fluid-cauldron-bottle']),
     );
     const before = usePreferences.getState().mode;

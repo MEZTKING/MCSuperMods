@@ -12,7 +12,6 @@ import { AiController, useAiPanelStore } from '../../src/renderer/src/components
 import { EditorArea } from '../../src/renderer/src/components/EditorArea';
 import type { AiAppliedStep, AiMadeThing } from '../../src/renderer/src/store/ai-store';
 import { useAiStore } from '../../src/renderer/src/store/ai-store';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import { aiSession, type FakeAi, fakeAi } from './ai-fixtures';
 
@@ -32,7 +31,6 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   delete (window as Partial<Window>).msm;
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 const element: Element = {
@@ -217,46 +215,30 @@ describe('Show me after adding (ADR 0125 D4)', () => {
   const pickaxe = made('demo:ruby_pickaxe', 'Ruby Pickaxe');
   const axe = made('demo:ruby_axe', 'Ruby Axe');
 
-  it.each(['very-easy', 'easy', 'advanced'] as const)(
-    'opens one thing in its Studio in %s',
-    (mode) => {
-      expect(showMeTarget(stepOf([sword]), MADE, mode)).toEqual({
-        type: 'open',
-        id: 'demo:ruby_sword',
-      });
-    },
-  );
-
-  it('opens a Creator set in the Creator in Very easy, and in its Studio otherwise', () => {
-    const target = showMeTarget(stepOf([pickaxe]), MADE, 'very-easy');
-    expect(target?.type).toBe('creator');
-    expect(target?.type === 'creator' ? target.element.id : null).toBe('demo:ruby_pickaxe');
-    for (const mode of ['easy', 'advanced'] as const) {
-      expect(showMeTarget(stepOf([pickaxe]), MADE, mode)).toEqual({
-        type: 'open',
-        id: 'demo:ruby_pickaxe',
-      });
-    }
+  it('opens one thing in its Studio', () => {
+    expect(showMeTarget(stepOf([sword]), MADE)).toEqual({ type: 'open', id: 'demo:ruby_sword' });
   });
 
-  it("opens Home's My things for several in Very easy and selects the first otherwise", () => {
-    const step = stepOf([sword, pickaxe, axe]);
-    expect(showMeTarget(step, MADE, 'very-easy')).toEqual({ type: 'my-things' });
-    for (const mode of ['easy', 'advanced'] as const) {
-      expect(showMeTarget(step, MADE, mode)).toEqual({ type: 'select', id: 'demo:ruby_sword' });
-    }
+  it('opens a Creator set in the Creator', () => {
+    const target = showMeTarget(stepOf([pickaxe]), MADE);
+    expect(target?.type).toBe('creator');
+    expect(target?.type === 'creator' ? target.element.id : null).toBe('demo:ruby_pickaxe');
+  });
+
+  it("opens Home's My things for several", () => {
+    expect(showMeTarget(stepOf([sword, pickaxe, axe]), MADE)).toEqual({ type: 'my-things' });
   });
 
   it('leaves out things taken out or no longer in the project', () => {
     const gone = made('demo:ruby_hoe', 'Ruby Hoe');
     const removed = made('demo:ruby_sword', 'Ruby Sword', 'removed');
     // Only the axe is left: one thing, so it opens.
-    expect(showMeTarget(stepOf([gone, removed, axe]), MADE, 'very-easy')).toEqual({
+    expect(showMeTarget(stepOf([gone, removed, axe]), MADE)).toEqual({
       type: 'open',
       id: 'demo:ruby_axe',
     });
-    expect(showMeTarget(stepOf([gone, removed]), MADE, 'easy')).toBeNull();
-    expect(showMeTarget(stepOf([sword]), null, 'advanced')).toBeNull();
+    expect(showMeTarget(stepOf([gone, removed]), MADE)).toBeNull();
+    expect(showMeTarget(stepOf([sword]), null)).toBeNull();
   });
 });
 
@@ -279,10 +261,9 @@ async function emitSword(ai: FakeAi, runId: string): Promise<void> {
 }
 
 describe("Undo and Put back of the helper's step (ADR 0125 D4)", () => {
-  it.each(['very-easy', 'easy', 'advanced'] as const)(
-    'offers Undo while the step is on top, and not after another edit, in %s',
-    async (mode) => {
-      usePreferences.setState({ mode });
+  it(
+    'offers Undo while the step is on top, and not after another edit',
+    async () => {
       const ai = fakeAi();
       const { session } = await aiSession();
       let next = 0;
@@ -369,7 +350,6 @@ describe("The open tray's Add is the primary button (B685's note)", () => {
     const props = {
       items: [],
       project: null,
-      mode: 'very-easy' as const,
       applying: false,
       onToggle: vi.fn(),
       onApply: vi.fn(),

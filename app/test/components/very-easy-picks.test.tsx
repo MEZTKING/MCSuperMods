@@ -17,7 +17,7 @@ import {
   MAKE_ITEM_PICKS,
   type VeryEasyPick,
   veryEasyPickOf,
-} from '../../src/renderer/src/studios/very-easy';
+} from '../../src/renderer/src/studios/plain';
 import { aiSession } from './ai-fixtures';
 
 afterEach(cleanup);

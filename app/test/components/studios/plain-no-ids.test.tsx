@@ -1,11 +1,12 @@
 // @vitest-environment happy-dom
 /// <reference types="node" />
 /**
- * Very easy shows no ids (ADR 0083 D3, ADR 0125 D13): every Studio Very easy can open (the
- * things of My things, the Creator's things, Show me's things), rendered through `ElementForm`
- * in Very easy over a real library example or Creator flow, with every readable string (text,
- * an input's value, placeholder, title, aria-label, alt) run through `forbiddenIn`. The Notes
- * callout of a copied example says its note in plain words there too.
+ * The default view shows no ids (ADR 0083 D3, ADR 0125 D13, ADR 0130 D2): every Studio of a
+ * thing (the things of My things, the Creator's things, Show me's things), rendered through
+ * `ElementForm` with every More options closed over a real library example or Creator flow,
+ * with every readable string (text, an input's value, placeholder, title, aria-label, alt) run
+ * through `forbiddenIn`. The Notes callout of a copied example says its note in plain words. A
+ * section's More options holds the ids (D3).
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -23,12 +24,11 @@ import entitiesPlugin from '@msm/plugin-entities';
 import rulesPlugin from '@msm/plugin-rules';
 import scriptingPlugin from '@msm/plugin-scripting';
 import { builtInTargets } from '@msm/targets';
-import { cleanup, render, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { forbiddenIn } from '../../../src/renderer/src/components/ai/ai-words';
 import { EditorArea } from '../../../src/renderer/src/components/EditorArea';
-import { usePreferences } from '../../../src/renderer/src/store/preferences';
 import { ElementForm } from '../../../src/renderer/src/studios/ElementForm';
 import type { SchemaContextState } from '../../../src/renderer/src/studios/use-schema-context';
 import { schemaIndex } from '../forms/schemas';
@@ -102,7 +102,7 @@ function exampleProject(folder: string): Project {
   };
 }
 
-/** One Studio of Very easy over a real element. */
+/** One Studio over a real element. */
 interface Case {
   studio: string;
   folder: string;
@@ -186,7 +186,7 @@ function readableStrings(root: HTMLElement): Readable[] {
 /** A clock time or a ratio (`1:30`, `8:00`): not an id, though `ID_PATTERN` matches it. */
 const DIGITS_ONLY = /^\d+:\d+$/;
 
-/** The leaks of `root`: each string with what it holds that Very easy forbids. */
+/** The leaks of `root`: each string with what it holds that the plain view forbids. */
 function leaksIn(root: HTMLElement): string[] {
   return readableStrings(root)
     .map((entry) => ({
@@ -199,10 +199,10 @@ function leaksIn(root: HTMLElement): string[] {
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
 let schema: SchemaContextState;
-const before = usePreferences.getState().mode;
 const projects = new Map<string, Project>();
 
 beforeAll(async () => {
+  globalThis.localStorage?.clear();
   schema = schemaState(bundle, await schemaIndex());
   for (const entry of CASES) {
     if (!projects.has(entry.folder)) projects.set(entry.folder, exampleProject(entry.folder));
@@ -227,11 +227,9 @@ beforeAll(async () => {
     () => import('../../../src/renderer/src/studios/scripting/StatStudio'),
     () => import('../../../src/renderer/src/studios/rules/RuleBookStudio'),
   );
-  usePreferences.setState({ mode: 'very-easy' as never });
 }, PRELOAD_TIMEOUT_MS);
 afterAll(() => {
   cleanup();
-  usePreferences.setState({ mode: before });
 });
 
 function Harness(props: { stack: CommandStack; id: ResourceLocation }) {
@@ -257,7 +255,7 @@ function Harness(props: { stack: CommandStack; id: ResourceLocation }) {
   );
 }
 
-describe('Very easy Studios show no ids', () => {
+describe('Studios show no ids by default', () => {
   it.each(CASES)('$studio', async (entry) => {
     const project = projects.get(entry.folder) as Project;
     const subject = project.namespaces
@@ -298,7 +296,7 @@ describe('Very easy Studios show no ids', () => {
       .find((element) => element.id === id) as Element;
     expect(subject.meta.notes).toBeTruthy();
     const { container, unmount } = render(
-      <EditorArea element={subject} onApply={vi.fn()} form={<p>Form</p>} hideRawJson hideIds />,
+      <EditorArea element={subject} onApply={vi.fn()} form={<p>Form</p>} />,
     );
     try {
       expect(leaksIn(container)).toEqual([]);
@@ -307,7 +305,7 @@ describe('Very easy Studios show no ids', () => {
     }
   });
 
-  it('says an id-laden note in words and keeps it whole in Easy', () => {
+  it('says an id-laden note in words', () => {
     const sword: Element = {
       formatVersion: 1,
       id: 'ruby:ruby_sword' as ResourceLocation,
@@ -319,34 +317,24 @@ describe('Very easy Studios show no ids', () => {
           'A ruby sword. msm:tool makes it a sword of the iron tier, and it sits in minecraft:combat. Its model is ruby:item/ruby_sword.',
       },
     };
-    const veryEasy = render(
-      <EditorArea element={sword} onApply={vi.fn()} form={<p>Form</p>} hideRawJson hideIds />,
-    );
-    expect(veryEasy.getByTestId('element-notes-text').textContent).toBe(
+    const plain = render(<EditorArea element={sword} onApply={vi.fn()} form={<p>Form</p>} />);
+    expect(plain.getByTestId('element-notes-text').textContent).toBe(
       'A ruby sword. Tool makes it a sword of the iron tier, and it sits in combat. Its model is ruby sword.',
     );
-    expect(leaksIn(veryEasy.container)).toEqual([]);
-    veryEasy.unmount();
-    const easy = render(<EditorArea element={sword} onApply={vi.fn()} form={<p>Form</p>} />);
-    expect(easy.getByTestId('element-notes-text').textContent).toBe(sword.meta.notes);
-    easy.unmount();
+    expect(leaksIn(plain.container)).toEqual([]);
+    plain.unmount();
   });
 
-  it('keeps the id fields of Easy', async () => {
-    usePreferences.setState({ mode: 'easy' as never });
-    try {
-      const project = projects.get('starters/gear-set') as Project;
-      const { findByTestId, unmount } = render(
-        <Harness
-          stack={new CommandStack(project)}
-          id={'msm_starter:ruby_sword' as ResourceLocation}
-        />,
-      );
-      const tab = (await findByTestId('item-tab', {}, { timeout: 4000 })) as HTMLInputElement;
-      expect(tab.value).toBe('minecraft:combat');
-      unmount();
-    } finally {
-      usePreferences.setState({ mode: 'very-easy' as never });
-    }
+  it('keeps the id fields in the section\'s More options', async () => {
+    const project = projects.get('starters/gear-set') as Project;
+    const { findByTestId, queryByTestId, unmount } = render(
+      <Harness stack={new CommandStack(project)} id={'msm_starter:ruby_sword' as ResourceLocation} />,
+    );
+    await findByTestId('item-tab-plain', {}, { timeout: 4000 });
+    expect(queryByTestId('item-tab')).toBeNull();
+    fireEvent.click(await findByTestId('more-options-item-general'));
+    const tab = (await findByTestId('item-tab')) as HTMLInputElement;
+    expect(tab.value).toBe('minecraft:combat');
+    unmount();
   });
 });

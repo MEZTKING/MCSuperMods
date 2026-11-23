@@ -12,7 +12,6 @@ import {
 import {
   statusWords,
   THING_KIND_WORDS,
-  WORDS_MODES,
 } from '../src/renderer/src/components/ai/ai-words';
 import {
   type AiAppliedStep,
@@ -184,16 +183,14 @@ describe('conversationStatus', () => {
     expect(all.length).toBeGreaterThan(500);
   });
 
-  it('gives exactly one non-empty line and at most one action in every mode', () => {
+  it('gives exactly one non-empty line and at most one action', () => {
     for (const { name, conversation } of all) {
       const status = conversationStatus(conversation, 14_700);
-      for (const mode of WORDS_MODES) {
-        const words = statusWords(status, mode);
-        expect(words.text.trim(), name).not.toBe('');
-        expect(words.text, name).not.toMatch(/\n/);
-        if (words.action !== null) expect(words.action.label.trim(), name).not.toBe('');
-        expect(words.action === null ? null : words.action.id, name).toBe(status.action);
-      }
+      const words = statusWords(status);
+      expect(words.text.trim(), name).not.toBe('');
+      expect(words.text, name).not.toMatch(/\n/);
+      if (words.action !== null) expect(words.action.label.trim(), name).not.toBe('');
+      expect(words.action === null ? null : words.action.id, name).toBe(status.action);
     }
   });
 
@@ -205,9 +202,7 @@ describe('conversationStatus', () => {
       expect(WORKING_STATES.has(status.state), name).toBe(false);
       expect(status.state, name).toMatch(/^your-turn-/);
       expect(status.seconds, name).toBeNull();
-      for (const mode of WORDS_MODES) {
-        expect(statusWords(status, mode).text, name).not.toMatch(WORKING_WORDS);
-      }
+      expect(statusWords(status).text, name).not.toMatch(WORKING_WORDS);
     }
   });
 
@@ -228,8 +223,8 @@ describe('conversationStatus', () => {
     expect(at('read_element').state).toBe('reading');
     expect(at('create_elements').state).toBe('making');
     expect(at('run_checks').state).toBe('checking');
-    expect(statusWords(at(), 'very-easy').text).toBe('Thinking… (12 s)');
-    expect(statusWords(at('run_checks'), 'easy').text).toBe('Checking it works… (12 s)');
+    expect(statusWords(at()).text).toBe('Thinking… (12 s)');
+    expect(statusWords(at('run_checks')).text).toBe('Checking it works… (12 s)');
   });
 
   it('counts things, not files, when changes are ready', () => {
@@ -237,11 +232,8 @@ describe('conversationStatus', () => {
       build({ kind: 'done', reason: 'end_turn' }, 'none', false, true, 'none', true),
     );
     expect(status).toMatchObject({ state: 'ready', things: 1, changes: 2, action: 'look' });
-    expect(statusWords(status, 'very-easy').text).toBe(
+    expect(statusWords(status).text).toBe(
       '1 thing is ready. Nothing is in your mod yet.',
-    );
-    expect(statusWords(status, 'advanced').text).toBe(
-      '2 proposed changes are ready. Nothing is applied yet.',
     );
   });
 
@@ -259,28 +251,23 @@ describe('conversationStatus', () => {
       build({ kind: 'done', reason: 'limit' }, 'none', false, false, 'none', true),
     );
     expect(limit).toMatchObject({ state: 'stopped', action: 'keep-going' });
-    expect(statusWords(limit, 'easy').text).toBe('It paused so the cost stays small.');
-    expect(statusWords(limit, 'advanced').text).toBe(
-      'It paused so the cost stays small (24 tool turns, 100,000 output tokens).',
-    );
-    expect(statusWords(failed('AuthenticationError'), 'advanced').text).toBe(
-      'Your key was not accepted. (AuthenticationError)',
-    );
+    expect(statusWords(limit).text).toBe('It paused so the cost stays small.');
+    expect(statusWords(failed('AuthenticationError')).text).toBe('Your key was not accepted.');
   });
 
   it('offers Show me after adding and Put back once taken out', () => {
     const idle = (phase: AiAppliedStep['phase'], onTop: boolean) =>
       conversationStatus(build({ kind: 'none' }, 'none', false, false, phase, onTop));
     expect(idle('added', true)).toMatchObject({ state: 'idle', action: 'show-me' });
-    expect(statusWords(idle('added', true), 'very-easy').text).toBe(
+    expect(statusWords(idle('added', true)).text).toBe(
       'Added 1 thing to your mod: Ruby Sword.',
     );
     expect(idle('taken-out', true).action).toBe('put-back');
     expect(idle('taken-out', false).action).toBeNull();
-    expect(statusWords(idle('taken-out', true), 'easy').text).toBe('Taken out again.');
-    expect(statusWords(idle('taken-out', true), 'advanced')).toEqual({
-      text: 'Undone.',
-      action: { id: 'put-back', label: 'Redo' },
+    expect(statusWords(idle('taken-out', true)).text).toBe('Taken out again.');
+    expect(statusWords(idle('taken-out', true))).toEqual({
+      text: 'Taken out again.',
+      action: { id: 'put-back', label: 'Put back' },
     });
   });
 });
