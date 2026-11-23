@@ -288,7 +288,7 @@ export default function AreaStudio(props: StudioProps) {
           Add a building
         </Button>
         <p className="text-muted text-xs">
-          Rules rebuild it (“Rebuild an area”) and react to players walking in and out.
+          Rules rebuild it (“Reset an area”) and react to players walking in and out.
         </p>
         <CommandLines
           testId="area-commands"
