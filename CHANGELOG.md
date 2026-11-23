@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.5.
+
+## [1.5.5] - 2026-11-23
+
 ### Added
 
 - **Set on fire** in Rules: a new step in the Mobs group sets a mob on fire for the seconds you give ("set the mob on fire for 5 seconds"). Players are not lit, as no Minecraft command can do that.
