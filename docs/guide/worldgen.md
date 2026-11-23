@@ -33,7 +33,7 @@ A game's world is set in its world setup (the World Setup Studio, [Game modes](g
 
 ## Start from a starter
 
-Click the arrow next to **New** and choose **New from starter…**. Under Themed content there are two biome starters:
+Choose **More → Start from a ready-made mod…** on the toolbar. Under Themed content there are two biome starters:
 
 - **Custom biome**: the Amber Woods biome with its own tree and copper ore, a World Type that offers it, and English names for both.
 - **Custom biome with a jigsaw structure**: the same biome plus a jigsaw hamlet that generates in it and in every vanilla forest. This is the project in [`fixtures/sample-worldgen/`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-worldgen/README.md).
@@ -102,7 +102,7 @@ A **dimension type** says what a dimension is like to be in: the colour of its s
 There are three ways:
 
 - the Creator's **Dimension** flow has the answer **Give it its own sky and rules** (off by default). Switched on, it asks for **Sky colour**, **Fog colour**, **Time of day** (**As the chosen sky has it**, **Always day: the sun stands at noon** or **Always night: moon and stars**) and **Beds** (**As the chosen sky has them**, **Beds explode here** or **Beds work: sleep at night and set your spawn**), and adds a dimension type `<id>_type` copied from the **Sky and rules** you picked, with your changes, for the dimension to use. Switched off, nothing changes;
-- **Add element** (Ctrl+N), the templates **Moon dimension type** (a black starry sky, the sun standing still low in the sky, no clouds, no sleeping, though beds still set your spawn) and **Nether-like dimension type** (no sky and a bedrock ceiling, red fog, fast lava, water that evaporates, beds that explode, working respawn anchors and one block here for eight in the overworld), both under **Dimensions**;
+- **Add from the full list…** (Ctrl+N), the templates **Moon dimension type** (a black starry sky, the sun standing still low in the sky, no clouds, no sleeping, though beds still set your spawn) and **Nether-like dimension type** (no sky and a bedrock ceiling, red fog, fast lava, water that evaporates, beds that explode, working respawn anchors and one block here for eight in the overworld), both under **Dimensions**;
 - any element of the kind `dimension_type`, edited in the **Dimension Type Studio**.
 
 The Dimension Type Studio has seven sections. Only the settings your Minecraft version has are shown; anything else stays in **Advanced**.

@@ -4,7 +4,7 @@ Components and events (see [Blocks and items](blocks-and-items.md#events-and-act
 
 Like blocks and items, scripts reach the game only through the **Fabric mod jar** export. The vanilla pack exports leave them out, and so does the [Java project export](eject.md).
 
-The quickest start is the **Scripted ore** starter (**New from starter…**): the Custom ore content plus three scripts. Sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. The examples **Script: block interaction**, **Script: scheduled effects** and **Script: action handler** in **Help → Examples…** show one idea each (see [Templates, starters and examples](templates-and-examples.md)).
+The quickest start is the **Scripted ore** starter (**Start from a ready-made mod…**): the Custom ore content plus three scripts. Sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. The examples **Script: block interaction**, **Script: scheduled effects** and **Script: action handler** in **Help → Examples…** show one idea each (see [Templates, starters and examples](templates-and-examples.md)).
 
 ## Rules first, then scripts
 
@@ -18,7 +18,7 @@ A script cannot reach Java, files, the network or other mods. See [Limits](#limi
 
 ## Create a script
 
-1. Choose **Add element** on the toolbar (Ctrl+N).
+1. Choose **More → Add from the full list…** on the toolbar (Ctrl+N).
 2. Under **Scripts**, pick one of the six templates:
    - **Block interaction script**: right-clicking a composter gives bone meal instead of composting;
    - **Entity hurt script**: an iron golem heals half of every hit back and shows heart particles;

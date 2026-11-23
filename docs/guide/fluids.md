@@ -20,7 +20,7 @@ There are four ways:
   - **Lakes of it in the world**, with **Lakes appear in** (**Anywhere in the overworld**, **Deserts**, **Swamps**, **Forests** or **Badlands**) and **One lake in how many chunks?** (vanilla's lava lakes on the surface are one in 200).
 
   It creates with its untouched defaults and zero problems;
-- **Add element** (Ctrl+N), the templates under **Fluids**: **Water-like fluid** (a green liquid, `swamp_water`), **Lava-like fluid** (a glowing golden one, `molten_gold`), **Fluid with a cauldron and bottle** and **Fluid that mixes with water**;
+- **Add from the full list…** (Ctrl+N), the templates under **Fluids**: **Water-like fluid** (a green liquid, `swamp_water`), **Lava-like fluid** (a glowing golden one, `molten_gold`), **Fluid with a cauldron and bottle** and **Fluid that mixes with water**;
 - the examples **Oil well** (a thick dark liquid that flows slowly, never refills, slows down whoever wades in and lies in lakes in deserts) and **Berry juice** (a cauldron, a bottle and mixing).
 
 Selecting a fluid opens the Fluid Studio. In My things a fluid's card is a **Liquid**.
@@ -87,7 +87,7 @@ You make a fluid the same way on both. What differs:
 
 ## Problems
 
-**Problems** says, in plain words: a bucket with the same name as another thing in your mod (rename one), a fluid that looks further for a way down than it can spread, a fluid missing one of its pictures (it looks like plain water or lava there), a fluid that behaves like nothing (see through as air), a fluid whose **Something inside** names an event it no longer has (the game would refuse the fluid), a mixing rule that makes nothing, mixes with the liquid itself, repeats another rule or makes a liquid instead of a solid block, a cauldron whose name another thing or one of Minecraft's cauldrons already has, and **Fills in levels** on a lava-like liquid (a note: it stays full only). In Very easy mode they appear in **Things to fix**.
+**Problems** says, in plain words: a bucket with the same name as another thing in your mod (rename one), a fluid that looks further for a way down than it can spread, a fluid missing one of its pictures (it looks like plain water or lava there), a fluid that behaves like nothing (see through as air), a fluid whose **Something inside** names an event it no longer has (the game would refuse the fluid), a mixing rule that makes nothing, mixes with the liquid itself, repeats another rule or makes a liquid instead of a solid block, a cauldron whose name another thing or one of Minecraft's cauldrons already has, and **Fills in levels** on a lava-like liquid (a note: it stays full only). They also appear in **Things to fix**.
 
 ## Vanilla packs
 

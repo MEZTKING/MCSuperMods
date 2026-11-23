@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins add new kinds of content to MCSuperMods: an element kind with its own form, templates for **Add element**, starters and wizards for the **New project** dialog, examples for the Examples gallery, checks that show in **Problems**, and importers for new file types. Everything MCSuperMods makes itself (resource packs, data packs, blocks and items, worldgen, mobs, scripts) is built from the same plugin API; plugins made by other people use that API too.
+Plugins add new kinds of content to MCSuperMods: an element kind with its own form, templates for **Add from the full list…**, starters and wizards for the **New project** dialog, examples for the Examples gallery, checks that show in **Problems**, and importers for new file types. Everything MCSuperMods makes itself (resource packs, data packs, blocks and items, worldgen, mobs, scripts) is built from the same plugin API; plugins made by other people use that API too.
 
 Plugins are code written by third parties. MCSuperMods runs each one in a sandbox, but install plugins only from sources you trust (see [Trust and the sandbox](#trust-and-the-sandbox)).
 
@@ -11,14 +11,14 @@ In plugin API 1.x a plugin can contribute:
 | Contribution | Where you see it |
 |---|---|
 | Element kinds | New elements in the element list. Their **Form** tab is drawn from the plugin's data definitions (mcdoc), like the forms of vanilla elements, and **Edit as raw text** works as usual. Each kind lowers to ordinary pack or mod files when you export. |
-| Element templates | Entries in **Add element**, grouped under the plugin's own categories. |
+| Element templates | Entries in **Add from the full list…**, grouped under the plugin's own categories. |
 | Project starters, including wizards | Entries in the **New project** dialog; a starter with questions carries the **Wizard** badge. |
 | Minecraft versions per entry | A template, starter or example may say which Minecraft versions it works on (`supports`). MCSuperMods asks the plugin once at start-up for every version it knows and hides the entry on the others. |
 | Examples | Entries in **Help → Examples…**, to open as a new project or copy into yours. |
 | Validators | Errors and warnings in **Problems**, checked while you edit. |
-| Importers | New file types in **File → Import Structure…**, which picks the importer by file extension. |
+| Importers | New file types in **File → Bring in a building…**, which picks the importer by file extension. |
 | Search words | The plugin's things found by [search](search.md) under words of its own: other names for its ideas, keywords on its templates, starters and kinds, hints for its starters' questions and extra rows that open its own things. See [Search words](#search-words). |
-| Exporters | Entries under **More exports** in the menu next to **Export .zip**, named "<exporter name> into a folder…", under **File → More Exports**, and in the command palette as "Export <exporter name> into a folder…". An exporter with options asks for them first; then it writes its files into a folder you choose. Errors in the layers it packages block it, like any export. The sample plugin's **Greeting list** writes `greetings.txt`. |
+| Exporters | Entries at the end of **More → Export** on the toolbar, named "<exporter name> into a folder…", under **File → Export**, and in the command palette as "Export <exporter name> into a folder…". An exporter with options asks for them first; then it writes its files into a folder you choose. Errors in the layers it packages block it, like any export. The sample plugin's **Greeting list** writes `greetings.txt`. |
 
 A plugin cannot add its own editors or Studio views, its own commands or menu entries, or new Minecraft versions. Its kinds always use the generic form. A plugin that tries to contribute editors, commands or targets still loads, with a `plugin.capability-unsupported` warning, and those parts are ignored.
 
@@ -35,7 +35,7 @@ MCSuperMods loads plugins once, at start-up. After you add, remove or replace a 
 
 ## Install a plugin
 
-1. Open **Settings** on the toolbar (or **File → Settings…**) and scroll to **Plugins**.
+1. Open **More → Settings…** on the toolbar (or **File → Settings…**) and scroll to **Plugins**.
 2. Choose **Open plugins folder**. MCSuperMods creates the folder if it does not exist yet and opens it in your file manager.
 3. Copy the plugin's folder into it. The folder must contain `msm-plugin.json` directly, not inside another folder.
 4. Restart MCSuperMods and open **Settings → Plugins** again to check the plugin's state.
@@ -81,9 +81,9 @@ The MCSuperMods repository has a small sample plugin, **Greetings** (id `sample.
 2. Copy the contents of `dist/` into a new folder `greetings` inside the plugins folder, so that `greetings` holds the three files.
 3. Restart MCSuperMods. **Settings → Plugins** lists **Greetings** 1.0.0 as **Loaded**.
 4. Open or create a project with data pack content, for example from the **Data pack** starter.
-5. Choose **Add element**. The **Greetings** group offers **Greeting**. Name it `hello` and choose **Create**.
+5. Choose **Add from the full list…**. The **Greetings** group offers **Greeting**. Name it `hello` and choose **Create**.
 6. Select the new element. The **Form** tab shows the fields `message` and `colour` from the plugin's definitions. Type a message; leave `colour` as `gold` or use another text colour name such as `aqua`, or `#rrggbb`.
-7. Export the data pack (**Export .zip** arrow → **Data pack (.zip)…**). The zip holds `data/<namespace>/function/greet_hello.mcfunction` with a `tellraw @a …` line, and `data/minecraft/tags/function/load.json` lists `<namespace>:greet_hello`, so the greeting runs when the world loads.
+7. Export the data pack (**More → Export → Data pack (.zip)…** on the toolbar). The zip holds `data/<namespace>/function/greet_hello.mcfunction` with a `tellraw @a …` line, and `data/minecraft/tags/function/load.json` lists `<namespace>:greet_hello`, so the greeting runs when the world loads.
 
 The plugin also adds the example **Welcome greeting** to **Help → Examples…**, and a warning in **Problems** when a greeting's message is empty.
 

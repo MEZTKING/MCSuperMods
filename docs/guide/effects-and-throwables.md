@@ -8,7 +8,7 @@ To brew an effect in a brewing stand, make a potion of it: [Potions and brewing]
 
 ## Make a status effect
 
-1. Open or create a project, then choose **Create…** on the toolbar.
+1. Open or create a project, then choose **More → Make something…** on the toolbar.
 2. Under **Magic**, pick **Status effect**. The preview opens on the **Card** tab: the effect's icon, its name in the colour the game uses for good or bad effects, what it does, and a table of its stat changes and how often it acts at levels I to IV.
 3. Fill in the form:
    - **Effect**: **Name**, **Colour** (the swirling particles and the bar) and **Good or bad** (**Good**, **Bad** or **Neutral**; good and neutral effects have a blue name in tooltips, bad ones a red name).
@@ -21,7 +21,7 @@ Select any of them later and choose **Edit in Creator** to change an answer, for
 
 ## Make a throwable
 
-1. Choose **Create…**, and under **Gear** pick **Throwable**.
+1. Choose **Make something…**, and under **Gear** pick **Throwable**.
 2. Fill in the form:
    - **Item**: **Name**, **Colour**, **Style** (**Ball, used up like a snowball**; **Knife, left where it lands to pick up again**; **Boomerang, back in your inventory when it lands**; **Bomb, used up and bursts where it lands**) and **Stack size**.
    - **Throw**: **Damage** (in half hearts), **Speed**, **Weight** (**Floaty**, **Normal** or **Heavy**) and **Hold to throw** (hold use for half a second and let go, like a trident).
@@ -32,7 +32,7 @@ Select any of them later and choose **Edit in Creator** to change an answer, for
 
 ## The Effect Studio
 
-To make an effect by hand, choose **Add element** (Ctrl+N) and pick a template under **Effects**: **Status effect** (a good effect that chimes and sparkles when it starts), **Damage over time effect** (like poison) or **Stat boost effect** (faster and stronger per level). Effects are listed in the sidebar under **Status effects**. Selecting one opens the **Effect Studio**; **Every setting** and **Edit as raw text** work as for blocks and items.
+To make an effect by hand, choose **Add from the full list…** (Ctrl+N) and pick a template under **Effects**: **Status effect** (a good effect that chimes and sparkles when it starts), **Damage over time effect** (like poison) or **Stat boost effect** (faster and stronger per level). Effects are listed in the sidebar under **Status effects**. Selecting one opens the **Effect Studio**; **Every setting** and **Edit as raw text** work as for blocks and items.
 
 - **Effect**: **Display name**, **Category** (beneficial, harmful or neutral), **Colour**, **Particle (instead of the swirl)** and **Sound when added**. The particle can be one of your own ([Particles](particles.md)); it must be a type without options (a type that needs options is reported by **Problems**).
 - **Icon**: the effect's icon with **Paint icon** (see [Effect icons](#effect-icons)). Without an icon the Studio says so: the game shows a blank square.

@@ -23,7 +23,7 @@ The Creator's **Map** tab draws the world of a Skyblock, a one block game in emp
 
 For an adventure map, give the players' tools and keys the blocks they may break or use in the Item Studio's **Adventure mode** section ([Adventure mode](blocks-and-items.md#adventure-mode)).
 
-Help > Examples… has one finished game per flow under **Games**: Cloud Farm, Deep Block, Blossom Isles, Star Block, Crystal Road, Four Kingdoms, Canyon Dash and Explorer, and one small example of each piece. **Add element** has the templates of the category **Games** (an empty sky world, a flat building world, a floating islands world, an adventure in the normal world, a one block in three phases, two teams, two scores, a countdown, a stopwatch and an arena).
+Help > Examples… has one finished game per flow under **Games**: Cloud Farm, Deep Block, Blossom Isles, Star Block, Crystal Road, Four Kingdoms, Canyon Dash and Explorer, and one small example of each piece. **Add from the full list…** has the templates of the category **Games** (an empty sky world, a flat building world, a floating islands world, an adventure in the normal world, a one block in three phases, two teams, two scores, a countdown, a stopwatch and an arena).
 
 ## The pieces of a game
 

@@ -12,13 +12,13 @@
  * 2. The test fills that world as the game would: a region file, player data, a `session.lock`,
  *    an old `level.dat`, the dev data pack, a data pack of the world's own and a structure block
  *    save (`generated/<ns>/structure/castle/tower.nbt`).
- * 3. File > "Export as a Map…": the managed instance's worlds are listed with the game's world
+ * 3. File > Export > "Export as a map…": the managed instance's worlds are listed with the game's world
  *    first; exporting the world while the game is in it is refused. The game closes, and the map
  *    is saved as `<map>.zip`: the world under `<map>/` with the project's data pack in
  *    `datapacks/` beside the world's own, its resource pack as `resources.zip`, and no player
  *    data, dev pack, lock or old `level.dat`. With "Keep my player
  *    data" the players' files are in.
- * 4. Import Structure… > "From my test worlds" lists the save; "Bring builds" makes it a
+ * 4. File > "Bring in a building…" > "From my test worlds" lists the save; "Bring builds" makes it a
  *    structure element of the project.
  */
 
@@ -137,27 +137,31 @@ function writeTree(dir: string, files: Record<string, string | Uint8Array>): voi
   }
 }
 
-/** Clicks File > `label` in the application menu. */
-async function fileMenu(launched: LaunchedApp, label: string): Promise<void> {
-  await launched.app.evaluate(({ Menu, BrowserWindow }, name) => {
-    const file = Menu.getApplicationMenu()?.items.find((item) => item.label === 'File');
-    const entry = file?.submenu?.items.find((item) => item.label === name);
-    if (entry === undefined) throw new Error(`File has no entry ${name}.`);
-    entry.click(undefined, BrowserWindow.getAllWindows()[0], undefined);
-  }, label);
+/** Clicks File > `labels[0]` > `labels[1]`… in the application menu. */
+async function fileMenu(launched: LaunchedApp, ...labels: string[]): Promise<void> {
+  await launched.app.evaluate(({ Menu, BrowserWindow }, names) => {
+    let items = Menu.getApplicationMenu()?.items.find((item) => item.label === 'File')?.submenu;
+    let entry: Electron.MenuItem | undefined;
+    for (const name of names) {
+      entry = items?.items.find((item) => item.label === name);
+      if (entry === undefined) throw new Error(`File has no entry ${names.join(' > ')}.`);
+      items = entry.submenu;
+    }
+    entry?.click(undefined, BrowserWindow.getAllWindows()[0], undefined);
+  }, labels);
 }
 
 function readZip(path: string): Record<string, Uint8Array> {
   return unzipSync(new Uint8Array(readFileSync(path)));
 }
 
-/** Opens "Export as a Map…", names the map and picks the game's world, then exports it. */
+/** Opens File > Export > "Export as a map…", names the map and picks the game's world, then exports it. */
 async function exportMap(
   launched: LaunchedApp,
   keepPlayerData: boolean,
 ): Promise<{ picker: ReturnType<Page['getByTestId']> }> {
   const { window } = launched;
-  await fileMenu(launched, 'Export as a Map…');
+  await fileMenu(launched, 'Export', 'Export as a map…');
   const dialog = window.getByTestId('export-map-dialog');
   await expect(dialog).toBeVisible();
   const source = dialog.getByTestId('export-map-source');
@@ -367,7 +371,7 @@ test('maps: Play my game, export the world as a map, bring a build in from it', 
   );
 
   // 4. A build from the test world. ------------------------------------------------------------
-  await fileMenu(launched, 'Import Structure…');
+  await fileMenu(launched, 'Bring in a building…');
   const importDialog = window.getByTestId('import-files-dialog');
   await expect(importDialog).toBeVisible();
   await importDialog.getByTestId('import-files-tab-test-worlds').click();

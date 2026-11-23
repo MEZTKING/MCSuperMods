@@ -4,8 +4,8 @@ MCSuperMods makes new blocks and items with the `msm:block` and `msm:item` eleme
 
 ## Create a block or an item
 
-1. Open or create a project. Any project works, including a blank one (**New** on the toolbar).
-2. Choose **Add element** on the toolbar (Ctrl+N). The **New element** dialog groups the templates by category.
+1. Open or create a project. Any project works, including a blank one (**More → New mod…** on the toolbar).
+2. Choose **More → Add from the full list…** on the toolbar (Ctrl+N). The **New element** dialog groups the templates by category.
 3. Under **Blocks**, pick **Simple block**, **Glowing ore**, **Interactive block**, **Half block**, **Plant (cross)** or **Glass-like block**; under **Items**, pick **Food item**, **Tool item** or **Magic wand**. Type in the filter box (for example "ore") to narrow the list.
 4. Type a name, for example `sun_stone`, and choose **Create**.
 
@@ -115,7 +115,7 @@ The triggers need the runtime that ships with this release; the [Java project ex
 
 ## Your own sounds
 
-A project's own sounds live in its **Sounds** element (**Add element**, category **Sounds**, one per namespace; its name is fixed to `sounds`): each key such as `block.example.chime` lists the Ogg files it plays. Import the audio with **Import assets** (see [Templates, starters and examples](templates-and-examples.md)).
+A project's own sounds live in its **Sounds** element (**Add from the full list…**, category **Sounds**, one per namespace; its name is fixed to `sounds`): each key such as `block.example.chime` lists the Ogg files it plays. Import the audio with **Bring in pictures or sounds…** (see [Templates, starters and examples](templates-and-examples.md)).
 
 The game needs every key to be a registered sound event, and the runtime and the [Java project export](eject.md) register every key of the project's `sounds.json` for you (the Java project writes `ModSounds.java`). So in MCSuperMods' own fields you write the plain key, `<namespace>:block.example.chime`:
 
@@ -189,9 +189,9 @@ An item with the `msm:armor` component is an armour piece. Its **slot** is `helm
 - the vanilla names are `leather`, `copper`, `chainmail`, `iron`, `gold`, `diamond`, `netherite`, `turtle_scute` and `armadillo_scute`. The piece then has that material's armour points, durability, sounds and worn look;
 - a material of your own has `durability` (each slot multiplies it as vanilla does: helmet 11, chestplate 16, leggings 15, boots 13), armour points per slot in `defense` (horse and wolf armour use `body` when given, otherwise the `chestplate` value), `enchantment_value` (0 means it cannot be enchanted), `toughness`, `knockback_resistance` (0 to 1), an optional `equip_sound` and `repair_items` (an item tag such as `#<namespace>:sapphire_repair_materials`), and `equipment_asset`, the equipment element that draws the piece when worn.
 
-The quickest start is the **Armour piece (helmet)** template (an iron helmet) in **Add element** under **Items**, or a [Gear set](creator.md#the-flows) from the Creator, which writes everything below for you.
+The quickest start is the **Armour piece (helmet)** template (an iron helmet) in **Add from the full list…** under **Items**, or a [Gear set](creator.md#the-flows) from the Creator, which writes everything below for you.
 
-**The equipment element and its textures.** How worn armour looks is an `equipment` element in the resource pack (**Equipment (humanoid armour)** under **Models**), exported as `assets/<namespace>/equipment/<name>.json`. Its `layers` point at textures by id: `humanoid` for the helmet, chestplate and boots, `humanoid_leggings` for the leggings, and `horse_body` or `wolf_body` for horse and wolf armour. A texture id `<namespace>:sapphire` in the `humanoid` layer is the file `textures/entity/equipment/humanoid/sapphire.png`; import it with **Import assets**. The humanoid layers are 64 by 32 pixels in the vanilla armour layout. A Gear set names its equipment element `<material>_armor`, for example `sapphire_armor`.
+**The equipment element and its textures.** How worn armour looks is an `equipment` element in the resource pack (**Equipment (humanoid armour)** under **Models**), exported as `assets/<namespace>/equipment/<name>.json`. Its `layers` point at textures by id: `humanoid` for the helmet, chestplate and boots, `humanoid_leggings` for the leggings, and `horse_body` or `wolf_body` for horse and wolf armour. A texture id `<namespace>:sapphire` in the `humanoid` layer is the file `textures/entity/equipment/humanoid/sapphire.png`; import it with **Bring in pictures or sounds…**. The humanoid layers are 64 by 32 pixels in the vanilla armour layout. A Gear set names its equipment element `<material>_armor`, for example `sapphire_armor`.
 
 An armour piece also needs the vanilla item tag of its slot (`minecraft:head_armor`, `chest_armor`, `leg_armor` or `foot_armor`) for enchantments and armour trims to apply; the Gear set adds these.
 
@@ -257,7 +257,7 @@ For anything the components above do not cover, `msm:components` passes vanilla 
 
 ## Export a Fabric mod jar
 
-1. Open the arrow next to **Export .zip** on the toolbar and choose **Fabric mod (.jar)…**, or use **File → Export Fabric Mod Jar…**, or "Export Fabric mod jar…" in the command palette (Ctrl+Shift+P).
+1. Choose **More → Export → Fabric mod (.jar)…** on the toolbar, or **File → Export → Fabric mod (.jar)…**, or "Export Fabric mod jar…" in the command palette (Ctrl+Shift+P). (**Share my mod** on the toolbar makes the same jar with the usual settings, without this dialog.)
 2. The **Export Fabric mod jar** dialog shows the export's options (see below). Choose **Export…**.
 3. Save the file. Its name is the mod id, for example `ruby_ore.jar`.
 
@@ -289,9 +289,9 @@ Start the game with the Fabric profile and open a creative world. Your blocks an
 
 ## Test in Minecraft
 
-**Test in Minecraft** exports the mod jar, installs it and starts the game for you. Open it with **File → Test in Minecraft…**, the toolbar **Export** menu (**Test in Minecraft…**, next to **Fabric mod (.jar)…**) or the command palette. Like the jar export, it is disabled while the project has errors.
+**Test in Minecraft** exports the mod jar, installs it and starts the game for you. Open it with **File → Test in Minecraft…**, the toolbar's **More** menu (**Test in Minecraft…**, under **Export** and **Install**) or the command palette. Like the jar export, it is disabled while the project has errors.
 
-The **Test in Minecraft** dialog shows the game location it will use (the one chosen in **Settings → Game locations** or the toolbar install target), with its Minecraft and Fabric Loader versions, and what the mod needs: your project's Minecraft version, at least the Fabric Loader version MCSuperMods targets, and Fabric API.
+The **Test in Minecraft** dialog shows the game location it will use (the one chosen in **Settings → Game locations** or the install target in the toolbar's **More → Install** menu), with its Minecraft and Fabric Loader versions, and what the mod needs: your project's Minecraft version, at least the Fabric Loader version MCSuperMods targets, and Fabric API.
 
 - **Prism Launcher or MultiMC instance with Fabric** on the right Minecraft version: the button is **Install and launch**. MCSuperMods copies the jar into the instance's `mods` folder as `<mod id>.jar`, adds Fabric API when it is missing, and starts the instance in the launcher. If MCSuperMods cannot find the launcher program, use **Choose launcher program…** to point at it (for Prism Launcher on Windows, usually `prismlauncher.exe` under `%LOCALAPPDATA%\Programs\PrismLauncher`).
 - **Official launcher or CurseForge location with Fabric**: the button is **Install**. MCSuperMods installs the jar (and Fabric API) only, with a note; start the game from that launcher yourself.
@@ -315,7 +315,7 @@ Any other line with `[msm_runtime]` names the file and the problem.
 |---|---|
 | The game refuses to start and asks for `fabric-api` | Put Fabric API for the same Minecraft version into `mods`. |
 | The game refuses to start and asks for `msm_runtime` | The jar was exported with **Separate runtime and GeckoLib (for modpacks)**. Export it again without that option, or add another MCSuperMods mod that carries the runtime. |
-| The game refuses to start because of the Minecraft version | The jar targets another Minecraft version than the instance. Use an instance of the version shown in the toolbar's target. |
+| The game refuses to start because of the Minecraft version | The jar targets another Minecraft version than the instance. Use an instance of the version shown in **More → Install** on the toolbar. |
 | No `[msm_runtime]` line at all | The game did not start with Fabric, or the jar is not in this game's `mods` folder. |
 | A purple and black cube | The block or item has no model, or its model id is wrong. **Problems** reports a missing model. |
 | A name such as `block.my_mod.sun_stone` | The block or item has no **Display name**. |

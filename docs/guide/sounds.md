@@ -42,7 +42,7 @@ Your own sounds always play. Minecraft's own sounds are read from your Minecraft
 
 ## Templates and examples
 
-**Add element** (Ctrl+N), category **Blocks**: **Block with its own sounds** (a block that sounds like amethyst, a little higher) and **Door with its own sounds** (a wooden door that opens by hand but sounds like an iron door). The sample project `fixtures/sample-plants-and-storage` has a chiming stone and a creaky door ([Templates, starters and examples](templates-and-examples.md)).
+**Add from the full list…** (Ctrl+N), category **Blocks**: **Block with its own sounds** (a block that sounds like amethyst, a little higher) and **Door with its own sounds** (a wooden door that opens by hand but sounds like an iron door). The sample project `fixtures/sample-plants-and-storage` has a chiming stone and a creaky door ([Templates, starters and examples](templates-and-examples.md)).
 
 ## Minecraft 26.3 and 26.4
 

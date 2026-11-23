@@ -929,7 +929,8 @@ describe('the prompt in topic files (B681)', () => {
   // ADR 0130 moved it for one mode: the app map's toolbar, More options, Where it goes and Edit as
   // raw text, the picture buttons' one set of words, and how to speak without a View line.
   // B701 moved it for the one toolbar row (ADR 0131 D1): the row's labels and the More menu's.
-  const PINNED = '6611ac4a3df72313846b1e83ac0423e8489d112dfaceeac909ceb7f2df2a428f';
+  // B711 moved it for the menu bar's plain words (the jar's export, a map, a building).
+  const PINNED = 'a219644f837cf55af6e1d093e786c7e25644294bb32438dbb9b5c110e90290cf';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');

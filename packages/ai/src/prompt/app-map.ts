@@ -75,8 +75,8 @@ export const APP_MAP_LABELS = Object.freeze({
   aiPictureService: 'Retro Diffusion',
   /** The Help menu's Wishlist (`main/menu.ts`) and the command palette's title. */
   wishlist: 'Wishlist…',
-  /** The export of the mod jar (`main/menu.ts`). */
-  exportJar: 'Export Fabric Mod Jar…',
+  /** The export of the mod jar (`main/menu.ts` and the toolbar's Export). */
+  exportJar: 'Fabric mod (.jar)…',
 } as const);
 
 /**

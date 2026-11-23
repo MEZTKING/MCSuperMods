@@ -20,7 +20,7 @@ World additions and extra drops are MCSuperMods kinds (`msm:biome_addition` and 
 
 ## Ore that generates
 
-The **Custom ore** flow (Creator group **Blocks**, and the Custom ore starter in **New from starter…**) has a **World** step. **Generate in the world** is on by default and adds three elements next to the ore:
+The **Custom ore** flow (Creator group **Blocks**, and the Custom ore starter in **Start from a ready-made mod…**) has a **World** step. **Generate in the world** is on by default and adds three elements next to the ore:
 
 - a configured feature `ore_<gem>` (for Ruby: `ore_ruby`, in the sidebar group **Worldgen**): one vein of up to **Vein size** ore blocks that replaces the blocks of the vanilla `#minecraft:stone_ore_replaceables` and `#minecraft:deepslate_ore_replaceables` tags (stone, granite, diorite, andesite and deepslate), as vanilla ores do;
 - a placed feature `ore_<gem>_placed` (also under **Worldgen**): **Veins per chunk** tries in each chunk, at a random height from **Lowest height** to **Highest height** (the overworld starts at y -64);
@@ -36,7 +36,7 @@ Two things to know about the ore:
 
 ## World additions
 
-A **World addition** element adds placed features and natural mob spawns to biomes that already exist. Add one from the **Additions** category of **Add element** (template **Ore in the overworld**), and edit it in its Studio:
+A **World addition** element adds placed features and natural mob spawns to biomes that already exist. Add one from the **Additions** category of **Add from the full list…** (template **Ore in the overworld**), and edit it in its Studio:
 
 - **Biomes**: biome tags (starting with `#`, such as `#minecraft:is_overworld` or `#minecraft:is_forest`) and single biomes (such as `minecraft:plains`). The addition applies to all of them.
 - **Features**: **Add feature** adds a row with a placed feature and its generation step. Ores go in `underground_ores`, flowers and grass in `vegetal_decoration`. The **Ore in the overworld** template names `<its own id>_placed`: make that placed feature and its feature in the Worldgen Studio, or point the row at one you have.
@@ -101,7 +101,7 @@ It makes one element of the animal's variant kind (sidebar **Wolf skins**, **Cat
 
 **Which skin an animal gets.** Each skin has spawn conditions with a priority. When an animal spawns, the game takes the skins whose condition matches where it spawns, keeps those with the highest priority and picks one of them at random. **In a biome** gives your skin priority 1 in that biome, so it joins the vanilla skins of that biome (for a wolf in a snowy taiga, the snowy wolf and yours). **Everywhere** gives it priority 0 with no condition, so it is picked only where no biome skin applies. The animal must spawn in the biome you pick: wolves in forests, taigas, groves, savannas and badlands, cats in villages and swamp huts, frogs in swamps (a tadpole picks its skin when it grows up). `/summon minecraft:wolf ~ ~ ~ {variant:"<namespace>:ember_coat"}` shows the skin at once.
 
-By hand, the templates **Wolf variant** and **Cat variant** (category **Mobs**) start from a wolf skin for taigas and a cat skin for swamps that use vanilla textures until you add your own; the other animals start from their kind's default in **Add element**. Zombie nautilus skins (sidebar **Zombie nautilus skins**) have no flow. The examples **Snowy wolf skin**, **Cat variant**, **Pig variant**, **Cow variant**, **Chicken variant**, **Frog variant** and **Zombie nautilus variant** show each kind.
+By hand, the templates **Wolf variant** and **Cat variant** (category **Mobs**) start from a wolf skin for taigas and a cat skin for swamps that use vanilla textures until you add your own; the other animals start from their kind's default in **Add from the full list…**. Zombie nautilus skins (sidebar **Zombie nautilus skins**) have no flow. The examples **Snowy wolf skin**, **Cat variant**, **Pig variant**, **Cow variant**, **Chicken variant**, **Frog variant** and **Zombie nautilus variant** show each kind.
 
 ## Goat horns
 
@@ -114,7 +114,7 @@ It makes an instrument element (sidebar **Horn sounds**), the call's name in `en
 
 ## Rules for vanilla blocks
 
-Minecraft's own blocks can get tool and fire rules of your own: an axe that scrapes the moss off mossy cobblestone, a shovel that packs mud, a hoe that turns a moss block into dirt, mushroom blocks that burn. **Add element** (Ctrl+N), category **Additions**, template **Rules for vanilla blocks**, starts with those examples; selecting the element opens the **Vanilla block rules** Studio. It says: "Rules for Minecraft's own blocks: what a tool turns them into, how they age and how they burn. They need the Fabric mod export; vanilla packs do not carry them."
+Minecraft's own blocks can get tool and fire rules of your own: an axe that scrapes the moss off mossy cobblestone, a shovel that packs mud, a hoe that turns a moss block into dirt, mushroom blocks that burn. **Add from the full list…** (Ctrl+N), category **Additions**, template **Rules for vanilla blocks**, starts with those examples; selecting the element opens the **Vanilla block rules** Studio. It says: "Rules for Minecraft's own blocks: what a tool turns them into, how they age and how they burn. They need the Fabric mod export; vanilla packs do not carry them."
 
 Each list has **Add a block** and one row per block:
 
@@ -136,7 +136,7 @@ Limits:
 
 ## Other data kinds
 
-These vanilla data kinds have no Studio: **Add element** offers each with its default content (and the form, **Every setting** and **Edit as raw text** as for any vanilla kind). They work in a plain data pack.
+These vanilla data kinds have no Studio: **Add from the full list…** offers each with its default content (and the form, **Every setting** and **Edit as raw text** as for any vanilla kind). They work in a plain data pack.
 
 | Kind | Sidebar | What it does |
 |---|---|---|
@@ -150,7 +150,7 @@ These vanilla data kinds have no Studio: **Add element** offers each with its de
 | `minecraft:sulfur_cube_archetype` | **Sulfur cube kinds** | A kind of sulfur cube and what feeding it does; its fields differ between Minecraft versions |
 | `minecraft:context_int_provider`, `minecraft:context_float_provider` | **Whole-number providers**, **Decimal-number providers** | A named number the game reads, such as a compost chance or a cooking speed; one named after a vanilla one changes it |
 
-There are also tags for eight more registries: banner patterns, dialogs, instruments, points of interest, potions, timelines, features and superflat presets (the tag kinds in **Add element**). The examples gallery has an example of each kind and tag ([Templates, starters and examples](templates-and-examples.md#all-examples)).
+There are also tags for eight more registries: banner patterns, dialogs, instruments, points of interest, potions, timelines, features and superflat presets (the tag kinds in **Add from the full list…**). The examples gallery has an example of each kind and tag ([Templates, starters and examples](templates-and-examples.md#all-examples)).
 
 ## Screen effects, shaders and waypoints
 
@@ -162,7 +162,7 @@ Three resource pack kinds change how the game draws:
 | `minecraft:shader` | **Shader programs** | A shader program naming its vertex and fragment files (template **Shader program**) |
 | `minecraft:waypoint_style` | **Waypoint styles** | A locator bar dot that changes with the distance (template **Waypoint style**); use it with `/waypoint modify <target> style set <id>` |
 
-The shader source files themselves (`.vsh`, `.fsh` and `.glsl`) are plain files: bring them in with **Import assets** and the folder **Shaders (shaders, .vsh, .fsh and .glsl)**, with an optional folder below it such as `post`. Shader files are copied as they are; MCSuperMods does not check them, so a mistake shows only in game. The post effect template's shader names point at files you add yourself. The locator bar dot pictures go under `textures/gui/sprites/hud/locator_bar_dot/`.
+The shader source files themselves (`.vsh`, `.fsh` and `.glsl`) are plain files: bring them in with **Bring in pictures or sounds…** and the folder **Shaders (shaders, .vsh, .fsh and .glsl)**, with an optional folder below it such as `post`. Shader files are copied as they are; MCSuperMods does not check them, so a mistake shows only in game. The post effect template's shader names point at files you add yourself. The locator bar dot pictures go under `textures/gui/sprites/hud/locator_bar_dot/`.
 
 ## Icon fonts
 

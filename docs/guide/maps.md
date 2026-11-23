@@ -6,7 +6,7 @@ Make the game first ([Game modes](game-modes.md)), play it with **Play my game**
 
 ## Export as a map
 
-1. Choose **File > Export as a Map…**. The project must have no errors.
+1. Choose **File > Export > Export as a map…**. The project must have no errors.
 2. **Worlds from** picks where the world is: the worlds of Play and Play my game come first, then every game location MCSuperMods knows (Settings, Game locations).
 3. **Map name** is the name of the map's world folder and file (the project's name to start with).
 4. **Keep my player data** is off by default (see below).
@@ -43,7 +43,7 @@ Good to know:
 Islands, arenas and other buildings are made in the game:
 
 1. In a world of Play or Play my game, place a structure block (`/give @s minecraft:structure_block`), set it to Save, give the build a name and press Save.
-2. In MCSuperMods choose **File > Import Structure…** and the tab **From my test worlds**. Under **Bring builds from my test worlds** every saved build is listed with its world; tick the ones you want and press **Bring builds**.
+2. In MCSuperMods choose **File > Bring in a building…** and the tab **From my test worlds**. Under **Bring builds from my test worlds** every saved build is listed with its world; tick the ones you want and press **Bring builds**.
 
 Each becomes a structure template named after the build; one that already exists is skipped, and one Undo takes the whole import back. Then use it as a start island in the World Setup Studio, to rebuild an area, or in the Structure Studio, where **Chests and containers** sets what its chests hold ([Structures](structures.md#chests-and-containers)).
 

@@ -9,7 +9,7 @@ Vehicles need the **Fabric mod jar**. A vanilla pack leaves them out, and a reso
 There are three ways to make one:
 
 - the Creator's **Car**, **Tank**, **Plane** and **Boat** flows (group **Vehicles**), or **Make a vehicle** on Home;
-- **Add element** (Ctrl+N) and a template under **Vehicles**: Go-kart, Car, Tank, Biplane, Helicopter, Motorboat, Raft and Hovercraft;
+- **Add from the full list…** (Ctrl+N) and a template under **Vehicles**: Go-kart, Car, Tank, Biplane, Helicopter, Motorboat, Raft and Hovercraft;
 - the AI helper, which uses the same flows ([The AI helper](ai-helper.md)).
 
 ## Make a vehicle in the Creator

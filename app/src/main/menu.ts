@@ -1,6 +1,7 @@
 /**
- * The application menu. Project commands are forwarded to the focused renderer as
- * `msm:v1:menu` events; clipboard items use Electron roles.
+ * The application menu. Mod commands are forwarded to the focused renderer as
+ * `msm:v1:menu` events; clipboard items use Electron roles. The labels are the toolbar's
+ * words (ADR 0131 D1): File follows the toolbar's More menu, Help its Help menu.
  *
  * @packageDocumentation
  */
@@ -38,7 +39,7 @@ function sendPluginExport(id: string): void {
 let currentRecent: readonly RecentProject[] = [];
 let currentPluginExports: readonly MenuPluginExportEntry[] = [];
 
-/** The entries File > More Exports adds for plugin exporters (after a separator). */
+/** The entries File > Export adds for plugin exporters (after a separator). */
 export function pluginExportItems(
   entries: readonly MenuPluginExportEntry[],
   choose: (id: string) => void,
@@ -55,7 +56,7 @@ export function pluginExportItems(
 }
 
 /**
- * Listens for the renderer's plugin exporter list (File > More Exports) and reinstalls the
+ * Listens for the renderer's plugin exporter list (File > Export) and reinstalls the
  * menu when it changes. Only the main frame of an app window may set it.
  */
 export function registerMenuIpc(): void {
@@ -69,7 +70,7 @@ export function registerMenuIpc(): void {
   });
 }
 
-/** The longest path shown in an "Open Recent" label before the middle is elided. */
+/** The longest path shown in a "Recent mods" label before the middle is elided. */
 export const RECENT_LABEL_PATH_MAX = 60;
 
 /**
@@ -92,12 +93,12 @@ export function shortenPath(path: string, max = RECENT_LABEL_PATH_MAX): string {
   return `${head}${separator}…${separator}${tail.join(separator)}`;
 }
 
-/** The label of one "Open Recent" entry; `&` is doubled so it is not read as a mnemonic. */
+/** The label of one "Recent mods" entry; `&` is doubled so it is not read as a mnemonic. */
 export function recentLabel(entry: Pick<RecentProject, 'name' | 'root'>): string {
   return `${entry.name} — ${shortenPath(entry.root)}`.replaceAll('&', '&&');
 }
 
-/** The "Open Recent" submenu: one item per project, or a disabled note, then "Clear". */
+/** The "Recent mods" submenu: one item per mod, or a disabled note, then "Clear list". */
 export function recentSubmenu(
   recent: readonly RecentProject[],
   open: (root: string) => void,
@@ -105,7 +106,7 @@ export function recentSubmenu(
 ): MenuItemConstructorOptions[] {
   const items: MenuItemConstructorOptions[] =
     recent.length === 0
-      ? [{ label: 'No recent projects', enabled: false }]
+      ? [{ label: 'No recent mods', enabled: false }]
       : recent.slice(0, 10).map((entry) => ({
           label: recentLabel(entry),
           click: () => open(entry.root),
@@ -113,7 +114,7 @@ export function recentSubmenu(
   return [
     ...items,
     { type: 'separator' },
-    { label: 'Clear Recent Projects', enabled: recent.length > 0, click: clear },
+    { label: 'Clear list', enabled: recent.length > 0, click: clear },
   ];
 }
 
@@ -127,58 +128,76 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
     {
       label: 'File',
       submenu: [
-        // Ctrl/Cmd+N is left to the renderer, where it adds a new element.
-        { label: 'New Project…', accelerator: 'CmdOrCtrl+Shift+N', click: () => send('new') },
-        { label: 'New Project from Starter…', click: () => send('newProjectFromStarter') },
-        // ADR 0043: opens the Creator.
-        { label: 'Create…', click: () => send('creator') },
-        // ADR 0086: a random themed mod, new or added to the open one.
-        { label: 'Surprise Me…', click: () => send('surpriseMe') },
-        { label: 'New Project with the AI Helper…', click: () => send('newWithAi') },
-        { label: 'Modpacks…', click: () => send('modpacks') },
-        // ADR 0048: a screenshot, image or skin as a texture.
-        { label: 'Picture to Texture…', click: () => send('pictureToTexture') },
-        { label: 'Open Project…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
+        // Ctrl/Cmd+N is left to the renderer, where it opens "Add from the full list…".
+        { label: 'New mod…', accelerator: 'CmdOrCtrl+Shift+N', click: () => send('new') },
         {
-          label: 'Open Recent',
+          label: 'Start from a ready-made mod…',
+          click: () => send('newProjectFromStarter'),
+        },
+        { label: 'Examples…', click: () => send('examples') },
+        { label: 'New mod with the AI helper…', click: () => send('newWithAi') },
+        // ADR 0086: a random themed mod, new or added to the open one.
+        { label: 'Surprise me…', click: () => send('surpriseMe') },
+        { type: 'separator' },
+        { label: 'Open a mod…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
+        {
+          label: 'Recent mods',
           submenu: recentSubmenu(recent, sendOpenRecent, () => send('clearRecentProjects')),
         },
-        // ADR 0037 D4: move the open project to another built-in target.
-        { label: 'Upgrade Project Target…', click: () => send('upgradeTarget') },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
         { type: 'separator' },
-        // ADR 0084 D1, D6: one-click Play and Reload. F5 and Ctrl/Cmd+R were the window's
-        // reload keys (Electron's "reload" role); View > Reload Window keeps Ctrl/Cmd+Shift+R.
-        { label: 'Play', accelerator: 'F5', click: () => send('play') },
-        { label: 'Reload in Game', accelerator: 'CmdOrCtrl+R', click: () => send('reloadGame') },
-        // ADR 0085 D13: the test area in the app; F6 sits on View > Try it.
-        { label: 'Try it', click: () => send('tryIt') },
+        // ADR 0043: opens the Creator.
+        { label: 'Make something…', click: () => send('creator') },
+        { label: 'Bring in pictures or sounds…', click: () => send('importAssets') },
+        { label: 'Bring in a building…', click: () => send('importStructure') },
+        { label: 'Bring in a Blockbench model…', click: () => send('importBlockbench') },
+        // ADR 0048: a screenshot, image or skin as a picture.
+        { label: 'Turn a photo into a picture…', click: () => send('pictureToTexture') },
         { type: 'separator' },
-        { label: 'Import Assets…', click: () => send('importAssets') },
-        { label: 'Import Structure…', click: () => send('importStructure') },
-        { label: 'Import Blockbench Model…', click: () => send('importBlockbench') },
-        { type: 'separator' },
-        { label: 'Export Resource Pack…', click: () => send('exportResourcePack') },
-        { label: 'Export Data Pack…', click: () => send('exportDataPack') },
-        { label: 'Export Both…', click: () => send('exportCombined') },
-        { label: 'Export Fabric Mod Jar…', click: () => send('exportFabricJar') },
-        { label: 'Export Java Project…', click: () => send('exportJavaProject') },
-        { label: 'Test in Minecraft…', click: () => send('testInMinecraft') },
-        { label: 'Install Resource Pack', click: () => send('installResourcePack') },
-        { label: 'Install Data Pack…', click: () => send('installDataPack') },
-        { label: 'Export as a Map…', click: () => send('exportMap') },
         {
-          label: 'More Exports',
+          label: 'Export',
           submenu: [
-            { label: 'Export Structures (.nbt)…', click: () => send('exportStructures') },
+            { label: 'Resource pack (.zip)…', click: () => send('exportResourcePack') },
+            { label: 'Data pack (.zip)…', click: () => send('exportDataPack') },
+            { label: 'Both packs into a folder…', click: () => send('exportCombined') },
+            { label: 'Fabric mod (.jar)…', click: () => send('exportFabricJar') },
+            { label: 'Fabric Java project (eject)…', click: () => send('exportJavaProject') },
+            { label: 'Export as a map…', click: () => send('exportMap') },
+            { type: 'separator' },
+            { label: 'Structures (.nbt) into a folder…', click: () => send('exportStructures') },
             {
-              label: 'Export Structures as Sponge Schematics (.schem)…',
+              label: 'Structures as Sponge schematics (.schem)…',
               click: () => send('exportSchematics'),
             },
-            // Other plugin exporters (an external plugin's), as the toolbar's "More exports".
+            // Other plugin exporters (an external plugin's), as in the toolbar's Export.
             ...pluginExportItems(currentPluginExports, sendPluginExport),
           ],
         },
+        {
+          label: 'Install',
+          submenu: [
+            {
+              label: 'Resource pack to the resourcepacks folder',
+              click: () => send('installResourcePack'),
+            },
+            { label: 'Data pack to a world…', click: () => send('installDataPack') },
+          ],
+        },
+        { label: 'Test in Minecraft…', click: () => send('testInMinecraft') },
+        { label: 'Modpacks…', click: () => send('modpacks') },
+        // ADR 0037 D4: move the open mod to another built-in target.
+        { label: 'Move to another Minecraft version…', click: () => send('upgradeTarget') },
+        { type: 'separator' },
+        // ADR 0084 D1, D6: one-click Play and Reload. F5 and Ctrl/Cmd+R were the window's
+        // reload keys (Electron's "reload" role); View > Reload window keeps Ctrl/Cmd+Shift+R.
+        { label: 'Play', accelerator: 'F5', click: () => send('play') },
+        {
+          label: 'Reload in the game',
+          accelerator: 'CmdOrCtrl+R',
+          click: () => send('reloadGame'),
+        },
+        // ADR 0085 D13: the test area in the app; F6 sits on View > Try it.
+        { label: 'Try it', click: () => send('tryIt') },
         { type: 'separator' },
         { label: 'Settings…', click: () => send('settings') },
         { type: 'separator' },
@@ -198,9 +217,9 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
           click: () => send('redo'),
         },
         { type: 'separator' },
-        { label: 'Rename Element…', accelerator: 'F2', click: () => send('renameElement') },
+        { label: 'Rename…', accelerator: 'F2', click: () => send('renameElement') },
         {
-          label: 'Command Palette',
+          label: 'Command palette',
           accelerator: 'CmdOrCtrl+Shift+P',
           click: () => send('commandPalette'),
         },
@@ -216,37 +235,37 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
         { role: 'cut' },
         { role: 'copy' },
         { role: 'paste' },
-        { role: 'selectAll' },
+        { role: 'selectAll', label: 'Select all' },
       ],
     },
     {
       label: 'View',
       submenu: [
-        // ADR 0041 D8: the right dock's "AI helper" tab.
-        {
-          label: 'AI Helper',
-          accelerator: 'CmdOrCtrl+Shift+A',
-          click: () => send('toggleAiHelper'),
-        },
         // ADR 0083 D2: Home (ADR 0130 D1: one mode, no mode entries).
         { label: 'Home', click: () => send('home') },
         { label: 'Try it', accelerator: 'F6', click: () => send('tryIt') },
+        // ADR 0041 D8: the right dock's "AI helper" tab.
+        {
+          label: 'AI helper',
+          accelerator: 'CmdOrCtrl+Shift+A',
+          click: () => send('toggleAiHelper'),
+        },
         { type: 'separator' },
-        // Ctrl/Cmd+R is File > Reload in Game (ADR 0084 D6), so the window reload moves.
-        { role: 'reload', label: 'Reload Window', accelerator: 'CmdOrCtrl+Shift+R' },
-        { role: 'toggleDevTools' },
+        // Ctrl/Cmd+R is File > Reload in the game (ADR 0084 D6), so the window reload moves.
+        { role: 'reload', label: 'Reload window', accelerator: 'CmdOrCtrl+Shift+R' },
+        { role: 'toggleDevTools', label: 'Developer tools' },
       ],
     },
     {
       label: 'Help',
       submenu: [
-        { label: 'Your First Mod…', click: () => send('firstMod') },
-        // ADR 0053: requests MSM could not build, kept per project.
-        { label: 'Wishlist…', click: () => send('wishlist') },
+        { label: 'Your first mod…', click: () => send('firstMod') },
         { label: 'Examples…', click: () => send('examples') },
-        { label: "What's New…", click: () => send('whatsNew') },
+        { label: 'What’s new…', click: () => send('whatsNew') },
+        // ADR 0053: requests MSM could not build, kept per mod.
+        { label: 'Wishlist…', click: () => send('wishlist') },
         { type: 'separator' },
-        { label: 'Check for Updates…', click: () => send('checkForUpdates') },
+        { label: 'Check for updates…', click: () => send('checkForUpdates') },
       ],
     },
   ];

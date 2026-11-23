@@ -11258,3 +11258,19 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B763: build `JavaSearchEnv` in main (`JAVA_HOME`, `PATH`, `LOCALAPPDATA`; `nodeEnv` lacks them), pass a `probe` that runs `java -version`, run `cachedServerLauncher` then `ensureServer` one at a time, check the port before each start, spawn `planServerStart`'s command without a shell, fold the log with `serverStateAfter`, write `SERVER_STOP_LINE` and kill after a time-out.
 - `packages/interop/CLAUDE.md`'s row still says `server/` is empty (not this brief's file).
+
+## 2026-11-23 — executor — B711 Native menus and the guide follow the toolbar
+
+**What**
+- `app/src/main/menu.ts`: the menu bar in the toolbar's sentence-case words (ADR 0131 D1). File follows the More menu: New mod…, Start from a ready-made mod…, Examples…, New mod with the AI helper…, Surprise me…; Open a mod…, Recent mods (Clear list, "No recent mods"), Save; Make something…, Bring in pictures or sounds…, Bring in a building…, Bring in a Blockbench model…, Turn a photo into a picture…; Export (the toolbar's Export submenu, plugin exporters after its separator; was "More Exports" plus nine flat entries), Install (its two entries), Test in Minecraft…, Modpacks…, Move to another Minecraft version…; Play, Reload in the game, Try it; Settings…, Quit. Edit: Rename… (was Rename Element…), Command palette, Search…, Select all. View: Home, Try it, AI helper, Reload window, Developer tools. Help: Your first mod…, Examples…, What’s new…, Wishlist…, Check for updates…. Accelerators and `MenuCommand` ids unchanged.
+- `app/test/main-menu.test.ts`: the File, Export, Install, Edit, View and Help labels in order; no "Project", "Element" or "Assets" and no title case in a label; every accelerator with its command as before; every entry's command.
+- The guide: the 22 pages that name the toolbar and every page that names an old menu or toolbar entry (Add element, Import assets, New from starter…, Create…, the Export .zip arrow, File → Export Fabric Mod Jar… and the rest) say where the thing now is (the row, More, or the menu bar, in the new words). `getting-started.md` and `more-options.md` describe the one row from B701's notes; `very-easy.md`'s stub, `boats.md`, `fluids.md`, `commands-and-tabs.md`, `creator.md`, `search.md` and `playing-and-testing.md` lose their mode words (only the stub's title keeps them, for the search). More ideas already said "starts from one thing", so it was left.
+- The AI prompt: `exportJar` is "Fabric mod (.jar)…", games' map export "Export > Export as a map…" and "Bring in a building…", and the seed "in the Play menu" (B701 moved it from beside the chip). 103,995 of 104,000 characters; hash re-pinned.
+- e2e `maps-path` (File > Export > Export as a map…, Bring in a building…) and `plugins-path` (File > Export) follow the labels; `ai-path` and `ai-clarity-path` click Edit > Undo and Help > Wishlist…, which kept their labels.
+
+**Decisions**
+- The native Help has no Guide… entry: it needs a new `MenuCommand` and its `App.tsx` handler (B713 owns `App.tsx` this wave).
+- "Reload in the game" rather than the toolbar's bare "Reload", which would sit beside View's "Reload window".
+
+**Next**
+- Old menu words left in renderer text outside this brief: `WelcomeDialog.tsx` ("Help → Your First Mod…"), `StarterWizard.tsx` ("File > Upgrade Project Target"), `EntityStudio.tsx` ("File, Import Blockbench Model"), `modpacks/build.ts` ("Upgrade Project Target"); `FluidStudio.tsx` still says "under Advanced" (the guide quotes it as shipped).

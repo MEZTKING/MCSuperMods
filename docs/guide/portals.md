@@ -8,7 +8,7 @@ There are three ways to make one:
 
 - the Creator's **Portal** flow (group **Worlds**), which can also make the dimension it leads to;
 - the **Dimension** flow, whose **How to get there** has **A portal (needs the Fabric mod jar)**;
-- **Add element** (Ctrl+N) and a template under **Portals**, or the **Portal** section of the [Block Studio](blocks-and-items.md#the-block-studio) for a block you already have.
+- **Add from the full list…** (Ctrl+N) and a template under **Portals**, or the **Portal** section of the [Block Studio](blocks-and-items.md#the-block-studio) for a block you already have.
 
 ## Make a portal in the Creator
 
@@ -127,7 +127,7 @@ Export the **Fabric mod jar** or use **Test in Minecraft**; **Problems** must sh
 
 ## Templates and example
 
-Under **Portals** in **Add element**: **Portal to the Nether** (crying obsidian, eight to one, ember-orange dust), **Portal to the End** (end stone bricks, lands on the ground, reverse portal particles) and **Trigger-lit portal** (quartz frame that no item lights). The example **Two-way sky portal** is a portal to a flat sky dimension, lit with flint and steel or by a beacon block, with blue dust and an `On travel` function.
+Under **Portals** in **Add from the full list…**: **Portal to the Nether** (crying obsidian, eight to one, ember-orange dust), **Portal to the End** (end stone bricks, lands on the ground, reverse portal particles) and **Trigger-lit portal** (quartz frame that no item lights). The example **Two-way sky portal** is a portal to a flat sky dimension, lit with flint and steel or by a beacon block, with blue dust and an `On travel` function.
 
 ## Troubleshooting
 

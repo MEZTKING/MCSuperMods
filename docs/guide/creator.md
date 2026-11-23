@@ -6,10 +6,11 @@ The Creator uses the same flows as the project starters ([Templates, starters an
 
 ## Open the Creator
 
-Open or create a project first (a blank one from **New** on the toolbar is fine). Then use one of:
+Open or create a project first (a blank one from **More → New mod…** on the toolbar is fine). Then use one of:
 
-- **Create…** on the toolbar;
-- **File → Create…**;
+- a tile under **Make something** on Home;
+- **Make something…** in the toolbar's **More** menu;
+- **File → Make something…**;
 - "Create with the Creator…" in the command palette (Ctrl+Shift+P);
 - **or Create something with the Creator** in the empty editor area, or in the **New project** dialog while a project is open.
 
@@ -119,7 +120,7 @@ The **Painting** flow's **Picture** field takes a PNG of your own. Choose **Choo
 
 ## Create and Undo
 
-Choose **Create**. The dialog closes, the sidebar shows the new elements and a message says how much changed, for example "Create Gear set: <n> element(s) and file(s) changed. Undo reverts them in one step." Everything the Creator added is one step: **Undo** (toolbar, **Edit → Undo** or Ctrl+Z) takes it all back, textures included, and **Redo** puts it back.
+Choose **Create**. The dialog closes, the sidebar shows the new elements and a message says how much changed, for example "Create Gear set: <n> element(s) and file(s) changed. Undo reverts them in one step." Everything the Creator added is one step: **Undo** (on the toolbar, **Edit → Undo** or Ctrl+Z) takes it all back, textures included, and **Redo** puts it back.
 
 The Creator never adds a second `pack.mcmeta` or mod metadata element to a project that has one, and it adds to language files and tags that already exist (missing names and entries only) instead of replacing them.
 
@@ -189,7 +190,7 @@ The **Dimension** flow (under **Worlds**) makes a new world to visit, and its **
 
 ## Make a world
 
-Five flows under **Worlds** make a World Type, a world players choose under **More > World Type** when they create a world: **Islands**, **Tall mountains**, **One biome everywhere**, **Caves only** and **Empty sky with a start island**. On Home they are the pictures of **Make a world** on Home. Their questions and answers are listed in [Worldgen](worldgen.md#make-a-world-in-a-few-questions). The land is MCSuperMods' own recipe, so the **Map** tab draws it while you answer, without your Minecraft folder (except **Like the overworld**). **Create** adds the World Type, its land files, its English name and, for **Caves only**, a dimension type without daylight under the roof; open the World Type to see its map in the **Preview** tab, or walk in it with [Try it](try-it.md#my-world-generation). The empty sky's start island, its chest and what you start with come from the **Skyblock** flow under **Games** ([Make a game](#make-a-game)); with **Empty sky with a start island** alone players fall, so play it in Creative. In Very easy mode, **Make a world** offers Skyblock in its place.
+Five flows under **Worlds** make a World Type, a world players choose under **More > World Type** when they create a world: **Islands**, **Tall mountains**, **One biome everywhere**, **Caves only** and **Empty sky with a start island**. On Home they are the pictures of **Make a world** on Home. Their questions and answers are listed in [Worldgen](worldgen.md#make-a-world-in-a-few-questions). The land is MCSuperMods' own recipe, so the **Map** tab draws it while you answer, without your Minecraft folder (except **Like the overworld**). **Create** adds the World Type, its land files, its English name and, for **Caves only**, a dimension type without daylight under the roof; open the World Type to see its map in the **Preview** tab, or walk in it with [Try it](try-it.md#my-world-generation). The empty sky's start island, its chest and what you start with come from the **Skyblock** flow under **Games** ([Make a game](#make-a-game)); with **Empty sky with a start island** alone players fall, so play it in Creative. Home's **Make a world** offers **Skyblock** in its place.
 
 ## Make a game
 
@@ -213,7 +214,7 @@ The **Custom mob** flow's **Skin** field takes a player skin: a PNG of 64 by 64 
 
 ## Picture to texture
 
-**File → Picture to Texture…** (also the picture button beside a namespace's assets heading, and the palette) turns a screenshot or any picture into a texture. Paste a screenshot with Ctrl+V, drop a picture on the dialog, or choose **Choose picture…** (PNG, JPEG, GIF, BMP or WebP). Pick **What it is for**: an item or a block (16 by 16), an armour layer (64 by 32), a mob skin (64 by 64) or a painting of 1 by 1 to 4 by 4 blocks. Drag over the picture to choose the part to use; the frame keeps the texture's proportions, and **Reset crop** starts again. Then:
+**File → Turn a photo into a picture…** (also the picture button beside a namespace's assets heading, and the palette) turns a screenshot or any picture into a texture. Paste a screenshot with Ctrl+V, drop a picture on the dialog, or choose **Choose picture…** (PNG, JPEG, GIF, BMP or WebP). Pick **What it is for**: an item or a block (16 by 16), an armour layer (64 by 32), a mob skin (64 by 64) or a painting of 1 by 1 to 4 by 4 blocks. Drag over the picture to choose the part to use; the frame keeps the texture's proportions, and **Reset crop** starts again. Then:
 
 - **Smooth (photos, screenshots)** averages the pixels; **Sharp (pixel art)** keeps hard edges, for pictures that are already pixel art.
 - **Make the background transparent** removes the colour around the subject (the colour of the picture's corners), with a **Tolerance** for colours close to it.
@@ -227,7 +228,7 @@ To change what an item, block or model looks like, drag a texture from the names
 
 ## Replacing the placeholders
 
-The Creator draws its pictures itself, in the colour you choose and in a Minecraft-like style: MCSuperMods' own drawings, never copied from the game. Projects made before keep the pictures they have; nothing is redrawn by itself. Paint over a drawn picture to restyle it, or choose **Draw…** beside a picture to pick another look ([Drawing pictures](pictures.md)). To change one inside MCSuperMods, choose the brush (**Paint this texture**) on its row under the namespace's assets: the texture editor has a pencil, an eraser, a fill bucket, a colour picker and the texture's own colours, zoom, and undo and redo (Ctrl+Z, Ctrl+Shift+Z). **Save** writes it, and one **Edit → Undo** brings the old picture back. To paint a new texture from a blank picture, choose the brush beside the namespace's assets heading (**New texture…**), type a **Name** and pick **What it is for** (an item or block, 16 by 16; an armour layer, 64 by 32; a status effect icon, 18 by 18; a 2 by 2 painting, 32 by 32) and **Start from** (**Blank**, or **Drawn picture**, which draws the picture first and opens it in the painter; paintings start blank), then **Paint…** (**Draw…** for a drawn picture): **Save** adds it to the project, and **Edit → Undo** removes it again. Point a model or an equipment layer at it to use it. To use a picture made elsewhere, paint a PNG with the same file name and choose **Import assets** on the toolbar, as in [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders). An imported texture counts as your edit, so **Edit in Creator** keeps it. The worn armour layers are 64 by 32 pixels in the vanilla armour layout (`humanoid` for the helmet, chestplate and boots, `humanoid_leggings` for the leggings).
+The Creator draws its pictures itself, in the colour you choose and in a Minecraft-like style: MCSuperMods' own drawings, never copied from the game. Projects made before keep the pictures they have; nothing is redrawn by itself. Paint over a drawn picture to restyle it, or choose **Draw…** beside a picture to pick another look ([Drawing pictures](pictures.md)). To change one inside MCSuperMods, choose the brush (**Paint this texture**) on its row under the namespace's assets: the texture editor has a pencil, an eraser, a fill bucket, a colour picker and the texture's own colours, zoom, and undo and redo (Ctrl+Z, Ctrl+Shift+Z). **Save** writes it, and one **Edit → Undo** brings the old picture back. To paint a new texture from a blank picture, choose the brush beside the namespace's assets heading (**New texture…**), type a **Name** and pick **What it is for** (an item or block, 16 by 16; an armour layer, 64 by 32; a status effect icon, 18 by 18; a 2 by 2 painting, 32 by 32) and **Start from** (**Blank**, or **Drawn picture**, which draws the picture first and opens it in the painter; paintings start blank), then **Paint…** (**Draw…** for a drawn picture): **Save** adds it to the project, and **Edit → Undo** removes it again. Point a model or an equipment layer at it to use it. To use a picture made elsewhere, paint a PNG with the same file name and choose **More → Bring in pictures or sounds…** on the toolbar, as in [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders). An imported texture counts as your edit, so **Edit in Creator** keeps it. The worn armour layers are 64 by 32 pixels in the vanilla armour layout (`humanoid` for the helmet, chestplate and boots, `humanoid_leggings` for the leggings).
 
 ## The AI helper uses the same flows
 

@@ -15,7 +15,7 @@ Ejecting is **one-way**. The Java project is yours: edits you make there never c
 ## Export the Java project
 
 1. Open the project. Fix any errors in **Problems** first: errors block this export, as they block the Fabric mod jar.
-2. Open the arrow next to **Export .zip** on the toolbar and choose **Fabric Java project (eject)…**, or use **File → Export Java Project…**, or "Export Java project…" in the command palette (Ctrl+Shift+P).
+2. Open **More → Export** on the toolbar and choose **Fabric Java project (eject)…**, or use **File → Export → Fabric Java project (eject)…**, or "Export Java project…" in the command palette (Ctrl+Shift+P).
 3. The **Export Java project** dialog says what the export writes: "Writes a standalone Fabric Gradle project with generated Java into a new folder. It does not depend on msm_runtime. Edits you make there do not come back into MCSuperMods. Scripts are not included." When the project has scripts, it lists them ("This script is not included in the Java project: <id>.").
 4. Choose **Choose folder…** and pick a folder (the folder picker is titled "Export Java project: choose a folder"). MCSuperMods writes the project into a new folder named after the mod id inside it, for example `<picked folder>/ruby_ore/`.
 5. When it is done, the status bar says "Java project written to <path>"; **Reveal** opens the folder.

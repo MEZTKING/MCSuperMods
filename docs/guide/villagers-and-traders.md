@@ -26,7 +26,7 @@ There are four ways:
   - the usual mob questions: **What is it called?**, **What does it look like?** (a two-legged mob, a four-legged mob, a bird or a round creature), its colour or skin picture, **Health**, **Speed** and where it turns up (with a spawn egg).
 
   It creates with its untouched defaults and zero problems;
-- **Add element** (Ctrl+N), the templates under **Villagers and traders**: **Wandering merchant**, **Trader who remembers you** (it likes flowers as gifts, raises prices with demand and restocks at a barrel), **Pack mule**, **Shoulder pet**, **Village job** and **Villager look**;
+- **Add from the full list…** (Ctrl+N), the templates under **Villagers and traders**: **Wandering merchant**, **Trader who remembers you** (it likes flowers as gifts, raises prices with demand and restocks at a barrel), **Pack mule**, **Shoulder pet**, **Village job** and **Villager look**;
 - the examples **Roadside merchant** (two levels of its own, a bell on every trade), **Fair trader who remembers you** and **Village blacksmith job**.
 
 To make an existing mob a trader, open it in the Entity Studio and use the **Trader** section.
@@ -54,7 +54,7 @@ With **Its own trades**, the trade editor appears. Each trade is a row with **Pr
 A village job gives vanilla villagers a new profession. A villager with no job that finds your **job site block** takes the job, wears your apron and sells your trades, as a mason does at a stonecutter.
 
 - the Creator's **Village job** flow (group **Worlds**; Fabric mod jar only). Its answers: **What is the job called?** (Tinker gives the job `tinker` and its block `tinker_workbench`), **Apron colour**, **Workbench colour**, **Crafting recipe for the workbench** (two iron ingots over two planks of any wood), then the first trades: **What does the villager buy?** with **How many for one emerald?**, and **What does the villager sell?** with **For how many emeralds?**. **Also trades like** is **Nobody: only its own two trades** or the trades of one of the vanilla jobs, from **A toolsmith** to **A shepherd**; the job then also draws from that job's trades at every level and uses its work sound;
-- **Add element**, the template **Village job** (category **Villagers and traders**), or the example **Village blacksmith job**.
+- **Add from the full list…**, the template **Village job** (category **Villagers and traders**), or the example **Village blacksmith job**.
 
 The flow makes the profession, its workbench block (with a model and a recipe), two first-level trades, five trade lists for the five levels and an apron drawn by MCSuperMods for villagers and for zombie villagers. A villager of the job has two trades picked at random from the level's list; a level 1 job offers both of the flow's trades.
 
@@ -75,7 +75,7 @@ A villager look dresses the villagers born or spawned in some biomes, and the zo
 
 - On Home, **Make a trader** also offers the **Villager look** flow.
 - The Creator's **Villager look** flow (Fabric mod jar only). Its answers: **What is the look called?**, **Where villagers wear it** (**Cherry groves**, **Meadows**, **Birch forests**, **Dark forests**, **Mushroom fields**, **Badlands**, or **Flower forests and sunflower plains**), **Clothes colour**, **Hem colour** and **A sash**. MCSuperMods draws the robe for villagers and zombie villagers.
-- **Add element**, the template **Villager look** (category **Villagers and traders**), or the example **Villager look: Blossom villagers**.
+- **Add from the full list…**, the template **Villager look** (category **Villagers and traders**), or the example **Villager look: Blossom villagers**.
 
 Selecting one opens the **Villager look Studio**:
 

@@ -11,7 +11,7 @@ The same search opens from five places:
 | Where | What you see |
 |---|---|
 | **Home** | A large bar at the top, **What do you want to make?**, with a mod open or not. |
-| The toolbar, in every mode | A small field, **Search or make anything**. |
+| The toolbar | A field in the middle of the row, **Search or make anything**; in a narrow window it is a magnifier button. |
 | **Ctrl+K** (**Cmd+K** on a Mac), or **Edit > Search…** | Opens it from anywhere. Inside a code editor Ctrl+K may belong to the editor: use the toolbar field, or press Escape first. |
 | The command palette, **Ctrl+Shift+P** | Still the palette, with its look and its order; what you type there is ranked by the same search, and **Search everything…** at the end of its list opens the full search. |
 

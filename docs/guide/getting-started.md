@@ -10,19 +10,21 @@ You need Windows 10 or 11 and Minecraft Java Edition 26.3, the release MCSuperMo
 2. Run it. The installer is not signed yet, so Windows SmartScreen warns on the first run: choose **More info**, then **Run anyway**.
 3. Start MCSuperMods from the Start menu.
 
-MCSuperMods updates itself. A few seconds after start-up, and then every six hours, it looks for a newer release. When it finds one, a banner above the toolbar says "Version X is available, downloading…" while it downloads in the background, then "Version X is ready and installs when you close MCSuperMods" with **Restart to update**, and Windows shows a notification. A downloaded update installs in one of two ways. Choose **Restart to update** to install it now: MCSuperMods closes, installs the update and opens again on the new version. Or keep working: the next time you close MCSuperMods, the update installs quietly and the new version is there when you next start it. Either way MCSuperMods asks first if the project has unsaved changes (**Save**, **Discard changes** or **Cancel**); **Cancel** keeps the app open and installs nothing. The first start on the new version shows What's new once. Turn the automatic checks off with **Check for updates automatically** in **Settings → Updates**; **Help → Check for Updates…** works either way.
+MCSuperMods updates itself. A few seconds after start-up, and then every six hours, it looks for a newer release. When it finds one, a banner above the toolbar says "Version X is available, downloading…" while it downloads in the background, then "Version X is ready and installs when you close MCSuperMods" with **Restart to update**, and Windows shows a notification. A downloaded update installs in one of two ways. Choose **Restart to update** to install it now: MCSuperMods closes, installs the update and opens again on the new version. Or keep working: the next time you close MCSuperMods, the update installs quietly and the new version is there when you next start it. Either way MCSuperMods asks first if the project has unsaved changes (**Save**, **Discard changes** or **Cancel**); **Cancel** keeps the app open and installs nothing. The first start on the new version shows What's new once. Turn the automatic checks off with **Check for updates automatically** in **Settings → Updates**; **Help → Check for updates…** works either way.
 
-**What's new.** The first time you start a new version, MCSuperMods shows what changed. Open it again with **Help → What's New…** or "What's new…" in the command palette; the update banner's **What's new** button shows the notes of the version being installed. The same notes are in [`CHANGELOG.md`](https://github.com/MEZTKING/MCSuperMods/blob/main/CHANGELOG.md).
+**What's new.** The first time you start a new version, MCSuperMods shows what changed. Open it again with **Help → What’s new…** or "What's new…" in the command palette; the update banner's **What's new** button shows the notes of the version being installed. The same notes are in [`CHANGELOG.md`](https://github.com/MEZTKING/MCSuperMods/blob/main/CHANGELOG.md).
 
-New project, New from starter, Open project and the Examples gallery's **Open as new project…** open their folder picker where you last chose a project folder.
+**New mod…**, **Start from a ready-made mod…**, **Open a mod…** and the Examples gallery's **Open as new project…** open their folder picker where you last chose a project folder.
 
 Starters and the Examples gallery come with the first release after 0.2.1. To run the very latest code instead, see [Try it](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#try-it) in the README.
 
 ## 2. First launch: tell MCSuperMods where Minecraft is
 
-The window has a toolbar at the top, the element list on the left, the editor in the middle and a dock on the right with **Preview** and **Problems** tabs. With no project open, the list says "No project is open. Use New or Open."
+The window has a toolbar at the top, the list of things in your mod on the left, the editor in the middle and a dock on the right with **Preview** and **Problems** tabs. With no mod open, the list says "No mod is open. Start one or open one from Home."
 
-Choose **Settings** on the toolbar (or **File → Settings…**).
+The toolbar is one row: **Home**, **Undo**, **Redo**, **Save**, **Try it**, **Play** and its menu, **Share my mod**, the search field, **AI helper**, **Help** and **More**. **More** holds everything else: new and ready-made mods, **Examples…**, **Open a mod…** and **Recent mods**, **Make something…**, **Add from the full list…**, **Bring in pictures or sounds…**, **Export**, **Install**, **Test in Minecraft…**, **Modpacks…** and **Settings…**. The menu bar (**File**, **Edit**, **View**, **Help**) has the same entries in the same words, with their shortcuts.
+
+Choose **More → Settings…** on the toolbar (or **File → Settings…**).
 
 **Game locations.** MCSuperMods looks for the official launcher (`%APPDATA%\.minecraft`), Prism Launcher and the CurseForge app on its own. Under **Install packs into** every game folder and launcher instance it found is listed with its launcher, Minecraft version and mod loader. Pick the one you play with; installs go there.
 
@@ -38,7 +40,7 @@ Close Settings.
 
 ## 3. Create a project from the Custom ore starter
 
-1. Click the small arrow next to **New** on the toolbar and choose **New from starter…** (or **File → New Project from Starter…**).
+1. Choose **More → Start from a ready-made mod…** on the toolbar (or **File → Start from a ready-made mod…**).
 2. The **New project** dialog lists the 36 starters under Blank, Packs and Themed content. Choose **Custom ore**. Its badges show that it fills a resource pack, a data pack and the Fabric mod jar, and the **Wizard** badge means it asks a few questions before it creates the project. The dialog shows "Step 1 of 5"; choose **Next**.
 3. **Custom ore: Ore** (step 2) asks for the **Gem name** (`Ruby`), its **Colour**, the **Pickaxe needed** to mine it (**Iron pickaxe**) and whether to **Add a storage block**. Keep the answers for this guide (the steps below assume Ruby) and choose **Next**.
 4. **Custom ore: Drops** (step 3) asks for the **Fewest gems per ore** and **Most gems per ore** (1 and 2). Choose **Next**.
@@ -72,13 +74,13 @@ Try a few edits (the steps below assume the starter's names, so undo the first e
 2. Select `ruby_ore:blocks/ruby_ore` and change the drop count from 1–2 to 2–4.
 3. Select `ruby_ore:ruby_block_from_rubies` and look at the recipe grid: nine rubies make a Block of Ruby.
 
-**Undo** and **Redo** (Ctrl+Z, Ctrl+Shift+Z) on the toolbar step back and forward through every change, including whole starter or example copies.
+**Undo** and **Redo** (Ctrl+Z, Ctrl+Shift+Z), next to **Home** on the toolbar, step back and forward through every change, including whole starter or example copies.
 
 ## 5. Preview
 
 Select `ruby_ore:block/ruby_ore`: the live preview beside the form shows the block turning in 3D with the ruby ore texture, and it redraws as you edit. Items and blocks preview their model, armour looks and armour pieces show on a figure (tick parts to show them, expand a part to see its texture, **Edit** jumps to its field), recipes show their crafting grid. **Preview** in the editor's header hides the pane or shows it again; while it is hidden the **Preview** tab on the right shows the same view. If the preview says "Vanilla assets not found — set your Minecraft folder.", go back to step 2 and extract the vanilla assets.
 
-To use your own texture, paint a 16×16 PNG named `ruby_ore.png`, choose **Import assets** on the toolbar, pick the namespace `ruby_ore` and **Block textures (textures/block)**, then the file. It replaces the drawn picture and the preview updates. `ruby.png` goes into **Item textures (textures/item)** the same way. See [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders).
+To use your own texture, paint a 16×16 PNG named `ruby_ore.png`, choose **More → Bring in pictures or sounds…** on the toolbar, pick the namespace `ruby_ore` and **Block textures (textures/block)**, then the file. It replaces the drawn picture and the preview updates. `ruby.png` goes into **Item textures (textures/item)** the same way. See [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders).
 
 ## 6. Problems
 
@@ -94,13 +96,13 @@ Not sure what a problem means? If you have added an Anthropic API key under **Se
 
 ## 7. Save
 
-Press **Save** on the toolbar or Ctrl+S. The project is a folder of small JSON files (one per element) plus your textures, so it works well with Git and backups. Open it again later with **Open** (Ctrl+O).
+Press **Save** on the toolbar or Ctrl+S (it is highlighted while there are changes that are not saved). The project is a folder of small JSON files (one per element) plus your textures, so it works well with Git and backups. Open it again later with **More → Open a mod…** (Ctrl+O) or **More → Recent mods**.
 
 ## 8. Export the Fabric mod jar
 
 New blocks and items need the mod jar; the resource and data pack exports leave them out.
 
-1. Open the arrow next to **Export .zip** on the toolbar and choose **Fabric mod (.jar)…** (or **File → Export Fabric Mod Jar…**, or "Export Fabric mod jar…" in the command palette).
+1. Choose **More → Export → Fabric mod (.jar)…** on the toolbar (or **Share my mod** for the usual settings, or **File → Export → Fabric mod (.jar)…**, or "Export Fabric mod jar…" in the command palette).
 2. The **Export Fabric mod jar** dialog has one option, **Separate runtime and GeckoLib (for modpacks)**. Leave it off: the jar then carries the small `msm_runtime` mod inside it, which reads your blocks and items when the game starts (and, for a project with mobs, GeckoLib too). See [Export a Fabric mod jar](blocks-and-items.md#export-a-fabric-mod-jar).
 3. Choose **Export…** and save the file. It is named after the mod id: `ruby_ore.jar`.
 
@@ -126,7 +128,7 @@ To remove the content, take `ruby_ore.jar` out of the `mods` folder. Blocks alre
 
 Functions are lists of commands the game runs. This starter sets up the usual wiring for you.
 
-1. Arrow next to **New** → **New from starter…** → **Functions** → **Choose folder and create**, and make an empty folder called `my_functions`.
+1. **More → Start from a ready-made mod…** on the toolbar → **Functions** → **Choose folder and create**, and make an empty folder called `my_functions`.
 2. The project contains:
    - `my_functions:load`: creates a scoreboard that counts jumps, shows it in the sidebar and prints a green message;
    - `my_functions:tick`: runs every tick and gives speed to every player standing on a gold block;
@@ -134,8 +136,8 @@ Functions are lists of commands the game runs. This starter sets up the usual wi
    - `minecraft:load` and `minecraft:tick`: function tags that tell the game to run `load` once after loading and `tick` every tick;
    - `my_functions:all`: a function tag of your own that lists `greet`.
 3. Select `my_functions:tick`. The function editor checks every command as you type and completes ids, selectors and NBT. Change `minecraft:speed` to `minecraft:jump_boost`, or `gold_block` to `diamond_block`. Type a broken command, such as `effect gve`, to see a problem appear, then undo.
-4. Add your own function: choose **Add element** (Ctrl+N), type `function` into **Find a template**, choose **Function**, keep the namespace `my_functions`, name it `heal` and choose **Create**. Write a line such as `effect give @s minecraft:instant_health 1 1`. To run it with the others, select `my_functions:all` and add `my_functions:heal` to its list.
-5. Check **Problems (0)**, save, then **Install → Data pack to a world…** and pick a world (close it in Minecraft first). The toolbar's **Install** menu names the current target, for example "Install to: Prism Launcher — My Instance (MC 26.3)"; use **Change target** in that menu to pick another instance. The data pack zip is written into the world's `datapacks` folder (**Install → Resource pack to the resourcepacks folder** does the same for resource packs). If the instance runs a different Minecraft version, MCSuperMods warns but still installs. Before installing into a world, MCSuperMods backs the world up ([World backups](playing-and-testing.md#world-backups)). To export zips without installing, use **Export .zip** and its arrow, or **File → Export Resource Pack…**, **Export Data Pack…** and **Export Both…**.
+4. Add your own function: choose **Add from the full list…** (Ctrl+N), type `function` into **Find a template**, choose **Function**, keep the namespace `my_functions`, name it `heal` and choose **Create**. Write a line such as `effect give @s minecraft:instant_health 1 1`. To run it with the others, select `my_functions:all` and add `my_functions:heal` to its list.
+5. Check **Problems (0)**, save, then **More → Install → Data pack to a world…** on the toolbar and pick a world (close it in Minecraft first). The **Install** menu names the current target, for example "Install to: Prism Launcher — My Instance (MC 26.3)"; use **Change target** in that menu to pick another instance. The data pack zip is written into the world's `datapacks` folder (**Install → Resource pack to the resourcepacks folder** does the same for resource packs). If the instance runs a different Minecraft version, MCSuperMods warns but still installs. Before installing into a world, MCSuperMods backs the world up ([World backups](playing-and-testing.md#world-backups)). To export zips without installing, use **More → Export** on the toolbar, or **File → Export → Resource pack (.zip)…**, **Data pack (.zip)…** and **Both packs into a folder…**.
 6. In the world, with cheats on:
    - `/reload`: chat shows "my_functions loaded. Run /function my_functions:greet" and a **Jumps** sidebar appears;
    - jump a few times: the score counts up;
@@ -148,7 +150,7 @@ The [templates list](templates-and-examples.md#all-templates) has 309 element te
 
 Minecraft Java reads three sorts of add-on, and MCSuperMods makes all three from the same project:
 
-- A **data pack** changes how a world plays, with no new code: recipes, loot tables, advancements, tags, functions (lists of commands), structures, biomes and dimensions. It is a folder or `.zip` with a `data` folder and a `pack.mcmeta`, and it lives in one world, in that world's `datapacks` folder; `/reload` reads it again. **File → Export Data Pack…** writes one, and **Install → Data pack to a world…** puts it in a world. The **Data pack** starter (a load message, a function and a recipe) and the **Functions** starter above are data packs.
+- A **data pack** changes how a world plays, with no new code: recipes, loot tables, advancements, tags, functions (lists of commands), structures, biomes and dimensions. It is a folder or `.zip` with a `data` folder and a `pack.mcmeta`, and it lives in one world, in that world's `datapacks` folder; `/reload` reads it again. **File → Export → Data pack (.zip)…** writes one, and **Install → Data pack to a world…** puts it in a world. The **Data pack** starter (a load message, a function and a recipe) and the **Functions** starter above are data packs.
 - A **resource pack** changes how the game looks and sounds: textures, models, names, sounds and fonts. It has an `assets` folder instead, goes in the game's `resourcepacks` folder and is chosen under Options → Resource Packs… in the game. The **Resource pack** starter makes one.
 - A **Fabric mod jar** adds what packs cannot: new blocks, items, mobs, liquids, vehicles, scripts and rules. It goes in the `mods` folder of a game with Fabric Loader and Fabric API, and carries the project's data and resource pack files inside it ([Export the Fabric mod jar](#8-export-the-fabric-mod-jar)).
 
@@ -162,7 +164,7 @@ The editor shows each thing in plain words. Every part ends in **More options**,
 
 ## Start with the AI helper
 
-**New project with the AI helper…** (the arrow next to **New**, **File**, the Welcome or the empty editor area) asks what your mod should add, makes a new project in a folder you choose and starts the AI helper on a whole build with your description. See [The AI helper](ai-helper.md); it needs your own Anthropic API key.
+**New mod with the AI helper…** (**More** on the toolbar, **File**, the Welcome or the empty editor area) asks what your mod should add, makes a new project in a folder you choose and starts the AI helper on a whole build with your description. See [The AI helper](ai-helper.md); it needs your own Anthropic API key.
 
 ## Command palette and shortcuts
 
@@ -195,10 +197,10 @@ Minecraft keeps placed blocks, items and mobs in a world by their id. Each time 
 - [Known limitations](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#known-limitations) in the README.
 - [Structures](structures.md) and [Worldgen](worldgen.md): jigsaw structures, custom biomes and World Types.
 - [Blocks and items](blocks-and-items.md): exporting the Fabric mod jar and the separate runtime for modpacks.
-- [Entities and models](entities-and-models.md): animated mobs. Create a project from the **Custom mob** starter (a Ruby Golem with its model, animations and spawn egg), or import a model with **File → Import Blockbench Model…** and give it a body and behaviour in the Entity Studio; the Fabric mod jar then carries GeckoLib too (on the 26.4 snapshot the built-in renderer draws mobs instead). [Mob behaviours](mob-behaviours.md) covers pets, mounts, shooters, flyers, swimmers and bosses.
-- [Scripting](scripting.md): behaviour in TypeScript. Create a project from the **Scripted ore** starter, or add a script from the **Block interaction script** template under **Scripts** in **Add element**; the Script Studio completes `msm.` as you type, and the Fabric mod jar carries the scripts into the game.
-- [Eject to a Java project](eject.md): **File → Export Java Project…** writes a standalone Fabric Gradle project with generated Java that no longer needs `msm_runtime`, for when you want to carry on in code.
-- [Minecraft versions](targets.md): the 26.3 release and 26.4 snapshot targets, choosing one for a new project and **File → Upgrade Project Target…**.
+- [Entities and models](entities-and-models.md): animated mobs. Create a project from the **Custom mob** starter (a Ruby Golem with its model, animations and spawn egg), or import a model with **File → Bring in a Blockbench model…** and give it a body and behaviour in the Entity Studio; the Fabric mod jar then carries GeckoLib too (on the 26.4 snapshot the built-in renderer draws mobs instead). [Mob behaviours](mob-behaviours.md) covers pets, mounts, shooters, flyers, swimmers and bosses.
+- [Scripting](scripting.md): behaviour in TypeScript. Create a project from the **Scripted ore** starter, or add a script from the **Block interaction script** template under **Scripts** in **Add from the full list…**; the Script Studio completes `msm.` as you type, and the Fabric mod jar carries the scripts into the game.
+- [Eject to a Java project](eject.md): **File → Export → Fabric Java project (eject)…** writes a standalone Fabric Gradle project with generated Java that no longer needs `msm_runtime`, for when you want to carry on in code.
+- [Minecraft versions](targets.md): the 26.3 release and 26.4 snapshot targets, choosing one for a new project and **File → Move to another Minecraft version…**.
 - [Plugins](plugins.md): content kinds made by other people, installed into the plugins folder and listed under **Settings → Plugins**.
 - [The AI helper](ai-helper.md): an optional assistant with your own Anthropic API key that explains problems, answers questions and builds content from a description, always as changes you review and apply in one undoable step.
 - The [roadmap](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/ROADMAP.md): what comes after scripting.

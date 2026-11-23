@@ -2,13 +2,13 @@
 
 MCSuperMods makes new mobs with three element kinds: `msm:entity` (the mob itself, edited in the **Entity Studio**), `msm:geo_model` (its 3D model) and `msm:animation` (its animation set). Models and animations come from [Blockbench](https://www.blockbench.net/), the free model editor; MCSuperMods imports them, shows them animated in its preview and puts them into the game, drawn by the GeckoLib mod or by the runtime's own built-in renderer (see [Export the mod jar and the renderer](#export-the-mod-jar-and-the-renderer)). A resource or data pack cannot add a mob, so entities reach the game only through the **Fabric mod jar** export, like [blocks and items](blocks-and-items.md).
 
-Pets, farm animals, mounts, flying and water mobs, shooters and bosses, with taming, breeding, riding, variants and boss bars, are covered in [Mob behaviours](mob-behaviours.md). The quickest start is the **Custom mob** starter (**New from starter…**): a Ruby Golem with its model, animations, skin, spawn egg, loot table and a death effect. The examples **Wandering creature**, **Hostile mob** and **Natural spawning** in **Help → Examples…** show one idea each (see [Templates, starters and examples](templates-and-examples.md)).
+Pets, farm animals, mounts, flying and water mobs, shooters and bosses, with taming, breeding, riding, variants and boss bars, are covered in [Mob behaviours](mob-behaviours.md). The quickest start is the **Custom mob** starter (**Start from a ready-made mod…**): a Ruby Golem with its model, animations, skin, spawn egg, loot table and a death effect. The examples **Wandering creature**, **Hostile mob** and **Natural spawning** in **Help → Examples…** show one idea each (see [Templates, starters and examples](templates-and-examples.md)).
 
 ## Import a model from Blockbench
 
 1. In Blockbench, make the model as a **Bedrock Entity** or **GeckoLib Animated Model** project, with the texture painted in Blockbench or loaded into it. Animations made in Blockbench's **Animate** tab come along.
 2. Save the project as a `.bbmodel` file. Keep the texture embedded in the project (the default when the texture was painted or loaded in Blockbench and saved with it). Alternatively, use Blockbench's own exports: the geometry as a `.geo.json` file and the animations as a `.animation.json` file.
-3. In MCSuperMods, open a project and choose **File → Import Blockbench Model…**, or "Import Blockbench model…" in the command palette (Ctrl+Shift+P).
+3. In MCSuperMods, open a project and choose **File → Bring in a Blockbench model…**, or "Import Blockbench model…" in the command palette (Ctrl+Shift+P).
 4. The **Import Blockbench model** dialog lists the one importer, **Blockbench model (.bbmodel, .geo.json, .animation.json)**. Pick the namespace and choose **Choose files…**, then the files. You can pick several at once.
 
 What you get from a file called `ruby_golem.bbmodel`:
@@ -18,13 +18,13 @@ What you get from a file called `ruby_golem.bbmodel`:
 - the texture as `textures/entity/ruby_golem.png` (several textures are numbered: `ruby_golem_0.png`, `ruby_golem_1.png`);
 - the original file, kept as `blockbench/ruby_golem.bbmodel` in the project and never exported.
 
-A `.geo.json` gives only the geo model and an `.animation.json` only the animation set; import the texture PNG with **Import assets**, choosing **Other textures folder** and `entity` as the folder under `textures/`. Elements that already exist are skipped, and one undo removes the whole import.
+A `.geo.json` gives only the geo model and an `.animation.json` only the animation set; import the texture PNG with **Bring in pictures or sounds…**, choosing **Other textures folder** and `entity` as the folder under `textures/`. Elements that already exist are skipped, and one undo removes the whole import.
 
 Only `.bbmodel`, `.geo.json` and `.animation.json` files are accepted. Blockbench's **Java Block/Item** projects are refused: they are block or item models, not mobs, and Blockbench exports them as Java models itself. A texture that is not embedded, or not a PNG, is reported in the dialog; import it separately. If a converted model looks wrong in the preview, export the `.geo.json` and `.animation.json` from Blockbench and import those instead: they are used unchanged.
 
 ## Create an entity
 
-1. Choose **Add element** on the toolbar (Ctrl+N).
+1. Choose **More → Add from the full list…** on the toolbar (Ctrl+N).
 2. Under **Entities**, pick **Creature** (a passive mob that wanders and spawns in forests), **Monster** (chases and hits players, fights back, spawns in the dark), **Ambient critter** (small, runs away from players, no spawn egg), **Pet**, **Farm animal**, **Mount**, **Flying creature**, **Fish**, **Archer** or **Boss** (each with the parts described in [Mob behaviours](mob-behaviours.md)).
 3. Type a name, for example `gloom`, and choose **Create**.
 
@@ -113,7 +113,7 @@ When the preview and the game differ, the game is right; please report it.
 
 ## Export the mod jar and the renderer
 
-Export as for blocks and items: open the arrow next to **Export .zip** and choose **Fabric mod (.jar)…**, or **File → Export Fabric Mod Jar…**, or "Export Fabric mod jar…" in the command palette. Every error in **Problems** blocks the export (for example a model that no longer exists); warnings do not.
+Export as for blocks and items: press **Share my mod**, or open **More → Export** on the toolbar and choose **Fabric mod (.jar)…**, or **File → Export → Fabric mod (.jar)…**, or "Export Fabric mod jar…" in the command palette. Every error in **Problems** blocks the export (for example a model that no longer exists); warnings do not.
 
 A mob is drawn by **GeckoLib**, a free mod (MIT licence) for animated models, or by the runtime's own **built-in renderer**, which reads the same model and animation files. The mob's **Renderer** setting chooses: **Automatic (GeckoLib when present)** uses GeckoLib on 26.3 and the built-in renderer on a target without GeckoLib, **GeckoLib only** insists on GeckoLib and **Built-in renderer** never uses it (see [Mob behaviours](mob-behaviours.md#choose-how-the-mob-is-drawn)). When the project has mobs drawn by GeckoLib the dialog says so: "This project has entities, so the jar also nests GeckoLib, which draws their models and animations. MCSuperMods downloads GeckoLib once from Modrinth and keeps it for later exports." The jar then holds:
 

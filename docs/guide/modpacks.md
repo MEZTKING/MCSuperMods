@@ -17,7 +17,7 @@ The left side lists the modpacks MCSuperMods knows about. Select one to see its 
 ## Details
 
 - **Name**, **Version** and **Summary** describe the modpack. The version is free text such as `1.0.0`; it becomes part of the exported file's name.
-- **Minecraft version** is the version every project in the modpack must be made for. A project made for another version is marked "made for …"; open it and use **Upgrade Project Target** ([Minecraft versions](targets.md)), or change the modpack's version.
+- **Minecraft version** is the version every project in the modpack must be made for. A project made for another version is marked "made for …"; open it and use **File → Move to another Minecraft version…** ([Minecraft versions](targets.md)), or change the modpack's version.
 
 Changes are saved when you leave a field.
 

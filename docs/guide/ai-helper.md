@@ -8,7 +8,7 @@ The helper's screens use plain words: no ids, kinds or file names ([Plain words 
 
 ## Set it up
 
-The first time, the helper shows a card, **Set up the AI helper**. Home's **Build with the AI helper** tile, the toolbar's helper button, the Welcome's **Or describe a mod and let the AI helper build it…** and New project with the AI helper all show the same card. What you typed stays in its box while you set up.
+The first time, the helper shows a card, **Set up the AI helper**. Home's **Build with the AI helper** tile, the toolbar's **AI helper** button, the Welcome's **Or describe a mod and let the AI helper build it…** and **New mod with the AI helper…** in the toolbar's **More** menu all show the same card. What you typed stays in its box while you set up.
 
 The card says that using the helper costs money on your Anthropic account (with the figure for your model, see [Cost](#what-it-costs)) and that if the account is not yours you should ask its owner first. Then three steps:
 
@@ -18,11 +18,11 @@ The card says that using the helper costs money on your Anthropic account (with 
 
 The card also lists **What is sent**. The key is never shown again, only its last four characters. Where the computer cannot lock the key away safely (some Linux systems without a keyring), the card says so and the key cannot be saved.
 
-All of this, and more, is also in **Settings** (the gear icon) under **AI helper**: the same card with the saved key's line, **Check again** and **Remove the key**; **Model** (each with the cost of a first question: Claude Opus 5.5 is the default and the most capable, Claude Sonnet 5.5 is in between, Claude Haiku 5.5 is the cheapest); **Effort for questions and small changes** and **Effort for whole builds** (**Low**, **Medium**, **High** or **Extra high**; more effort thinks for longer and costs more; the defaults are Medium and High); and **Let Anthropic answer with another Claude model when this one declines**, on by default (Claude Haiku 5.5 has no other model to fall back to). **AI helper guide** opens this page; **All AI helper settings** in the panel opens the section with its top in view.
+All of this, and more, is also in **Settings** (**More → Settings…** on the toolbar) under **AI helper**: the same card with the saved key's line, **Check again** and **Remove the key**; **Model** (each with the cost of a first question: Claude Opus 5.5 is the default and the most capable, Claude Sonnet 5.5 is in between, Claude Haiku 5.5 is the cheapest); **Effort for questions and small changes** and **Effort for whole builds** (**Low**, **Medium**, **High** or **Extra high**; more effort thinks for longer and costs more; the defaults are Medium and High); and **Let Anthropic answer with another Claude model when this one declines**, on by default (Claude Haiku 5.5 has no other model to fall back to). **AI helper guide** opens this page; **All AI helper settings** in the panel opens the section with its top in view.
 
 ## Open the helper
 
-Open a mod, then use **AI helper** on the toolbar (the sparkle icon), **View → AI Helper**, Ctrl+Shift+A, or "Open AI helper" in the command palette (Ctrl+Shift+P). It opens in the right-hand dock as a third tab, **AI helper**, next to **Preview** and **Problems**. Without a key it shows the set-up card.
+Open a mod, then use **AI helper** on the toolbar (the sparkle icon, near the right end of the row), **View → AI helper**, Ctrl+Shift+A, or "Open AI helper" in the command palette (Ctrl+Shift+P). It opens in the right-hand dock as a third tab, **AI helper**, next to **Preview** and **Problems**. Without a key it shows the set-up card.
 
 There is no Chat or Build switch: a small ask and a whole mod use the same box. The whole-mod example ask below runs with the bigger limits.
 

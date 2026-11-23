@@ -10,7 +10,7 @@ There are four ways:
 
 - the Creator's **Custom command** flow (group **Scripts**; Fabric mod jar only). Its answers: **Command name** (`heal` gives `/heal`), **Who can use it** (**Every player** or **Operators only (as /give)**), **Message back**, **What it does** (**Heal you**, **Give you an effect**, **Give you an item** or **Launch you up**) with its numbers (**Health restored**, **Effect**, **Effect seconds**, **Item**, **How many**), and **Its own game rule**: a game rule `<namespace>:allow_<name>` that turns the command on and off (its action moves into a rule book that runs it while the rule is on). It creates with its untouched defaults and zero problems;
 - the Home tile **Make your mod do something** (heading **Rules and help**) opens the Custom command, Creative tab and Game rule flows ([Plain words and More options](more-options.md));
-- **Add element** (Ctrl+N), the templates under **Commands**: **Help command** (`/helpme`, also `/tips`: a chime and an answer in chat) and **Hop command** (`/hop`: a few blocks up, then a slow fall);
+- **Add from the full list…** (Ctrl+N), the templates under **Commands**: **Help command** (`/helpme`, also `/tips`: a chime and an answer in chat) and **Hop command** (`/hop`: a few blocks up, then a slow fall);
 - the examples **Command: /welcome** (`/welcome`, also `/hi`) and **Server helper** (`/helpme` for everyone, `/hub` to jump to a lobby, `/boost` with a number for operators, and a rule book that points new players at `/helpme`).
 
 Selecting a command opens the Command Studio.
@@ -65,7 +65,7 @@ How the tab is ordered:
 A game rule of your own is a world setting players change with `/gamerule <namespace>:<name>` (the namespace is needed) and see in the world's game rule screen. It is saved with each world.
 
 - the Creator's **Game rule** flow (group **Scripts**; Fabric mod jar only). Its answers: **What is the setting called?**, **What it does, in a sentence**, **What it holds** (**On or off** or **A whole number**), **On in a new world**, or **Number in a new world** with **Lowest number allowed** and **Highest number allowed**, **Listed under** (Player, Mobs, Spawning, Drops, World updates, Chat or Miscellaneous), and under **Using it** **Greet players while it is on** with **The greeting**, and **Count the greetings** (a statistic). The greeting is a rule book that reads the setting;
-- **Add element**, the templates **On or off game rule** and **Number game rule** (category **Game rules**), or the example **Game rule: Sparkle trails**.
+- **Add from the full list…**, the templates **On or off game rule** and **Number game rule** (category **Game rules**), or the example **Game rule: Sparkle trails**.
 
 The **Game rule Studio** has **Name**, **Description**, **Game rule kind** (**On or off (true or false)** or **A whole number**), **Category**, **Default**, and for a number **Lowest** and **Highest**; its **More options** shows the `/gamerule` line to type. A rule reads a game rule with the condition **The game rule is** and changes it with the step **Set a game rule** ([Rules](rules.md)); a script with `world.gameRule` and `world.setGameRule` ([Script API 1.7](scripting.md#script-api-17)).
 
@@ -76,7 +76,7 @@ Problems reports a lowest above the highest, a default outside them, a lowest or
 A statistic of your own counts something for each player. It is shown in the Statistics screen and can be the criterion of a scoreboard objective, `minecraft.custom:<namespace>.<name>` (`/scoreboard objectives add coins minecraft.custom:mypack.coins_found`).
 
 - the Game rule flow's **Count the greetings**, the templates **Counted statistic** and **Timed statistic** (category **Statistics**), or the example **Statistic: Bells rung**;
-- the **Statistic Studio**: **Name** and **Shown as**: **A count (1, 2, 3…)**, **A distance (counted in centimetres, shown in metres)** or **A time (counted in ticks, shown in seconds and minutes)**; outside Very easy mode it shows the scoreboard criterion.
+- the **Statistic Studio**: **Name** and **Shown as**: **A count (1, 2, 3…)**, **A distance (counted in centimetres, shown in metres)** or **A time (counted in ticks, shown in seconds and minutes)**; its **More options** shows the scoreboard criterion.
 
 A rule adds to it with **Add to a statistic** and tests it with **The statistic is at least**; a script with `player.stat` and `player.addStat`. Problems reports the same clashes and missing names as for game rules.
 

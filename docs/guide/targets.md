@@ -19,17 +19,17 @@ The **New project** dialog has a **Minecraft version** select. For a starter wit
 
 A wizard lists only the targets its starter can be made for. Every mob starter, including **Custom mob**, **Pet** and **Boss**, offers both targets: on the 26.4 snapshot the mobs are drawn by the runtime's built-in renderer.
 
-**New** on its own creates a blank project on the newest release target.
+**New mod…** creates a blank project on the newest release target.
 
 ## See the target of an open project
 
 The status bar at the bottom of the window shows the open project's target id, for example `mc-26.3`, with a **snapshot** badge when it is a snapshot target. Hover over it to see the Minecraft version.
 
-The toolbar's **Install** menu and its **Change target** submenu are something else: they choose which game folder or launcher instance installs go into (see [Getting started](getting-started.md#2-first-launch-tell-mcsupermods-where-minecraft-is)). They do not change the project's target.
+The **Install** menu (under **More** on the toolbar) and its **Change target** submenu are something else: they choose which game folder or launcher instance installs go into (see [Getting started](getting-started.md#2-first-launch-tell-mcsupermods-where-minecraft-is)). They do not change the project's target.
 
 ## Move a project to another target
 
-1. Choose **File → Upgrade Project Target…** (or "Upgrade project target…" in the command palette, Ctrl+Shift+P).
+1. Choose **File → Move to another Minecraft version…** (or "Upgrade project target…" in the command palette, Ctrl+Shift+P).
 2. The **Upgrade project target** dialog says which version the project exports for now and lists every other target; snapshot targets carry a **snapshot** badge. Choose one.
 3. MCSuperMods checks the project against the chosen target and shows a report. Nothing has changed yet.
 4. Choose **Upgrade** to move the project, or **Cancel** to leave it.
@@ -56,7 +56,7 @@ A project made from the **Custom ore** starter, for example, moves from 26.3 to 
 | File names | Pack zips are named `<project>-<target id>.zip` (and `-data.zip` for the data pack), so exports for different targets do not overwrite each other. |
 | Fabric mod jar | `fabric.mod.json` names the target's Minecraft and Fabric API versions, and the nested `msm_runtime` is the build for that Minecraft version. |
 | Mobs | Mobs work on both targets. 26.3 has GeckoLib; the 26.4 snapshot has none yet, so there the runtime draws mobs with its built-in renderer (no Molang, easings or sound and particle keyframes; see [Mob behaviours](mob-behaviours.md#choose-how-the-mob-is-drawn)). A mob whose **Renderer** is **Automatic (GeckoLib when present)** or **Built-in renderer** exports for 26.4 without GeckoLib (an info line, `export.entity-vanilla-renderer`); only a mob set to **GeckoLib only** cannot (`export.no-geckolib-target`), and **Problems** says so. |
-| Java project export | **File → Export Java Project…** works for 26.3 only; for the 26.4 snapshot it reports `export.no-java-project-target`. |
+| Java project export | **File → Export → Fabric Java project (eject)…** works for 26.3 only; for the 26.4 snapshot it reports `export.no-java-project-target`. |
 | Preview textures | The preview uses the vanilla assets of the target's Minecraft version, extracted from your own copy of the game (**Settings → Vanilla assets**). Start that version once in any launcher if they are missing. |
 | Test in Minecraft | The managed test instance is named after the version, for example `MCSuperMods Test (26.3)`. |
 

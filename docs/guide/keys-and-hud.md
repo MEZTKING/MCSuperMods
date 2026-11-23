@@ -6,7 +6,7 @@ Both need the **Fabric mod jar**. A vanilla pack leaves them out and says so ([L
 
 ## Make a key
 
-- **Add element** (Ctrl+N), then a template under **Controls and HUD**: `msm_key_bind_dash` (key Z) or `msm_key_bind_ability` (key K), then the **Key bind Studio**; or
+- **Add from the full list…** (Ctrl+N), then a template under **Controls and HUD**: `msm_key_bind_dash` (key Z) or `msm_key_bind_ability` (key K), then the **Key bind Studio**; or
 - use the example **Controls: a dash ability** in **Help → Examples…**.
 
 Home shows no key by itself: make one by choosing the rule **When the player presses a key** in [Rules](rules.md), which asks **Press the key you want**.
@@ -31,7 +31,7 @@ Worlds with at least one vehicle add four keys under **MSM Vehicles**: **R** fir
 
 ## Make something on the screen
 
-- **Add element** (Ctrl+N) and a template under **Controls and HUD**: `msm_hud_mana_bar`, `msm_hud_stamina_bar`, `msm_hud_coordinates` or `msm_hud_score_counter`, then the **HUD Studio**; or
+- **Add from the full list…** (Ctrl+N) and a template under **Controls and HUD**: `msm_hud_mana_bar`, `msm_hud_stamina_bar`, `msm_hud_coordinates` or `msm_hud_score_counter`, then the **HUD Studio**; or
 - the example **Controls: a dash ability** shows a charge bar that a key empties.
 
 ### The HUD Studio

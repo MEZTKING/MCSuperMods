@@ -8,13 +8,13 @@ There are three ways to make one:
 
 - the Creator's **Potion** flow (group **Magic**), with an effect of its own or a vanilla one;
 - **Make a potion** in the [Effect Studio](effects-and-throwables.md#the-effect-studio), for an effect you already have;
-- **Add element** (Ctrl+N) and a template under **Effects**: **Potion of a custom effect** or **Potion with longer and stronger versions**.
+- **Add from the full list…** (Ctrl+N) and a template under **Effects**: **Potion of a custom effect** or **Potion with longer and stronger versions**.
 
 Potions are listed in the sidebar under **Potions**. Selecting one opens the **Potion Studio**.
 
 ## Make a potion in the Creator
 
-1. Open or create a project, then choose **Create…** on the toolbar.
+1. Open or create a project, then choose **More → Make something…** on the toolbar.
 2. Under **Magic**, pick **Potion**. Fill in the form:
    - **Potion**: **Name**, the English name after "Potion of". Ids come from it: "Moon Leap" gives the potion `moon_leap`.
    - **Effect**: **Effect** is **A new effect of its own** (made here, with its icon, named `<name>_effect`) or a vanilla effect such as **Speed**, **Night vision** or **Slow falling**. A new effect also has a **Colour**, which colours the potion too, and **Stat change 1** and **Stat change 2** with their amounts per level. **Seconds it lasts** (vanilla potions last 180) and **Level** (1 is level I).

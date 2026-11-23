@@ -19,7 +19,7 @@ Prices change: MCSuperMods asks Retro Diffusion for the price of every request b
 
 ## Settings: AI pictures
 
-Open **Settings** (the gear icon on the toolbar) and scroll to **AI pictures**.
+Open **Settings** (**More → Settings…** on the toolbar, or **File → Settings…**) and scroll to **AI pictures**.
 
 - **Image service**: Retro Diffusion or OpenAI. Each keeps its own key.
 - The key status reads **No key** or **Key set (…abcd)** with the last four characters of the stored key.

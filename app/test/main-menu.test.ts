@@ -23,147 +23,228 @@ const { installMenu, pluginExportItems, recentLabel, recentSubmenu, shortenPath 
 );
 const { isMenuPluginExports, isMenuPluginExport } = await import('../src/shared/ipc-channels');
 
-describe('File menu', () => {
-  it('offers "Export Java Project…" after "Export Fabric Mod Jar…"', () => {
-    installMenu();
-    const template = templates.at(-1) as {
-      label?: string;
-      submenu?: { label?: string; click?: () => void }[];
-    }[];
-    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
-    const labels = file.map((item) => item.label);
-    const jar = labels.indexOf('Export Fabric Mod Jar…');
-    expect(jar).toBeGreaterThan(-1);
-    expect(labels[jar + 1]).toBe('Export Java Project…');
-    file[jar + 1]?.click?.();
-    expect(sent.at(-1)).toBe('exportJavaProject');
-  });
-
-  it('offers "Upgrade Project Target…" right after "Open Recent" (ADR 0037 D4)', () => {
-    installMenu();
-    const template = templates.at(-1) as {
-      label?: string;
-      submenu?: { label?: string; click?: () => void }[];
-    }[];
-    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
-    const labels = file.map((item) => item.label);
-    const recent = labels.indexOf('Open Recent');
-    expect(recent).toBeGreaterThan(-1);
-    expect(labels[recent + 1]).toBe('Upgrade Project Target…');
-    file[recent + 1]?.click?.();
-    expect(sent.at(-1)).toBe('upgradeTarget');
-  });
-});
-
 type MenuEntry = {
   label?: string;
   accelerator?: string;
+  role?: string;
+  type?: string;
   submenu?: MenuEntry[];
   click?: () => void;
 };
 
-describe('Search (ADR 0124 D10)', () => {
-  it('offers Edit > "Search…" showing CmdOrCtrl+K that the renderer handles (SQ9)', () => {
-    installMenu();
-    const template = templates.at(-1) as (MenuEntry & { registerAccelerator?: boolean })[];
-    const edit = (template.find((entry) => entry.label === 'Edit')?.submenu ?? []) as (MenuEntry & {
-      registerAccelerator?: boolean;
-    })[];
-    const labels = edit.map((entry) => entry.label);
-    const search = edit.find((entry) => entry.label === 'Search…');
-    expect(labels.indexOf('Search…')).toBe(labels.indexOf('Command Palette') + 1);
-    expect(search?.accelerator).toBe('CmdOrCtrl+K');
-    expect(search?.registerAccelerator).toBe(false);
-    search?.click?.();
-    expect(sent.at(-1)).toBe('search');
-  });
-});
+/** The menu as installed last. */
+function latest(): MenuEntry[] {
+  installMenu();
+  return templates.at(-1) as MenuEntry[];
+}
 
-describe('Play and the modes (ADR 0083, ADR 0084)', () => {
-  it('offers File > "Play" on F5 and "Reload in Game" on CmdOrCtrl+R', () => {
-    installMenu();
-    const template = templates.at(-1) as MenuEntry[];
-    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
-    const play = file.find((entry) => entry.label === 'Play');
-    expect(play?.accelerator).toBe('F5');
-    play?.click?.();
-    expect(sent.at(-1)).toBe('play');
-    const reload = file.find((entry) => entry.label === 'Reload in Game');
-    expect(reload?.accelerator).toBe('CmdOrCtrl+R');
-    reload?.click?.();
-    expect(sent.at(-1)).toBe('reloadGame');
+/** One top-level menu's entries. */
+function menu(name: string): MenuEntry[] {
+  return latest().find((entry) => entry.label === name)?.submenu ?? [];
+}
+
+/** Every entry of the menu, submenus included. */
+function everyEntry(entries: readonly MenuEntry[]): MenuEntry[] {
+  return entries.flatMap((entry) => [entry, ...everyEntry(entry.submenu ?? [])]);
+}
+
+/** The labels of a menu, `—` for a separator. */
+function labelsOf(entries: readonly MenuEntry[]): (string | undefined)[] {
+  return entries.map((entry) => (entry.type === 'separator' ? '—' : (entry.label ?? entry.role)));
+}
+
+describe("The menu bar speaks the toolbar's words (ADR 0131 D1, B711)", () => {
+  it("lays out File in the order of the toolbar's More menu", () => {
+    expect(labelsOf(menu('File'))).toEqual([
+      'New mod…',
+      'Start from a ready-made mod…',
+      'Examples…',
+      'New mod with the AI helper…',
+      'Surprise me…',
+      '—',
+      'Open a mod…',
+      'Recent mods',
+      'Save',
+      '—',
+      'Make something…',
+      'Bring in pictures or sounds…',
+      'Bring in a building…',
+      'Bring in a Blockbench model…',
+      'Turn a photo into a picture…',
+      '—',
+      'Export',
+      'Install',
+      'Test in Minecraft…',
+      'Modpacks…',
+      'Move to another Minecraft version…',
+      '—',
+      'Play',
+      'Reload in the game',
+      'Try it',
+      '—',
+      'Settings…',
+      '—',
+      'Quit',
+    ]);
+    const file = menu('File');
+    const exports = file.find((entry) => entry.label === 'Export')?.submenu ?? [];
+    expect(labelsOf(exports)).toEqual([
+      'Resource pack (.zip)…',
+      'Data pack (.zip)…',
+      'Both packs into a folder…',
+      'Fabric mod (.jar)…',
+      'Fabric Java project (eject)…',
+      'Export as a map…',
+      '—',
+      'Structures (.nbt) into a folder…',
+      'Structures as Sponge schematics (.schem)…',
+    ]);
+    const install = file.find((entry) => entry.label === 'Install')?.submenu ?? [];
+    expect(labelsOf(install)).toEqual([
+      'Resource pack to the resourcepacks folder',
+      'Data pack to a world…',
+    ]);
   });
 
-  it('offers View > "Try it" on F6 and File > "Try it" after Reload in Game (ADR 0085 D13)', () => {
-    installMenu();
-    const template = templates.at(-1) as MenuEntry[];
-    const view = template.find((entry) => entry.label === 'View')?.submenu ?? [];
-    const tryIt = view.find((entry) => entry.label === 'Try it');
-    expect(tryIt?.accelerator).toBe('F6');
-    tryIt?.click?.();
-    expect(sent.at(-1)).toBe('tryIt');
-    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
-    const labels = file.map((entry) => entry.label);
-    expect(labels.indexOf('Try it')).toBe(labels.indexOf('Reload in Game') + 1);
-    expect(file.find((entry) => entry.label === 'Try it')?.accelerator).toBeUndefined();
-    const keys = template
-      .flatMap((entry) => entry.submenu ?? [])
-      .map((entry) => entry.accelerator)
-      .filter((key) => key === 'F6');
-    expect(keys).toEqual(['F6']);
+  it("has the toolbar's Help menu, then the Wishlist and updates; Edit and View in plain words", () => {
+    expect(labelsOf(menu('Help'))).toEqual([
+      'Your first mod…',
+      'Examples…',
+      'What’s new…',
+      'Wishlist…',
+      '—',
+      'Check for updates…',
+    ]);
+    expect(labelsOf(menu('Edit')).slice(0, 7)).toEqual([
+      'Undo',
+      'Redo',
+      'Redo',
+      '—',
+      'Rename…',
+      'Command palette',
+      'Search…',
+    ]);
+    expect(labelsOf(menu('View'))).toEqual([
+      'Home',
+      'Try it',
+      'AI helper',
+      '—',
+      'Reload window',
+      'Developer tools',
+    ]);
   });
 
-  it('moves the window reload off F5 and CmdOrCtrl+R', () => {
-    installMenu();
-    const template = templates.at(-1) as (MenuEntry & { role?: string })[];
-    const all = template.flatMap(
-      (entry) => (entry.submenu ?? []) as (MenuEntry & { role?: string })[],
+  it('says mod, never "Project", "Element" or "Assets", in sentence case', () => {
+    const labels = everyEntry(latest())
+      .map((entry) => entry.label)
+      .filter((label): label is string => label !== undefined);
+    for (const word of ['Project', 'Element', 'Assets']) {
+      expect(labels.filter((label) => label.includes(word))).toEqual([]);
+    }
+    // Sentence case: after the first word only names keep their capitals.
+    const names = /^(Minecraft|Blockbench|Fabric|Java|Sponge|AI)\b/;
+    const titleCased = labels.filter((label) =>
+      label
+        .split(' ')
+        .slice(1)
+        .some((word) => /^[A-Z]/.test(word) && !names.test(word)),
     );
-    const reloadWindow = all.find((entry) => entry.role === 'reload');
-    expect(reloadWindow?.accelerator).toBe('CmdOrCtrl+Shift+R');
-    const keys = all.map((entry) => entry.accelerator).filter((key) => key !== undefined);
+    expect(titleCased).toEqual([]);
+  });
+
+  it('keeps every accelerator and its command as before', () => {
+    const commands: Record<string, unknown> = {};
+    for (const entry of everyEntry(latest())) {
+      if (entry.accelerator === undefined) continue;
+      // An entry with a role and no click is run by Electron: record the role.
+      sent.push(entry.role ?? null);
+      entry.click?.();
+      commands[`${entry.label} ${entry.accelerator}`] = sent.at(-1);
+    }
+    expect(commands).toEqual({
+      'New mod… CmdOrCtrl+Shift+N': 'new',
+      'Open a mod… CmdOrCtrl+O': 'open',
+      'Save CmdOrCtrl+S': 'save',
+      'Play F5': 'play',
+      'Reload in the game CmdOrCtrl+R': 'reloadGame',
+      'Undo CmdOrCtrl+Z': 'undo',
+      'Redo CmdOrCtrl+Shift+Z': 'redo',
+      'Redo Ctrl+Y': 'redo',
+      'Rename… F2': 'renameElement',
+      'Command palette CmdOrCtrl+Shift+P': 'commandPalette',
+      'Search… CmdOrCtrl+K': 'search',
+      'Try it F6': 'tryIt',
+      'AI helper CmdOrCtrl+Shift+A': 'toggleAiHelper',
+      'Reload window CmdOrCtrl+Shift+R': 'reload',
+    });
+  });
+
+  it("sends each entry's command, unchanged", () => {
+    const wanted: Record<string, string> = {
+      'Start from a ready-made mod…': 'newProjectFromStarter',
+      'New mod with the AI helper…': 'newWithAi',
+      'Surprise me…': 'surpriseMe',
+      'Make something…': 'creator',
+      'Bring in pictures or sounds…': 'importAssets',
+      'Bring in a building…': 'importStructure',
+      'Bring in a Blockbench model…': 'importBlockbench',
+      'Turn a photo into a picture…': 'pictureToTexture',
+      'Resource pack (.zip)…': 'exportResourcePack',
+      'Data pack (.zip)…': 'exportDataPack',
+      'Both packs into a folder…': 'exportCombined',
+      'Fabric mod (.jar)…': 'exportFabricJar',
+      'Fabric Java project (eject)…': 'exportJavaProject',
+      'Export as a map…': 'exportMap',
+      'Structures (.nbt) into a folder…': 'exportStructures',
+      'Structures as Sponge schematics (.schem)…': 'exportSchematics',
+      'Resource pack to the resourcepacks folder': 'installResourcePack',
+      'Data pack to a world…': 'installDataPack',
+      'Test in Minecraft…': 'testInMinecraft',
+      'Modpacks…': 'modpacks',
+      'Move to another Minecraft version…': 'upgradeTarget',
+      'Settings…': 'settings',
+      Home: 'home',
+      'Your first mod…': 'firstMod',
+      'Examples…': 'examples',
+      'What’s new…': 'whatsNew',
+      'Wishlist…': 'wishlist',
+      'Check for updates…': 'checkForUpdates',
+    };
+    const entries = everyEntry(latest());
+    for (const [label, command] of Object.entries(wanted)) {
+      const entry = entries.find((candidate) => candidate.label === label);
+      expect(entry, label).toBeDefined();
+      entry?.click?.();
+      expect(sent.at(-1), label).toBe(command);
+    }
+  });
+
+  it('offers Edit > "Search…" showing CmdOrCtrl+K that the renderer handles (ADR 0124 SQ9)', () => {
+    const search = menu('Edit').find((entry) => entry.label === 'Search…') as
+      | (MenuEntry & { registerAccelerator?: boolean })
+      | undefined;
+    expect(search?.registerAccelerator).toBe(false);
+  });
+
+  it('has F6 once, and the window reload off F5 and CmdOrCtrl+R (ADR 0084 D6, ADR 0085 D13)', () => {
+    const keys = everyEntry(latest()).map((entry) => entry.accelerator);
+    expect(keys.filter((key) => key === 'F6')).toEqual(['F6']);
     expect(keys.filter((key) => key === 'F5' || key === 'CmdOrCtrl+R')).toEqual([
       'F5',
       'CmdOrCtrl+R',
     ]);
+    expect(menu('File').find((entry) => entry.label === 'Try it')?.accelerator).toBeUndefined();
   });
 
-  it('offers Home and no modes in the View menu (ADR 0130 D1)', () => {
-    installMenu();
-    const template = templates.at(-1) as MenuEntry[];
-    const view = template.find((entry) => entry.label === 'View')?.submenu ?? [];
-    view.find((entry) => entry.label === 'Home')?.click?.();
-    expect(sent.at(-1)).toBe('home');
-    const labels = template.flatMap((entry) => entry.submenu ?? []).map((entry) => entry.label);
-    expect(labels.filter((label) => label?.endsWith(' Mode'))).toEqual([]);
+  it('has no mode entries (ADR 0130 D1)', () => {
+    const labels = everyEntry(latest()).map((entry) => entry.label);
+    expect(labels.filter((label) => label?.endsWith(' mode') || label?.endsWith(' Mode'))).toEqual(
+      [],
+    );
   });
 });
 
-describe('AI helper and Creator menu items', () => {
-  it('offers View > "AI Helper" with CmdOrCtrl+Shift+A (ADR 0041 D8)', () => {
-    installMenu();
-    const template = templates.at(-1) as MenuEntry[];
-    const view = template.find((entry) => entry.label === 'View')?.submenu ?? [];
-    const item = view.find((entry) => entry.label === 'AI Helper');
-    expect(item?.accelerator).toBe('CmdOrCtrl+Shift+A');
-    item?.click?.();
-    expect(sent.at(-1)).toBe('toggleAiHelper');
-  });
-
-  it('reserves File > "Create…" after "New Project from Starter…" for the Creator', () => {
-    installMenu();
-    const template = templates.at(-1) as MenuEntry[];
-    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
-    const labels = file.map((item) => item.label);
-    const starter = labels.indexOf('New Project from Starter…');
-    expect(starter).toBeGreaterThan(-1);
-    expect(labels[starter + 1]).toBe('Create…');
-    file[starter + 1]?.click?.();
-    expect(sent.at(-1)).toBe('creator');
-  });
-});
-
-describe('Open Recent menu', () => {
+describe('Recent mods menu', () => {
   it('shortens long paths in the middle and keeps short ones', () => {
     expect(shortenPath('/home/a/ruby')).toBe('/home/a/ruby');
     const long = '/home/someone/Documents/Minecraft/projects/mods/2026/november/ruby_tools';
@@ -198,7 +279,7 @@ describe('Open Recent menu', () => {
       'B — /p/b',
       'A — /p/a',
       'separator',
-      'Clear Recent Projects',
+      'Clear list',
     ]);
     const click = (index: number) => (items[index]?.click as (() => void) | undefined)?.();
     click(1);
@@ -211,12 +292,12 @@ describe('Open Recent menu', () => {
       () => {},
       () => {},
     );
-    expect(empty[0]).toEqual({ label: 'No recent projects', enabled: false });
-    expect(empty[2]).toMatchObject({ label: 'Clear Recent Projects', enabled: false });
+    expect(empty[0]).toEqual({ label: 'No recent mods', enabled: false });
+    expect(empty[2]).toMatchObject({ label: 'Clear list', enabled: false });
   });
 });
 
-describe('File > More Exports plugin exporters', () => {
+describe('File > Export plugin exporters', () => {
   it('lists plugin exporters after a separator, disabled ones greyed, & kept literal', () => {
     const chosen: string[] = [];
     expect(pluginExportItems([], (id) => chosen.push(id))).toEqual([]);

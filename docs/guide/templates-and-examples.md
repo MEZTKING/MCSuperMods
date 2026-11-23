@@ -4,8 +4,8 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (309) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (82) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Element templates** (309) | **Add from the full list…** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (82) | **Start from a ready-made mod…**, or **Make something…** for the flows | A new project, already filled; the flows also add to the open project |
 | **Examples** (265) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting, rules and games plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
@@ -14,7 +14,7 @@ No starter or example contains Mojang files. Textures are small pictures that MC
 
 ## Element templates
 
-Open a project, then choose **Add element** on the toolbar (or press Ctrl+N, or run "New element…" from the command palette). The dialog lists the templates under category headings.
+Open a project, then choose **More → Add from the full list…** on the toolbar (or press Ctrl+N, or run "New element…" from the command palette). The dialog lists the templates under category headings.
 
 1. Type in **Find a template** to filter the list ("loot", "tag", "model", "smelting").
 2. Pick a template. Some fill in the **Name** for you (`en_us`, `pack`, `root`, `load`, `tick`) or put a folder in front of the name you type (`block/`, `item/`, `blocks/`, `chests/`).
@@ -77,7 +77,7 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 
 #### Shaders
 
-Screen effects and shader programs work in a plain resource pack. Their `.vsh`, `.fsh` and `.glsl` files are your own, brought in with **Import assets** (folder **Shaders**); MCSuperMods copies them as they are and does not check them ([Screen effects, shaders and waypoints](adding-to-vanilla.md#screen-effects-shaders-and-waypoints)).
+Screen effects and shader programs work in a plain resource pack. Their `.vsh`, `.fsh` and `.glsl` files are your own, brought in with **Bring in pictures or sounds…** (folder **Shaders**); MCSuperMods copies them as they are and does not check them ([Screen effects, shaders and waypoints](adding-to-vanilla.md#screen-effects-shaders-and-waypoints)).
 
 | Template | id | Kind | Notes |
 |---|---|---|---|
@@ -98,7 +98,7 @@ Screen effects and shader programs work in a plain resource pack. Their `.vsh`, 
 
 #### Recipes
 
-To add a recipe, choose **Add element** (Ctrl+N), type `recipe` into **Find a template** and pick the kind of recipe below, or search for "recipe" and choose **Add to my mod** on one. A shaped recipe opens in the Recipe Studio with a 3 by 3 crafting grid: put an item in each cell and choose the result; shapeless and cooking recipes list their ingredients. Most Creator flows (a block, a food, a weapon, a gear set) ask for a crafting recipe of their own, and the **Recipe pack** starter holds one recipe of each common type. Recipes are data pack files: they work in the vanilla data pack export and in the Fabric mod jar, and in the game `/reload` reads them again.
+To add a recipe, choose **Add from the full list…** (Ctrl+N), type `recipe` into **Find a template** and pick the kind of recipe below, or search for "recipe" and choose **Add to my mod** on one. A shaped recipe opens in the Recipe Studio with a 3 by 3 crafting grid: put an item in each cell and choose the result; shapeless and cooking recipes list their ingredients. Most Creator flows (a block, a food, a weapon, a gear set) ask for a crafting recipe of their own, and the **Recipe pack** starter holds one recipe of each common type. Recipes are data pack files: they work in the vanilla data pack export and in the Fabric mod jar, and in the game `/reload` reads them again.
 
 | Template | id | Kind | Notes |
 |---|---|---|---|
@@ -588,15 +588,15 @@ The pieces of a game (see [Game modes](game-modes.md)): how a world starts, one 
 
 A starter creates a whole project in an empty folder. Open the list in any of these ways:
 
-- the arrow next to **New** on the toolbar, then **New from starter…**;
-- **File → New Project from Starter…**;
+- **More → Start from a ready-made mod…** on the toolbar;
+- **File → Start from a ready-made mod…**;
 - the command palette (Ctrl+Shift+P): "New project from starter…".
 
 The **New project** dialog groups the starters (Blank, Packs, Themed content) and shows which packs each one fills. Choose one, pick the **Minecraft version** (the newest release unless you choose a snapshot; see [Minecraft versions](targets.md)), then **Choose folder and create**, and pick an empty folder. The folder name becomes the project's namespace: a folder called `Ruby Ore` gives the namespace `ruby_ore`. The project is saved straight away.
 
-**New** on its own (and **File → New Project…**, Ctrl+Shift+N) still creates a blank project directly.
+**More → New mod…** on the toolbar (and **File → New mod…**, Ctrl+Shift+N) still creates a blank project directly.
 
-Starters with questions (a name, a colour, a tier and so on) carry the **Wizard** badge and ask them in the dialog, one step per group of questions (**Next** and **Back**), before creating the project; the **Minecraft version** select is then on the last step, which sums up your answers. **Custom sword**, for example, asks for the **Sword name**, **Blade colour**, **Material tier**, **Durability** and **Crafting ingredient**. The **Custom mob** starter needs GeckoLib and is offered only for targets that have it (not the 26.4 snapshot). Those marked "Creator: <group>" in the table are also **Creator flows**: **Create…** on the toolbar runs the same flow inside the project you have open, with a live preview and **Edit in Creator** afterwards (see [The Creator](creator.md)).
+Starters with questions (a name, a colour, a tier and so on) carry the **Wizard** badge and ask them in the dialog, one step per group of questions (**Next** and **Back**), before creating the project; the **Minecraft version** select is then on the last step, which sums up your answers. **Custom sword**, for example, asks for the **Sword name**, **Blade colour**, **Material tier**, **Durability** and **Crafting ingredient**. The **Custom mob** starter needs GeckoLib and is offered only for targets that have it (not the 26.4 snapshot). Those marked "Creator: <group>" in the table are also **Creator flows**: **More → Make something…** on the toolbar runs the same flow inside the project you have open, with a live preview and **Edit in Creator** afterwards (see [The Creator](creator.md)).
 
 | Starter | id | Packs | What it contains |
 |---|---|---|---|
@@ -695,7 +695,7 @@ The [Getting started](getting-started.md) guide walks through the Custom ore sta
 
 ## Examples gallery
 
-Choose **Help → Examples…** (also on the arrow next to **New**, and "Examples…" in the command palette). The gallery has:
+Choose **Help → Examples…** (also in the toolbar's **Help** and **More** menus, and "Examples…" in the command palette). The gallery has:
 
 - a search box that matches title, kind, category and tags;
 - a kind filter (**All kinds** or one element kind);
@@ -762,7 +762,7 @@ Every project starter and Creator flow but the blank project has at least one ex
 
 ### All examples
 
-There is one example for each of the 124 element kinds (the six games kinds under **Game kits**), the behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; growing plants and pots: ember vines with glowing berries, a sea ribbon, glow moss, a dune reed, a spine cactus, reed bamboo, a wide leaf and a clay planter; containers and machines: a loot crate in a structure, an ore crusher, a shulker crate, bronze fittings that age, a twin crate and a private crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; villagers: a roadside merchant with trades of its own and a fair trader who remembers you; mobs 2: a minnow you catch in a bucket, a hovering wisp that roosts and a finch that fetches and rides your shoulder; fluids 2: berry juice with a cauldron, a bottle and mixing; enchantments: frost boots that freeze water as Frost Walker does; vehicles: a seaside; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), seventeen **Popular ideas** (below), eight **Games**, one from each game flow (Cloud Farm, Deep Block, Blossom Isles, Star Block, Crystal Road, Four Kingdoms, Canyon Dash and Explorer), forty-three examples made with the Creator flows (below), plus eleven starters listed again under **Starters** (the Custom ore, Recipe pack, Custom music disc and Functions starters, the three pack starters, the three worldgen starters and the Scripted ore starter): 265 in all. The Custom mob starter and the other Creator flows are shown by an example made with them (below); create them with **New from starter…** or **Create…**, or open their folders under `examples/starters/`.
+There is one example for each of the 124 element kinds (the six games kinds under **Game kits**), the behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; growing plants and pots: ember vines with glowing berries, a sea ribbon, glow moss, a dune reed, a spine cactus, reed bamboo, a wide leaf and a clay planter; containers and machines: a loot crate in a structure, an ore crusher, a shulker crate, bronze fittings that age, a twin crate and a private crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; villagers: a roadside merchant with trades of its own and a fair trader who remembers you; mobs 2: a minnow you catch in a bucket, a hovering wisp that roosts and a finch that fetches and rides your shoulder; fluids 2: berry juice with a cauldron, a bottle and mixing; enchantments: frost boots that freeze water as Frost Walker does; vehicles: a seaside; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), seventeen **Popular ideas** (below), eight **Games**, one from each game flow (Cloud Farm, Deep Block, Blossom Isles, Star Block, Crystal Road, Four Kingdoms, Canyon Dash and Explorer), forty-three examples made with the Creator flows (below), plus eleven starters listed again under **Starters** (the Custom ore, Recipe pack, Custom music disc and Functions starters, the three pack starters, the three worldgen starters and the Scripted ore starter): 265 in all. The Custom mob starter and the other Creator flows are shown by an example made with them (below); create them with **Start from a ready-made mod…** or **Make something…**, or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -1034,7 +1034,7 @@ There is one example for each of the 124 element kinds (the six games kinds unde
 
 ## The `examples/` folder
 
-The same examples are in the repository as ordinary MCSuperMods projects, so you can browse them on GitHub or open them with **File → Open Project…**:
+The same examples are in the repository as ordinary MCSuperMods projects, so you can browse them on GitHub or open them with **File → Open a mod…**:
 
 | Folder | Namespace | Contents |
 |---|---|---|
@@ -1120,11 +1120,11 @@ Copy a folder somewhere else before opening it, so your edits do not change the 
 
 ## Replacing the placeholders
 
-**Textures.** Starters and examples draw 16×16 textures in a Minecraft-like style: an ore, a gem, a disc, planks or a tool, from MCSuperMods' own recipes (flows draw their pictures now; see [Drawing pictures](pictures.md)). To use your own, paint a PNG with the same file name and choose **Import assets** on the toolbar. Pick the namespace and **Block textures** or **Item textures**, then the file. Importing a file with an existing name replaces the placeholder; the models keep pointing at it. For the Custom ore starter these are `ruby_ore.png` and `ruby_block.png` (block textures) and `ruby.png` (item textures); for the Switch lamp, `lamp.png` and `lamp_lit.png` (block textures); for the music disc, `my_song_disc.png` (item textures).
+**Textures.** Starters and examples draw 16×16 textures in a Minecraft-like style: an ore, a gem, a disc, planks or a tool, from MCSuperMods' own recipes (flows draw their pictures now; see [Drawing pictures](pictures.md)). To use your own, paint a PNG with the same file name and choose **More → Bring in pictures or sounds…** on the toolbar. Pick the namespace and **Block textures** or **Item textures**, then the file. Importing a file with an existing name replaces the placeholder; the models keep pointing at it. For the Custom ore starter these are `ruby_ore.png` and `ruby_block.png` (block textures) and `ruby.png` (item textures); for the Switch lamp, `lamp.png` and `lamp_lit.png` (block textures); for the music disc, `my_song_disc.png` (item textures).
 
 **The music disc sound.** Export your track as Ogg Vorbis (`.ogg`; Audacity can do this), then:
 
-1. **Import assets** → **Sounds (sounds, Ogg Vorbis)** → pick the file, for example `my_song.ogg`. It is stored as `sounds/my_song.ogg` in the namespace.
+1. **Bring in pictures or sounds…** → **Sounds (sounds, Ogg Vorbis)** → pick the file, for example `my_song.ogg`. It is stored as `sounds/my_song.ogg` in the namespace.
 2. Select the `sounds` element. In the event `music_disc.my_song`, change the sound's `name` from `minecraft:records/cat` to `<namespace>:my_song` (the file path under `sounds/`, without `.ogg`). Keep `stream` on: long music streams instead of loading all at once.
 3. Select the jukebox song `my_song` and set `length_in_seconds` to the length of your track in seconds. The "Now playing" text is in the `en_us` language element (`Your Name - My Song`); change it there.
 

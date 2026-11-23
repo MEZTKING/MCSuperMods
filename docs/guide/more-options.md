@@ -1,6 +1,6 @@
 # Plain words and More options
 
-MCSuperMods has one way of working for everyone. Everything is in plain words, with a short reason under each part saying what it is for, and the settings most people need come first. The rest is never removed: it waits under **More options** at the bottom of the part it belongs to, ids and raw values included. (Earlier versions had three modes, Very easy, Easy and Advanced; they are now this one view.)
+MCSuperMods has one way of working for everyone. Everything is in plain words, with a short reason under each part saying what it is for, and the settings most people need come first. The rest is never removed: it waits under **More options** at the bottom of the part it belongs to, ids and raw values included.
 
 ## More options
 
@@ -24,12 +24,19 @@ Each More options remembers whether you left it open, on this computer. Nothing 
 
 - The list on the left shows your things by name, grouped by what they are; the files behind them sit under **More** at its end. Ids are not shown there: search finds them.
 - [Search](search.md) (Ctrl+K, Cmd+K on a Mac) finds anything by its name, in your own words, or by its id. Start with `@` for your own things, `#` for Minecraft's ids, `>` for commands and `?` for how-to pages.
-- The command palette (Ctrl+Shift+P) lists every command, Java project export, More exports and Plugins included; they are also in the **File** and **Help** menus and in Settings.
+- The command palette (Ctrl+Shift+P) lists every command, Java project export, More exports and Plugins included; they are also in the toolbar's **More** menu, the **File** and **Help** menus and Settings.
 - **Things to fix** at the bottom lists problems in plain words; the **Problems** tab on the right lists the same with the place in the file.
 
 ## Home
 
-The toolbar has **Home**, New, Open and Save, Undo and Redo, **Create…** and **Add**, the exports and Install, **Share my mod**, **Try it**, **Play** and **Reload** with the game's status, the search field **Search or make anything**, the AI helper, Help and Settings. With no thing open, the middle of the window is Home.
+The toolbar is one row: **Home**, **Undo**, **Redo**, **Save**, **Try it**, **Play** and its menu, **Share my mod**, the search field, **AI helper**, **Help** and **More**. With no thing open, the middle of the window is Home.
+
+- **Save** is highlighted while your mod has changes that are not saved; when everything is saved its tip says so.
+- **More** holds everything else: new and ready-made mods, **Examples…**, **Open a mod…** and **Recent mods**, **Make something…**, **Add from the full list…**, **Bring in pictures or sounds…**, **Export**, **Install**, **Test in Minecraft…**, **Modpacks…** and **Settings…**.
+- **Help** has **Your first mod…**, **Examples…**, **What’s new…** and **Guide…**.
+- Play's chip shows only when Prism Launcher is missing, a restart is needed or the game is running; otherwise the first line of Play's menu says how the game is, and the seed of **Play my game**'s world is there too. **Reload** shows only while the game is in the test world.
+- In narrow windows **Try it** and **Share my mod** show only their icons, and the search becomes a magnifier button.
+- All the shortcuts work as before. The menu bar (**File**, **Edit**, **View**, **Help**) has the same entries in the same words, with the rest: **Surprise me…**, **Bring in a building…**, **Bring in a Blockbench model…**, **Turn a photo into a picture…**, **Move to another Minecraft version…**, the **Wishlist…** and **Check for updates…**.
 
 ## What do you want to make?
 
@@ -112,7 +119,7 @@ Next to a picture, **Draw it for me** draws it in a Minecraft-like style: pick a
 
 ## Surprise me
 
-Not sure what to make? **Surprise me** makes a small random mod to start from. It is the first tile on Home, a button on Home when no mod is open, **File > Surprise Me…**, and "Surprise me: make a random mod" in the command palette.
+Not sure what to make? **Surprise me** makes a small random mod to start from. It is the first tile on Home, a button on Home when no mod is open, **File > Surprise me…**, and "Surprise me: make a random mod" in the command palette.
 
 Every picture in a surprise is drawn in a Minecraft-like style ([Drawing pictures](pictures.md)). A surprise has a theme, such as Ruby, Frost, Ember, Moss, Sky or Void, and three to five things named after it: always an ore with its gem (or a set of tools and armour with its ore), then a few of a block, a weapon, a food, a mob or pet, a potion or effect, a plant or tree, sparkles and a portal. Sometimes it also has a rule, for example "When a player breaks Ruby Ore, 25 times in 100 an extra Ruby drops." The pictures are placeholders in the theme's colours: paint over them later.
 
@@ -175,7 +182,7 @@ If a mistake stops the mod from being built, **Play** and **Share my mod** send 
 
 ## Play and Reload
 
-**Play** saves your mod, builds it and starts Minecraft in a test world with your things in chests and in your hotbar. **Reload** sends later changes to the running game. Both are in the toolbar. The whole story, including Restart, is in [Playing and testing](playing-and-testing.md).
+**Play** saves your mod, builds it and starts Minecraft in a test world with your things in chests and in your hotbar. **Reload** sends later changes to the running game. Both are in the toolbar; **Reload** shows there while the game is in the test world. The whole story, including Restart, is in [Playing and testing](playing-and-testing.md).
 
 ## Try it
 
@@ -183,7 +190,7 @@ If a mistake stops the mod from being built, **Play** and **Share my mod** send 
 
 ## Share my mod
 
-**Share my mod** builds the Fabric mod jar with the usual settings and saves it where you choose. It then says: "Your mod is saved. Give the file to friends: they put it in their mods folder." **Where is it?** shows the file. Friends need Fabric Loader and Fabric API, like for any Fabric mod; the jar carries MCSuperMods' small runtime, so nothing else is needed. (The same file is **Fabric mod (.jar)…** in the Export menu; see [Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar).)
+**Share my mod** builds the Fabric mod jar with the usual settings and saves it where you choose. It then says: "Your mod is saved. Give the file to friends: they put it in their mods folder." **Where is it?** shows the file. Friends need Fabric Loader and Fabric API, like for any Fabric mod; the jar carries MCSuperMods' small runtime, so nothing else is needed. (The same file is **Fabric mod (.jar)…** under **More → Export** on the toolbar; see [Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar).)
 
 To share the mod with everyone, not only your friends, add the project to the [MCSuperMods community repository](https://github.com/MEZTKING/MCSuperMods-Community): copy your project folder (the one with `msm.project.json` in it) into its `mods/` folder with a short README, a picture and a licence, and open a pull request. Its checks open and export every shared mod on both Minecraft versions, and refuse Minecraft's own pictures and sounds. The repository also has every example of MCSuperMods as a project you can open; its `CONTRIBUTING.md` explains each step.
 

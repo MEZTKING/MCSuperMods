@@ -7,7 +7,7 @@ Containers and machines are part of the Fabric mod: export the **Fabric mod jar*
 There are three ways to make one:
 
 - the Creator's **Storage crate** or **Machine** flow (group **Blocks**);
-- **Add element** (Ctrl+N) and a template under **Blocks**: **Storage crate**, **Small crate (1 row)**, **Item holder**, **Hopper box**, **Dispenser box**, **Grinder machine**, **Fast furnace**, **Redstone machine**, **Double chest** or **Chest for every player**;
+- **Add from the full list…** (Ctrl+N) and a template under **Blocks**: **Storage crate**, **Small crate (1 row)**, **Item holder**, **Hopper box**, **Dispenser box**, **Grinder machine**, **Fast furnace**, **Redstone machine**, **Double chest** or **Chest for every player**;
 - the **Inventory** section of the [Block Studio](blocks-and-items.md#the-block-studio), for a block you already have.
 
 ## Make a crate in the Creator

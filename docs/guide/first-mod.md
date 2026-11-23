@@ -2,7 +2,7 @@
 
 This page is for your very first time. In about fifteen minutes you make a small Fabric mod with a new material, "Ruby", and a full set of ruby tools and armour, then play with it in Minecraft. You do not write any code or JSON: you answer a few questions and MCSuperMods makes the files.
 
-MCSuperMods shows a short version of these steps the first time it starts (**Welcome to MCSuperMods**). Open it again any time with **Help → Your First Mod…** or "Your first mod…" in the command palette (Ctrl+Shift+P).
+MCSuperMods shows a short version of these steps the first time it starts (**Welcome to MCSuperMods**). Open it again any time with **Help → Your first mod…** or "Your first mod…" in the command palette (Ctrl+Shift+P).
 
 ## What you need
 
@@ -12,7 +12,7 @@ MCSuperMods shows a short version of these steps the first time it starts (**Wel
 
 ## 1. Tell MCSuperMods where Minecraft is (once)
 
-1. Choose **Settings** on the toolbar.
+1. Open **More** at the right end of the toolbar and choose **Settings…**.
 2. Under **Game locations**, pick the game folder or launcher instance you play with. If none fits, that is fine: step 5 can make a test instance.
 3. Under **Vanilla assets**, choose **Extract vanilla assets**. This copies the game's own textures from your Minecraft so the 3D preview can draw them. If it cannot find Minecraft 26.3, start that version once in any launcher and try again.
 4. Close Settings.
@@ -21,14 +21,14 @@ MCSuperMods shows a short version of these steps the first time it starts (**Wel
 
 A project is one mod: a folder that holds everything you make for it.
 
-1. Choose **New** on the toolbar.
+1. Choose **More → New mod…** on the toolbar.
 2. Create a new, empty folder, for example `Documents\MCSuperMods\ruby_mod`, and choose it. The folder name becomes the mod's **namespace**, the part before the colon in ids such as `ruby_mod:ruby_sword`.
 
 The element list on the left now holds one element, `pack`, which every project has.
 
 ## 3. Make a ruby gear set with the Creator
 
-1. Choose **Create…** on the toolbar.
+1. Choose **More → Make something…** on the toolbar.
 2. Under **Gear**, pick **Gear set**.
 3. Fill in the first fields:
    - **Material name**: `Ruby`.
@@ -48,7 +48,7 @@ A quick look first: **Try it** in the toolbar (or F6) opens a small test area in
 
 ## 5. Play with it in Minecraft
 
-1. Open the **Export** menu (the arrow next to **Export .zip**) and choose **Test in Minecraft…**.
+1. Open **More** on the toolbar and choose **Test in Minecraft…**.
 2. The dialog says which game it will use:
    - With a Prism Launcher instance that has Fabric for Minecraft 26.3, choose **Install and launch**. MCSuperMods copies your mod and Fabric API into the instance and starts it.
    - If no game fits, choose **Create test instance**. MCSuperMods makes the Prism instance **MCSuperMods Test (26.3)** with Fabric; then choose **Install and launch**. Prism downloads the game the first time, which takes a few minutes.

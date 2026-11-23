@@ -7,7 +7,7 @@ Particles need the **Fabric mod jar**, because a particle type is a registry ent
 There are three ways to make one:
 
 - the Creator's **Particle** flow (group **Magic**), which makes the particle and a block or an item that shows it;
-- **Add element** (Ctrl+N) and a template under **Particles**, then the **Particle Studio**;
+- **Add from the full list…** (Ctrl+N) and a template under **Particles**, then the **Particle Studio**;
 - the AI helper, which uses the same flow ([The AI helper](ai-helper.md)).
 
 ## Make a particle in the Creator

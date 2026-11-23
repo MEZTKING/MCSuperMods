@@ -13,7 +13,7 @@ A data pack structure has four parts, each an element in your project:
 
 A biome tag (in the **Tags** group) says which biomes the structure may start in.
 
-The quickest way to see all of this working is the **Jigsaw village-style structure** starter: click the arrow next to **New** and choose **New from starter…**, then pick it under Themed content. It makes a small hamlet of a hut, streets and lamp posts that generates in every vanilla forest. **Custom biome with a jigsaw structure** adds the same hamlet to a custom biome (see [Worldgen](worldgen.md)).
+The quickest way to see all of this working is the **Jigsaw village-style structure** starter: choose **More → Start from a ready-made mod…** on the toolbar, then pick it under Themed content. It makes a small hamlet of a hut, streets and lamp posts that generates in every vanilla forest. **Custom biome with a jigsaw structure** adds the same hamlet to a custom biome (see [Worldgen](worldgen.md)).
 
 ## Ids are unique across kinds
 
@@ -24,7 +24,7 @@ Some templates start a link pointing at the new element's own id (a structure se
 ## Import a structure
 
 1. Build the piece in a Minecraft world and save it with a structure block (see [Jigsaw blocks in the game](#jigsaw-blocks-in-the-game) below). The game writes it to `saves/<world>/generated/<namespace>/structure/<name>.nbt`.
-2. In MCSuperMods choose **File → Import Structure…**. The **Import structure** dialog lists the **Supported files**: structure templates (`.nbt`) and Sponge schematics (`.schem`, as written by WorldEdit and other tools).
+2. In MCSuperMods choose **File → Bring in a building…**. The **Import structure** dialog lists the **Supported files**: structure templates (`.nbt`) and Sponge schematics (`.schem`, as written by WorldEdit and other tools).
 3. Choose the **Namespace**, then **Choose files…** and pick one or more files.
 
 Each file becomes a structure template named after the file (lower case, spaces as `_`), listed under **Structures**. A file whose element already exists is skipped; one undo removes the whole import. A file saved by a newer game than the project's target gets the `structures.newer-data-version` note in **Problems**.
@@ -81,7 +81,7 @@ The **Problems** tab warns about the same things: `structures.jigsaw-target-miss
 
 A structure generates only when all of these are in place:
 
-1. A **structure** whose start pool is your first pool. Use the **Jigsaw structure** template under **Add element** (category Structures) and set its start pool, its biomes (a biome tag such as `#<namespace>:has_structure/<name>`), its size (how many jigsaw steps away pieces may be) and the terrain adaptation (`beard_thin` blends the ground under it).
+1. A **structure** whose start pool is your first pool. Use the **Jigsaw structure** template under **Add from the full list…** (category Structures) and set its start pool, its biomes (a biome tag such as `#<namespace>:has_structure/<name>`), its size (how many jigsaw steps away pieces may be) and the terrain adaptation (`beard_thin` blends the ground under it).
 2. A **structure set** that lists the structure. Use **Structure set (random spread)**: `spacing` is the size of the grid cell in chunks with one attempt per cell, and `separation` the minimum distance in chunks; separation must be less than spacing (`structures.set-spacing`). A structure in no set reports `structures.unplaced-structure`.
 3. A **biome tag** listing the biomes, from the **Biome tag (has_structure)** template. Listing `#minecraft:is_forest`, for example, covers every vanilla forest.
 
@@ -91,8 +91,8 @@ A structure generates only when all of these are in place:
 
 Two exports write the project's structure templates as files for other tools or for structure blocks:
 
-- **File → More Exports → Export Structures (.nbt)…**, or the arrow next to **Export .zip** on the toolbar, then **More exports → Structures (.nbt) into a folder…**, writes each structure template as `<namespace>/<path>.nbt`.
-- **File → More Exports → Export Structures as Sponge Schematics (.schem)…**, or **More exports → Structures as Sponge schematics (.schem)…** from the same toolbar arrow, writes `<namespace>/<path>.schem` (Sponge schematic version 3), for WorldEdit and similar tools.
+- **File → Export → Structures (.nbt) into a folder…**, or **More → Export → Structures (.nbt) into a folder…** on the toolbar, writes each structure template as `<namespace>/<path>.nbt`.
+- **File → Export → Structures as Sponge schematics (.schem)…**, or the same entry in the toolbar's **More → Export**, writes `<namespace>/<path>.schem` (Sponge schematic version 3), for WorldEdit and similar tools.
 
 Both ask for a folder, and both are disabled while the data pack has errors. The **Export structures** buttons in the Structure Studio run the same exports. The ordinary data pack export already contains every structure as `.nbt`, so you need these only outside a data pack.
 

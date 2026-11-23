@@ -9,7 +9,7 @@ A boat is an item with the **Boat** part (`msm:boat`). It needs the **Fabric mod
 There are three ways:
 
 - the Creator's **Wood set** flow, with the answer **Has boats** (off by default): it makes `<wood>_boat` and `<wood>_chest_boat` with their item pictures, the boat pictures drawn by MCSuperMods in your wood colour, the recipes and the tags. The boats need the set's planks, so keep **Planks** among **Blocks in the set**;
-- **Add element** (Ctrl+N), the template **Boat and chest boat**: a boat you paddle and ride as vanilla boats, with a chest boat beside it. It is drawn as an oak boat until you give it your own wood pictures, and it is crafted from your wood planks, so make a wood set of the same name for them;
+- **Add from the full list…** (Ctrl+N), the template **Boat and chest boat**: a boat you paddle and ride as vanilla boats, with a chest boat beside it. It is drawn as an oak boat until you give it your own wood pictures, and it is crafted from your wood planks, so make a wood set of the same name for them;
 - the example **Willow boats**.
 
 Selecting a boat opens the Item Studio.
@@ -35,7 +35,7 @@ A boat is placed only where its whole box touches no block, which is Minecraft's
 
 ## Problems
 
-**Problems** says, in plain words: a chest boat whose name another thing in your mod already has (rename one), a boat whose planks are missing (the recipe cannot be made: make `<wood>_planks`, as the Wood set does), a boat or chest boat with no picture (it is drawn with the missing-picture pattern: draw it, or name a Minecraft wood), boat pictures or a chest boat name on an item that is not a boat or has no chest boat (they are left out), a boat with another use of its own, and a boat that stacks to more than one. In Very easy mode they appear in **Things to fix**.
+**Problems** says, in plain words: a chest boat whose name another thing in your mod already has (rename one), a boat whose planks are missing (the recipe cannot be made: make `<wood>_planks`, as the Wood set does), a boat or chest boat with no picture (it is drawn with the missing-picture pattern: draw it, or name a Minecraft wood), boat pictures or a chest boat name on an item that is not a boat or has no chest boat (they are left out), a boat with another use of its own, and a boat that stacks to more than one. They also appear in **Things to fix**.
 
 ## Vanilla packs
 
