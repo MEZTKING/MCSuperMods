@@ -395,8 +395,14 @@ describe('Play service', () => {
       join(instanceDir, name),
     );
     const inside = (root: string, path: string) => path.startsWith(`${root}${sep}`);
+    // A new instance is built in the instances folder's `.msm-staging` and moved into place
+    // with one rename (B761), so Prism never sees a half-made instance.
+    const staging = join(normalize(prism.instancesDir), '.msm-staging');
     const allowed = (path: string) =>
-      inside(gameDir(), path) || inside(cacheDir, path) || instanceFiles.includes(path);
+      inside(gameDir(), path) ||
+      inside(cacheDir, path) ||
+      inside(staging, path) ||
+      instanceFiles.includes(path);
     expect(writes.length).toBeGreaterThan(10);
     expect(writes.filter((path) => !allowed(path))).toEqual([]);
     expect(removes.filter((path) => !inside(gameDir(), path))).toEqual([]);
