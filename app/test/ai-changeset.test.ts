@@ -1,3 +1,13 @@
+import { readFileSync } from 'node:fs';
+import {
+  type AiModelScript,
+  aiModelScriptSchema,
+  createConversation,
+  DEFAULT_AI_SETTINGS,
+  DEFAULT_LIMITS,
+  runAssistant,
+  ScriptedModelClient,
+} from '@msm/ai';
 import {
   CommandStack,
   commands,
@@ -8,6 +18,7 @@ import {
   type ResourceLocation,
 } from '@msm/core';
 import { describe, expect, it } from 'vitest';
+import { createToolExecutor } from '../src/renderer/src/ai/tool-executor';
 import {
   bundleToNewItems,
   type ChangeItem,
@@ -15,6 +26,16 @@ import {
   PendingChangeset,
   planChangeItems,
 } from '../src/renderer/src/changeset/changeset';
+import {
+  changesSomething,
+  fileWords,
+  keptState,
+  notAddedWords,
+  proposalThings,
+  reviewCounts,
+  thingsOf,
+} from '../src/renderer/src/components/ai/proposal-things';
+import { newSession, nodeMcfunctionChecker } from './session-fixture';
 
 const now = () => '2026-01-01T00:00:00.000Z';
 
@@ -313,5 +334,179 @@ describe('PendingChangeset', () => {
     expect(plan.applied).toEqual(['one']);
     expect(Object.isFrozen(project)).toBe(false);
     expect(project.namespaces).toEqual([]);
+  });
+});
+
+/** The ruby tools scenario's changeset (`fixtures/ai/ruby-tools.script.json`), as the helper proposes it. */
+async function rubyToolsItems(): Promise<readonly ChangeItem[]> {
+  const { createMemoryFileSystem } = await import('@msm/core');
+  const { session } = newSession(
+    createMemoryFileSystem(),
+    {},
+    { mcfunction: await nodeMcfunctionChecker() },
+  );
+  await session.newProject({});
+  await session.schemas();
+  const changeset = new PendingChangeset();
+  const script = aiModelScriptSchema.parse(
+    JSON.parse(
+      readFileSync(new URL('./fixtures/ai/ruby-tools.script.json', import.meta.url), 'utf8'),
+    ),
+  ) as AiModelScript;
+  const conversation = createConversation('c', 'claude-opus-5-5');
+  const execute = createToolExecutor(session, changeset, {
+    proposePlan: async (plan) => ({ decision: 'build_all', items: plan.items, comments: '' }),
+    checkpoint: async () => 'continue',
+  });
+  const result = await runAssistant({
+    client: new ScriptedModelClient(script),
+    conversation,
+    request: {
+      runId: 'r',
+      conversationId: 'c',
+      mode: 'build',
+      text: 'ruby tools',
+      contextBlocks: [],
+    },
+    settings: structuredClone(DEFAULT_AI_SETTINGS) as typeof DEFAULT_AI_SETTINGS,
+    limits: { ...DEFAULT_LIMITS.build },
+    host: { executeTool: (request, signal) => execute(request, signal), emit: () => {} },
+    signal: new AbortController().signal,
+  });
+  expect(result.reason).toBe('end_turn');
+  return changeset.items;
+}
+
+describe('proposal things (B688)', () => {
+  it('groups the ruby tools mod into the ore, the block, the gem, the three tools and the mob', async () => {
+    const items = await rubyToolsItems();
+    const things = proposalThings(items);
+    // The ore set is one thing, as on Home's My things, its block of ruby first and the ore and
+    // the gem named on it; the sword, pickaxe, axe and the mob set are things of their own.
+    expect(
+      things.map((thing) => ({
+        id: thing.id,
+        name: thing.name,
+        what: thing.what,
+        parts: thing.parts,
+      })),
+    ).toEqual([
+      {
+        id: 'ruby:ruby_block',
+        name: 'Ruby',
+        what: 'Block',
+        parts: expect.arrayContaining(['Ruby Ore', 'Ruby']) as unknown as string[],
+      },
+      { id: 'ruby:ruby_sword', name: 'Ruby Sword', what: 'Item', parts: [] },
+      { id: 'ruby:ruby_golem', name: 'Ruby Golem', what: 'Mob', parts: [] },
+      { id: 'ruby:ruby_pickaxe', name: 'Ruby Pickaxe', what: 'Item', parts: [] },
+      { id: 'ruby:ruby_axe', name: 'Ruby Axe', what: 'Item', parts: [] },
+    ]);
+    const ore = things[0];
+    const names = (ore?.items ?? []).map((item) => item.elementId);
+    for (const id of ['ruby:ruby_ore', 'ruby:ruby_block', 'ruby:ruby']) expect(names).toContain(id);
+    // The ore, the block, the gem, the three tools and the mob are all there as things.
+    const thingNames = things.flatMap((thing) => [thing.name, ...thing.parts]);
+    for (const name of [
+      'Ruby Ore',
+      'Ruby',
+      'Ruby Sword',
+      'Ruby Pickaxe',
+      'Ruby Axe',
+      'Ruby Golem',
+    ]) {
+      expect(thingNames).toContain(name);
+    }
+    expect(ore?.parts.length).toBe(2);
+    // Every other item is behind one of them: nothing left for "Other files", nothing twice.
+    expect(things.some((thing) => thing.other)).toBe(false);
+    const behind = things.flatMap((thing) => thing.items.map((item) => item.itemId));
+    expect([...behind].sort()).toEqual(items.map((item) => item.itemId).sort());
+    // Files behind the hand-written tools: picture, model and recipe, in the proposal's order;
+    // the loose loot table is
+    // behind the block of ruby that names it.
+    const pickaxe = things.find((thing) => thing.id === 'ruby:ruby_pickaxe');
+    expect(pickaxe?.items.map(fileWords)).toEqual([
+      'Item: Ruby pickaxe',
+      'Picture: Ruby pickaxe',
+      'Model: Ruby pickaxe',
+      'Recipe: Ruby pickaxe from rubies',
+    ]);
+    expect(ore?.items.map((item) => item.elementId)).toContain('ruby:blocks/ruby_block');
+    // Each thing has its picture from the proposal.
+    for (const thing of things) expect(thing.picture, thing.name).toBeInstanceOf(Uint8Array);
+    expect(thingsOf(items).map((thing) => thing.name)).toEqual(things.map((thing) => thing.name));
+    expect(reviewCounts(things, items)).toEqual({
+      things: 5,
+      files: items.length - 5,
+      kept: items.length,
+      total: items.length,
+    });
+    expect(changesSomething(items)).toBe(false);
+  });
+
+  it('puts unnamed files in Other files, the mod settings behind the first thing', () => {
+    const item = (itemId: string, extra: Partial<ChangeItem>): ChangeItem => ({
+      itemId,
+      op: 'create',
+      accepted: true,
+      problems: [],
+      ...extra,
+    });
+    const items = [
+      item('a', { elementId: 'demo:mod' as ResourceLocation, kind: 'msm:mod', after: {} }),
+      item('b', {
+        elementId: 'demo:gem' as ResourceLocation,
+        kind: 'msm:item',
+        after: { display_name: 'Gem' },
+      }),
+      item('c', {
+        elementId: 'demo:greet' as ResourceLocation,
+        kind: 'minecraft:function',
+        op: 'update',
+        before: 'say hi',
+        after: 'say hello',
+      }),
+    ];
+    const things = proposalThings(items);
+    expect(things.map((thing) => [thing.name, thing.items.map((entry) => entry.itemId)])).toEqual([
+      ['Gem', ['b', 'a']],
+      ['Other files', ['c']],
+    ]);
+    expect(things[1]?.other).toBe(true);
+    expect(things[1]?.op).toBe('changed');
+    expect(changesSomething(items)).toBe(true);
+    expect(keptState(things[0] as (typeof things)[number])).toBe('all');
+    const unticked = items.map((entry) =>
+      entry.itemId === 'a' ? { ...entry, accepted: false } : entry,
+    );
+    expect(keptState(proposalThings(unticked)[0] as (typeof things)[number])).toBe('mixed');
+    expect(reviewCounts(proposalThings(unticked), unticked)).toEqual({
+      things: 1,
+      files: 0,
+      kept: 2,
+      total: 3,
+    });
+  });
+
+  it('says why an item was not added, with no id outside Advanced', () => {
+    const conflicted: ChangeItem = {
+      itemId: 'x',
+      op: 'create',
+      elementId: 'demo:gem' as ResourceLocation,
+      kind: 'msm:item',
+      after: {},
+      accepted: true,
+      problems: [],
+      conflict: 'An element demo:gem already exists.',
+    };
+    expect(notAddedWords(conflicted, 'very-easy')).toBe(
+      'Not added: your mod already has one with this name.',
+    );
+    expect(notAddedWords(conflicted, 'advanced')).toBe(
+      'Not added: An element demo:gem already exists.',
+    );
+    const { conflict: _conflict, ...fitting } = conflicted;
+    expect(notAddedWords(fitting, 'easy')).toBeUndefined();
   });
 });

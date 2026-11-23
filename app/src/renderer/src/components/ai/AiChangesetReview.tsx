@@ -1,20 +1,25 @@
 import { type Json, type Project, stableStringify } from '@msm/core';
+import { targetById } from '@msm/targets';
 import { TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { CHANGE_OPS, type ChangeItem, type ChangeOp } from '../../changeset/changeset';
+import { usePreferences } from '../../store/preferences';
 import { useUiStore } from '../../store/ui-store';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Button } from '../ui/Button';
+import { AiProposalCards } from './AiProposalCards';
 import { AiSeeIt } from './AiSeeIt';
+import { reviewHeading, type UiMode, wordsFor } from './ai-words';
 import { lineDiff } from './line-diff';
+import { CARD_WORDS, changesSomething, proposalThings, reviewCounts } from './proposal-things';
 
-/** The group headings of the review, by operation. */
+/** The group headings of Advanced's file list, by operation. */
 export const CHANGE_OP_LABELS: Readonly<Record<ChangeOp, string>> = {
   create: 'New elements',
   update: 'Changed elements',
   delete: 'Deleted elements',
   rename: 'Renamed elements',
-  asset: 'Placeholder textures',
+  asset: wordsFor('advanced').review.pictures,
 };
 
 function json(value: unknown): string {
@@ -121,11 +126,11 @@ function ChangeRow(props: { item: ChangeItem; onToggle(accepted: boolean): void 
       )}
       <details className="pl-5 text-xs" data-testid={`${testId}-diff`}>
         <summary className="cursor-pointer text-muted">
-          {item.op === 'asset' ? 'Preview' : 'Before and after'}
+          {item.op === 'asset' ? 'Preview' : wordsFor('advanced').review.beforeAfter}
         </summary>
         {item.op === 'asset' && item.asset !== undefined ? (
           <img
-            alt={`Placeholder texture ${title}`}
+            alt={`Texture ${title}`}
             src={`data:image/png;base64,${base64(item.asset.bytes)}`}
             className="mt-1 size-16 [image-rendering:pixelated]"
           />
@@ -138,17 +143,24 @@ function ChangeRow(props: { item: ChangeItem; onToggle(accepted: boolean): void 
 }
 
 /**
- * The pending changeset (ADR 0041 D5): items grouped by operation, each with an accept
- * checkbox, kind and id, a before/after diff, the problems the last check found and conflict
- * notes. Apply is enabled when an accepted item has no conflict; Discard asks first.
+ * The pending changeset (ADR 0041 D5, ADR 0125 D3): what the helper would make, seen before
+ * anything is added. The heading says how many things are ready; the **See it** pane (B615,
+ * {@link AiSeeIt}) comes first, drawing the open project as it would be with the kept changes;
+ * then one card per thing ({@link AiProposalCards}) with its picture, name and **Keep**. Very easy
+ * shows nothing else; Easy folds each thing's files under **Files behind this**; Advanced adds
+ * today's file list (by operation, each with its kind and id, the diff, the raw problems and
+ * conflict notes).
  *
- * The **See it** pane (B615, {@link AiSeeIt}) comes first: the open project as it would be with
- * the kept changes, drawn live; looking applies nothing.
+ * **Add to my mod** (**Make these changes** when something already in the mod is changed or
+ * taken out; **Apply** in Advanced) is enabled when a kept item has no conflict and the helper
+ * has finished; **Throw away** (**Discard**) asks first.
  */
 export function AiChangesetReview(props: {
   items: readonly ChangeItem[];
   /** The project the changes apply to; default: the open project. */
   project?: Project | null;
+  /** The view mode; default: the preference. */
+  mode?: UiMode;
   running: boolean;
   applying: boolean;
   onToggle(itemId: string, accepted: boolean): void;
@@ -157,63 +169,80 @@ export function AiChangesetReview(props: {
 }) {
   const [confirming, setConfirming] = useState(false);
   const { items } = props;
-  const accepted = items.filter((item) => item.accepted).length;
+  const preferred = usePreferences((state) => state.mode);
+  const mode = props.mode ?? preferred;
+  const words = wordsFor(mode).review;
   const open = useUiStore((state) => state.snapshot?.project ?? null);
   const project = props.project === undefined ? open : props.project;
+  const targetId = project?.targets[0];
+  const folders =
+    targetId === undefined ? undefined : targetById(targetId)?.target.folders.resource;
+  const things = useMemo(
+    () => proposalThings(items, folders === undefined ? {} : { folders }),
+    [items, folders],
+  );
+  const counts = reviewCounts(things, items);
+  const advanced = mode === 'advanced';
+  const doIt = changesSomething(items) ? words.makeChanges : words.add;
+  const thingCount = things.filter((thing) => !thing.other).length;
   return (
     <section
       className="flex flex-col gap-2 rounded border border-border p-2 text-sm"
-      aria-label="Proposed changes"
+      aria-label={advanced ? 'Proposed changes' : 'Ready to add'}
       data-testid="ai-changeset"
+      data-mode={mode}
     >
-      <h3 className="font-semibold">
-        Proposed changes ({accepted} of {items.length} kept)
+      <h3 className="font-semibold" data-testid="ai-review-heading">
+        {reviewHeading(counts, mode)}
       </h3>
       {project !== null && <AiSeeIt project={project} items={items} running={props.running} />}
-      {props.running && (
-        <p className="text-xs text-muted">The helper is still working; more changes may follow.</p>
-      )}
-      {CHANGE_OPS.map((op) => {
-        const group = items.filter((item) => item.op === op);
-        if (group.length === 0) return null;
-        return (
-          <div key={op} className="flex flex-col gap-1">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted">
-              {CHANGE_OP_LABELS[op]} ({group.length})
-            </h4>
-            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-              {group.map((item) => (
-                <ChangeRow
-                  key={item.itemId}
-                  item={item}
-                  onToggle={(next) => props.onToggle(item.itemId, next)}
-                />
-              ))}
-            </ul>
-          </div>
-        );
-      })}
+      <AiProposalCards things={things} mode={mode} onToggle={props.onToggle} />
+      {advanced &&
+        CHANGE_OPS.map((op) => {
+          const group = items.filter((item) => item.op === op);
+          if (group.length === 0) return null;
+          return (
+            <div key={op} className="flex flex-col gap-1">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-muted">
+                {CHANGE_OP_LABELS[op]} ({group.length})
+              </h4>
+              <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+                {group.map((item) => (
+                  <ChangeRow
+                    key={item.itemId}
+                    item={item}
+                    onToggle={(next) => props.onToggle(item.itemId, next)}
+                  />
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       <div className="flex gap-1.5">
         <Button
           data-testid="ai-apply"
           disabled={!canApply(items) || props.running || props.applying}
           onClick={props.onApply}
         >
-          Apply
+          {doIt}
         </Button>
         <Button
           data-testid="ai-discard"
           disabled={props.applying}
           onClick={() => setConfirming(true)}
         >
-          Discard
+          {words.throwAway}
         </Button>
       </div>
       {confirming && (
         <ConfirmDialog
-          title="Discard proposed changes"
-          message={`Discard all ${items.length} proposed change${items.length === 1 ? '' : 's'}? Nothing has been applied to the project.`}
-          confirmLabel="Discard"
+          title={advanced ? 'Discard proposed changes' : CARD_WORDS.discardTitle}
+          message={
+            advanced
+              ? `Discard all ${items.length} proposed change${items.length === 1 ? '' : 's'}? Nothing has been applied to the project.`
+              : CARD_WORDS.discardMessage(thingCount)
+          }
+          confirmLabel={words.throwAway}
           onCancel={() => setConfirming(false)}
           onConfirm={() => {
             setConfirming(false);

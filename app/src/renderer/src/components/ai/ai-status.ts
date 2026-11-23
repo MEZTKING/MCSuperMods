@@ -14,20 +14,18 @@
 
 import { type AiDoneReason, type AiLimitReached, toolDefinition } from '@msm/ai';
 import type { Project } from '@msm/core';
-import type { ContentBundle } from '@msm/plugin-api';
 import type { ChangeItem } from '../../changeset/changeset';
-import { displayName } from '../../preview/bundle-source';
 import { findProjectElement } from '../../session/plain-problems';
 import {
   type AiAppliedStep,
   type AiConversation,
   type AiDisplayMessage,
-  type AiMadeThing,
   type AiPlanState,
   pendingPlan,
   tickedItemIds,
 } from '../../store/ai-store';
-import { failureAction, isThingKind, proposedName, THING_KIND_WORDS } from './ai-words';
+import { failureAction } from './ai-words';
+import { thingsOf } from './proposal-things';
 
 /** The states of the state line (ADR 0125 D1). */
 export const AI_STATUS_STATES = Object.freeze([
@@ -223,108 +221,9 @@ export function conversationStatus(
 
 // Things ---------------------------------------------------------------------------------
 
-const KIND_ORDER = new Map(THING_KIND_WORDS.map((entry, index) => [entry.kind, index]));
-
-function kindWord(kind: string, data: unknown): string {
-  if (
-    kind === 'msm:block' &&
-    typeof data === 'object' &&
-    data !== null &&
-    (data as Record<string, unknown>).type === 'portal'
-  ) {
-    return 'Portal';
-  }
-  return THING_KIND_WORDS.find((entry) => entry.kind === kind)?.word ?? 'Thing';
-}
-
-function opOf(item: ChangeItem): AiMadeThing['op'] {
-  if (item.op === 'create') return 'added';
-  if (item.op === 'delete') return 'removed';
-  return 'changed';
-}
-
-/** The set name a Creator set stores in `meta.creator.values` (`name` or `*_name`), if any. */
-function setName(item: ChangeItem): string | undefined {
-  const values = item.meta?.creator?.values;
-  if (values === undefined) return undefined;
-  const key = Object.keys(values)
-    .sort()
-    .find((entry) => entry === 'name' || entry.endsWith('_name'));
-  const value = key === undefined ? undefined : values[key];
-  return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined;
-}
-
-/**
- * The things a list of change items stands for (ADR 0125 D4): one per Creator set, else one per
- * item of a kind My things shows, in the items' order, named by `displayName` of
- * `preview/bundle-source.ts` over the items (the language files they carry, then the elements'
- * own names), else words of the id. Supporting files (models, recipes, pictures) are no thing of
- * their own. B688's `proposal-things.ts` groups them for the review.
- */
-export function thingsOf(items: readonly ChangeItem[]): AiMadeThing[] {
-  const bundle: ContentBundle = {
-    elements: items.flatMap((item) =>
-      item.elementId === undefined || item.kind === undefined || item.after === undefined
-        ? []
-        : [{ id: item.elementId, kind: item.kind, data: item.after }],
-    ),
-    assets: [],
-  };
-  const nameOf = (item: ChangeItem, id: string): string => {
-    const type =
-      item.kind === 'msm:block' ? 'block' : item.kind === 'msm:item' ? 'item' : undefined;
-    return (
-      (type === undefined ? undefined : displayName(bundle, id, type)) ??
-      proposedName({ id, data: item.after ?? item.before })
-    );
-  };
-  const sets = new Map<string, ChangeItem[]>();
-  const order: ({ set: string } | { item: ChangeItem })[] = [];
-  for (const item of items) {
-    if (item.elementId === undefined || item.kind === undefined) continue;
-    const setId = item.meta?.creator?.setId;
-    if (setId !== undefined) {
-      const list = sets.get(setId);
-      if (list === undefined) {
-        sets.set(setId, [item]);
-        order.push({ set: setId });
-      } else list.push(item);
-    } else if (isThingKind(item.kind)) {
-      order.push({ item });
-    }
-  }
-  const things: AiMadeThing[] = [];
-  for (const entry of order) {
-    if ('item' in entry) {
-      const { item } = entry;
-      const id = item.elementId as string;
-      things.push({
-        id,
-        name: nameOf(item, id),
-        what: kindWord(item.kind as string, item.after ?? item.before),
-        op: opOf(item),
-      });
-      continue;
-    }
-    const members = sets.get(entry.set) ?? [];
-    const main = [...members]
-      .filter((item) => isThingKind(item.kind as string))
-      .sort(
-        (a, b) =>
-          (KIND_ORDER.get(a.kind as string) ?? 99) - (KIND_ORDER.get(b.kind as string) ?? 99) ||
-          (a.elementId as string).localeCompare(b.elementId as string),
-      )[0];
-    if (main === undefined) continue;
-    const id = main.elementId as string;
-    things.push({
-      id,
-      name: setName(main) ?? nameOf(main, id),
-      what: kindWord(main.kind as string, main.after ?? main.before),
-      op: opOf(main),
-    });
-  }
-  return things;
-}
+// The things of a list of change items are B688's `proposal-things.ts` (`thingsOf`, kept here
+// under the same name for the callers of this file).
+export { thingsOf };
 
 /**
  * The undo step an Apply made, from the changeset's items and the session's result, or `null`
