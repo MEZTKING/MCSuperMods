@@ -17,6 +17,10 @@ The split keeps the Claude SDK out of the renderer and the preload (Biome forbid
 
 `runAssistant({ client, conversation, request, settings, limits, host, signal })` drives one run: it streams requests, forwards text and thinking-summary deltas, validates every tool input with zod, sends valid tool calls to `host.executeTool` (emitting `tool_request` first), appends all results of a turn as one user message and stops on `end_turn`, `refusal`, `max_tokens`, a limit, cancellation or an error. History is committed in whole turns, so a cancelled run never leaves a `tool_use` without its result.
 
+## What the app shows
+
+The app turns the loop's events into the screens the guide describes ([the AI helper](../../docs/guide/ai-helper.md)): `errorClass` and `limit` of a stopped run become one sentence and one button (`ai-words.ts`), `typicalCost` and `estimateCost` give the cost sentence on the set-up card and in the Model list from the price table in `models.ts`, and the run's size (`chat` for a small ask, `build` for a whole mod) picks the limits. The words per view mode are the app's, not this package's (ADR 0125).
+
 ## Writing a model script
 
 `ScriptedModelClient` replays an `AiModelScript` (validated by `aiModelScriptSchema`), one turn per request:

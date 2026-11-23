@@ -57,7 +57,7 @@ With a mod open, Home shows **Make something** with these tiles, under headings:
 | | **Make a sound or music** | A music disc with your own song, or a goat horn call |
 | | **Paint a picture** | Draw a new picture, pixel by pixel |
 | Rules and help | **Make things happen** | Rules: when something happens, do something. No code needed. |
-| | **Build with the AI helper** | Say what you want and let the AI helper build it |
+| | **Build with the AI helper** | Say what you want and let the AI helper plan it; you look at what it made, then **Add to my mod** ([the AI helper](ai-helper.md)) |
 
 Most tiles open the [Creator](creator.md) on the right question page, or on its list of pages when a tile offers several. **Make a recipe**, **Make a building**, **Make a world** and **Change how Minecraft looks** also offer ready-made content: they open a short list, where a question page opens the Creator and a ready-made choice is added to your mod at once (one step, so **Undo** takes it back). **Make things happen** opens your [rule book](rules.md); the first time it makes one. A tile whose pages do not exist for your Minecraft version is not shown.
 
@@ -112,7 +112,8 @@ Rename only changes the shown name, so it never breaks a world. **Delete** asks 
 When something stops your mod from playing, **Things to fix (N)** lists it in plain words, with the thing's name: for example a picture that is missing, or a step in a rule that cannot work. Each line has:
 
 - **Show me**, which opens the thing at the right place;
-- **Fix it**, where one click can fix it, for example **Paint the picture** to open the painter on the missing picture or **Remove this step** for a rule step.
+- **Fix it**, where one click can fix it, for example **Paint the picture** to open the painter on the missing picture or **Remove this step** for a rule step;
+- **Ask the helper**, once the [AI helper](ai-helper.md#ask-the-helper-about-a-problem) is set up: it opens the helper with the problem attached and sends nothing until you press **Send**.
 
 The newest things are explained in the same plain way, for example:
 

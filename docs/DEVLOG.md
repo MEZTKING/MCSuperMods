@@ -9356,3 +9356,16 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B658: protected words are handed in; B650's set (every vanilla id word of four letters or more) protects plurals such as `blocks`, `leaves`, `boots` and `stairs`, so `block` and `blocks` do not meet. Consider protecting an id word only when its stem would be another dictionary word, or index both forms. Run phrases and `joinsAndSplits` before stop words are dropped (`sets on fire`); the typo index takes the folded dictionary with counts per entry and leaves out words under three letters and numbers.
 - B659: `readNumbers` never clamps; answers drop a number out of range (D7 as amended). Token indexes in `NumberMention` and `IntentReading.cue` are for the struck-through and understood chips.
 - B656 and B657: nothing of this brief changes their interfaces; jar names and guide sections go through `tokenise` and `fold` like any other text.
+
+## 2026-11-23 — executor — B691 the AI helper's guide, changelog and scoped guides
+
+**What**
+- `docs/guide/ai-helper.md` rewritten around the merged screens (ADR 0125): set-up (the three-step card, Save and check, Check again, Settings), asking (example asks, New chat), waiting (the state line, Stop, New below), the plan, Look and the tray with cards, Keep, Files behind this, Add to my mod, Make these changes, Throw away (Apply and Discard in Advanced), Show me, Undo and Put back, Ask the helper on Things to fix, See exactly what is sent, cost (one sentence, from the price table: Opus 5.5 about $0.27 first, $0.05 after), failures by sentence in a table, limits in Settings.
+- `docs/guide/very-easy.md`: Ask the helper on Things to fix, the AI tile's line. `CHANGELOG.md` `[Unreleased]` gains three Added entries. `app/CLAUDE.md` (helper sentence only, still 55 lines) and `packages/ai/README.md` (a short "What the app shows" section).
+
+**Decisions**
+- Typical costs are written for Opus 5.5 only, as the set-up card prints them; other models are "about half" (Sonnet) and "a good deal less" (Haiku).
+- Every bold label was grepped in `ai-words.ts`, `ai-setup-words.ts`, `proposal-things.ts`, `ai-limits-model.ts` or the components.
+
+**Next**
+- B692's check list can link to this page's anchors (`#set-it-up`, `#when-something-goes-wrong`). Docs site built (vitepress) with no dead links.
