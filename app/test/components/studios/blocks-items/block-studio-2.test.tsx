@@ -19,7 +19,6 @@ import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import { VanillaBlockRulesStudio } from '../../../../src/renderer/src/studios/blocks-items/AdditionStudios';
 import {
   newVanillaRule,
@@ -60,10 +59,10 @@ import {
   withSetTypeBase,
   withSetTypeSound,
 } from '../../../../src/renderer/src/studios/blocks-items/sounds-model';
+import { BLOCK_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { DISCOVERED_STUDIOS } from '../../../../src/renderer/src/studios/studio-registry';
 import type { StudioProps } from '../../../../src/renderer/src/studios/types';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { BLOCK_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -94,7 +93,6 @@ beforeAll(async () => {
 }, PRELOAD_TIMEOUT_MS);
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 const ID = 'demo:thing' as ResourceLocation;
@@ -268,7 +266,7 @@ describe('the plant sections', () => {
     expect((screen.getByTestId('growing-plant-climbable') as HTMLInputElement).checked).toBe(false);
     stack.undo();
     expect(read(data).needs_water).toBeUndefined();
-    expect(screen.getByTestId('block-companion-row').textContent).toContain('demo:thing_plant');
+    expect(screen.getByTestId('block-companion-ids').textContent).toContain('demo:thing_plant');
   });
 
   it('changes a column plant to bamboo in one step and edits a dripleaf', () => {
@@ -318,8 +316,8 @@ describe('the plant sections', () => {
     expect(read(data).plants).toEqual(['minecraft:poppy', 'demo:maple']);
   });
 
-  it('shows names and no ids in Very easy', () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
+  it('shows names and no ids by default', () => {
+    window.msmMoreOptionsOpen = false;
     renderOnStack(
       block({ type: 'flower_pot', plants: ['minecraft:red_tulip'] }, 'demo:pot'),
       schema,
@@ -329,6 +327,7 @@ describe('the plant sections', () => {
     expect(row.textContent).not.toContain('minecraft:');
     expect(screen.queryByTestId('flower-pot-add-id')).toBeNull();
     expect(screen.getByTestId('block-companion-row').textContent).not.toContain('demo:');
+    window.msmMoreOptionsOpen = true;
   });
 
   it('names a project pot for a potted plant', () => {
@@ -444,11 +443,10 @@ describe('the Sounds section', () => {
     expect(read(data).set_type).toBe('iron');
   });
 
-  it('picks sounds by name in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
+  it('picks sounds by name', async () => {
     const { data } = renderOnStack(block({ model: 'minecraft:block/stone' }), schema);
     const chip = await screen.findByTestId(
-      'block-sound-step',
+      'block-sound-step-plain',
       {},
       { timeout: LAZY_CHUNK_TIMEOUT_MS },
     );
@@ -459,7 +457,7 @@ describe('the Sounds section', () => {
       within(screen.getByTestId('thing-picker')).getByTestId('thing-minecraft:block.wood.step'),
     );
     expect(read(data).block_sounds).toEqual({ step: 'minecraft:block.wood.step' });
-    expect(screen.getByTestId('block-sound-step').textContent).toBe('Wood step');
+    expect(screen.getByTestId('block-sound-step-plain').textContent).toBe('Wood step');
   });
 });
 
@@ -565,12 +563,11 @@ describe('the Vanilla block rules Studio', () => {
     );
   });
 
-  it('picks blocks by name in Very easy', () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
+  it('picks blocks by name', () => {
     const { read } = renderRules({ format: 1, flatten: [{ block: 'minecraft:dirt', into: '' }] });
-    const chip = screen.getByTestId('vanilla-rules-flatten-0-block');
+    const chip = screen.getByTestId('vanilla-rules-flatten-0-block-plain');
     expect(chip.textContent).toBe('Dirt');
-    fireEvent.click(screen.getByTestId('vanilla-rules-flatten-0-into'));
+    fireEvent.click(screen.getByTestId('vanilla-rules-flatten-0-into-plain'));
     fireEvent.click(
       within(screen.getByTestId('thing-picker')).getByTestId('thing-minecraft:stone'),
     );

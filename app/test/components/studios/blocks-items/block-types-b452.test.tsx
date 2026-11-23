@@ -46,8 +46,8 @@ import {
   waterloggingState,
   withWaterloggable,
 } from '../../../../src/renderer/src/studios/blocks-items/WaterloggingSwitch';
-import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { BLOCK_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
+import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { projectOf, renderOnStack, schemaState } from './harness';
@@ -266,16 +266,17 @@ describe('per-type fields', () => {
     expect(read(data).particle).toBe('minecraft:soul_fire_flame');
     const rows = screen.getAllByTestId('block-companion-row');
     expect(rows).toHaveLength(1);
-    expect(rows[0]?.textContent).toBe('Also makes: demo:thing_wall (the torch on a wall)');
+    expect(rows[0]?.textContent).toBe('Also makes: the torch on a wall');
+    // The id is under the section's More options (ADR 0130).
+    expect(screen.getByTestId('block-companion-ids').textContent).toBe('demo:thing_wall');
   });
 
   it('edits the wood type of signs and hanging signs and shows their wall blocks', () => {
     const { data } = renderOnStack(block({ type: 'sign', wood_type: 'oak' }), schema);
     pick('block-sign-wood-type', 'cherry');
     expect(read(data).wood_type).toBe('cherry');
-    expect(screen.getByTestId('block-companion').textContent).toContain(
-      'demo:thing_wall (the sign on a wall)',
-    );
+    expect(screen.getByTestId('block-companion').textContent).toContain('the sign on a wall');
+    expect(screen.getByTestId('block-companion-ids').textContent).toContain('demo:thing_wall');
     pick('block-type-picker', 'hanging_sign');
     expect(read(data).wood_type).toBe('cherry');
     expect(screen.getByTestId('block-companion').textContent).toContain(
@@ -295,7 +296,7 @@ describe('per-type fields', () => {
     expect(companionRows({ id: ID, data: read(data) as Json })).toEqual([
       { id: 'demo:thing_attached', words: 'the stem bent onto a grown fruit' },
     ]);
-    expect(screen.getByTestId('block-companion').textContent).toContain('demo:thing_attached');
+    expect(screen.getByTestId('block-companion-ids').textContent).toContain('demo:thing_attached');
     pick('stem-fruit-own', 'demo:gourd');
     expect(read(data).fruit).toBe('demo:gourd');
     expect(screen.getByText(/empty: #minecraft:supports_melon_stem\)/)).toBeTruthy();

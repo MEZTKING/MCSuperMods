@@ -15,7 +15,7 @@ import {
 } from '../../src/renderer/src/components/SettingsDialog';
 import { SETTINGS_CATALOGUE } from '../../src/renderer/src/components/settings-catalogue';
 import { EMPTY_HISTORY } from '../../src/renderer/src/search/history';
-import { type UiMode, usePreferences } from '../../src/renderer/src/store/preferences';
+import { usePreferences } from '../../src/renderer/src/store/preferences';
 import type {
   AppSettingsView,
   WorldBackupList,
@@ -23,8 +23,6 @@ import type {
 } from '../../src/shared/platform';
 import { fakeAi } from './ai-fixtures';
 import { fakePictures } from './ai-pictures-fake';
-
-const MODES: readonly UiMode[] = ['very-easy', 'easy', 'advanced'];
 
 const VIEW: AppSettingsView = {
   minecraftDir: null,
@@ -139,7 +137,6 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 describe('the settings catalogue (B662)', () => {
@@ -162,14 +159,13 @@ describe('the settings catalogue (B662)', () => {
     }
   });
 
-  for (const mode of MODES) {
-    it(`matches the dialog's lines and controls in ${mode}`, async () => {
-      usePreferences.setState({ mode });
+  for (const open of [true, false]) {
+    it(`matches the dialog's lines and controls with More options ${open ? 'open' : 'closed'}`, async () => {
+      window.msmMoreOptionsOpen = open;
+      globalThis.localStorage.clear();
       renderFull();
       const dialog = await loaded();
-      const expected = SETTINGS_CATALOGUE.filter(
-        (line) => line.modes === undefined || line.modes.includes(mode),
-      );
+      const expected = SETTINGS_CATALOGUE.filter((line) => open || line.more !== true);
       const lines = [...dialog.querySelectorAll('[data-setting]')];
       const shown = lines.map((line) => line.getAttribute('data-setting'));
       // Every catalogue line is a line of the dialog, and every line of the dialog is in it.
@@ -188,11 +184,14 @@ describe('the settings catalogue (B662)', () => {
       // Every control of the dialog sits in a catalogue line (Close only closes it).
       for (const control of dialog.querySelectorAll('input, select, textarea, button')) {
         if (control.getAttribute('data-testid') === 'settings-close') continue;
+        // A More options toggle opens lines; it is not a setting itself (ADR 0130).
+        if (control.getAttribute('data-testid')?.startsWith('more-options-') === true) continue;
         expect(
           control.closest('[data-setting]'),
           `${control.outerHTML.slice(0, 120)} is in a settings line`,
         ).not.toBeNull();
       }
+      window.msmMoreOptionsOpen = true;
     });
   }
 });
@@ -314,8 +313,9 @@ describe('SettingsDialog focusSetting', () => {
 
 describe('built-in command words (B662)', () => {
   it('gives every command one sentence and extra words', () => {
-    // 53 with "Search everything" (B667); 55 with More ideas and Your mods (ADR 0128 D6).
-    expect(BUILT_IN_COMMAND_IDS).toHaveLength(56);
+    // 53 with "Search everything" (B667); 55 with More ideas and Your mods (ADR 0128 D6); 52
+    // without the four mode commands (ADR 0130 D1).
+    expect(BUILT_IN_COMMAND_IDS).toHaveLength(52);
     for (const id of BUILT_IN_COMMAND_IDS) {
       const command = BUILT_IN_COMMANDS[id];
       expect(command.sentence, id).toMatch(/^[A-Z].*\.$/);

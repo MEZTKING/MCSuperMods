@@ -266,21 +266,16 @@ describe('chips and scopes', () => {
     expect(screen.getByRole('group', { name: 'Look in' })).toBeTruthy();
   });
 
-  it("reads Advanced's prefixes as scopes, and only in Advanced", async () => {
+  it('reads the prefixes as scopes for everyone (ADR 0130)', async () => {
     const advanced = setup({ mode: 'advanced' });
     await typed(advanced.user, advanced.field, '>export jar');
     expect(advanced.fake.requests.at(-1)).toMatchObject({ text: 'export jar', scope: 'commands' });
     expect(screen.getByTestId('search-scope-commands').getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByTestId('search-scope-commands').textContent).toBe('Commands>');
     cleanup();
-    const easy = setup({ mode: 'easy' });
-    await typed(easy.user, easy.field, '>export jar');
-    expect(easy.fake.requests.at(-1)).toEqual({ text: '>export jar', mode: 'easy' });
-    cleanup();
-    const veryEasy = setup({ mode: 'very-easy' });
-    expect(screen.queryByTestId('search-scope-commands')).toBeNull();
-    await typed(veryEasy.user, veryEasy.field, '@ruby');
-    expect(veryEasy.fake.requests.at(-1)?.scope).toBeUndefined();
+    const plain = setup({ mode: 'very-easy' });
+    await typed(plain.user, plain.field, '@ruby');
+    expect(plain.fake.requests.at(-1)).toMatchObject({ text: 'ruby', scope: 'mine' });
   });
 
   it('opens on the palette door with the commands scope', () => {

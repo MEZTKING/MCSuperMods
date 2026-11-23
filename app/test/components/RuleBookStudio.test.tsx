@@ -21,8 +21,7 @@ import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { type ReactNode, useEffect, useReducer } from 'react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -66,9 +65,6 @@ beforeAll(async () => {
   // The Studio is a lazy chunk: load it here, not inside the first findBy.
   await preloadChunks(() => import('../../src/renderer/src/studios/rules/RuleBookStudio'));
 }, PRELOAD_TIMEOUT_MS);
-beforeEach(() => {
-  usePreferences.setState({ mode: 'easy' });
-});
 afterEach(cleanup);
 
 const BOOK_ID = 'demo:rules' as ResourceLocation;
@@ -433,25 +429,26 @@ describe('Rule book Studio', () => {
     expect(document.activeElement?.getAttribute('data-pointer')).toBe('/rules/0/do/1/sound');
   });
 
-  it('hides advanced-only steps in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
-    expect(rulesModeOf('very-easy')).toEqual({ veryEasy: true, advanced: false });
-    await renderBook(GIFT);
-    fireEvent.click(screen.getAllByTestId('rules-add-step-do')[0] as HTMLElement);
-    await screen.findByRole('button', { name: 'Give an item' });
-    expect(screen.queryByRole('button', { name: 'Run a command' })).toBeNull();
-    expect(screen.queryByTestId('rule-key')).toBeNull();
+  it('reads the view: plain in the main area, ids inside More options', () => {
+    expect(rulesModeOf(true)).toEqual({ advanced: false });
+    expect(rulesModeOf(false)).toEqual({ advanced: true });
   });
 
-  it('offers every step in Easy', async () => {
-    await renderBook(GIFT);
-    fireEvent.click(screen.getAllByTestId('rules-add-step-do')[0] as HTMLElement);
-    expect(await screen.findByRole('button', { name: 'Run a command' })).toBeTruthy();
-    expect(screen.queryByTestId('rules-what-this-becomes')).toBeNull();
+  it('offers every step, and keeps the key and What this becomes under More options', async () => {
+    window.msmMoreOptionsOpen = false;
+    globalThis.localStorage.clear();
+    try {
+      await renderBook(GIFT);
+      fireEvent.click(screen.getAllByTestId('rules-add-step-do')[0] as HTMLElement);
+      expect(await screen.findByRole('button', { name: 'Run a command' })).toBeTruthy();
+      expect(screen.queryByTestId('rules-what-this-becomes')).toBeNull();
+      expect(screen.queryByTestId('rule-key')).toBeNull();
+    } finally {
+      window.msmMoreOptionsOpen = true;
+    }
   });
 
-  it('shows the key and "What this becomes" in Advanced', async () => {
-    usePreferences.setState({ mode: 'advanced' });
+  it('shows the key and "What this becomes" in their More options', async () => {
     await renderBook(GIFT);
     expect(screen.getAllByTestId('rule-key')[0]?.textContent).toBe('Key: gift');
     const drawer = screen.getByTestId('rules-what-this-becomes');
@@ -461,7 +458,6 @@ describe('Rule book Studio', () => {
   });
 
   it('shows the generated script when a rule needs one', async () => {
-    usePreferences.setState({ mode: 'advanced' });
     await renderBook({
       counters: [],
       format: 1,
@@ -477,7 +473,6 @@ describe('Rule book Studio', () => {
   });
 
   it('offers "Copy as my own script" in Advanced, as one changeset', async () => {
-    usePreferences.setState({ mode: 'advanced' });
     const applyChanges = vi.fn(async () => undefined);
     const host: BlocksItemsStudioHost = {
       thumbnail: async () => new Uint8Array(),
@@ -517,7 +512,6 @@ describe('Rule book Studio', () => {
   });
 
   it('says why "Copy as my own script" cannot copy a book with no rules on', async () => {
-    usePreferences.setState({ mode: 'advanced' });
     const applyChanges = vi.fn(async () => undefined);
     await renderBook(EMPTY, {
       host: {
@@ -574,9 +568,7 @@ describe('Rule book Studio', () => {
     expect(vanilla.files).toEqual(['minecraft/sounds/note/chime.ogg']);
     expect(fake.played[0]?.bytes).toEqual(oggOf('minecraft/sounds/note/chime.ogg'));
     // Very easy keeps the button and names no id.
-    act(() => {
-      usePreferences.setState({ mode: 'very-easy' as never });
-    });
+    act(() => {});
     const shown = screen.getByTestId('rules-chip-sound-play');
     expect(shown.getAttribute('aria-label') ?? '').not.toMatch(/minecraft:|note_block/);
     expect(shown.getAttribute('title') ?? '').not.toMatch(/minecraft:|note_block/);

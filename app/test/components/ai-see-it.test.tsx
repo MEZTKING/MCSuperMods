@@ -174,23 +174,16 @@ describe('See it names things as the cards do (ADR 0125 open items)', () => {
     problems: [],
   };
 
-  it('says a rename in names in Very easy and Easy, and with ids in Advanced', () => {
-    for (const mode of ['very-easy', 'easy'] as const) {
-      const shown = seeItPreview(project, [rename], mode);
-      expect(shown.removed).toEqual(['Old Stone renamed']);
-      expect(shown.removed.join(' ')).not.toMatch(/\b[a-z0-9_]+:[a-z0-9_/]+\b/);
-    }
+  it('says a rename in names', () => {
+    const shown = seeItPreview(project, [rename]);
+    expect(shown.removed).toEqual(['Old Stone renamed']);
+    expect(shown.removed.join(' ')).not.toMatch(/\b[a-z0-9_]+:[a-z0-9_/]+\b/);
     const renamed = { ...rename, after: { ...existing.data, display_name: 'Ruby Stone' } };
-    expect(seeItPreview(project, [renamed], 'very-easy').removed).toEqual([
-      'Old Stone renamed to Ruby Stone',
-    ]);
-    expect(seeItPreview(project, [rename], 'advanced').removed).toEqual([
-      'demo:old_stone renamed to demo:ruby_stone',
-    ]);
+    expect(seeItPreview(project, [renamed]).removed).toEqual(['Old Stone renamed to Ruby Stone']);
   });
 
-  it('draws the rename line in the mode it is given', () => {
-    render(<AiSeeIt project={project} items={[rename]} mode="very-easy" projectRoot={null} />);
+  it('draws the rename line', () => {
+    render(<AiSeeIt project={project} items={[rename]} projectRoot={null} />);
     expect(screen.getByTestId('ai-see-it-removed').textContent).toBe(
       'Not drawn: Old Stone renamed.',
     );

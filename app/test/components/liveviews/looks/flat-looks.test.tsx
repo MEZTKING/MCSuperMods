@@ -230,7 +230,7 @@ describe('the potion look', () => {
     expect(screen.getByTestId('potion-look-colour').getAttribute('data-colour')).toBe(
       `#${DEFAULT_POTION_TINT.toString(16).padStart(6, '0')}`,
     );
-    expect(screen.getByTestId('live-view-notes').textContent).toContain('minecraft:speed');
+    expect(screen.getByTestId('live-view-notes').textContent).toContain('The colour of Speed');
   });
 });
 
@@ -362,7 +362,7 @@ describe('waypoint styles (3S11)', () => {
       expect(screen.getByTestId('waypoint-step-0').getAttribute('data-state')).toBe('found'),
     );
     expect(screen.getByTestId('waypoint-step-3').getAttribute('data-state')).toBe('missing');
-    expect(screen.getByTestId('live-view-notes').textContent).toContain('demo:c has no picture');
+    expect(screen.getByTestId('live-view-notes').textContent).toContain('Dot 3 has no picture yet');
     fireEvent.change(screen.getByTestId('waypoint-distance'), { target: { value: '25' } });
     expect(screen.getByTestId('waypoint-bar').getAttribute('data-index')).toBe('2');
 
@@ -400,7 +400,9 @@ describe('particle sprites', () => {
       ),
     );
     expect(screen.getByTestId('particle-sprites-frame-0').getAttribute('data-state')).toBe('found');
-    expect(screen.getByTestId('live-view-notes').textContent).toContain('demo:spark_2');
+    expect(screen.getByTestId('live-view-notes').textContent).toContain(
+      'Picture 3 has no picture yet',
+    );
     fireEvent.click(screen.getByTestId('particle-sprites-step'));
     expect(screen.getByTestId('particle-sprites-current').getAttribute('data-index')).toBe('1');
 
@@ -491,6 +493,8 @@ describe('the effect look', () => {
   it('names its own particle in place of the swirl', () => {
     const first = effect(0x00ff00, { particle: 'minecraft:heart' });
     render(<EffectLookFrame project={projectOf([first])} element={first} vanillaAssets={null} />);
-    expect(screen.getByTestId('live-view-notes').textContent).toContain('minecraft:heart');
+    expect(screen.getByTestId('live-view-notes').textContent).toContain(
+      'It shows Heart around the player',
+    );
   });
 });

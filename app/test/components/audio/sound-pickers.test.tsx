@@ -25,6 +25,7 @@ import {
   ThingPicker,
   thingSections,
 } from '../../../src/renderer/src/components/thing-picker/ThingPicker';
+import { PlainContext } from '../../../src/renderer/src/components/ui/MoreOptions';
 import { ParameterField } from '../../../src/renderer/src/components/wizard/ParameterField';
 import { oggDataUrl } from '../../../src/renderer/src/components/wizard/wizard-model';
 import { FormContext, type FormContextValue } from '../../../src/renderer/src/forms/context';
@@ -33,7 +34,6 @@ import BundleLiveView from '../../../src/renderer/src/liveviews/BundleLiveView';
 import SoundsView from '../../../src/renderer/src/liveviews/looks/sounds/SoundsView';
 import { NOT_SET_UP_VANILLA_DATA } from '../../../src/renderer/src/liveviews/vanilla-data';
 import { DEFAULT_PREFS } from '../../../src/renderer/src/liveviews/view-prefs';
-import { usePreferences } from '../../../src/renderer/src/store/preferences';
 import { SoundsSection } from '../../../src/renderer/src/studios/blocks-items/SoundsSection';
 import { THING_SLOTS } from '../../../src/renderer/src/studios/rules/slot-words';
 import { IdField } from '../../../src/renderer/src/studios/structures/pickers';
@@ -48,8 +48,8 @@ import {
 } from './fake-player';
 
 afterEach(() => {
+  window.msmMoreOptionsOpen = true;
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 const RENDERER = join(import.meta.dirname, '../../../src/renderer/src');
@@ -129,7 +129,9 @@ const press = async (button: HTMLElement) => {
 };
 
 describe('every place has the button', () => {
-  it('the shared id field, in Easy and in Very easy', async () => {
+  it('the shared id field, plain and under More options', async () => {
+    // The default view (ADR 0130): the plain field has the button, the id under More options too.
+    window.msmMoreOptionsOpen = false;
     const { wrap, played } = harness();
     const field = (
       <IdField label="Sound" value="demo:hum" registry="sound_event" onCommit={() => {}} />
@@ -138,8 +140,7 @@ describe('every place has the button', () => {
     await press(screen.getByTestId('sound-play-button'));
     expect(played[0]?.bytes).toEqual(oggOf('demo:sounds/hum.ogg'));
     cleanup();
-    usePreferences.setState({ mode: 'very-easy' as never });
-    render(wrap(field));
+    render(wrap(<PlainContext.Provider value={false}>{field}</PlainContext.Provider>));
     expect(screen.getByTestId('sound-play-button')).toBeTruthy();
     cleanup();
     // An id field of another registry has none; an empty sound has none.
@@ -238,11 +239,11 @@ describe('every place has the button', () => {
       suggest: () => [],
       set: () => {},
     };
+    window.msmMoreOptionsOpen = false;
     render(wrap(<SoundsSection {...props} />));
     await press(screen.getByTestId('sound-play-button'));
     expect(played[0]).toMatchObject({ volume: 0.5, pitch: 1.5 });
     cleanup();
-    usePreferences.setState({ mode: 'very-easy' as never });
     render(wrap(<SoundsSection {...props} />));
     expect(screen.getAllByTestId('sound-play-button')).toHaveLength(1);
   });
@@ -304,7 +305,7 @@ describe('every place has the button', () => {
     await press(screen.getByTestId('sounds-view-play-hum'));
     expect(played[0]?.bytes).toEqual(oggOf('assets/demo/sounds/hum.ogg'));
     expect(screen.getByTestId('sounds-view-picked-hum').textContent).toBe(
-      'Picked demo:hum at volume 1, pitch 1.',
+      'Picked Hum at volume 1, pitch 1.',
     );
   });
 });

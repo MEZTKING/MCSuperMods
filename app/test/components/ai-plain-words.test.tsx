@@ -16,7 +16,6 @@ import { AiController, useAiPanelStore } from '../../src/renderer/src/components
 import { forbiddenIn } from '../../src/renderer/src/components/ai/ai-words';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useAiStore } from '../../src/renderer/src/store/ai-store';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import { aiSession, type FakeAi, fakeAi } from './ai-fixtures';
 
@@ -123,12 +122,10 @@ beforeEach(() => {
     focusRequest: 0,
   });
   useUiStore.setState({ snapshot: null, rightDock: 'problems' });
-  usePreferences.setState({ mode: 'very-easy' });
 });
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 describe('the Very easy panel in plain words', () => {

@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 import { AI_MODELS, DEFAULT_AI_SETTINGS, formatCost, typicalCost } from '@msm/ai';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AiKeySetup } from '../../src/renderer/src/components/ai/AiKeySetup';
 import { LIMIT_BOUNDS } from '../../src/renderer/src/components/ai/AiLimitsPopover';
 import {
@@ -19,7 +19,6 @@ import {
   SETUP_WORDS,
 } from '../../src/renderer/src/components/ai/ai-setup-words';
 import { SettingsDialog } from '../../src/renderer/src/components/SettingsDialog';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import type { AppSettingsPatch } from '../../src/shared/platform';
 import { type FakeAi, fakeAi } from './ai-fixtures';
 
@@ -37,7 +36,6 @@ function expectPlain(text: string): void {
 
 const KEY = 'sk-ant-test-0123456789-wxyz';
 
-beforeEach(() => usePreferences.setState({ mode: 'easy' }));
 afterEach(cleanup);
 
 function renderSection(ai: FakeAi = fakeAi(), focusKey = false) {
@@ -234,7 +232,7 @@ describe('AiSettingsSection', () => {
     await user.selectOptions(model, 'claude-sonnet-5-5');
     expect(save).toHaveBeenLastCalledWith({ ...DEFAULT_AI_SETTINGS, model: 'claude-sonnet-5-5' });
     expect(screen.getByTestId('settings-ai-model-notice').textContent).toBe(
-      'Start a new conversation to use Sonnet 5.5.',
+      'Start a new chat to use Sonnet 5.5.',
     );
     // The cost sentence follows the chosen model.
     expect(screen.getByTestId('ai-setup-cost').textContent).toContain('Claude Sonnet 5.5');
@@ -255,23 +253,22 @@ describe('AiSettingsSection', () => {
     );
   });
 
-  it('shows the default limits only in Advanced', async () => {
-    renderSection();
-    await waitFor(() =>
-      expect((screen.getByTestId('settings-ai-model') as HTMLSelectElement).disabled).toBe(false),
-    );
-    expect(screen.queryByTestId('settings-ai-limits')).toBeNull();
-    cleanup();
-    usePreferences.setState({ mode: 'very-easy' });
-    const veryEasy = renderSection();
-    await waitFor(() => expect(status()).toBe('Key set (…abcd)'));
-    expect(screen.queryByTestId('settings-ai-limits')).toBeNull();
-    // Nothing in the Very easy section says an id or a word it never shows.
-    expectPlain(veryEasy.container.textContent ?? '');
+  it('keeps the default limits under More options (ADR 0130)', async () => {
+    window.msmMoreOptionsOpen = false;
+    try {
+      const plain = renderSection();
+      await waitFor(() => expect(status()).toBe('Key set (…abcd)'));
+      expect(screen.queryByTestId('settings-ai-limits')).toBeNull();
+      // Nothing in the default view says an id or a word it never shows.
+      expectPlain(plain.container.textContent ?? '');
+      fireEvent.click(screen.getByTestId('more-options-settings-ai'));
+      expect(screen.getByTestId('settings-ai-limits')).toBeTruthy();
+    } finally {
+      window.msmMoreOptionsOpen = true;
+    }
   });
 
-  it('edits the default limits in Advanced, within the bounds, with the worst-case cost', async () => {
-    usePreferences.setState({ mode: 'advanced' });
+  it('edits the default limits under More options, within the bounds, with the worst-case cost', async () => {
     const { save, user } = renderSection();
     const steps = (await screen.findByTestId('settings-ai-limit-steps-chat')) as HTMLInputElement;
     await waitFor(() =>
@@ -320,10 +317,10 @@ describe('AiSettingsSection', () => {
         }),
       }),
     );
-    // Advanced names the price per million tokens.
-    expect(
-      (screen.getByTestId('settings-ai-model') as HTMLSelectElement).options[0]?.textContent,
-    ).toBe('Claude Opus 5.5 (about $4 in, $20 out per million tokens)');
+    // More options names the price per million tokens.
+    expect(screen.getByTestId('settings-ai-model-details').textContent).toBe(
+      'Claude Opus 5.5 (about $4 in, $20 out per million tokens)',
+    );
   });
 
   it('uses the bounds of the Run limits popover', () => {

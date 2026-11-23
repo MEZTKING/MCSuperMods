@@ -82,7 +82,7 @@ describe('Draw frames… in the Particle Studio', () => {
     );
     current = stack;
     const button = await screen.findByTestId('particle-draw-frames');
-    expect(button.textContent).toBe('Draw frames…');
+    expect(button.textContent).toBe('Draw it for me');
     fireEvent.click(button);
     await screen.findByTestId('draw-dialog');
     expect(screen.getByTestId('draw-option-particle_spark')).toBeTruthy();

@@ -21,7 +21,6 @@ import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   handOrderOf,
   movedItem,
@@ -30,6 +29,7 @@ import {
 } from '../../../../src/renderer/src/studios/blocks-items/creative-tab-model';
 import { mixingRulesOf } from '../../../../src/renderer/src/studios/blocks-items/fluid-model';
 import { ElementForm } from '../../../../src/renderer/src/studios/ElementForm';
+import { FLUID_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import {
   ARGUMENT_TYPE_LABELS,
   offeredArgumentTypes,
@@ -37,7 +37,6 @@ import {
 import { withGameRuleKind } from '../../../../src/renderer/src/studios/scripting/GameRuleStudio';
 import { statCriterionOf } from '../../../../src/renderer/src/studios/scripting/StatStudio';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
-import { FLUID_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -161,20 +160,23 @@ describe('Fluid Studio, batch 2', () => {
     expect(screen.queryByTestId('fluid-cauldron-levels')).toBeNull();
   });
 
-  it('shows its beginner sections in Very easy, with no ids', async () => {
+  it('shows its beginner sections by default, with no ids', async () => {
     expect(FLUID_COMMON_SECTIONS).toEqual(
       expect.arrayContaining(['fluid-mixing', 'fluid-cauldron-bottle']),
     );
-    const before = usePreferences.getState().mode;
-    usePreferences.setState({ mode: 'very-easy' as never });
     try {
+      // The default view: every More options closed.
+      window.msmMoreOptionsOpen = false;
       renderOn(OIL);
       expect(await find('fluid-mixing')).toBeTruthy();
       expect(screen.getByTestId('fluid-cauldron-bottle')).toBeTruthy();
-      expect(screen.queryByTestId('fluid-inside')).toBeNull();
+      // Folded: its title, why and a closed More options (ADR 0130).
+      expect(screen.getByTestId('more-options-fluid-inside').getAttribute('aria-expanded')).toBe(
+        'false',
+      );
       expect(screen.queryByTestId('fluid-also-makes')).toBeNull();
     } finally {
-      usePreferences.setState({ mode: before });
+      window.msmMoreOptionsOpen = true;
     }
   });
 });
@@ -270,7 +272,7 @@ describe('Game rule and Statistic Studios', () => {
     );
   });
 
-  it('edits a statistic and shows its scoreboard criterion outside Very easy', async () => {
+  it('edits a statistic and shows its scoreboard criterion under More options', async () => {
     expect(statCriterionOf('demo:gems_found', target)).toBe('minecraft.custom:demo.gems_found');
     const { data } = renderOn(element('demo:gems_found' as ResourceLocation, 'msm:stat', {}));
     fireEvent.change(await find('stat-format'), { target: { value: 'time' } });
@@ -279,14 +281,14 @@ describe('Game rule and Statistic Studios', () => {
       'minecraft.custom:demo.gems_found',
     );
     cleanup();
-    const before = usePreferences.getState().mode;
-    usePreferences.setState({ mode: 'very-easy' as never });
     try {
+      // The default view: every More options closed.
+      window.msmMoreOptionsOpen = false;
       renderOn(element('demo:gems_found' as ResourceLocation, 'msm:stat', {}));
       expect(await find('stat-general')).toBeTruthy();
       expect(screen.queryByTestId('stat-criterion')).toBeNull();
     } finally {
-      usePreferences.setState({ mode: before });
+      window.msmMoreOptionsOpen = true;
     }
   });
 });

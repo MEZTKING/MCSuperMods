@@ -11,7 +11,6 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { CreatorDialog } from '../../src/renderer/src/components/creator/CreatorDialog';
 import { colourHintOf } from '../../src/renderer/src/components/creator/CreatorImageField';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { aiSession } from './ai-fixtures';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from './lazy-chunks';
 
@@ -22,7 +21,6 @@ beforeAll(
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 const param = (fields: Record<string, unknown>): StarterParameter => fields as never;
@@ -80,7 +78,6 @@ function stoneColour(session: ProjectSession): string {
 describe('the Creator image field and the flow colour', () => {
   for (const mode of ['advanced', 'very-easy'] as const) {
     it(`starts Draw on the flow colour (${mode})`, async () => {
-      usePreferences.setState({ mode });
       const { session } = await aiSession();
       const user = renderDialog(session);
       await user.click(screen.getByTestId('creator-flow-stone-set'));

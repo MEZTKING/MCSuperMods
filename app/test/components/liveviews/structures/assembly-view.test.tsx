@@ -27,7 +27,6 @@ import {
   NOT_SET_UP_VANILLA_DATA,
 } from '../../../../src/renderer/src/liveviews/vanilla-data';
 import { DEFAULT_PREFS } from '../../../../src/renderer/src/liveviews/view-prefs';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import { arm, cross, element, hub, hubProject, pool, projectOf } from './assembly-fixtures';
 
 const webgl = vi.hoisted(() => ({ on: false }));
@@ -69,7 +68,6 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup();
   webgl.on = false;
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 interface Shown {
@@ -121,7 +119,7 @@ describe('the assembly view', () => {
     expect(count()).toBe('2 of 2 pieces');
     const lines = placedLines();
     expect(lines).toHaveLength(2);
-    expect(lines[1]).toContain('Piece 2: Arm (demo:arm), joined to piece 1');
+    expect(lines[1]).toContain('Piece 2: Arm, joined to piece 1');
     expect(lines[1]).toContain('the two jigsaw blocks that met are lit');
     expect((screen.getByTestId('assembly-step-button') as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByTestId('live-view-notes').textContent).toContain(BUILDING_LINE);
@@ -206,7 +204,6 @@ describe('the assembly view', () => {
   });
 
   it('shows no ids in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
     const project = projectOf(
       pool('demo:start', 'demo:hub'),
       pool('demo:arms', 'demo:arm', 'demo:wall'),

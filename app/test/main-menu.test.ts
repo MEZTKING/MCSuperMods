@@ -128,21 +128,14 @@ describe('Play and the modes (ADR 0083, ADR 0084)', () => {
     ]);
   });
 
-  it('offers the three modes and Home in the View menu', () => {
+  it('offers Home and no modes in the View menu (ADR 0130 D1)', () => {
     installMenu();
     const template = templates.at(-1) as MenuEntry[];
     const view = template.find((entry) => entry.label === 'View')?.submenu ?? [];
-    for (const [label, command] of [
-      ['Very Easy Mode', 'modeVeryEasy'],
-      ['Easy Mode', 'modeEasy'],
-      ['Advanced Mode', 'modeAdvanced'],
-      ['Switch Easy / Advanced Mode', 'toggleMode'],
-      ['Home', 'home'],
-    ] as const) {
-      const item = view.find((entry) => entry.label === label);
-      item?.click?.();
-      expect(sent.at(-1), label).toBe(command);
-    }
+    view.find((entry) => entry.label === 'Home')?.click?.();
+    expect(sent.at(-1)).toBe('home');
+    const labels = template.flatMap((entry) => entry.submenu ?? []).map((entry) => entry.label);
+    expect(labels.filter((label) => label?.endsWith(' Mode'))).toEqual([]);
   });
 });
 

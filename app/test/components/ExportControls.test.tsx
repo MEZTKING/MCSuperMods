@@ -46,7 +46,6 @@ function props(overrides: Partial<ToolbarProps> = {}): ToolbarProps {
     onSave: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onAddNamespace: vi.fn(),
     onAddElement: vi.fn(),
     onImportAssets: vi.fn(),
     onExportZip: vi.fn(),

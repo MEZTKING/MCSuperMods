@@ -24,7 +24,8 @@ describe('EditorArea notes callout', () => {
     render(<EditorArea element={element('Line one.\nLine two.')} onApply={vi.fn()} />);
     const callout = screen.getByTestId('element-notes') as HTMLDetailsElement;
     expect(callout.open).toBe(true);
-    expect(screen.getByTestId('element-notes-text').textContent).toBe('Line one.\nLine two.');
+    // Said in plain words (ADR 0130 D2): sentence by sentence.
+    expect(screen.getByTestId('element-notes-text').textContent).toBe('Line one. Line two.');
     expect(callout.querySelector('input, textarea, [contenteditable]')).toBeNull();
     await userEvent.setup().click(screen.getByTestId('element-notes-toggle'));
     expect(callout.open).toBe(false);
@@ -58,15 +59,6 @@ describe('EditorArea Creator entry points (ADR 0043)', () => {
     await userEvent.setup().click(button);
     expect(onEditInCreator).toHaveBeenCalledWith(made);
   });
-
-  it('offers the Creator when nothing is selected', async () => {
-    const onOpenCreator = vi.fn();
-    render(<EditorArea element={null} onApply={vi.fn()} onOpenCreator={onOpenCreator} />);
-    const link = screen.getByTestId('editor-open-creator');
-    expect(link.textContent).toBe('or Create something with the Creator');
-    await userEvent.setup().click(link);
-    expect(onOpenCreator).toHaveBeenCalledOnce();
-  });
 });
 
 describe('EditorArea Try it (ADR 0085 D13)', () => {
@@ -80,27 +72,56 @@ describe('EditorArea Try it (ADR 0085 D13)', () => {
       />,
     );
     expect(screen.getByTestId('tryit-here')).toBeTruthy();
-    expect(screen.queryByTestId('editor-tab-form')).toBeNull();
+    expect(screen.queryByTestId('editor-studio')).toBeNull();
     cleanup();
     render(<EditorArea element={null} onApply={vi.fn()} home={<p>Home</p>} />);
     expect(screen.getByText('Home')).toBeTruthy();
   });
 });
 
-describe('the search bar (ADR 0124 D10, B667)', () => {
-  it('heads the empty editor area when given, and not an open element', () => {
-    const view = render(
-      <EditorArea element={null} onApply={vi.fn()} search={<button type="button">Find</button>} />,
-    );
-    expect(screen.getByTestId('editor-search').textContent).toBe('Find');
-    view.unmount();
-    render(
-      <EditorArea
-        element={element('A note.')}
-        onApply={vi.fn()}
-        search={<button type="button">Find</button>}
-      />,
-    );
-    expect(screen.queryByTestId('editor-search')).toBeNull();
+describe('one mode (ADR 0130 D2, D4)', () => {
+  it('names the thing, never its id, until a More options is opened', async () => {
+    window.msmMoreOptionsOpen = false;
+    globalThis.localStorage.clear();
+    try {
+      const onChangeId = vi.fn();
+      const onApply = vi.fn();
+      render(
+        <EditorArea
+          element={element()}
+          onApply={onApply}
+          form={<p>Studio</p>}
+          onChangeId={onChangeId}
+          usedBy={() => [{ id: 'demo:other', name: 'Other' }]}
+          filesOf={async () => ['datapack: data/demo/function/greet.mcfunction']}
+        />,
+      );
+      expect(screen.getByTestId('editor-name').textContent).toBe('Greet');
+      expect(screen.getByTestId('editor-form').textContent).not.toContain('demo:greet');
+      expect(screen.getByTestId('new-here').textContent).toContain('commands');
+      expect(screen.getByTestId('where-used-by-words').textContent).toBe('Used by Other.');
+      const user = userEvent.setup();
+      await user.click(screen.getByTestId('more-options-thing-name'));
+      expect(screen.getByTestId('element-id').textContent).toBe('demo:greet');
+      await user.click(screen.getByTestId('thing-change-id'));
+      expect(onChangeId).toHaveBeenCalledWith('demo:greet');
+      await user.click(screen.getByTestId('more-options-where-it-goes'));
+      expect(screen.getByTestId('where-used-by').textContent).toContain('demo:other');
+      await user.click(screen.getByTestId('where-files-show'));
+      expect((await screen.findByTestId('where-files-list')).textContent).toContain('greet');
+      await user.click(screen.getByTestId('more-options-where-raw-text'));
+      expect(screen.getByTestId('where-raw-text')).toBeTruthy();
+      // New here? goes once dismissed, for this kind.
+      await user.click(screen.getByTestId('new-here-dismiss'));
+      expect(screen.queryByTestId('new-here')).toBeNull();
+    } finally {
+      window.msmMoreOptionsOpen = true;
+    }
+  });
+
+  it('opens Edit as raw text when the palette asks for it', () => {
+    globalThis.localStorage.clear();
+    render(<EditorArea element={element()} onApply={vi.fn()} tab="json" />);
+    expect(screen.getByTestId('where-raw-text')).toBeTruthy();
   });
 });

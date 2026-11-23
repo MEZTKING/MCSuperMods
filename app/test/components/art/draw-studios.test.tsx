@@ -97,7 +97,7 @@ describe('Draw… on a Block Studio texture slot', () => {
       element(ID, 'msm:block', { format: 1, display_name: 'Thing', type: 'leaves' }),
     );
     const button = await screen.findByTestId('block-texture-all-draw');
-    expect(button.textContent).toBe('Draw…');
+    expect(button.textContent).toBe('Draw it for me');
     expect(screen.queryByTestId('block-texture-all-ai')).toBeNull();
     fireEvent.click(button);
     await screen.findByTestId('draw-dialog', undefined, { timeout: LAZY_CHUNK_TIMEOUT_MS });

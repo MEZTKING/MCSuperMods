@@ -9,9 +9,8 @@ import type { StarterParameter } from '@msm/plugin-api';
 import { artLookPng } from '@msm/plugin-library';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DRAW, DrawButton } from '../../../src/renderer/src/components/art/DrawButton';
+import { DrawButton } from '../../../src/renderer/src/components/art/DrawButton';
 import {
-  DRAW_A_PICTURE,
   DRAW_IT_FOR_ME,
   DrawPictureDialog,
 } from '../../../src/renderer/src/components/art/DrawPictureDialog';
@@ -19,7 +18,6 @@ import type { DrawnPicture } from '../../../src/renderer/src/components/art/draw
 import { CreatorImageField } from '../../../src/renderer/src/components/creator/CreatorImageField';
 import { NewTextureDialog } from '../../../src/renderer/src/components/texture-editor/NewTextureDialog';
 import { TextureEditorDialog } from '../../../src/renderer/src/components/texture-editor/TextureEditorDialog';
-import { usePreferences } from '../../../src/renderer/src/store/preferences';
 
 // The painter's PNG codec needs a canvas: here a PNG is its RGBA bytes after 8 bytes of size.
 vi.mock('../../../src/renderer/src/components/texture-editor/png-canvas', () => ({
@@ -44,7 +42,6 @@ vi.mock('../../../src/renderer/src/components/texture-editor/png-canvas', () => 
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 const RUBY = [196, 28, 52] as const;
@@ -62,14 +59,11 @@ describe('the Draw dialog', () => {
       <DrawPictureDialog
         field={{ kinds: ['block'], width: 16, height: 16, name: 'ruby_ore' }}
         target="demo:textures/block/ruby_ore.png"
-        veryEasy={false}
         onPick={onPick}
         onClose={onClose}
       />,
     );
-    expect(screen.getByRole('heading').textContent).toBe(
-      `${DRAW_A_PICTURE}: demo:textures/block/ruby_ore.png`,
-    );
+    expect(screen.getByRole('heading').textContent).toBe(DRAW_IT_FOR_ME);
     expect(screen.getByText('What is it?')).toBeTruthy();
     // The guess comes first and is chosen; only block recipes are offered.
     const tiles = screen
@@ -105,7 +99,6 @@ describe('the Draw dialog', () => {
       <DrawPictureDialog
         field={{ kinds: ['block'], width: 16, height: 16, name: 'ruby_block', colour: RUBY }}
         target="t"
-        veryEasy={false}
         onPick={vi.fn()}
         onClose={vi.fn()}
       />,
@@ -124,23 +117,26 @@ describe('the Draw dialog', () => {
     expect(screen.getByText('Its own colour until you pick one.')).toBeTruthy();
   });
 
-  it('shows only Colour and the variations in Very easy mode', () => {
+  it('shows only Colour and the variations until More options is opened (ADR 0130)', () => {
+    window.msmMoreOptionsOpen = false;
     render(
       <DrawPictureDialog
         field={{ kinds: ['item'], width: 16, height: 16, name: 'ruby_sword' }}
         target="Ruby sword"
-        veryEasy
         onPick={vi.fn()}
         onClose={vi.fn()}
       />,
     );
-    expect(screen.getByRole('heading').textContent).toBe(`${DRAW_IT_FOR_ME}: Ruby sword`);
+    expect(screen.getByRole('heading').textContent).toBe(DRAW_IT_FOR_ME);
     expect(screen.queryByText('What is it?')).toBeNull();
     expect(screen.queryByTestId('draw-detail-normal')).toBeNull();
     expect(screen.queryByTestId('draw-finish')).toBeNull();
     expect(screen.getByTestId('draw-colour')).toBeTruthy();
     expect(screen.getByTestId('draw-variation-5')).toBeTruthy();
     expect(screen.getByTestId('draw-new-looks').textContent).toBe('New looks');
+    fireEvent.click(screen.getByTestId('more-options-draw-picture'));
+    expect(screen.getByText('What is it?')).toBeTruthy();
+    window.msmMoreOptionsOpen = true;
   });
 
   it('says when nothing can be drawn at the size', () => {
@@ -148,7 +144,6 @@ describe('the Draw dialog', () => {
       <DrawPictureDialog
         field={{ kinds: ['block'], width: 32, height: 32 }}
         target="t"
-        veryEasy={false}
         onPick={vi.fn()}
         onClose={vi.fn()}
       />,
@@ -163,7 +158,6 @@ describe('the Draw dialog', () => {
       <DrawPictureDialog
         field={{ kinds: ['block'], width: 16, height: 16 }}
         target="t"
-        veryEasy={false}
         onPick={() => {
           throw new Error('The project changed meanwhile.');
         }}
@@ -179,7 +173,7 @@ describe('the Draw dialog', () => {
 });
 
 describe('the Draw button', () => {
-  it('reads "Draw…", or "Draw it for me" in Very easy mode, and opens the dialog lazily', async () => {
+  it('reads "Draw it for me" and opens the dialog lazily', async () => {
     const field = { kinds: ['item'] as const, width: 16, height: 16 };
     const { unmount } = render(
       <DrawButton
@@ -189,9 +183,8 @@ describe('the Draw button', () => {
         onPick={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('x-draw').textContent).toBe(DRAW);
+    expect(screen.getByTestId('x-draw').textContent).toBe('Draw it for me');
     unmount();
-    usePreferences.setState({ mode: 'very-easy' });
     render(
       <DrawButton
         testId="x-draw"

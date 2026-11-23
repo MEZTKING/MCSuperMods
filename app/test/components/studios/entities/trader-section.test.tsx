@@ -12,7 +12,6 @@ import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/re
 import type { ReactNode } from 'react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { planChangeItems } from '../../../../src/renderer/src/changeset/changeset';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -36,8 +35,8 @@ import {
   tradeSetWords,
   updateTradeChange,
 } from '../../../../src/renderer/src/studios/entities/trade-model';
-import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { MOB_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
+import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { projectOf, renderOnStack, schemaState } from '../blocks-items/harness';
@@ -361,17 +360,20 @@ describe('Very easy', () => {
     expect(MOB_COMMON_SECTIONS).toEqual(
       expect.arrayContaining(['entity-trader', 'entity-storage', 'entity-shoulder']),
     );
-    const before = usePreferences.getState().mode;
-    usePreferences.setState({ mode: 'very-easy' as never });
     try {
+      // The default view: every More options closed.
+      window.msmMoreOptionsOpen = false;
       withHost(mob());
       expect(await screen.findByTestId('entity-trader')).toBeTruthy();
       expect(screen.getByTestId('entity-storage')).toBeTruthy();
       expect(screen.getByTestId('entity-shoulder')).toBeTruthy();
       expect(screen.getByTestId('entity-trader-on')).toBeTruthy();
-      expect(screen.queryByTestId('entity-variants')).toBeNull();
+      // Folded: its title, why and a closed More options (ADR 0130).
+      expect(screen.getByTestId('more-options-entity-variants').getAttribute('aria-expanded')).toBe(
+        'false',
+      );
     } finally {
-      usePreferences.setState({ mode: before });
+      window.msmMoreOptionsOpen = true;
     }
   });
 });

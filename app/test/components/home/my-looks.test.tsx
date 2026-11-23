@@ -14,7 +14,6 @@ import {
   MyThings,
   soundEventWords,
 } from '../../../src/renderer/src/components/home/MyThings';
-import { usePreferences } from '../../../src/renderer/src/store/preferences';
 import { fakePlayer, fakeVanilla, projectReader, SoundHarness } from '../audio/fake-player';
 import { element } from '../fixtures';
 
@@ -62,7 +61,6 @@ beforeAll(async () => {
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 function harness(project: Project) {
@@ -93,7 +91,6 @@ describe('lookCards', () => {
 
 describe('My things: particles and sounds', () => {
   it('shows the cards under My things with no ids in Very easy, and plays a sound card', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
     const project = looksProject();
     const { player, played, sources } = harness(project);
     render(
@@ -155,7 +152,6 @@ describe('My things: particles and sounds', () => {
   });
 
   it('draws no ids in the windows in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
     const project = looksProject();
     const { player, sources } = harness(project);
     for (const n of [1, 2, 3]) {

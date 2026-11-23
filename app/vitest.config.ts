@@ -12,5 +12,7 @@ export default defineConfig({
     // monorepo ran under Turborepo (each passed alone). A larger default replaces per-test
     // bumps; tests that need more still pass their own timeout.
     testTimeout: 15_000,
+    // Every More options starts open in component tests (ADR 0130; `test/more-options-open.ts`).
+    setupFiles: ['test/more-options-open.ts'],
   },
 });

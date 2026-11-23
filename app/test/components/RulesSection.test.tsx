@@ -25,14 +25,13 @@ import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { type ReactNode, useEffect, useReducer } from 'react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { type ChangeItem, planChangeItems } from '../../src/renderer/src/changeset/changeset';
 import {
   ExportJavaProjectDialog,
   rulesNotInEject,
 } from '../../src/renderer/src/components/ExportJavaProjectDialog';
 import { flushPendingEdits } from '../../src/renderer/src/session/pending-edits';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -72,9 +71,6 @@ beforeAll(async () => {
   // The section is a lazy chunk of each Studio.
   await preloadChunks(() => import('../../src/renderer/src/studios/rules/RulesSection'));
 }, PRELOAD_TIMEOUT_MS);
-beforeEach(() => {
-  usePreferences.setState({ mode: 'easy' });
-});
 afterEach(cleanup);
 
 const BLOCK = 'demo:ruby_block' as ResourceLocation;

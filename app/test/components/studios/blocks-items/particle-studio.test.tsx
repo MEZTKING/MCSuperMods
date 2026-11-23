@@ -197,11 +197,11 @@ describe('Particle Studio', () => {
     expect((data() as Data).emissive).toBeUndefined();
   });
 
-  it('shows every field under Advanced', async () => {
+  it('shows every field under Every setting', async () => {
     renderOnStack(particle(), schema);
     await screen.findByTestId('particle-studio');
-    click('particle-advanced-toggle');
-    expect(screen.queryByTestId('particle-pictures')).toBeNull();
-    expect(screen.getByTestId('particle-advanced-toggle')).toHaveProperty('checked', true);
+    click('more-options-every-setting');
+    expect(screen.getByTestId('particle-pictures')).toBeTruthy();
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
   });
 });

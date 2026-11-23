@@ -15,7 +15,6 @@ import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -46,7 +45,6 @@ beforeAll(async () => {
 }, PRELOAD_TIMEOUT_MS);
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 const ID = 'demo:tank' as ResourceLocation;
@@ -108,7 +106,7 @@ describe('Vehicle Studio', () => {
   it('is registered for msm:vehicle with a Very easy list', () => {
     const entry = DISCOVERED_STUDIOS.find((studio) => studio.id === 'msm.entities.vehicle');
     expect(entry?.kindId).toBe('msm:vehicle');
-    expect(entry?.veryEasy).toEqual(['rules-section', 'vehicle-preview', 'vehicle-basics']);
+    expect(entry?.common).toEqual(['rules-section', 'vehicle-preview', 'vehicle-basics']);
   });
 
   it('shows every section for the Tank template', async () => {
@@ -133,8 +131,8 @@ describe('Vehicle Studio', () => {
     ]) {
       expect(screen.getByTestId(id)).toBeTruthy();
     }
-    // Very easy's short form is not shown in Easy.
-    expect(screen.queryByTestId('vehicle-basics')).toBeNull();
+    // The short form is there too (ADR 0130: one mode).
+    expect(screen.getByTestId('vehicle-basics')).toBeTruthy();
     expect(screen.getByTestId('vehicle-speed-words').textContent).toContain('5 blocks a second');
     expect(screen.queryByTestId('vehicle-missing-bones')).toBeNull();
   });
@@ -230,15 +228,15 @@ describe('Vehicle Studio', () => {
     expect(screen.getByTestId('vehicle-preview-turret').textContent).toBe('Turret: ahead');
   });
 
-  it('shows only the short form, the preview and Rules in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
+  it('shows the short form, the preview and Rules, the rest folded, by default', async () => {
+    window.msmMoreOptionsOpen = false;
     const { data } = await open(tank());
     expect(screen.getByTestId('vehicle-basics')).toBeTruthy();
     expect(screen.getByTestId('vehicle-preview')).toBeTruthy();
-    expect(screen.queryByTestId('vehicle-seats')).toBeNull();
-    expect(screen.queryByTestId('vehicle-weapons')).toBeNull();
-    expect(screen.queryByTestId('msm-events')).toBeNull();
-    expect(screen.queryByTestId('vehicle-advanced-toggle')).toBeNull();
+    for (const id of ['vehicle-seats', 'vehicle-weapons', 'msm-events']) {
+      expect(screen.getByTestId(`more-options-${id}`).getAttribute('aria-expanded')).toBe('false');
+    }
+    window.msmMoreOptionsOpen = true;
     fireEvent.change(screen.getByTestId('vehicle-basics-seats'), { target: { value: '3' } });
     expect(obj(data()).seats as Json[]).toHaveLength(3);
     // The tank has a cannon; switching it off removes the fire-charge weapon.

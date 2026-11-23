@@ -28,7 +28,6 @@ import {
   AiPicturesContext,
   type AiPicturesHost,
 } from '../../../src/renderer/src/components/ai-pictures/ai-pictures-host';
-import { usePreferences } from '../../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -62,7 +61,6 @@ beforeAll(async () => {
 const WORK = { timeout: LAZY_CHUNK_TIMEOUT_MS };
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 const RUBY = [196, 28, 52] as const;
@@ -178,11 +176,12 @@ describe('Draw a skin', () => {
   it('draws the model’s own boxes and names the new texture in one undo step', async () => {
     const { stack, data, calls } = renderMob(mob(MODEL), BOX_GEOMETRY);
     const button = screen.getByTestId('entity-draw-skin') as HTMLButtonElement;
-    expect(button.textContent).toBe('Draw a skin');
+    expect(button.textContent).toBe('Draw its skin');
     expect(button.disabled).toBe(false);
     fireEvent.click(button);
     const dialog = await screen.findByTestId('draw-dialog', undefined, WORK);
-    expect(dialog.textContent).toContain('Draw a skin: demo:textures/entity/golem.png');
+    expect(dialog.textContent).toContain('Draw its skin');
+    expect(dialog.textContent).toContain('Saved as demo:textures/entity/golem.png');
     const coats = Array.from(
       (screen.getByTestId('draw-finish') as HTMLSelectElement).options,
       (option) => option.textContent,
@@ -259,16 +258,17 @@ describe('Draw a skin', () => {
     });
   });
 
-  it('reads "Draw its skin" in Very easy mode', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
+  it('reads "Draw its skin", the finish under More options', async () => {
+    window.msmMoreOptionsOpen = false;
     renderMob(mob(MODEL), BOX_GEOMETRY);
     const button = screen.getByTestId('entity-draw-skin');
     expect(button.textContent).toBe('Draw its skin');
     fireEvent.click(button);
     const dialog = await screen.findByTestId('draw-dialog', undefined, WORK);
-    expect(dialog.textContent).toContain('Draw its skin:');
+    expect(dialog.textContent).toContain('Draw its skin');
     expect(screen.queryByTestId('draw-finish')).toBeNull();
     expect(screen.getAllByTestId(/^draw-variation-\d$/)).toHaveLength(6);
+    window.msmMoreOptionsOpen = true;
   });
 
   it('is not shown without a host that can write', () => {
@@ -292,7 +292,7 @@ describe('Make a skin with AI (ADR 0093, 2026-11-22)', () => {
     const platform = fakePictures();
     const { stack, data, calls } = renderMob(mob(MODEL), BOX_GEOMETRY, fakeHost(platform));
     const button = screen.getByTestId('entity-ai-skin') as HTMLButtonElement;
-    expect(button.textContent).toBe('Make a skin with AI');
+    expect(button.textContent).toBe('Make it with AI');
     fireEvent.click(button);
     expect((await screen.findByTestId('ai-pictures-shape', undefined, WORK)).textContent).toBe(
       'Mob skin: 64 × 32, laid on the model',

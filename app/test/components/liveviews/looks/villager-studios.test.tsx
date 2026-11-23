@@ -38,7 +38,7 @@ describe('the Villager look Studio’s Pictures', () => {
     renderOnStack(look, schema);
     const words = await screen.findByTestId('villager-type-look-words', {}, { timeout: 10_000 });
     expect(words.textContent).toContain('no picture yet');
-    const field = screen.getByTestId('villager-type-picture-villager');
+    const field = await screen.findByTestId('villager-type-picture-villager');
     fireEvent.change(field, { target: { value: 'demo:entity/villager/type/blossom' } });
     fireEvent.blur(field);
     await waitFor(() =>

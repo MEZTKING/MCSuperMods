@@ -3,7 +3,7 @@
  * The app explains itself: the Creator warns before it skips a thing the project already has
  * (and names it for the toast), the Block and Item Studios say why "Make with AI" has
  * nothing to make on a vanilla model, and Explain and Ask the helper attach a problem with a
- * chip in the words of the view mode (ADR 0125 D11, B689).
+ * chip in plain words (ADR 0125 D11, B689).
  */
 import { DEFAULT_AI_SETTINGS } from '@msm/ai';
 import type { Element, Problem, Project } from '@msm/core';
@@ -18,7 +18,7 @@ import {
   EXPLAIN_PROBLEM_TEXT,
   useAiPanelStore,
 } from '../../src/renderer/src/components/ai/ai-controller';
-import { forbiddenIn, type UiMode } from '../../src/renderer/src/components/ai/ai-words';
+import { forbiddenIn } from '../../src/renderer/src/components/ai/ai-words';
 import {
   AiPicturesContext,
   type AiPicturesHost,
@@ -35,7 +35,6 @@ import {
 import { ThingsToFix } from '../../src/renderer/src/components/ThingsToFix';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { useAiStore } from '../../src/renderer/src/store/ai-store';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import {
   type BlocksItemsStudioHost,
@@ -53,7 +52,6 @@ function dialog(
   session: ProjectSession,
   setId: string,
   onCreated: (result: CreatorCreated) => void = () => {},
-  mode?: 'very-easy',
 ) {
   return (
     <CreatorDialog
@@ -68,17 +66,13 @@ function dialog(
       newSetId={() => setId}
       webgl={false}
       debounceMs={5}
-      {...(mode === undefined ? {} : { mode })}
     />
   );
 }
 
 describe('Creator: things it would skip', () => {
-  it('words the warning for each mode', () => {
+  it('words the warning', () => {
     expect(skippedWarning(['Glow Stone'])).toBe(
-      'Your mod already has Glow Stone, so it will not be made again. Choose another name.',
-    );
-    expect(skippedWarning(['Glow Stone'], 'very-easy')).toBe(
       'You already have Glow Stone, so it will not be made again. Type a different name.',
     );
   });
@@ -95,7 +89,7 @@ describe('Creator: things it would skip', () => {
     first.unmount();
 
     // A second set with the same name: every piece is already in the project.
-    render(dialog(session, 'set-b', () => {}, 'very-easy'));
+    render(dialog(session, 'set-b', () => {}));
     await user.click(screen.getByTestId('creator-flow-gear-set'));
     const warning = await screen.findByTestId('creator-skipped-warning');
     expect(warning.textContent).toContain('You already have Ruby');
@@ -203,37 +197,24 @@ const ON_THE_MOD: Problem = {
 /** An id-shaped word (`demo:ruby_sword`) or a problem code (`blocks-items.missing-model`). */
 const ID_OR_CODE = /[a-z0-9_.-]+:[a-z0-9_/.-]+|[a-z-]+\.[a-z-]+/;
 
-describe("Explain's chip by mode (ADR 0125 D11)", () => {
-  it.each(['very-easy', 'easy'] as const)(
-    'names the thing and the plain problem with no id or code in %s',
-    (mode) => {
-      const labels = [
-        problemChipLabel(MISSING_MODEL, SWORD_PROJECT, mode),
-        problemChipLabel(UNKNOWN, SWORD_PROJECT, mode),
-        problemChipLabel(ON_THE_MOD, SWORD_PROJECT, mode),
-        elementChipLabel(SWORD, mode),
-      ];
-      expect(labels).toEqual([
-        'About: Ruby Sword, it has no shape picture (model) to show. Pick a picture for it',
-        'About: Ruby Sword, something in Ruby Sword needs fixing',
-        'About: Your mod, something in your mod needs fixing',
-        'About: Ruby Sword',
-      ]);
-      for (const label of labels) {
-        expect(label).not.toMatch(ID_OR_CODE);
-        expect(forbiddenIn(label)).toEqual([]);
-      }
-    },
-  );
-
-  it('keeps the code and the id in Advanced', () => {
-    expect(problemChipLabel(MISSING_MODEL, SWORD_PROJECT, 'advanced')).toBe(
-      'Problem blocks-items.missing-model on demo:ruby_sword',
-    );
-    expect(problemChipLabel(ON_THE_MOD, SWORD_PROJECT, 'advanced')).toBe(
-      'Problem scripting.who-knows',
-    );
-    expect(elementChipLabel(SWORD, 'advanced')).toBe('Element demo:ruby_sword (msm:item)');
+describe("Explain's chip (ADR 0125 D11)", () => {
+  it('names the thing and the plain problem with no id or code', () => {
+    const labels = [
+      problemChipLabel(MISSING_MODEL, SWORD_PROJECT),
+      problemChipLabel(UNKNOWN, SWORD_PROJECT),
+      problemChipLabel(ON_THE_MOD, SWORD_PROJECT),
+      elementChipLabel(SWORD),
+    ];
+    expect(labels).toEqual([
+      'About: Ruby Sword, it has no shape picture (model) to show. Pick a picture for it',
+      'About: Ruby Sword, something in Ruby Sword needs fixing',
+      'About: Your mod, something in your mod needs fixing',
+      'About: Ruby Sword',
+    ]);
+    for (const label of labels) {
+      expect(label).not.toMatch(ID_OR_CODE);
+      expect(forbiddenIn(label)).toEqual([]);
+    }
   });
 });
 
@@ -250,10 +231,7 @@ describe('Ask the helper on a Things to fix row (ADR 0125 D11)', () => {
     });
     useUiStore.setState({ snapshot: null, rightDock: 'problems' });
   });
-  afterEach(() => usePreferences.setState({ mode: 'advanced' }));
-
-  async function host(mode: UiMode) {
-    usePreferences.setState({ mode });
+  async function host() {
     const ai = fakeAi();
     const { session } = await aiSession();
     session.addElement({ id: 'demo:ruby_sword', kind: 'msm:item', data: SWORD.data });
@@ -272,69 +250,53 @@ describe('Ask the helper on a Things to fix row (ADR 0125 D11)', () => {
     return { ai, session, controller };
   }
 
-  it.each(['very-easy', 'easy'] as const)(
-    'attaches the problem in plain words and sends nothing in %s',
-    async (mode) => {
-      const { ai, session, controller } = await host(mode);
-      const project = session.snapshot.project;
-      render(
-        <>
-          <ThingsToFix
-            project={project}
-            problems={[MISSING_MODEL]}
-            onShow={vi.fn()}
-            onAsk={(problem) => controller.explainProblem(problem)}
-          />
-          <AiPanel controller={controller} onOpenSettings={vi.fn()} />
-        </>,
-      );
-      const user = userEvent.setup();
-      await user.click(screen.getByTestId('things-to-fix-0-ask'));
-      expect(useUiStore.getState().rightDock).toBe('assistant');
-      const label = await screen.findByTestId('ai-context-label');
-      expect(label.textContent).toBe(
-        'About: Ruby Sword, it has no shape picture (model) to show. Pick a picture for it',
-      );
-      expect(label.textContent).not.toMatch(ID_OR_CODE);
-      // The exact text that would be sent is folded, and still there to see on a click.
-      expect(screen.getByTestId('ai-context').textContent).not.toMatch(ID_OR_CODE);
-      await user.click(screen.getByTestId('ai-context-show'));
-      expect(screen.getByTestId('ai-context').textContent).toContain(
-        '`blocks-items.missing-model` on `demo:ruby_sword`',
-      );
-      expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).value).toBe(
-        EXPLAIN_PROBLEM_TEXT,
-      );
-      // Nothing was sent.
-      await Promise.resolve();
-      expect(ai.starts).toEqual([]);
-      expect(
-        useAiStore.getState().conversations[session.snapshot.root ?? '']?.messages ?? [],
-      ).toEqual([]);
-    },
-  );
-
-  it('labels the chip by the mode it is given, with no relabel by the app', async () => {
-    const { controller } = await host('easy');
-    expect('setMode' in controller).toBe(false);
-    controller.explainProblem(MISSING_MODEL, 'very-easy');
-    expect(controller.draft().context?.label).toBe(
+  it('attaches the problem in plain words and sends nothing', async () => {
+    const { ai, session, controller } = await host();
+    const project = session.snapshot.project;
+    render(
+      <>
+        <ThingsToFix
+          project={project}
+          problems={[MISSING_MODEL]}
+          onShow={vi.fn()}
+          onAsk={(problem) => controller.explainProblem(problem)}
+        />
+        <AiPanel controller={controller} onOpenSettings={vi.fn()} />
+      </>,
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('things-to-fix-0-ask'));
+    expect(useUiStore.getState().rightDock).toBe('assistant');
+    const label = await screen.findByTestId('ai-context-label');
+    expect(label.textContent).toBe(
       'About: Ruby Sword, it has no shape picture (model) to show. Pick a picture for it',
     );
-    controller.explainProblem(MISSING_MODEL, 'advanced');
-    expect(controller.draft().context?.label).toBe(
-      'Problem blocks-items.missing-model on demo:ruby_sword',
+    expect(label.textContent).not.toMatch(ID_OR_CODE);
+    // The exact text that would be sent is folded, and still there to see on a click.
+    expect(screen.getByTestId('ai-context').textContent).not.toMatch(ID_OR_CODE);
+    await user.click(screen.getByTestId('ai-context-show'));
+    expect(screen.getByTestId('ai-context').textContent).toContain(
+      '`blocks-items.missing-model` on `demo:ruby_sword`',
     );
+    expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).value).toBe(
+      EXPLAIN_PROBLEM_TEXT,
+    );
+    // Nothing was sent.
+    await Promise.resolve();
+    expect(ai.starts).toEqual([]);
+    expect(
+      useAiStore.getState().conversations[session.snapshot.root ?? '']?.messages ?? [],
+    ).toEqual([]);
   });
 
-  it('keeps the code and id on the chip in Advanced, and labels Ask AI by mode', async () => {
-    const { session, controller } = await host('advanced');
+  it('labels the chip in plain words, and Ask AI by the thing', async () => {
+    const { session, controller } = await host();
     render(<AiPanel controller={controller} onOpenSettings={vi.fn()} />);
-    controller.explainProblem(MISSING_MODEL, 'advanced');
+    controller.explainProblem(MISSING_MODEL);
     expect((await screen.findByTestId('ai-context-label')).textContent).toBe(
-      'Problem blocks-items.missing-model on demo:ruby_sword',
+      'About: Ruby Sword, it has no shape picture (model) to show. Pick a picture for it',
     );
-    attachElementToAi(controller, 'demo:ruby_sword', session.snapshot.project, 'very-easy');
+    attachElementToAi(controller, 'demo:ruby_sword', session.snapshot.project);
     await waitFor(() =>
       expect(screen.getByTestId('ai-context-label').textContent).toBe('About: Ruby Sword'),
     );

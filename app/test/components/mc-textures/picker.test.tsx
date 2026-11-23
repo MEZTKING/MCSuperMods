@@ -19,7 +19,7 @@ import {
 } from '../../../src/renderer/src/components/mc-textures/MinecraftTexturePicker';
 import { NewTextureDialog } from '../../../src/renderer/src/components/texture-editor/NewTextureDialog';
 import { TextureEditorDialog } from '../../../src/renderer/src/components/texture-editor/TextureEditorDialog';
-import { usePreferences } from '../../../src/renderer/src/store/preferences';
+import { PlainContext } from '../../../src/renderer/src/components/ui/MoreOptions';
 import { PATHS } from './paths';
 
 // The painter's PNG codec needs a canvas: here a PNG is its RGBA bytes after 8 bytes of size.
@@ -46,7 +46,6 @@ vi.mock('../../../src/renderer/src/components/texture-editor/png-canvas', () => 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 /** A stand-in picture in the mocked codec's format, every pixel `rgba`. */
@@ -91,7 +90,6 @@ const names = () =>
 
 describe('the Minecraft texture picker (ADR 0129 D4)', () => {
   it('lists the textures by name, filters by folder and search, and shows no ids in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
     // Every thumbnail is in view at once.
     vi.stubGlobal(
       'IntersectionObserver',
@@ -129,9 +127,11 @@ describe('the Minecraft texture picker (ADR 0129 D4)', () => {
     );
   });
 
-  it('shows ids in Advanced mode', async () => {
+  it('shows ids when opened from a More options (ADR 0130)', async () => {
     render(
-      <MinecraftTexturePicker host={fakeHost()} title="Pick" onPick={vi.fn()} onClose={vi.fn()} />,
+      <PlainContext.Provider value={false}>
+        <MinecraftTexturePicker host={fakeHost()} title="Pick" onPick={vi.fn()} onClose={vi.fn()} />
+      </PlainContext.Provider>,
     );
     const stone = await screen.findByTestId('mc-texture-block-stone');
     expect(stone.textContent).toContain('minecraft:block/stone');

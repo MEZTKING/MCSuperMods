@@ -17,7 +17,6 @@ import { fromHsl } from '../../src/renderer/src/components/ai-pictures/cleanup';
 import { aiTextures, batchNote } from '../../src/renderer/src/components/ai-pictures/generate';
 import {
   MAKE_IT_WITH_AI,
-  MAKE_WITH_AI,
   MakeWithAiButton,
   SET_UP_AI_PICTURES,
 } from '../../src/renderer/src/components/ai-pictures/MakeWithAiButton';
@@ -33,7 +32,6 @@ import {
   textureChange,
 } from '../../src/renderer/src/components/ai-pictures/texture-write';
 import type { RgbaImage } from '../../src/renderer/src/components/texture-editor/pixels';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import type {
   AiPictureRaster,
   AiPictureRequest,
@@ -44,7 +42,6 @@ import type {
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 /** A codec without a canvas: 8 bytes of size, then the RGBA bytes. */
@@ -206,14 +203,9 @@ describe('Make with AI', () => {
     expect(host.openSettings).toHaveBeenCalled();
   });
 
-  it('reads "Make it with AI" in Very easy mode', () => {
-    usePreferences.setState({ mode: 'very-easy' });
+  it('reads "Make it with AI"', () => {
     renderButton(hostOf(fakePlatform()));
     expect(screen.getByTestId('make-ai').textContent).toBe(MAKE_IT_WITH_AI);
-    cleanup();
-    usePreferences.setState({ mode: 'easy' });
-    renderButton(hostOf(fakePlatform()));
-    expect(screen.getByTestId('make-ai').textContent).toBe(MAKE_WITH_AI);
   });
 
   it('makes four pictures, shows them before and after clean-up, and hands over the pick', async () => {

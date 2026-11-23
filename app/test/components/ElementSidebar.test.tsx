@@ -19,6 +19,16 @@ afterEach(cleanup);
 const headingLabel = (heading: HTMLElement): string | null =>
   heading.querySelector('button span')?.textContent ?? heading.textContent;
 
+/** The element ids of the rows under `root`, in order (rows name things, never ids: ADR 0130 D4). */
+const idsOf = (root: HTMLElement): string[] =>
+  [...root.querySelectorAll<HTMLElement>('[data-testid^="element-row-"]')].map((row) =>
+    (row.dataset.testid ?? '').slice('element-row-'.length),
+  );
+/** The rows under `root`, in order. */
+const rowsOf = (root: HTMLElement): HTMLElement[] => [
+  ...root.querySelectorAll<HTMLElement>('[data-testid^="element-row-"]'),
+];
+
 describe('ElementSidebar', () => {
   it('asks for a project when none is open', () => {
     render(
@@ -99,17 +109,13 @@ describe('ElementSidebar', () => {
     expect(kinds).toEqual(['Block states', 'Models', 'Assets']);
 
     const models = within(demo).getByRole('region', { name: 'demo minecraft:model' });
-    expect(
-      within(models)
-        .getAllByRole('button', { name: /^demo:/ })
-        .map((button) => button.getAttribute('aria-label')),
-    ).toEqual(['demo:block/ruby_block', 'demo:item/ruby']);
+    expect(idsOf(models)).toEqual(['demo:block/ruby_block', 'demo:item/ruby']);
 
     const assets = within(demo).getByRole('region', { name: 'demo assets' });
     expect(within(assets).getByText('textures/block/ruby_block.png')).toBeTruthy();
 
     const empty = screen.getByRole('region', { name: 'Namespace empty' });
-    expect(within(empty).getByText('No elements.')).toBeTruthy();
+    expect(within(empty).getByText('Nothing here yet.')).toBeTruthy();
     expect(within(empty).getByText('No assets.')).toBeTruthy();
   });
 
@@ -124,17 +130,17 @@ describe('ElementSidebar', () => {
         onRemove={onRemove}
       />,
     );
+    expect(screen.getByTestId('element-row-demo:item/ruby').getAttribute('aria-current')).toBe(
+      'true',
+    );
     expect(
-      screen.getByRole('button', { name: 'demo:item/ruby' }).getAttribute('aria-current'),
-    ).toBe('true');
-    expect(
-      screen.getByRole('button', { name: 'demo:ruby_block' }).getAttribute('aria-current'),
+      screen.getByTestId('element-row-demo:ruby_block').getAttribute('aria-current'),
     ).toBeNull();
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'demo:ruby_block' }));
+    await user.click(screen.getByTestId('element-row-demo:ruby_block'));
     expect(onSelect).toHaveBeenCalledWith('demo:ruby_block');
-    await user.click(screen.getByRole('button', { name: 'Remove demo:item/ruby' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Ruby' }));
     expect(onRemove).toHaveBeenCalledWith('demo:item/ruby');
   });
 });
@@ -157,13 +163,9 @@ describe('ElementSidebar tags', () => {
     expect(headings.filter((text) => text?.includes('tag'))).toEqual([]);
     expect(headings).toContain('Tags');
     const tags = within(region).getByRole('region', { name: 'demo Tags' });
-    const rows = within(tags).getAllByRole('button', { name: /^demo:/ });
-    expect(rows.map((row) => row.getAttribute('aria-label'))).toEqual([
-      'demo:ores',
-      'demo:gems',
-      'demo:stones',
-    ]);
-    expect(rows[0]?.textContent).toBe('blockores');
+    const rows = rowsOf(tags);
+    expect(idsOf(tags)).toEqual(['demo:ores', 'demo:gems', 'demo:stones']);
+    expect(rows[0]?.textContent).toBe('blockOres');
   });
 });
 
@@ -189,17 +191,16 @@ describe('ElementSidebar worldgen and structures', () => {
       headings.filter((text) => text?.includes('worldgen') || text?.includes('dimension')),
     ).toEqual([]);
     const worldgen = within(region).getByRole('region', { name: 'demo Worldgen' });
-    const rows = within(worldgen).getAllByRole('button', { name: /^demo:/ });
-    expect(rows.map((row) => row.textContent)).toEqual([
-      'dimensionsky',
-      'biomeplains_plus',
-      'template_poolvillage/start',
+    expect(rowsOf(worldgen).map((row) => row.textContent)).toEqual([
+      'dimensionSky',
+      'biomePlains plus',
+      'template_poolStart',
     ]);
     const structures = within(region).getByRole('region', { name: 'demo Structures' });
-    expect(within(structures).getByRole('button', { name: 'demo:hut' }).textContent).toBe('hut');
+    expect(within(structures).getByTestId('element-row-demo:hut').textContent).toBe('Hut');
     const tags = within(region).getByRole('region', { name: 'demo Tags' });
-    expect(within(tags).getByRole('button', { name: 'demo:biomes' }).textContent).toBe(
-      'worldgen/biomebiomes',
+    expect(within(tags).getByTestId('element-row-demo:biomes').textContent).toBe(
+      'worldgen/biomeBiomes',
     );
   });
 });
@@ -222,13 +223,12 @@ describe('ElementSidebar entities and models', () => {
     expect(headings).toEqual(expect.arrayContaining(['Entities', 'Models and animations']));
     expect(headings.filter((text) => text?.startsWith('msm:'))).toEqual([]);
     const entities = within(region).getByRole('region', { name: 'demo Entities' });
-    expect(within(entities).getByRole('button', { name: 'demo:gloom' }).textContent).toBe('gloom');
+    expect(within(entities).getByTestId('element-row-demo:gloom').textContent).toBe('Gloom');
     const models = within(region).getByRole('region', { name: 'demo Models and animations' });
-    expect(
-      within(models)
-        .getAllByRole('button', { name: /^demo:/ })
-        .map((row) => row.textContent),
-    ).toEqual(['animationentity/gloom_animations', 'modelentity/gloom']);
+    expect(rowsOf(models).map((row) => row.textContent)).toEqual([
+      'animationGloom animations',
+      'modelGloom',
+    ]);
   });
 });
 
@@ -245,7 +245,7 @@ describe('ElementSidebar status effects (ADR 0055)', () => {
     const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
     expect(headings).toContain('Status effects');
     const effects = within(region).getByRole('region', { name: 'demo msm:effect' });
-    expect(within(effects).getByRole('button', { name: 'demo:frost_bite' })).toBeTruthy();
+    expect(within(effects).getByTestId('element-row-demo:frost_bite')).toBeTruthy();
   });
 });
 
@@ -288,22 +288,23 @@ describe('ElementSidebar navigation (ADR 0047)', () => {
       />,
     );
     // A collapsed group shows its heading and count but no rows.
-    expect(screen.queryByRole('button', { name: 'demo:mod' })).toBeNull();
+    expect(screen.queryByTestId('element-row-demo:mod')).toBeNull();
     await userEvent.setup().click(screen.getByTestId('group-toggle-demo-msm:mod'));
     expect(onToggleGroup).toHaveBeenCalledWith('demo/msm:mod');
     await userEvent.setup().type(screen.getByTestId('sidebar-search'), 'wand');
-    expect(screen.getByRole('button', { name: 'demo:wand' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'demo:ruby_sword' })).toBeNull();
+    expect(screen.getByTestId('element-row-demo:wand')).toBeTruthy();
+    expect(screen.queryByTestId('element-row-demo:ruby_sword')).toBeNull();
   });
 
-  it('shows Creator sets first and folds technical groups under More in Easy mode', async () => {
+  it('shows Creator sets first and folds technical groups under More', async () => {
+    // The real default: More folded (the test setup starts every More options open).
+    window.msmMoreOptionsOpen = false;
     render(
       <ElementSidebar
         project={projectWithSet()}
         selectedId={null}
         onSelect={vi.fn()}
         onRemove={vi.fn()}
-        mode="easy"
         flowTitles={{ 'msm.library.gear-set': 'Gear set' }}
       />,
     );
@@ -316,6 +317,7 @@ describe('ElementSidebar navigation (ADR 0047)', () => {
     // The set holds both of its elements, the model included.
     const set = within(region).getByRole('region', { name: 'demo set:set-1' });
     expect(within(set).getAllByRole('listitem')).toHaveLength(2);
+    window.msmMoreOptionsOpen = true;
   });
 });
 
@@ -396,7 +398,7 @@ describe('ElementSidebar search (B668)', () => {
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
     await userEvent.setup().type(screen.getByTestId('sidebar-search'), 'swrod');
-    expect(screen.getByRole('button', { name: 'demo:ruby_sword' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'demo:item/ruby' })).toBeNull();
+    expect(screen.getByTestId('element-row-demo:ruby_sword')).toBeTruthy();
+    expect(screen.queryByTestId('element-row-demo:item/ruby')).toBeNull();
   });
 });

@@ -569,10 +569,10 @@ describe('Entity Studio', () => {
     expect(componentsOf(data())['msm:on_hurt']).toEqual({ event: 'demo:howl' });
   });
 
-  it('switches to the schema form under Advanced', () => {
+  it('shows the schema form under Every setting', () => {
     renderStudio(element('demo:gloom', 'msm:entity', templateData('msm_entity_ambient')));
-    fireEvent.click(screen.getByTestId('entity-advanced-toggle'));
-    expect(screen.queryByTestId('entity-identity')).toBeNull();
+    fireEvent.click(screen.getByTestId('more-options-every-setting'));
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
     expect(screen.getByTestId('entity-studio')).toBeTruthy();
   });
 });

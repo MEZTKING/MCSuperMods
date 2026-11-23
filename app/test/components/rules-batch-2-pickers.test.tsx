@@ -19,8 +19,7 @@ import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ElementForm } from '../../src/renderer/src/studios/ElementForm';
 import {
   commandArgumentsOf,
@@ -63,9 +62,6 @@ beforeAll(async () => {
   };
   await preloadChunks(() => import('../../src/renderer/src/studios/rules/RuleBookStudio'));
 }, PRELOAD_TIMEOUT_MS);
-beforeEach(() => {
-  usePreferences.setState({ mode: 'easy' });
-});
 afterEach(cleanup);
 
 const BOOK_ID = 'demo:rules' as ResourceLocation;

@@ -484,10 +484,11 @@
     },
     {
       "q": "advanced mode",
-      "class": "command",
+      "class": "how-to",
       "mode": "easy",
-      "expect": "command:advancedMode",
-      "top3": ["command:toggleMode"]
+      "expect": "guide:very-easy#very-easy-easy-and-advanced-mode",
+      "top3": ["guide:more-options#more-options"],
+      "reason": "ADR 0130 (2026-11-23): the three modes and their commands are gone; the words find the guide's stub page on them, which points to More options."
     },
     {
       "q": "save",
@@ -1447,16 +1448,19 @@
     },
     {
       "q": "easy mode",
-      "class": "command",
+      "class": "how-to",
       "mode": "easy",
-      "expect": "command:easyMode"
+      "expect": "guide:very-easy#very-easy-easy-and-advanced-mode",
+      "top3": ["guide:more-options#more-options"],
+      "reason": "ADR 0130 (2026-11-23): the three modes and their commands are gone; the words find the guide's stub page on them, which points to More options."
     },
     {
       "q": "very easy mode",
-      "class": "command",
+      "class": "how-to",
       "mode": "easy",
-      "expect": "command:veryEasyMode",
-      "reason": "Search follow-ups after the close (2026-11-23): when the words are a title's whole title, its stop and intent words included, the title gets the whole-title bonus (and, where the intent was read from a stop word of the title, a neutral source weight), so the command comes first and `needs` is gone."
+      "expect": "guide:very-easy#very-easy-easy-and-advanced-mode",
+      "reason": "ADR 0130 (2026-11-23): the three modes and their commands are gone; the words find the guide's stub page on them, which points to More options.",
+      "top3": ["guide:more-options#more-options"]
     },
     {
       "q": "wishlist",

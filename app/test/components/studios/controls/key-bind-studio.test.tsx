@@ -10,7 +10,6 @@
 import type { Element, Json, Problem, ResourceLocation } from '@msm/core';
 import { act, cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   categoryOf,
   keyGroups,
@@ -37,7 +36,6 @@ beforeAll(async () => {
 }, PRELOAD_TIMEOUT_MS);
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 const ID = 'demo:dash' as ResourceLocation;
@@ -91,7 +89,7 @@ describe('Key bind Studio', () => {
   it('is registered for msm:key_bind with a Very easy list', () => {
     const entry = DISCOVERED_STUDIOS.find((studio) => studio.id === 'msm.controls.key-bind');
     expect(entry?.kindId).toBe('msm:key_bind');
-    expect(entry?.veryEasy).toEqual([
+    expect(entry?.common).toEqual([
       'rules-section',
       'key-bind-name',
       'key-bind-key',
@@ -225,14 +223,15 @@ describe('Key bind Studio', () => {
     expect(screen.getByTestId('key-bind-cooldown-words').textContent).toBe('30 seconds');
   });
 
-  it('shows only the name, the key and when it works in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
+  it('shows the name, the key and when it works, the rest folded, by default', async () => {
+    window.msmMoreOptionsOpen = false;
     await open();
     expect(screen.getByTestId('key-bind-name')).toBeTruthy();
     expect(screen.getByTestId('key-bind-key')).toBeTruthy();
     expect(screen.getByTestId('key-bind-when')).toBeTruthy();
-    expect(screen.queryByTestId('key-bind-timing')).toBeNull();
-    expect(screen.queryByTestId('msm-events')).toBeNull();
-    expect(screen.queryByTestId('key-bind-advanced-toggle')).toBeNull();
+    for (const id of ['key-bind-timing', 'msm-events']) {
+      expect(screen.getByTestId(`more-options-${id}`).getAttribute('aria-expanded')).toBe('false');
+    }
+    window.msmMoreOptionsOpen = true;
   });
 });

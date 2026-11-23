@@ -1090,11 +1090,11 @@ describe('the checks bite: one fact changed in a copy of a source fails its case
     ]);
     const tiles = { ...sources.files };
     tiles[SOURCE_FILES.drawButton] = (tiles[SOURCE_FILES.drawButton] ?? '').replace(
-      "DRAW = 'Draw…'",
-      "DRAW = 'Draw a picture…'",
+      "DRAW_IT_FOR_ME_BUTTON = 'Draw it for me'",
+      "DRAW_IT_FOR_ME_BUTTON = 'Draw a picture'",
     );
     expect(checkAppMap(withSources({ files: tiles }))).toEqual([
-      `"Draw…" is not DRAW of ${SOURCE_FILES.drawButton} (Draw a picture…)`,
+      `"Draw it for me" is not DRAW_IT_FOR_ME_BUTTON of ${SOURCE_FILES.drawButton} (Draw a picture)`,
     ]);
   });
 

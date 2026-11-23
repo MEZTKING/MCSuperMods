@@ -315,11 +315,5 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       fireEvent.click(screen.getByRole('button', { name: 'Remove Decorator 1' }));
       expect(onChange).toHaveBeenCalledWith('/decorators', []);
     });
-
-    it('shows the full form under Advanced', () => {
-      render(<TreeFeatureStudio {...propsFor(tree(), projectWith())} />);
-      fireEvent.click(screen.getByTestId('tree-advanced-toggle'));
-      expect(screen.getByTestId('advanced-form')).toBeTruthy();
-    });
   },
 );

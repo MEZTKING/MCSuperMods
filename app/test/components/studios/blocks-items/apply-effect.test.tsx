@@ -7,6 +7,7 @@ import type { Element, Json, ResourceLocation } from '@msm/core';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { PlainContext } from '../../../../src/renderer/src/components/ui/MoreOptions';
 import { parsePointer } from '../../../../src/renderer/src/forms/pointer';
 import {
   ACTIONS,
@@ -55,18 +56,21 @@ function Harness(props: { data: Json }) {
   const [data, setData] = useState<Json>(props.data);
   latest = data;
   return (
-    <EventsEditor
-      element={item(data)}
-      problems={[]}
-      suggest={(registry) => (registry === 'mob_effect' ? ['minecraft:speed'] : [])}
-      onChange={(pointer, value) =>
-        setData((current) => {
-          const next = setAtPointer(current, pointer, value);
-          latest = next;
-          return next;
-        })
-      }
-    />
+    // The expert view (ids in labels), as inside a More options (ADR 0130).
+    <PlainContext.Provider value={false}>
+      <EventsEditor
+        element={item(data)}
+        problems={[]}
+        suggest={(registry) => (registry === 'mob_effect' ? ['minecraft:speed'] : [])}
+        onChange={(pointer, value) =>
+          setData((current) => {
+            const next = setAtPointer(current, pointer, value);
+            latest = next;
+            return next;
+          })
+        }
+      />
+    </PlainContext.Provider>
   );
 }
 

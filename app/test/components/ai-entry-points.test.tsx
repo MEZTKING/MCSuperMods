@@ -261,82 +261,79 @@ async function emitSword(ai: FakeAi, runId: string): Promise<void> {
 }
 
 describe("Undo and Put back of the helper's step (ADR 0125 D4)", () => {
-  it(
-    'offers Undo while the step is on top, and not after another edit',
-    async () => {
-      const ai = fakeAi();
-      const { session } = await aiSession();
-      let next = 0;
-      const controller = new AiController({
-        session,
-        ai,
-        loadSettings: async () => ({
-          minecraftDir: null,
-          updates: { autoCheck: true },
-          detectedMinecraftDir: null,
-          ai: DEFAULT_AI_SETTINGS,
-        }),
-        newId: () => `id-${++next}`,
-      });
-      controller.attach();
-      const onShowMe = vi.fn();
-      render(
-        <AiPanel
-          controller={controller}
-          onOpenSettings={vi.fn()}
-          onShowMe={onShowMe}
-          onUndo={() => undoAiStep(session)}
-          onRedo={() => redoAiStep(session)}
-        />,
-      );
-      const user = userEvent.setup();
-      await user.type(await screen.findByTestId('ai-input'), 'Make a ruby sword');
-      await user.click(screen.getByTestId('ai-send'));
-      await waitFor(() => expect(ai.starts.length).toBe(1));
-      // The run's size comes from the caller, chat unless a whole build (D2).
-      expect(ai.starts[0]?.mode).toBe('chat');
-      await emitSword(ai, ai.starts[0]?.runId ?? '');
-      await user.click(screen.getByTestId('ai-apply'));
-      await waitFor(() => expect(session.snapshot.undoLabel).toBe('Apply AI helper changes'));
-      const notice = () => {
-        const all = screen
-          .getAllByTestId(/^ai-message-\d+$/)
-          .filter((entry) => entry.dataset.role === 'notice');
-        return all[all.length - 1] as HTMLElement;
-      };
-      await waitFor(() =>
-        expect(within(notice()).queryByRole('button', { name: 'Undo' })).not.toBeNull(),
-      );
-      await user.click(screen.getByTestId('ai-status-show-me'));
-      expect(onShowMe).toHaveBeenCalledExactlyOnceWith(
-        expect.objectContaining({ createdIds: ['demo:ruby_sword'] }),
-      );
+  it('offers Undo while the step is on top, and not after another edit', async () => {
+    const ai = fakeAi();
+    const { session } = await aiSession();
+    let next = 0;
+    const controller = new AiController({
+      session,
+      ai,
+      loadSettings: async () => ({
+        minecraftDir: null,
+        updates: { autoCheck: true },
+        detectedMinecraftDir: null,
+        ai: DEFAULT_AI_SETTINGS,
+      }),
+      newId: () => `id-${++next}`,
+    });
+    controller.attach();
+    const onShowMe = vi.fn();
+    render(
+      <AiPanel
+        controller={controller}
+        onOpenSettings={vi.fn()}
+        onShowMe={onShowMe}
+        onUndo={() => undoAiStep(session)}
+        onRedo={() => redoAiStep(session)}
+      />,
+    );
+    const user = userEvent.setup();
+    await user.type(await screen.findByTestId('ai-input'), 'Make a ruby sword');
+    await user.click(screen.getByTestId('ai-send'));
+    await waitFor(() => expect(ai.starts.length).toBe(1));
+    // The run's size comes from the caller, chat unless a whole build (D2).
+    expect(ai.starts[0]?.mode).toBe('chat');
+    await emitSword(ai, ai.starts[0]?.runId ?? '');
+    await user.click(screen.getByTestId('ai-apply'));
+    await waitFor(() => expect(session.snapshot.undoLabel).toBe('Apply AI helper changes'));
+    const notice = () => {
+      const all = screen
+        .getAllByTestId(/^ai-message-\d+$/)
+        .filter((entry) => entry.dataset.role === 'notice');
+      return all[all.length - 1] as HTMLElement;
+    };
+    await waitFor(() =>
+      expect(within(notice()).queryByRole('button', { name: 'Undo' })).not.toBeNull(),
+    );
+    await user.click(screen.getByTestId('ai-status-show-me'));
+    expect(onShowMe).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ createdIds: ['demo:ruby_sword'] }),
+    );
 
-      // Undo and Put back go through the session's stack.
-      await user.click(within(notice()).getByRole('button', { name: 'Undo' }));
-      await waitFor(() => expect(session.snapshot.redoLabel).toBe('Apply AI helper changes'));
-      await user.click(await screen.findByTestId('ai-status-put-back'));
-      await waitFor(() => expect(session.snapshot.undoLabel).toBe('Apply AI helper changes'));
-      await waitFor(() =>
-        expect(within(notice()).queryByRole('button', { name: 'Undo' })).not.toBeNull(),
-      );
+    // Undo and Put back go through the session's stack.
+    await user.click(within(notice()).getByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(session.snapshot.redoLabel).toBe('Apply AI helper changes'));
+    await user.click(await screen.findByTestId('ai-status-put-back'));
+    await waitFor(() => expect(session.snapshot.undoLabel).toBe('Apply AI helper changes'));
+    await waitFor(() =>
+      expect(within(notice()).queryByRole('button', { name: 'Undo' })).not.toBeNull(),
+    );
 
-      // Another edit is now on top: Undo is no longer offered, and the host would refuse it.
-      act(() => {
-        session.addElement({
-          id: 'demo:other',
-          kind: 'minecraft:function',
-          data: { lines: ['say other'] },
-        });
+    // Another edit is now on top: Undo is no longer offered, and the host would refuse it.
+    act(() => {
+      session.addElement({
+        id: 'demo:other',
+        kind: 'minecraft:function',
+        data: { lines: ['say other'] },
       });
-      await waitFor(() =>
-        expect(within(notice()).queryByRole('button', { name: 'Undo' })).toBeNull(),
-      );
-      expect(screen.queryByTestId('ai-status-undo')).toBeNull();
-      expect(undoAiStep(session)).toBe(false);
-      expect(session.snapshot.undoLabel).not.toBe('Apply AI helper changes');
-    },
-  );
+    });
+    await waitFor(() =>
+      expect(within(notice()).queryByRole('button', { name: 'Undo' })).toBeNull(),
+    );
+    expect(screen.queryByTestId('ai-status-undo')).toBeNull();
+    expect(undoAiStep(session)).toBe(false);
+    expect(session.snapshot.undoLabel).not.toBe('Apply AI helper changes');
+  });
 
   it('refuses Undo and Put back when the stack holds another step', async () => {
     const { session } = await aiSession();

@@ -10,7 +10,6 @@
 import type { Element, Json, ResourceLocation } from '@msm/core';
 import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   hudLookOf,
   hudPreviewItem,
@@ -38,7 +37,6 @@ beforeAll(async () => {
 }, PRELOAD_TIMEOUT_MS);
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 const ID = 'demo:mana' as ResourceLocation;
@@ -153,7 +151,7 @@ describe('HUD Studio', () => {
   it('is registered for msm:hud with a Very easy list', () => {
     const entry = DISCOVERED_STUDIOS.find((studio) => studio.id === 'msm.controls.hud');
     expect(entry?.kindId).toBe('msm:hud');
-    expect(entry?.veryEasy).toEqual([
+    expect(entry?.common).toEqual([
       'hud-preview',
       'hud-look',
       'hud-value',
@@ -257,7 +255,7 @@ describe('HUD Studio', () => {
     const { data } = await open();
     fireEvent.change(screen.getByTestId('hud-sprite'), { target: { value: 'demo:hud/mana' } });
     expect(obj(data()).sprite).toBe('demo:hud/mana');
-    expect(screen.getByTestId('hud-missing-sprites').textContent).toContain('demo:hud/mana');
+    expect(screen.getByTestId('hud-missing-sprites').textContent).toContain('“Mana”');
   });
 
   it('shows in a vehicle with the vehicle picker; the preview needs "Riding a vehicle"', async () => {
@@ -293,13 +291,13 @@ describe('HUD Studio', () => {
     expect(fill?.getAttribute('width')).toBe('41');
   });
 
-  it('shows the preview, look, value, place and colours in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
+  it('shows the preview, look, value, place and colours, the rest folded, by default', async () => {
+    window.msmMoreOptionsOpen = false;
     await open();
     for (const id of ['hud-preview', 'hud-look', 'hud-value', 'hud-where', 'hud-style']) {
       expect(screen.getByTestId(id)).toBeTruthy();
     }
-    expect(screen.queryByTestId('hud-show')).toBeNull();
-    expect(screen.queryByTestId('hud-advanced-toggle')).toBeNull();
+    expect(screen.getByTestId('more-options-hud-show').getAttribute('aria-expanded')).toBe('false');
+    window.msmMoreOptionsOpen = true;
   });
 });

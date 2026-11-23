@@ -21,10 +21,8 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useEffect, useReducer } from 'react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { forbiddenIn } from '../../../../src/renderer/src/components/ai/ai-words';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import { ElementForm } from '../../../../src/renderer/src/studios/ElementForm';
 import { studios } from '../../../../src/renderer/src/studios/games/studios';
-import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import {
   AREA_COMMON_SECTIONS,
   OBJECTIVE_COMMON_SECTIONS,
@@ -33,6 +31,7 @@ import {
   TIMER_COMMON_SECTIONS,
   WORLD_SETUP_COMMON_SECTIONS,
 } from '../../../../src/renderer/src/studios/plain';
+import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -61,7 +60,6 @@ beforeAll(async () => {
 }, PRELOAD_TIMEOUT_MS);
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 const KINDS: ElementKind[] = [
@@ -192,7 +190,7 @@ describe('the games Studio entries', () => {
       'msm:timer',
       'msm:area',
     ]);
-    for (const entry of studios) expect(entry.veryEasy?.length).toBeGreaterThan(0);
+    for (const entry of studios) expect(entry.common?.length).toBeGreaterThan(0);
   });
 });
 
@@ -204,22 +202,22 @@ describe.each(SAMPLES)('$studio Studio', (sample) => {
       sample.data ?? defaultOf(sample.kind),
     );
 
-  it('shows every section of its Very easy list with no id or forbidden word', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
+  it('shows every section of its common list with no id or forbidden word', async () => {
+    window.msmMoreOptionsOpen = false;
     renderOn(subject(), [ISLAND]);
     const studio = await find(`${sample.studio}-studio`);
     for (const section of sample.sections) expect(screen.getByTestId(section)).toBeTruthy();
-    expect(screen.queryByTestId(`${sample.studio}-advanced-toggle`)).toBeNull();
     const found = shownStrings(studio).flatMap((text) => forbiddenIn(text));
     expect(found).toEqual([]);
+    window.msmMoreOptionsOpen = true;
   });
 
-  it('shows a live view and its advanced form outside Very easy', async () => {
+  it('shows a live view and the whole form under Every setting', async () => {
     renderOn(subject(), [ISLAND]);
     await find(`${sample.studio}-studio`);
     expect(screen.getByTestId(sample.sections[0] as string)).toBeTruthy();
-    fireEvent.click(screen.getByTestId(`${sample.studio}-advanced-toggle`));
-    expect(screen.queryByTestId(sample.sections[1] as string)).toBeNull();
+    fireEvent.click(screen.getByTestId('more-options-every-setting'));
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
   });
 });
 

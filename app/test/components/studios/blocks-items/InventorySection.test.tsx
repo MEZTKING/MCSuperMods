@@ -214,7 +214,7 @@ describe('Textures section state slots', () => {
       schema,
     );
     await screen.findByTestId('block-inventory');
-    expect(screen.getByText('Front when open')).toBeTruthy();
+    expect(screen.getAllByText('Front when open').length).toBeGreaterThan(0);
     expect(screen.queryByTestId('block-texture-front_lit')).toBeNull();
     commit('block-texture-front_open', 'minecraft:block/barrel_top_open');
     expect((read(data).textures as Record<string, string>).front_open).toBe(
@@ -225,7 +225,7 @@ describe('Textures section state slots', () => {
     );
     pick('block-inventory-holds', 'machine');
     expect(read(data).textures).not.toHaveProperty('front_open');
-    expect(screen.getByText('Front when working')).toBeTruthy();
+    expect(screen.getAllByText('Front when working').length).toBeGreaterThan(0);
   });
 
   it('offers the open and lit models on a simple block', async () => {

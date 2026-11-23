@@ -362,9 +362,10 @@ describe('Block Studio', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Go to model' }));
     expect(openElement).toHaveBeenCalledWith('demo:block/gem');
-    fireEvent.click(screen.getByTestId('block-advanced-toggle'));
-    expect(screen.queryByTestId('block-hardness')).toBeNull();
-    expect(screen.getByTestId('block-studio').querySelector('[data-pointer]')).toBeTruthy();
+    // Every setting (ADR 0130 D3): the whole form under the Studio, the Studio still shown.
+    fireEvent.click(screen.getByTestId('more-options-every-setting'));
+    expect(screen.getByTestId('block-hardness')).toBeTruthy();
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
   });
 });
 

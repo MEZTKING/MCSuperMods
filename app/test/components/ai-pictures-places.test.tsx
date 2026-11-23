@@ -43,13 +43,11 @@ import {
 } from '../../src/renderer/src/components/creator/CreatorImageField';
 import { NewTextureDialog } from '../../src/renderer/src/components/texture-editor/NewTextureDialog';
 import type { RgbaImage } from '../../src/renderer/src/components/texture-editor/pixels';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { villagerLookChange } from '../../src/renderer/src/studios/entities/VillagerTypeStudio';
 import { fakePictures, testCodec } from './ai-pictures-fake';
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 /** The test codec reading the fake service's pictures and writing real PNGs (the Creator checks them). */
@@ -320,7 +318,6 @@ describe('a villager look’s picture', () => {
 
 describe('Very easy, Draw it for me', () => {
   it('offers Make it with AI instead when a key is set', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
     render(
       <DrawButton
         testId="d"
@@ -348,7 +345,6 @@ describe('Very easy, Draw it for me', () => {
   });
 
   it('offers nothing without a key', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
     render(
       <DrawButton
         testId="d"

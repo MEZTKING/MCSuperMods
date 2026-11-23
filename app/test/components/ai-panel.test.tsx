@@ -89,6 +89,8 @@ function lastMessage(role: string): HTMLElement {
 }
 
 beforeEach(() => {
+  // A More options opened by one test stays open in local storage.
+  globalThis.localStorage.clear();
   useAiStore.setState({ conversations: {} });
   useAiPanelStore.setState({
     keyStatus: null,
@@ -123,8 +125,8 @@ describe('AiPanel', () => {
     await s.ai.emit(runId, { type: 'text_delta', text: '**function**.' });
     const answer = lastMessage('assistant');
     expect(answer.querySelector('strong')?.textContent).toBe('function');
-    const thinking = within(answer).getByText('Thinking');
-    expect(thinking.closest('details')?.open).toBe(false);
+    // No thinking line (ADR 0130 D5: one plain view).
+    expect(within(answer).queryByText('Thinking')).toBeNull();
     await s.ai.emit(runId, {
       type: 'usage',
       turn: {
@@ -143,13 +145,13 @@ describe('AiPanel', () => {
       },
     });
     expect(screen.getByTestId('ai-usage').textContent).toMatch(
-      /^This chat has cost about \$0\.\d\d so far \(12,431 in \/ 3,210 out, 4 requests, Opus 5\.5\)\.$/,
+      /^This chat has cost about \$0\.\d\d so far\.$/,
     );
     await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
     expect(screen.queryByTestId('ai-stop')).toBeNull();
   });
 
-  it('runs a tool request against the session and shows it as a one-line entry', async () => {
+  it('runs a tool request against the session and leaves a read out of the chat', async () => {
     const s = await setup();
     const runId = await sendMessage(s, 'Read greet');
     await s.ai.emit(runId, {
@@ -167,10 +169,8 @@ describe('AiPanel', () => {
     expect(result?.result.isError).toBe(false);
     expect(result?.result.content).toContain('say hi');
     await s.ai.emit(runId, { type: 'tool_done', requestId: 'r1', isError: false });
-    const entry = lastMessage('tool');
-    expect(entry.textContent).toContain('Read demo:greet');
-    expect(entry.querySelector('code')?.textContent).toBe('demo:greet');
-    await waitFor(() => expect(entry.textContent).toContain('Result'));
+    // Reading has no plain line, so it is not shown (ADR 0130 D5).
+    expect(() => lastMessage('tool')).toThrow('No tool message.');
   });
 
   it('shows a plan where it was proposed, says whose turn it is and takes a typed go', async () => {
@@ -227,12 +227,12 @@ describe('AiPanel', () => {
     const tray = await screen.findByTestId('ai-tray');
     expect(tray.dataset.open).toBe('false');
     expect(screen.queryByTestId('ai-changeset')).toBeNull();
-    expect(screen.getByTestId('ai-tray-toggle').textContent).toBe('Proposed changes (1 of 1 kept)');
+    expect(screen.getByTestId('ai-tray-toggle').textContent).toBe('Ready to add: 1 change');
     expect((screen.getByTestId('ai-apply') as HTMLButtonElement).disabled).toBe(true);
     await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
     expect((screen.getByTestId('ai-apply') as HTMLButtonElement).disabled).toBe(false);
     expect(screen.getByTestId('ai-status-text').textContent).toBe(
-      '1 proposed change is ready. Nothing is applied yet.',
+      '1 change is ready. Nothing is in your mod yet.',
     );
     await s.user.click(screen.getByTestId('ai-status-look'));
     expect(screen.getByTestId('ai-tray').dataset.open).toBe('true');
@@ -254,7 +254,9 @@ describe('AiPanel', () => {
     expect(screen.getByTestId(`ai-change-${itemId}-diff`).textContent).toContain('- ');
 
     await s.user.click(screen.getByTestId('ai-apply'));
-    await waitFor(() => expect(lastMessage('notice').textContent).toBe('Applied 1 change.'));
+    await waitFor(() =>
+      expect(lastMessage('notice').textContent).toBe('Made 1 change to your mod.'),
+    );
     const ids = (s.session.snapshot.project?.namespaces ?? []).flatMap((namespace) =>
       namespace.elements.map((element) => element.id),
     );
@@ -300,6 +302,8 @@ describe('AiPanel', () => {
 
   it('edits the next run limits in the Run limits popover', async () => {
     const s = await setup();
+    // The run limits are under the panel's More options (ADR 0130).
+    await s.user.click(await screen.findByTestId('more-options-ai-panel'));
     await s.user.click(await screen.findByTestId('ai-limits'));
     const turns = await screen.findByTestId('ai-limit-tool-turns');
     await s.user.clear(turns);
@@ -318,9 +322,7 @@ describe('AiPanel', () => {
       message: 'It paused so the cost stays small.',
       limit: { toolTurns: 5, outputTokens: 100_000 },
     });
-    expect(lastMessage('notice').textContent).toBe(
-      'It paused so the cost stays small (5 tool turns, 100,000 output tokens).',
-    );
+    expect(lastMessage('notice').textContent).toBe('It paused so the cost stays small.');
     expect(screen.getByTestId('ai-status-keep-going').textContent).toBe('Keep going');
     // The override was for that run only.
     expect(useAiStore.getState().conversations['/projects/demo']?.runLimits).toBeNull();
@@ -349,8 +351,7 @@ describe('AiPanel', () => {
     );
     expect(useUiStore.getState().rightDock).toBe('assistant');
     const context = await screen.findByTestId('ai-context');
-    expect(context.textContent).toContain('Problem schema.type on demo:greet');
-    expect(context.textContent).toContain('Expected a string.');
+    expect(context.textContent).toContain('something in Greet needs fixing');
     expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).value).toBe(
       EXPLAIN_PROBLEM_TEXT,
     );
@@ -476,34 +477,31 @@ describe('AiPanel by state', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
-
-  {
-    it.each(AI_STATUS_STATES)('draws the state line of %s', async (state) => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      vi.setSystemTime(12_000);
-      await setup();
-      const conversation = aiStateFixtures()[state];
-      await show(conversation);
-      const line = screen.getByTestId('ai-status');
-      expect(line.dataset.state).toBe(state);
-      const expected = statusWords(conversationStatus(conversation, 12_000));
-      expect(screen.getByTestId('ai-status-text').textContent).toBe(expected.text);
-      const buttons = within(line).queryAllByRole('button');
-      expect(buttons.length).toBeLessThanOrEqual(1);
-      if (expected.action !== null) expect(buttons[0]?.textContent).toBe(expected.action.label);
-      // No Chat or Build switch.
-      expect(screen.queryByTestId('ai-mode-chat')).toBeNull();
-      expect(screen.queryByTestId('ai-mode-build')).toBeNull();
-      // Exactly one primary button (a waiting plan's or step's own, B686).
-      expect(primaries()).toHaveLength(1);
-      // The message box stays usable while the user's answer is awaited.
-      expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).disabled).toBe(false);
-      expect(screen.getByTestId('ai-new-conversation').textContent).toBe(wordsFor().newChat);
-      // The run limits wait in the panel's More options (ADR 0130 D3).
-      expect(screen.queryByTestId('ai-limits')).toBeNull();
-      expect(screen.getByTestId('more-options-ai-panel')).toBeTruthy();
-    });
-  }
+  it.each(AI_STATUS_STATES)('draws the state line of %s', async (state) => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(12_000);
+    await setup();
+    const conversation = aiStateFixtures()[state];
+    await show(conversation);
+    const line = screen.getByTestId('ai-status');
+    expect(line.dataset.state).toBe(state);
+    const expected = statusWords(conversationStatus(conversation, 12_000));
+    expect(screen.getByTestId('ai-status-text').textContent).toBe(expected.text);
+    const buttons = within(line).queryAllByRole('button');
+    expect(buttons.length).toBeLessThanOrEqual(1);
+    if (expected.action !== null) expect(buttons[0]?.textContent).toBe(expected.action.label);
+    // No Chat or Build switch.
+    expect(screen.queryByTestId('ai-mode-chat')).toBeNull();
+    expect(screen.queryByTestId('ai-mode-build')).toBeNull();
+    // Exactly one primary button (a waiting plan's or step's own, B686).
+    expect(primaries()).toHaveLength(1);
+    // The message box stays usable while the user's answer is awaited.
+    expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).disabled).toBe(false);
+    expect(screen.getByTestId('ai-new-conversation').textContent).toBe(wordsFor().newChat);
+    // The run limits wait in the panel's More options (ADR 0130 D3).
+    expect(screen.queryByTestId('ai-limits')).toBeNull();
+    expect(screen.getByTestId('more-options-ai-panel')).toBeTruthy();
+  });
 
   it('counts the seconds up once a second while the helper works', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
@@ -552,18 +550,15 @@ describe('AiPanel by state', () => {
     expect(s.ai.starts[0]?.text).toMatch(/^Make a whole mod/);
   });
 
-  it(
-    'says a new chat is not kept after closing the app (F19)',
-    async () => {
-      await setup();
-      const empty = await screen.findByTestId('ai-empty');
-      const line = within(empty).getByTestId('ai-not-saved');
-      expect(line.textContent).toBe(
-        'Chats are not saved: they last until you close MCSuperMods or start a new one.',
-      );
-      expect(forbiddenIn(line.textContent ?? '')).toEqual([]);
-    },
-  );
+  it('says a new chat is not kept after closing the app (F19)', async () => {
+    await setup();
+    const empty = await screen.findByTestId('ai-empty');
+    const line = within(empty).getByTestId('ai-not-saved');
+    expect(line.textContent).toBe(
+      'Chats are not saved: they last until you close MCSuperMods or start a new one.',
+    );
+    expect(forbiddenIn(line.textContent ?? '')).toEqual([]);
+  });
 
   it('wires Try again, Keep going and Check my key', async () => {
     const s = await setup();
@@ -590,9 +585,7 @@ describe('AiPanel by state', () => {
       message: 'invalid x-api-key',
     });
     await show(keyless);
-    expect(screen.getByTestId('ai-status-text').textContent).toBe(
-      'Your key was not accepted. (AuthenticationError)',
-    );
+    expect(screen.getByTestId('ai-status-text').textContent).toBe('Your key was not accepted.');
     await u.user.click(screen.getByTestId('ai-status-check-key'));
     expect(u.onOpenSettings).toHaveBeenCalledOnce();
   });
@@ -683,7 +676,9 @@ describe('AiPanel by state', () => {
     await s.ai.waitForResults(1);
     await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
     await s.user.click(screen.getByTestId('ai-apply'));
-    await waitFor(() => expect(lastMessage('notice').textContent).toBe('Applied 1 change.'));
+    await waitFor(() =>
+      expect(lastMessage('notice').textContent).toBe('Added 1 thing to your mod: Ruby Sword.'),
+    );
     expect(screen.queryByTestId('ai-status-show-me')).toBeNull();
     expect(within(lastMessage('notice')).queryAllByRole('button')).toHaveLength(0);
     expect(primaries().map((button) => button.dataset.testid)).toEqual(['ai-send']);

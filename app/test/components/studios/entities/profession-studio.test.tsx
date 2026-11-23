@@ -142,6 +142,8 @@ describe('profession pictures', () => {
   it('copies a picked picture in one undo step and offers the copy for older pictures', async () => {
     const { stack, writes, labels, data } = withHost(profession(), ['textures/art/smith.png']);
     await screen.findByTestId('profession-studio', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
+    // The id field is under the section's More options (ADR 0130), there after a render.
+    await screen.findByTestId('profession-picture-villager');
     commitId('profession-picture-villager', 'demo:art/smith');
     await waitFor(() => expect(labels).toEqual(['Profession picture']));
     expect((data() as { textures?: Json }).textures).toEqual({ villager: 'demo:art/smith' });

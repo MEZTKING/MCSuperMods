@@ -25,7 +25,6 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { type ChangeItem, planChangeItems } from '../../src/renderer/src/changeset/changeset';
 import { forbiddenIn } from '../../src/renderer/src/components/ai/ai-words';
 import { thingSections } from '../../src/renderer/src/components/thing-picker/thing-sources';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -64,7 +63,7 @@ beforeAll(async () => {
   await preloadChunks(() => import('../../src/renderer/src/studios/rules/RuleBookStudio'));
 }, PRELOAD_TIMEOUT_MS);
 beforeEach(() => {
-  usePreferences.setState({ mode: 'easy' });
+  window.msmMoreOptionsOpen = true;
 });
 afterEach(cleanup);
 
@@ -399,7 +398,8 @@ describe('Make a new one', () => {
 
 describe('Very easy', () => {
   it('a book with a games rule shows no id, in the cards or the pickers', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
+    // The default view: every More options closed (ADR 0130).
+    window.msmMoreOptionsOpen = false;
     await renderBook(
       bookWith(
         {

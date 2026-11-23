@@ -526,8 +526,6 @@ const toast = (text: Matcher) =>
 
 beforeEach(() => {
   window.msmNoMonaco = true;
-  // A fresh profile (ADR 0047 D1): Advanced, no mode chosen yet.
-  usePreferences.setState({ mode: 'advanced', modeChosen: false });
   useAiStore.setState({ conversations: {} });
   useAiPanelStore.setState({ keyStatus: null, settings: null, models: {}, drafts: {} });
   useUiStore.setState({
@@ -696,14 +694,11 @@ describe('App menu commands', () => {
     expect(within(welcome).getByTestId('welcome-guide-link').getAttribute('href')).toBe(
       'https://meztking.github.io/MCSuperMods/first-mod',
     );
-    // A brand-new install starts in Very easy (ADR 0083 D1), the Welcome offering the three.
-    expect(usePreferences.getState().mode).toBe('very-easy');
-    expect(within(welcome).getByTestId('welcome-mode-very-easy').getAttribute('aria-pressed')).toBe(
-      'true',
-    );
+    // One mode (ADR 0130 D1): no mode question.
+    expect(within(welcome).queryByTestId('welcome-modes')).toBeNull();
     fireEvent.click(within(welcome).getByRole('button', { name: 'Got it' }));
     await waitFor(() => expect(screen.queryByTestId('welcome-dialog')).toBeNull());
-    expect(screen.getByTestId('toolbar-very-easy')).toBeTruthy();
+    expect(screen.getByTestId('toolbar-home')).toBeTruthy();
     expect(screen.getByTestId('home')).toBeTruthy();
     await harness.menu('firstMod');
     expect(await screen.findByTestId('welcome-dialog')).toBeTruthy();
@@ -1711,8 +1706,8 @@ describe('App AI helper (ADR 0041 D8)', () => {
     await userEvent.setup().click(screen.getByTestId(`problem-explain-${index}`));
     expect(useUiStore.getState().rightDock).toBe('assistant');
     const context = await screen.findByTestId('ai-context');
-    expect(context.textContent).toContain('Problem mcfunction.parse on demo:greet');
-    expect(context.textContent).toContain('Expected a command.');
+    // The chip says it in plain words (ADR 0130 D5); the block sent keeps the code and message.
+    expect(context.textContent).toContain('something in Greet needs fixing');
   });
 
   it("opens Settings on the helper's section from the panel without a key (ADR 0125 D5)", async () => {
@@ -1736,8 +1731,7 @@ describe('App AI helper (ADR 0041 D8)', () => {
     }
   });
 
-  it('starts a new mod with the helper in Very easy by its name, not a folder', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+  it('starts a new mod with the helper by its name, not a folder', async () => {
     const ai = fakeAi();
     const harness = await renderApp({ ai, noProject: true, defaultParent: '/docs/MCSuperMods' });
     const user = userEvent.setup();
@@ -1762,7 +1756,7 @@ describe('App AI helper (ADR 0041 D8)', () => {
 });
 
 describe('App Creator (ADR 0043 D3)', () => {
-  it('opens the Creator from the menu, the toolbar, the palette and the empty editor', async () => {
+  it('opens the Creator from the menu, the toolbar and the palette', async () => {
     const harness = await renderApp();
     const user = userEvent.setup();
     await harness.menu('creator');
@@ -1782,9 +1776,6 @@ describe('App Creator (ADR 0043 D3)', () => {
     await user.click(command);
     expect(await screen.findByTestId('creator-dialog')).toBeTruthy();
     await user.click(screen.getByTestId('creator-cancel'));
-
-    await user.click(await screen.findByTestId('editor-open-creator'));
-    expect(await screen.findByTestId('creator-dialog')).toBeTruthy();
   });
 
   it('creates a set, selects its first element and reopens it with "Edit in Creator"', async () => {
@@ -1816,20 +1807,17 @@ describe('App Creator (ADR 0043 D3)', () => {
     const harness = await renderApp();
     addFunction(harness, ['say hi']);
     act(() => useUiStore.getState().select('demo:greet'));
-    expect(await screen.findByTestId('editor-tab-form')).toBeTruthy();
+    expect(await screen.findByTestId('editor-studio')).toBeTruthy();
     expect(screen.queryByTestId('editor-edit-in-creator')).toBeNull();
   });
 });
 
-describe('App Very easy mode (ADR 0083)', () => {
-  it('shows Home, runs a tile, lists My things, and hides the sidebar and Problems', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+describe('App in one mode (ADR 0083, ADR 0130)', () => {
+  it('shows Home beside the list, runs a tile, lists My things and Things to fix', async () => {
     const harness = await renderApp();
     const user = userEvent.setup();
-    expect(screen.getByTestId('toolbar-very-easy')).toBeTruthy();
-    expect(screen.queryByRole('navigation', { name: 'Elements' })).toBeNull();
-    expect(screen.queryByTestId('dock-tab-problems')).toBeNull();
-    expect(screen.queryByTestId('project-target')).toBeNull();
+    expect(screen.getByTestId('toolbar-home')).toBeTruthy();
+    expect(screen.getByRole('navigation', { name: 'Elements' })).toBeTruthy();
     expect(screen.getByTestId('things-to-fix')).toBeTruthy();
     expect(screen.getByTestId('my-things-empty')).toBeTruthy();
 
@@ -1855,15 +1843,9 @@ describe('App Very easy mode (ADR 0083)', () => {
     expect(harness.session.snapshot.undoLabel).toMatch(/^Delete /);
     await user.click(screen.getByTestId('toolbar-undo'));
     expect(await screen.findByTestId('my-things')).toBeTruthy();
-
-    // Back to Advanced from the row: the sidebar returns.
-    await user.click(screen.getByTestId('toolbar-mode-advanced'));
-    expect(usePreferences.getState().mode).toBe('advanced');
-    expect(screen.getByRole('navigation', { name: 'Elements' })).toBeTruthy();
   });
 
   it('warns in plain words before deleting a thing that was already played (ADR 0102 D5)', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp();
     const user = userEvent.setup();
     await user.click(screen.getByTestId('home-tile-food'));
@@ -1889,7 +1871,6 @@ describe('App Very easy mode (ADR 0083)', () => {
   });
 
   it('opens the rule book from "Make things happen", making one when there is none', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp();
     const user = userEvent.setup();
     await user.click(screen.getByTestId('home-tile-rules'));
@@ -1905,19 +1886,18 @@ describe('App Very easy mode (ADR 0083)', () => {
     expect(await screen.findByTestId('home')).toBeTruthy();
   });
 
-  it('switches modes from the View menu and the palette', async () => {
+  it('has no mode commands in the palette', async () => {
     const harness = await renderApp();
-    await harness.menu('modeVeryEasy');
-    expect(usePreferences.getState().mode).toBe('very-easy');
-    await harness.menu('toggleMode');
-    expect(usePreferences.getState().mode).toBe('easy');
-    await harness.menu('modeAdvanced');
-    expect(usePreferences.getState().mode).toBe('advanced');
+    addFunction(harness, ['say hi']);
+    act(() => useUiStore.getState().select('demo:greet'));
     await harness.menu('commandPalette');
     const palette = await screen.findByTestId('command-palette');
-    expect(within(palette).queryByTestId('command-advancedMode')).toBeNull();
-    await userEvent.setup().click(within(palette).getByTestId('command-veryEasyMode'));
-    expect(usePreferences.getState().mode).toBe('very-easy');
+    for (const id of ['veryEasyMode', 'easyMode', 'advancedMode', 'toggleMode']) {
+      expect(within(palette).queryByTestId(`command-${id}`)).toBeNull();
+    }
+    expect(within(palette).getByTestId('command-toggleRawJson').textContent).toContain(
+      'Edit as raw text',
+    );
   });
 });
 
@@ -1932,10 +1912,17 @@ describe('App warnings for exported ids (ADR 0102 D5)', () => {
     act(() => {
       harness.session.addElement({ id: 'demo:fresh', kind: 'msm:item' });
     });
-    await user.click(await screen.findByRole('button', { name: 'Remove demo:fresh' }));
+    // The list names things (ADR 0130): each row's Remove sits beside its name.
+    const removeOf = (id: string) =>
+      within(screen.getByTestId(`element-row-${id}`).parentElement as HTMLElement).getByRole(
+        'button',
+        { name: /^Remove / },
+      );
+    await screen.findByTestId('element-row-demo:fresh');
+    await user.click(removeOf('demo:fresh'));
     await waitFor(() => expect(harness.session.snapshot.undoLabel).toBe('Remove demo:fresh'));
     expect(screen.queryByTestId('confirm-dialog')).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Remove demo:ruby' }));
+    await user.click(removeOf('demo:ruby'));
     const confirm = await screen.findByTestId('confirm-dialog');
     expect(confirm.textContent).toContain('demo:ruby (item)');
     await user.click(within(confirm).getByRole('button', { name: 'Remove anyway' }));
@@ -1962,7 +1949,6 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
   }
 
   it('shows the cards on the Home of a mod with no things, and Make this opens the flow', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp();
     const user = userEvent.setup();
     const showcase = await screen.findByTestId('home-showcase');
@@ -1979,7 +1965,6 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
   });
 
   it('shows every group of the gallery, and a deep card’s Make this opens its flow (ADR 0129 D1)', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp();
     const user = userEvent.setup();
     const gallery = await screen.findByTestId('home-gallery');
@@ -1994,28 +1979,13 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
     expect(creator.textContent).toContain(flowTitle(harness, flowId));
   });
 
-  it('shows Home with the gallery in Easy and Advanced while no mod is open', async () => {
-    for (const mode of ['easy', 'advanced'] as const) {
-      usePreferences.setState({ mode, modeChosen: true });
-      await renderApp({ noProject: true });
-      expect(await screen.findByTestId('home-hero')).toBeTruthy();
-      expect(await screen.findByTestId('home-gallery')).toBeTruthy();
-      cleanup();
-    }
-  });
-
-  it('shows the gallery under the empty editor with a mod open, in Easy and Advanced alike', async () => {
-    for (const mode of ['easy', 'advanced'] as const) {
-      usePreferences.setState({ mode, modeChosen: true });
-      await renderApp();
-      expect(await screen.findByTestId('editor-search')).toBeTruthy();
-      expect(await screen.findByTestId('editor-gallery')).toBeTruthy();
-      cleanup();
-    }
+  it('shows Home with the gallery while no mod is open', async () => {
+    await renderApp({ noProject: true });
+    expect(await screen.findByTestId('home-hero')).toBeTruthy();
+    expect(await screen.findByTestId('home-gallery')).toBeTruthy();
   });
 
   it('folds to a link once the mod has things and remembers the choice', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp();
     const user = userEvent.setup();
     await screen.findByTestId('home-showcase');
@@ -2034,7 +2004,6 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
   });
 
   it('See the example copies the Rules example into the open mod and shows its Rule book', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp();
     const user = userEvent.setup();
     await user.click(await screen.findByTestId('showcase-example-rules'));
@@ -2049,7 +2018,6 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
   });
 
   it('without a mod, Make this asks for a name prefilled from the card, then opens the flow', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp({ noProject: true, defaultParent: '/docs/MCSuperMods' });
     const user = userEvent.setup();
     const home = await screen.findByTestId('home');
@@ -2121,10 +2089,9 @@ describe('App search doors (ADR 0124 D10, B667)', () => {
     expect((await screen.findByTestId('search-dialog')).getAttribute('data-door')).toBe('toolbar');
   });
 
-  it('has the large bar on the empty editor area, and a letter typed on a door is kept', async () => {
-    usePreferences.setState({ mode: 'easy', modeChosen: true });
+  it('has the large bar on Home, and a letter typed on a door is kept', async () => {
     await renderApp();
-    const bar = await screen.findByTestId('editor-search-field');
+    const bar = await screen.findByTestId('home-search-field');
     expect(bar.getAttribute('aria-label')).toBe('What do you want to make?');
     act(() => {
       bar.focus();
@@ -2136,8 +2103,7 @@ describe('App search doors (ADR 0124 D10, B667)', () => {
     expect(field.value).toBe('b');
   });
 
-  it("has the large bar on Very easy's Home with and without a mod", async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+  it('has the large bar on Home with and without a mod', async () => {
     const harness = await renderApp({ noProject: true, defaultParent: '/docs/MCSuperMods' });
     const home = await screen.findByTestId('home');
     expect(within(home).getByTestId('home-search-field')).toBeTruthy();
@@ -2171,7 +2137,6 @@ describe('App search doors (ADR 0124 D10, B667)', () => {
   }, 40_000);
 
   it('Make this with no mod asks the mod name, then opens the Creator with the answers', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp({ noProject: true, defaultParent: '/docs/MCSuperMods' });
     const user = userEvent.setup();
     await user.click(await screen.findByTestId('home-search-field'));
@@ -2232,7 +2197,6 @@ describe('App search: Ask the AI helper (ADR 0124 D12, B669)', () => {
   }, 40_000);
 
   it('with no mod opens New project with the AI helper and sends the hints with the first message', async () => {
-    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const ai = fakeAi();
     const harness = await renderApp({ ai, noProject: true, defaultParent: '/docs/MCSuperMods' });
     const user = userEvent.setup();

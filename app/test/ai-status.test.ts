@@ -9,10 +9,7 @@ import {
   thingsOf,
   WORKING_STATES,
 } from '../src/renderer/src/components/ai/ai-status';
-import {
-  statusWords,
-  THING_KIND_WORDS,
-} from '../src/renderer/src/components/ai/ai-words';
+import { statusWords, THING_KIND_WORDS } from '../src/renderer/src/components/ai/ai-words';
 import {
   type AiAppliedStep,
   type AiConversation,
@@ -232,9 +229,7 @@ describe('conversationStatus', () => {
       build({ kind: 'done', reason: 'end_turn' }, 'none', false, true, 'none', true),
     );
     expect(status).toMatchObject({ state: 'ready', things: 1, changes: 2, action: 'look' });
-    expect(statusWords(status).text).toBe(
-      '1 thing is ready. Nothing is in your mod yet.',
-    );
+    expect(statusWords(status).text).toBe('1 thing is ready. Nothing is in your mod yet.');
   });
 
   it('puts a failure first while it is the newest notice, with its one action', () => {
@@ -259,9 +254,7 @@ describe('conversationStatus', () => {
     const idle = (phase: AiAppliedStep['phase'], onTop: boolean) =>
       conversationStatus(build({ kind: 'none' }, 'none', false, false, phase, onTop));
     expect(idle('added', true)).toMatchObject({ state: 'idle', action: 'show-me' });
-    expect(statusWords(idle('added', true)).text).toBe(
-      'Added 1 thing to your mod: Ruby Sword.',
-    );
+    expect(statusWords(idle('added', true)).text).toBe('Added 1 thing to your mod: Ruby Sword.');
     expect(idle('taken-out', true).action).toBe('put-back');
     expect(idle('taken-out', false).action).toBeNull();
     expect(statusWords(idle('taken-out', true)).text).toBe('Taken out again.');

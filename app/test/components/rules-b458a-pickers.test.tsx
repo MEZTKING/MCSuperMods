@@ -22,9 +22,8 @@ import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { thingSections } from '../../src/renderer/src/components/thing-picker/thing-sources';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { ElementForm } from '../../src/renderer/src/studios/ElementForm';
 import { getAt } from '../../src/renderer/src/studios/rules/rules-model';
 import type { SchemaContextState } from '../../src/renderer/src/studios/use-schema-context';
@@ -52,9 +51,6 @@ beforeAll(async () => {
   // The Studio is a lazy chunk: load it here, not inside the first findBy.
   await preloadChunks(() => import('../../src/renderer/src/studios/rules/RuleBookStudio'));
 }, PRELOAD_TIMEOUT_MS);
-beforeEach(() => {
-  usePreferences.setState({ mode: 'easy' });
-});
 afterEach(cleanup);
 
 const BOOK_ID = 'demo:rules' as ResourceLocation;

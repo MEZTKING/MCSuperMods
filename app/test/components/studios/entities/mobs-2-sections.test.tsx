@@ -12,7 +12,6 @@ import { act, cleanup, fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { planChangeItems } from '../../../../src/renderer/src/changeset/changeset';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -24,8 +23,8 @@ import {
   withHabit,
 } from '../../../../src/renderer/src/studios/entities/HabitsSection';
 import { MOVEMENT_MODES } from '../../../../src/renderer/src/studios/entities/mob-kinds';
-import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { MOB_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
+import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { renderOnStack, schemaState } from '../blocks-items/harness';
@@ -237,17 +236,15 @@ describe('Trader section, batch 2', () => {
 
 describe('Very easy', () => {
   it('shows the Bucket and Habits sections', () => {
-    expect(MOB_COMMON_SECTIONS).toEqual(
-      expect.arrayContaining(['entity-bucket', 'entity-habits']),
-    );
-    const before = usePreferences.getState().mode;
-    usePreferences.setState({ mode: 'very-easy' as never });
+    expect(MOB_COMMON_SECTIONS).toEqual(expect.arrayContaining(['entity-bucket', 'entity-habits']));
     try {
+      // The default view: every More options closed.
+      window.msmMoreOptionsOpen = false;
       withHost(mob());
       expect(screen.getByTestId('entity-bucket')).toBeTruthy();
       expect(screen.getByTestId('entity-habits')).toBeTruthy();
     } finally {
-      usePreferences.setState({ mode: before });
+      window.msmMoreOptionsOpen = true;
     }
   });
 });

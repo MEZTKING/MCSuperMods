@@ -267,9 +267,7 @@ describe('Effect Studio', () => {
   it('warns about a missing icon and paints it through the host', () => {
     const subject = element('demo:frost_bite' as ResourceLocation, 'msm:effect', FROST);
     renderStudio(subject);
-    expect(screen.getByTestId('effect-icon-missing').textContent).toContain(
-      'textures/mob_effect/frost_bite.png',
-    );
+    expect(screen.getByTestId('effect-icon-missing').textContent).toContain('No icon yet');
     expect((screen.getByTestId('effect-paint-icon') as HTMLButtonElement).disabled).toBe(true);
     cleanup();
 
@@ -363,8 +361,8 @@ describe('Effect Studio', () => {
   it('switches to the full schema form under Advanced', () => {
     const subject = element('demo:frost_bite' as ResourceLocation, 'msm:effect', FROST);
     renderStudio(subject);
-    fireEvent.click(screen.getByTestId('effect-advanced-toggle'));
-    expect(screen.queryByTestId('effect-preview')).toBeNull();
+    fireEvent.click(screen.getByTestId('more-options-every-setting'));
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
     expect(screen.getByTestId('effect-studio')).toBeTruthy();
   });
 });

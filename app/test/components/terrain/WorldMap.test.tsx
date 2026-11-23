@@ -3,7 +3,7 @@ import type { Element, OutputFile, Project, Target } from '@msm/plugin-api';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { forbiddenIn } from '../../../src/renderer/src/components/ai/ai-words';
-import { usePreferences } from '../../../src/renderer/src/store/preferences';
+import { PlainContext } from '../../../src/renderer/src/components/ui/MoreOptions';
 import {
   type MapRegion,
   TerrainClient,
@@ -173,18 +173,26 @@ async function settle(local: LocalWorker, rounds = 6): Promise<void> {
   }
 }
 
-function show(r: Rig, start: Project, chosen: Element, setup: () => void = () => undefined) {
+function show(
+  r: Rig,
+  start: Project,
+  chosen: Element,
+  setup: () => void = () => undefined,
+  plain = true,
+) {
   return render(
-    <WorldMap
-      session={undefined as unknown as WorldgenSession}
-      terrain={r.handle}
-      root={ROOT}
-      project={start}
-      element={chosen}
-      vanillaReady={false}
-      onSetup={setup}
-      worlds={null}
-    />,
+    <PlainContext.Provider value={plain}>
+      <WorldMap
+        session={undefined as unknown as WorldgenSession}
+        terrain={r.handle}
+        root={ROOT}
+        project={start}
+        element={chosen}
+        vanillaReady={false}
+        onSetup={setup}
+        worlds={null}
+      />
+    </PlainContext.Provider>,
   );
 }
 
@@ -253,7 +261,7 @@ describe('WorldMap', () => {
     await settle(r.local);
     const notes = screen.getByTestId('terrain-notes').textContent ?? '';
     // The fake engine reports `minecraft:bandlands` in `demo:land`.
-    expect(notes).toContain('This world uses bandlands (in demo:land)');
+    expect(notes).toContain('This world uses bandlands (in land)');
     expect(notes).toContain('left flat');
     expect(notes).toContain('Carved caves and buildings show only in the game.');
     // Not the End and not a climate world: no "about right" line on this target.
@@ -355,7 +363,7 @@ describe('WorldMap', () => {
     await settle(r.local);
     const picker = screen.getByTestId('terrain-host') as HTMLSelectElement;
     expect([...picker.options].map((o) => o.textContent)).toEqual([
-      'demo:world',
+      'World',
       "A plain world: this biome everywhere on the overworld's land",
     ]);
     // The fake engine's map is all plains: the moor covers none of it.
@@ -408,7 +416,7 @@ function leaksIn(root: HTMLElement): string[] {
     .map((entry) => `${entry.found.join(', ')} in "${entry.text}"`);
 }
 
-describe('WorldMap in Very easy (ADR 0083 D3)', () => {
+describe('WorldMap in plain words (ADR 0083 D3, ADR 0130 D2)', () => {
   const PRESET = element('demo:islands', 'minecraft:worldgen/world_preset', {
     dimensions: {
       'minecraft:overworld': OWN_WORLD.data,
@@ -420,9 +428,6 @@ describe('WorldMap in Very easy (ADR 0083 D3)', () => {
     ...(OWN_WORLD.data as object),
     display_name: 'Sky Realm',
   });
-
-  beforeEach(() => usePreferences.setState({ mode: 'very-easy' as never }));
-  afterEach(() => usePreferences.setState({ mode: 'easy' as never }));
 
   it('names a world type’s dimensions in words, never by id', async () => {
     const start = project([OWN_LAND, MOOR, SKY, PRESET]);
@@ -448,11 +453,10 @@ describe('WorldMap in Very easy (ADR 0083 D3)', () => {
     expect(leaksIn(container)).toEqual([]);
   });
 
-  it('keeps the ids in Easy', async () => {
-    usePreferences.setState({ mode: 'easy' as never });
+  it('keeps the ids inside a More options', async () => {
     const start = project([OWN_LAND, MOOR, SKY, PRESET]);
     const r = rig(start, null);
-    show(r, start, PRESET);
+    show(r, start, PRESET, () => undefined, false);
     await settle(r.local);
     const picker = screen.getByTestId('terrain-host') as HTMLSelectElement;
     expect(picker.options[0]?.textContent).toBe('minecraft:overworld');

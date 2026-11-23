@@ -214,10 +214,10 @@ describe('Potion Studio', () => {
     });
   });
 
-  it('keeps everything else behind Advanced (all fields)', () => {
+  it('keeps everything else under Every setting', () => {
     renderOnStack(element(id, 'msm:potion', FULL), schema);
-    fireEvent.click(screen.getByTestId('potion-advanced-toggle'));
-    expect(screen.queryByTestId('potion-effects')).toBeNull();
+    fireEvent.click(screen.getByTestId('more-options-every-setting'));
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
     expect(screen.getByTestId('potion-studio')).toBeTruthy();
   });
 });

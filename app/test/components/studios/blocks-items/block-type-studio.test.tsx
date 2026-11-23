@@ -130,7 +130,7 @@ describe('Block Studio Textures section', () => {
       }),
       schema,
     );
-    expect(screen.getByText('Every face')).toBeTruthy();
+    expect(screen.getAllByText('Every face').length).toBeGreaterThan(0);
     expect(screen.getByTestId('block-model-row-bottom').textContent).toContain('demo:block/brick');
     expect(screen.getByTestId('block-model-row-double').textContent).toContain(
       'demo:block/brick_double',

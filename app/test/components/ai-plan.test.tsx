@@ -156,9 +156,7 @@ describe('the plan (ADR 0125 wording table)', () => {
     expect(screen.getByTestId('ai-plan-pictures').textContent).toBe(
       'Pictures: The sword, Ruby ore',
     );
-    expect(planPictureWords({ namespace: 'a', path: 'x/blue_gem', purpose: ' ' })).toBe(
-      'Blue gem',
-    );
+    expect(planPictureWords({ namespace: 'a', path: 'x/blue_gem', purpose: ' ' })).toBe('Blue gem');
   });
 
   it('answers Make all of it with the lines left in', async () => {
@@ -394,12 +392,7 @@ describe('the run limits (ADR 0125 D10)', () => {
     const onChange = vi.fn<(limits: AiRunLimits) => void>();
     const onReset = vi.fn();
     render(
-      <AiLimitsPopover
-        limits={limits}
-        overridden={true}
-        onChange={onChange}
-        onReset={onReset}
-      />,
+      <AiLimitsPopover limits={limits} overridden={true} onChange={onChange} onReset={onReset} />,
     );
     const user = userEvent.setup();
     await user.click(screen.getByTestId('ai-limits'));

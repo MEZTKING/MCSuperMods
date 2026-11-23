@@ -25,7 +25,6 @@ function props(overrides: Partial<ToolbarProps> = {}): ToolbarProps {
     onSave: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onAddNamespace: vi.fn(),
     onAddElement: vi.fn(),
     ...overrides,
   };
@@ -44,13 +43,13 @@ function button(name: string): HTMLButtonElement {
 }
 
 describe('Toolbar', () => {
-  it('disables Save, Add namespace and Add element without a project', () => {
+  it('disables Save and Add without a project', () => {
     renderToolbar(
       props({ hasProject: false, canAddElement: false, saveDisabledReason: 'No project is open.' }),
     );
     expect(button('Save').disabled).toBe(true);
-    expect(button('Add namespace').disabled).toBe(true);
-    expect(button('Add element').disabled).toBe(true);
+    expect(screen.queryByTestId('toolbar-add-namespace')).toBeNull();
+    expect(button('Add').disabled).toBe(true);
     expect(button('New').disabled).toBe(false);
     expect(button('Open').disabled).toBe(false);
   });
@@ -398,10 +397,10 @@ describe('Toolbar Java project export', () => {
   it('shows the secondary buttons as icons named by their labels', () => {
     renderToolbar(props({ onSettings: vi.fn(), onAiHelper: vi.fn(), onImportAssets: vi.fn() }));
     for (const name of [
+      'Home',
       'Undo',
       'Redo',
-      'Add namespace',
-      'Import assets',
+      'Bring in pictures or sounds',
       'AI helper',
       'Settings',
     ]) {
@@ -409,22 +408,22 @@ describe('Toolbar Java project export', () => {
       expect(found.getAttribute('aria-label')).toBe(name);
       expect(found.textContent).toBe('');
     }
-    expect(button('Add element').textContent).toBe('Add element');
+    expect(button('Add').textContent).toBe('Add');
   });
 });
 
 describe('Toolbar Try it (ADR 0085 D13)', () => {
-  it('shows Try it in every mode, enabled only with a project', async () => {
-    for (const mode of ['very-easy', 'easy', 'advanced'] as const) {
+  it('shows Try it, enabled only with a project', async () => {
+    for (const open of [true, false]) {
       const onTryIt = vi.fn();
-      renderToolbar(props({ mode, onTryIt, tryItOpen: mode === 'easy' }));
+      renderToolbar(props({ onTryIt, tryItOpen: open }));
       const tryIt = screen.getByTestId('toolbar-try-it') as HTMLButtonElement;
       expect(tryIt.disabled).toBe(false);
-      expect(tryIt.getAttribute('aria-pressed')).toBe(String(mode === 'easy'));
+      expect(tryIt.getAttribute('aria-pressed')).toBe(String(open));
       await userEvent.setup().click(tryIt);
       expect(onTryIt).toHaveBeenCalledOnce();
       cleanup();
-      renderToolbar(props({ mode, onTryIt, hasProject: false }));
+      renderToolbar(props({ onTryIt, hasProject: false }));
       expect((screen.getByTestId('toolbar-try-it') as HTMLButtonElement).disabled).toBe(true);
       cleanup();
     }
@@ -437,12 +436,10 @@ describe('Toolbar Try it (ADR 0085 D13)', () => {
 });
 
 describe('the search field (ADR 0124 D10, B667)', () => {
-  it('shows the compact field in every mode, opening on a click, Down or a typed letter', async () => {
-    for (const mode of ['very-easy', 'easy', 'advanced'] as const) {
+  it('shows the compact field, opening on a click, Down or a typed letter', async () => {
+    {
       const onSearch = vi.fn();
-      const view = renderToolbar(
-        props({ mode, onSearch, searchPlaceholder: 'Search or make anything' }),
-      );
+      const view = renderToolbar(props({ onSearch, searchPlaceholder: 'Search or make anything' }));
       const field = screen.getByTestId('toolbar-search');
       expect(field.getAttribute('aria-label')).toBe('Search or make anything');
       expect(field.getAttribute('aria-haspopup')).toBe('dialog');
@@ -457,7 +454,7 @@ describe('the search field (ADR 0124 D10, B667)', () => {
   });
 
   it('shows no field without onSearch', () => {
-    renderToolbar(props({ mode: 'easy' }));
+    renderToolbar(props());
     expect(screen.queryByTestId('toolbar-search')).toBeNull();
   });
 });

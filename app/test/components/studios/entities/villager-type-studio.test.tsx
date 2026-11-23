@@ -19,7 +19,6 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { planChangeItems } from '../../../../src/renderer/src/changeset/changeset';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   boatPictureCopies,
   withBoatPicture,
@@ -37,11 +36,11 @@ import {
   pictureCopiesOf,
   pictureCopyChange,
 } from '../../../../src/renderer/src/studios/picture-copies';
-import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import {
   ITEM_COMMON_SECTIONS,
   PROFESSION_COMMON_SECTIONS,
 } from '../../../../src/renderer/src/studios/plain';
+import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
@@ -233,9 +232,9 @@ describe('Very easy lists', () => {
       'profession-trades',
     ]);
     expect(ITEM_COMMON_SECTIONS).toContain('item-boat');
-    const before = usePreferences.getState().mode;
-    usePreferences.setState({ mode: 'very-easy' as never });
     try {
+      // The default view: every More options closed.
+      window.msmMoreOptionsOpen = false;
       withHost(
         element('demo:smith' as ResourceLocation, 'msm:villager_profession', {
           format: 1,
@@ -246,10 +245,12 @@ describe('Very easy lists', () => {
         await screen.findByTestId('profession-job', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS }),
       ).toBeTruthy();
       expect(screen.getByTestId('profession-trades')).toBeTruthy();
-      expect(screen.queryByTestId('profession-work')).toBeNull();
-      expect(screen.queryByTestId('profession-advanced-toggle')).toBeNull();
+      // Folded: its title, why and a closed More options (ADR 0130).
+      expect(screen.getByTestId('more-options-profession-work').getAttribute('aria-expanded')).toBe(
+        'false',
+      );
     } finally {
-      usePreferences.setState({ mode: before });
+      window.msmMoreOptionsOpen = true;
     }
   });
 });

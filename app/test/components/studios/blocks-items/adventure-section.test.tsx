@@ -11,7 +11,6 @@ import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { forbiddenIn } from '../../../../src/renderer/src/components/ai/ai-words';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   adventureListOf,
   adventureValue,
@@ -19,15 +18,14 @@ import {
   CAN_PLACE_ON,
   withAdventureList,
 } from '../../../../src/renderer/src/studios/blocks-items/adventure-model';
-import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { ITEM_COMMON_SECTIONS } from '../../../../src/renderer/src/studios/plain';
+import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { renderOnStack, schemaState } from './harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
 let schema: SchemaContextState;
-const modeBefore = usePreferences.getState().mode;
 
 beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex(), {
@@ -36,8 +34,8 @@ beforeAll(async () => {
   });
 });
 afterEach(() => {
+  window.msmMoreOptionsOpen = true;
   cleanup();
-  usePreferences.setState({ mode: modeBefore });
 });
 
 const pick = (id: string): Element =>
@@ -98,7 +96,6 @@ describe('adventure model', () => {
 
 describe('Item Studio: Adventure mode', () => {
   it('picks blocks and groups, removes them, and undoes each step', () => {
-    usePreferences.setState({ mode: 'easy' });
     const { stack, data } = renderOnStack(pick('demo:pick'), schema, { others: [ruby] });
     const section = screen.getByTestId('item-adventure');
     expect(screen.queryByTestId('item-adventure-tooltip')).toBeNull();
@@ -175,7 +172,6 @@ describe('Item Studio: Adventure mode', () => {
   });
 
   it('keeps a richer list as it is', () => {
-    usePreferences.setState({ mode: 'easy' });
     const subject = pick('demo:old_pick');
     (subject.data as Record<string, Json>).components = {
       'msm:components': { 'minecraft:can_break': { predicates: [{ blocks: 'minecraft:stone' }] } },
@@ -186,25 +182,26 @@ describe('Item Studio: Adventure mode', () => {
     expect(screen.getByTestId('item-can-place-on-add')).toBeTruthy();
   });
 
-  it('shows ids only in Advanced', () => {
+  it('shows ids only under More options (ADR 0130)', () => {
     const subject = pick('demo:id_pick');
     (subject.data as Record<string, Json>).components = {
       'msm:components': {
         'minecraft:can_break': [{ blocks: ['minecraft:stone'] }, { blocks: '#minecraft:logs' }],
       },
     };
-    usePreferences.setState({ mode: 'advanced' });
     renderOnStack(subject, schema);
-    const section = screen.getByTestId('item-adventure');
-    expect(within(section).getByText('minecraft:stone')).toBeTruthy();
-    expect(within(section).getByText('#minecraft:logs')).toBeTruthy();
+    const ids = within(screen.getByTestId('item-adventure')).getByTestId('item-can-break-ids');
+    expect(ids.textContent).toContain('minecraft:stone, #minecraft:logs');
     cleanup();
-    usePreferences.setState({ mode: 'easy' });
+    window.msmMoreOptionsOpen = false;
     renderOnStack(subject, schema);
-    expect(within(screen.getByTestId('item-adventure')).queryByText('minecraft:stone')).toBeNull();
+    expect(screen.queryByTestId('item-can-break-ids')).toBeNull();
+    expect(within(screen.getByTestId('item-adventure')).queryByText(/minecraft:stone/)).toBeNull();
+    window.msmMoreOptionsOpen = true;
   });
 
-  it('shows no ids in Very easy', () => {
+  it('shows no ids by default', () => {
+    window.msmMoreOptionsOpen = false;
     expect(ITEM_COMMON_SECTIONS).toContain('item-adventure');
     const subject = pick('demo:easy_pick');
     (subject.data as Record<string, Json>).components = {
@@ -213,7 +210,6 @@ describe('Item Studio: Adventure mode', () => {
         'minecraft:can_place_on': { predicates: [{ blocks: 'minecraft:stone' }] },
       },
     };
-    usePreferences.setState({ mode: 'very-easy' });
     renderOnStack(subject, schema);
     const section = screen.getByTestId('item-adventure');
     const texts: string[] = [];

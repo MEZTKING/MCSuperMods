@@ -203,6 +203,8 @@ const projects = new Map<string, Project>();
 
 beforeAll(async () => {
   globalThis.localStorage?.clear();
+  // The default view: every More options closed (the test setup opens them).
+  window.msmMoreOptionsOpen = false;
   schema = schemaState(bundle, await schemaIndex());
   for (const entry of CASES) {
     if (!projects.has(entry.folder)) projects.set(entry.folder, exampleProject(entry.folder));
@@ -325,10 +327,13 @@ describe('Studios show no ids by default', () => {
     plain.unmount();
   });
 
-  it('keeps the id fields in the section\'s More options', async () => {
+  it("keeps the id fields in the section's More options", async () => {
     const project = projects.get('starters/gear-set') as Project;
     const { findByTestId, queryByTestId, unmount } = render(
-      <Harness stack={new CommandStack(project)} id={'msm_starter:ruby_sword' as ResourceLocation} />,
+      <Harness
+        stack={new CommandStack(project)}
+        id={'msm_starter:ruby_sword' as ResourceLocation}
+      />,
     );
     await findByTestId('item-tab-plain', {}, { timeout: 4000 });
     expect(queryByTestId('item-tab')).toBeNull();

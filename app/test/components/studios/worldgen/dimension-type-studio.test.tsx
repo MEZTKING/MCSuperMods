@@ -276,11 +276,5 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       fireEvent.change(screen.getByTestId('dimension-time-mode'), { target: { value: 'clock' } });
       expect(onChange).toHaveBeenCalledWith('/has_fixed_time', undefined, undefined);
     });
-
-    it('shows the full form under Advanced', () => {
-      render(<DimensionTypeStudio {...propsFor(moon())} />);
-      fireEvent.click(screen.getByTestId('dimension-advanced-toggle'));
-      expect(screen.getByTestId('advanced-form')).toBeTruthy();
-    });
   },
 );

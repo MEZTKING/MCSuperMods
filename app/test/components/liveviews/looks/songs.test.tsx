@@ -34,7 +34,6 @@ import {
   type VanillaDataReader,
 } from '../../../../src/renderer/src/liveviews/vanilla-data';
 import { DEFAULT_PREFS } from '../../../../src/renderer/src/liveviews/view-prefs';
-import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import { SoundHarness } from '../../audio/fake-player';
 import { element } from '../../fixtures';
 
@@ -167,7 +166,6 @@ beforeAll(async () => {
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'easy' as never });
 });
 
 describe('song-files', () => {
@@ -337,7 +335,6 @@ describe('the music disc song view', () => {
   });
 
   it('draws no ids in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
     const one = song(185);
     render(
       wrap(
@@ -446,7 +443,6 @@ describe('the goat horn call view', () => {
   });
 
   it('draws no ids in Very easy', async () => {
-    usePreferences.setState({ mode: 'very-easy' as never });
     const one = horn(256);
     render(
       wrap(

@@ -20,10 +20,9 @@ import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { type ChangeItem, planChangeItems } from '../../src/renderer/src/changeset/changeset';
 import { thingSections } from '../../src/renderer/src/components/thing-picker/thing-sources';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -64,9 +63,6 @@ beforeAll(async () => {
   // The Studio is a lazy chunk: load it here, not inside the first findBy.
   await preloadChunks(() => import('../../src/renderer/src/studios/rules/RuleBookStudio'));
 }, PRELOAD_TIMEOUT_MS);
-beforeEach(() => {
-  usePreferences.setState({ mode: 'easy' });
-});
 afterEach(cleanup);
 
 const BOOK_ID = 'demo:rules' as ResourceLocation;
@@ -345,7 +341,7 @@ describe('"The vehicle fires"', () => {
       registries: { ids: () => [] },
       texturesFolder: 'textures',
       pictures: null,
-      mode: rulesModeOf('easy'),
+      mode: rulesModeOf(true),
       problems: [],
       plainWords: null,
     });

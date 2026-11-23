@@ -187,7 +187,8 @@ describe('Biome Studio', () => {
     render(<BiomeStudio {...propsFor(biome(), projectWith(), onChange)} />);
     const step = target.worldgen.featureSteps.indexOf('vegetal_decoration');
     const title = humanise('vegetal_decoration');
-    const box = within(screen.getByTestId(`biome-step-${step}`));
+    // The id list is in the section's More options (ADR 0130), outside the step's box.
+    const box = screen;
     fireEvent.change(box.getByLabelText(`New entry in ${title} features`), {
       target: { value: 'demo:rocks' },
     });
@@ -204,7 +205,7 @@ describe('Biome Studio', () => {
     const onChange = vi.fn();
     const short = element('demo:bare', 'minecraft:worldgen/biome', { features: [[]] });
     render(<BiomeStudio {...propsFor(short, projectWith(), onChange)} />);
-    const box = within(screen.getByTestId('biome-step-2'));
+    const box = screen;
     const title = humanise(target.worldgen.featureSteps[2] as string);
     fireEvent.change(box.getByLabelText(`New entry in ${title} features`), {
       target: { value: 'demo:rocks' },
@@ -246,12 +247,6 @@ describe('Biome Studio', () => {
     const [pointer, value] = onChange.mock.calls.at(-1) as [string, Json];
     expect(pointer).toBe('/attributes');
     expect(Object.keys(value as object)).toEqual([key]);
-  });
-
-  it('shows the full form behind the Advanced toggle', () => {
-    render(<BiomeStudio {...propsFor(biome(), projectWith())} />);
-    fireEvent.click(screen.getByTestId('biome-advanced-toggle'));
-    expect(screen.getByTestId('advanced-form')).toBeTruthy();
   });
 });
 

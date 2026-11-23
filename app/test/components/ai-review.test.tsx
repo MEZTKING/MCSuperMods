@@ -13,8 +13,7 @@ import { useState } from 'react';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { ChangeItem } from '../../src/renderer/src/changeset/changeset';
 import { AiChangesetReview } from '../../src/renderer/src/components/ai/AiChangesetReview';
-import { forbiddenIn, type UiMode } from '../../src/renderer/src/components/ai/ai-words';
-import { usePreferences } from '../../src/renderer/src/store/preferences';
+import { forbiddenIn } from '../../src/renderer/src/components/ai/ai-words';
 
 vi.mock('../../src/renderer/src/liveviews/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/renderer/src/liveviews/client')>();
@@ -142,13 +141,12 @@ function proposal(): ChangeItem[] {
 }
 
 /** The review over its own ticks, as the panel holds them. */
-function Review(props: { mode: UiMode; items: ChangeItem[]; running?: boolean }) {
+function Review(props: { items: ChangeItem[]; running?: boolean }) {
   const [items, setItems] = useState(props.items);
   return (
     <AiChangesetReview
       items={items}
       project={project}
-      mode={props.mode}
       running={props.running ?? false}
       applying={false}
       onToggle={(itemId, accepted) =>
@@ -163,9 +161,10 @@ function Review(props: { mode: UiMode; items: ChangeItem[]; running?: boolean })
 }
 
 describe('the review as things (B688)', () => {
-  it('shows things with pictures and plain words in Very easy, and no id or file row', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
-    render(<Review mode="very-easy" items={proposal()} />);
+  it('shows things with pictures and plain words, and no id or file row until More options', async () => {
+    window.msmMoreOptionsOpen = false;
+    globalThis.localStorage.clear();
+    render(<Review items={proposal()} />);
     const review = screen.getByTestId('ai-changeset');
     expect(screen.getByTestId('ai-review-heading').textContent).toBe('Ready to add: 2 things');
     // See it first, then the cards.
@@ -205,11 +204,11 @@ describe('the review as things (B688)', () => {
       const label = element.getAttribute('aria-label') ?? element.getAttribute('alt') ?? '';
       expect(forbiddenIn(label), label).toEqual([]);
     }
+    window.msmMoreOptionsOpen = true;
   });
 
   it('unticks every file of a thing with its Keep, and the See it pane loses it', async () => {
-    usePreferences.setState({ mode: 'very-easy' });
-    render(<Review mode="very-easy" items={proposal()} />);
+    render(<Review items={proposal()} />);
     const pane = screen.getByTestId('ai-see-it');
     await waitFor(() => expect(within(pane).getByTestId('ai-see-it-thing-2')).toBeTruthy(), {
       timeout: 4000,
@@ -229,26 +228,6 @@ describe('the review as things (B688)', () => {
     fireEvent.click(screen.getByTestId('ai-thing-1-keep'));
     expect(screen.getByTestId('ai-thing-1').dataset.kept).toBe('all');
     expect(screen.getByTestId('ai-review-heading').textContent).toBe('Ready to add: 2 things');
-  });
-
-  it('folds the files behind each thing in Easy, in words', () => {
-    usePreferences.setState({ mode: 'easy' });
-    render(<Review mode="easy" items={proposal()} />);
-    expect(screen.getByTestId('ai-review-heading').textContent).toBe(
-      'Ready to add: 2 things, 5 files behind them',
-    );
-    const files = screen.getByTestId('ai-thing-1-files');
-    expect(files.querySelector('summary')?.textContent).toBe('Files behind this (6)');
-    expect([...files.querySelectorAll('li')].map((li) => li.textContent)).toEqual([
-      'Item: Ruby sword',
-      'Mod settings: Mod',
-      'Model: Ruby sword',
-      'Names: En us',
-      'Recipe: Ruby sword from rubies',
-      'Picture: Ruby sword',
-    ]);
-    expect(screen.getByTestId('ai-changeset').querySelectorAll('li[data-op]')).toHaveLength(0);
-    expect(screen.queryByTestId('ai-thing-2-files')).toBeTruthy();
   });
 
   it('says Make these changes when something is changed or taken out', () => {
@@ -273,29 +252,20 @@ describe('the review as things (B688)', () => {
         conflict: 'demo:old_stone_slab no longer exists.',
       },
     ];
-    usePreferences.setState({ mode: 'very-easy' });
-    render(<Review mode="very-easy" items={items} />);
+    render(<Review items={items} />);
     expect(screen.getByTestId('ai-apply').textContent).toBe('Make these changes');
     expect(screen.getByTestId('ai-thing-1').textContent).toContain('Block · Changed');
     expect(screen.getByTestId('ai-thing-2').textContent).toContain('Block · Taken out');
     expect(screen.getByTestId('ai-thing-2-conflict').textContent).toBe(
       'Not added: it is no longer in your mod.',
     );
-    expect(forbiddenIn(screen.getByTestId('ai-changeset').textContent ?? '')).toEqual([]);
-    cleanup();
-    usePreferences.setState({ mode: 'advanced' });
-    render(<Review mode="advanced" items={items} />);
-    expect(screen.getByTestId('ai-apply').textContent).toBe('Apply');
-    expect(screen.getByTestId('ai-discard').textContent).toBe('Discard');
+    expect(screen.getByTestId('ai-discard').textContent).toBe('Throw away');
   });
 
-  it('keeps the full file list in Advanced, with Textures for the pictures', () => {
-    usePreferences.setState({ mode: 'advanced' });
-    render(<Review mode="advanced" items={proposal()} />);
+  it('keeps the full file list under More options, with Textures for the pictures', () => {
+    render(<Review items={proposal()} />);
     const review = screen.getByTestId('ai-changeset');
-    expect(screen.getByTestId('ai-review-heading').textContent).toBe(
-      'Proposed changes (7 of 7 kept)',
-    );
+    expect(screen.getByTestId('more-options-ai-review-files')).toBeTruthy();
     expect(screen.getByTestId('ai-things')).toBeTruthy();
     const rows = review.querySelectorAll('li[data-op]');
     expect(rows).toHaveLength(7);
@@ -309,6 +279,6 @@ describe('the review as things (B688)', () => {
     // A file's own tick still works, and the thing reads as partly kept.
     fireEvent.click(screen.getByTestId('ai-change-item-texture-accept'));
     expect(screen.getByTestId('ai-thing-1').dataset.kept).toBe('mixed');
-    expect(screen.getByTestId('ai-apply').textContent).toBe('Apply');
+    expect(screen.getByTestId('ai-apply').textContent).toBe('Add to my mod');
   });
 });

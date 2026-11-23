@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 /**
- * Very easy mode (ADR 0083): Home's tiles and My things, Things to fix, the Very easy toolbar
- * and its mode row, the name-only New, the Studio section lists and the three stored modes.
+ * Home (ADR 0083, ADR 0130): Home's tiles and My things, Things to fix, the one toolbar, the
+ * name-only New, the Studio section lists and the one mode (a stored mode dropped).
  */
 import type { Element, Problem, Project } from '@msm/core';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
@@ -20,12 +20,11 @@ import {
 import { ASK_THE_HELPER, ThingsToFix } from '../../src/renderer/src/components/ThingsToFix';
 import { Toolbar, type ToolbarProps } from '../../src/renderer/src/components/Toolbar';
 import { WelcomeDialog } from '../../src/renderer/src/components/WelcomeDialog';
-import { isUiMode, UI_MODES, usePreferences } from '../../src/renderer/src/store/preferences';
+import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { commonSection } from '../../src/renderer/src/studios/plain';
 
 afterEach(() => {
   cleanup();
-  usePreferences.setState({ mode: 'advanced' });
 });
 
 function element(
@@ -483,10 +482,7 @@ function toolbarProps(overrides: Partial<ToolbarProps> = {}): ToolbarProps {
     onSave: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onAddNamespace: vi.fn(),
     onAddElement: vi.fn(),
-    onToggleMode: vi.fn(),
-    onSetMode: vi.fn(),
     onHome: vi.fn(),
     onShare: vi.fn(),
     shareDisabledReason: null,
@@ -504,21 +500,16 @@ function renderToolbar(p: ToolbarProps) {
   );
 }
 
-describe('Very easy toolbar and the mode row', () => {
-  it('shows Home, Undo, Redo, Share my mod, the AI helper, Help and the mode row only', async () => {
-    const p = toolbarProps({ mode: 'very-easy' });
+describe('the one toolbar (ADR 0130 D1)', () => {
+  it('shows Home, Save, Undo, Share my mod, the AI helper and Help, and no mode switch', async () => {
+    const p = toolbarProps();
     renderToolbar(p);
     const user = userEvent.setup();
-    expect(screen.getByTestId('toolbar-very-easy')).toBeTruthy();
-    for (const hidden of [
-      'toolbar-save',
-      'toolbar-add-element',
-      'toolbar-export-menu',
-      'toolbar-install-menu',
-      'toolbar-new-project',
-      'toolbar-mode',
-    ]) {
-      expect(screen.queryByTestId(hidden), hidden).toBeNull();
+    for (const shown of ['toolbar-save', 'toolbar-add-element', 'toolbar-new-project']) {
+      expect(screen.getByTestId(shown), shown).toBeTruthy();
+    }
+    for (const gone of ['toolbar-mode', 'toolbar-mode-row', 'toolbar-very-easy']) {
+      expect(screen.queryByTestId(gone), gone).toBeNull();
     }
     await user.click(screen.getByTestId('toolbar-home'));
     expect(p.onHome).toHaveBeenCalled();
@@ -529,60 +520,33 @@ describe('Very easy toolbar and the mode row', () => {
     await user.click(screen.getByTestId('toolbar-help'));
     await user.click(await screen.findByTestId('toolbar-help-first-mod'));
     expect(p.onFirstMod).toHaveBeenCalled();
-    expect(screen.getByTestId('toolbar-mode-very-easy').getAttribute('data-state')).toBe('on');
-    await user.click(screen.getByTestId('toolbar-mode-advanced'));
-    expect(p.onSetMode).toHaveBeenCalledWith('advanced');
   });
 
   it('disables Share my mod while errors block it', () => {
-    renderToolbar(toolbarProps({ mode: 'very-easy', shareDisabledReason: 'Fix 2 errors first.' }));
+    renderToolbar(toolbarProps({ shareDisabledReason: 'Fix 2 errors first.' }));
     expect((screen.getByTestId('toolbar-share') as HTMLButtonElement).disabled).toBe(true);
-  });
-
-  it('keeps the Easy and Advanced toolbar and adds the row beside the switch', async () => {
-    const p = toolbarProps({ mode: 'easy' });
-    renderToolbar(p);
-    const user = userEvent.setup();
-    expect(screen.getByTestId('toolbar-save')).toBeTruthy();
-    expect(screen.queryByTestId('toolbar-home')).toBeNull();
-    expect(screen.getByTestId('toolbar-mode-easy').getAttribute('data-state')).toBe('on');
-    await user.click(screen.getByTestId('toolbar-mode'));
-    expect(p.onToggleMode).toHaveBeenCalled();
-    await user.click(screen.getByTestId('toolbar-mode-very-easy'));
-    expect(p.onSetMode).toHaveBeenCalledWith('very-easy');
   });
 });
 
-describe('the three modes', () => {
-  it('names three modes in the row order and accepts only them', () => {
-    expect(UI_MODES.map((entry) => entry.label)).toEqual(['Very easy', 'Easy', 'Advanced']);
-    expect(isUiMode('very-easy')).toBe(true);
-    expect(isUiMode('expert')).toBe(false);
+describe('one mode', () => {
+  it('drops a stored mode and never writes one', () => {
+    usePreferences.getState().toggleCollapsed('demo/x');
+    expect(globalThis.localStorage.getItem('msm.preferences.v1')).not.toContain('"mode"');
+    expect('mode' in usePreferences.getState()).toBe(false);
   });
 
-  it('stores Very easy like the others', () => {
-    usePreferences.getState().setMode('very-easy');
-    expect(usePreferences.getState().mode).toBe('very-easy');
-    expect(usePreferences.getState().modeChosen).toBe(true);
-    expect(globalThis.localStorage.getItem('msm.preferences.v1')).toContain('"very-easy"');
-  });
-
-  it('offers the three modes in the Welcome, with the Very easy steps', async () => {
-    const onMode = vi.fn();
+  it('asks no mode in the Welcome, and says where More options are', () => {
     render(
       <WelcomeDialog
         hasProject={false}
         onSettings={vi.fn()}
         onNewProject={vi.fn()}
         onClose={vi.fn()}
-        mode="very-easy"
-        onMode={onMode}
       />,
     );
-    expect(screen.getByTestId('welcome-mode-very-easy').getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByTestId('welcome-modes')).toBeNull();
     expect(screen.getByTestId('welcome-steps').textContent).toContain('Start a new mod');
-    await userEvent.setup().click(screen.getByTestId('welcome-mode-easy'));
-    expect(onMode).toHaveBeenCalledWith('easy');
+    expect(screen.getByTestId('welcome-more-options').textContent).toContain('More options');
   });
 
   it('keeps the Rules section and drops the events on every subject Studio list', async () => {
@@ -599,7 +563,7 @@ describe('the three modes', () => {
     }
   });
 
-  it('hides sections not on a Very easy list, and none without one', () => {
+  it('keeps sections not on a list out of the main area, and none without one', () => {
     const list = new Set(['block-type']);
     expect(commonSection(list, 'block-type')).toBe(true);
     expect(commonSection(list, 'msm-events')).toBe(false);
@@ -648,8 +612,8 @@ describe('New mod (a name only)', () => {
   });
 });
 
-describe('Studio sections in Very easy', () => {
-  it('shows only the listed sections inside a Very easy list and every section outside it', async () => {
+describe('Studio sections in one mode', () => {
+  it('puts the listed sections in the main area and the others under More options', async () => {
     const { Section } = await import('../../src/renderer/src/studios/worldgen/parts');
     const { CommonSectionsContext } = await import('../../src/renderer/src/studios/plain');
     const { RulesSlot } = await import('../../src/renderer/src/studios/RulesSlot');
@@ -671,13 +635,15 @@ describe('Studio sections in Very easy', () => {
         {studio}
       </CommonSectionsContext.Provider>,
     );
-    expect(screen.getByTestId('block-type')).toBeTruthy();
-    expect(screen.queryByTestId('msm-events')).toBeNull();
+    expect(screen.getByText('type')).toBeTruthy();
+    // The events section shows its title and a More options holding all of it.
+    expect(screen.getByTestId('msm-events')).toBeTruthy();
+    expect(screen.getByTestId('more-options-msm-events')).toBeTruthy();
     expect(screen.getByTestId('rules-slot').getAttribute('data-first')).toBe('true');
     cleanup();
     render(studio);
-    expect(screen.getByTestId('msm-events')).toBeTruthy();
-    expect(screen.getByTestId('rules-slot').getAttribute('data-first')).toBeNull();
+    expect(screen.getByText('events')).toBeTruthy();
+    expect(screen.queryByTestId('more-options-msm-events')).toBeNull();
   });
 });
 

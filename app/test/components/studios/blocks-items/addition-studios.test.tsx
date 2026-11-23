@@ -127,10 +127,10 @@ describe('World addition Studio', () => {
     expect(data()).toEqual(original);
   });
 
-  it('shows the generic form under Advanced', () => {
+  it('shows the generic form under Every setting', () => {
     start(templateData('msm_biome_addition_overworld_ore'));
-    fireEvent.click(screen.getByTestId('world-addition-advanced'));
-    expect(screen.queryByTestId('world-addition-features')).toBeNull();
+    fireEvent.click(screen.getByTestId('more-options-every-setting'));
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
   });
 });
 
@@ -351,7 +351,7 @@ describe('Extra drops Studio', () => {
     ]);
   });
 
-  it('leaves a pool beyond the simple row to Advanced and Raw JSON', () => {
+  it('leaves a pool beyond the simple row to Every setting and Edit as raw text', () => {
     start({
       format: 1,
       tables: ['minecraft:entities/zombie'],
@@ -365,10 +365,10 @@ describe('Extra drops Studio', () => {
         },
       ],
     });
-    expect(screen.getByTestId('extra-drops-0-custom').textContent).toContain('Raw JSON');
+    expect(screen.getByTestId('extra-drops-0-custom').textContent).toContain('Edit as raw text');
     expect(screen.queryByTestId('extra-drops-0-item')).toBeNull();
-    fireEvent.click(screen.getByTestId('extra-drops-advanced'));
-    expect(screen.queryByTestId('extra-drops-pools')).toBeNull();
+    fireEvent.click(screen.getByTestId('more-options-every-setting'));
+    expect(screen.getByTestId('schema-form')).toBeTruthy();
   });
 });
 

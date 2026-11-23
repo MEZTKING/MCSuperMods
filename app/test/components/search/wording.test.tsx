@@ -302,12 +302,13 @@ describe('rows and chips per mode', () => {
     expect(liveSentence({ ...base, mode: 'easy', text: ' ', confident: true })).toBe('');
   });
 
-  it('reads prefixes only in Advanced', () => {
+  it('reads prefixes for everyone (ADR 0130)', () => {
     expect(readPrefix('> export', 'advanced')).toEqual({ scope: 'commands', text: 'export' });
     expect(readPrefix('@ruby', 'advanced')).toEqual({ scope: 'mine', text: 'ruby' });
     expect(readPrefix('#pig', 'advanced')).toEqual({ scope: 'minecraft', text: 'pig' });
     expect(readPrefix('?recipe', 'advanced')).toEqual({ scope: 'help', text: 'recipe' });
-    expect(readPrefix('?recipe', 'easy')).toEqual({ text: '?recipe' });
+    expect(readPrefix('?recipe', 'easy')).toEqual({ scope: 'help', text: 'recipe' });
+    expect(readPrefix('@ruby')).toEqual({ scope: 'mine', text: 'ruby' });
   });
 });
 
