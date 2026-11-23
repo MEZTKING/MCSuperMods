@@ -11,13 +11,7 @@ import type {
   ResourceLocation,
   TargetFacts,
 } from '@msm/plugin-api';
-import {
-  fillForm,
-  functionFile,
-  hookTagFile,
-  runHook,
-  textComponent,
-} from '../shared-functions';
+import { fillForm, functionFile, hookTagFile, runHook, textComponent } from '../shared-functions';
 import type { GameLoweringContext } from './mechanics/index';
 import {
   GAME_STATES,
