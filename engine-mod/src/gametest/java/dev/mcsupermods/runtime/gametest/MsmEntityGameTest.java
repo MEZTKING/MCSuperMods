@@ -131,15 +131,26 @@ public class MsmEntityGameTest {
         final List<String> events = new ArrayList<>();
         final List<Action> actions = new ArrayList<>();
         final List<EventContext> contexts = new ArrayList<>();
+        /** Only this mob's events when set: other tests of the same batch run mobs of the same type at once. */
+        private final Entity self;
 
         Recorder(String owner) {
+            this(owner, null);
+        }
+
+        Recorder(String owner, Entity self) {
             this.owner = id(owner);
+            this.self = self;
             EventRunner.addListener(this);
+        }
+
+        private boolean mine(Identifier owner, EventContext ctx) {
+            return owner.equals(this.owner) && (self == null || ctx.entity() == self);
         }
 
         @Override
         public void onEvent(Identifier owner, Identifier event, int depth, EventContext ctx) {
-            if (owner.equals(this.owner)) {
+            if (mine(owner, ctx)) {
                 events.add(event.getPath() + "@" + depth);
                 contexts.add(ctx);
             }
@@ -147,7 +158,7 @@ public class MsmEntityGameTest {
 
         @Override
         public void onAction(Identifier owner, Identifier event, Action action, EventContext ctx) {
-            if (owner.equals(this.owner)) {
+            if (mine(owner, ctx)) {
                 actions.add(action);
             }
         }
@@ -393,7 +404,9 @@ public class MsmEntityGameTest {
         MsmEntity mob = helper.spawn(type("brawler"), MID);
         mob.setTarget(player);
         float start = player.getHealth();
-        Recorder recorder = new Recorder("brawler");
+        // Scoped to this mob: meleeAttackTargetsListedTypes and retaliateTargetsTheAttacker run brawlers in the same
+        // batch, and their on_attack (a pig or cow hit, no player) came first on a Windows release run (2026-11-23).
+        Recorder recorder = new Recorder("brawler", mob);
         helper.succeedWhen(() -> {
             if (mob.getTarget() == null) {
                 mob.setTarget(player);
