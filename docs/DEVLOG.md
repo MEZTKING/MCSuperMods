@@ -9082,3 +9082,17 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B688 fills the tray (its words and the cards) and removes `ai-changeset` from `OTHER_BRIEFS`; B689 passes `onShowMe`, `onUndo`, `onRedo` and stops calling `setMode`; B690 applies the ai-path label patch.
+## 2026-11-23 — executor — B616 e2e for the data live views (Live views 2)
+
+**What**
+- `app/e2e/live-views-data-path.spec.ts` replaces B601's skipped stub with four tests over a fresh copy of `fixtures/live-views` (no Minecraft folder set up). 1. The data views in the element's preview, each in the frame (Preview tag, a fidelity level, no "Not yet"): `live_views:weights` rolls one of its four items and its odds come out at 1 to 4 tenths; an edit of the stone entry's weight from 1 to 10 in the form makes stone the first odds row (timed from the edit: 215 to 311 ms over the runs, ceiling 2 s) at about 10 of 19; a new seed changes the roll (within ten seeds) and never the odds; `live_views:raining` answers "Only the game knows", then Yes with the situation's weather at Rain, then No at Clear; `live_views:tags_inside` holds three things (stone and dirt through `#live_views:plain`, sand listed) with the set-up banner for `#minecraft:logs` and no "left out" claim; the tree of `live_views:tab/a` marks it, its parent, a child and an unrelated node, puts the root in column 0, leaves out the advancement without a display and lists its criterion; the `live_views:notice` dialog is drawn and its OK button says it would run `say hi`. 2. `live_views:scores`: the panel's four lines all "Runs in Try it", the editor's summary counts 4 of 4, and Run in Try it opens Try it (SwiftShader) and says the run in What happened with nothing only in the game. 3. The Creator's Custom mob flow opens on Live in the fixture project, the mob's words follow a new name, and Escape makes nothing. 4. A scripted AI model (written to a temporary file, as `ai-path` does) proposes `live_views:ai_drops` in chat mode; See it names it, rolls diamond or emerald with emerald at about three quarters before anything is added, and Apply adds it.
+- Verified: the spec green three runs in a row (about 45 s a run), `smoke` and e2e `ai-path` (both tests, after B688's review changes) green once, `pnpm lint` and `pnpm typecheck` green. `app/out`, `app/dist` and the worktree's caches deleted afterwards.
+
+**Decisions**
+- Monaco draws a function's marks in its glyph margin, so the editor's `function-line-mark` ids exist only in the plain text editor; the spec checks the panel's `function-view-line` marks and the editor's `function-run-summary` counts instead.
+- A click on a sidebar row just after the project opens was lost once in six runs (the editor stayed on "Select an element"): the spec clicks until the row has `aria-current`. No view was broken.
+- The Creator and AI tests use the fixture project rather than a blank one; no fixture file was added under `app/e2e/`.
+
+**Next**
+- The full e2e run (the plan's other exit criterion) was not run here; CI's e2e job covers it.
+- B618: the stub's "no view reads the session store" is left to the unit tests (`imports.test.ts`); an e2e cannot see it.
