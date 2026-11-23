@@ -80,6 +80,13 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'rules.not-a-number': step(
     (t) => `A step in ${t} uses "the way it faces" where a number is needed. Use it in a message.`,
   ),
+  'rules.no-command-form': step(
+    (t) =>
+      `A step in ${t} needs a command this Minecraft version does not have in MSM. Pick another step.`,
+  ),
+  'rules.no-such-phase': entry(
+    (t) => `A rule in ${t} names a phase the one block does not have. Pick one of its phases.`,
+  ),
   'rules.needs-plain': step(
     (t) => `"Light a portal" in ${t} only works in a rule without "if", "repeat" or counters.`,
   ),

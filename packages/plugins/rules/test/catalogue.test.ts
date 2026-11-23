@@ -48,14 +48,14 @@ describe('the catalogue', () => {
     expect(sorted(CATALOGUE_IDS.who)).toEqual(sorted([...enumValues('WhoName'), 'players_nearby']));
   });
 
-  it('counts 62 triggers, 47 steps, 21 conditions, 14 values and 7 places', () => {
+  it('counts 66 triggers, 61 steps, 25 conditions, 17 values and 7 places', () => {
     expect([
       TRIGGERS.length,
       STEPS.length,
       CONDITIONS.length,
       VALUES.length,
       PLACES.length,
-    ]).toEqual([62, 47, 21, 14, 7]);
+    ]).toEqual([66, 61, 25, 17, 7]);
   });
 
   const all: [string, readonly CatalogueEntry[]][] = [
@@ -106,7 +106,11 @@ describe('the catalogue', () => {
     for (const trigger of TRIGGERS) {
       const definition = trigger.definition !== undefined;
       expect(definition || trigger.scriptEvent !== undefined, trigger.id).toBe(true);
-      expect(trigger.subjectKinds.length > 0, trigger.id).toBe(definition);
+      // The games triggers (ADR 0115 D4) name a project subject but have no definition: the
+      // function bridge fires them.
+      expect(trigger.subjectKinds.length > 0, trigger.id).toBe(
+        definition || trigger.signal !== undefined,
+      );
       // The `any_` triggers and the items and advancements of ADR 0111 D3 may name a subject.
       expect(trigger.subjectOptional, trigger.id).toBe(
         trigger.id.startsWith('any_') ||
@@ -184,6 +188,22 @@ describe('the catalogue', () => {
     expect(VALUES.filter((value) => value.words === true).map((value) => value.id)).toEqual([
       'facing',
     ]);
+  });
+
+  it('fires the games triggers through the function bridge (ADR 0115 D4, D5)', () => {
+    expect(
+      Object.fromEntries(
+        TRIGGERS.filter((trigger) => trigger.signal !== undefined).map((trigger) => [
+          trigger.id,
+          [trigger.signal, trigger.scriptEvent, trigger.subjectKinds],
+        ]),
+      ),
+    ).toEqual({
+      area_entered: ['enter', 'command', ['msm:area']],
+      area_left: ['leave', 'command', ['msm:area']],
+      timer_ended: ['end', 'command', ['msm:timer']],
+      one_block_broken: ['break', 'command', ['msm:one_block']],
+    });
   });
 
   it('is frozen', () => {

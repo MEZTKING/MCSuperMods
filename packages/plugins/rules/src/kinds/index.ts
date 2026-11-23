@@ -4,7 +4,7 @@
  * they reach the game through the expander's patches and the generated script.
  */
 import type { ElementKind } from '@msm/plugin-api';
-import { lowerRuleBook, RULES_SCRIPT_FIELD } from '../lowering';
+import { lowerRuleBook, RULES_SCRIPT_FIELD, RULES_SIGNAL_FIELD } from '../lowering';
 
 /** Kind id of rule books. */
 export const RULES_KIND = 'msm:rules';
@@ -16,7 +16,7 @@ export const rulesKind: ElementKind = {
   schema: RULES_SCHEMA,
   folder: 'rules',
   defaultData: { counters: [], format: 1, rules: [] },
-  hiddenPaths: [`/${RULES_SCRIPT_FIELD}`],
+  hiddenPaths: [`/${RULES_SCRIPT_FIELD}`, `/${RULES_SIGNAL_FIELD}`],
   lower: lowerRuleBook,
 };
 

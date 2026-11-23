@@ -140,6 +140,28 @@ export const VALUES: readonly ValueEntry[] = Object.freeze([
     ],
     triggers: ['command_used'],
   }),
+  // Scores, timers and teams (ADR 0115 D3), read through commands' results.
+  value({
+    id: 'score',
+    label: 'The score of',
+    sentence: 'the {objective} score of {who}',
+    slots: [
+      { name: 'who', type: 'who', optional: true },
+      { name: 'objective', type: 'objective' },
+    ],
+  }),
+  value({
+    id: 'timer_left',
+    label: 'Time left on the timer',
+    sentence: 'the seconds left on {timer}',
+    slots: [{ name: 'timer', type: 'timer' }],
+  }),
+  value({
+    id: 'team_size',
+    label: 'Players on the team',
+    sentence: 'the number of players on {team}',
+    slots: [{ name: 'team', type: 'team' }],
+  }),
   value({
     id: 'math',
     label: 'Sums',

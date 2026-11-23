@@ -219,6 +219,43 @@ export const CONDITIONS: readonly ConditionEntry[] = Object.freeze([
     slots: [{ name: 'stat', type: 'stat' }, NUMBER],
     needsActor: 'player',
   }),
+  // Areas, teams, scores and timers (ADR 0115 D2).
+  condition({
+    id: 'in_area',
+    label: 'The player is in the area',
+    sentence: 'the player is in {area}',
+    notSentence: 'the player is not in {area}',
+    slots: [{ name: 'area', type: 'area' }],
+    needsActor: 'player',
+  }),
+  condition({
+    id: 'on_team',
+    label: 'The player is on the team',
+    sentence: '{who} is on {team}',
+    notSentence: '{who} is not on {team}',
+    slots: [
+      { name: 'who', type: 'who', optional: true },
+      { name: 'team', type: 'team' },
+    ],
+  }),
+  condition({
+    id: 'score_at_least',
+    label: 'The score is at least',
+    sentence: 'the {objective} score of {who} is at least {number}',
+    notSentence: 'the {objective} score of {who} is less than {number}',
+    slots: [
+      { name: 'who', type: 'who', optional: true },
+      { name: 'objective', type: 'objective' },
+      { ...NUMBER, whole: true },
+    ],
+  }),
+  condition({
+    id: 'timer_running',
+    label: 'The timer is running',
+    sentence: '{timer} is running',
+    notSentence: '{timer} is not running',
+    slots: [{ name: 'timer', type: 'timer' }],
+  }),
   condition({
     id: 'counter',
     label: 'A counter',

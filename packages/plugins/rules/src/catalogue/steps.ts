@@ -41,6 +41,14 @@ const step = (spec: Spec): StepEntry =>
   });
 
 const COUNT: SlotSpec = { name: 'count', type: 'number', optional: true, min: 1, whole: true };
+/** A loot table, vanilla or the project's (ADR 0115 D1). */
+const LOOT_TABLE: SlotSpec = { name: 'loot_table', type: 'loot_table' };
+/** A team: a project `msm:team` or any team by name. */
+const TEAM: SlotSpec = { name: 'team', type: 'team' };
+/** An objective: a project `msm:objective` or any objective by name. */
+const OBJECTIVE: SlotSpec = { name: 'objective', type: 'objective' };
+/** A project timer. */
+const TIMER: SlotSpec = { name: 'timer', type: 'timer' };
 
 export const STEPS: readonly StepEntry[] = Object.freeze([
   // Players
@@ -266,6 +274,39 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     ],
     defaultWho: 'player',
   }),
+  // Loot, teams and spawn points (ADR 0115 D1): commands of `TargetFacts.commands.forms`.
+  step({
+    id: 'give_loot',
+    label: 'Give from a loot table',
+    sentence: 'give {who} what {loot_table} rolls',
+    group: 'players',
+    slots: [WHO, LOOT_TABLE],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'join_team',
+    label: 'Join a team',
+    sentence: 'put {who} on {team}',
+    group: 'players',
+    slots: [WHO, TEAM],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'leave_team',
+    label: 'Leave the team',
+    sentence: 'take {who} off their team',
+    group: 'players',
+    slots: [WHO],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'set_spawn_point',
+    label: "Set the player's spawn point",
+    sentence: 'set the spawn point of {who} {where}',
+    group: 'players',
+    slots: [WHO, WHERE],
+    defaultWho: 'player',
+  }),
   // World
   step({
     id: 'place_block',
@@ -388,6 +429,70 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     group: 'world',
     slots: [{ name: 'portal', type: 'block' }, WHERE],
     action: 'light_portal',
+  }),
+  // Loot, structures, areas, the world spawn and border (ADR 0115 D1).
+  step({
+    id: 'drop_loot',
+    label: 'Drop from a loot table',
+    sentence: 'drop what {loot_table} rolls {where}',
+    group: 'world',
+    slots: [LOOT_TABLE, WHERE],
+  }),
+  step({
+    id: 'place_structure',
+    label: 'Place a structure',
+    sentence: 'place the structure {structure} {where} {rotation} {mirror}',
+    group: 'world',
+    slots: [
+      { name: 'structure', type: 'structure' },
+      WHERE,
+      {
+        name: 'rotation',
+        type: 'choice',
+        optional: true,
+        choices: [
+          { value: 'none', label: 'as it was saved' },
+          { value: 'clockwise_90', label: 'turned right' },
+          { value: '180', label: 'turned round' },
+          { value: 'counterclockwise_90', label: 'turned left' },
+        ],
+      },
+      {
+        name: 'mirror',
+        type: 'choice',
+        optional: true,
+        choices: [
+          { value: 'none', label: 'not mirrored' },
+          { value: 'left_right', label: 'mirrored left to right' },
+          { value: 'front_back', label: 'mirrored front to back' },
+        ],
+      },
+    ],
+  }),
+  step({
+    id: 'reset_area',
+    label: 'Reset an area',
+    sentence: 'reset {area}',
+    group: 'world',
+    slots: [{ name: 'area', type: 'area' }],
+  }),
+  step({
+    id: 'set_world_spawn',
+    label: 'Set the world spawn',
+    sentence: 'set the world spawn {where}',
+    group: 'world',
+    slots: [WHERE],
+  }),
+  step({
+    id: 'set_world_border',
+    label: 'Set the world border',
+    sentence: 'set the world border to {width} blocks wide {seconds} {center}',
+    group: 'world',
+    slots: [
+      { name: 'width', type: 'number', min: 1, max: 59999968 },
+      { name: 'seconds', type: 'seconds', optional: true, min: 0, max: 86400, prefix: 'over' },
+      { name: 'center', type: 'place', optional: true, prefix: 'centred' },
+    ],
   }),
   // Sounds and particles
   step({
@@ -512,6 +617,15 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     slots: [{ name: 'radius', type: 'number', optional: true, min: 1, max: 64, whole: true }],
     logic: true,
   }),
+  // Weighted choices, compiled in the script (ADR 0115 D1): each step of `do` is one choice.
+  step({
+    id: 'pick_random',
+    label: 'Pick one at random',
+    sentence: 'pick one of these at random',
+    group: 'logic',
+    slots: [],
+    logic: true,
+  }),
   step({
     id: 'wait',
     label: 'Wait',
@@ -581,5 +695,36 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
       { name: 'amount', type: 'number' },
       { name: 'counter', type: 'counter' },
     ],
+  }),
+  // Scores and timers (ADR 0115 D1, D6): scoreboard scores, apart from the counters.
+  step({
+    id: 'set_score',
+    label: 'Set a score',
+    sentence: 'set the {objective} score of {who} to {amount}',
+    group: 'counters',
+    slots: [WHO, OBJECTIVE, { name: 'amount', type: 'number', whole: true }],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'add_to_score',
+    label: 'Add to a score',
+    sentence: 'add {amount} to the {objective} score of {who}',
+    group: 'counters',
+    slots: [{ name: 'amount', type: 'number', min: 0, whole: true }, WHO, OBJECTIVE],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'start_timer',
+    label: 'Start a timer',
+    sentence: 'start {timer}',
+    group: 'counters',
+    slots: [TIMER],
+  }),
+  step({
+    id: 'stop_timer',
+    label: 'Stop a timer',
+    sentence: 'stop {timer}',
+    group: 'counters',
+    slots: [TIMER],
   }),
 ]);

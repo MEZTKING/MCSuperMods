@@ -117,6 +117,10 @@ const TRIGGERS = [
   'player_slept',
   'player_woke',
   'player_advancement',
+  'area_entered',
+  'area_left',
+  'timer_ended',
+  'one_block_broken',
 ];
 
 /** Script triggers whose subject may be left out (ADR 0111 D3), as the `any_` triggers. */
@@ -247,6 +251,34 @@ const STEPS: Record<string, Json> = {
     radius: 16,
     step: 'for_each_player',
   },
+  // Games (ADR 0115 D1).
+  give_loot: { loot_table: 'minecraft:chests/simple_dungeon', step: 'give_loot' },
+  drop_loot: { loot_table: 'minecraft:chests/simple_dungeon', step: 'drop_loot', where: 'player' },
+  place_structure: {
+    mirror: 'front_back',
+    rotation: '180',
+    step: 'place_structure',
+    structure: 'mymod:island',
+  },
+  join_team: { step: 'join_team', team: 'mymod:red', who: 'every_player' },
+  leave_team: { step: 'leave_team' },
+  set_score: { amount: -2, objective: 'kills', step: 'set_score' },
+  add_to_score: {
+    amount: { value: 'player_level' },
+    objective: 'mymod:points',
+    step: 'add_to_score',
+  },
+  start_timer: { step: 'start_timer', timer: 'mymod:round' },
+  stop_timer: { step: 'stop_timer', timer: 'mymod:round' },
+  reset_area: { area: 'mymod:arena', step: 'reset_area' },
+  set_world_spawn: { step: 'set_world_spawn', where: 'above_here' },
+  set_spawn_point: { step: 'set_spawn_point', who: 'player' },
+  set_world_border: { center: 'player', seconds: 30, step: 'set_world_border', width: 64 },
+  pick_random: {
+    do: [{ amount: 1, step: 'heal' }, { step: 'leave_team' }],
+    step: 'pick_random',
+    weights: [3, 1],
+  },
 };
 
 /** One valid case of every condition of ADR 0082 D5. */
@@ -276,6 +308,10 @@ const CONDITIONS: Record<string, Json> = {
     value: { value: 'player_level' },
   },
   stat_at_least: { condition: 'stat_at_least', number: 10, stat: 'minecraft:jump' },
+  in_area: { area: 'mymod:arena', condition: 'in_area' },
+  on_team: { condition: 'on_team', team: 'blue', who: 'other' },
+  score_at_least: { condition: 'score_at_least', number: 5, objective: 'mymod:points' },
+  timer_running: { condition: 'timer_running', not: true, timer: 'mymod:round' },
   counter: {
     compare: 'more_than',
     condition: 'counter',
@@ -300,6 +336,9 @@ const VALUES: Record<string, Json> = {
   vehicle_ammo: { value: 'vehicle_ammo', weapon: 'cannon' },
   facing: { of: 'player', value: 'facing' },
   command_argument: { axis: 'x', name: 'spot', value: 'command_argument' },
+  score: { objective: 'mymod:points', value: 'score', who: 'mob' },
+  timer_left: { timer: 'mymod:round', value: 'timer_left' },
+  team_size: { team: 'mymod:red', value: 'team_size' },
   math: { a: { max: 3, min: 1, value: 'random' }, b: 2, op: '+', value: 'math' },
 };
 
@@ -548,6 +587,7 @@ describe('rule book steps (ADR 0082 D5)', () => {
     expect(kinds('::msm::rules::LogicStepKind').sort()).toEqual([
       'for_each_player',
       'if',
+      'pick_random',
       'repeat',
     ]);
   });

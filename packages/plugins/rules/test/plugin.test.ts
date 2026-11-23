@@ -21,7 +21,7 @@ describe('@msm/plugin-rules', () => {
       schema: 'msm:rules',
       folder: 'rules',
       defaultData: { counters: [], format: 1, rules: [] },
-      hiddenPaths: ['/generated_script'],
+      hiddenPaths: ['/generated_script', '/generated_signal'],
     });
     expect(rulesKind.registry).toBeUndefined();
     expect(rulesKind.previewKind).toBeUndefined();
@@ -33,12 +33,17 @@ describe('@msm/plugin-rules', () => {
     ]);
     expect(RULES_EXPANDER_KINDS).toEqual([
       'msm:rules',
+      'msm:area',
       'msm:block',
       'msm:command',
       'msm:effect',
       'msm:entity',
       'msm:item',
       'msm:key_bind',
+      'msm:objective',
+      'msm:one_block',
+      'msm:team',
+      'msm:timer',
       'msm:vehicle',
     ]);
     expect(plugin.contributes.validators?.map((validator) => validator.id)).toEqual([
@@ -56,6 +61,8 @@ describe('@msm/plugin-rules', () => {
     expect(RULES_PROBLEM_CODES).toContain('rules.unknown-hud');
     expect(RULES_PROBLEM_CODES).toContain('rules.not-for-trigger');
     expect(RULES_PROBLEM_CODES).toContain('rules.not-a-number');
-    expect(RULES_PROBLEM_CODES).toHaveLength(25);
+    expect(RULES_PROBLEM_CODES).toContain('rules.no-command-form');
+    expect(RULES_PROBLEM_CODES).toContain('rules.no-such-phase');
+    expect(RULES_PROBLEM_CODES).toHaveLength(27);
   });
 });

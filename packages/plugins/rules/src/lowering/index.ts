@@ -10,8 +10,20 @@
  * project, compiles every book and writes each book's script lines into the expanded copy of
  * the book at {@link RULES_SCRIPT_FIELD}; lowering only turns those lines into the file. A book
  * that is lowered without expansion, or that needs no script, lowers to nothing.
+ *
+ * The one book the expander picks also lowers the function bridge of ADR 0115 D5 (the signal
+ * command and the functions and function tags the games kinds' functions run), from
+ * {@link RULES_SIGNAL_FIELD} on its copy (`signal.ts`).
  */
 import type { Element, Json, OutputFile, TargetFacts } from '@msm/plugin-api';
+import { lowerSignals } from './signal';
+
+export {
+  FUNCTION_TAG_SCHEMA,
+  generatedSignals,
+  lowerSignals,
+  RULES_SIGNAL_FIELD,
+} from './signal';
 
 /**
  * The field of an expanded rule book's copy that holds its generated script lines. It is
@@ -64,12 +76,13 @@ export function generatedScript(data: Json): string[] | undefined {
 
 /**
  * Lowers a rule book: its generated script as one TypeScript file, or nothing when the book
- * needs no script (empty, plain rules only) or was not expanded.
+ * needs no script (empty, plain rules only) or was not expanded; and the function bridge when
+ * the expander put it on this book.
  *
  * @param element - The (expanded) rule book.
- * @param _target - Unused: the script folder does not depend on the target.
+ * @param target - The target supplying the function and tag folders of the bridge.
  */
-export function lowerRuleBook(element: Element, _target: TargetFacts): OutputFile[] {
+export function lowerRuleBook(element: Element, target: TargetFacts): OutputFile[] {
   const lines = generatedScript(element.data);
   if (lines === undefined) return [];
   return [
@@ -79,5 +92,6 @@ export function lowerRuleBook(element: Element, _target: TargetFacts): OutputFil
       layer: 'msm',
       language: RULES_SCRIPT_LANGUAGE,
     },
+    ...lowerSignals(element.data, target),
   ];
 }

@@ -53,6 +53,12 @@ export interface SentenceContext {
 const nameOf = (context: SentenceContext, id: string): string =>
   context.names(id) ?? humanizeId(id);
 
+/** A project team, objective, timer or area by its name; one made elsewhere by its own name. */
+const gameWords = (id: string | undefined, context: SentenceContext): string => {
+  if (id === undefined) return 'something';
+  return id.includes(':') ? nameOf(context, id) : `"${id}"`;
+};
+
 const COUNTER_OWNERS: Record<string, string> = {
   player: "the player's",
   mob: "the mob's",
@@ -101,6 +107,12 @@ export function valueSentence(value: Json | undefined, context: SentenceContext)
       const axis = str(object, 'axis');
       return axis === undefined ? typed : `the ${axis} of ${typed}`;
     }
+    case 'score':
+      return `the ${gameWords(str(object, 'objective'), context)} score of ${whoSentence(object.who ?? 'player', context)}`;
+    case 'timer_left':
+      return `the seconds left on ${gameWords(str(object, 'timer'), context)}`;
+    case 'team_size':
+      return `the number of players on ${gameWords(str(object, 'team'), context)}`;
     case 'math': {
       const op = { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' }[
         str(object, 'op') ?? '+'
@@ -215,7 +227,16 @@ function valueWords(
     case 'game_rule':
     case 'stat':
     case 'advancement':
+    case 'loot_table':
+    case 'structure':
+    case 'timer':
+    case 'area':
+    case 'one_block':
       return typeof raw === 'string' ? nameOf(context, raw) : '';
+    case 'team':
+    case 'objective':
+      // A project team or objective by its name; one made elsewhere by its own name.
+      return typeof raw === 'string' ? gameWords(raw, context) : '';
     case 'argument':
       return typeof raw === 'string' ? `"${raw.replace(/_/g, ' ')}"` : '';
     case 'game_rule_value':
@@ -268,7 +289,7 @@ export function conditionSentence(condition: JsonObject, context: SentenceContex
   const slots = new Map(entry.slots.map((slot) => [slot.name, slot]));
   const defaults: Record<string, Json> = {
     where: 'here',
-    who: id === 'is_riding' ? 'player' : 'other',
+    who: id === 'mob_is' ? 'other' : 'player',
     count: 1,
     of: 'here',
   };
@@ -293,6 +314,14 @@ export function stepSentence(step: JsonObject, context: SentenceContext): string
   }
   if (id === 'repeat') {
     return `repeat ${formatNumber(num(step, 'times') ?? 1)} times: ${grouped(stepsSentence(step, 'do', context), step, 'do')}`;
+  }
+  if (id === 'pick_random') {
+    const choices = stepList(step, 'do');
+    if (choices.length === 0) return 'pick nothing at random';
+    return `pick one at random: ${joinWords(
+      choices.map(({ step: choice }) => stepSentence(choice, context)),
+      'or',
+    )}`;
   }
   if (id === 'for_each_player') {
     const radius = num(step, 'radius');

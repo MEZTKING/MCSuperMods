@@ -21983,6 +21983,23 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::AreaTrigger": {
+      "fields": [
+        {
+          "desc": "The project area (an `msm:area` id).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::Axis": {
       "enumKind": "string",
       "kind": "enum",
@@ -22478,6 +22495,26 @@
           "desc": "One of the player's statistics is at least a number (ADR 0111 D6).",
           "identifier": "StatAtLeast",
           "value": "stat_at_least"
+        },
+        {
+          "desc": "The player is in a project area (ADR 0115 D2).",
+          "identifier": "InArea",
+          "value": "in_area"
+        },
+        {
+          "desc": "Someone is on a team.",
+          "identifier": "OnTeam",
+          "value": "on_team"
+        },
+        {
+          "desc": "Someone's score is at least a number.",
+          "identifier": "ScoreAtLeast",
+          "value": "score_at_least"
+        },
+        {
+          "desc": "A project timer is running.",
+          "identifier": "TimerRunning",
+          "value": "timer_running"
         }
       ]
     },
@@ -22795,6 +22832,41 @@
           "type": {
             "kind": "reference",
             "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::DropLootStep": {
+      "fields": [
+        {
+          "desc": "The loot table, vanilla or of the project's data pack.",
+          "key": "loot_table",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
           }
         },
         {
@@ -23285,6 +23357,41 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::GiveLootStep": {
+      "fields": [
+        {
+          "desc": "The loot table, vanilla or of the project's data pack.",
+          "key": "loot_table",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::Hand": {
       "enumKind": "string",
       "kind": "enum",
@@ -23425,6 +23532,23 @@
             "lengthRange": {
               "kind": 0,
               "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::InAreaCondition": {
+      "fields": [
+        {
+          "desc": "The project area (an `msm:area` id).",
+          "key": "area",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
             }
           }
         }
@@ -23664,6 +23788,33 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::JoinTeamStep": {
+      "fields": [
+        {
+          "desc": "The team: a project `msm:team` id, or the name of any team.",
+          "key": "team",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::KeyCooldownOptions": {
       "fields": [
         {
@@ -23841,6 +23992,21 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::LeaveTeamStep": {
+      "fields": [
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::LightPortalStep": {
       "fields": [
         {
@@ -23894,6 +24060,11 @@
           "desc": "Runs steps once for each player nearby, or for every player.",
           "identifier": "ForEachPlayer",
           "value": "for_each_player"
+        },
+        {
+          "desc": "Runs one of its steps, picked at random by weight (ADR 0115 D1).",
+          "identifier": "PickRandom",
+          "value": "pick_random"
         }
       ]
     },
@@ -24225,6 +24396,49 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::NestedPickRandomStep": {
+      "fields": [
+        {
+          "desc": "The choices, 1 to 16.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::InnermostStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The weight of each choice in order, 0 to 1000; a missing weight is 1.",
+          "key": "weights",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "int",
+              "valueRange": {
+                "kind": 0,
+                "max": 1000,
+                "min": 0
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::NestedRepeatStep": {
       "fields": [
         {
@@ -24353,6 +24567,78 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::OnTeamCondition": {
+      "fields": [
+        {
+          "desc": "The team: a project `msm:team` id, or the name of any team.",
+          "key": "team",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The player, the mob or the other one; defaults to the player.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::OneBlockOptions": {
+      "fields": [
+        {
+          "desc": "Only breaks in this phase, 1 to 64 in the order of the one block's `phases` (the plugin\nchecks it has that many); absent means every phase.",
+          "key": "phase",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::OneBlockTrigger": {
+      "fields": [
+        {
+          "desc": "The project one block (an `msm:one_block` id).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::OneBlockOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::OpenDialogStep": {
       "fields": [
         {
@@ -24383,6 +24669,49 @@
           "type": {
             "kind": "reference",
             "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PickRandomStep": {
+      "fields": [
+        {
+          "desc": "The choices, 1 to 16; a choice of several steps is one `repeat` of 1 time.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::NestedStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The weight of each choice in order, 0 to 1000; a missing weight is 1.",
+          "key": "weights",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "int",
+              "valueRange": {
+                "kind": 0,
+                "max": 1000,
+                "min": 0
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16
+            }
           }
         }
       ],
@@ -24470,6 +24799,61 @@
           "value": "mob"
         }
       ]
+    },
+    "::msm::rules::PlaceStructureStep": {
+      "fields": [
+        {
+          "desc": "The structure template, vanilla or of the project.",
+          "key": "structure",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "structure"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        },
+        {
+          "desc": "Defaults to `none`.",
+          "key": "rotation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::StructureRotation"
+          }
+        },
+        {
+          "desc": "Defaults to `none`.",
+          "key": "mirror",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::StructureMirror"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::rules::PlainNumberSlot": {
       "kind": "union",
@@ -24706,6 +25090,71 @@
           "desc": "Takes from a counter.",
           "identifier": "TakeFromCounter",
           "value": "take_from_counter"
+        },
+        {
+          "desc": "Gives what a loot table rolls (ADR 0115 D1).",
+          "identifier": "GiveLoot",
+          "value": "give_loot"
+        },
+        {
+          "desc": "Puts someone on a team.",
+          "identifier": "JoinTeam",
+          "value": "join_team"
+        },
+        {
+          "desc": "Takes someone off their team.",
+          "identifier": "LeaveTeam",
+          "value": "leave_team"
+        },
+        {
+          "desc": "Sets a player's spawn point.",
+          "identifier": "SetSpawnPoint",
+          "value": "set_spawn_point"
+        },
+        {
+          "desc": "Drops what a loot table rolls.",
+          "identifier": "DropLoot",
+          "value": "drop_loot"
+        },
+        {
+          "desc": "Places a structure template.",
+          "identifier": "PlaceStructure",
+          "value": "place_structure"
+        },
+        {
+          "desc": "Runs a project area's reset.",
+          "identifier": "ResetArea",
+          "value": "reset_area"
+        },
+        {
+          "desc": "Sets the world spawn.",
+          "identifier": "SetWorldSpawn",
+          "value": "set_world_spawn"
+        },
+        {
+          "desc": "Sets the world border.",
+          "identifier": "SetWorldBorder",
+          "value": "set_world_border"
+        },
+        {
+          "desc": "Sets a scoreboard score.",
+          "identifier": "SetScore",
+          "value": "set_score"
+        },
+        {
+          "desc": "Adds to a scoreboard score.",
+          "identifier": "AddToScore",
+          "value": "add_to_score"
+        },
+        {
+          "desc": "Starts a project timer.",
+          "identifier": "StartTimer",
+          "value": "start_timer"
+        },
+        {
+          "desc": "Stops a project timer.",
+          "identifier": "StopTimer",
+          "value": "stop_timer"
         }
       ]
     },
@@ -24787,6 +25236,18 @@
         {
           "identifier": "CommandArgument",
           "value": "command_argument"
+        },
+        {
+          "identifier": "Score",
+          "value": "score"
+        },
+        {
+          "identifier": "TimerLeft",
+          "value": "timer_left"
+        },
+        {
+          "identifier": "TeamSize",
+          "value": "team_size"
         }
       ]
     },
@@ -25180,6 +25641,23 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::ResetAreaStep": {
+      "fields": [
+        {
+          "desc": "The project area (an `msm:area` id).",
+          "key": "area",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::RideStep": {
       "fields": [
         {
@@ -25356,6 +25834,105 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::ScoreAtLeastCondition": {
+      "fields": [
+        {
+          "desc": "The objective: a project `msm:objective` id, or the name of any objective.",
+          "key": "objective",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The least the score must be.",
+          "key": "number",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "The player, the mob or the other one; defaults to the player.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ScoreStep": {
+      "fields": [
+        {
+          "desc": "The objective: a project `msm:objective` id, or the name of any objective.",
+          "key": "objective",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The whole number to set, or to add (from 0); a reading is rounded.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ScoreValue": {
+      "fields": [
+        {
+          "desc": "The objective: a project `msm:objective` id, or the name of any objective.",
+          "key": "objective",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whose score: the player, the mob or the other one; defaults to the player.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::SetGameModeStep": {
       "fields": [
         {
@@ -25453,6 +26030,31 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::SetSpawnPointStep": {
+      "fields": [
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::SetWeatherStep": {
       "fields": [
         {
@@ -25472,6 +26074,68 @@
           "type": {
             "kind": "reference",
             "path": "::msm::rules::NumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::SetWorldBorderStep": {
+      "fields": [
+        {
+          "desc": "The width in blocks, 1 to 59,999,968.",
+          "key": "width",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 59999968,
+                  "min": 1
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Seconds to grow or shrink to it, up to 86,400 (whole); absent or 0 is at once.",
+          "key": "seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "The border's centre; absent leaves it where it is.",
+          "key": "center",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::SetWorldSpawnStep": {
+      "fields": [
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
           }
         }
       ],
@@ -26025,6 +26689,71 @@
           "value": "take_from_counter"
         },
         {
+          "desc": "Gives what a loot table rolls (ADR 0115 D1).",
+          "identifier": "GiveLoot",
+          "value": "give_loot"
+        },
+        {
+          "desc": "Puts someone on a team.",
+          "identifier": "JoinTeam",
+          "value": "join_team"
+        },
+        {
+          "desc": "Takes someone off their team.",
+          "identifier": "LeaveTeam",
+          "value": "leave_team"
+        },
+        {
+          "desc": "Sets a player's spawn point.",
+          "identifier": "SetSpawnPoint",
+          "value": "set_spawn_point"
+        },
+        {
+          "desc": "Drops what a loot table rolls.",
+          "identifier": "DropLoot",
+          "value": "drop_loot"
+        },
+        {
+          "desc": "Places a structure template.",
+          "identifier": "PlaceStructure",
+          "value": "place_structure"
+        },
+        {
+          "desc": "Runs a project area's reset.",
+          "identifier": "ResetArea",
+          "value": "reset_area"
+        },
+        {
+          "desc": "Sets the world spawn.",
+          "identifier": "SetWorldSpawn",
+          "value": "set_world_spawn"
+        },
+        {
+          "desc": "Sets the world border.",
+          "identifier": "SetWorldBorder",
+          "value": "set_world_border"
+        },
+        {
+          "desc": "Sets a scoreboard score.",
+          "identifier": "SetScore",
+          "value": "set_score"
+        },
+        {
+          "desc": "Adds to a scoreboard score.",
+          "identifier": "AddToScore",
+          "value": "add_to_score"
+        },
+        {
+          "desc": "Starts a project timer.",
+          "identifier": "StartTimer",
+          "value": "start_timer"
+        },
+        {
+          "desc": "Stops a project timer.",
+          "identifier": "StopTimer",
+          "value": "stop_timer"
+        },
+        {
           "desc": "If the conditions hold, then some steps, otherwise others.",
           "identifier": "If",
           "value": "if"
@@ -26038,6 +26767,51 @@
           "desc": "Runs steps once for each player nearby, or for every player.",
           "identifier": "ForEachPlayer",
           "value": "for_each_player"
+        },
+        {
+          "desc": "Runs one of its steps, picked at random by weight (ADR 0115 D1).",
+          "identifier": "PickRandom",
+          "value": "pick_random"
+        }
+      ]
+    },
+    "::msm::rules::StructureMirror": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "None",
+          "value": "none"
+        },
+        {
+          "identifier": "LeftRight",
+          "value": "left_right"
+        },
+        {
+          "identifier": "FrontBack",
+          "value": "front_back"
+        }
+      ]
+    },
+    "::msm::rules::StructureRotation": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "None",
+          "value": "none"
+        },
+        {
+          "identifier": "Clockwise90",
+          "value": "clockwise_90"
+        },
+        {
+          "identifier": "Rotate180",
+          "value": "180"
+        },
+        {
+          "identifier": "Counterclockwise90",
+          "value": "counterclockwise_90"
         }
       ]
     },
@@ -26086,6 +26860,23 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::TeamSizeValue": {
+      "fields": [
+        {
+          "desc": "The team: a project `msm:team` id, or the name of any team.",
+          "key": "team",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::TeleportStep": {
       "fields": [
         {
@@ -26124,6 +26915,74 @@
         ]
       },
       "kind": "list"
+    },
+    "::msm::rules::TimerLeftValue": {
+      "fields": [
+        {
+          "desc": "The project timer (an `msm:timer` id).",
+          "key": "timer",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::TimerRunningCondition": {
+      "fields": [
+        {
+          "desc": "The project timer (an `msm:timer` id).",
+          "key": "timer",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::TimerStep": {
+      "fields": [
+        {
+          "desc": "The project timer (an `msm:timer` id).",
+          "key": "timer",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::TimerTrigger": {
+      "fields": [
+        {
+          "desc": "The project timer (an `msm:timer` id).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::rules::Trigger": {
       "enumKind": "string",
@@ -26390,6 +27249,26 @@
           "value": "vehicle_every"
         },
         {
+          "desc": "A player enters a project area (ADR 0115 D4; fired by the area's function through the\nfunction bridge, D5).",
+          "identifier": "AreaEntered",
+          "value": "area_entered"
+        },
+        {
+          "desc": "A player leaves a project area.",
+          "identifier": "AreaLeft",
+          "value": "area_left"
+        },
+        {
+          "desc": "A project timer ends.",
+          "identifier": "TimerEnded",
+          "value": "timer_ended"
+        },
+        {
+          "desc": "A player breaks a project one block, in any phase or in one.",
+          "identifier": "OneBlockBroken",
+          "value": "one_block_broken"
+        },
+        {
           "desc": "The world starts.",
           "identifier": "WorldStarted",
           "value": "world_started"
@@ -26531,6 +27410,21 @@
           "desc": "What the player typed for one of the command's arguments (only on `command_used`; ADR\n0111 D1): a number for `integer` and `number`, one part of a position by `axis`, words\nfor `word`, `text`, `player` (its name), `entity` (its UUID), `item`, `block`,\n`dimension` and `effect`. The plugin checks the name and type against the command.",
           "identifier": "CommandArgument",
           "value": "command_argument"
+        },
+        {
+          "desc": "Someone's score on a scoreboard objective (ADR 0115 D3); 0 without one.",
+          "identifier": "Score",
+          "value": "score"
+        },
+        {
+          "desc": "The whole seconds left on a project timer.",
+          "identifier": "TimerLeft",
+          "value": "timer_left"
+        },
+        {
+          "desc": "The number of players on a team.",
+          "identifier": "TeamSize",
+          "value": "team_size"
         },
         {
           "desc": "The way the block here, the player, the mob or the other one faces, in words (north,\neast, south, west, up or down; ADR 0096 D5). Text slots only: the plugin refuses it in a\nnumber.",
@@ -28973,6 +29867,10 @@
         "kind": "reference",
         "path": "::msm::rules::GameRuleCondition"
       },
+      "in_area": {
+        "kind": "reference",
+        "path": "::msm::rules::InAreaCondition"
+      },
       "is_facing": {
         "kind": "reference",
         "path": "::msm::rules::IsFacingCondition"
@@ -28984,6 +29882,10 @@
       "mob_is": {
         "kind": "reference",
         "path": "::msm::rules::MobIsCondition"
+      },
+      "on_team": {
+        "kind": "reference",
+        "path": "::msm::rules::OnTeamCondition"
       },
       "player_food": {
         "kind": "reference",
@@ -29005,9 +29907,17 @@
         "kind": "reference",
         "path": "::msm::rules::PlayerCompareCondition"
       },
+      "score_at_least": {
+        "kind": "reference",
+        "path": "::msm::rules::ScoreAtLeastCondition"
+      },
       "stat_at_least": {
         "kind": "reference",
         "path": "::msm::rules::StatAtLeastCondition"
+      },
+      "timer_running": {
+        "kind": "reference",
+        "path": "::msm::rules::TimerRunningCondition"
       }
     },
     "msm:rule_logic_step": {
@@ -29018,6 +29928,10 @@
       "if": {
         "kind": "reference",
         "path": "::msm::rules::IfStep"
+      },
+      "pick_random": {
+        "kind": "reference",
+        "path": "::msm::rules::PickRandomStep"
       },
       "repeat": {
         "kind": "reference",
@@ -29033,6 +29947,10 @@
         "kind": "reference",
         "path": "::msm::rules::NestedIfStep"
       },
+      "pick_random": {
+        "kind": "reference",
+        "path": "::msm::rules::NestedPickRandomStep"
+      },
       "repeat": {
         "kind": "reference",
         "path": "::msm::rules::NestedRepeatStep"
@@ -29042,6 +29960,10 @@
       "add_to_counter": {
         "kind": "reference",
         "path": "::msm::rules::CounterStep"
+      },
+      "add_to_score": {
+        "kind": "reference",
+        "path": "::msm::rules::ScoreStep"
       },
       "add_to_stat": {
         "kind": "reference",
@@ -29054,6 +29976,10 @@
       "drop_item": {
         "kind": "reference",
         "path": "::msm::rules::DropItemStep"
+      },
+      "drop_loot": {
+        "kind": "reference",
+        "path": "::msm::rules::DropLootStep"
       },
       "explode": {
         "kind": "reference",
@@ -29075,6 +30001,10 @@
         "kind": "reference",
         "path": "::msm::rules::GiveItemStep"
       },
+      "give_loot": {
+        "kind": "reference",
+        "path": "::msm::rules::GiveLootStep"
+      },
       "heal": {
         "kind": "reference",
         "path": "::msm::rules::HealthStep"
@@ -29087,9 +30017,17 @@
         "kind": "reference",
         "path": "::msm::rules::HealthStep"
       },
+      "join_team": {
+        "kind": "reference",
+        "path": "::msm::rules::JoinTeamStep"
+      },
       "launch": {
         "kind": "reference",
         "path": "::msm::rules::LaunchStep"
+      },
+      "leave_team": {
+        "kind": "reference",
+        "path": "::msm::rules::LeaveTeamStep"
       },
       "light_portal": {
         "kind": "reference",
@@ -29102,6 +30040,10 @@
       "place_block": {
         "kind": "reference",
         "path": "::msm::rules::PlaceBlockStep"
+      },
+      "place_structure": {
+        "kind": "reference",
+        "path": "::msm::rules::PlaceStructureStep"
       },
       "play_animation": {
         "kind": "reference",
@@ -29122,6 +30064,10 @@
       "remove_mob": {
         "kind": "reference",
         "path": "::msm::rules::RemoveMobStep"
+      },
+      "reset_area": {
+        "kind": "reference",
+        "path": "::msm::rules::ResetAreaStep"
       },
       "ride": {
         "kind": "reference",
@@ -29151,9 +30097,25 @@
         "kind": "reference",
         "path": "::msm::rules::SetHudStep"
       },
+      "set_score": {
+        "kind": "reference",
+        "path": "::msm::rules::ScoreStep"
+      },
+      "set_spawn_point": {
+        "kind": "reference",
+        "path": "::msm::rules::SetSpawnPointStep"
+      },
       "set_weather": {
         "kind": "reference",
         "path": "::msm::rules::SetWeatherStep"
+      },
+      "set_world_border": {
+        "kind": "reference",
+        "path": "::msm::rules::SetWorldBorderStep"
+      },
+      "set_world_spawn": {
+        "kind": "reference",
+        "path": "::msm::rules::SetWorldSpawnStep"
       },
       "show_action_bar": {
         "kind": "reference",
@@ -29182,6 +30144,14 @@
       "spawn_particles": {
         "kind": "reference",
         "path": "::msm::rules::SpawnParticlesStep"
+      },
+      "start_timer": {
+        "kind": "reference",
+        "path": "::msm::rules::TimerStep"
+      },
+      "stop_timer": {
+        "kind": "reference",
+        "path": "::msm::rules::TimerStep"
       },
       "take_from_counter": {
         "kind": "reference",
@@ -29228,6 +30198,14 @@
       "any_mob_used": {
         "kind": "reference",
         "path": "::msm::rules::AnyMobTrigger"
+      },
+      "area_entered": {
+        "kind": "reference",
+        "path": "::msm::rules::AreaTrigger"
+      },
+      "area_left": {
+        "kind": "reference",
+        "path": "::msm::rules::AreaTrigger"
       },
       "block_broken": {
         "kind": "reference",
@@ -29349,6 +30327,10 @@
         "kind": "reference",
         "path": "::msm::rules::MobTrigger"
       },
+      "one_block_broken": {
+        "kind": "reference",
+        "path": "::msm::rules::OneBlockTrigger"
+      },
       "player_advancement": {
         "kind": "reference",
         "path": "::msm::rules::PlayerAdvancementTrigger"
@@ -29384,6 +30366,10 @@
       "thrown_hit_mob": {
         "kind": "reference",
         "path": "::msm::rules::ItemTrigger"
+      },
+      "timer_ended": {
+        "kind": "reference",
+        "path": "::msm::rules::TimerTrigger"
       },
       "vehicle_destroyed": {
         "kind": "reference",
@@ -29435,11 +30421,23 @@
         "kind": "reference",
         "path": "::msm::rules::RandomValue"
       },
+      "score": {
+        "kind": "reference",
+        "path": "::msm::rules::ScoreValue"
+      },
+      "team_size": {
+        "kind": "reference",
+        "path": "::msm::rules::TeamSizeValue"
+      },
+      "timer_left": {
+        "kind": "reference",
+        "path": "::msm::rules::TimerLeftValue"
+      },
       "vehicle_ammo": {
         "kind": "reference",
         "path": "::msm::rules::VehicleAmmoValue"
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:eb8b4e4dd880e5dbcf57f6f64f140deee523110bc337054e80ccd08afbaf736f"
+  "ref": "msm-mcdoc:sha256:5b229ab8ebaa07d5512ee34f42e713358cda64a1f6fec5ab0ee25c68c61cd696"
 }

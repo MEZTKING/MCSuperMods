@@ -154,6 +154,57 @@ export const PROJECT: readonly Element[] = Object.freeze([
     min: 0,
   }),
   element('msm:stat', 'demo:spells_cast', { format: 1, formatter: 'default' }),
+  // The games kinds Rules reads and fires (ADR 0113, ADR 0115).
+  element('msm:area', 'demo:arena', {
+    dimension: 'minecraft:overworld',
+    from: [10, 60, -4],
+    name: 'Arena',
+    to: [-6, 80, 12],
+  }),
+  element('msm:timer', 'demo:round', {
+    colour: 'red',
+    count: 'down',
+    name: 'Round',
+    repeat: false,
+    seconds: 90,
+    show: 'boss_bar',
+    starts: 'manual',
+  }),
+  element('msm:one_block', 'demo:magic_block', {
+    announce: true,
+    at: [0, 64, 0],
+    loop: true,
+    phases: [
+      {
+        blocks: [{ block: 'minecraft:dirt', weight: 1 }],
+        breaks: 20,
+        chest_chance: 0,
+        mob_chance: 0,
+        name: 'Plains',
+      },
+      {
+        blocks: [{ block: 'minecraft:stone', weight: 1 }],
+        breaks: 40,
+        chest_chance: 0.1,
+        mob_chance: 0,
+        name: 'Caves',
+      },
+    ],
+  }),
+  element('msm:team', 'demo:red', {
+    collision: 'always',
+    colour: 'red',
+    friendly_fire: false,
+    name: 'Red team',
+    name_tags: 'always',
+    see_invisible_friends: true,
+  }),
+  element('msm:objective', 'demo:points', {
+    criterion: 'dummy',
+    display: 'sidebar',
+    name: 'Points',
+    render: 'integer',
+  }),
 ]);
 
 /** Ids the registry index treats as project ids. */
@@ -176,6 +227,8 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   model: ['demo:entity/guard'],
   texture: ['demo:entity/guard', 'demo:entity/tank'],
   particle_type: ['demo:spark'],
+  loot_table: ['demo:lucky'],
+  structure: ['demo:island'],
 };
 
 /** A rule book element. */
@@ -246,6 +299,11 @@ const SCHEMA_OF_KIND: Record<string, string> = {
   'msm:game_rule': MSM_SCHEMA_REFS.gameRule,
   'msm:stat': MSM_SCHEMA_REFS.stat,
   'msm:rules': MSM_SCHEMA_REFS.rules,
+  'msm:area': MSM_SCHEMA_REFS.area,
+  'msm:timer': MSM_SCHEMA_REFS.timer,
+  'msm:one_block': MSM_SCHEMA_REFS.oneBlock,
+  'msm:team': MSM_SCHEMA_REFS.team,
+  'msm:objective': MSM_SCHEMA_REFS.objective,
 };
 
 /** Errors and unknown-id warnings of `value` against the schema of `kind`. */

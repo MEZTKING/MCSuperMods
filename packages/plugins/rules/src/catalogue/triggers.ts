@@ -21,6 +21,12 @@ export const EFFECT_KIND = 'msm:effect';
 export const KEY_BIND_KIND = 'msm:key_bind';
 export const VEHICLE_KIND = 'msm:vehicle';
 export const COMMAND_KIND = 'msm:command';
+/** The games kinds Rules reads and fires through the function bridge (ADR 0113, ADR 0115). */
+export const AREA_KIND = 'msm:area';
+export const TIMER_KIND = 'msm:timer';
+export const ONE_BLOCK_KIND = 'msm:one_block';
+export const TEAM_KIND = 'msm:team';
+export const OBJECTIVE_KIND = 'msm:objective';
 
 const SUBJECT_BLOCK: SlotSpec = { name: 'subject', type: 'block' };
 const SUBJECT_ITEM: SlotSpec = { name: 'subject', type: 'item' };
@@ -29,6 +35,19 @@ const SUBJECT_EFFECT: SlotSpec = { name: 'subject', type: 'effect' };
 const SUBJECT_KEY: SlotSpec = { name: 'subject', type: 'key' };
 const SUBJECT_VEHICLE: SlotSpec = { name: 'subject', type: 'vehicle' };
 const SUBJECT_COMMAND: SlotSpec = { name: 'subject', type: 'command' };
+const SUBJECT_AREA: SlotSpec = { name: 'subject', type: 'area' };
+const SUBJECT_TIMER: SlotSpec = { name: 'subject', type: 'timer' };
+const SUBJECT_ONE_BLOCK: SlotSpec = { name: 'subject', type: 'one_block' };
+/** The one block's phase, 1 to 64 in the order of its `phases`; absent means every phase. */
+const PHASE: SlotSpec = {
+  name: 'phase',
+  type: 'number',
+  optional: true,
+  min: 1,
+  max: 64,
+  whole: true,
+  prefix: 'in phase',
+};
 
 const COOLDOWN: SlotSpec = {
   name: 'cooldown_seconds',
@@ -103,6 +122,7 @@ interface Spec {
   cancellable?: boolean;
   mobDead?: boolean;
   playerGone?: boolean;
+  signal?: TriggerEntry['signal'];
 }
 
 const trigger = (spec: Spec): TriggerEntry =>
@@ -127,6 +147,7 @@ const trigger = (spec: Spec): TriggerEntry =>
     cancellable: spec.cancellable ?? false,
     ...(spec.mobDead === true ? { mobDead: true } : {}),
     ...(spec.playerGone === true ? { playerGone: true } : {}),
+    ...(spec.signal === undefined ? {} : { signal: spec.signal }),
   });
 
 /** A block definition trigger. */
@@ -716,6 +737,61 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     scriptEvent: 'player.tick',
     actors: ['player'],
     actorLabels: { player: 'the driver' },
+  }),
+  // The games kinds (ADR 0115 D4): their functions fire these through the function bridge
+  // (D5), the project's signal command, whose Script API `command` event the rules listen to.
+  trigger({
+    id: 'area_entered',
+    label: 'A player enters the area',
+    sentence: 'When a player enters {subject}',
+    group: 'players',
+    slots: [SUBJECT_AREA],
+    subject: 'area',
+    subjectKinds: [AREA_KIND],
+    scriptEvent: 'command',
+    signal: 'enter',
+    actors: ['player'],
+    actorLabels: { player: 'the player who came in' },
+  }),
+  trigger({
+    id: 'area_left',
+    label: 'A player leaves the area',
+    sentence: 'When a player leaves {subject}',
+    group: 'players',
+    slots: [SUBJECT_AREA],
+    subject: 'area',
+    subjectKinds: [AREA_KIND],
+    scriptEvent: 'command',
+    signal: 'leave',
+    actors: ['player'],
+    actorLabels: { player: 'the player who went out' },
+  }),
+  trigger({
+    id: 'timer_ended',
+    label: 'A timer ends',
+    sentence: 'When {subject} ends',
+    group: 'world',
+    slots: [SUBJECT_TIMER],
+    subject: 'timer',
+    subjectKinds: [TIMER_KIND],
+    scriptEvent: 'command',
+    signal: 'end',
+    actors: [],
+    hasPlace: false,
+  }),
+  trigger({
+    id: 'one_block_broken',
+    label: 'The one block is broken',
+    sentence: 'When {subject} is broken {phase}',
+    group: 'blocks',
+    slots: [SUBJECT_ONE_BLOCK, PHASE],
+    subject: 'one_block',
+    subjectKinds: [ONE_BLOCK_KIND],
+    scriptEvent: 'command',
+    signal: 'break',
+    // The one block's tick function sees the break, not who made it (B552).
+    actors: [],
+    hasPlace: false,
   }),
   trigger({
     id: 'world_started',

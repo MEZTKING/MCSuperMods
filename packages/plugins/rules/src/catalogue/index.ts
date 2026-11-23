@@ -18,12 +18,17 @@ import { PLACES, VALUES, WHO } from './values';
 export { CONDITIONS } from './conditions';
 export { STEPS } from './steps';
 export {
+  AREA_KIND,
   BLOCK_KIND,
   COMMAND_KIND,
   EFFECT_KIND,
   ENTITY_KIND,
   ITEM_KIND,
   KEY_BIND_KIND,
+  OBJECTIVE_KIND,
+  ONE_BLOCK_KIND,
+  TEAM_KIND,
+  TIMER_KIND,
   TRIGGERS,
   VEHICLE_KIND,
 } from './triggers';
@@ -79,3 +84,14 @@ export const HUD_KIND = 'msm:hud';
 export const MAX_DROP_COUNT = 64;
 /** The longest weather a step sets, in seconds (Script API 1.4 `World.setWeather`). */
 export const MAX_WEATHER_SECONDS = 1000000;
+/** The most choices of one "Pick one at random" (ADR 0115 D1). */
+export const MAX_PICK_CHOICES = 16;
+/** The heaviest weight of one choice of "Pick one at random". */
+export const MAX_PICK_WEIGHT = 1000;
+/**
+ * The widest world border, in blocks: both targets' `worldborder set` takes up to 59,999,968
+ * (the vendored command trees).
+ */
+export const MAX_WORLD_BORDER = 59999968;
+/** The longest world border change, in seconds (a day). */
+export const MAX_WORLD_BORDER_SECONDS = 86400;

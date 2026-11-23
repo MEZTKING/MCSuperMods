@@ -172,6 +172,15 @@ enum(string) Trigger {
 	VehicleDestroyed = "vehicle_destroyed",
 	/// Every few seconds while a project vehicle is driven.
 	VehicleEvery = "vehicle_every",
+	/// A player enters a project area (ADR 0115 D4; fired by the area's function through the
+	/// function bridge, D5).
+	AreaEntered = "area_entered",
+	/// A player leaves a project area.
+	AreaLeft = "area_left",
+	/// A project timer ends.
+	TimerEnded = "timer_ended",
+	/// A player breaks a project one block, in any phase or in one.
+	OneBlockBroken = "one_block_broken",
 	/// The world starts.
 	WorldStarted = "world_started",
 	/// Every few seconds.
@@ -339,6 +348,32 @@ dispatch msm:rule_trigger[command_used] to struct CommandUsedTrigger {
 	subject: string @ 1..,
 }
 
+/// A project area entered or left (ADR 0115 D4).
+dispatch msm:rule_trigger[area_entered, area_left] to struct AreaTrigger {
+	/// The project area (an `msm:area` id).
+	subject: string @ 1..,
+}
+
+/// A project timer that ends.
+dispatch msm:rule_trigger[timer_ended] to struct TimerTrigger {
+	/// The project timer (an `msm:timer` id).
+	subject: string @ 1..,
+}
+
+/// A project one block broken.
+dispatch msm:rule_trigger[one_block_broken] to struct OneBlockTrigger {
+	/// The project one block (an `msm:one_block` id).
+	subject: string @ 1..,
+	options?: OneBlockOptions,
+}
+
+/// Which breaks of a one block start the rule.
+struct OneBlockOptions {
+	/// Only breaks in this phase, 1 to 64 in the order of the one block's `phases` (the plugin
+	/// checks it has that many); absent means every phase.
+	phase?: int @ 1..64,
+}
+
 /// A crafted, picked up or eaten item: any item, or one of one kind (ADR 0111 D3).
 dispatch msm:rule_trigger[player_crafted, player_picked_up, player_ate] to struct PlayerItemTrigger {
 	/// The item, vanilla or project; absent means every item.
@@ -465,6 +500,12 @@ enum(string) ValueKind {
 	/// for `word`, `text`, `player` (its name), `entity` (its UUID), `item`, `block`,
 	/// `dimension` and `effect`. The plugin checks the name and type against the command.
 	CommandArgument = "command_argument",
+	/// Someone's score on a scoreboard objective (ADR 0115 D3); 0 without one.
+	Score = "score",
+	/// The whole seconds left on a project timer.
+	TimerLeft = "timer_left",
+	/// The number of players on a team.
+	TeamSize = "team_size",
 	/// The way the block here, the player, the mob or the other one faces, in words (north,
 	/// east, south, west, up or down; ADR 0096 D5). Text slots only: the plugin refuses it in a
 	/// number.
@@ -488,6 +529,9 @@ enum(string) PlainValueKind {
 	VehicleDamage = "vehicle_damage",
 	VehicleAmmo = "vehicle_ammo",
 	CommandArgument = "command_argument",
+	Score = "score",
+	TimerLeft = "timer_left",
+	TeamSize = "team_size",
 }
 
 /// A value object, selected by `value`.
@@ -575,6 +619,26 @@ dispatch msm:rule_value[command_argument] to struct CommandArgumentValue {
 	name: string @ 1..32,
 	/// For a `position` or `block_position`: which part; needed where a number is.
 	axis?: Axis,
+}
+
+/// Someone's score (ADR 0115 D3).
+dispatch msm:rule_value[score] to struct ScoreValue {
+	/// The objective: a project `msm:objective` id, or the name of any objective.
+	objective: string @ 1..,
+	/// Whose score: the player, the mob or the other one; defaults to the player.
+	who?: Who,
+}
+
+/// The seconds left on a project timer.
+dispatch msm:rule_value[timer_left] to struct TimerLeftValue {
+	/// The project timer (an `msm:timer` id).
+	timer: string @ 1..,
+}
+
+/// The number of players on a team.
+dispatch msm:rule_value[team_size] to struct TeamSizeValue {
+	/// The team: a project `msm:team` id, or the name of any team.
+	team: string @ 1..,
 }
 
 /// An arithmetic operator.
@@ -722,6 +786,14 @@ enum(string) ConditionKind {
 	GameRule = "game_rule",
 	/// One of the player's statistics is at least a number (ADR 0111 D6).
 	StatAtLeast = "stat_at_least",
+	/// The player is in a project area (ADR 0115 D2).
+	InArea = "in_area",
+	/// Someone is on a team.
+	OnTeam = "on_team",
+	/// Someone's score is at least a number.
+	ScoreAtLeast = "score_at_least",
+	/// A project timer is running.
+	TimerRunning = "timer_running",
 }
 
 /// One condition, selected by `condition`.
@@ -859,6 +931,36 @@ dispatch msm:rule_condition[stat_at_least] to struct StatAtLeastCondition {
 	number: NumberSlot,
 }
 
+/// The player is in a project area (ADR 0115 D2).
+dispatch msm:rule_condition[in_area] to struct InAreaCondition {
+	/// The project area (an `msm:area` id).
+	area: string @ 1..,
+}
+
+/// Someone is on a team.
+dispatch msm:rule_condition[on_team] to struct OnTeamCondition {
+	/// The team: a project `msm:team` id, or the name of any team.
+	team: string @ 1..,
+	/// The player, the mob or the other one; defaults to the player.
+	who?: Who,
+}
+
+/// Someone's score is at least a number.
+dispatch msm:rule_condition[score_at_least] to struct ScoreAtLeastCondition {
+	/// The objective: a project `msm:objective` id, or the name of any objective.
+	objective: string @ 1..,
+	/// The least the score must be.
+	number: NumberSlot,
+	/// The player, the mob or the other one; defaults to the player.
+	who?: Who,
+}
+
+/// A project timer is running.
+dispatch msm:rule_condition[timer_running] to struct TimerRunningCondition {
+	/// The project timer (an `msm:timer` id).
+	timer: string @ 1..,
+}
+
 // ---------------------------------------------------------------------------------------------
 // Steps (ADR 0082 D5)
 // ---------------------------------------------------------------------------------------------
@@ -954,6 +1056,32 @@ enum(string) PlainStepKind {
 	AddToCounter = "add_to_counter",
 	/// Takes from a counter.
 	TakeFromCounter = "take_from_counter",
+	/// Gives what a loot table rolls (ADR 0115 D1).
+	GiveLoot = "give_loot",
+	/// Puts someone on a team.
+	JoinTeam = "join_team",
+	/// Takes someone off their team.
+	LeaveTeam = "leave_team",
+	/// Sets a player's spawn point.
+	SetSpawnPoint = "set_spawn_point",
+	/// Drops what a loot table rolls.
+	DropLoot = "drop_loot",
+	/// Places a structure template.
+	PlaceStructure = "place_structure",
+	/// Runs a project area's reset.
+	ResetArea = "reset_area",
+	/// Sets the world spawn.
+	SetWorldSpawn = "set_world_spawn",
+	/// Sets the world border.
+	SetWorldBorder = "set_world_border",
+	/// Sets a scoreboard score.
+	SetScore = "set_score",
+	/// Adds to a scoreboard score.
+	AddToScore = "add_to_score",
+	/// Starts a project timer.
+	StartTimer = "start_timer",
+	/// Stops a project timer.
+	StopTimer = "stop_timer",
 }
 
 /// A step that holds other steps (levels 1 and 2 only).
@@ -964,6 +1092,8 @@ enum(string) LogicStepKind {
 	Repeat = "repeat",
 	/// Runs steps once for each player nearby, or for every player.
 	ForEachPlayer = "for_each_player",
+	/// Runs one of its steps, picked at random by weight (ADR 0115 D1).
+	PickRandom = "pick_random",
 }
 
 /// Any step: the plain steps of `PlainStepKind` and the logic steps of `LogicStepKind`.
@@ -1056,12 +1186,40 @@ enum(string) StepKind {
 	AddToCounter = "add_to_counter",
 	/// Takes from a counter.
 	TakeFromCounter = "take_from_counter",
+	/// Gives what a loot table rolls (ADR 0115 D1).
+	GiveLoot = "give_loot",
+	/// Puts someone on a team.
+	JoinTeam = "join_team",
+	/// Takes someone off their team.
+	LeaveTeam = "leave_team",
+	/// Sets a player's spawn point.
+	SetSpawnPoint = "set_spawn_point",
+	/// Drops what a loot table rolls.
+	DropLoot = "drop_loot",
+	/// Places a structure template.
+	PlaceStructure = "place_structure",
+	/// Runs a project area's reset.
+	ResetArea = "reset_area",
+	/// Sets the world spawn.
+	SetWorldSpawn = "set_world_spawn",
+	/// Sets the world border.
+	SetWorldBorder = "set_world_border",
+	/// Sets a scoreboard score.
+	SetScore = "set_score",
+	/// Adds to a scoreboard score.
+	AddToScore = "add_to_score",
+	/// Starts a project timer.
+	StartTimer = "start_timer",
+	/// Stops a project timer.
+	StopTimer = "stop_timer",
 	/// If the conditions hold, then some steps, otherwise others.
 	If = "if",
 	/// Repeats steps.
 	Repeat = "repeat",
 	/// Runs steps once for each player nearby, or for every player.
 	ForEachPlayer = "for_each_player",
+	/// Runs one of its steps, picked at random by weight (ADR 0115 D1).
+	PickRandom = "pick_random",
 }
 
 /// A step at level 1 (a rule's `do`), selected by `step`.
@@ -1114,6 +1272,14 @@ dispatch msm:rule_logic_step[for_each_player] to struct ForEachPlayerStep {
 	do: [NestedStep] @ ..50,
 }
 
+/// Run one of `do`'s steps, picked at random: each step is one choice (ADR 0115 D1).
+dispatch msm:rule_logic_step[pick_random] to struct PickRandomStep {
+	/// The choices, 1 to 16; a choice of several steps is one `repeat` of 1 time.
+	do: [NestedStep] @ 1..16,
+	/// The weight of each choice in order, 0 to 1000; a missing weight is 1.
+	weights?: [int @ 0..1000] @ ..16,
+}
+
 // Logic steps at level 2 (their steps are level 3).
 
 /// If the conditions hold, run `do`, otherwise `else`.
@@ -1139,6 +1305,14 @@ dispatch msm:rule_logic_step_nested[for_each_player] to struct NestedForEachPlay
 	radius?: int @ 1..64,
 	/// The steps.
 	do: [InnermostStep] @ ..50,
+}
+
+/// Run one of `do`'s steps, picked at random: each step is one choice.
+dispatch msm:rule_logic_step_nested[pick_random] to struct NestedPickRandomStep {
+	/// The choices, 1 to 16.
+	do: [InnermostStep] @ 1..16,
+	/// The weight of each choice in order, 0 to 1000; a missing weight is 1.
+	weights?: [int @ 0..1000] @ ..16,
 }
 
 // Plain steps (every level).
@@ -1501,4 +1675,109 @@ dispatch msm:rule_step[set_counter, add_to_counter, take_from_counter] to struct
 	scope: CounterScope,
 	/// The number to set, add or take.
 	amount: NumberSlot,
+}
+
+// Games steps (ADR 0115 D1): commands of the target's forms, the games kinds' functions.
+
+/// A structure template's rotation, as `place template` takes it.
+enum(string) StructureRotation {
+	None = "none",
+	Clockwise90 = "clockwise_90",
+	Rotate180 = "180",
+	Counterclockwise90 = "counterclockwise_90",
+}
+
+/// A structure template's mirror, as `place template` takes it.
+enum(string) StructureMirror {
+	None = "none",
+	LeftRight = "left_right",
+	FrontBack = "front_back",
+}
+
+/// Gives what a loot table rolls (`loot give`).
+dispatch msm:rule_step[give_loot] to struct GiveLootStep {
+	/// The loot table, vanilla or of the project's data pack.
+	loot_table: #[id="loot_table"] string,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Drops what a loot table rolls (`loot spawn`).
+dispatch msm:rule_step[drop_loot] to struct DropLootStep {
+	/// The loot table, vanilla or of the project's data pack.
+	loot_table: #[id="loot_table"] string,
+	/// Defaults to `here`.
+	where?: Place,
+}
+
+/// Places a structure template (`place template`), its corner at the place.
+dispatch msm:rule_step[place_structure] to struct PlaceStructureStep {
+	/// The structure template, vanilla or of the project.
+	structure: #[id="structure"] string,
+	/// Defaults to `here`.
+	where?: Place,
+	/// Defaults to `none`.
+	rotation?: StructureRotation,
+	/// Defaults to `none`.
+	mirror?: StructureMirror,
+}
+
+/// Puts someone on a team (`team join`).
+dispatch msm:rule_step[join_team] to struct JoinTeamStep {
+	/// The team: a project `msm:team` id, or the name of any team.
+	team: string @ 1..,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Takes someone off their team (`team leave`).
+dispatch msm:rule_step[leave_team] to struct LeaveTeamStep {
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Sets or adds to a scoreboard score (`scoreboard players set` or `add`).
+dispatch msm:rule_step[set_score, add_to_score] to struct ScoreStep {
+	/// The objective: a project `msm:objective` id, or the name of any objective.
+	objective: string @ 1..,
+	/// The whole number to set, or to add (from 0); a reading is rounded.
+	amount: NumberSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Starts or stops a project timer.
+dispatch msm:rule_step[start_timer, stop_timer] to struct TimerStep {
+	/// The project timer (an `msm:timer` id).
+	timer: string @ 1..,
+}
+
+/// Resets a project area: its entities removed and its structures placed again.
+dispatch msm:rule_step[reset_area] to struct ResetAreaStep {
+	/// The project area (an `msm:area` id).
+	area: string @ 1..,
+}
+
+/// Sets the world spawn (`setworldspawn`).
+dispatch msm:rule_step[set_world_spawn] to struct SetWorldSpawnStep {
+	/// Defaults to `here`.
+	where?: Place,
+}
+
+/// Sets a player's spawn point (`spawnpoint`).
+dispatch msm:rule_step[set_spawn_point] to struct SetSpawnPointStep {
+	/// Defaults to `here`.
+	where?: Place,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Sets the world border (`worldborder set`, and `worldborder center` with a centre).
+dispatch msm:rule_step[set_world_border] to struct SetWorldBorderStep {
+	/// The width in blocks, 1 to 59,999,968.
+	width: (double @ 1..59999968 | Value),
+	/// Seconds to grow or shrink to it, up to 86,400 (whole); absent or 0 is at once.
+	seconds?: NumberSlot,
+	/// The border's centre; absent leaves it where it is.
+	center?: Place,
 }

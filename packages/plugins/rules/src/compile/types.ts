@@ -3,6 +3,20 @@
  * type (ADR 0082 D9).
  */
 import type { ElementPatch, Problem, ResourceLocation } from '@msm/plugin-api';
+import type { Signal } from './games';
+
+/**
+ * What the project's rules listen to through the function bridge (ADR 0115 D5): the book that
+ * lowers the signal command and the bridge's functions and tags, and every signal, in order.
+ */
+export interface CompiledSignals {
+  /** The rule book that lowers the bridge: the first, in book order, with a signal rule. */
+  readonly host: ResourceLocation;
+  /** The namespace of the signal command `<namespace>:msm_signal`: the host book's. */
+  readonly namespace: string;
+  /** Every signal a rule listens to, sorted by tag id, each once. */
+  readonly signals: readonly Signal[];
+}
 
 /** What `compileRuleBook` returns. */
 export interface CompiledRuleBook {
@@ -28,6 +42,8 @@ export interface CompiledRuleBooks {
   readonly scripts: ReadonlyMap<ResourceLocation, string[]>;
   /** Problems of every book, in book order. */
   readonly problems: Problem[];
+  /** The function bridge, when a rule listens to an area, a timer or a one block. */
+  readonly signals?: CompiledSignals;
 }
 
 /**
@@ -76,6 +92,13 @@ export const RULES_COMPILE_CODES = Object.freeze({
   notForTrigger: 'rules.not-for-trigger',
   /** A reading in words ("the way it faces") where a number is needed (B458). */
   notANumber: 'rules.not-a-number',
+  /**
+   * A step, condition or value that writes a command the target has no form for
+   * (`TargetFacts.commands.forms`, plugin API 1.22.0; ADR 0115 D1).
+   */
+  noCommandForm: 'rules.no-command-form',
+  /** A one block's phase it does not have (ADR 0115 D4). */
+  noSuchPhase: 'rules.no-such-phase',
 });
 
 /** One of {@link RULES_COMPILE_CODES}. */

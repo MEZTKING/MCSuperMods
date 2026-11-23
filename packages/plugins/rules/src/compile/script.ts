@@ -31,11 +31,27 @@ import {
 import {
   MAX_DROP_COUNT,
   MAX_EXPLOSION_POWER,
+  MAX_PICK_CHOICES,
+  MAX_PICK_WEIGHT,
   MAX_RADIUS,
   MAX_REPEAT,
   MAX_WEATHER_SECONDS,
+  MAX_WORLD_BORDER,
+  MAX_WORLD_BORDER_SECONDS,
   type TriggerEntry,
 } from '../catalogue';
+import {
+  areaFunction,
+  areaTag,
+  fillForm,
+  gameName,
+  type Piece,
+  type RulesFormName,
+  SIGNAL_ARGUMENT,
+  timerFunction,
+  timerHolder,
+  timersObjective,
+} from './games';
 
 /** A string literal that is safe in TypeScript and ES5 (line separators escaped). */
 export function literal(text: string): string {
@@ -53,6 +69,28 @@ function numberLiteral(value: number): string {
 /** Text for a one-line comment: no line breaks. */
 export function commentText(text: string): string {
   return text.replace(/[\r\n\u2028\u2029]+/g, ' ');
+}
+
+/** Literal command words. */
+const words = (text: string): Piece => ({ text });
+/** A TypeScript expression of command text. */
+const code = (expression: string): Piece => ({ code: expression });
+
+/** Pieces of command text as one TypeScript string expression (adjacent words joined). */
+function piecesCode(pieces: readonly Piece[]): string {
+  const parts: string[] = [];
+  let text = '';
+  for (const piece of pieces) {
+    if ('text' in piece) {
+      text += piece.text;
+      continue;
+    }
+    if (text.length > 0 || parts.length === 0) parts.push(literal(text));
+    text = '';
+    parts.push(piece.code);
+  }
+  if (text.length > 0 || parts.length === 0) parts.push(literal(text));
+  return parts.join(' + ');
 }
 
 const indent = (lines: readonly string[], depth = 1): string[] =>
@@ -379,6 +417,46 @@ const HELPERS: readonly { name: string; uses?: readonly string[]; lines: readonl
     ],
   },
   {
+    name: 'coord',
+    lines: [
+      '/** A coordinate as command text: at most two decimals, never an exponent. */',
+      'const coord = (value: number): string => String(Math.round(value * 100) / 100);',
+    ],
+  },
+  {
+    name: 'blockCoord',
+    lines: [
+      '/** The block coordinate of a position part as command text. */',
+      'const blockCoord = (value: number): string => String(Math.floor(value));',
+    ],
+  },
+  {
+    name: 'ran',
+    lines: [
+      "/** Runs a command as and at an entity; the command's result, or 0 without the entity. */",
+      'const ran = (entity: Entity | undefined, command: string): number =>',
+      '  entity === undefined ? 0 : entity.runCommand(command);',
+    ],
+  },
+  {
+    name: 'pickWeighted',
+    lines: [
+      '/** The index of one choice, picked at random by weight; the last when every weight is 0. */',
+      'const pickWeighted = (weights: number[]): number => {',
+      '  let total = 0;',
+      '  weights.forEach((weight) => {',
+      '    total += weight;',
+      '  });',
+      '  let roll = Math.random() * total;',
+      '  for (let index = 0; index < weights.length; index += 1) {',
+      '    roll -= weights[index];',
+      '    if (roll < 0) return index;',
+      '  }',
+      '  return weights.length - 1;',
+      '};',
+    ],
+  },
+  {
     name: 'argNumber',
     lines: [
       '/** A number typed for an argument, or one part of a position; 0 when it was left out. */',
@@ -484,6 +562,8 @@ const NEEDS_PLAYER = new Set([
   'set_hud',
   'open_dialog',
   'add_to_stat',
+  'give_loot',
+  'set_spawn_point',
 ]);
 
 /** The argument types read as one part of a position (ADR 0111 D1). */
@@ -496,6 +576,36 @@ interface Env {
   readonly here: boolean;
   readonly playerInLoop: boolean;
 }
+
+/** What Rules reads of a project timer (ADR 0113 D6). */
+export interface TimerFacts {
+  /** Its length in seconds. */
+  readonly seconds: number;
+  /** Whether it counts up (its holder then holds the seconds gone). */
+  readonly up: boolean;
+}
+
+/** What the script of a book knows of the games around it (ADR 0115). */
+export interface GamesContext {
+  /** The template of a command form on the target, or undefined. */
+  readonly form: (name: RulesFormName) => string | undefined;
+  /** A project timer's length and way of counting, or undefined when there is no such timer. */
+  readonly timer: (id: string) => TimerFacts | undefined;
+  /** Whether a project area has `reset` (else only its `clear` function exists). */
+  readonly areaHasReset: (id: string) => boolean;
+}
+
+/** The bridge of a signal trigger (ADR 0115 D5): the command's id and the word it is sent. */
+export interface SignalListen {
+  readonly commandId: string;
+  readonly word: string;
+}
+
+const NO_GAMES: GamesContext = {
+  form: () => undefined,
+  timer: () => undefined,
+  areaHasReset: () => false,
+};
 
 /** One rule to write into a handler. */
 export interface ScriptRule {
@@ -512,9 +622,16 @@ export class ScriptBuilder {
   private argReads = 0;
   private readonly bookId: string;
   private readonly counters: ReadonlyMap<string, number>;
+  /** The forms and areas of the project (ADR 0115). */
+  readonly games: GamesContext;
 
-  constructor(bookId: string, counters: readonly CounterDeclaration[]) {
+  constructor(
+    bookId: string,
+    counters: readonly CounterDeclaration[],
+    games: GamesContext = NO_GAMES,
+  ) {
     this.bookId = bookId;
+    this.games = games;
     this.counters = new Map(
       counters.map((counter) => [`${counter.scope}:${counter.name}`, counter.start]),
     );
@@ -585,6 +702,7 @@ export class ScriptBuilder {
     title: string,
     rules: readonly ScriptRule[],
     commandArguments?: ReadonlyMap<string, string>,
+    signal?: SignalListen,
   ): void {
     const body = this.handlerRules(trigger, rules, commandArguments);
     const head: string[] = [];
@@ -703,6 +821,22 @@ export class ScriptBuilder {
         );
         break;
       case 'command':
+        if (signal !== undefined) {
+          // The function bridge (ADR 0115 D5): the signal command sent this subject's word.
+          head.push(
+            `if (e.id !== ${literal(signal.commandId)} || ${this.use('commandArgs')}(e)[${literal(SIGNAL_ARGUMENT)}] !== ${literal(signal.word)}) return;`,
+            'const world = e.world;',
+          );
+          if (trigger.actors.includes('player')) {
+            head.push(
+              'const source = e.source;',
+              'const player: Player | undefined = source !== undefined ? source.asPlayer() : undefined;',
+              'if (player === undefined) return;',
+              'const here = player.pos;',
+            );
+          }
+          break;
+        }
         // A command that runs a function (B458): no place without a source entity.
         if (subject !== undefined) head.push(`if (e.id !== ${literal(subject)}) return;`);
         head.push(
@@ -880,6 +1014,81 @@ class RuleWriter {
     return inText ? `${this.use('text')}(${number})` : number;
   }
 
+  // Games (ADR 0115)
+
+  /** A command of a form as a TypeScript string expression; `""` when the target lacks it. */
+  private command(
+    name: RulesFormName,
+    values: Readonly<Record<string, Piece | undefined>>,
+  ): string {
+    const form = this.builder.games.form(name);
+    const pieces = form === undefined ? undefined : fillForm(form, values);
+    return pieces === undefined ? '""' : piecesCode(pieces);
+  }
+
+  /** `scoreboard players get` of a timer's holder, run as the server: its time or `.on`. */
+  private timerGet(timer: string, on: boolean): string {
+    return `world.runCommand(${this.command('score_get', {
+      holder: words(timerHolder(timer, on)),
+      objective: words(timersObjective(timer)),
+    })})`;
+  }
+
+  /** The seconds left on a timer: its holder counting down, its length less it counting up. */
+  private timerLeft(timer: string): string {
+    const read = this.timerGet(timer, false);
+    const facts = this.builder.games.timer(timer);
+    return facts?.up === true ? `Math.max(0, ${facts.seconds} - ${read})` : read;
+  }
+
+  /** `scoreboard players get @s <objective>`, run as the one it reads. */
+  private scoreGet(objective: string | undefined): string {
+    return this.command('score_get', {
+      holder: words('@s'),
+      objective: words(gameName(objective ?? '')),
+    });
+  }
+
+  /** One someone of a "who": the player, the mob or the other one (default the player). */
+  private one(value: Json | undefined): string {
+    return value === 'mob' || value === 'other' ? value : 'player';
+  }
+
+  /** A whole number as command text: a literal rounded, a reading rounded at run time. */
+  private integerText(value: Json | undefined, env: Env, min?: number): Piece {
+    if (typeof value === 'number') {
+      const whole = Math.round(value);
+      return words(String(min === undefined ? whole : Math.max(min, whole)));
+    }
+    const expression = `Math.round(${this.number(value, env)})`;
+    return code(`String(${min === undefined ? expression : `Math.max(${min}, ${expression})`})`);
+  }
+
+  /** The steps of "Pick one at random": an `if` chain on a weighted pick of `do`'s steps. */
+  private pick(step: JsonObject, branch: (choice: JsonObject) => string[]): string[] {
+    const choices = stepList(step, 'do')
+      .slice(0, MAX_PICK_CHOICES)
+      .map(({ step: choice }) => choice);
+    if (choices.length === 0) return [];
+    const weights = asArray(step.weights);
+    const weightCode = choices.map((_, index) => {
+      const weight = weights[index];
+      return String(
+        typeof weight === 'number' ? Math.min(MAX_PICK_WEIGHT, Math.max(0, Math.floor(weight))) : 1,
+      );
+    });
+    const pick = this.builder.freshName('pick');
+    const out = [`const ${pick} = ${this.use('pickWeighted')}([${weightCode.join(', ')}]);`];
+    choices.forEach((choice, index) => {
+      out.push(
+        `${index === 0 ? 'if' : '} else if'} (${pick} === ${index}) {`,
+        ...indent(branch(choice)),
+      );
+    });
+    out.push('}');
+    return out;
+  }
+
   // Values
 
   number(value: Json | undefined, env: Env, fallback = 0): string {
@@ -916,6 +1125,12 @@ class RuleWriter {
         return '0';
       case 'command_argument':
         return this.commandArgument(object, false);
+      case 'score':
+        return `${this.use('ran')}(${this.one(object?.who)}, ${this.scoreGet(str(object, 'objective'))})`;
+      case 'timer_left':
+        return this.timerLeft(str(object, 'timer') ?? '');
+      case 'team_size':
+        return `world.runCommand(${this.command('if_entity', { entities: words(`@a[team=${gameName(str(object, 'team') ?? '')}]`) })})`;
       case 'math': {
         const a = this.number(object?.a, env);
         const b = this.number(object?.b, env);
@@ -1104,6 +1319,15 @@ class RuleWriter {
         if (typeof value === 'boolean') return `world.gameRule(${id}) === ${value}`;
         return `${this.use('gameRuleNumber')}(world, ${id}) ${compare} ${this.number(value, env)}`;
       }
+      case 'in_area':
+        // The area's tick function tags the players in it (B552).
+        return `${this.use('ran')}(player, ${this.command('if_entity', { entities: words(`@s[tag=${areaTag(str(condition, 'area') ?? '')}]`) })}) > 0`;
+      case 'on_team':
+        return `${this.use('ran')}(${this.one(condition.who)}, ${this.command('if_entity', { entities: words(`@s[team=${gameName(str(condition, 'team') ?? '')}]`) })}) > 0`;
+      case 'score_at_least':
+        return `${this.use('ran')}(${this.one(condition.who)}, ${this.scoreGet(str(condition, 'objective'))}) >= ${this.number(condition.number, env)}`;
+      case 'timer_running':
+        return `${this.timerGet(str(condition, 'timer') ?? '', true)} > 0`;
       case 'stat_at_least':
         return this.hasPlayer(
           `stat(${literal(str(condition, 'stat') ?? '')}) >= ${this.number(condition.number, env)}`,
@@ -1161,6 +1385,8 @@ class RuleWriter {
           ...indent(otherwise.length === 0 ? goOn : this.steps(step, 'else', env, goOn)),
           '}',
         );
+      } else if (id === 'pick_random') {
+        out.push(...this.pick(step, (choice) => this.sequence([choice], env, goOn)));
       } else if (id === 'repeat') {
         const loop = this.builder.freshName('loop');
         out.push(
@@ -1451,6 +1677,81 @@ class RuleWriter {
         this.use('counters');
         return [`setCounter(${this.store(scope)}, ${literal(name)}, ${value});`];
       }
+      case 'give_loot':
+        return [
+          `${who('player')}.forEach((target) => target.runCommand(${this.command('loot_give', { players: words('@s'), loot_table: words(str(step, 'loot_table') ?? '') })}));`,
+        ];
+      case 'drop_loot':
+        return [
+          at(
+            `world.runCommand(${this.command('loot_spawn', { x: code(`${this.use('coord')}(at.x)`), y: code('coord(at.y)'), z: code('coord(at.z)'), loot_table: words(str(step, 'loot_table') ?? '') })}, at)`,
+          ),
+        ];
+      case 'place_structure': {
+        const mirror = str(step, 'mirror');
+        const rotation = str(step, 'rotation') ?? (mirror === undefined ? undefined : 'none');
+        const block = this.use('blockCoord');
+        return [
+          at(
+            `world.runCommand(${this.command('place_template', {
+              template: words(str(step, 'structure') ?? ''),
+              x: code(`${block}(at.x)`),
+              y: code(`${block}(at.y)`),
+              z: code(`${block}(at.z)`),
+              rotation: rotation === undefined ? undefined : words(rotation),
+              mirror: mirror === undefined ? undefined : words(mirror),
+            })}, at)`,
+          ),
+        ];
+      }
+      case 'join_team':
+        return [
+          `${who('player')}.forEach((target) => target.runCommand(${this.command('team_join', { team: words(gameName(str(step, 'team') ?? '')), members: words('@s') })}));`,
+        ];
+      case 'leave_team':
+        return [
+          `${who('player')}.forEach((target) => target.runCommand(${this.command('team_leave', { members: words('@s') })}));`,
+        ];
+      case 'set_score':
+      case 'add_to_score':
+        return [
+          `${who('player')}.forEach((target) => target.runCommand(${this.command(
+            id === 'set_score' ? 'score_set' : 'score_add',
+            {
+              holders: words('@s'),
+              objective: words(gameName(str(step, 'objective') ?? '')),
+              score: this.integerText(step.amount, env, id === 'add_to_score' ? 0 : undefined),
+            },
+          )}));`,
+        ];
+      case 'start_timer':
+      case 'stop_timer':
+        return [
+          `world.runFunction(${literal(timerFunction(str(step, 'timer') ?? '', id === 'start_timer' ? 'start' : 'stop'))});`,
+        ];
+      case 'reset_area': {
+        const area = str(step, 'area') ?? '';
+        const part = this.builder.games.areaHasReset(area) ? 'reset' : 'clear';
+        return [`world.runFunction(${literal(areaFunction(area, part))});`];
+      }
+      case 'set_world_spawn': {
+        const block = this.use('blockCoord');
+        return [
+          at(
+            `world.runCommand(${this.command('set_world_spawn', { x: code(`${block}(at.x)`), y: code(`${block}(at.y)`), z: code(`${block}(at.z)`) })}, at)`,
+          ),
+        ];
+      }
+      case 'set_spawn_point': {
+        const block = this.use('blockCoord');
+        return [
+          `${this.use('withPos')}(${this.place(step.where)}, (at) => ${who('player')}.forEach((target) => target.runCommand(${this.command('spawn_point', { players: words('@s'), x: code(`${block}(at.x)`), y: code(`${block}(at.y)`), z: code(`${block}(at.z)`) })})));`,
+        ];
+      }
+      case 'set_world_border':
+        return this.worldBorder(step, env);
+      case 'pick_random':
+        return this.pick(step, (choice) => this.plainStep(choice, env));
       case 'if': {
         const otherwise = stepList(step, 'else');
         return [
@@ -1482,6 +1783,50 @@ class RuleWriter {
       default:
         return [`// Left out: step "${commentText(id)}" is not known.`];
     }
+  }
+
+  /** "Set the world border": its width, over some seconds, and its centre when given. */
+  private worldBorder(step: JsonObject, env: Env): string[] {
+    const raw = step.width;
+    const width =
+      typeof raw === 'number'
+        ? words(String(Math.min(MAX_WORLD_BORDER, Math.max(1, raw))))
+        : code(
+            `${this.use('coord')}(Math.min(${MAX_WORLD_BORDER}, Math.max(1, ${this.number(raw, env)})))`,
+          );
+    const rawSeconds = step.seconds;
+    let seconds: Piece | undefined;
+    if (typeof rawSeconds === 'number') {
+      const whole = Math.min(MAX_WORLD_BORDER_SECONDS, Math.round(rawSeconds));
+      if (whole > 0) seconds = words(String(whole));
+    } else if (rawSeconds !== undefined) {
+      seconds = code(
+        `String(Math.min(${MAX_WORLD_BORDER_SECONDS}, Math.max(1, Math.round(${this.number(rawSeconds, env)}))))`,
+      );
+    }
+    const run = (command: string, at = env.here ? 'here' : undefined): string =>
+      at === undefined ? `world.runCommand(${command});` : `world.runCommand(${command}, ${at});`;
+    const out: string[] = [];
+    if (step.center !== undefined) {
+      const coord = this.use('coord');
+      out.push(
+        `${this.use('withPos')}(${this.place(step.center)}, (at) => ${run(
+          this.command('worldborder_center', {
+            x: code(`${coord}(at.x)`),
+            z: code(`${coord}(at.z)`),
+          }),
+          'at',
+        ).slice(0, -1)});`,
+      );
+    }
+    out.push(
+      run(
+        seconds === undefined
+          ? this.command('worldborder_set', { width })
+          : this.command('worldborder_set_over_seconds', { width, seconds }),
+      ),
+    );
+    return out;
   }
 
   private particle(value: Json | undefined): string {

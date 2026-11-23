@@ -35,25 +35,36 @@ import {
   asObject,
   bookCounters,
   bookRules,
+  num,
   pointer,
   ruleEnabled,
   stepList,
   str,
 } from '../book';
-import { COMMAND_KIND, type TriggerEntry, triggerById } from '../catalogue';
+import {
+  AREA_KIND,
+  COMMAND_KIND,
+  ONE_BLOCK_KIND,
+  TIMER_KIND,
+  type TriggerEntry,
+  triggerById,
+} from '../catalogue';
 import { ruleSentence, whenSentence } from '../sentence';
 import { type CheckContext, checkRule, Reporter } from './check';
+import { commandForm, type Signal, signalCommandId, signalTagId, signalWord } from './games';
 import { plainActions } from './plain';
-import { ScriptBuilder, type ScriptRule } from './script';
+import { type GamesContext, ScriptBuilder, type ScriptRule } from './script';
 import {
   RULES_COMPILE_CODES as CODES,
   type CompiledRuleBook,
   type CompiledRuleBooks,
+  type CompiledSignals,
 } from './types';
 
 export { READABLE_ARGUMENT_TYPES } from './check';
+export * from './games';
 export { plainAction, plainActions } from './plain';
-export { literal } from './script';
+export { literal, type TimerFacts } from './script';
 export * from './types';
 
 /** One enabled, checked rule. */
@@ -67,6 +78,8 @@ interface ScriptGroup {
   readonly trigger: TriggerEntry;
   readonly subject: string | undefined;
   readonly rules: Compiled[];
+  /** A signal trigger's signal (ADR 0115 D5). */
+  readonly signal?: Signal;
 }
 
 const PORTAL_COMPONENTS = new Set([
@@ -78,6 +91,9 @@ const PORTAL_COMPONENTS = new Set([
   'msm:on_entity_inside',
 ]);
 
+/** The games kinds whose `name` is the name players see (ADR 0113 D4 to D7). */
+const GAME_NAMED = new Set(['msm:team', 'msm:objective', 'msm:timer', 'msm:area']);
+
 /** Display names of project elements, for the sentences in the script's comments. */
 export function namesFromElements(
   elements: readonly Element[],
@@ -85,7 +101,8 @@ export function namesFromElements(
   const names = new Map<string, string>();
   for (const element of elements) {
     const data = asObject(element.data);
-    const name = str(data, 'display_name');
+    const name =
+      str(data, 'display_name') ?? (GAME_NAMED.has(element.kind) ? str(data, 'name') : undefined);
     if (name !== undefined && name.trim().length > 0) names.set(element.id, name);
     // A command is named as it is typed: "/hello" (B458).
     const literal = element.kind === COMMAND_KIND ? str(data, 'name') : undefined;
@@ -188,6 +205,9 @@ const SUBJECT_PLURALS: Readonly<Record<string, string>> = {
   key: 'key binds',
   vehicle: 'vehicles',
   command: 'commands',
+  area: 'areas',
+  timer: 'timers',
+  one_block: 'one blocks',
 };
 
 /**
@@ -246,17 +266,35 @@ export function compileRuleBooks(
   };
   const shared = new Map<string, SharedGroup>();
   const passes: BookPass[] = [];
+  const games: GamesContext = {
+    form: (name) => commandForm(target, name),
+    timer: (id) => {
+      const element = byId.get(id);
+      if (element?.kind !== TIMER_KIND) return undefined;
+      const data = asObject(element.data);
+      return { seconds: num(data, 'seconds') ?? 0, up: str(data, 'count') === 'up' };
+    },
+    areaHasReset: (id) => {
+      const element = byId.get(id);
+      return element?.kind === AREA_KIND && asObject(element.data)?.reset !== undefined;
+    },
+  };
+  const context: Omit<CheckContext, 'commandArguments'> = {
+    gameRuleKind,
+    elementKind: (id) => byId.get(id)?.kind,
+    hasForm: (name) => commandForm(target, name) !== undefined,
+  };
 
   for (const book of books) {
     const data = asObject(book.data) ?? {};
     const pass: BookPass = {
       book,
       reporter: new Reporter(book.id),
-      builder: new ScriptBuilder(book.id, bookCounters(data)),
+      builder: new ScriptBuilder(book.id, bookCounters(data), games),
       scriptGroups: new Map(),
     };
     passes.push(pass);
-    collectRules(pass, data, byId, shared, gameRuleKind);
+    collectRules(pass, data, byId, shared, context);
   }
 
   const scriptRule = (compiled: Compiled): ScriptRule => ({
@@ -369,12 +407,20 @@ export function compileRuleBooks(
     );
   }
 
+  // The function bridge (ADR 0115 D5): one signal command, made by the first book that listens.
+  const host = passes.find((pass) =>
+    [...pass.scriptGroups.values()].some((group) => group.signal !== undefined),
+  );
+  const hostNamespace = host === undefined ? '' : namespaceOf(host.book.id);
+  const listened = new Map<string, Signal>();
   const scripts = new Map<ResourceLocation, string[]>();
   const problems: Problem[] = [];
   for (const pass of passes) {
     for (const group of pass.scriptGroups.values()) {
       const first = group.rules[0];
       const options = asObject(asObject(first?.rule.when)?.options) ?? {};
+      const signal = group.signal;
+      if (signal !== undefined) listened.set(signalTagId(signal), signal);
       pass.builder.addEventHandler(
         group.trigger,
         group.subject,
@@ -382,6 +428,9 @@ export function compileRuleBooks(
         `${whenSentence(asObject(first?.rule.when), names)}.`,
         group.rules.map(scriptRule),
         argumentsOf(byId.get(group.subject ?? '')),
+        signal === undefined
+          ? undefined
+          : { commandId: signalCommandId(hostNamespace), word: signalWord(signal) },
       );
     }
     const script = pass.builder.lines();
@@ -397,10 +446,19 @@ export function compileRuleBooks(
     problems.push(...pass.reporter.problems);
   }
 
+  let signals: CompiledSignals | undefined;
+  if (host !== undefined && scripts.has(host.book.id)) {
+    signals = {
+      host: host.book.id,
+      namespace: hostNamespace,
+      signals: [...listened.keys()].sort().map((key) => listened.get(key) as Signal),
+    };
+  }
   return {
     patches: [...subjects.values()].flatMap((subject) => subject.patches()),
     scripts,
     problems,
+    ...(signals === undefined ? {} : { signals }),
   };
 }
 
@@ -410,7 +468,7 @@ function collectRules(
   data: JsonObject,
   byId: ReadonlyMap<string, Element>,
   shared: Map<string, SharedGroup>,
-  gameRuleKind: (id: string) => string | undefined,
+  baseContext: Omit<CheckContext, 'commandArguments'>,
 ): void {
   const { reporter } = pass;
   for (const { rule, index } of bookRules(data)) {
@@ -430,11 +488,50 @@ function collectRules(
     const subjectId = str(when, 'subject');
     const command = trigger.subject === 'command' ? byId.get(subjectId ?? '') : undefined;
     const context: CheckContext = {
-      gameRuleKind,
+      ...baseContext,
       ...(command?.kind === COMMAND_KIND ? { commandArguments: commandArguments(command) } : {}),
     };
     if (!checkRule(rule, base, trigger, reporter, context)) continue;
     const compiled: Compiled = { rule, index, key: str(rule, 'key') ?? '' };
+    if (trigger.signal !== undefined) {
+      // A games kind's subject, fired through the function bridge (ADR 0115 D4, D5).
+      const subject = subjectId === undefined ? undefined : byId.get(subjectId);
+      if (subject === undefined || !trigger.subjectKinds.includes(subject.kind)) {
+        reporter.error(
+          CODES.unknownSubject,
+          pointer(base, 'when', 'subject'),
+          subjectId === undefined
+            ? `"${trigger.label}" needs one of your ${SUBJECT_PLURALS[trigger.subject] ?? 'things'}.`
+            : `"${subjectId}" is not one of your ${SUBJECT_PLURALS[trigger.subject] ?? 'things'}.`,
+        );
+        continue;
+      }
+      const phase = num(asObject(when?.options), 'phase');
+      if (phase !== undefined && subject.kind === ONE_BLOCK_KIND) {
+        const phases = asArray(asObject(subject.data)?.phases).length;
+        if (!Number.isInteger(phase) || phase < 1 || phase > phases) {
+          reporter.error(
+            CODES.noSuchPhase,
+            pointer(base, 'when', 'options', 'phase'),
+            `"${subject.id}" has ${phases === 1 ? 'one phase' : `${phases} phases`}; pick a phase from 1 to ${phases}.`,
+          );
+          continue;
+        }
+      }
+      const signal: Signal = {
+        subject: subject.id,
+        on: trigger.signal,
+        ...(phase === undefined ? {} : { phase }),
+      };
+      const groupKey = `${trigger.id}|${subject.id}|${phase ?? ''}`;
+      let group = pass.scriptGroups.get(groupKey);
+      if (group === undefined) {
+        group = { trigger, subject: subject.id, rules: [], signal };
+        pass.scriptGroups.set(groupKey, group);
+      }
+      group.rules.push(compiled);
+      continue;
+    }
     if (trigger.definition === undefined) {
       const groupKey = `${trigger.id}|${subjectId ?? ''}`;
       let group = pass.scriptGroups.get(groupKey);

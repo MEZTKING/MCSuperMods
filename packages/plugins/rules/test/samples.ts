@@ -91,6 +91,10 @@ const TRIGGER_WHEN: Record<string, JsonObject> = {
   any_mob_hurt: { subject: 'minecraft:zombie' },
   any_mob_died: {},
   any_mob_used: { subject: 'minecraft:cow' },
+  area_entered: { subject: 'demo:arena' },
+  area_left: { subject: 'demo:arena' },
+  timer_ended: { subject: 'demo:round' },
+  one_block_broken: { options: { phase: 2 }, subject: 'demo:magic_block' },
 };
 
 const when = (trigger: string): JsonObject => ({ ...TRIGGER_WHEN[trigger], trigger });
@@ -99,10 +103,15 @@ const when = (trigger: string): JsonObject => ({ ...TRIGGER_WHEN[trigger], trigg
 const GIFT_WHEN: JsonObject = { subject: 'demo:gift', trigger: 'command_used' };
 
 const triggerSample = (trigger: string): Json[] => {
-  if (trigger === 'world_started' || trigger === 'world_every') {
+  if (
+    trigger === 'world_started' ||
+    trigger === 'world_every' ||
+    trigger === 'timer_ended' ||
+    trigger === 'one_block_broken'
+  ) {
     return [{ seconds: 30, step: 'set_weather', weather: 'clear' }];
   }
-  if (trigger.startsWith('player_') || trigger.startsWith('any_')) {
+  if (trigger.startsWith('player_') || trigger.startsWith('any_') || trigger.startsWith('area_')) {
     return [{ step: 'show_message', text: ['Something happened.'] }];
   }
   return [CHIME];
@@ -298,6 +307,55 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
     trigger: 'mob_hurt',
     steps: [{ amount: 1, counter: 'anger', scope: 'mob', step: 'take_from_counter' }],
   },
+  // Games (ADR 0115 D1).
+  give_loot: {
+    trigger: 'block_used',
+    steps: [{ loot_table: 'minecraft:chests/simple_dungeon', step: 'give_loot' }],
+  },
+  drop_loot: {
+    trigger: 'any_block_broken',
+    steps: [{ loot_table: 'demo:lucky', step: 'drop_loot', where: 'above_here' }],
+  },
+  place_structure: {
+    trigger: 'item_used_on_block',
+    steps: [{ mirror: 'left_right', step: 'place_structure', structure: 'demo:island' }],
+  },
+  join_team: { trigger: 'area_entered', steps: [{ step: 'join_team', team: 'demo:red' }] },
+  leave_team: { trigger: 'area_left', steps: [{ step: 'leave_team' }] },
+  set_spawn_point: {
+    trigger: 'block_used',
+    steps: [{ step: 'set_spawn_point', where: 'above_here' }],
+  },
+  set_world_spawn: { trigger: 'block_used', steps: [{ step: 'set_world_spawn' }] },
+  set_world_border: {
+    trigger: 'timer_ended',
+    steps: [{ seconds: 60, step: 'set_world_border', width: 50 }],
+  },
+  reset_area: { trigger: 'timer_ended', steps: [{ area: 'demo:arena', step: 'reset_area' }] },
+  set_score: {
+    trigger: 'player_joined',
+    steps: [{ amount: 0, objective: 'demo:points', step: 'set_score' }],
+  },
+  add_to_score: {
+    trigger: 'one_block_broken',
+    steps: [{ amount: 1, objective: 'demo:points', step: 'add_to_score', who: 'every_player' }],
+  },
+  start_timer: { trigger: 'area_entered', steps: [{ step: 'start_timer', timer: 'demo:round' }] },
+  stop_timer: { trigger: 'area_left', steps: [{ step: 'stop_timer', timer: 'demo:round' }] },
+  pick_random: {
+    trigger: 'any_block_broken',
+    steps: [
+      {
+        do: [
+          { count: 3, item: 'minecraft:diamond', step: 'drop_item' },
+          { mob: 'minecraft:zombie', step: 'spawn_mob' },
+          { power: 2, step: 'explode' },
+        ],
+        step: 'pick_random',
+        weights: [5, 3, 1],
+      },
+    ],
+  },
 };
 
 /** The trigger and condition of each condition's sample. */
@@ -338,6 +396,13 @@ const CONDITION_SAMPLES: Record<
     trigger: 'item_used',
     condition: { number: 100, stat: 'minecraft:jump' },
   },
+  in_area: { trigger: 'player_every', condition: { area: 'demo:arena' } },
+  on_team: { trigger: 'block_used', condition: { team: 'demo:red' } },
+  score_at_least: {
+    trigger: 'block_used',
+    condition: { number: 10, objective: 'demo:points' },
+  },
+  timer_running: { trigger: 'block_used', condition: { not: true, timer: 'demo:round' } },
   counter: {
     trigger: 'block_used',
     condition: {
@@ -363,6 +428,9 @@ const VALUE_SAMPLES: Record<string, JsonObject> = {
   vehicle_ammo: { value: 'vehicle_ammo' },
   facing: { of: 'here', value: 'facing' },
   command_argument: { name: 'friend', value: 'command_argument' },
+  score: { objective: 'demo:points', value: 'score' },
+  timer_left: { timer: 'demo:round', value: 'timer_left' },
+  team_size: { team: 'demo:red', value: 'team_size' },
   math: {
     a: { counter: 'clicks', scope: 'player', value: 'counter' },
     b: 2,
@@ -640,6 +708,51 @@ export const SAMPLES: readonly Sample[] = Object.freeze([
     };
   }),
   ...LISTENER_SAMPLES,
+  // ADR 0115: a lucky block rule book: weighted choices with waits, readings in commands, a
+  // vanilla objective and team by name, and one phase of a one block.
+  {
+    name: 'games-lucky-block',
+    rules: [
+      {
+        do: [
+          {
+            do: [
+              { loot_table: 'demo:lucky', step: 'drop_loot' },
+              {
+                do: [
+                  { seconds: 1, step: 'wait' },
+                  { power: 3, step: 'explode' },
+                ],
+                step: 'repeat',
+                times: 1,
+              },
+              {
+                amount: { value: 'score', objective: 'kills' },
+                objective: 'demo:points',
+                step: 'add_to_score',
+              },
+            ],
+            step: 'pick_random',
+            weights: [2, 1],
+          },
+          {
+            center: 'player',
+            seconds: { value: 'timer_left', timer: 'demo:round' },
+            step: 'set_world_border',
+            width: { a: { team: 'blue', value: 'team_size' }, b: 20, op: '*', value: 'math' },
+          },
+          { step: 'join_team', team: 'blue', who: 'every_player' },
+        ],
+        key: 'sample',
+        when: { subject: 'minecraft:gold_block', trigger: 'any_block_broken' },
+      },
+      {
+        do: [{ step: 'show_message', text: ['Caves at last!'], who: 'every_player' }],
+        key: 'caves',
+        when: { options: { phase: 2 }, subject: 'demo:magic_block', trigger: 'one_block_broken' },
+      },
+    ],
+  },
   {
     name: 'step-open_dialog-script',
     rules: [

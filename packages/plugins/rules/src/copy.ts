@@ -32,10 +32,10 @@ import type {
   TargetFacts,
 } from '@msm/plugin-api';
 import { asObject, bookRules, ruleEnabled } from './book';
-import { TRIGGERS, type TriggerEntry } from './catalogue';
+import { TRIGGERS, type TriggerEntry, triggerById } from './catalogue';
 import { compileRuleBooks, ruleEventId } from './compile';
 import { RULES_KIND } from './kinds';
-import { RULES_SCRIPT_FIELD, ruleScriptPath } from './lowering';
+import { RULES_SCRIPT_FIELD, RULES_SIGNAL_FIELD, ruleScriptPath } from './lowering';
 
 /** One subject's data after the copy. */
 export interface CopiedSubject {
@@ -219,6 +219,19 @@ export function copyRuleBookAsScript(
   if (!rules.some(({ rule }) => ruleEnabled(rule))) {
     return { ok: false, reason: 'No rule in this book is turned on, so there is nothing to copy.' };
   }
+  // The function bridge (ADR 0115 D5) is made by Rules only: a copied script would lose it.
+  const signalRule = rules.find(
+    ({ rule }) =>
+      ruleEnabled(rule) &&
+      triggerById(String(asObject(rule.when)?.trigger ?? ''))?.signal !== undefined,
+  );
+  if (signalRule !== undefined) {
+    return {
+      ok: false,
+      reason:
+        'Rules on an area, a timer or a one block cannot be copied as a script: they run through a command only Rules makes.',
+    };
+  }
   const books = elements.filter((element) => element.kind === RULES_KIND).sort(byId);
   const full = compileRuleBooks(books, elements, target);
   if (
@@ -298,6 +311,7 @@ export function copyRuleBookAsScript(
 
   const nextBook: JsonObject = structuredClone(bookData);
   delete nextBook[RULES_SCRIPT_FIELD];
+  delete nextBook[RULES_SIGNAL_FIELD];
   nextBook.rules = (Array.isArray(bookData.rules) ? bookData.rules : []).map((rule) => {
     const object = asObject(rule);
     return object === undefined

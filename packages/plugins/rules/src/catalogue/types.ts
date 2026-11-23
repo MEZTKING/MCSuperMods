@@ -44,7 +44,21 @@ export type SlotType =
   /** A statistic, vanilla or a project `msm:stat` (ADR 0111 D6). */
   | 'stat'
   /** An advancement, vanilla or of the project's data pack (ADR 0111 D3). */
-  | 'advancement';
+  | 'advancement'
+  /** A loot table, vanilla or of the project's data pack (ADR 0115 D1). */
+  | 'loot_table'
+  /** A structure template, vanilla or of the project (ADR 0115 D1). */
+  | 'structure'
+  /** A team: a project `msm:team` by id, or any team by its name (ADR 0115 D1). */
+  | 'team'
+  /** A scoreboard objective: a project `msm:objective` by id, or any by its name (ADR 0115 D1). */
+  | 'objective'
+  /** A project timer (`msm:timer`, ADR 0113 D6). */
+  | 'timer'
+  /** A project area (`msm:area`, ADR 0113 D7). */
+  | 'area'
+  /** A project one block (`msm:one_block`, ADR 0113 D3). */
+  | 'one_block';
 
 /** One blank of a sentence: the field it edits and how. */
 export interface SlotSpec {
@@ -101,6 +115,12 @@ export type SubjectSort =
   | 'command'
   /** An advancement, vanilla or the project's (ADR 0111 D3; script triggers only). */
   | 'advancement'
+  /** A project area (ADR 0115 D4; through the function bridge). */
+  | 'area'
+  /** A project timer (ADR 0115 D4; through the function bridge). */
+  | 'timer'
+  /** A project one block (ADR 0115 D4; through the function bridge). */
+  | 'one_block'
   /** No subject: player and world triggers. */
   | 'none';
 
@@ -221,7 +241,16 @@ export interface TriggerEntry extends CatalogueEntry {
   readonly mobDead?: boolean;
   /** Whether the player of the trigger has left (no alive check after a wait). */
   readonly playerGone?: boolean;
+  /**
+   * A trigger fired by a games kind's function through the function bridge (ADR 0115 D5): what
+   * happened to the subject (`enter`, `leave`, `end` or `break`). The rule listens to the
+   * Script API `command` event of the project's signal command.
+   */
+  readonly signal?: SignalName;
 }
+
+/** What a games kind's function signals through the function bridge (ADR 0115 D5). */
+export type SignalName = 'enter' | 'leave' | 'end' | 'break';
 
 /** The groups of the Do picker. */
 export type StepGroup = 'players' | 'world' | 'sounds' | 'mobs' | 'logic' | 'counters';

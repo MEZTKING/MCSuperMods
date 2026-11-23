@@ -7,17 +7,23 @@ import type { Json, JsonObject, Problem, ResourceLocation } from '@msm/plugin-ap
 import { asArray, asObject, conditionList, pointer, stepList, str } from '../book';
 import {
   type Actor,
+  AREA_KIND,
   conditionById,
   MAX_DEPTH,
+  MAX_PICK_CHOICES,
   MAX_STEPS,
+  OBJECTIVE_KIND,
   placeById,
   type SlotSpec,
   stepById,
+  TEAM_KIND,
+  TIMER_KIND,
   type TriggerEntry,
   triggerById,
   valueById,
   whoById,
 } from '../catalogue';
+import { RULES_ENTRY_FORMS, type RulesFormName } from './games';
 import { RULES_COMPILE_CODES as CODES } from './types';
 
 /** Collects problems for one book. */
@@ -55,7 +61,23 @@ export interface CheckContext {
   readonly commandArguments?: ReadonlyMap<string, string>;
   /** The kind (`boolean` or `integer`) of a project game rule, or undefined for any other id. */
   readonly gameRuleKind?: (id: string) => string | undefined;
+  /** The kind of the project element with an id, or undefined (ADR 0115). */
+  readonly elementKind?: (id: string) => string | undefined;
+  /** Whether the target has a command form (ADR 0115 D1); absent skips the check. */
+  readonly hasForm?: (name: RulesFormName) => boolean;
 }
+
+/** The project kinds the games slots name, with their words (ADR 0115). */
+const GAME_SLOTS: Readonly<Record<string, { kind: string; plural: string; projectOnly: boolean }>> =
+  {
+    timer: { kind: TIMER_KIND, plural: 'timers', projectOnly: true },
+    area: { kind: AREA_KIND, plural: 'areas', projectOnly: true },
+    team: { kind: TEAM_KIND, plural: 'teams', projectOnly: false },
+    objective: { kind: OBJECTIVE_KIND, plural: 'scores', projectOnly: false },
+  };
+
+/** The steps, conditions and values that read or change one someone, not several. */
+const ONE_WHO = new Set(['on_team', 'score_at_least', 'score']);
 
 /** Argument types Rules reads as numbers (ADR 0111 D1, limit N20). */
 const NUMBER_ARGUMENTS = new Set(['integer', 'number']);
@@ -199,6 +221,7 @@ class RuleChecker {
       );
     }
     if (entry.triggers !== undefined) this.onlyFor(entry.triggers, entry.label, path);
+    this.forms(id, entry.label, path);
     if (id === 'ride') this.single(step.mount, pointer(path, 'mount'));
     this.slots(entry.slots, step, path, scope, entry.defaultWho);
     if (id === 'if') {
@@ -206,6 +229,16 @@ class RuleChecker {
       this.steps(step, 'do', path, level + 1, scope);
       this.steps(step, 'else', path, level + 1, scope);
     } else if (id === 'repeat') {
+      this.steps(step, 'do', path, level + 1, scope);
+    } else if (id === 'pick_random') {
+      const choices = stepList(step, 'do').length;
+      if (choices > MAX_PICK_CHOICES) {
+        this.reporter.error(
+          CODES.tooManySteps,
+          pointer(path, 'do'),
+          `"${entry.label}" has ${choices} choices; it can pick from at most ${MAX_PICK_CHOICES}.`,
+        );
+      }
       this.steps(step, 'do', path, level + 1, scope);
     } else if (id === 'for_each_player') {
       if (step.radius !== undefined) this.here(scope, pointer(path, 'radius'));
@@ -233,6 +266,8 @@ class RuleChecker {
     }
     if (entry.needsActor !== undefined) this.actor(entry.needsActor, scope, path);
     if (entry.triggers !== undefined) this.onlyFor(entry.triggers, entry.label, path);
+    this.forms(id, entry.label, path);
+    if (ONE_WHO.has(id) && !this.oneWho(condition.who, pointer(path, 'who'))) return;
     const defaultWho = id === 'mob_is' ? 'other' : undefined;
     if (id === 'is_facing') this.facingOf(condition.of, pointer(path, 'of'), scope);
     if (id === 'mob_is' || id === 'is_riding') {
@@ -247,6 +282,41 @@ class RuleChecker {
       }
     }
     this.slots(entry.slots, condition, path, scope, defaultWho);
+  }
+
+  /** A step, condition or value whose command the target has no form for (ADR 0115 D1). */
+  private forms(id: string, label: string, path: string): void {
+    const hasForm = this.context.hasForm;
+    const missing = (RULES_ENTRY_FORMS[id] ?? []).filter((name) => hasForm?.(name) === false);
+    if (missing.length === 0) return;
+    this.reporter.error(
+      CODES.noCommandForm,
+      path,
+      `"${label}" needs the command ${missing.map((name) => `"${name}"`).join(', ')}, which this Minecraft version has no form for in MSM.`,
+    );
+  }
+
+  /** One someone (the player, the mob or the other one), not every player. */
+  private oneWho(value: Json | undefined, path: string): boolean {
+    if (value === undefined || value === 'player' || value === 'mob' || value === 'other') {
+      return true;
+    }
+    this.reporter.error(CODES.noSuchActor, path, 'Pick one: the player, the mob or the other one.');
+    return false;
+  }
+
+  /** A timer, area, team or objective slot: a project id must name one of its kind. */
+  private gameSlot(type: string, value: Json | undefined, path: string): void {
+    const slot = GAME_SLOTS[type];
+    if (slot === undefined || typeof value !== 'string') return;
+    if (!slot.projectOnly && !value.includes(':')) return;
+    const kind = this.context.elementKind?.(value);
+    if (this.context.elementKind === undefined || kind === slot.kind) return;
+    this.reporter.error(
+      CODES.unknownSubject,
+      path,
+      `"${value}" is not one of your ${slot.plural}${slot.projectOnly ? '' : '; give a name without a namespace for one made elsewhere'}.`,
+    );
   }
 
   /** A step or condition made for some triggers only (B458). */
@@ -303,13 +373,20 @@ class RuleChecker {
           break;
         }
         case 'place':
-          this.place(value ?? 'here', at, scope);
+          // The world border's centre is left where it is when absent.
+          if (value !== undefined || slot.name !== 'center') this.place(value ?? 'here', at, scope);
           break;
         case 'who':
           this.who(value ?? defaultWho ?? 'player', at, scope);
           break;
         case 'game_rule_value':
           if (value !== undefined) this.gameRuleValue(object, value, path, at, scope);
+          break;
+        case 'timer':
+        case 'area':
+        case 'team':
+        case 'objective':
+          this.gameSlot(slot.type, value, at);
           break;
         default:
           break;
@@ -335,6 +412,17 @@ class RuleChecker {
     if (kind === 'command_argument') {
       this.commandArgument(object, path, inText);
       return;
+    }
+    this.forms(kind, entry.label, path);
+    if (ONE_WHO.has(kind)) {
+      if (!this.oneWho(object.who, pointer(path, 'who'))) return;
+      const who = object.who ?? 'player';
+      if (typeof who === 'string') this.who(who, pointer(path, 'who'), scope);
+    }
+    for (const slot of entry.slots) {
+      if (GAME_SLOTS[slot.type] !== undefined) {
+        this.gameSlot(slot.type, object[slot.name], pointer(path, slot.name));
+      }
     }
     if (entry.words === true && !inText) {
       this.reporter.error(
