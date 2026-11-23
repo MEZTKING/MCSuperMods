@@ -31,7 +31,14 @@ import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { strToU8, unzipSync, zipSync } from 'fflate';
 import { expect, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
+import {
+  appDir,
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  outputDir,
+  toast,
+} from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'msm_play';
@@ -207,7 +214,7 @@ test('play: Play, Reload a data change, Restart needed for a new block, Restart'
   await seedFabricApi(launched);
 
   // A new project with one item. ---------------------------------------------------------------
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
   await addFromTemplate(window, 'food', 'msm_item_food', 'play_berry');
   await expect(window.getByTestId(`element-row-${ITEM_ID}`)).toBeVisible();

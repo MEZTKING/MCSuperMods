@@ -23,7 +23,13 @@ import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import ts from 'typescript';
-import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+} from './fixtures';
 
 /** The project folder name; a blank project's namespace (and mod id) is derived from it. */
 const NAMESPACE = 'script_e2e';
@@ -176,7 +182,7 @@ test('scripting: template, Monaco TypeScript, problems, Fabric jar with ES5 scri
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   await window.getByTestId('toolbar-add-element').click();
@@ -353,7 +359,7 @@ test('scripting: Script API 1.1, player.inventory completes and the script expor
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // The "Full set bonus" template: player.tick with an interval and entity equipment. -------

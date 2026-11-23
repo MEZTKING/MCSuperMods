@@ -17,7 +17,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+} from './fixtures';
 import { checkerPng } from './png';
 
 /** The project folder name; a new project's namespace is derived from it. */
@@ -55,7 +61,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId('element-row-msm_e2e:pack')).toBeVisible();
 
   // Block model from the template picker.
@@ -136,7 +142,6 @@ test('new project, block model, texture, export zip, reopen', async () => {
 
   // Point textures.all at the imported texture, through the form.
   await window.getByTestId(`element-row-${ELEMENT_ID}`).click();
-  await window.getByTestId('editor-tab-form').click();
   const textureField = window
     .getByTestId('schema-form')
     .locator('[data-pointer="/textures/all"]')
@@ -208,7 +213,6 @@ test('new project, block model, texture, export zip, reopen', async () => {
   const reopened = second.window.getByTestId(`element-row-${ELEMENT_ID}`);
   await expect(reopened).toBeVisible();
   await reopened.click();
-  await second.window.getByTestId('editor-tab-form').click();
   await expect(
     second.window
       .getByTestId('schema-form')

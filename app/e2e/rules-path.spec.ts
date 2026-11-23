@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
+import { type LaunchedApp, launchApp, newProjectInFolder, outputDir, toast } from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'msm_rules_e2e';
@@ -103,7 +103,7 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
   await addFromTemplate(window, 'simple block', 'msm_block_simple', 'chime_block');
   await addFromTemplate(window, 'bounce pad', 'msm_block_bounce_pad', 'jump_pad');

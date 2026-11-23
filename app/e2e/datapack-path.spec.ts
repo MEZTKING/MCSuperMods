@@ -24,7 +24,13 @@ import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+} from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'msm_e2e';
@@ -174,7 +180,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // A function from the template, then its source typed in.

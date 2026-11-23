@@ -88,10 +88,6 @@ async function launch(name: string, args: readonly string[]): Promise<LaunchedAp
 async function veryEasyHome(window: Page): Promise<Locator> {
   const welcome = window.getByTestId('welcome-dialog');
   await expect(welcome).toBeVisible();
-  await expect(welcome.getByTestId('welcome-mode-very-easy')).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
   await welcome.getByRole('button', { name: 'Got it' }).click();
   await expect(welcome).toBeHidden();
   const home = window.getByTestId('home');

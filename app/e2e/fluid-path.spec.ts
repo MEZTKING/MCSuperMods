@@ -17,7 +17,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 
@@ -155,7 +155,6 @@ test('fluid: the Fluid flow from Make a block, the Fluid Studio, a bucket poured
   await expect(fix.getByTestId('things-to-fix-tips')).toHaveCount(0);
 
   // The Fluid Studio's preview. -------------------------------------------------------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await window.getByTestId(`element-row-${id('mint_water')}`).click();
   const studio = window.getByTestId('fluid-studio');
   await expect(studio).toBeVisible({ timeout: 30_000 });
@@ -200,7 +199,7 @@ test('sky: the Dimension flow with its own sky, chosen in Try it', async () => {
   launched = await launchApp({ reuse: folders, args: WEBGL_ARGS });
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect.poll(() => existsSync(join(folders.projectDir, 'msm.project.json'))).toBe(true);
   const manifest = JSON.parse(
     readFileSync(join(folders.projectDir, 'msm.project.json'), 'utf8'),

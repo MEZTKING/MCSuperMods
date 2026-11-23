@@ -218,7 +218,6 @@ test('plants: Cave plants and Flower pot from Very easy, the pot and its sounds,
   await expect(things).toContainText('Clay Planter');
 
   // 2. Advanced: the vine, then the pot, a vanilla plant added and its own sounds. ------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await expect(window.getByRole('navigation', { name: 'Elements' })).toBeVisible();
   await window.getByTestId(`element-row-${id('ember_vine')}`).click();
   const studio = window.getByTestId('block-studio');

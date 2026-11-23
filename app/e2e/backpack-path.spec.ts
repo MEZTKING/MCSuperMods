@@ -103,7 +103,6 @@ test('backpack: the Very easy pick, the Backpack flow defaults, the Item Studio 
   await expect(things).toContainText('Backpack');
 
   // Advanced: the Item Studio's Inventory section. --------------------------------------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await window.getByTestId(`element-row-${id('backpack')}`).click();
   const inventory = window.getByTestId('item-inventory');
   await expect(inventory).toBeVisible();
@@ -156,7 +155,7 @@ test('backpack: the Very easy pick, the Backpack flow defaults, the Item Studio 
   await window.screenshot({ path: join(outputDir, 'backpack-path.png') });
 
   // Back to Very easy: nothing to fix. ---------------------------------------------------------
-  await window.getByTestId('toolbar-mode-very-easy').click();
+  await window.getByTestId('toolbar-home').click();
   await window.getByTestId('toolbar-home').click();
   await expect(home).toBeVisible();
   await expectNothingToFix(window);

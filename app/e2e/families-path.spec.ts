@@ -29,7 +29,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+  toast,
+} from './fixtures';
 
 /** The project folder name; a blank project's namespace is derived from it. */
 const NAMESPACE = 'grove';
@@ -193,7 +200,7 @@ async function blankProject(prefix: string, args?: readonly string[]) {
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
   return { window, folders };
 }

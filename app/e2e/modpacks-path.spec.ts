@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from 'playwright/test';
-import { type LaunchedApp, launchApp } from './fixtures';
+import { type LaunchedApp, launchApp, newProjectInFolder } from './fixtures';
 
 let launched: LaunchedApp | undefined;
 
@@ -22,7 +22,7 @@ test('modpacks: create one, add the open project and build it', async () => {
   const { window, modpackDir } = launched;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
 
   await window.keyboard.press('ControlOrMeta+Shift+P');

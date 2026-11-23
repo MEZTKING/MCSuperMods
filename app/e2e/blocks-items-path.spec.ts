@@ -50,7 +50,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+} from './fixtures';
 
 /** The project folder name; a blank project's namespace (and mod id) is derived from it. */
 const NAMESPACE = 'glow_e2e';
@@ -175,7 +181,7 @@ test('blocks and items: templates, Block Studio, unknown event, Fabric jar, reso
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   await addFromTemplate(window, 'simple block', 'msm_block_simple', BLOCK_PATH);
@@ -409,7 +415,7 @@ test('blocks and items: Effect Studio tick action and an item throwable section,
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // The Effect Studio: a status effect with a tick event that heals. ------------------------
@@ -507,7 +513,7 @@ test('blocks and items: a sounds element, its key picked from the completion lis
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // The sounds element: one per namespace, its name is fixed to "sounds". ---------------------
@@ -583,7 +589,7 @@ test('blocks and items: a Block Studio shape preset lowers to boxes in the jar',
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // The Shape section: no shape is the full solid cube; the preset gives one box. -----------
@@ -679,7 +685,7 @@ test('blocks and items: an extra drop and an on-hit trigger, with Undo, in the j
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // The Extra drops Studio: the template's emerald, then a diamond. --------------------------
@@ -801,7 +807,7 @@ test('blocks and items: Make a potion from an effect, with Undo, in the jar', as
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // The Effect Studio's Potion section. -----------------------------------------------------

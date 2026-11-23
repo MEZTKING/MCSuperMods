@@ -1,16 +1,24 @@
 /**
- * Very easy mode end to end (ADR 0083). A brand-new install (`MSM_E2E_NEW_INSTALL`: the launch
- * notice is not suppressed, and the `MSM_HOME` has no settings yet) opens the Welcome in Very
- * easy and then Home, with no sidebar and no Problems panel. "Start a new mod" asks only for a
- * name and makes the mod under `<MSM_HOME>/Documents/MCSuperMods/` (test runs). The "Make food"
- * tile runs the Creator's Food flow, and My things shows the set. "Make things happen" opens a
- * new rule book; a step without its item is a thing to fix in plain words; "Show me" goes to
- * the chip, and picking an item clears it. "Share my mod" saves the Fabric mod jar with the
- * export's defaults (a stand-in runtime from `MSM_E2E_RUNTIME_DIR` is nested) and says where it
- * is.
+ * One mode with More options (ADR 0130; it replaces `modes-path` and `very-easy-path`), with
+ * every More options closed as people first see them (`moreOptions: 'closed'`).
+ *
+ * 1. A brand-new install (`MSM_E2E_NEW_INSTALL`: the launch notice is not suppressed, and the
+ *    `MSM_HOME` has no settings yet) opens the Welcome, with no question about a mode, then Home
+ *    with the element list beside it and no mode switch anywhere (toolbar, palette). "Start a new
+ *    mod" asks only for a name and makes the mod under `<MSM_HOME>/Documents/MCSuperMods/` (test
+ *    runs). The "Make food" tile runs the Creator's Food flow, and My things shows the set; the
+ *    food opens in its Studio in plain words (New here?, Name, a section's why, no id shown), a
+ *    section's More options shows the id field and is remembered, Where it goes' More options
+ *    holds Edit as raw text. "Make things happen" opens a new rule book; a step without its item
+ *    is a thing to fix in plain words; "Show me" goes to the chip, and picking an item clears it.
+ *    "Share my mod" saves the Fabric mod jar with the export's defaults (a stand-in runtime from
+ *    `MSM_E2E_RUNTIME_DIR` is nested) and says where it is.
+ * 2. `fixtures/sample-mod`: the list shows names and groups, never ids, and folds the technical
+ *    `msm:mod` element under "More"; Every setting shows the whole form under its More options.
  */
 
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -24,7 +32,7 @@ import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { strToU8, unzipSync, zipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
 
 const MOD_NAME = 'Garden Mod';
 
@@ -67,9 +75,9 @@ test.afterEach(async () => {
   base = undefined;
 });
 
-test('very easy: Welcome, Home, a new mod, a tile, My things, Things to fix, Share my mod', async () => {
+test('one mode: Welcome, Home, a new mod, a tile, plain Studios with More options, Things to fix, Share my mod', async () => {
   test.setTimeout(150_000);
-  base = mkdtempSync(join(tmpdir(), 'msm-very-easy-'));
+  base = mkdtempSync(join(tmpdir(), 'msm-one-mode-'));
   const folders = {
     projectDir: join(base, 'picked'),
     outDir: join(base, 'out'),
@@ -82,24 +90,32 @@ test('very easy: Welcome, Home, a new mod, a tile, My things, Things to fix, Sha
     process.env[key] = value;
   }
 
-  launched = await launchApp({ reuse: folders });
+  launched = await launchApp({ reuse: folders, moreOptions: 'closed' });
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
 
-  // A brand-new install: the Welcome in Very easy, then Home. ---------------------------------
+  // A brand-new install: the Welcome with no mode question, then Home. -------------------------
   const welcome = window.getByTestId('welcome-dialog');
   await expect(welcome).toBeVisible();
-  await expect(welcome.getByTestId('welcome-mode-very-easy')).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(welcome.getByTestId('welcome-modes')).toHaveCount(0);
+  await expect(welcome.getByTestId('welcome-more-options')).toContainText('More options');
   await welcome.getByRole('button', { name: 'Got it' }).click();
   await expect(welcome).toBeHidden();
-  await expect(window.getByTestId('toolbar-very-easy')).toBeVisible();
   const home = window.getByTestId('home');
   await expect(home).toBeVisible();
-  await expect(window.getByRole('navigation', { name: 'Elements' })).toHaveCount(0);
-  await expect(window.getByTestId('dock-tab-problems')).toHaveCount(0);
+  // One toolbar, with no mode switch.
+  await expect(window.getByTestId('toolbar-home')).toBeVisible();
+  await expect(window.getByTestId('toolbar-save')).toBeVisible();
+  await expect(window.getByTestId('toolbar-mode-row')).toHaveCount(0);
+  await expect(window.getByTestId('toolbar-mode')).toHaveCount(0);
+  // Nor in the palette.
+  await window.keyboard.press('ControlOrMeta+Shift+P');
+  const palette = window.getByTestId('command-palette');
+  await expect(palette).toBeVisible();
+  await expect(palette.getByTestId('command-veryEasyMode')).toHaveCount(0);
+  await expect(palette.getByTestId('command-toggleMode')).toHaveCount(0);
+  await window.keyboard.press('Escape');
+  await expect(palette).toBeHidden();
 
   // A new mod by name only. -------------------------------------------------------------------
   await home.getByTestId('home-new').click();
@@ -131,6 +147,43 @@ test('very easy: Welcome, Home, a new mod, a tile, My things, Things to fix, Sha
   await expect(things.locator('li')).toHaveCount(1);
   await expect(things).toContainText('Food');
 
+  // The food in its Studio: plain words, its ids under More options. --------------------------
+  await things.locator('[data-testid^="my-thing-open-"]').first().click();
+  const studioOf = window.getByTestId('item-studio');
+  await expect(studioOf).toBeVisible();
+  await expect(window.getByTestId('new-here')).toBeVisible();
+  await window.getByTestId('new-here-dismiss').click();
+  await expect(window.getByTestId('new-here')).toHaveCount(0);
+  await expect(window.getByTestId('thing-name')).toBeVisible();
+  await expect(window.getByTestId('item-general-why')).toBeVisible();
+  const editor = window.getByTestId('editor-form');
+  await expect(editor).not.toContainText(/[a-z0-9_]+:[a-z0-9_/]+/);
+  await expect(window.getByTestId('item-tab')).toHaveCount(0);
+  await expect(window.getByTestId('item-tab-plain')).toBeVisible();
+  const generalMore = window.getByTestId('more-options-item-general');
+  await expect(generalMore).toHaveAttribute('aria-expanded', 'false');
+  await generalMore.click();
+  await expect(generalMore).toHaveAttribute('aria-expanded', 'true');
+  await expect(window.getByTestId('item-tab')).toBeVisible();
+  // The id and Change id are in the Name section's More options.
+  await expect(window.getByTestId('element-id')).toHaveCount(0);
+  await window.getByTestId('more-options-thing-name').click();
+  await expect(window.getByTestId('element-id')).toContainText(':');
+  await expect(window.getByTestId('thing-change-id')).toBeVisible();
+  // Edit as raw text under Where it goes.
+  await window.getByTestId('more-options-where-it-goes').click();
+  await window.getByTestId('more-options-where-raw-text').click();
+  await expect(window.getByTestId('where-raw-text')).toBeVisible();
+  // More options is remembered: back on Home and in again, the section's is still open.
+  await window.getByTestId('toolbar-home').click();
+  await things.locator('[data-testid^="my-thing-open-"]').first().click();
+  await expect(window.getByTestId('more-options-item-general')).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  await window.screenshot({ path: join(outputDir, 'one-mode-path-studio.png') });
+  await window.getByTestId('toolbar-home').click();
+
   // "Make things happen": a rule book, and a step without its item is a thing to fix. ---------
   await home.getByTestId('home-tile-rules').click();
   const studio = window.getByTestId('rule-book-studio');
@@ -138,7 +191,7 @@ test('very easy: Welcome, Home, a new mod, a tile, My things, Things to fix, Sha
   await studio.getByTestId('rule-add').click();
   const card = studio.getByTestId('rule-card');
   await expect(card).toHaveCount(1);
-  // Very easy shows no keys.
+  // No keys in the plain view.
   await expect(card.getByTestId('rule-key')).toHaveCount(0);
   await pickFromMenu(window, card.getByTestId('rules-add-step-do'), 'Give an item');
   await expect(card.getByTestId('rules-chip-item')).toHaveAttribute('aria-invalid', 'true');
@@ -183,5 +236,42 @@ test('very easy: Welcome, Home, a new mod, a tile, My things, Things to fix, Sha
   expect(names.some((name) => /^META-INF\/jars\/msm_runtime-.*\.jar$/.test(name))).toBe(true);
   expect(names.some((name) => /^msm\/[a-z0-9_]+\/item\/.+\.json$/.test(name))).toBe(true);
   expect(names.some((name) => /^msm\/[a-z0-9_]+\/script\/rules\/rules\.js$/.test(name))).toBe(true);
-  await window.screenshot({ path: join(outputDir, 'very-easy-path.png') });
+  await window.screenshot({ path: join(outputDir, 'one-mode-path.png') });
+});
+
+test('one mode: the list shows names and groups, More folds the files, Every setting', async () => {
+  const MOD_ID = 'msm_sample_mod';
+  base = mkdtempSync(join(tmpdir(), 'msm-one-mode-list-'));
+  const folders = {
+    projectDir: join(base, MOD_ID),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  cpSync(join(appDir, '..', 'fixtures', 'sample-mod'), folders.projectDir, { recursive: true });
+  launched = await launchApp({ reuse: folders, moreOptions: 'closed' });
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-open-project').click();
+
+  const oreRow = window.getByTestId(`element-row-${MOD_ID}:ruby_ore`);
+  const modRow = window.getByTestId(`element-row-${MOD_ID}:mod`);
+  const more = window.getByTestId(`group-toggle-${MOD_ID}-more`);
+  await expect(oreRow).toBeVisible();
+  // Names, not ids.
+  await expect(oreRow).not.toContainText(':');
+  await expect(oreRow).toHaveAccessibleName(/Ruby/);
+  // The mod's settings wait under "More".
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(modRow).toHaveCount(0);
+  await more.click();
+  await expect(modRow).toBeVisible();
+
+  // Every setting: the whole form, under its More options.
+  await oreRow.click();
+  await expect(window.getByTestId('block-studio')).toBeVisible();
+  await expect(window.getByTestId('schema-form')).toHaveCount(0);
+  await window.getByTestId('more-options-every-setting').click();
+  await expect(window.getByTestId('schema-form')).toBeVisible();
+  await expect(window.getByTestId('play-controls')).toBeVisible();
+  await expect(window.getByTestId('dock-tab-problems')).toBeVisible();
 });

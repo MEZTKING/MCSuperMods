@@ -63,7 +63,7 @@ test('make a block picture with AI, then undo it', async () => {
   await window.getByTestId(`element-row-${MOD_ID}:amber_tile`).click();
   const button = window.getByTestId('block-model-ai-msm-sample-mod-block-amber-tile');
   await expect(button).toBeVisible();
-  await expect(button).toHaveText('Make with AI');
+  await expect(button).toHaveText('Make it with AI');
   await button.click();
 
   const dialog = window.getByTestId('ai-pictures-dialog');
@@ -136,7 +136,7 @@ test('make a mob skin and a painting with AI', async () => {
   await expect(studio).toBeVisible();
   await expect(studio.getByTestId('entity-draw-skin')).toBeVisible();
   const aiSkin = studio.getByTestId('entity-ai-skin');
-  await expect(aiSkin).toHaveText('Make a skin with AI');
+  await expect(aiSkin).toHaveText('Make it with AI');
   await expect(aiSkin).toBeEnabled();
   await aiSkin.click();
   const dialog = window.getByTestId('ai-pictures-dialog');

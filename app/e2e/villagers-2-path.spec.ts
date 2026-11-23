@@ -187,7 +187,6 @@ test('villagers 2: a villager look and a merchant that remembers, the Studios, T
   await expect(home.getByTestId('my-things')).toContainText('Travelling Merchant');
 
   // 2. Advanced: the Villager look Studio. ------------------------------------------------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await window.getByTestId(`element-row-${id(LOOK)}`).click();
   const look = window.getByTestId('villager-type-studio');
   await expect(look).toBeVisible({ timeout: 30_000 });

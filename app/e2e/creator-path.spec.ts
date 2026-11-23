@@ -47,7 +47,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  openRawText,
+  outputDir,
+  toast,
+} from './fixtures';
 import { oggVorbis } from './ogg';
 import { gradientPng } from './png';
 
@@ -176,7 +184,7 @@ function savedData(projectDir: string, folder: string, path: string): Record<str
  * input event on a single line, so Monaco's auto-closing and auto-indent do not touch it.
  */
 async function applyRawJson(window: Page, data: unknown): Promise<void> {
-  await window.getByTestId('editor-tab-json').click();
+  await openRawText(window);
   const panel = window.getByRole('region', { name: 'Raw JSON' });
   const view = panel.locator('.monaco-editor .view-lines');
   await expect(view).toBeVisible();
@@ -206,7 +214,7 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
   await save(window);
   const blank = readdirSync(join(folders.projectDir, 'content', NAMESPACE), { recursive: true })
@@ -358,7 +366,7 @@ test('Creator: Painting with a picked PNG and a bow from the Weapon flow', async
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // Painting: opens on the Card tab; the picked picture replaces the placeholder.
@@ -440,7 +448,7 @@ test('Creator: Music disc with a picked song file (ADR 0049)', async () => {
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   const disc = await openFlow(window, 'music-disc-item');
@@ -476,7 +484,7 @@ test('Creator: Dimension with a key (ADR 0051)', async () => {
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   const dimension = await openFlow(window, 'dimension');
@@ -503,7 +511,7 @@ test('Creator: Status effect with a drink and a Throwable (ADRs 0055, 0056)', as
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // Status effect, from the Magic group: opens on its card.
@@ -593,7 +601,7 @@ test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () =
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // The Custom ore flow: "Generate in the world" is on by default; a smaller vein.
@@ -686,7 +694,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // The Potion flow, from the Magic group, with its defaults: Moon Leap, an effect of its own,
@@ -783,7 +791,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // Mob skin, from the Mobs group: a wolf skin in forests (the defaults).

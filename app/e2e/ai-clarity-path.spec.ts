@@ -30,7 +30,14 @@ import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  appDir,
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openMoreOptions,
+  outputDir,
+} from './fixtures';
 
 const SCRIPTS = join(appDir, 'test', 'fixtures', 'ai');
 const MOD_NAME = 'Ruby Mod';
@@ -100,10 +107,6 @@ async function launchNewInstall(prefix: string, script?: string): Promise<Launch
 async function passWelcome(window: Page): Promise<void> {
   const welcome = window.getByTestId('welcome-dialog');
   await expect(welcome).toBeVisible();
-  await expect(welcome.getByTestId('welcome-mode-very-easy')).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
   await welcome.getByRole('button', { name: 'Got it' }).click();
   await expect(welcome).toBeHidden();
   await expect(window.getByTestId('home')).toBeVisible();
@@ -568,7 +571,7 @@ test('Ask the helper on a thing to fix, then each failure with its sentence and 
   await window.screenshot({ path: join(outputDir, 'ai-clarity-failures.png') });
 });
 
-test('Easy and Advanced: the cards with their files, then ids, kinds, Apply, limits and Ask AI', async () => {
+test('More options: the files with ids and kinds, Before and after, the limits, then Add and Ask AI', async () => {
   test.setTimeout(120_000);
   base = mkdtempSync(join(tmpdir(), 'msm-ai-clarity-modes-'));
   mkdirSync(outputDir, { recursive: true });
@@ -583,12 +586,10 @@ test('Easy and Advanced: the cards with their files, then ids, kinds, Apply, lim
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId('element-row-ai_e2e:pack')).toBeVisible();
 
-  // Easy: cards, and Files behind this.
-  await window.getByTestId('toolbar-mode-easy').click();
-  await expect(window.getByTestId('toolbar-mode-easy')).toHaveAttribute('data-state', 'on');
+  // The cards, and under the review's More options the files with their ids and kinds.
   await window.getByTestId('toolbar-ai-helper').click();
   const panel = window.getByTestId('ai-panel');
   await expect(panel).toBeVisible();
@@ -598,28 +599,9 @@ test('Easy and Advanced: the cards with their files, then ids, kinds, Apply, lim
   });
   await panel.getByTestId('ai-status-look').click();
   const tray = panel.getByTestId('ai-tray');
-  await expect(tray.getByTestId('ai-review-heading')).toHaveText(
-    /^Ready to add: 1 thing, \d+ files? behind (it|them)$/,
-  );
+  await expect(tray.getByTestId('ai-review-heading')).toHaveText('Ready to add: 1 thing');
   await expect(tray.getByTestId('ai-thing-1')).toContainText('Ruby Sword');
-  const files = tray.getByTestId('ai-thing-1-files');
-  await expect(files).toContainText('Files behind this');
-  await expect(tray.locator('li[data-op]')).toHaveCount(0);
-  await expect(panel.getByTestId('ai-limits')).toHaveCount(0);
-
-  // Advanced: ids and kinds on the file rows, Before and after, Apply, the limits popover.
-  await window.getByTestId('toolbar-mode-advanced').click();
-  await expect(window.getByTestId('toolbar-mode-advanced')).toHaveAttribute('data-state', 'on');
-  if (!(await panel.isVisible())) await openDockTab(window, 'assistant');
-  await expect(panel).toBeVisible();
-  if ((await tray.getAttribute('data-open')) !== 'true')
-    await panel.getByTestId('ai-tray-toggle').click();
-  await expect(tray.getByTestId('ai-review-heading')).toHaveText(
-    /^Proposed changes \((\d+) of \1 kept\)$/,
-  );
-  await expect(statusText(panel)).toHaveText(
-    /^\d+ proposed changes? (is|are) ready\. Nothing is applied yet\.$/,
-  );
+  await openMoreOptions(tray, 'ai-review-files');
   const rows = tray.locator('li[data-op]');
   const titles = await rows.locator('code').allTextContents();
   expect(titles).toContain('ruby:ruby_sword');
@@ -627,6 +609,8 @@ test('Easy and Advanced: the cards with their files, then ids, kinds, Apply, lim
   await expect(swordRow).toHaveCount(1);
   await expect(swordRow).toContainText('msm:item');
   await expect(swordRow.locator('[data-testid$="-diff"] summary')).toHaveText('Before and after');
+  // The run limits are in the panel's More options.
+  await openMoreOptions(panel, 'ai-panel');
   await expect(panel.getByTestId('ai-limits')).toBeVisible();
   await panel.getByTestId('ai-limits').click();
   await expect(window.getByTestId('ai-limits-popover')).toBeVisible();
@@ -634,21 +618,21 @@ test('Easy and Advanced: the cards with their files, then ids, kinds, Apply, lim
   await window.keyboard.press('Escape');
   await expect(window.getByTestId('ai-limits-popover')).toBeHidden();
   const apply = tray.getByTestId('ai-apply');
-  await expect(apply).toHaveText('Apply');
+  await expect(apply).toHaveText('Add to my mod');
   await apply.click();
-  await expect(statusText(panel)).toHaveText(/^Applied \d+ changes?\./);
+  await expect(statusText(panel)).toHaveText(/^Added 1 thing to your mod/);
   await expect(window.getByTestId('element-row-ruby:ruby_sword')).toBeVisible();
 
-  // Ask AI on the element: the chip keeps the id and kind, with the block shown at once.
+  // Ask AI on the element: the chip names it, the block (with its id) one click away.
   const row = window.getByTestId('element-row-ruby:ruby_sword');
   await row.click();
   if ((await row.getAttribute('aria-current')) === null) await row.click();
   await window.getByTestId('editor-ask-ai').click();
   await expect(panel).toBeVisible();
-  await expect(panel.getByTestId('ai-context-label')).toContainText('ruby:ruby_sword');
-  await expect(panel.getByTestId('ai-context-block')).toBeVisible();
-  await expect(panel.getByTestId('ai-context-show')).toHaveCount(0);
-  await window.screenshot({ path: join(outputDir, 'ai-clarity-advanced.png') });
+  await expect(panel.getByTestId('ai-context-label')).toHaveText('About: Ruby Sword');
+  await panel.getByTestId('ai-context-show').click();
+  await expect(panel.getByTestId('ai-context-block')).toContainText('ruby:ruby_sword');
+  await window.screenshot({ path: join(outputDir, 'ai-clarity-more-options.png') });
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

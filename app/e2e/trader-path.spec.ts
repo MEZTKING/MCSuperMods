@@ -149,7 +149,6 @@ test('trader: the Make a trader tile, the merchant mock-up, a trade added in the
   await expect(home.getByTestId('my-things')).toContainText('Travelling Merchant');
 
   // 2. Try it: the merchant mock-up with the flow's wares. ------------------------------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await expect(window.getByTestId(`element-row-${id('travelling_merchant')}`)).toBeVisible();
   const egg = id('travelling_merchant_spawn_egg');
   let merchant = await openMerchant(window, egg);

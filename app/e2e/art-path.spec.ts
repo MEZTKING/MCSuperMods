@@ -38,7 +38,7 @@ import {
   placeholderPng,
 } from '@msm/plugin-library';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
+import { type LaunchedApp, launchApp, newProjectInFolder, outputDir, toast } from './fixtures';
 import { readPng } from './png';
 
 /** The project folder name; a blank project's namespace is derived from it. */
@@ -58,7 +58,7 @@ test.afterEach(async () => {
 });
 
 /** Opens a new blank project in a fresh launch, the project folder named `NAMESPACE`. */
-async function blankProject(prefix: string) {
+async function blankProject(prefix: string, moreOptions: 'open' | 'closed' = 'open') {
   base = mkdtempSync(join(tmpdir(), prefix));
   const folders = {
     projectDir: join(base, NAMESPACE),
@@ -66,11 +66,11 @@ async function blankProject(prefix: string) {
     msmHome: join(base, 'msm-home'),
   };
   mkdirSync(outputDir, { recursive: true });
-  const launched = await launchApp({ reuse: folders, args: WEBGL_ARGS });
+  const launched = await launchApp({ reuse: folders, args: WEBGL_ARGS, moreOptions });
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
   return { window, folders };
 }
@@ -165,11 +165,11 @@ test('art: drawn Gear set, Draw on a Block Studio row with Undo, New texture fro
 
   await window.getByTestId(`element-row-${id('amber_tile')}`).click();
   const drawRow = window.getByTestId(`block-model-ai-${NAMESPACE}-block-amber-tile-draw`);
-  await expect(drawRow).toHaveText('Draw…');
+  await expect(drawRow).toHaveText('Draw it for me');
   await drawRow.click();
   const dialog = window.getByTestId('draw-dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('heading')).toContainText('Draw a picture');
+  await expect(dialog.getByRole('heading')).toContainText('Draw it for me');
   await dialog.getByTestId('draw-option-bricks').click();
   await expect(dialog.getByTestId('draw-option-bricks')).toHaveAttribute('aria-selected', 'true');
   // New looks shows the next six seeds and chooses the first.
@@ -228,7 +228,7 @@ test('art: Draw frames in the Particle Studio, Draw a skin in the Mob Studio wit
   const particleStudio = window.getByTestId('particle-studio');
   await expect(particleStudio).toBeVisible();
   const drawFrames = particleStudio.getByTestId('particle-draw-frames');
-  await expect(drawFrames).toHaveText('Draw frames…');
+  await expect(drawFrames).toHaveText('Draw it for me');
   await drawFrames.click();
   const dialog = window.getByTestId('draw-dialog');
   await expect(dialog).toBeVisible();
@@ -281,12 +281,12 @@ test('art: Draw frames in the Particle Studio, Draw a skin in the Mob Studio wit
   await expect(studio).toBeVisible();
   const drawSkin = studio.getByTestId('entity-draw-skin');
   await expect(drawSkin).toBeEnabled();
-  await expect(drawSkin).toHaveText('Draw a skin');
+  await expect(drawSkin).toHaveText('Draw its skin');
   await expect(studio.getByTestId('entity-draw-skin-note')).toHaveCount(0);
   await drawSkin.click();
   const skinDialog = window.getByTestId('draw-dialog');
   await expect(skinDialog).toBeVisible();
-  await expect(skinDialog.getByRole('heading')).toContainText('Draw a skin');
+  await expect(skinDialog.getByRole('heading')).toContainText('Draw its skin');
   await skinDialog.getByTestId('draw-finish').selectOption('scales');
   const skinSeed = await chooseVariation(skinDialog, 3);
   const skinColour = await dialogColour(skinDialog);
@@ -306,11 +306,9 @@ test('art: Draw frames in the Particle Studio, Draw a skin in the Mob Studio wit
   await window.screenshot({ path: join(outputDir, 'art-path-mobs.png') });
 });
 
-test('art: Very easy "Draw it for me" on a Creator picture field', async () => {
+test('art: "Draw it for me" on a Creator picture field, More options closed', async () => {
   test.setTimeout(120_000);
-  const { window, folders } = await blankProject('msm-art-very-easy-');
-  await window.getByTestId('toolbar-mode-very-easy').click();
-  await expect(window.getByTestId('toolbar-very-easy')).toBeVisible();
+  const { window, folders } = await blankProject('msm-art-very-easy-', 'closed');
   await window.getByTestId('toolbar-home').click();
   const home = window.getByTestId('home');
   await expect(home).toBeVisible();
@@ -324,7 +322,7 @@ test('art: Very easy "Draw it for me" on a Creator picture field', async () => {
   await expect(creator.getByTestId('param-picture_stone-empty')).toBeVisible();
   await draw.click();
 
-  // Very easy's dialog: its own title, Colour and the variations, nothing else.
+  // The dialog's default view: its title, Colour and the variations; the rest in More options.
   const dialog = window.getByTestId('draw-dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('heading')).toContainText('Draw it for me');

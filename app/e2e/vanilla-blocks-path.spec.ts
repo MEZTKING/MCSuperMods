@@ -111,7 +111,6 @@ test('vanilla blocks: Very easy picks, Lights and Copper set defaults, a sign in
   await expect(things).toContainText('Copper set');
 
   // Advanced: the sets' elements, then a sign made in the Block Studio. ----------------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await expect(window.getByRole('navigation', { name: 'Elements' })).toBeVisible();
   for (const path of ['glow_torch', 'glow_lantern', 'glow_chain', 'glow_candle', 'tin_block']) {
     await expect(window.getByTestId(`element-row-${id(path)}`)).toBeVisible();
@@ -184,7 +183,7 @@ test('vanilla blocks: Very easy picks, Lights and Copper set defaults, a sign in
   await window.screenshot({ path: join(outputDir, 'vanilla-blocks-path.png') });
 
   // Back to Very easy: nothing to fix. ---------------------------------------------------------
-  await window.getByTestId('toolbar-mode-very-easy').click();
+  await window.getByTestId('toolbar-home').click();
   await window.getByTestId('toolbar-home').click();
   await expect(home).toBeVisible();
   await expectNothingToFix(window);

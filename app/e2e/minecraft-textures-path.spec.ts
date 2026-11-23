@@ -29,7 +29,7 @@ import { strToU8, unzipSync, zipSync } from 'fflate';
 import { expect, test } from 'playwright/test';
 import { makeOfficialDir } from '../test/helpers/fake-launchers';
 import { KEPT_ENTRIES, makePng } from '../test/helpers/synthetic-jar';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
 import { readPng } from './png';
 
 /** The project folder name; a new project's namespace is derived from it. */
@@ -96,11 +96,11 @@ test('minecraft textures: set up, change Stone, start a texture from Water still
   launched = await launchApp({ reuse: folders });
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // 1. Very easy: Home's tile, not set up yet. -----------------------------------------------
-  await window.getByTestId('toolbar-mode-very-easy').click();
+  await window.getByTestId('toolbar-home').click();
   const home = window.getByTestId('home');
   await expect(home).toBeVisible();
   await home.getByTestId('home-tile-minecraft-texture').click();
@@ -150,7 +150,6 @@ test('minecraft textures: set up, change Stone, start a texture from Water still
   ]);
 
   // One undo step: Undo removes the override, Redo puts it back.
-  await window.getByTestId('toolbar-mode-advanced').click();
   await window.getByTestId('toolbar-undo').click();
   await expect.poll(() => existsSync(stone)).toBe(false);
   await window.getByTestId('toolbar-redo').click();

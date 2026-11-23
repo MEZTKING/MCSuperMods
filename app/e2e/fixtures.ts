@@ -55,6 +55,11 @@ export interface LaunchOptions {
    * client serves every AI helper run of the launch, and the key reads as set ("e2e!").
    */
   aiScript?: string;
+  /**
+   * Whether every More options never opened starts open (ADR 0130): `'open'` by default, so the
+   * specs written before one mode find each field; `'closed'` is what people see.
+   */
+  moreOptions?: 'open' | 'closed';
 }
 
 const CLOSE_TIMEOUT_MS = 10_000;
@@ -117,6 +122,7 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
   const delimiter = process.platform === 'win32' ? ';' : ':';
   if (options.pickFiles !== undefined) env.MSM_E2E_PICK_FILES = options.pickFiles.join(delimiter);
   if (options.aiScript !== undefined) env.MSM_E2E_AI_SCRIPT = options.aiScript;
+  if ((options.moreOptions ?? 'open') === 'open') env.MSM_E2E_MORE_OPTIONS = 'open';
 
   const app = await _electron.launch({
     args: [appDir, '--no-sandbox', `--user-data-dir=${userData}`, ...(options.args ?? [])],
@@ -168,4 +174,35 @@ export async function openDockTab(window: Page, name: string): Promise<void> {
     .waitFor({ state: 'detached', timeout: 5_000 })
     .catch(() => undefined);
   await window.getByTestId(`dock-tab-${name}`).click();
+}
+
+/**
+ * A blank project in the e2e project folder (named after it): **New**, then the New mod
+ * dialog's More options **Use a folder of my own…** (ADR 0130), which picks
+ * `MSM_E2E_PROJECT_DIR` without a dialog.
+ */
+export async function newProjectInFolder(window: Page): Promise<void> {
+  await window.getByTestId('toolbar-new-project').click();
+  const dialog = window.getByTestId('new-mod-dialog');
+  await dialog.waitFor({ state: 'visible' });
+  const choose = dialog.getByTestId('new-mod-choose-folder');
+  if (!(await choose.isVisible())) await dialog.getByTestId('more-options-new-mod').click();
+  await choose.click();
+}
+
+/** Opens a More options by its key (a section's test id), unless it is open already. */
+export async function openMoreOptions(window: Page | Locator, key: string): Promise<void> {
+  const toggle = window.getByTestId(`more-options-${key}`).first();
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+}
+
+/** Opens **Edit as raw text** under Where it goes (ADR 0130 D4; before it the Raw JSON tab). */
+export async function openRawText(window: Page): Promise<void> {
+  await openMoreOptions(window, 'where-it-goes');
+  await openMoreOptions(window, 'where-raw-text');
+}
+
+/** Opens **Every setting** (ADR 0130 D3; before it a Studio's "Advanced (all fields)"). */
+export async function openEverySetting(window: Page): Promise<void> {
+  await openMoreOptions(window, 'every-setting');
 }

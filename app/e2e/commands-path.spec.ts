@@ -110,7 +110,6 @@ test('commands: the flows with defaults, a command in its Studio, nothing to fix
   await expect(home.getByTestId('my-things')).toContainText('heal');
 
   // Advanced: a command made in the Command Studio. -------------------------------------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await expect(window.getByTestId(`element-row-${id('heal')}`)).toBeVisible();
   await window.getByTestId('toolbar-add-element').click();
   const add = window.getByTestId('new-element-dialog');
@@ -191,7 +190,7 @@ test('commands: the flows with defaults, a command in its Studio, nothing to fix
   await window.screenshot({ path: join(outputDir, 'commands-path.png') });
 
   // Back to Very easy: nothing to fix. ---------------------------------------------------------
-  await window.getByTestId('toolbar-mode-very-easy').click();
+  await window.getByTestId('toolbar-home').click();
   await window.getByTestId('toolbar-home').click();
   await expect(home).toBeVisible();
   await expectNothingToFix(window);

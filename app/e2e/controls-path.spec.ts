@@ -123,7 +123,6 @@ test('controls: a key bind pressed in its Studio, a mana bar, a Rules key card, 
   const ns = manifest.namespaces[0] ?? '';
   expect(ns).not.toBe('');
   const id = (path: string) => `${ns}:${path}`;
-  await window.getByTestId('toolbar-mode-advanced').click();
 
   // A key bind from its template; its key set by pressing it. ---------------------------------
   await addFromTemplate(window, ns, 'dash', 'msm_key_bind_dash', 'dash');
@@ -200,7 +199,7 @@ test('controls: a key bind pressed in its Studio, a mana bar, a Rules key card, 
   await window.screenshot({ path: join(outputDir, 'controls-path.png') });
 
   // Back to Very easy: nothing to fix. ---------------------------------------------------------
-  await window.getByTestId('toolbar-mode-very-easy').click();
+  await window.getByTestId('toolbar-home').click();
   await window.getByTestId('toolbar-home').click();
   await expect(home).toBeVisible();
   await expectNothingToFix(window);

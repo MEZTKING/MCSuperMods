@@ -297,7 +297,7 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   const again = second.window;
   await again.waitForLoadState('domcontentloaded');
   if (SHOTS !== undefined) await forShots(second);
-  await again.getByTestId('toolbar-mode-very-easy').click();
+  await again.getByTestId('toolbar-home').click();
   const home2 = again.getByTestId('home');
   await expect(home2).toBeVisible();
   const yours = home2.getByTestId('home-your-mods');

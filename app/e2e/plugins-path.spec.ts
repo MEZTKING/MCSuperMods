@@ -24,6 +24,7 @@ import {
   installPlugin,
   type LaunchedApp,
   launchApp,
+  newProjectInFolder,
   openDockTab,
   outputDir,
   samplePluginDist,
@@ -139,7 +140,7 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
 
   // A blank project: the greeting is its only data pack content, so the data pack export
   // must see the plugin's (asynchronous) lowering.
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${namespace}:pack`)).toBeVisible();
 
   // New element offers the plugin's template under its own category.
@@ -149,7 +150,6 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
 
   // The generic form comes from the plugin's mcdoc schema.
   await window.getByTestId(`element-row-${elementId}`).click();
-  await window.getByTestId('editor-tab-form').click();
   const form = window.getByTestId('schema-form');
   const message = form.getByLabel('message', { exact: true });
   const colour = form.getByLabel('colour', { exact: true });
@@ -257,7 +257,7 @@ test('plugins: a manifest asking for an incompatible API range is refused', asyn
   await closeSettings(window);
 
   // Nothing of the plugin is registered: New element has no Greetings group.
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId('element-row-refused_e2e:pack')).toBeVisible();
   await window.getByTestId('toolbar-add-element').click();
   const dialog = window.getByTestId('new-element-dialog');
@@ -328,7 +328,7 @@ test('plugins: a lower call that never returns stops the plugin and blocks expor
   await expect(section.getByTestId('plugin-sample.spinner-state')).toHaveText('Loaded');
   await closeSettings(window);
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${namespace}:pack`)).toBeVisible();
   await addElement(window, 'spinners', 'sample-spinner', 'spin');
   const elementId = `${namespace}:spin`;

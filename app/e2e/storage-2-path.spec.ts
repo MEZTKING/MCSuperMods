@@ -22,7 +22,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+  toast,
+} from './fixtures';
 
 /** The project folder name; a blank project's namespace is derived from it. */
 const NAMESPACE = 'vault';
@@ -145,7 +152,7 @@ test('storage 2: double, per-player and copper chests from the Creator, the Inve
   launched = await launchApp({ reuse: folders });
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // 1. The three flows. --------------------------------------------------------------------------

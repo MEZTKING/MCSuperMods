@@ -23,7 +23,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+  toast,
+} from './fixtures';
 
 /** The project folder name; a blank project's namespace is derived from it. */
 const NAMESPACE = 'harbour';
@@ -128,7 +135,7 @@ test('mobs 2: a fish bucket, a hovering mob and boats from the Creator, the Stud
   launched = await launchApp({ reuse: folders, args: WEBGL_ARGS });
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // 1. The three flows. --------------------------------------------------------------------------

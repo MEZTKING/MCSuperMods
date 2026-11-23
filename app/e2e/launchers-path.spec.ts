@@ -18,7 +18,7 @@ import { defaultTargetId, targetById } from '@msm/targets';
 import { expect, type Page, test } from 'playwright/test';
 import { makeCurseForgeRoot, makeMmcRoot } from '../test/helpers/fake-launchers';
 import { buildSyntheticJar } from '../test/helpers/synthetic-jar';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'msm_launchers';
@@ -156,7 +156,7 @@ test('launchers: Prism and CurseForge instances, extract from Prism, install pac
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // Settings: every location with launcher, version and loader badges. ---------------------

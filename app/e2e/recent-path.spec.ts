@@ -8,7 +8,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
 
 /** Folder names double as project names and namespaces. */
 const PROJECT_A = 'recent_a';
@@ -51,14 +51,14 @@ test('recent projects: create A and B, relaunch, list B then A, open A', async (
   let { window } = await launchWith(dirA, shared);
   await expect(window.getByText('No project is open. Use New or Open.')).toBeVisible();
   await expect(window.getByTestId('recent-projects')).toHaveCount(0);
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${PROJECT_A}:pack`)).toBeVisible();
   await closeLast();
 
   // Second launch: A is listed; create B. ---------------------------------------------------
   ({ window } = await launchWith(dirB, shared));
   await expect(window.getByTestId('recent-row-0')).toContainText(PROJECT_A);
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${PROJECT_B}:pack`)).toBeVisible();
   await closeLast();
 

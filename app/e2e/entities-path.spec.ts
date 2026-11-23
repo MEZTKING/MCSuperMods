@@ -22,7 +22,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  appDir,
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+} from './fixtures';
 import { checkerPng } from './png';
 
 /** The project folder name; a blank project's namespace (and mod id) is derived from it. */
@@ -148,7 +155,7 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   let palette = await openPalette(window, 'import blockbench');

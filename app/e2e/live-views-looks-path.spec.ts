@@ -28,7 +28,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { crc32, deflateSync } from 'node:zlib';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp } from './fixtures';
+import { type LaunchedApp, launchApp, openRawText } from './fixtures';
 import { oggVorbis } from './ogg';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
@@ -316,7 +316,7 @@ async function openView(window: Page, id: string, title: string): Promise<Locato
  * text goes in as one input event on a single line, so Monaco's auto-closing leaves it alone.
  */
 async function applyRawJson(window: Page, data: unknown): Promise<void> {
-  await window.getByTestId('editor-tab-json').click();
+  await openRawText(window);
   const panel = window.getByRole('region', { name: 'Raw JSON' });
   const lines = panel.locator('.monaco-editor .view-lines');
   await expect(lines).toBeVisible();

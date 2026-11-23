@@ -165,7 +165,6 @@ test('vehicles: the Tank and Car flows, the Vehicle Studio, a Rules get-in card,
   await expect(studio.getByTestId('vehicle-weapons')).toHaveCount(0);
 
   // Advanced: the whole Vehicle Studio. -------------------------------------------------------
-  await window.getByTestId('toolbar-mode-advanced').click();
   await window.getByTestId(`element-row-${id('battle_tank')}`).click();
   await expect(studio).toBeVisible();
   await expect(studio.getByTestId('vehicle-seat-2')).toBeVisible();
@@ -285,7 +284,7 @@ test('vehicles: the Tank and Car flows, the Vehicle Studio, a Rules get-in card,
   await window.screenshot({ path: join(outputDir, 'vehicles-path.png') });
 
   // Back to Very easy: nothing to fix. ---------------------------------------------------------
-  await window.getByTestId('toolbar-mode-very-easy').click();
+  await window.getByTestId('toolbar-home').click();
   await window.getByTestId('toolbar-home').click();
   await expect(home).toBeVisible();
   await expectNothingToFix(window);

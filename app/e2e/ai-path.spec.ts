@@ -32,7 +32,14 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  appDir,
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openDockTab,
+  outputDir,
+} from './fixtures';
 import { rgbaPng } from './png';
 
 /** The project folder name; a blank project's namespace is derived from it. */
@@ -146,7 +153,7 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-project').click();
+  await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // Open the helper through the palette (no Chat or Build switch: the plan comes first).

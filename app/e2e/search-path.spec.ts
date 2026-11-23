@@ -185,7 +185,7 @@ test('search in Very easy: a blue sword, an ore that drops xp, a how-to and a se
   expect(await launched.network()).toEqual([]);
 });
 
-test('search in Advanced: Ctrl+K with > and @, and the palette still runs commands', async () => {
+test('search: Ctrl+K with > and @ for everyone, and the palette still runs commands', async () => {
   test.setTimeout(120_000);
   launched = await launchSearch('advanced', {
     prepare: ({ projectDir }) =>
