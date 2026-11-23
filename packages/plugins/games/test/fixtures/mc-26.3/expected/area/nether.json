@@ -1,0 +1,117 @@
+[
+  {
+    "contents": {
+      "predicate": {
+        "dimension": "minecraft:the_nether",
+        "position": {
+          "x": {
+            "max": 8,
+            "min": -8
+          },
+          "y": {
+            "max": 71,
+            "min": 64
+          },
+          "z": {
+            "max": 8,
+            "min": -8
+          }
+        }
+      },
+      "type": "minecraft:location_check"
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/predicate/msm_games/area/fortress_gate.json",
+    "schema": "resource:predicate"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a at @s if predicate demo:msm_games/area/fortress_gate run tag @s add demo.area.fortress_gate.now",
+      "execute as @a[tag=demo.area.fortress_gate.now,tag=!demo.area.fortress_gate] run function demo:msm_games/area/fortress_gate/entered",
+      "execute as @a[tag=!demo.area.fortress_gate.now,tag=demo.area.fortress_gate] run function demo:msm_games/area/fortress_gate/left",
+      "tag @a[tag=demo.area.fortress_gate.now] remove demo.area.fortress_gate.now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/fortress_gate/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/area/fortress_gate/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.area.fortress_gate",
+      "function #demo:msm_games/area/fortress_gate/entered",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/fortress_gate/entered.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.area.fortress_gate",
+      "function #demo:msm_games/area/fortress_gate/left",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/fortress_gate/left.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:the_nether run kill @e[type=!minecraft:player,x=-8,y=64,z=-8,dx=15,dy=6,dz=15]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/fortress_gate/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/area/fortress_gate/entered.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/area/fortress_gate/left.json",
+    "schema": "tag:function"
+  }
+]

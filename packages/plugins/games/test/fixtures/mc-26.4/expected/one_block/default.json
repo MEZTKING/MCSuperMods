@@ -1,0 +1,132 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_one_block dummy",
+      "execute unless score #one_block.phase demo.msm_one_block matches 0.. run scoreboard players set #one_block.breaks demo.msm_one_block -1",
+      "execute unless score #one_block.phase demo.msm_one_block matches 0.. run scoreboard players set #one_block.phase demo.msm_one_block 0",
+      "execute if score #one_block.phase demo.msm_one_block matches 1.. run scoreboard players set #one_block.phase demo.msm_one_block 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/one_block/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/one_block/one_block/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld if block 0 64 0 minecraft:air run function demo:msm_games/one_block/one_block/next",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/one_block/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/one_block/one_block/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #one_block.breaks demo.msm_one_block matches 0.. run function #demo:msm_games/one_block/one_block/broken",
+      "scoreboard players add #one_block.breaks demo.msm_one_block 1",
+      "execute if score #one_block.phase demo.msm_one_block matches 0 if score #one_block.breaks demo.msm_one_block matches 100.. run function demo:msm_games/one_block/one_block/phase_0",
+      "execute if score #one_block.phase demo.msm_one_block matches 0 run function demo:msm_games/one_block/one_block/fill_0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/one_block/next.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #one_block.phase demo.msm_one_block 0",
+      "scoreboard players set #one_block.breaks demo.msm_one_block 0",
+      "tellraw @a {\"text\":\"Plains\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/one_block/phase_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #one_block.roll demo.msm_one_block run random value 1..10",
+      "execute if score #one_block.roll demo.msm_one_block matches 1..4 run setblock 0 64 0 minecraft:grass_block",
+      "execute if score #one_block.roll demo.msm_one_block matches 5..8 run setblock 0 64 0 minecraft:dirt",
+      "execute if score #one_block.roll demo.msm_one_block matches 9..10 run setblock 0 64 0 minecraft:oak_log",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/one_block/blocks_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/one_block/one_block/blocks_0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/one_block/fill_0.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/one_block/one_block/broken.json",
+    "schema": "tag:function"
+  }
+]

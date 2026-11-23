@@ -1,0 +1,43 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "team add demo.my_team {\"text\":\"My team\"}",
+      "team modify demo.my_team displayName {\"text\":\"My team\"}",
+      "team modify demo.my_team color white",
+      "team modify demo.my_team friendlyFire true",
+      "team modify demo.my_team seeFriendlyInvisibles true",
+      "team modify demo.my_team nametagVisibility always",
+      "team modify demo.my_team collisionRule always",
+      "team modify demo.my_team prefix {\"text\":\"\"}",
+      "team modify demo.my_team suffix {\"text\":\"\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/team/my_team/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/team/my_team/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  }
+]

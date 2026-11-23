@@ -1,0 +1,178 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_one_block dummy",
+      "execute unless score #nether_block.phase demo.msm_one_block matches 0.. run scoreboard players set #nether_block.breaks demo.msm_one_block -1",
+      "execute unless score #nether_block.phase demo.msm_one_block matches 0.. run scoreboard players set #nether_block.phase demo.msm_one_block 0",
+      "execute if score #nether_block.phase demo.msm_one_block matches 2.. run scoreboard players set #nether_block.phase demo.msm_one_block 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/one_block/nether_block/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:the_nether if block -3 70 12 minecraft:air run function demo:msm_games/one_block/nether_block/next",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/one_block/nether_block/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #nether_block.breaks demo.msm_one_block matches 0.. run function #demo:msm_games/one_block/nether_block/broken",
+      "scoreboard players add #nether_block.breaks demo.msm_one_block 1",
+      "execute if score #nether_block.phase demo.msm_one_block matches 0 if score #nether_block.breaks demo.msm_one_block matches 5.. run function demo:msm_games/one_block/nether_block/phase_1",
+      "execute if score #nether_block.phase demo.msm_one_block matches 0 run function demo:msm_games/one_block/nether_block/fill_0",
+      "execute if score #nether_block.phase demo.msm_one_block matches 1 run function demo:msm_games/one_block/nether_block/fill_1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/next.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #nether_block.phase demo.msm_one_block 0",
+      "scoreboard players set #nether_block.breaks demo.msm_one_block 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/phase_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "setblock -3 70 12 minecraft:netherrack",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/blocks_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "summon minecraft:strider -2.5 71 12.5",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/mobs_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #nether_block.roll demo.msm_one_block run random value 1..10000",
+      "execute if score #nether_block.roll demo.msm_one_block matches 1..10000 run setblock -3 70 12 minecraft:chest{LootTable:\"minecraft:chests/nether_bridge\"}",
+      "function demo:msm_games/one_block/nether_block/mobs_0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/fill_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #nether_block.phase demo.msm_one_block 1",
+      "scoreboard players set #nether_block.breaks demo.msm_one_block 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/phase_1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #nether_block.roll demo.msm_one_block run random value 1..3",
+      "execute if score #nether_block.roll demo.msm_one_block matches 1..2 run setblock -3 70 12 minecraft:blackstone",
+      "execute if score #nether_block.roll demo.msm_one_block matches 3..3 run setblock -3 70 12 minecraft:basalt",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/blocks_1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/one_block/nether_block/blocks_1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/nether_block/fill_1.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/one_block/nether_block/broken.json",
+    "schema": "tag:function"
+  }
+]

@@ -6,6 +6,11 @@
  */
 import type { ElementKind, Json } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
+import { lowerArea } from '../lowering/area';
+import { lowerObjective } from '../lowering/objective';
+import { lowerOneBlock } from '../lowering/one-block';
+import { lowerTeam } from '../lowering/team';
+import { lowerTimer } from '../lowering/timer';
 
 /** The kind ids this plugin contributes, in order. */
 export const GAMES_KIND_IDS = [
@@ -103,40 +108,30 @@ export const worldSetupKind: ElementKind = gamesKind(
   WORLD_SETUP_DEFAULT,
 );
 /** A one-block position and its phases (ADR 0113 D3). */
-export const oneBlockKind: ElementKind = gamesKind(
-  'msm:one_block',
-  MSM_SCHEMA_REFS.oneBlock,
-  'one_block',
-  ONE_BLOCK_DEFAULT,
-);
+export const oneBlockKind: ElementKind = {
+  ...gamesKind('msm:one_block', MSM_SCHEMA_REFS.oneBlock, 'one_block', ONE_BLOCK_DEFAULT),
+  lower: lowerOneBlock,
+};
 /** A team (ADR 0113 D4). */
-export const teamKind: ElementKind = gamesKind(
-  'msm:team',
-  MSM_SCHEMA_REFS.team,
-  'team',
-  TEAM_DEFAULT,
-);
+export const teamKind: ElementKind = {
+  ...gamesKind('msm:team', MSM_SCHEMA_REFS.team, 'team', TEAM_DEFAULT),
+  lower: lowerTeam,
+};
 /** A scoreboard objective (ADR 0113 D5). */
-export const objectiveKind: ElementKind = gamesKind(
-  'msm:objective',
-  MSM_SCHEMA_REFS.objective,
-  'objective',
-  OBJECTIVE_DEFAULT,
-);
+export const objectiveKind: ElementKind = {
+  ...gamesKind('msm:objective', MSM_SCHEMA_REFS.objective, 'objective', OBJECTIVE_DEFAULT),
+  lower: lowerObjective,
+};
 /** A timer in whole seconds (ADR 0113 D6). */
-export const timerKind: ElementKind = gamesKind(
-  'msm:timer',
-  MSM_SCHEMA_REFS.timer,
-  'timer',
-  TIMER_DEFAULT,
-);
+export const timerKind: ElementKind = {
+  ...gamesKind('msm:timer', MSM_SCHEMA_REFS.timer, 'timer', TIMER_DEFAULT),
+  lower: lowerTimer,
+};
 /** A box that knows when players walk in or out (ADR 0113 D7). */
-export const areaKind: ElementKind = gamesKind(
-  'msm:area',
-  MSM_SCHEMA_REFS.area,
-  'area',
-  AREA_DEFAULT,
-);
+export const areaKind: ElementKind = {
+  ...gamesKind('msm:area', MSM_SCHEMA_REFS.area, 'area', AREA_DEFAULT),
+  lower: lowerArea,
+};
 
 /** Every kind this plugin contributes, in the order of {@link GAMES_KIND_IDS}. */
 export const gamesKinds: readonly ElementKind[] = Object.freeze([

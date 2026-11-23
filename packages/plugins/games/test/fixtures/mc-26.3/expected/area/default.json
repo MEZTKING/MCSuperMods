@@ -1,0 +1,117 @@
+[
+  {
+    "contents": {
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "position": {
+          "x": {
+            "max": 16,
+            "min": 0
+          },
+          "y": {
+            "max": 80,
+            "min": 64
+          },
+          "z": {
+            "max": 16,
+            "min": 0
+          }
+        }
+      },
+      "type": "minecraft:location_check"
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/predicate/msm_games/area/my_area.json",
+    "schema": "resource:predicate"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a at @s if predicate demo:msm_games/area/my_area run tag @s add demo.area.my_area.now",
+      "execute as @a[tag=demo.area.my_area.now,tag=!demo.area.my_area] run function demo:msm_games/area/my_area/entered",
+      "execute as @a[tag=!demo.area.my_area.now,tag=demo.area.my_area] run function demo:msm_games/area/my_area/left",
+      "tag @a[tag=demo.area.my_area.now] remove demo.area.my_area.now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/my_area/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/area/my_area/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.area.my_area",
+      "function #demo:msm_games/area/my_area/entered",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/my_area/entered.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.area.my_area",
+      "function #demo:msm_games/area/my_area/left",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/my_area/left.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run kill @e[type=!minecraft:player,x=0,y=64,z=0,dx=15,dy=15,dz=15]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/my_area/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/area/my_area/entered.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/area/my_area/left.json",
+    "schema": "tag:function"
+  }
+]

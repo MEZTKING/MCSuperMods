@@ -1,0 +1,129 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_timers dummy",
+      "execute unless score #race.stopwatch.on demo.msm_timers matches 0..1 run scoreboard players set #race.stopwatch.on demo.msm_timers 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/race/stopwatch/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/timer/race/stopwatch/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #race.stopwatch.on demo.msm_timers matches 1 run scoreboard players add #race.stopwatch.ticks demo.msm_timers 1",
+      "execute if score #race.stopwatch.on demo.msm_timers matches 1 if score #race.stopwatch.ticks demo.msm_timers matches 20.. run function demo:msm_games/timer/race/stopwatch/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/race/stopwatch/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/timer/race/stopwatch/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #race.stopwatch demo.msm_timers 0",
+      "scoreboard players set #race.stopwatch.ticks demo.msm_timers 0",
+      "scoreboard players set #race.stopwatch.on demo.msm_timers 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/race/stopwatch/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #race.stopwatch.on demo.msm_timers 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/race/stopwatch/stop.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #race.stopwatch.ticks demo.msm_timers 0",
+      "scoreboard players add #race.stopwatch demo.msm_timers 1",
+      "title @a actionbar [{\"text\":\"Time \"},{\"score\":{\"name\":\"#race.stopwatch\",\"objective\":\"demo.msm_timers\"}},{\"text\":\"s\"}]",
+      "execute if score #race.stopwatch demo.msm_timers matches 3600.. run function demo:msm_games/timer/race/stopwatch/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/race/stopwatch/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/timer/race/stopwatch/stop",
+      "function #demo:msm_games/timer/race/stopwatch/ended",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/race/stopwatch/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/timer/race/stopwatch/ended.json",
+    "schema": "tag:function"
+  }
+]

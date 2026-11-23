@@ -44,10 +44,10 @@ describe('games kinds (B549)', () => {
     ]);
   });
 
-  it('lowers to nothing until B551 and B552', async () => {
+  it('lowers the world setup to nothing until B551', async () => {
     const [target] = builtInTargets;
     if (target === undefined) throw new Error('no built-in target');
-    for (const kind of gamesKinds) {
+    for (const kind of gamesKinds.filter((entry) => entry.id === 'msm:world_setup')) {
       const element: Element = {
         formatVersion: 1,
         id: 'mygame:thing' as ResourceLocation,

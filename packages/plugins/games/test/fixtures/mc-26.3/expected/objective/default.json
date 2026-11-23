@@ -1,0 +1,38 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.score dummy {\"text\":\"Score\"}",
+      "scoreboard objectives modify demo.score displayname {\"text\":\"Score\"}",
+      "scoreboard objectives modify demo.score rendertype integer",
+      "scoreboard objectives setdisplay sidebar demo.score",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/objective/score/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/objective/score/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  }
+]

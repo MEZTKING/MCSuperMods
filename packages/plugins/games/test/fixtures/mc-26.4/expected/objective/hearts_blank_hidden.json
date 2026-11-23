@@ -1,0 +1,38 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.health health {\"text\":\"Health\"}",
+      "scoreboard objectives modify demo.health displayname {\"text\":\"Health\"}",
+      "scoreboard objectives modify demo.health rendertype hearts",
+      "scoreboard objectives modify demo.health numberformat blank",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/objective/health/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/objective/health/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  }
+]

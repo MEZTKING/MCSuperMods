@@ -1,0 +1,130 @@
+[
+  {
+    "contents": {
+      "predicate": {
+        "dimension": "minecraft:overworld",
+        "position": {
+          "x": {
+            "max": 132,
+            "min": 100
+          },
+          "y": {
+            "max": 76,
+            "min": 60
+          },
+          "z": {
+            "max": -8,
+            "min": -40
+          }
+        }
+      },
+      "type": "minecraft:location_check"
+    },
+    "layer": "datapack",
+    "merge": null,
+    "path": "data/demo/predicate/msm_games/area/arenas/north.json",
+    "schema": "resource:predicate"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a at @s if predicate demo:msm_games/area/arenas/north run tag @s add demo.area.arenas.north.now",
+      "execute as @a[tag=demo.area.arenas.north.now,tag=!demo.area.arenas.north] run function demo:msm_games/area/arenas/north/entered",
+      "execute as @a[tag=!demo.area.arenas.north.now,tag=demo.area.arenas.north] run function demo:msm_games/area/arenas/north/left",
+      "tag @a[tag=demo.area.arenas.north.now] remove demo.area.arenas.north.now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/arenas/north/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/area/arenas/north/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.area.arenas.north",
+      "function #demo:msm_games/area/arenas/north/entered",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/arenas/north/entered.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.area.arenas.north",
+      "function #demo:msm_games/area/arenas/north/left",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/arenas/north/left.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run kill @e[type=!minecraft:player,x=100,y=60,z=-40,dx=31,dy=15,dz=31]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/arenas/north/clear.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/area/arenas/north/entered.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/area/arenas/north/left.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/area/arenas/north/clear",
+      "execute in minecraft:overworld run place template minecraft:igloo/top 100 60 -40",
+      "execute in minecraft:overworld run place template demo:arena_floor 110 60 -30",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/area/arenas/north/reset.mcfunction",
+    "schema": null
+  }
+]

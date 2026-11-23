@@ -1,0 +1,43 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "team add demo.teams.red {\"text\":\"Red\"}",
+      "team modify demo.teams.red displayName {\"text\":\"Red\"}",
+      "team modify demo.teams.red color red",
+      "team modify demo.teams.red friendlyFire false",
+      "team modify demo.teams.red seeFriendlyInvisibles true",
+      "team modify demo.teams.red nametagVisibility always",
+      "team modify demo.teams.red collisionRule pushOtherTeams",
+      "team modify demo.teams.red prefix {\"text\":\"[Red] \"}",
+      "team modify demo.teams.red suffix {\"text\":\"\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/team/teams/red/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/team/teams/red/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.kills playerKillCount {\"text\":\"Kills\"}",
+      "scoreboard objectives modify demo.kills displayname {\"text\":\"Kills\"}",
+      "scoreboard objectives modify demo.kills rendertype integer",
+      "scoreboard objectives setdisplay list demo.kills",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/objective/kills/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/objective/kills/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  }
+]

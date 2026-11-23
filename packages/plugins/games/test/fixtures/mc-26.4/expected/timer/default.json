@@ -1,0 +1,138 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_timers dummy",
+      "bossbar add demo:msm_games/timer/timer {\"text\":\"Timer\"}",
+      "bossbar set demo:msm_games/timer/timer name {\"text\":\"Timer\"}",
+      "bossbar set demo:msm_games/timer/timer color white",
+      "bossbar set demo:msm_games/timer/timer max 300",
+      "execute unless score #timer.on demo.msm_timers matches 0..1 run scoreboard players set #timer.on demo.msm_timers 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/timer/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/timer/timer/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #timer.on demo.msm_timers matches 1 run scoreboard players add #timer.ticks demo.msm_timers 1",
+      "execute if score #timer.on demo.msm_timers matches 1 if score #timer.ticks demo.msm_timers matches 20.. run function demo:msm_games/timer/timer/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/timer/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/timer/timer/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #timer demo.msm_timers 300",
+      "scoreboard players set #timer.ticks demo.msm_timers 0",
+      "scoreboard players set #timer.on demo.msm_timers 1",
+      "execute store result bossbar demo:msm_games/timer/timer value run scoreboard players get #timer demo.msm_timers",
+      "bossbar set demo:msm_games/timer/timer players @a",
+      "bossbar set demo:msm_games/timer/timer visible true",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/timer/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #timer.on demo.msm_timers 0",
+      "bossbar set demo:msm_games/timer/timer visible false",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/timer/stop.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #timer.ticks demo.msm_timers 0",
+      "scoreboard players remove #timer demo.msm_timers 1",
+      "execute store result bossbar demo:msm_games/timer/timer value run scoreboard players get #timer demo.msm_timers",
+      "bossbar set demo:msm_games/timer/timer players @a",
+      "execute if score #timer demo.msm_timers matches ..0 run function demo:msm_games/timer/timer/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/timer/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/timer/timer/stop",
+      "function #demo:msm_games/timer/timer/ended",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/timer/timer/end.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/timer/timer/ended.json",
+    "schema": "tag:function"
+  }
+]

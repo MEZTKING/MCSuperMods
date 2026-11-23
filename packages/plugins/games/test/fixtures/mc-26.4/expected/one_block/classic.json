@@ -1,0 +1,251 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_one_block dummy",
+      "execute unless score #islands.classic.phase demo.msm_one_block matches 0.. run scoreboard players set #islands.classic.breaks demo.msm_one_block -1",
+      "execute unless score #islands.classic.phase demo.msm_one_block matches 0.. run scoreboard players set #islands.classic.phase demo.msm_one_block 0",
+      "execute if score #islands.classic.phase demo.msm_one_block matches 3.. run scoreboard players set #islands.classic.phase demo.msm_one_block 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/one_block/islands/classic/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld if block 0 64 0 minecraft:air run function demo:msm_games/one_block/islands/classic/next",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/one_block/islands/classic/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #islands.classic.breaks demo.msm_one_block matches 0.. run function #demo:msm_games/one_block/islands/classic/broken",
+      "scoreboard players add #islands.classic.breaks demo.msm_one_block 1",
+      "execute if score #islands.classic.phase demo.msm_one_block matches 0 if score #islands.classic.breaks demo.msm_one_block matches 100.. run function demo:msm_games/one_block/islands/classic/phase_1",
+      "execute if score #islands.classic.phase demo.msm_one_block matches 1 if score #islands.classic.breaks demo.msm_one_block matches 200.. run function demo:msm_games/one_block/islands/classic/phase_2",
+      "execute if score #islands.classic.phase demo.msm_one_block matches 2 if score #islands.classic.breaks demo.msm_one_block matches 200.. run function demo:msm_games/one_block/islands/classic/phase_0",
+      "execute if score #islands.classic.phase demo.msm_one_block matches 0 run function demo:msm_games/one_block/islands/classic/fill_0",
+      "execute if score #islands.classic.phase demo.msm_one_block matches 1 run function demo:msm_games/one_block/islands/classic/fill_1",
+      "execute if score #islands.classic.phase demo.msm_one_block matches 2 run function demo:msm_games/one_block/islands/classic/fill_2",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/next.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #islands.classic.phase demo.msm_one_block 0",
+      "scoreboard players set #islands.classic.breaks demo.msm_one_block 0",
+      "tellraw @a {\"text\":\"Plains\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/phase_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..12",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..4 run setblock 0 64 0 minecraft:grass_block",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 5..8 run setblock 0 64 0 minecraft:dirt",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 9..11 run setblock 0 64 0 minecraft:oak_log",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 12..12 run setblock 0 64 0 minecraft:oak_leaves",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/blocks_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..3",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..1 run summon minecraft:cow 0.5 65 0.5",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 2..2 run summon minecraft:sheep 0.5 65 0.5",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 3..3 run summon minecraft:chicken 0.5 65 0.5",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/mobs_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..10000",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..200 run setblock 0 64 0 minecraft:chest{LootTable:\"minecraft:chests/village/village_plains_house\"}",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 201.. run function demo:msm_games/one_block/islands/classic/blocks_0",
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..10000",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..500 run function demo:msm_games/one_block/islands/classic/mobs_0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/fill_0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #islands.classic.phase demo.msm_one_block 1",
+      "scoreboard players set #islands.classic.breaks demo.msm_one_block 0",
+      "tellraw @a {\"text\":\"Underground\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/phase_1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..18",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..10 run setblock 0 64 0 minecraft:stone",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 11..13 run setblock 0 64 0 minecraft:coal_ore",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 14..15 run setblock 0 64 0 minecraft:iron_ore",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 16..17 run setblock 0 64 0 minecraft:copper_ore",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 18..18 run setblock 0 64 0 minecraft:gold_ore",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/blocks_1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..10000",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..200 run setblock 0 64 0 minecraft:chest{LootTable:\"minecraft:chests/simple_dungeon\"}",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 201.. run function demo:msm_games/one_block/islands/classic/blocks_1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/fill_1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #islands.classic.phase demo.msm_one_block 2",
+      "scoreboard players set #islands.classic.breaks demo.msm_one_block 0",
+      "tellraw @a {\"text\":\"The Nether\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/phase_2.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..15",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..10 run setblock 0 64 0 minecraft:netherrack",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 11..12 run setblock 0 64 0 minecraft:nether_quartz_ore",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 13..13 run setblock 0 64 0 minecraft:glowstone",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 14..15 run setblock 0 64 0 minecraft:soul_sand",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/blocks_2.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "summon minecraft:piglin 0.5 65 0.5",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/mobs_2.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..10000",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..100 run setblock 0 64 0 minecraft:chest{LootTable:\"minecraft:chests/nether_bridge\"}",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 101.. run function demo:msm_games/one_block/islands/classic/blocks_2",
+      "execute store result score #islands.classic.roll demo.msm_one_block run random value 1..10000",
+      "execute if score #islands.classic.roll demo.msm_one_block matches 1..200 run function demo:msm_games/one_block/islands/classic/mobs_2",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/one_block/islands/classic/fill_2.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/one_block/islands/classic/broken.json",
+    "schema": "tag:function"
+  }
+]
