@@ -1028,3 +1028,28 @@ Not committed; each needs an ADR before work starts.
 | 2026-11-23 | AI helper 2: clarity (ADR 0125) | ADR 0125 accepted with findings at B693 (B680–B692; the later topics B617, B561, B632, the B553 merge and Try it's commands; reserves B694–B696 not run; plan deleted, findings F1–F21 with their outcome in the ADR); ADR 0041 amended (D6 modes, D7 limits, D8 the panel). One system prompt in 26 topic files under `packages/ai/src/prompt/`, pinned to the code by `ai-prompt-truth` tests (and three siblings), its budget 104,000 characters (from 96,000 in five raises, each with its line); no Chat or Build switch, the run's size from where the user started; the state line, the plan in the conversation, the tray of things with See it and cards, Show me, Undo and Put back; the three-step key card with Save and check; failures as sentences with one button; the typical cost derived (about $0.29 for a first question on Opus 5.5 at the close); Ask the helper on Things to fix; words per view mode swept for ids; e2e `ai-clarity-path`; guide pages `ai-helper.md` (rewritten) and `ai-helper-check.md`. Unreleased; the user's check with a real key pending. |
 | 2026-11-23 | Live views 3: looks and sounds (ADR 0121) | ADR 0121 accepted with findings at B633 (B619–B632; reserve B646 not run; batch 3's facts 3F1–3F12, spike answers 3S1–3S12 and limits 3L1–3L12 moved into the ADR; batch 4 stays in the plan). **Play** beside every place a sound is picked or defined (25 places in `SOUND_PICKERS`, one app-level player in `app/src/renderer/src/audio/`, long sounds streamed), Minecraft's own sounds and unifont read in place from the user's asset store (`asset-index.ts`, `msm:v1:minecraft:assetObject`, never cached); the looks registry `liveviews/looks/` (32 kinds): eighteen stand-in bodies from MSM's own measurements for the mob variants, villagers and the sulfur cube (the zombie nautilus a flat sheet), paintings, banners and shields, trims on the armour figure, pots, fonts (bitmap, space and reference checked), particle sprites, waypoint styles, potions, creative tabs, effect frames, the day strip, shaders and post effects (seven translation rules; post 9 of 9 compile; MSM's own test picture), songs with their length and comparator, horn calls with their range; the Creator's Live tab for seven more flows; My things' Particles and sounds; plugin API 1.25.0 `TargetFacts.dyes`; cache schema 6 (+1,408 and +1,559 files); e2e `live-views-looks-path` and `live-views-shaders-path`; guide `live-views.md` Looks and sounds; the AI helper's topic file (prompt budget 104,000). Audit: 112 kinds with a live view, 3 waiting, 9 exempt. Sizes: renderer 18.8 of 21 MB (stop 20.5), first paint 4.7 of 6 MB (stop 5.5), through ADR 0126 and its first-paint budget. Unreleased; the user's look and the real-folder sound checks pending. |
 | 2026-11-23 | Search everything (ADR 0124) | ADR 0124 accepted with findings at B673 (B650–B672 and the follow-ups "Ask the helper from search" and "Unavailable flows never hidden"; reserves B674–B676 not run; plan deleted, facts SF1–SF26 with a "Since" column, limits SL1–SL17 with their outcome and the spike's answers SQ1–SQ16 in the ADR). One offline search over flows, starters, templates, examples, Showcase cards, kinds, the mod's things, vanilla ids, Rules lines, settings, commands, the guide and Things to fix: the package `@msm/search` (trigram typos, a dictionary-aware stemmer, British and American folding, intent words, BM25F, answers from words, one behaviour clause), plugin API 1.23.0 `searchData` in every built-in plugin, layers built in about 0.1 s in a worker with 95th-centile queries under 16 ms, the panel with chips, Best matches and sections, one action per result and a live picture first, the doors (Home, the empty editor area, the toolbar, Ctrl/Cmd+K, Edit > Search…, the palette ranked by the engine), one matcher in the four filter boxes, the guide read in the app, `search_library` for the AI helper and **Ask the AI helper**, third-party search data through the sandbox, Settings > Search. 241 hand-written queries: 97.0 % first and 99.1 % in the top three on the sample mod, every bar met on both targets; e2e `search-path` and `search-keyboard-path` with no network; guide page `search.md`. In 1.5.6 (search with its doors, the AI helper's library search, one matcher everywhere); awaiting the user's look and a screen reader check. |
+
+### One mode: the rest (ADR 0131, `docs/PLAN-one-mode-rest.md`, 2026-11-23)
+
+- [ ] B700 measure app.asar
+- [ ] B701 one toolbar row (and the launchers-path flake)
+- [ ] B702 Settings over the open dialog
+- [ ] B703 element list, asset list and status bar in plain words
+- [ ] B641 processor view, Studio link, parity test
+- [ ] B712 every member of a list pool element drawn
+- [ ] B711 native menus and the guide
+- [ ] B713 Showcase and gallery polish
+- [ ] B714 the e2e flakes by root cause
+- [ ] B705 split the blocks and items Studios
+- [ ] B642 structures in Try it
+- [ ] B706 split the worldgen Studios
+- [ ] B707 split Recipe, Tag, Names, Pack settings
+- [ ] B710 Add dialog and Problems in plain words
+- [ ] B704 the four search misses
+- [ ] B643 live views 4 e2e
+- [ ] B708 Rule book, Script and Function sweep
+- [ ] B709 schema form in plain words
+- [ ] B716 export and other dialogs in plain words
+- [ ] B715 split Structure and Template pool
+- [ ] B644 live views 4 words and guide
+- [ ] B645 close of live views 4

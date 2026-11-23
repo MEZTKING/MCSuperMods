@@ -11006,3 +11006,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - The user's look at the default view of each Studio, then the split of the Studios in the audit's second table.
 - Sweep the Add dialog and the asset list for plain words (`docs/ONE-MODE-AUDIT.md`).
+
+## 2026-11-23 — orchestrator — Plan for the fixes after 1.5.8
+
+**What**
+- Reviewed what is left after 1.5.8 against the code at 42012ec and wrote briefs B700 to B716 with the live views briefs B641 to B645 in five waves of at most five (plan: `docs/PLAN-one-mode-rest.md`). No code changed.
+- Verified: the toolbar (about 24 controls, wraps to two rows), the sidebar's kind words (`rowRegistry`), the Studios and surfaces of `docs/ONE-MODE-AUDIT.md`, the painter loss (Settings replaces the one open dialog at seven call sites, the Creator included), the idea card's size and button, `ideaLive`, the three e2e flakes and a fourth (`creator-path`), the four search misses, the unmeasured asar.
+- Found besides: the status bar and the native menus are not in plain words; the sidebar's empty lines name buttons that left the toolbar; the schema form labels fields with raw keys.
+
+**Decisions** (vetoable defaults)
+- One toolbar row with Save kept and a More menu (ADR 0131 to write); Settings opens over the open dialog; clips step their own sharpness down under 24 frames a second (amends ADR 0128 D3); idea cards use the gallery's card; guide entries carry heading depth; the schema form shows words in the main area and keys in More options; Script and Function stay editors.
+- One owner per wave for the existing e2e specs, `App.tsx` and the AI prompt pin.
+
+**Next**
+- B700 alone, then wave 1: B701, B702, B703, B641, B712; I1 and a release.
+- Ask the user: Save by itself or a Save button; a Make something button in the row.

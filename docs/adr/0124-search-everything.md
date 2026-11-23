@@ -303,3 +303,5 @@ Accepted with findings (B673, 2026-11-23; briefs B650–B672 and the follow-ups 
 - the findable rule for every later brief in `docs/HANDOFF.md`, and in the root `CLAUDE.md` golden rules only if the user agrees (D15);
 - the bars: 85 % first and 95 % in the top three overall, 75 % and 85 % per class, 100 % for ids, commands and nonsense (D16);
 - the 18.2 kB the filter boxes added to the first paint (the plan said nothing but the bar and the client's stub).
+
+**Open item decided (2026-11-23):** "how do rules work" is closed by a heading-depth signal on guide entries, so a page's own title outranks a deep sub-heading (brief B704 of `docs/PLAN-one-mode-rest.md`).

@@ -34,3 +34,5 @@ The Showcase (ADR 0118) has thirteen hand-picked cards, each a library example w
 ## Status
 
 Accepted (2026-11-23, user's request on Home; the defaults above are vetoable).
+
+**Amendment (2026-11-23, ADR 0131 plan) to D3:** a clip steps its pixel ratio down from 2 to 1.5 to 1 while its own median frame time is over 1000/24 ms, and does not step up again for that card in the session (replaces the open item "measure at ratio 2 on a quiet machine").
