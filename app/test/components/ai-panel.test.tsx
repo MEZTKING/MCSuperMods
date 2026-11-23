@@ -5,6 +5,11 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AiPanel, primaryOf } from '../../src/renderer/src/components/ai/AiPanel';
+import {
+  rememberContextLabel,
+  SENT_CONTEXT_WORDS,
+  sentContextLabel,
+} from '../../src/renderer/src/components/ai/AiTranscript';
 import { usageText } from '../../src/renderer/src/components/ai/AiUsageLine';
 import {
   AiController,
@@ -351,6 +356,63 @@ describe('AiPanel', () => {
     await waitFor(() => expect(s.ai.starts).toHaveLength(1));
     expect(s.ai.starts[0]?.contextBlocks[1]).toContain('`schema.type` on `demo:greet`');
     expect(screen.queryByTestId('ai-context')).toBeNull();
+  });
+
+  it.each(['advanced', 'easy'] as const)(
+    'shows the context block by mode, in the box and in the conversation (%s)',
+    async (mode) => {
+      usePreferences.setState({ mode });
+      const s = await setup();
+      await screen.findByTestId('ai-input');
+      const block = 'Problem `schema.type` on `demo:greet`: Expected a string.';
+      act(() =>
+        s.controller.setDraft({
+          text: 'Explain it.',
+          context: {
+            label: mode === 'advanced' ? 'Problem schema.type on demo:greet' : 'About: Greet',
+            block,
+          },
+        }),
+      );
+      await screen.findByTestId('ai-context');
+      if (mode === 'advanced') {
+        // Advanced shows the block as before, with nothing to open.
+        expect(screen.getByTestId('ai-context-block').textContent).toBe(block);
+        expect(screen.queryByTestId('ai-context-show')).toBeNull();
+      } else {
+        expect(screen.queryByTestId('ai-context-block')).toBeNull();
+        const show = screen.getByTestId('ai-context-show');
+        expect(show.textContent).toBe('See exactly what is sent');
+        expect(show.getAttribute('aria-expanded')).toBe('false');
+        await s.user.click(show);
+        expect(screen.getByTestId('ai-context-block').textContent).toBe(block);
+      }
+      await s.user.click(screen.getByTestId('ai-send'));
+      await waitFor(() => expect(s.ai.starts).toHaveLength(1));
+      const user = screen
+        .getByTestId('ai-transcript')
+        .querySelector<HTMLElement>('[data-role="user"]');
+      const sent = user?.querySelector<HTMLElement>('[data-testid$="-context-0"]');
+      if (mode === 'advanced') {
+        expect(sent?.tagName).toBe('DETAILS');
+        expect(sent?.textContent).toContain(SENT_CONTEXT_WORDS.advanced);
+        expect(sent?.textContent).toContain(block);
+      } else {
+        expect(sent?.textContent).toContain('About: Greet');
+        expect(sent?.textContent).not.toContain('demo:greet');
+        const show = sent?.querySelector<HTMLElement>('[data-testid$="-context-0-show"]');
+        if (show) await s.user.click(show);
+        expect(sent?.textContent).toContain(block);
+      }
+    },
+  );
+
+  it('labels a sent block in plain words only when its chip label holds no id', () => {
+    rememberContextLabel('block one', 'About: Ruby Sword');
+    rememberContextLabel('block two', 'Problem schema.type on demo:greet');
+    expect(sentContextLabel('block one')).toBe('About: Ruby Sword');
+    expect(sentContextLabel('block two')).toBe(SENT_CONTEXT_WORDS.unknown);
+    expect(sentContextLabel('never sent')).toBe(SENT_CONTEXT_WORDS.unknown);
   });
 
   it('starts a new conversation and drops the old one in main', async () => {

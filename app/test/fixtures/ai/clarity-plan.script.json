@@ -1,0 +1,75 @@
+{
+  "turns": [
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Here is my plan for a mod about rubies. Say go and I will make it."
+        },
+        {
+          "type": "tool_use",
+          "name": "propose_plan",
+          "input": {
+            "title": "Rubies",
+            "items": [
+              {
+                "itemId": "sword",
+                "kind": "msm:item",
+                "elementId": "ruby:ruby_sword",
+                "summary": "A ruby sword as strong as a diamond one."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "tool_use",
+          "name": "add_starter",
+          "input": {
+            "starterId": "custom-sword",
+            "namespace": "ruby",
+            "values": {
+              "sword_name": "Ruby Sword"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "The Ruby Sword is ready to look at."
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Your mod can only be played in the Java game, so I cannot make it work on phones and consoles."
+        },
+        {
+          "type": "tool_use",
+          "name": "note_missing_feature",
+          "input": {
+            "title": "Play on phones and consoles",
+            "request": "Make my mod work on phones and consoles too.",
+            "missing": "Mods for the Bedrock game are not made here."
+          }
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "I wrote that down in your wish list."
+        }
+      ]
+    }
+  ]
+}

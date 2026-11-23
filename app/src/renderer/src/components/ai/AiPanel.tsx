@@ -20,9 +20,14 @@ import { AiKeyMissing } from './AiKeyMissing';
 import { AiLimitsPopover } from './AiLimitsPopover';
 import { AiPlanView } from './AiPlanView';
 import { AiStatusLine, PRIMARY_BUTTON_CLASS, useStatusClock } from './AiStatusLine';
-import { AiTranscript } from './AiTranscript';
+import { AiTranscript, rememberContextLabel } from './AiTranscript';
 import { AiUsageLine } from './AiUsageLine';
-import { type AiController, EMPTY_DRAFT, useAiPanelStore } from './ai-controller';
+import {
+  type AiContextDraft,
+  type AiController,
+  EMPTY_DRAFT,
+  useAiPanelStore,
+} from './ai-controller';
 import { AI_PICTURES_MAX, pictureFilesOf, readPictures } from './ai-pictures';
 import {
   type AiStatus,
@@ -111,8 +116,75 @@ function changesExisting(items: AiConversation['changesetItems']): boolean {
   return items.some((item) => item.op === 'update' || item.op === 'delete' || item.op === 'rename');
 }
 
+/** The words of the context chip (ADR 0125 D11). */
+export const CONTEXT_CHIP_WORDS = Object.freeze({
+  remove: 'Remove the context',
+  show: 'See exactly what is sent',
+  hide: 'Hide what is sent',
+});
+
+/**
+ * The context waiting in the input area: its label, a remove button and the block that goes with
+ * the message. In Advanced the block shows as before; in Very easy and Easy it is folded under
+ * **See exactly what is sent** and is not in the page until opened.
+ */
+function ContextChip(props: { context: AiContextDraft; mode: UiMode; onRemove(): void }) {
+  const { context, mode } = props;
+  const [open, setOpen] = useState(false);
+  const shown = mode === 'advanced' || open;
+  return (
+    <div
+      className="flex flex-col gap-1 rounded border border-border bg-bg p-1.5 text-xs"
+      data-testid="ai-context"
+    >
+      <span className="flex items-center gap-1">
+        <span className="font-medium" data-testid="ai-context-label">
+          {context.label}
+        </span>
+        <span className="flex-1" />
+        <button
+          type="button"
+          className={iconButtonClass}
+          aria-label={CONTEXT_CHIP_WORDS.remove}
+          data-testid="ai-context-remove"
+          onClick={props.onRemove}
+        >
+          <X size={12} aria-hidden />
+        </button>
+      </span>
+      {mode !== 'advanced' && (
+        <button
+          type="button"
+          className="cursor-pointer self-start text-accent underline"
+          aria-expanded={open}
+          data-testid="ai-context-show"
+          onClick={() => setOpen((value) => !value)}
+        >
+          {open ? CONTEXT_CHIP_WORDS.hide : CONTEXT_CHIP_WORDS.show}
+        </button>
+      )}
+      {shown && (
+        <blockquote
+          className="max-h-32 overflow-auto border-l-2 border-border pl-1.5 font-mono whitespace-pre-wrap text-muted"
+          data-testid="ai-context-block"
+        >
+          {context.block}
+        </blockquote>
+      )}
+    </div>
+  );
+}
+
 type PlanMessage = Extract<AiDisplayMessage, { role: 'plan' }>;
 type NoticeMessage = Extract<AiDisplayMessage, { role: 'notice' }>;
+
+/**
+ * How often the state line's clock is read while the helper works. The seconds count from the
+ * turn's start, which comes after the run's: read once a second from the run's start, the line
+ * could stay at "0 s" for almost two seconds (B690's walk). A quarter second keeps each new
+ * second within 250 ms of when it begins.
+ */
+const STATUS_TICK_MS = 250;
 
 /** How far from the newest entry the user may scroll and still be followed, in pixels. */
 const FOLLOW_SLACK = 24;
@@ -188,7 +260,7 @@ export function AiPanel(props: {
 
   const working =
     conversation !== undefined && WORKING_STATES.has(conversationStatus(conversation).state);
-  const now = useStatusClock(working);
+  const now = useStatusClock(working, STATUS_TICK_MS);
 
   useEffect(() => {
     void controller.refresh();
@@ -320,6 +392,7 @@ export function AiPanel(props: {
   const send = () => {
     if (!canSend) return;
     follow.current = true;
+    if (draft.context !== null) rememberContextLabel(draft.context.block, draft.context.label);
     void controller.sendDraft();
   };
 
@@ -552,29 +625,12 @@ export function AiPanel(props: {
           onAction={(action) => act(action, status.applied)}
         />
         {draft.context !== null && (
-          <div
-            className="flex flex-col gap-1 rounded border border-border bg-bg p-1.5 text-xs"
-            data-testid="ai-context"
-          >
-            <span className="flex items-center gap-1">
-              <span className="font-medium" data-testid="ai-context-label">
-                {draft.context.label}
-              </span>
-              <span className="flex-1" />
-              <button
-                type="button"
-                className={iconButtonClass}
-                aria-label="Remove the context"
-                data-testid="ai-context-remove"
-                onClick={() => controller.setDraft({ ...draft, context: null })}
-              >
-                <X size={12} aria-hidden />
-              </button>
-            </span>
-            <blockquote className="max-h-32 overflow-auto border-l-2 border-border pl-1.5 font-mono whitespace-pre-wrap text-muted">
-              {draft.context.block}
-            </blockquote>
-          </div>
+          <ContextChip
+            key={draft.context.block}
+            context={draft.context}
+            mode={mode}
+            onRemove={() => controller.setDraft({ ...draft, context: null })}
+          />
         )}
         {pictures.length > 0 && (
           <div className="flex flex-wrap gap-1.5" data-testid="ai-pictures">

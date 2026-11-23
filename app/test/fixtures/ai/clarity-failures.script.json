@@ -1,0 +1,79 @@
+{
+  "turns": [
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "The rule gives an item, but no item is picked yet. Pick one in the rule, and it is fixed."
+        }
+      ]
+    },
+    {
+      "error": {
+        "errorClass": "AuthenticationError",
+        "message": "401 invalid x-api-key",
+        "status": 401
+      }
+    },
+    {
+      "error": {
+        "errorClass": "APIError",
+        "message": "402 Your credit balance is too low",
+        "status": 402
+      }
+    },
+    {
+      "error": {
+        "errorClass": "InternalServerError",
+        "message": "529 overloaded_error",
+        "status": 529
+      }
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Hello again. What would you like to make?"
+        }
+      ]
+    },
+    {
+      "error": {
+        "errorClass": "APIConnectionError",
+        "message": "Connection error."
+      }
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Yes, I am here."
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Let me look at your mod first."
+        },
+        {
+          "type": "tool_use",
+          "name": "project_summary",
+          "input": {}
+        }
+      ],
+      "usage": {
+        "outputTokens": 200000
+      }
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Carrying on: all done now."
+        }
+      ]
+    }
+  ]
+}

@@ -2,18 +2,20 @@
  * The AI helper path (ADR 0041), driven by the scripted model client (`MSM_E2E_AI_SCRIPT`, one
  * client per launch) so no key, network or SDK is involved:
  *
- * 1. Build mode with `test/fixtures/ai/ruby-tools.script.json`: a blank project, the dock tab
- *    "AI helper" opened through the palette ("Open AI helper"), Build, the ruby tools prompt,
- *    the plan with its items, "Build all", the changeset (ore, sword, pickaxe, axe, loot table,
- *    mob, placeholder textures), Apply; the sidebar shows the new elements and Problems no
+ * 1. A whole build with `test/fixtures/ai/ruby-tools.script.json` (Advanced): a blank project,
+ *    the dock tab "AI helper" opened through the palette ("Open AI helper"), the ruby tools
+ *    prompt, the plan with its items, "Make all of it", **Look** on the state line, the proposed
+ *    changes (ore, sword, pickaxe, axe, loot table, mob, textures), Apply ("Applied n
+ *    changes."); the sidebar shows the new elements and Problems no
  *    errors; the resource pack (toolbar) and data pack (Export menu) zips and the Fabric mod
  *    jar with "Separate runtime and GeckoLib (for modpacks)" (palette) hold the ore's model,
  *    the recipes and `msm/ruby/`; Edit > Undo removes the elements; Settings shows the key
  *    status "Key set (…e2e!)" and the privacy text.
- * 2. Chat mode with `test/fixtures/ai/explain-problem.script.json` over a copy of
+ * 2. A question with `test/fixtures/ai/explain-problem.script.json` over a copy of
  *    `fixtures/sample-mod` with one injected `blocks-items.unknown-event` error: "Explain" on
- *    the Problems row opens the panel with the context chip, the answer streams, the
- *    `update_element` fix applies and the problem disappears. The script's fix is rebuilt from
+ *    the Problems row opens the panel with the context chip (code and id, the block shown), the
+ *    answer streams, **Look**, the `update_element` fix applies and the problem disappears.
+ *    The Very easy and Easy walks are `ai-clarity-path`. The script's fix is rebuilt from
  *    the fixture's own wand data, so the spec follows changes to the sample mod.
  */
 
@@ -335,7 +337,8 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   const panel = window.getByTestId('ai-panel');
   await expect(panel).toBeVisible();
   await expect(panel.getByTestId('ai-context')).toBeVisible();
-  await expect(panel.getByTestId('ai-context-label')).not.toBeEmpty();
+  await expect(panel.getByTestId('ai-context-label')).toHaveText(/^Problem \S+ on /);
+  await expect(panel.getByTestId('ai-context-block')).toBeVisible();
   await expect(panel.getByTestId('ai-input')).toHaveValue(
     'Explain this problem and how to fix it.',
   );

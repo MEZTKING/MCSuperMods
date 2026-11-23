@@ -62,6 +62,7 @@ function sweep(step: string): void {
 interface Setup {
   session: ProjectSession;
   ai: FakeAi;
+  controller: AiController;
   user: ReturnType<typeof userEvent.setup>;
 }
 
@@ -91,7 +92,7 @@ async function setup(): Promise<Setup> {
     />,
   );
   await screen.findByTestId('ai-input');
-  return { session, ai, user: userEvent.setup() };
+  return { session, ai, controller, user: userEvent.setup() };
 }
 
 async function ask(s: Setup, text: string): Promise<string> {
@@ -234,5 +235,44 @@ describe('the Very easy panel in plain words', () => {
     await s.ai.emit(runId, event);
     expect(screen.getByTestId('ai-status').dataset.state).toMatch(/^(stopped|failed)$/);
     sweep(name);
+  });
+
+  it('folds a problem asked about under its plain label, in the box and in the conversation', async () => {
+    const s = await setup();
+    const block =
+      'The user asked about problem `blocks-items.missing-model` on `demo:ruby_sword`: no model.';
+    const label = 'About: Ruby Sword, a picture is missing';
+    act(() =>
+      s.controller.setDraft({
+        text: 'Explain this problem and how to fix it.',
+        context: { label, block },
+      }),
+    );
+    expect((await screen.findByTestId('ai-context-label')).textContent).toBe(label);
+    expect(screen.queryByTestId('ai-context-block')).toBeNull();
+    sweep('a problem attached');
+    // The exact block is there on a click, and folds again.
+    await s.user.click(screen.getByTestId('ai-context-show'));
+    expect(screen.getByTestId('ai-context-block').textContent).toBe(block);
+    await s.user.click(screen.getByTestId('ai-context-show'));
+    expect(screen.queryByTestId('ai-context-block')).toBeNull();
+
+    await s.user.click(screen.getByTestId('ai-send'));
+    await waitFor(() => expect(s.ai.starts).toHaveLength(1));
+    expect(s.ai.starts[0]?.contextBlocks).toContain(block);
+    const runId = s.ai.starts[0]?.runId ?? '';
+    await s.ai.emit(runId, { type: 'text_delta', text: 'The sword needs a picture to show.' });
+    await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
+    const sent = screen
+      .getByTestId('ai-transcript')
+      .querySelector<HTMLElement>('[data-role="user"] [data-testid$="-context-0"]');
+    expect(sent).not.toBeNull();
+    expect(sent?.textContent).toContain(label);
+    expect(sent?.textContent).not.toContain('Context sent with this message');
+    sweep('a problem sent');
+    const show = sent?.querySelector<HTMLElement>('[data-testid$="-context-0-show"]');
+    expect(show?.textContent).toBe('See exactly what was sent');
+    if (show) await s.user.click(show);
+    expect(sent?.textContent).toContain('`demo:ruby_sword`');
   });
 });

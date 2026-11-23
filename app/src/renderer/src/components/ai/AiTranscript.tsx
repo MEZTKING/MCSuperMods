@@ -1,10 +1,17 @@
 import { Bot, CircleAlert, Info, User, Wrench } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import type { AiDisplayMessage } from '../../store/ai-store';
 import { Markdown } from '../Markdown';
 import { Button } from '../ui/Button';
 import type { AiStatusAction } from './ai-status';
-import { type AiActionWords, noticeWords, toolLine, type UiMode, wordsFor } from './ai-words';
+import {
+  type AiActionWords,
+  forbiddenIn,
+  noticeWords,
+  toolLine,
+  type UiMode,
+  wordsFor,
+} from './ai-words';
 
 type ToolMessage = Extract<AiDisplayMessage, { role: 'tool' }>;
 
@@ -68,6 +75,87 @@ function ToolEntry({ message, mode }: { message: ToolMessage; mode: UiMode }) {
   );
 }
 
+/** The words of a context block sent with a message, outside Advanced (ADR 0125 D11). */
+export const SENT_CONTEXT_WORDS = Object.freeze({
+  /** The label of a block whose chip label is not known or is not plain. */
+  unknown: 'Something from your mod went with this message.',
+  /** Opens the block as it was sent. */
+  show: 'See exactly what was sent',
+  hide: 'Hide what was sent',
+  /** Advanced's summary, as before. */
+  advanced: 'Context sent with this message',
+});
+
+/** The chip labels of the context blocks the panel has sent, by block (the most kept). */
+const sentLabels = new Map<string, string>();
+const SENT_LABELS_MAX = 200;
+
+/**
+ * Remembers the chip's label of a context block as it is sent, so the transcript can show the
+ * plain label in Very easy and Easy (the store keeps only the block).
+ */
+export function rememberContextLabel(block: string, label: string): void {
+  sentLabels.delete(block);
+  sentLabels.set(block, label);
+  while (sentLabels.size > SENT_LABELS_MAX) {
+    const oldest = sentLabels.keys().next().value;
+    if (oldest === undefined) break;
+    sentLabels.delete(oldest);
+  }
+}
+
+/**
+ * The plain label of a sent context block: the chip's label it was sent with when that holds no
+ * id and none of Very easy's forbidden words, else {@link SENT_CONTEXT_WORDS}' `unknown`.
+ */
+export function sentContextLabel(block: string): string {
+  const label = sentLabels.get(block);
+  return label !== undefined && label.trim() !== '' && forbiddenIn(label).length === 0
+    ? label
+    : SENT_CONTEXT_WORDS.unknown;
+}
+
+/**
+ * A context block sent with a user message: in Advanced the block behind "Context sent with this
+ * message" as before; in Very easy and Easy the chip's plain label, and the exact block only
+ * after **See exactly what was sent** (not in the page until then, so no id shows unasked).
+ */
+function SentContext({ block, mode, testId }: { block: string; mode: UiMode; testId: string }) {
+  const [open, setOpen] = useState(false);
+  if (mode === 'advanced') {
+    return (
+      <details className="text-xs text-muted" data-testid={testId}>
+        <summary className="cursor-pointer">{SENT_CONTEXT_WORDS.advanced}</summary>
+        <pre className="mt-1 max-h-40 overflow-auto font-mono whitespace-pre-wrap">{block}</pre>
+      </details>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-1 text-xs text-muted" data-testid={testId}>
+      <span className="flex flex-wrap items-center gap-1.5">
+        <span data-testid={`${testId}-label`}>{sentContextLabel(block)}</span>
+        <button
+          type="button"
+          className="cursor-pointer text-accent underline"
+          aria-expanded={open}
+          data-testid={`${testId}-show`}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {open ? SENT_CONTEXT_WORDS.hide : SENT_CONTEXT_WORDS.show}
+        </button>
+      </span>
+      {open && (
+        <pre
+          className="max-h-40 overflow-auto font-mono whitespace-pre-wrap"
+          data-testid={`${testId}-block`}
+        >
+          {block}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 type NoticeMessage = Extract<AiDisplayMessage, { role: 'notice' }>;
 type PlanMessage = Extract<AiDisplayMessage, { role: 'plan' }>;
 
@@ -120,12 +208,12 @@ export function AiTranscript(props: {
                 <User size={14} aria-label="You" className="mt-0.5 shrink-0" />
                 <div className="flex min-w-0 flex-col gap-1">
                   {message.contextBlocks.map((block, index) => (
-                    <details key={index} className="text-xs text-muted">
-                      <summary className="cursor-pointer">Context sent with this message</summary>
-                      <pre className="mt-1 max-h-40 overflow-auto font-mono whitespace-pre-wrap">
-                        {block}
-                      </pre>
-                    </details>
+                    <SentContext
+                      key={index}
+                      block={block}
+                      mode={mode}
+                      testId={`${testId}-context-${index}`}
+                    />
                   ))}
                   {message.images !== undefined && (
                     <div className="flex flex-wrap gap-1" data-testid={`${testId}-pictures`}>

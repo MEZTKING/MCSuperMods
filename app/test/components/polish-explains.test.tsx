@@ -298,7 +298,9 @@ describe('Ask the helper on a Things to fix row (ADR 0125 D11)', () => {
         'About: Ruby Sword, it has no shape picture (model) to show. Pick a picture for it',
       );
       expect(label.textContent).not.toMatch(ID_OR_CODE);
-      // The exact text that would be sent is still there to see.
+      // The exact text that would be sent is folded, and still there to see on a click.
+      expect(screen.getByTestId('ai-context').textContent).not.toMatch(ID_OR_CODE);
+      await user.click(screen.getByTestId('ai-context-show'));
       expect(screen.getByTestId('ai-context').textContent).toContain(
         '`blocks-items.missing-model` on `demo:ruby_sword`',
       );

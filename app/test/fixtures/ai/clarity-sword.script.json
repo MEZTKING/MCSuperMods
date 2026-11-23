@@ -1,0 +1,40 @@
+{
+  "turns": [
+    {
+      "delayMs": 2000,
+      "content": [
+        {
+          "type": "text",
+          "text": "A ruby sword it is. I will make one that is as strong as a diamond sword, with its own picture, its name and a way to craft it from rubies and a stick. Nothing goes into your mod until you say so."
+        },
+        {
+          "type": "tool_use",
+          "name": "add_starter",
+          "input": {
+            "starterId": "custom-sword",
+            "namespace": "ruby",
+            "values": {
+              "sword_name": "Ruby Sword"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "The Ruby Sword is ready. Look at it below, and add it to your mod when you like it. You can also ask me to change its colour, its strength or how it is crafted."
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "Yes, it can glow. Should it glow a little, like a torch held in the hand, or a lot, so that the ground around you lights up?"
+        }
+      ]
+    }
+  ]
+}
