@@ -2,7 +2,7 @@
 
 Plugin id `msm.games`. Game modes: custom skyblock and more (ADRs 0113 to 0117,
 accepted with findings at close B562, 2026-11-23; the plan is deleted, its facts G1–G22, the spike's answers Y1–Y16
-and limits M1–M16 are in ADR 0117). Six kinds lowered only to data pack files and one language line.
+and limits M1–M16 are in ADR 0117). Eight kinds (the six of ADR 0113 plus `msm:game` and `msm:kit`, ADR 0132, B724) lowered only to data pack files and one language line; the round engine is `lowering/game/` (`names.ts` the generated names and 15 hook tags, `build.ts` form helpers, `round.ts`, `lobby.ts`, `roles.ts`, `win/`, `mechanics/` behind the frozen `index.ts`), kits `lowering/kit.ts`.
 
 ## Layout
 
