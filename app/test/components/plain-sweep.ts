@@ -23,7 +23,7 @@ function walk(dir: string): string[] {
   });
 }
 
-/** A library example or flow on disk (`examples/<folder>`) as a project. */
+/** A library example or flow on disk (`examples/<folder>`) as a project, named by its manifest. */
 export function exampleProject(folder: string): Project {
   const base = join(EXAMPLES, folder);
   const byNamespace = new Map<string, Project['namespaces'][number]>();
@@ -52,9 +52,18 @@ export function exampleProject(folder: string): Project {
   } catch {
     // An example without assets.
   }
+  let name = folder;
+  try {
+    const manifest = JSON.parse(readFileSync(join(base, 'msm.project.json'), 'utf8')) as {
+      name?: unknown;
+    };
+    if (typeof manifest.name === 'string') name = manifest.name;
+  } catch {
+    // No manifest: the folder names it.
+  }
   return {
     formatVersion: 1,
-    name: folder,
+    name,
     targets: [],
     plugins: [],
     settings: {},

@@ -11169,3 +11169,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Checks: app 4,564 tests (3 fail on this branch alone, all B703's words; with B703's three components applied, App, Toolbar and Home tests pass), `packages/ai` 147, `pnpm lint`, `pnpm typecheck`, build; renderer 19.6 of 21 MB, first paint 4.9 of 6 MB. Full e2e with B703's components applied: 106 passed, 1 skipped, 3 failed (entities-path and plants-path on B703 words, smoke on the toolbar's new name), all three green after the spec fixes. `launchers-path`, `toolbar-path` and `play-path` five times each with six busy loops: 25 passed.
 - I1: wire `unsaved`, `onExportMap`, `onModpacks`, `onGuide` in `App.tsx`. Follow-ups: toasts take Escape from dialogs and menus opened before them (`StatusToast`); B703's status bar counts warnings as things to fix while Things to fix says "Nothing to fix".
+## 2026-11-23 — executor — B703 Element list, asset list and status bar in plain words
+
+**What**
+- `app/test/components/plain-sweep.ts` (own commit): `readableStrings`, `leaksIn`, `expectPlain` and `exampleProject` moved out of `studios/plain-no-ids.test.tsx`, which imports them; `exampleProject` now takes the mod's name from the example's `msm.project.json`.
+- Element list: rows show the name only. Tags, World generation and Models and animations group their rows under small sub-headings from one exported table (`SUB_HEADINGS`, `subHeadingOf`: "Item tags", "Biomes", "Where features go", "Building pools", "Block changers", "World types", "Models", "Animations"…). Headings "World generation", "Mobs", "More things (N)"; empty lines "No mod is open. Start one or open one from Home." and "Nothing here yet."; "On-screen displays" for `msm:hud`. Sections are named by their headings (the mod part's name before them only when there is more than one part); the list is "Things in this mod". Group keys, `group-toggle-*` test ids and collapsed keys are unchanged; the search still finds by id, kind and the old group words.
+- Asset list ("Pictures and sounds"): each file by a name in words ("Ruby ore", the folder in brackets where two share one), a picture or sound mark; **Show where the files are** (a More options at the bottom) shows the paths and puts them back in the tips. Buttons say Paint this picture, Show in folder, Remove <name>, Bring in pictures or sounds…, New picture…, Turn a photo into a picture….
+- Status bar: the mod's name (not its folder), "Saved" or "Not saved yet", "For Minecraft <version>" with the snapshot badge, undo and redo in words, "N things to fix" (nothing at zero).
+- New `lists-plain.test.tsx` over `examples/all-kinds`, `blocks-items` and `entities`.
+
+**Decisions**
+- The starters (`msm_starter`) are not used for the sweep: their part name holds "starter", and a started mod takes the user's own.
+- Existing e2e specs and `App.test.tsx` that assert the old words were not edited (B701 owns them); the lines are in the report.
+
+**Next**
+- B701 or the integration updates the listed spec and `App.test.tsx` lines; B705 to B709 and B715 use `plain-sweep.ts`.

@@ -81,10 +81,10 @@ describe('ElementSidebar labels for potions and the data kinds sweep', () => {
     render(
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
-    const region = screen.getByRole('region', { name: 'Namespace demo' });
-    const potions = within(region).getByRole('region', { name: 'demo msm:potion' });
+    const region = screen.getByRole('region', { name: 'demo' });
+    const potions = within(region).getByRole('region', { name: 'demo Potions' });
     expect(within(potions).getByRole('heading', { level: 3 }).textContent).toContain('Potions');
-    const wolves = within(region).getByRole('region', { name: 'demo minecraft:wolf_variant' });
+    const wolves = within(region).getByRole('region', { name: 'demo Wolf skins' });
     expect(within(wolves).getByRole('heading', { level: 3 }).textContent).toContain('Wolf skins');
   });
 });

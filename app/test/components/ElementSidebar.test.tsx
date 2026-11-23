@@ -24,6 +24,11 @@ const idsOf = (root: HTMLElement): string[] =>
   [...root.querySelectorAll<HTMLElement>('[data-testid^="element-row-"]')].map((row) =>
     (row.dataset.testid ?? '').slice('element-row-'.length),
   );
+/** The sub-headings (level 4) under `root`, in order. */
+const subHeadingsOf = (root: HTMLElement): string[] =>
+  within(root)
+    .queryAllByRole('heading', { level: 4 })
+    .map((heading) => heading.textContent ?? '');
 /** The rows under `root`, in order. */
 const rowsOf = (root: HTMLElement): HTMLElement[] => [
   ...root.querySelectorAll<HTMLElement>('[data-testid^="element-row-"]'),
@@ -34,7 +39,7 @@ describe('ElementSidebar', () => {
     render(
       <ElementSidebar project={null} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
-    expect(screen.getByText(/No project is open/)).toBeTruthy();
+    expect(screen.getByText('No mod is open. Start one or open one from Home.')).toBeTruthy();
   });
 
   it('lists recent projects in the empty state with Open buttons', async () => {
@@ -104,19 +109,21 @@ describe('ElementSidebar', () => {
         onRemove={vi.fn()}
       />,
     );
-    const demo = screen.getByRole('region', { name: 'Namespace demo' });
+    const demo = screen.getByRole('region', { name: 'demo' });
     const kinds = within(demo).getAllByRole('heading', { level: 3 }).map(headingLabel);
-    expect(kinds).toEqual(['Block states', 'Models', 'Assets']);
+    expect(kinds).toEqual(['Block states', 'Models', 'Pictures and sounds']);
 
-    const models = within(demo).getByRole('region', { name: 'demo minecraft:model' });
+    const models = within(demo).getByRole('region', { name: 'demo Models' });
     expect(idsOf(models)).toEqual(['demo:block/ruby_block', 'demo:item/ruby']);
 
-    const assets = within(demo).getByRole('region', { name: 'demo assets' });
+    const assets = within(demo).getByRole('region', { name: 'demo Pictures and sounds' });
+    expect(within(assets).getByText('Ruby block')).toBeTruthy();
+    // The test setup starts every More options open: the paths show.
     expect(within(assets).getByText('textures/block/ruby_block.png')).toBeTruthy();
 
-    const empty = screen.getByRole('region', { name: 'Namespace empty' });
+    const empty = screen.getByRole('region', { name: 'empty' });
     expect(within(empty).getByText('Nothing here yet.')).toBeTruthy();
-    expect(within(empty).getByText('No assets.')).toBeTruthy();
+    expect(within(empty).getByText('No pictures or sounds yet.')).toBeTruthy();
   });
 
   it('marks the selection and reports clicks', async () => {
@@ -158,19 +165,21 @@ describe('ElementSidebar tags', () => {
     render(
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
-    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const region = screen.getByRole('region', { name: 'demo' });
     const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
     expect(headings.filter((text) => text?.includes('tag'))).toEqual([]);
     expect(headings).toContain('Tags');
     const tags = within(region).getByRole('region', { name: 'demo Tags' });
     const rows = rowsOf(tags);
     expect(idsOf(tags)).toEqual(['demo:ores', 'demo:gems', 'demo:stones']);
-    expect(rows[0]?.textContent).toBe('blockOres');
+    // The name only; the kind words are small sub-headings above the rows.
+    expect(rows.map((row) => row.textContent)).toEqual(['Ores', 'Gems', 'Stones']);
+    expect(subHeadingsOf(tags)).toEqual(['Block tags', 'Item tags']);
   });
 });
 
 describe('ElementSidebar worldgen and structures', () => {
-  it('groups worldgen kinds and dimensions under Worldgen, structure templates under Structures', () => {
+  it('groups worldgen kinds and dimensions under World generation, structure templates under Structures', () => {
     const project = sampleProject();
     const demo = project.namespaces[0];
     if (demo === undefined) throw new Error('no namespace');
@@ -184,29 +193,27 @@ describe('ElementSidebar worldgen and structures', () => {
     render(
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
-    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const region = screen.getByRole('region', { name: 'demo' });
     const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
-    expect(headings).toEqual(expect.arrayContaining(['Structures', 'Tags', 'Worldgen']));
+    expect(headings).toEqual(expect.arrayContaining(['Structures', 'Tags', 'World generation']));
     expect(
       headings.filter((text) => text?.includes('worldgen') || text?.includes('dimension')),
     ).toEqual([]);
-    const worldgen = within(region).getByRole('region', { name: 'demo Worldgen' });
-    expect(rowsOf(worldgen).map((row) => row.textContent)).toEqual([
-      'dimensionSky',
-      'biomePlains plus',
-      'template_poolStart',
-    ]);
+    // The group's key, and so its test id, stays.
+    expect(within(region).getByTestId('group-toggle-demo-Worldgen')).toBeTruthy();
+    const worldgen = within(region).getByRole('region', { name: 'demo World generation' });
+    expect(rowsOf(worldgen).map((row) => row.textContent)).toEqual(['Sky', 'Plains plus', 'Start']);
+    expect(subHeadingsOf(worldgen)).toEqual(['Dimensions', 'Biomes', 'Building pools']);
     const structures = within(region).getByRole('region', { name: 'demo Structures' });
     expect(within(structures).getByTestId('element-row-demo:hut').textContent).toBe('Hut');
     const tags = within(region).getByRole('region', { name: 'demo Tags' });
-    expect(within(tags).getByTestId('element-row-demo:biomes').textContent).toBe(
-      'worldgen/biomeBiomes',
-    );
+    expect(within(tags).getByTestId('element-row-demo:biomes').textContent).toBe('Biomes');
+    expect(subHeadingsOf(tags)).toEqual(['Biome tags']);
   });
 });
 
 describe('ElementSidebar entities and models', () => {
-  it('groups entities under Entities, geo models and animations under Models and animations', () => {
+  it('groups entities under Mobs, geo models and animations under Models and animations', () => {
     const project = sampleProject();
     const demo = project.namespaces[0];
     if (demo === undefined) throw new Error('no namespace');
@@ -218,17 +225,16 @@ describe('ElementSidebar entities and models', () => {
     render(
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
-    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const region = screen.getByRole('region', { name: 'demo' });
     const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
-    expect(headings).toEqual(expect.arrayContaining(['Entities', 'Models and animations']));
+    expect(headings).toEqual(expect.arrayContaining(['Mobs', 'Models and animations']));
     expect(headings.filter((text) => text?.startsWith('msm:'))).toEqual([]);
-    const entities = within(region).getByRole('region', { name: 'demo Entities' });
+    expect(within(region).getByTestId('group-toggle-demo-Entities')).toBeTruthy();
+    const entities = within(region).getByRole('region', { name: 'demo Mobs' });
     expect(within(entities).getByTestId('element-row-demo:gloom').textContent).toBe('Gloom');
     const models = within(region).getByRole('region', { name: 'demo Models and animations' });
-    expect(rowsOf(models).map((row) => row.textContent)).toEqual([
-      'animationGloom animations',
-      'modelGloom',
-    ]);
+    expect(rowsOf(models).map((row) => row.textContent)).toEqual(['Gloom animations', 'Gloom']);
+    expect(subHeadingsOf(models)).toEqual(['Animations', 'Models']);
   });
 });
 
@@ -241,10 +247,10 @@ describe('ElementSidebar status effects (ADR 0055)', () => {
     render(
       <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
     );
-    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const region = screen.getByRole('region', { name: 'demo' });
     const headings = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
     expect(headings).toContain('Status effects');
-    const effects = within(region).getByRole('region', { name: 'demo msm:effect' });
+    const effects = within(region).getByRole('region', { name: 'demo Status effects' });
     expect(within(effects).getByTestId('element-row-demo:frost_bite')).toBeTruthy();
   });
 });
@@ -308,14 +314,16 @@ describe('ElementSidebar navigation (ADR 0047)', () => {
         flowTitles={{ 'msm.library.gear-set': 'Gear set' }}
       />,
     );
-    const region = screen.getByRole('region', { name: 'Namespace demo' });
+    const region = screen.getByRole('region', { name: 'demo' });
     const labels = within(region).getAllByRole('heading', { level: 3 }).map(headingLabel);
     expect(labels[0]).toBe('Ruby (Gear set)');
     expect(labels).toContain('Items');
     expect(labels).not.toContain('Mod settings');
-    expect(within(region).getByTestId('group-toggle-demo-more').textContent).toContain('More');
+    expect(within(region).getByTestId('group-toggle-demo-more').textContent).toBe(
+      'More things (4)',
+    );
     // The set holds both of its elements, the model included.
-    const set = within(region).getByRole('region', { name: 'demo set:set-1' });
+    const set = within(region).getByRole('region', { name: 'demo Ruby (Gear set)' });
     expect(within(set).getAllByRole('listitem')).toHaveLength(2);
     window.msmMoreOptionsOpen = true;
   });
