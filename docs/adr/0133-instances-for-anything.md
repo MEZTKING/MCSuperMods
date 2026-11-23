@@ -17,3 +17,5 @@ Drafted by the orchestrator (Fable) on 2026-11-23 in its plan; filed by the main
 - *D10.* Downloads only from the Fabric Maven, Fabric's meta service and Modrinth; Mojang's files are fetched by the launcher and by Fabric's server launcher on the user's machine and never bundled.
 - *Consequences.* Play's safety rule (ADR 0084 D9) now covers several marked folders. The recipe's loader and server kind are the seams a Paper server (ADR 0134) and a NeoForge instance plug into. Main gains a long-lived child process to look after.
 - *Status.* Proposed.
+
+**Spike answers (B760, 2026-11-23):** see `docs/PLAN-instances.md` "B760's answers" and `docs/reference/spikes/b760/README.md`; D2, D4, D6, D7, D9 to D11 amended there.

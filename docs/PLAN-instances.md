@@ -205,3 +205,16 @@ A new section "Instances for anything (ADR 0133, `docs/PLAN-instances.md`, 2026-
 ## 10. Notes from implementation
 
 (The main session appends each executor's "Notes for the plan" here.)
+
+### B760's answers (2026-11-23; `docs/reference/spikes/b760/README.md`, N1–N16)
+
+Folded into the briefs before wave B1 (the main session amends the briefs' text as each starts):
+- **D2:** every launcher writer builds the instance in a staging folder and renames it into place in one step (Prism lists a sub-folder only once it has `instance.cfg`; today's `createManagedInstance` makes the folder first, which is the likely cause of ADR 0026's open item: fix it in B761 first); always `InstanceType=OneSix` (MultiMC).
+- **D4:** CurseForge through an imported profile .zip (Import, Import Profile .zip, All Files with its tick); the official launcher only while it is closed.
+- **D6:** the Plain instance opens the copied world with the launcher's `--world` (Prism since 9.0, MultiMC; PolyMC by hand) — an exception to ADR 0084 since Plain has no runtime.
+- **D7:** a local server's state is read from its log lines, never its exit status (a missing EULA and a taken port both exit 0); `server.properties` is written only while stopped; command blocks are the game rule `command_blocks_work`; about 131 MB a server folder; friends need the same mods (offer the `.mrpack`). White list default: off, with online mode on (vetoable; the alternative is on, with **Let a friend in**).
+- **D9:** Java places: Prism's `<data>/java/`, the official launcher's `runtime/` (and the Store app's), `java-runtime-epsilon` for 26.x.
+- **D10:** the Fabric server launcher's fall-back hosts (`meta2`, `meta3`, `maven2`, `maven3.fabricmc.net`); MSM never queries a launcher's metadata server or reads its account files.
+- **D11:** a version the launcher lacks fails at start with the launcher's own message.
+- **Reserve:** "Open to LAN" by the runtime (`IntegratedServer.publishServer`, same signatures on both targets).
+- **N16:** 14 checks for the user's Windows machine, listed in the README.
