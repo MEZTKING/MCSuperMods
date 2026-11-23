@@ -16,6 +16,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   PART_USES,
+  SOUND_PICKER_EXEMPT,
   SOUND_PICKER_MARKERS,
   SOUND_PICKERS,
 } from '../../../src/renderer/src/audio/sound-pickers';
@@ -75,7 +76,7 @@ describe('the sound picker registry', () => {
       );
     });
     expect(pickers.length).toBeGreaterThan(15);
-    const missing = pickers.filter((file) => !listed.has(file));
+    const missing = pickers.filter((file) => !listed.has(file) && !(file in SOUND_PICKER_EXEMPT));
     expect(missing, 'add these sound pickers to SOUND_PICKERS with a Play button').toEqual([]);
   });
 

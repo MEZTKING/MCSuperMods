@@ -55,6 +55,15 @@ export const SOUND_PICKER_MARKERS: readonly { pattern: RegExp; componentsOnly: b
   { pattern: /type: 'audio'/, componentsOnly: true },
 ];
 
+/**
+ * Files a marker matches that pick no sound on screen, each with its reason. The walk skips them;
+ * anything else that matches must be a place below.
+ */
+export const SOUND_PICKER_EXEMPT: Readonly<Record<string, string>> = {
+  'search/sources/vanilla.ts':
+    "search's table of vanilla registries names the sort 'sound' for its entries; it draws nothing",
+};
+
 /** The places (see the module comment); sorted by file. */
 export const SOUND_PICKERS: readonly SoundPickerPlace[] = [
   {
