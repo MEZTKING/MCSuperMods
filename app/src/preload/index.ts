@@ -256,6 +256,36 @@ const bridge: MsmBridge = {
       }),
     openFolder: () => ipcRenderer.invoke(InvokeChannels.worldBackupsOpenFolder),
   },
+  maps: {
+    listWorlds: (targetId) => ipcRenderer.invoke(InvokeChannels.mapsListWorlds, { targetId }),
+    exportMap: (request) =>
+      ipcRenderer.invoke(InvokeChannels.mapsExport, {
+        targetId: request.targetId,
+        sourceId: request.sourceId,
+        worldDir: request.worldDir,
+        keepPlayerData: request.keepPlayerData,
+        mapName: request.mapName,
+        ...(request.dataPack === undefined
+          ? {}
+          : { dataPack: { fileName: request.dataPack.fileName, data: request.dataPack.data } }),
+        ...(request.resourcePack === undefined ? {} : { resourcePack: request.resourcePack }),
+        ...(request.mrpack === undefined
+          ? {}
+          : {
+              mrpack: {
+                index: request.mrpack.index,
+                jars: request.mrpack.jars.map((jar) => ({
+                  fileName: jar.fileName,
+                  data: jar.data,
+                })),
+              },
+            }),
+      }),
+    listStructureSaves: (targetId) =>
+      ipcRenderer.invoke(InvokeChannels.mapsListStructureSaves, { targetId }),
+    readStructureSave: (targetId, world, id) =>
+      ipcRenderer.invoke(InvokeChannels.mapsReadStructureSave, { targetId, world, id }),
+  },
   guide: {
     index: () => ipcRenderer.invoke(InvokeChannels.guideIndex),
     page: (page) => ipcRenderer.invoke(InvokeChannels.guidePage, { page }),

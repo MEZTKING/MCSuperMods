@@ -242,6 +242,22 @@ export function createIpcHandlers(
     [InvokeChannels.worldBackupsList]: () => platform.worldBackups.list(),
     [InvokeChannels.worldBackupsRestore]: (req) => platform.worldBackups.restore(req),
     [InvokeChannels.worldBackupsOpenFolder]: () => platform.worldBackups.openFolder(),
+    [InvokeChannels.mapsListWorlds]: (req) => platform.maps.listWorlds(req.targetId),
+    [InvokeChannels.mapsExport]: (req) =>
+      platform.maps.exportMap({
+        targetId: req.targetId,
+        sourceId: req.sourceId,
+        worldDir: req.worldDir,
+        keepPlayerData: req.keepPlayerData,
+        mapName: req.mapName,
+        dataPack: req.dataPack,
+        resourcePack: req.resourcePack,
+        mrpack: req.mrpack,
+      }),
+    [InvokeChannels.mapsListStructureSaves]: (req) =>
+      platform.maps.listStructureSaves(req.targetId),
+    [InvokeChannels.mapsReadStructureSave]: (req) =>
+      platform.maps.readStructureSave(req.targetId, req.world, req.id),
     [InvokeChannels.guideIndex]: () => guide.index(),
     [InvokeChannels.guidePage]: (req) => guide.page(req.page),
     [InvokeChannels.playStatus]: (req) => platform.play.status(req.targetId),

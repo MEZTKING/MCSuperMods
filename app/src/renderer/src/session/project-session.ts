@@ -286,6 +286,33 @@ export type ExportResult = ExportReport & {
   cancelled?: boolean;
 };
 
+/**
+ * What "Export as a map…" carries beside the world (ADR 0116 D2), from
+ * {@link ProjectSession.buildMapContent}: both vanilla packs, or, for a project that needs the
+ * mod jar, the content jar. Blocked when the report has errors (nothing to carry then).
+ */
+export interface MapContent {
+  report: ExportReport;
+  /** Whether the project needs the mod jar (the map is then a `.mrpack`). */
+  needsJar: boolean;
+  dataPack?: { fileName: string; data: Uint8Array };
+  resourcePack?: Uint8Array;
+  jar?: { modId: string; data: Uint8Array };
+  /** Records the ids that leave MSM with the map (ADR 0102 D4); call once it is written. */
+  recordExport(): Promise<void>;
+}
+
+/** Codes that say a vanilla data pack leaves something out that only the mod jar has. */
+const MAP_NEEDS_JAR_CODES: ReadonlySet<string> = new Set([
+  ExportProblemCodes.needsJar,
+  ExportProblemCodes.modOnlyReference,
+  ExportProblemCodes.modOnlyFunction,
+  RulesSessionProblemCodes.needsJar,
+  'controls.needs-jar',
+  'vehicles.needs-jar',
+  'blocks-items.potion-needs-jar',
+]);
+
 /** The result of {@link ProjectSession.testInMinecraft}: the export report plus the run. */
 export type TestInMinecraftOutcome = ExportReport & {
   /** What the install and launch did; absent when the export was blocked. */
@@ -2416,6 +2443,57 @@ export class ProjectSession {
   /** Installs the data pack into the world folder `worldDir` under `saves/`. */
   installDataPack(worldDir: string): Promise<ExportResult> {
     return this.exportPack('data', 'install', { worldDir });
+  }
+
+  /**
+   * Builds what a map carries (ADR 0116 D2) in memory, with no dialog: the vanilla data and
+   * resource packs, or the content jar (default options, runtime nested) when the project
+   * registers anything only the mod jar provides or its vanilla data pack would leave something
+   * out for the jar.
+   *
+   * @throws Error If no project is open.
+   */
+  async buildMapContent(): Promise<MapContent> {
+    const project = this.#requireStack().state;
+    const target = this.target;
+    const modOnly = modOnlyIdsOf(
+      withExtraIds(
+        dataRegistryIds(project, this.registry, target),
+        fluidProfessionIdsOf(projectElements(project), target.blocks?.fluidModel === 'two_fluids'),
+      ),
+      commandLiteralsOf(projectElements(project)),
+    );
+    const data = await this.#buildPack('data');
+    const needsJar =
+      modOnly.size > 0 ||
+      data.report.problems.some((problem) => MAP_NEEDS_JAR_CODES.has(problem.code));
+    if (needsJar) {
+      const built = await this.#buildContentJar({});
+      return {
+        report: built.report,
+        needsJar,
+        ...(built.data === undefined ? {} : { jar: { modId: built.modId, data: built.data } }),
+        recordExport: () => this.#recordExport(built.project, built.target, 'jar', 'content-jar'),
+      };
+    }
+    const resources = await this.#buildPack('resource');
+    const relevant = (problems: readonly Problem[]) =>
+      problems.filter((problem) => problem.code !== ExportProblemCodes.layerSkipped);
+    const report: ExportReport = {
+      ok: resources.report.ok && data.report.ok,
+      problems: [...relevant(resources.report.problems), ...relevant(data.report.problems)],
+      files: [...resources.report.files, ...data.report.files],
+    };
+    const blocked = resources.data === undefined || data.data === undefined;
+    return {
+      report,
+      needsJar,
+      ...(blocked || data.data === undefined
+        ? {}
+        : { dataPack: { fileName: data.fileName, data: data.data } }),
+      ...(blocked || resources.data === undefined ? {} : { resourcePack: resources.data }),
+      recordExport: () => this.#recordExport(data.project, data.target, 'data-pack', 'both-packs'),
+    };
   }
 
   /** The worlds of the selected install target (rejects when there is none). */

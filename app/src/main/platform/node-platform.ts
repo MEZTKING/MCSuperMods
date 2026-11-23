@@ -27,6 +27,7 @@ import { createExportsService } from './exports';
 import { createGeckolibJarService } from './geckolib-jar';
 import { type GradleWrapperLocation, readGradleWrapper } from './gradle-wrapper';
 import { createLocationResolver } from './locations';
+import { createMapExportService } from './map-export';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { createModpackService, type ModpackService } from './modpacks';
@@ -190,6 +191,8 @@ export interface MainPlatform
   tryItWorlds: TryItWorldsService;
   /** World backups (ADR 0102 D3); the IPC layer serves `worldBackups:*` from it. */
   worldBackups: NonNullable<PlatformAdapter['worldBackups']>;
+  /** Export as a map and builds from the game (ADR 0116 D2, D3); served as `maps:*`. */
+  maps: NonNullable<PlatformAdapter['maps']>;
 }
 
 /**
@@ -324,6 +327,25 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   const tryItWorlds = createTryItWorldsService({
     locations,
     managedGameDir: () => playGameDir,
+  });
+  // ADR 0116 D2, D3: maps from the managed instance's or a launcher's worlds; builds from the
+  // managed instance's structure-block saves.
+  const mapExport = createMapExportService({
+    locations,
+    managedGame: async (targetId) => {
+      try {
+        const status = await play.status(targetId);
+        return status.gameDir === null
+          ? null
+          : { gameDir: status.gameDir, openWorld: status.world };
+      } catch {
+        return null;
+      }
+    },
+    saveFilePath: (opts) => deps.dialogs.saveFilePath(opts),
+    onWritten: (path) => {
+      lastSavePath = path;
+    },
   });
   const modpacks = createModpackService({
     settings,
@@ -499,6 +521,12 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       list: () => minecraft.listWorldBackups(),
       restore: (request) => minecraft.restoreWorldBackup(request),
       openFolder: () => backups.openFolder(),
+    },
+    maps: {
+      listWorlds: (targetId) => mapExport.listWorlds(targetId),
+      exportMap: (request) => mapExport.exportMap(request),
+      listStructureSaves: (targetId) => mapExport.listStructureSaves(targetId),
+      readStructureSave: (targetId, world, id) => mapExport.readStructureSave(targetId, world, id),
     },
     mcfunction: createMcfunctionBroker({ readVendored: targets.readVendored }),
     exports: {

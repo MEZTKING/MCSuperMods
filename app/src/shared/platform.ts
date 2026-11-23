@@ -118,6 +118,77 @@ export interface WorldBackupsPlatform {
   openFolder(): Promise<void>;
 }
 
+/** Worlds a map can be made from: one game folder (ADR 0116 D2). */
+export interface MapWorldSource {
+  /** `msm-play` for the managed Play instance, else the game location's id. */
+  id: string;
+  /** The instance or location name. */
+  name: string;
+  /** Whether this is the managed Play instance (its test and game worlds). */
+  managed: boolean;
+  /** Its worlds, most recently changed first. */
+  worlds: WorldInfo[];
+}
+
+/** What {@link MapsPlatform.exportMap} writes. */
+export interface MapExportRequest {
+  targetId: string;
+  /** A {@link MapWorldSource.id} from {@link MapsPlatform.listWorlds}. */
+  sourceId: string;
+  /** A world folder of that source. */
+  worldDir: string;
+  /** "Keep my player data": players' files and `level.dat_old` go into the map too. */
+  keepPlayerData: boolean;
+  /** The world folder name inside the map (also the file name). */
+  mapName: string;
+  /** A world zip's data pack, written to `datapacks/<fileName>`. */
+  dataPack?: { fileName: string; data: Uint8Array } | undefined;
+  /** A world zip's resource pack, written as `resources.zip`. */
+  resourcePack?: Uint8Array | undefined;
+  /**
+   * For a project that needs the jar: a `.mrpack` with this `modrinth.index.json` text, the jars
+   * under `overrides/mods/` and the world under `overrides/saves/` (ADR 0046 D4, ADR 0116 D2).
+   */
+  mrpack?: { index: string; jars: { fileName: string; data: Uint8Array }[] } | undefined;
+}
+
+/** Why a world entry was not copied into a map. */
+export type MapLeftOutReason = 'lock' | 'dev-pack' | 'player-data' | 'replaced';
+
+/** A written map. */
+export interface MapExportResult {
+  /** The map file. */
+  path: string;
+  kind: 'world-zip' | 'mrpack';
+  /** Zip entries written. */
+  entries: number;
+  /** Top-most world entries left out, sorted by path. */
+  leftOut: { path: string; reason: MapLeftOutReason }[];
+}
+
+/** A structure-block save of a managed instance world (ADR 0116 D3). */
+export interface StructureSaveInfo {
+  /** The world's folder name. */
+  world: string;
+  /** `<namespace>:<path>`, the name typed into the structure block. */
+  id: string;
+  size: number;
+  /** ISO 8601. */
+  lastModified: string;
+}
+
+/** Export as a map and builds from the game (ADR 0116 D2, D3), served by main. */
+export interface MapsPlatform {
+  /** The managed instance's worlds (first, even with none) and every game location's. */
+  listWorlds(targetId: string): Promise<MapWorldSource[]>;
+  /** Asks where to save, then writes the map; `null` when cancelled. */
+  exportMap(request: MapExportRequest): Promise<MapExportResult | null>;
+  /** The structure-block saves of the managed instance's worlds for `targetId`. */
+  listStructureSaves(targetId: string): Promise<StructureSaveInfo[]>;
+  /** One save's `.nbt` bytes. */
+  readStructureSave(targetId: string, world: string, id: string): Promise<Uint8Array>;
+}
+
 /** The launchers MSM knows how to read (ADR 0019). */
 export type LauncherKind = 'official' | 'prism' | 'multimc' | 'curseforge';
 
@@ -1364,6 +1435,11 @@ export interface PlatformAdapter {
    * written before it may omit it.
    */
   worldBackups?: WorldBackupsPlatform;
+  /**
+   * Export as a map and builds from the game (ADR 0116 D2, D3). The preload always provides
+   * it; optional so that test doubles written before it may omit it.
+   */
+  maps?: MapsPlatform;
   /**
    * The user guide inside the app (ADR 0124 D14). The preload always provides it; optional so
    * that test doubles written before it may omit it.

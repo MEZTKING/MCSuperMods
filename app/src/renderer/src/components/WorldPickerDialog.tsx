@@ -1,6 +1,7 @@
 /**
- * Picks a singleplayer world to install a data pack into. Worlds are listed newest first;
- * the first one starts selected. Each row shows the world name and, in muted text, the folder
+ * Picks a singleplayer world to install a data pack into, or (with `title` and
+ * `submitLabel`) to export as a map (ADR 0116 D2). Worlds are listed newest first; the first
+ * one, or `initialDir` when listed, starts selected. Each row shows the world name and, in muted text, the folder
  * when it differs. Presentational: the host lists the worlds and installs.
  *
  * @packageDocumentation
@@ -26,6 +27,16 @@ export interface WorldPickerDialogProps {
   onClose(): void;
   /** The game location the worlds belong to, such as "Prism Launcher — My Instance". */
   locationName?: string;
+  /** The title in place of the data pack install's. */
+  title?: string;
+  /** The submit button's label; "Install" by default. */
+  submitLabel?: string;
+  /** The world selected first when it is listed (Play my game's `msm-game-<ns>`). */
+  initialDir?: string;
+  /** Disables the buttons while the host works. */
+  busy?: boolean;
+  /** An error from the host, shown above the buttons. */
+  error?: string | null;
 }
 
 /** Worlds newest first, then by name. */
@@ -48,12 +59,20 @@ export function WorldPickerDialog({
   onPick,
   onClose,
   locationName,
+  title,
+  submitLabel,
+  initialDir,
+  busy,
+  error: hostError,
 }: WorldPickerDialogProps) {
   const sorted = sortWorlds(worlds);
-  const [selected, setSelected] = useState<string | null>(sorted[0]?.dir ?? null);
+  const firstDir =
+    initialDir !== undefined && sorted.some((world) => world.dir === initialDir)
+      ? initialDir
+      : (sorted[0]?.dir ?? null);
+  const [selected, setSelected] = useState<string | null>(firstDir);
   const [error, setError] = useState<string | null>(null);
 
-  const firstDir = sorted[0]?.dir ?? null;
   useEffect(() => {
     if (!open) return;
     setSelected((current) =>
@@ -67,15 +86,16 @@ export function WorldPickerDialog({
   return (
     <Modal
       title={
-        locationName === undefined
+        title ??
+        (locationName === undefined
           ? 'Install data pack to world'
-          : `Install data pack to a world — ${locationName}`
+          : `Install data pack to a world — ${locationName}`)
       }
-      error={error}
+      error={error ?? hostError ?? null}
       wide
       testId="world-picker"
-      submitLabel="Install"
-      busy={sorted.length === 0}
+      submitLabel={submitLabel ?? 'Install'}
+      busy={sorted.length === 0 || busy === true}
       onCancel={onClose}
       onSubmit={() => {
         const world = sorted.find((entry) => entry.dir === selected);

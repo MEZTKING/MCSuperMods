@@ -166,6 +166,7 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
         { label: 'Test in Minecraft…', click: () => send('testInMinecraft') },
         { label: 'Install Resource Pack', click: () => send('installResourcePack') },
         { label: 'Install Data Pack…', click: () => send('installDataPack') },
+        { label: 'Export as a Map…', click: () => send('exportMap') },
         {
           label: 'More Exports',
           submenu: [

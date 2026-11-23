@@ -7,6 +7,7 @@ import {
   type Reference,
   type ResourceLocation,
 } from '@msm/core';
+import { structureSaveFileName } from '@msm/interop';
 import type { ExampleProject, Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
 import { Toast, Tooltip } from 'radix-ui';
@@ -25,6 +26,7 @@ import type {
   AppSettingsPatch,
   LaunchableLauncher,
   LauncherSettings,
+  MapsPlatform,
   MinecraftStatus,
   MsmBridge,
   RecentProjectView,
@@ -84,7 +86,11 @@ import {
   importFileFilters,
   importPickerTitle,
 } from './components/ImportAssetsDialog';
-import { BLOCKBENCH_IMPORT_NOTE, ImportFilesDialog } from './components/ImportFilesDialog';
+import {
+  BLOCKBENCH_IMPORT_NOTE,
+  ImportFilesDialog,
+  type TestWorldBuilds,
+} from './components/ImportFilesDialog';
 import {
   describeJarSource,
   type InstallTargetOption,
@@ -218,6 +224,8 @@ export function joinProjectPath(root: string, relative: string): string {
 
 /** Try it's view (ADR 0085), a lazy chunk with the simulation and the renderer. */
 const TryItView = lazy(() => import('./tryit/TryItView'));
+/** "Export as a map…" (ADR 0116 D2), a lazy chunk loaded when it opens. */
+const ExportMapDialog = lazy(() => import('./components/ExportMapDialog'));
 
 /** The menu command bound to the same accelerator as each keyboard shortcut. */
 const menuEquivalent = {
@@ -283,6 +291,7 @@ type DialogState =
   | { type: 'usages'; id: ResourceLocation; usages: readonly Reference[] }
   | { type: 'worlds'; worlds: readonly WorldInfo[] }
   | { type: 'fabric-jar' }
+  | { type: 'export-map' }
   | { type: 'plugin-export'; exporterId: string }
   | { type: 'java-project' }
   | { type: 'test-in-minecraft' }
@@ -1263,6 +1272,35 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     session.importers.filter((entry) =>
       mode === 'blockbench' ? isBlockbenchImporter(entry) : !isBlockbenchImporter(entry),
     );
+
+  /** "Bring builds from my test worlds" (ADR 0116 D3): structure saves through the .nbt importer. */
+  const testWorldBuilds = (maps: MapsPlatform, targetId: string): TestWorldBuilds => ({
+    list: () => maps.listStructureSaves(targetId),
+    importSaves: async (namespace, saves) => {
+      try {
+        const files = [];
+        for (const save of saves) {
+          files.push({
+            name: structureSaveFileName(save.id),
+            data: await maps.readStructureSave(targetId, save.world, save.id),
+          });
+        }
+        const result = await session.importFiles(files, namespace);
+        const count = result.imported.length;
+        const first = result.imported[0];
+        if (first !== undefined) select(first);
+        const notes = result.problems.filter((problem) => problem.severity !== 'info');
+        if (notes.length > 0) {
+          return `${count > 0 ? 'Some builds were not fully imported' : 'Nothing was imported'}:\n${notes.map((problem) => problem.message).join('\n')}`;
+        }
+        setDialog(null);
+        setMessage({ kind: 'info', text: `Brought ${count} build(s) into ${namespace}.` });
+        return null;
+      } catch (error) {
+        return messageOf(error);
+      }
+    },
+  });
 
   /** Picks files for the `mode` importers and imports them into `namespace`. */
   const importFiles = async (namespace: string, mode: ImportMode): Promise<string | null> => {
@@ -2252,6 +2290,17 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportSchematics,
     exportFabricJar,
     exportJavaProject,
+    exportMap: () => {
+      if (project === null) {
+        setMessage({ kind: 'error', text: 'Open a project to export it as a map.' });
+        return;
+      }
+      if (bridge.maps === undefined) {
+        setMessage({ kind: 'error', text: 'Export as a map is not available.' });
+        return;
+      }
+      setDialog({ type: 'export-map' });
+    },
     testInMinecraft,
     settings: () => openSettings(),
     renameElement: renameSelected,
@@ -3329,6 +3378,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 note={dialog.mode === 'blockbench' ? BLOCKBENCH_IMPORT_NOTE : undefined}
                 onImport={(namespace) => importFiles(namespace, dialog.mode)}
                 onCancel={() => setDialog(null)}
+                testWorlds={
+                  dialog.mode === 'structure' && bridge.maps !== undefined && target !== null
+                    ? testWorldBuilds(bridge.maps, target.id)
+                    : undefined
+                }
               />
             )}
             {dialog?.type === 'remove-asset' && (
@@ -3456,6 +3510,25 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                   />
                 );
               })()}
+            {dialog?.type === 'export-map' &&
+              project !== null &&
+              target !== null &&
+              bridge.maps !== undefined && (
+                <Suspense fallback={null}>
+                  <ExportMapDialog
+                    maps={bridge.maps}
+                    target={target}
+                    namespace={project.namespaces[0]?.name ?? null}
+                    projectName={project.name}
+                    build={() => session.buildMapContent()}
+                    onDone={(text) => {
+                      setDialog(null);
+                      setMessage({ kind: 'info', text });
+                    }}
+                    onClose={() => setDialog(null)}
+                  />
+                </Suspense>
+              )}
             {dialog?.type === 'fabric-jar' && (
               <ExportFabricJarDialog
                 options={session.fabricJarOptions}

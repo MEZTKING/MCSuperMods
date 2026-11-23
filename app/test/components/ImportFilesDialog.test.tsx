@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   extensionList,
   ImportFilesDialog,
+  TEST_WORLDS_IMPORT_NOTE,
 } from '../../src/renderer/src/components/ImportFilesDialog';
 
 afterEach(cleanup);
@@ -67,5 +68,54 @@ describe('ImportFilesDialog', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Choose files…' }));
     expect((await screen.findByRole('alert')).textContent).toContain('No plugin can import files.');
     expect(onImport).not.toHaveBeenCalled();
+  });
+
+  it('brings builds from my test worlds into the chosen namespace (ADR 0116 D3)', async () => {
+    const saves = [
+      { world: 'msm-test-demo', id: 'demo:hut', size: 3, lastModified: 'x' },
+      { world: 'msm-game-demo', id: 'demo:houses/tower', size: 5, lastModified: 'x' },
+    ];
+    const importSaves = vi.fn(async () => null);
+    const onImport = vi.fn(async () => null);
+    render(
+      <ImportFilesDialog
+        title="Import structure"
+        namespaces={['demo', 'other']}
+        importers={importers}
+        onImport={onImport}
+        onCancel={vi.fn()}
+        testWorlds={{ list: async () => saves, importSaves }}
+      />,
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('tab', { name: 'From my test worlds' }));
+    expect(await screen.findByText('Bring builds from my test worlds')).toBeTruthy();
+    expect(screen.getByTestId('import-test-worlds-note').textContent).toBe(TEST_WORLDS_IMPORT_NOTE);
+    await user.click(screen.getByRole('button', { name: 'Bring builds' }));
+    expect(screen.getByRole('alert').textContent).toBe('Choose at least one build.');
+    await user.click(screen.getByTestId('import-test-world-save-msm-game-demo/demo:houses/tower'));
+    await user.selectOptions(screen.getByLabelText('Namespace'), 'other');
+    await user.click(screen.getByRole('button', { name: 'Bring builds' }));
+    await waitFor(() => expect(importSaves).toHaveBeenCalledWith('other', [saves[1]]));
+    expect(onImport).not.toHaveBeenCalled();
+  });
+
+  it('says how to save a build when the test worlds have none', async () => {
+    render(
+      <ImportFilesDialog
+        namespaces={['demo']}
+        importers={importers}
+        onImport={vi.fn(async () => null)}
+        onCancel={vi.fn()}
+        testWorlds={{ list: async () => [], importSaves: vi.fn(async () => null) }}
+      />,
+    );
+    await userEvent.setup().click(screen.getByRole('tab', { name: 'From my test worlds' }));
+    expect((await screen.findByTestId('import-test-worlds-empty')).textContent).toContain(
+      'structure block',
+    );
+    expect(screen.getByRole('button', { name: 'Bring builds' }).hasAttribute('disabled')).toBe(
+      true,
+    );
   });
 });

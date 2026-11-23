@@ -158,18 +158,33 @@ async function plainEntries(dir: string): Promise<{ name: string; directory: boo
     .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 }
 
-/**
- * Streams the folder `root` into the zip `out` with every entry under `top/`, through a
- * temporary file in the same folder that is renamed into place when complete and removed on
- * failure. Folders are kept as entries, so empty ones come back on a restore.
- */
-async function zipFolder(
-  root: string,
-  top: string,
-  out: string,
-  read: (path: string) => Promise<Uint8Array>,
-  skipDir: (path: string) => boolean,
-): Promise<void> {
+/** What {@link zipTree} streams into one zip file. */
+export interface ZipTreeOptions {
+  /** The real folder to zip. */
+  root: string;
+  /** The entry name prefix of the folder, `/`-separated, no trailing `/` (`top` or `a/b/top`). */
+  top: string;
+  /** The zip to write; a temporary file beside it is renamed into place when complete. */
+  out: string;
+  /** Reads one file. */
+  read(path: string): Promise<Uint8Array>;
+  /**
+   * Whether to leave an entry out: `relative` is `/`-separated below `root`, `path` absolute.
+   * A folder left out is left out with everything in it.
+   */
+  skip(relative: string, directory: boolean, path: string): boolean;
+  /** Files written before the folder, with their full entry names (their folders first). */
+  before?: readonly { name: string; data: Uint8Array }[];
+  /** Files written after the folder, named relative to `top` (missing folders are added). */
+  after?: readonly { name: string; data: Uint8Array }[];
+  /** The verb of the size errors, as in "The world is too large to back up". */
+  verb?: string;
+}
+
+/** Writes the zip entries of {@link ZipTreeOptions} in order; resolves the entry count. */
+export async function zipTree(options: ZipTreeOptions): Promise<{ entries: number }> {
+  const { root, top, out, read } = options;
+  const verb = options.verb ?? 'back up';
   const temp = join(dirname(out), tempName(basename(out)));
   const handle: FileHandle = await open(temp, 'wx');
   let closed = false;
@@ -179,6 +194,7 @@ async function zipFolder(
     let finished = false;
     let written = 0;
     let entries = 0;
+    const folders = new Set<string>();
     const zip = new Zip((error, chunk, final) => {
       if (error !== null) {
         failure = error;
@@ -191,7 +207,7 @@ async function zipFolder(
       for (let chunk = pending.shift(); chunk !== undefined; chunk = pending.shift()) {
         written += chunk.length;
         if (written > ZIP_MAX_BYTES) {
-          throw new Error('The world is too large to back up (over 4 GB).');
+          throw new Error(`The world is too large to ${verb} (over 4 GB).`);
         }
         await handle.write(chunk);
       }
@@ -200,26 +216,42 @@ async function zipFolder(
     const add = (name: string, data: Uint8Array, mtime: Date, compress: boolean): void => {
       entries += 1;
       if (entries > ZIP_MAX_ENTRIES) {
-        throw new Error(`The world has too many files to back up (over ${ZIP_MAX_ENTRIES}).`);
+        throw new Error(`The world has too many files to ${verb} (over ${ZIP_MAX_ENTRIES}).`);
       }
+      if (name.endsWith('/')) folders.add(name);
       const entry = compress ? new ZipDeflate(name, { level: 6 }) : new ZipPassThrough(name);
       entry.mtime = mtime;
       zip.add(entry);
       entry.push(data, true);
     };
+    /** Adds the missing parent folders of `name`. */
+    const addParents = async (name: string, mtime: Date): Promise<void> => {
+      const segments = name.split('/');
+      for (let n = 1; n < segments.length; n += 1) {
+        const folder = `${segments.slice(0, n).join('/')}/`;
+        if (folders.has(folder)) continue;
+        add(folder, new Uint8Array(0), mtime, false);
+        await flush();
+      }
+    };
+    const addFile = async (name: string, data: Uint8Array, mtime: Date): Promise<void> => {
+      await addParents(name, mtime);
+      add(name, data, mtime, !STORED_EXTENSIONS.test(name));
+      await flush();
+    };
 
     const walk = async (dir: string, relative: string): Promise<void> => {
       for (const entry of await plainEntries(dir)) {
         const path = join(dir, entry.name);
-        const name = `${relative}/${entry.name}`;
+        const rel = relative === '' ? entry.name : `${relative}/${entry.name}`;
+        const name = `${top}/${rel}`;
+        if (options.skip(rel, entry.directory, path)) continue;
         if (entry.directory) {
-          if (skipDir(path)) continue;
           add(`${name}/`, new Uint8Array(0), (await lstat(path)).mtime, false);
           await flush();
-          await walk(path, name);
+          await walk(path, rel);
           continue;
         }
-        if (relative === top && SKIPPED_FILES.has(entry.name)) continue;
         const info = await lstat(path);
         const data = await read(path);
         add(name, data, info.mtime, !STORED_EXTENSIONS.test(entry.name));
@@ -227,20 +259,48 @@ async function zipFolder(
       }
     };
 
-    add(`${top}/`, new Uint8Array(0), (await lstat(root)).mtime, false);
-    await walk(root, top);
+    const rootTime = (await lstat(root)).mtime;
+    for (const file of options.before ?? []) await addFile(file.name, file.data, rootTime);
+    await addParents(`${top}/`, rootTime);
+    await walk(root, '');
+    for (const file of options.after ?? []) {
+      await addFile(`${top}/${file.name}`, file.data, rootTime);
+    }
     zip.end();
     await flush();
-    if (!finished) throw new Error('The backup zip could not be finished.');
+    if (!finished) throw new Error('The zip could not be finished.');
     await handle.sync();
     await handle.close();
     closed = true;
     await rename(temp, out);
+    return { entries };
   } catch (error) {
     if (!closed) await handle.close().catch(() => {});
     await rm(temp, { force: true });
     throw error;
   }
+}
+
+/**
+ * Streams the folder `root` into the zip `out` with every entry under `top/`, through a
+ * temporary file in the same folder that is renamed into place when complete and removed on
+ * failure. Folders are kept as entries, so empty ones come back on a restore.
+ */
+async function zipFolder(
+  root: string,
+  top: string,
+  out: string,
+  read: (path: string) => Promise<Uint8Array>,
+  skipDir: (path: string) => boolean,
+): Promise<void> {
+  await zipTree({
+    root,
+    top,
+    out,
+    read,
+    skip: (relative, directory, path) =>
+      directory ? skipDir(path) : !relative.includes('/') && SKIPPED_FILES.has(relative),
+  });
 }
 
 /**

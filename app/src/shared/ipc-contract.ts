@@ -989,6 +989,98 @@ export const playStatusSchema = z
   })
   .strict();
 
+// ---- Export as a map and builds from the game (ADR 0116 D2, D3). ----
+
+/** The most worlds one `maps:listWorlds` source carries (mirrors the service's cap). */
+export const MAP_WORLDS_MAX = 500;
+/** The most structure saves `maps:listStructureSaves` returns (500 per world, 64 worlds). */
+export const MAP_STRUCTURE_SAVES_MAX = 32_000;
+/** The most jars a map `.mrpack` carries. */
+export const MAP_JARS_MAX = 16;
+/** The largest `.mrpack` index text. */
+export const MAP_INDEX_MAX = 1024 * 1024;
+
+const mapSourceId = z.string().min(1).max(300);
+/** A map's world folder name (as `isMapFolderName` in `@msm/interop`). */
+const mapName = z
+  .string()
+  .min(1)
+  .max(64)
+  .regex(/^[A-Za-z0-9 ._()'!,&-]+$/)
+  .refine((value) => !/^[ .]|[ .]$/.test(value), { message: 'Not a map name' });
+/** A structure save id: `<ns>:<path>` (as `isStructureSaveId` in `@msm/interop`). */
+const structureSaveId = z
+  .string()
+  .max(1200)
+  .regex(/^[a-z0-9_.-]{1,64}:[a-z0-9_.-]{1,128}(?:\/[a-z0-9_.-]{1,128}){0,8}$/)
+  .refine((value) => !value.split(/[:/]/).some((part) => /^\.+$/.test(part)), {
+    message: 'Not a structure name',
+  });
+const mapJarName = z
+  .string()
+  .max(255)
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._+-]*\.jar$/);
+const mapWorldSource = z
+  .object({
+    id: mapSourceId,
+    name: z.string().max(1024),
+    managed: z.boolean(),
+    worlds: z.array(worldInfo).max(MAP_WORLDS_MAX),
+  })
+  .strict();
+const mapExportRequest = z
+  .object({
+    targetId,
+    sourceId: mapSourceId,
+    worldDir,
+    keepPlayerData: z.boolean(),
+    mapName,
+    dataPack: z.object({ fileName: packFileName, data: bytes }).strict().optional(),
+    resourcePack: bytes.optional(),
+    mrpack: z
+      .object({
+        index: z.string().min(2).max(MAP_INDEX_MAX),
+        jars: z
+          .array(z.object({ fileName: mapJarName, data: bytes }).strict())
+          .min(1)
+          .max(MAP_JARS_MAX),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict()
+  .refine(
+    (value) => value.mrpack === undefined || (value.dataPack ?? value.resourcePack) === undefined,
+    {
+      message: 'A .mrpack map carries no separate packs',
+    },
+  );
+const mapExportResult = z
+  .object({
+    path: absolutePath,
+    kind: z.enum(['world-zip', 'mrpack']),
+    entries: z.number().int().min(0),
+    leftOut: z
+      .array(
+        z
+          .object({
+            path: z.string().min(1).max(4096),
+            reason: z.enum(['lock', 'dev-pack', 'player-data', 'replaced']),
+          })
+          .strict(),
+      )
+      .max(10_000),
+  })
+  .strict();
+const structureSaveInfo = z
+  .object({
+    world: worldDir,
+    id: structureSaveId,
+    size: z.number().int().min(0),
+    lastModified: z.string().max(64),
+  })
+  .strict();
+
 // ---- Try it's worlds (ADR 0087), read-only. ----
 
 /** The most worlds `tryit:listWorlds` returns (mirrors the service's cap). */
@@ -1563,6 +1655,22 @@ export const ipcContract = {
     response: z.object({ dir: backupSegment, path: absolutePath }).strict(),
   },
   [InvokeChannels.worldBackupsOpenFolder]: { request: noRequest, response: voidResponse },
+  [InvokeChannels.mapsListWorlds]: {
+    request: z.object({ targetId }).strict(),
+    response: z.array(mapWorldSource).max(64),
+  },
+  [InvokeChannels.mapsExport]: {
+    request: mapExportRequest,
+    response: mapExportResult.nullable(),
+  },
+  [InvokeChannels.mapsListStructureSaves]: {
+    request: z.object({ targetId }).strict(),
+    response: z.array(structureSaveInfo).max(MAP_STRUCTURE_SAVES_MAX),
+  },
+  [InvokeChannels.mapsReadStructureSave]: {
+    request: z.object({ targetId, world: worldDir, id: structureSaveId }).strict(),
+    response: bytes,
+  },
   [InvokeChannels.guideIndex]: { request: noRequest, response: guideIndex },
   [InvokeChannels.guidePage]: {
     request: z.object({ page: guidePageName }).strict(),

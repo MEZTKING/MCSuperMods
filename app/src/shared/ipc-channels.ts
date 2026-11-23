@@ -109,6 +109,11 @@ export const InvokeChannels = {
   worldBackupsList: 'msm:v1:worldBackups:list',
   worldBackupsRestore: 'msm:v1:worldBackups:restore',
   worldBackupsOpenFolder: 'msm:v1:worldBackups:openFolder',
+  // ADR 0116 D2, D3: Export as a map and builds from the game.
+  mapsListWorlds: 'msm:v1:maps:listWorlds',
+  mapsExport: 'msm:v1:maps:export',
+  mapsListStructureSaves: 'msm:v1:maps:listStructureSaves',
+  mapsReadStructureSave: 'msm:v1:maps:readStructureSave',
   guideIndex: 'msm:v1:guide:index',
   guidePage: 'msm:v1:guide:page',
 } as const;
@@ -172,6 +177,8 @@ export const MENU_COMMANDS = [
   'exportCombined',
   'installResourcePack',
   'installDataPack',
+  // ADR 0116 D2: File > "Export as a Map…".
+  'exportMap',
   'exportStructures',
   'exportSchematics',
   'exportFabricJar',

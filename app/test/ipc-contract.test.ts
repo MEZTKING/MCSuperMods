@@ -973,6 +973,63 @@ const samples: Record<
       { version: '1.0', blocks: { 'minecraft:made_up_rock': 'Made-up Rock' } },
     ],
   },
+  [InvokeChannels.mapsListWorlds]: {
+    request: [{ targetId: 'mc-26.3' }, { targetId: '' }],
+    response: [
+      [
+        {
+          id: 'msm-play',
+          name: 'MCSuperMods Test (26.3)',
+          managed: true,
+          worlds: [{ dir: 'msm-game-ruby', name: 'MCSuperMods game (ruby)', lastModified: 'x' }],
+        },
+      ],
+      [{ id: 'msm-play', name: 'x', managed: 'yes', worlds: [] }],
+    ],
+  },
+  [InvokeChannels.mapsExport]: {
+    request: [
+      {
+        targetId: 'mc-26.3',
+        sourceId: 'msm-play',
+        worldDir: 'msm-game-ruby',
+        keepPlayerData: false,
+        mapName: 'Ruby Sky',
+        dataPack: { fileName: 'ruby-data.zip', data: bytes },
+        resourcePack: bytes,
+      },
+      {
+        targetId: 'mc-26.3',
+        sourceId: 'msm-play',
+        worldDir: 'msm-game-ruby',
+        keepPlayerData: false,
+        mapName: '../Ruby',
+      },
+    ],
+    response: [
+      {
+        path: '/home/a/Ruby Sky.zip',
+        kind: 'world-zip',
+        entries: 12,
+        leftOut: [{ path: 'players', reason: 'player-data' }],
+      },
+      { path: '/home/a/Ruby Sky.zip', kind: 'tar', entries: 12, leftOut: [] },
+    ],
+  },
+  [InvokeChannels.mapsListStructureSaves]: {
+    request: [{ targetId: 'mc-26.3' }, {}],
+    response: [
+      [{ world: 'msm-test-ruby', id: 'ruby:houses/hut', size: 10, lastModified: 'x' }],
+      [{ world: 'msm-test-ruby', id: 'ruby:../hut', size: 10, lastModified: 'x' }],
+    ],
+  },
+  [InvokeChannels.mapsReadStructureSave]: {
+    request: [
+      { targetId: 'mc-26.3', world: 'msm-test-ruby', id: 'ruby:hut' },
+      { targetId: 'mc-26.3', world: '../x', id: 'ruby:hut' },
+    ],
+    response: [bytes, [1, 2]],
+  },
   [InvokeChannels.guideIndex]: {
     request: [undefined, { page: 'x' }],
     response: [
@@ -1041,6 +1098,31 @@ describe('IPC contract', () => {
     ).toBe(true);
     expect(
       newWorld.safeParse({ targetId: 'mc-26.3', namespace: 'ruby', kind: 'map' }).success,
+    ).toBe(false);
+  });
+
+  it('carries map exports (ADR 0116 D2): packs or a .mrpack, never both', () => {
+    const { request } = ipcContract[InvokeChannels.mapsExport];
+    const base = {
+      targetId: 'mc-26.3',
+      sourceId: 'prism:My_Pack',
+      worldDir: 'My World',
+      keepPlayerData: true,
+      mapName: 'Ruby Sky',
+    };
+    const mrpack = { index: '{"formatVersion":1}', jars: [{ fileName: 'ruby.jar', data: bytes }] };
+    expect(request.safeParse(base).success).toBe(true);
+    expect(request.safeParse({ ...base, mrpack }).success).toBe(true);
+    expect(request.safeParse({ ...base, mrpack, resourcePack: bytes }).success).toBe(false);
+    expect(
+      request.safeParse({
+        ...base,
+        mrpack: { ...mrpack, jars: [{ fileName: '../x.jar', data: bytes }] },
+      }).success,
+    ).toBe(false);
+    expect(request.safeParse({ ...base, mapName: 'Ruby Sky.' }).success).toBe(false);
+    expect(
+      request.safeParse({ ...base, dataPack: { fileName: 'a/b.zip', data: bytes } }).success,
     ).toBe(false);
   });
 

@@ -31,6 +31,29 @@ export {
 } from './chunk';
 export { type LevelSummary, readLevelSummary } from './level';
 export {
+  isMapFolderName,
+  isMapJarFileName,
+  isMapPackFileName,
+  MAP_ALWAYS_LEFT_OUT,
+  MAP_DATAPACKS_FOLDER,
+  MAP_DEV_PACK_PATH,
+  MAP_PLAYER_DATA,
+  MAP_RESOURCE_PACK_FILE,
+  type MapEntryPlan,
+  type MapExtraFile,
+  type MapLeftOutReason,
+  type MapPackage,
+  type MapPlanOptions,
+  type MapWorldEntry,
+  MRPACK_SAVES_PREFIX,
+  mapEntryLeftOut,
+  mapEntryPrefix,
+  mapExtraFiles,
+  mapFileName,
+  mapFolderName,
+  planMapEntries,
+} from './map-export';
+export {
   ChunkCompression,
   decompressChunk,
   EXTERNAL_CHUNK_FLAG,

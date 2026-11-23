@@ -150,6 +150,19 @@ export {
   setupFunctionText,
 } from './setup-function';
 export {
+  isStructureSaveId,
+  listStructureSaves,
+  STRUCTURE_SAVE_MAX_BYTES,
+  STRUCTURE_SAVE_MAX_DEPTH,
+  STRUCTURE_SAVES_FOLDER,
+  STRUCTURE_SAVES_MAX,
+  STRUCTURE_SAVES_REGISTRY,
+  type StructureSave,
+  structureSaveFileName,
+  structureSaveIdOf,
+  structureSavePath,
+} from './structure-saves';
+export {
   assertSafeVersion,
   compareDottedVersions,
   type Downloader,
