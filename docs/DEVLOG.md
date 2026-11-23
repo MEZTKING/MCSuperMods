@@ -11198,3 +11198,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B722 (format) and B723 (plugin API 1.27.0 and facts) in wave A1.
+
+## 2026-11-23 — executor — B761 Recipes and managed instances
+
+**What**
+- New `packages/interop/src/instances/` (ADR 0133 D1, D2, D5): `recipe.ts` (`RunRecipe`, `recipeFor(action, project, target)` for test, game, plain, modpack, map and server, `describeRecipe` for the offer card's sentences, `InstanceError` codes), `names.ts` (`MCSuperMods Test|Plain|Pack <name>|Map <name> (<mc>)`, `MCSuperMods Server <ns> (<mc>)`, owner labels safe on every system, the taken-name rule `-2` to `-99`), `marker.ts` (marker version 2 with `purpose`, `owner`, `loaderKind`, `files`, `worlds`; version 1 read as the Fabric test instance and kept at version 1 until a record is needed; `listManaged`), `mmc-writer.ts` (the component table: none and Fabric made, Quilt, NeoForge and Forge known and refused; `instance.cfg` with `InstanceType=OneSix`; `placeInstance`), `staging.ts` (build in `<parent>/.msm-staging/<id>/<name>/`, stamp first, one rename, stale stamped folders removed, anything else left), `install.ts` (`ensureInstance(deps, launcher root, recipe)`: mods through the existing `mods/.msm-installed.json` installer, resource packs and copied worlds recorded in the marker, `options.txt` defaults, a copied world staged in the instance folder and moved into `saves/` whole). New empty `packages/interop/src/server/index.ts` for B762; both exported from `packages/interop/src/index.ts`.
+- `InstallFileSystem` gained an optional `rename`; the Node adapter has it with `createNodeInstallFileSystem({ rename: true })` (refusing an existing target, even an empty folder). `createManagedInstance` now builds a new test instance in a staging folder whenever its file system can rename (B760 N1; ADR 0026's open item); its behaviour and tests are otherwise unchanged.
+- Tests in `packages/interop/test/instances/` (61): every action on a release and a snapshot target, the card's sentences, bad input, marker versions, the component table, the taken-name rule, foreign files and worlds refused, the staging race, stale staging, the D5 test (a Prism folder with ten foreign instances, two same-named folders without the marker, account and launcher files, every recipe run twice on both targets: all of it byte for byte the same, every write inside MSM's folders, no half-made instance or world ever visible) and a run on a real disk.
+
+**Decisions**
+- The app's Node file system gets `rename` only on request: with it on by default, Play's `createManagedInstance` stages, and `app/test/main/play.test.ts` "writes nothing outside the managed instance" fails on the staging folder (a file outside this brief). B763 or B765 turn it on with one line in that test.
+- A map that needs its mod gets `MCSuperMods Map <name> (<mc>)` (D2 named only Test, Plain and Pack); a server folder is named `MCSuperMods Server <namespace> (<mc>)` (B762 may rename it in its layout).
+- A marker that cannot be read counts as taken, never as MSM's; a copied world is kept as played unless the recipe asks to replace it; MSM's own unlisted mods are removed as Play and the modpack test already do, resource packs and worlds never.
+
+**Next**
+- B762 starts from this commit (`server/`). B763 wires `ensureInstance` and `listManaged` in main with `createNodeInstallFileSystem({ rename: true })` and runs them one at a time per launcher folder.

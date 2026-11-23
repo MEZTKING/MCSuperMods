@@ -8,15 +8,18 @@
  * mods-folder installs, the managed Prism instance, Fabric API download cache, launch
  * arguments; ADR 0026 D5) and (Phase 5) `blockbench/` (`.bbmodel` to GeckoLib geometry and
  * animations, the `blockbench` importer; ADR 0029 D3) and `world/` (a read-only area of a save's
- * Overworld for Try it; ADR 0087). This entry point
+ * Overworld for Try it; ADR 0087) and `instances/` (run recipes and the managed instances of
+ * every purpose; ADR 0133) and `server/` (the local server; ADR 0133 D7). This entry point
  * stays free of Node built-ins; the Node adapter lives under `@msm/interop/node`.
  */
 
 export * from './blockbench/index';
 export * from './fabric/index';
+export * from './instances/index';
 export * from './launchers/index';
 export * from './minecraft-install/index';
 export * from './modrinth/index';
 export * from './nbt/index';
 export { PngFormatError, type PngHeader, readPngHeader } from './png';
+export * from './server/index';
 export * from './world/index';

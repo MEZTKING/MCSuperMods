@@ -8,8 +8,13 @@
  * folder and a `.msm-managed.json` marker. Prism adds missing dependencies itself when it
  * loads the profile (`ComponentUpdateTask.cpp`): its meta for Fabric Loader requires
  * `net.fabricmc.intermediary`, which it adds as a dependency-only component, as it does LWJGL.
+ *
+ * When the file system can rename, a new managed instance is built in a staging folder and
+ * moved into place in one step (`instances/staging.ts`, B760 N1), so a Prism that is running
+ * lists it at once; the general writer for every purpose is `instances/` (ADR 0133).
  */
 
+import { buildStaged, clearStaleStaging, StagingTakenError } from '../instances/staging';
 import { isSafeSegment } from '../launchers/paths';
 import type { GameLocation } from '../launchers/types';
 import { type InstallFileSystem, joinInstallPath } from '../minecraft-install/fs';
@@ -124,13 +129,30 @@ export async function createManagedInstance(
     return { folder, instanceDir, created: false, updated };
   }
 
-  await fs.mkdirp(joinInstallPath(instanceDir, 'minecraft', 'mods'));
-  await fs.writeFile(
-    joinInstallPath(instanceDir, 'instance.cfg'),
-    encode(managedInstanceCfg(folder)),
-  );
-  await fs.writeFile(joinInstallPath(instanceDir, 'mmc-pack.json'), encode(managedMmcPack(facts)));
-  await fs.writeFile(markerPath, encode(stableJson(marker)));
+  const write = async (dir: string): Promise<void> => {
+    await fs.mkdirp(joinInstallPath(dir, 'minecraft', 'mods'));
+    await fs.writeFile(joinInstallPath(dir, 'instance.cfg'), encode(managedInstanceCfg(folder)));
+    await fs.writeFile(joinInstallPath(dir, 'mmc-pack.json'), encode(managedMmcPack(facts)));
+    await fs.writeFile(joinInstallPath(dir, MANAGED_INSTANCE_MARKER), encode(stableJson(marker)));
+  };
+  if (fs.rename === undefined) {
+    await write(instanceDir);
+  } else {
+    // Built whole in a staging folder and moved into place in one step, so a running Prism
+    // lists it at once (B760 N1; ADR 0026's open item).
+    await clearStaleStaging(fs, instancesDir);
+    try {
+      await buildStaged(fs, instancesDir, folder, write);
+    } catch (error) {
+      if (error instanceof StagingTakenError) {
+        throw new FabricTestError(
+          'fabric.instance-not-managed',
+          `The launcher already has an instance folder named "${folder}" that MCSuperMods did not create. Rename it, or choose it in Settings if it runs Fabric.`,
+        );
+      }
+      throw error;
+    }
+  }
   return { folder, instanceDir, created: true, updated: false };
 }
 

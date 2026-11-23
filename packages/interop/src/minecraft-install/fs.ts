@@ -27,6 +27,13 @@ export interface InstallFileSystem {
   /** Removes a file or directory tree. Succeeds when nothing exists at the path. */
   remove(absPath: string): Promise<void>;
   /**
+   * Moves a file or directory tree to `toAbsPath` in one step (both on the same volume).
+   * Rejects when something already exists at `toAbsPath`. Optional: launcher writers build an
+   * instance in a staging folder and move it into place with it, so a running launcher never
+   * lists a half-made instance (ADR 0133 D2, B760 N1); without it they write in place.
+   */
+  rename?(fromAbsPath: string, toAbsPath: string): Promise<void>;
+  /**
    * Resolves symbolic links to the canonical absolute path. Rejects when nothing exists at
    * the path. Optional: without it, launcher discovery skips its symlink containment check.
    */
