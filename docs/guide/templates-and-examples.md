@@ -284,6 +284,10 @@ A trade reaches a villager through the vanilla trade tag of its profession and l
 | Template | id | Kind | Notes |
 |---|---|---|---|
 | Noise settings: gentle hills | `noise_settings` | `minecraft:worldgen/noise_settings` | Terrain from a height gradient plus one noise, with water at sea level and a simple grass, dirt and bedrock surface. |
+| Noise settings: islands | `noise_settings_islands` | `minecraft:worldgen/noise_settings` | Islands in a sea at height 63: land rises where a stretched surface noise is high and sinks under water where it is low. Grass over dirt on land, sand under water. |
+| Noise settings: tall mountains | `noise_settings_mountains` | `minecraft:worldgen/noise_settings` | Tall mountains up to about height 230 over valleys at height 80, with cliffs from a 3D noise. Grass over dirt, stone beneath. |
+| Noise settings: caves only | `noise_settings_caves` | `minecraft:worldgen/noise_settings` | Solid stone from height 0 to 127 with caverns where a 3D surface noise is high, water lakes below height 20 and bedrock at the bottom. Use it with a dimension type 128 high, without sky light. |
+| Noise settings: empty sky | `noise_settings_empty` | `minecraft:worldgen/noise_settings` | Nothing at all: air everywhere and no water, for a Skyblock or a world you build from scratch. |
 | Density function: noise | `density_function` | `minecraft:worldgen/density_function` | Samples a vanilla noise, scaled horizontally; reference it from noise settings. |
 | Noise | `noise` | `minecraft:worldgen/noise` | Noise parameters with three octaves starting at a large scale. |
 | Carver: caves | `carver` | `minecraft:worldgen/carver` | Cave tunnels between the bottom of the world and y 180; list it in a biome. |
@@ -642,6 +646,11 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Mob skin (Creator: Mobs) | `mob-skin` | resource, data | A new skin for a vanilla wolf, cat, pig, cow, chicken or frog, with placeholder textures of the right size to paint over, appearing in a biome you choose or everywhere. |
 | Goat horn (Creator: Gear) | `goat-horn` | resource, data | A new goat horn call: its name, a vanilla sound or your own `.ogg`, how long it plays and how far it is heard, a recipe and, if you choose, goats dropping it. |
 | Dimension (Creator: Worlds) | `dimension` | resource, data, mod | A new dimension to explore: pick the terrain, the biome and the sky, and travel there and back with a key item or a portal (Fabric mod jar) or a command (vanilla packs). |
+| Islands (Creator: Worlds) | `world-islands` | resource, data | A World Type of islands in the sea: how big they are, how much sea lies between them, what grows on them and how many trees. Its land is MSM's own recipe, so the live map draws it without your Minecraft files. Choose it under **More > World Type** when creating a world. |
+| Tall mountains (Creator: Worlds) | `world-mountains` | resource, data | A World Type of tall mountains: how tall, how jagged, where the snow starts and what grows on them. Its land is MSM's own recipe, so the live map draws it without your Minecraft files. |
+| One biome everywhere (Creator: Worlds) | `world-one-biome` | resource, data | A World Type that is one biome everywhere, over gentle hills, flat land or land like the overworld. |
+| Caves only (Creator: Worlds) | `world-caves` | resource, data | A World Type that is all caves: a roof or an open top, the rock, lakes of water or lava, and what glows. It has its own dimension type without daylight under the roof. |
+| Empty sky with a start island (Creator: Worlds) | `world-empty-sky` | resource, data | A World Type of empty sky, for a Skyblock: the biome of the sky. It makes the empty world only; the Skyblock flow, under Games, makes the start island, its chest and what you start with. |
 | Recipe pack | `recipe_pack` | data | Shaped, shapeless, smelting, blasting and stonecutting recipes, an item tag used as an ingredient, a crafting advancement and a load message. |
 | Custom music disc | `music_disc` | resource, data | A jukebox song, its sound event, a disc model and texture, and a `give_disc` function. |
 | Functions | `function_starter` | data | `load` and `tick` functions wired to `#minecraft:load` and `#minecraft:tick`, a jump scoreboard, a `greet` function and a function tag of your own. |
@@ -839,6 +848,11 @@ There is one example for each of the 124 element kinds (the six games kinds unde
 | Placed feature | `example_placed_feature` | Worldgen | `minecraft:worldgen/placed_feature` | Scatters poppies in patches on the surface. |
 | Dimension | `example_dimension` | Worldgen | `minecraft:dimension` | A new dimension where the whole world is a cherry grove. |
 | World preset | `example_world_preset` | Worldgen | `minecraft:worldgen/world_preset` | A World Type with amplified terrain covered in cherry groves. |
+| Coral Isles | `example_world_coral_isles` | Worlds | `minecraft:worldgen/world_preset` | Small islands far apart in a wide sea, with many trees: jungle and savanna, from the Islands flow. |
+| Frost Peaks | `example_world_frost_peaks` | Worlds | `minecraft:worldgen/world_preset` | Jagged mountains as tall as the world allows, snowy from low down, with snowy pine woods and bare stone, from the Tall mountains flow. |
+| Endless Blossom | `example_world_endless_blossom` | Worlds | `minecraft:worldgen/world_preset` | A whole world of cherry grove over gentle hills and lakes, from the One biome everywhere flow. |
+| Ember Caverns | `example_world_ember_caverns` | Worlds | `minecraft:worldgen/world_preset` | Deepslate caves under a roof of rock, with lava lakes at the bottom and shroomlight glowing on the cave roofs, from the Caves only flow. |
+| Cloud Realm | `example_world_cloud_realm` | Worlds | `minecraft:worldgen/world_preset` | An empty sky that is all cherry grove, for a Skyblock, from the Empty sky with a start island flow; the start island comes with Skyblock. |
 | Noise settings | `example_noise_settings` | Worldgen (advanced) | `minecraft:worldgen/noise_settings` | Gentle hills from a height gradient plus one noise, with a simple surface. |
 | Density function | `example_density_function` | Worldgen (advanced) | `minecraft:worldgen/density_function` | A reusable density function: one vanilla noise, stretched horizontally. |
 | Noise | `example_noise` | Worldgen (advanced) | `minecraft:worldgen/noise` | Noise parameters: three octaves starting at a large scale. |
@@ -976,6 +990,8 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/scripts/` | `msm_examples` | The script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect, Script: kill counter, Script: full set bonus, Script: teleport staff, Script: boss fight bar) |
 | `examples/popular/<name>/` | `msm_examples` | Each Popular ideas example as a project of its own: `glowshard/`, `ember_drake/`, `cottage_furniture/`, `camp_stove/`, `pull_charm/`, `sunken_crypt/`, `amber_realm/`, `boomerang/`, `paper_glider/`, `rocket_boots/`, `orchard_tree/`, `spell_scrolls/`, `coordinates_bar/`, `go_kart/`, `mini_tank/`, `biplane/` and `willow_boats/` |
 | `examples/games/<name>/` | `msm_examples` | Each Games example as a project of its own: `cloud_farm/`, `deep_block/`, `blossom_isles/`, `star_block/`, `crystal_road/`, `four_kingdoms/`, `canyon_dash/` and `explorer/` |
+| `examples/rules/` | `msm_examples` | The Rules examples, made without code: Rules: a lucky block and Rules: a guard mob, each with its rule book (they need the Fabric mod jar) |
+| `examples/worlds/<name>/` | `msm_examples` | Each world example of the Make a world flows as a project of its own: `coral_isles/`, `frost_peaks/`, `endless_blossom/`, `ember_caverns/` and `cloud_realm/` |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |
@@ -1013,6 +1029,37 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/wandering-merchant/` | `msm_starter` | The Wandering merchant starter |
 | `examples/starters/village-job/` | `msm_starter` | The Village job starter |
 | `examples/starters/fluid/` | `msm_starter` | The Fluid starter |
+| `examples/starters/adventure-map/` | `msm_starter` | The Adventure map starter |
+| `examples/starters/arena-game/` | `msm_starter` | The Arena game starter |
+| `examples/starters/backpack/` | `msm_starter` | The Backpack starter |
+| `examples/starters/bed/` | `msm_starter` | The Bed starter |
+| `examples/starters/cake/` | `msm_starter` | The Cake starter |
+| `examples/starters/copper-set/` | `msm_starter` | The Copper set starter |
+| `examples/starters/creative-tab/` | `msm_starter` | The Creative tab starter |
+| `examples/starters/crop/` | `msm_starter` | The Crop starter |
+| `examples/starters/custom-command/` | `msm_starter` | The Custom command starter |
+| `examples/starters/goals/` | `msm_starter` | The Goals starter |
+| `examples/starters/lights/` | `msm_starter` | The Lights starter |
+| `examples/starters/lucky-block/` | `msm_starter` | The Lucky block starter |
+| `examples/starters/machine/` | `msm_starter` | The Machine starter |
+| `examples/starters/one-block/` | `msm_starter` | The One block starter |
+| `examples/starters/portal/` | `msm_starter` | The Portal starter |
+| `examples/starters/race/` | `msm_starter` | The Race starter |
+| `examples/starters/sky-islands/` | `msm_starter` | The Sky islands starter |
+| `examples/starters/skyblock/` | `msm_starter` | The Skyblock starter |
+| `examples/starters/stone-set/` | `msm_starter` | The Stone set starter |
+| `examples/starters/storage-crate/` | `msm_starter` | The Storage crate starter |
+| `examples/starters/tree/` | `msm_starter` | The Tree starter |
+| `examples/starters/vehicle-boat/` | `msm_starter` | The Boat starter |
+| `examples/starters/vehicle-car/` | `msm_starter` | The Car starter |
+| `examples/starters/vehicle-plane/` | `msm_starter` | The Plane starter |
+| `examples/starters/vehicle-tank/` | `msm_starter` | The Tank starter |
+| `examples/starters/wood-set/` | `msm_starter` | The Wood set starter |
+| `examples/starters/world-caves/` | `msm_starter` | The Caves only starter |
+| `examples/starters/world-empty-sky/` | `msm_starter` | The Empty sky with a start island starter |
+| `examples/starters/world-islands/` | `msm_starter` | The Islands starter |
+| `examples/starters/world-mountains/` | `msm_starter` | The Tall mountains starter |
+| `examples/starters/world-one-biome/` | `msm_starter` | The One biome everywhere starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 

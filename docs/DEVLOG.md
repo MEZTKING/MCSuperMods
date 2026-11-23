@@ -10569,3 +10569,11 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B671/B672: the guide can say the sidebar, New element, Examples and the pickers forgive spellings and small typos.
 - Sound tiles could show subtitles as a second line if wanted (a look change, not in this brief).
+
+## 2026-11-23 — executor — templates-and-examples recount
+
+**What:** Recounted `docs/guide/templates-and-examples.md` against the source (read only, no builds or tests). Added the four missing Make a world noise-settings templates (`noise_settings_islands`, `_mountains`, `_caves`, `_empty`; templates 305 to 309), the five Make a world starters (`world-islands`, `world-mountains`, `world-one-biome`, `world-caves`, `world-empty-sky`; starters 77 to 82) and the five world examples (`example_world_coral_isles`, `_frost_peaks`, `_endless_blossom`, `_ember_caverns`, `_cloud_realm`; examples 210 to 215) to their tables. The `examples/` folder table gained `rules/`, `worlds/<name>/` and the 29 starter folders it lacked, so it now lists all 68 folders under `examples/starters/`.
+
+**Decisions:** Counts match the root `CLAUDE.md` figures (309 templates, 82 starters, 215 examples), so the headline numbers on the page stayed as they were. The five flows sit after Dimension in the starters table, under the Worlds group, with the labels the code uses. Template, starter and example ids were checked by grep against the plugin sources; ids built by helpers (`example_popular_*`, `example_tag_*`, the `msm_block_*` family) were matched by their generator, not a literal string.
+
+**Next:** The per-plugin template split in the root `CLAUDE.md` was not re-derived beyond the totals; a test that fails when the page's table rows drift from the registered templates would stop this recurring.
