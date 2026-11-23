@@ -65,5 +65,6 @@ export default definePlugin({
     importers: [...structureImporters],
     exporters: [...structureExporters],
     validators: [...structureValidators],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

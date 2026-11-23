@@ -20,5 +20,6 @@ export default definePlugin({
     elementKinds: [...worldgenKinds],
     elementTemplates: [...worldgenTemplates],
     validators: [...worldgenValidators],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

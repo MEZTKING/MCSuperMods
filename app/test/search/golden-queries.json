@@ -1,0 +1,582 @@
+{
+  "about": "B650 first draft of the fixed query set (ADR 0124 D16): 80 hand-written queries in eleven classes, each with the result it can really reach on the corpus at 0cb3abe. `expect` is the expected first result, `top3` the other ids that count for the top three, `answers` the expected flow answers, `behaviour` the expected behaviour id, `needs` a condition on later work (SQ16), `mode` the door (very-easy: Home's bar; easy: the toolbar; advanced: the toolbar in Advanced), `project` the open mod. Never regenerated: a change needs a reason.",
+  "queries": [
+    {
+      "q": "blue sword",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "answers": {
+        "weapon_type": "sword",
+        "colour": "#3c44aa",
+        "weapon_name": "Blue Sword"
+      }
+    },
+    {
+      "q": "make a pig fly",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:flying-mob",
+      "top3": ["flow:mount"],
+      "answers": {
+        "mob_name": "Flying Pig"
+      },
+      "notes": "Minecraft's own pig stays as it is (SL6)"
+    },
+    {
+      "q": "a mob I can ride",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:mount"
+    },
+    {
+      "q": "make a car",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:vehicle-car"
+    },
+    {
+      "q": "a new ore",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:custom_ore"
+    },
+    {
+      "q": "make a potion",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:potion",
+      "top3": ["tile:potion"]
+    },
+    {
+      "q": "a pet that follows me",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:pet"
+    },
+    {
+      "q": "make a dimension",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:dimension",
+      "top3": ["tile:portal"]
+    },
+    {
+      "q": "music disc",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:music-disc-item",
+      "top3": ["starter:music_disc", "tile:sound"]
+    },
+    {
+      "q": "stone stairs and slabs",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:stone-set"
+    },
+    {
+      "q": "creper",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:entity_type:creeper",
+      "corrected": "creeper",
+      "notes": "name made from the id"
+    },
+    {
+      "q": "netherrite sword",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "top3": ["vanilla:thing:netherite_sword"],
+      "answers": {
+        "weapon_type": "sword",
+        "tier": "netherite"
+      }
+    },
+    {
+      "q": "enchantmant",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:enchantment"
+    },
+    {
+      "q": "dimention",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:dimension"
+    },
+    {
+      "q": "vehical",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "tile:vehicle",
+      "top3": ["flow:vehicle-car", "flow:vehicle-tank", "flow:vehicle-plane", "flow:vehicle-boat"]
+    },
+    {
+      "q": "skeliton",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:entity_type:skeleton"
+    },
+    {
+      "q": "custum ore",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:custom_ore"
+    },
+    {
+      "q": "glyder",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:glider"
+    },
+    {
+      "q": "armor",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "tile:armour",
+      "top3": ["flow:gear-set", "flow:armour-trim"]
+    },
+    {
+      "q": "armour",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "tile:armour",
+      "top3": ["flow:gear-set", "flow:armour-trim"]
+    },
+    {
+      "q": "gray wool",
+      "class": "american",
+      "mode": "easy",
+      "expect": "vanilla:thing:gray_wool"
+    },
+    {
+      "q": "colored lights",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "flow:lights"
+    },
+    {
+      "q": "armor trim",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "flow:armour-trim"
+    },
+    {
+      "q": "mob behavior",
+      "class": "american",
+      "mode": "easy",
+      "expect": "guide:mob-behaviours.md#the-quick-way-the-creator-flows",
+      "top3": [
+        "guide:mob-behaviours.md#movement",
+        "guide:mob-behaviours.md#habits",
+        "guide:mob-behaviours.md#kind-of-mob-and-base"
+      ]
+    },
+    {
+      "q": "skyblock",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:world-empty-sky",
+      "needs": "Until the game modes plan's B557; then expect its Skyblock flow first and world-empty-sky in the top three"
+    },
+    {
+      "q": "netherite pick",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:gear-set",
+      "top3": ["vanilla:thing:netherite_pickaxe"],
+      "answers": {
+        "pieces": ["pickaxe"],
+        "tier": "netherite"
+      }
+    },
+    {
+      "q": "give xp",
+      "class": "slang",
+      "mode": "easy",
+      "expect": "rule:step:give_experience"
+    },
+    {
+      "q": "tp",
+      "class": "slang",
+      "mode": "easy",
+      "expect": "rule:step:teleport"
+    },
+    {
+      "q": "op sword",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:weapon"
+    },
+    {
+      "q": "pet doggo",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:pet"
+    },
+    {
+      "q": "mod jar",
+      "class": "slang",
+      "mode": "easy",
+      "expect": "command:exportFabricJar"
+    },
+    {
+      "q": "void world",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:world-empty-sky"
+    },
+    {
+      "q": "how do I add a recipe",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "starter:recipe_pack",
+      "top3": ["kind:minecraft:recipe", "template:recipe_shaped", "example:example_recipe"],
+      "notes": "The guide has no recipe section today (gap for B672); the plan's draft expected one"
+    },
+    {
+      "q": "how do I test my mod",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:playing-and-testing.md#play",
+      "top3": [
+        "guide:blocks-and-items.md#test-in-minecraft",
+        "guide:getting-started.md#9-try-it-in-minecraft",
+        "guide:playing-and-testing.md#what-you-need"
+      ]
+    },
+    {
+      "q": "how to make a portal",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:creator.md#make-a-portal",
+      "top3": ["flow:portal"]
+    },
+    {
+      "q": "how do rules work",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:rules.md#where-rules-live",
+      "top3": [
+        "guide:rules.md#one-rule-one-sentence",
+        "guide:rules.md#plain-rules-and-rules-with-logic"
+      ]
+    },
+    {
+      "q": "how to export a modpack",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:modpacks.md#export-modpack-mrpack-"
+    },
+    {
+      "q": "how do I make a mob",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:creator.md#make-a-mob",
+      "top3": ["flow:custom_mob", "guide:mob-behaviours.md#the-quick-way-the-creator-flows"]
+    },
+    {
+      "q": "how to reload the game",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:playing-and-testing.md#reload",
+      "top3": ["command:reloadGame"]
+    },
+    {
+      "q": "what is a datapack",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "starter:data_pack",
+      "top3": ["guide:templates-and-examples.md#templates"],
+      "notes": "No guide section explains data packs by name (gap for B672)"
+    },
+    {
+      "q": "minecraft:iron_ingot",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:thing:iron_ingot"
+    },
+    {
+      "q": "minecraft:creeper",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:entity_type:creeper"
+    },
+    {
+      "q": "msm:block",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "kind:msm:block"
+    },
+    {
+      "q": "minecraft:recipe",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "kind:minecraft:recipe"
+    },
+    {
+      "q": "minecraft:plains",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:worldgen/biome:plains"
+    },
+    {
+      "q": "minecraft:speed",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:mob_effect:speed"
+    },
+    {
+      "q": "ruby sword",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:item/ruby_sword",
+      "top3": ["flow:weapon"]
+    },
+    {
+      "q": "maple door",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:block/maple_door"
+    },
+    {
+      "q": "ruby ore",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:block/ruby_ore",
+      "top3": ["flow:custom_ore"]
+    },
+    {
+      "q": "zombie drops ruby",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:loot_addition/zombie_drops_ruby",
+      "top3": ["example:example_msm_loot_addition"]
+    },
+    {
+      "q": "open ruby bow",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:item/ruby_bow"
+    },
+    {
+      "q": "glow stone",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:block/glow_stone",
+      "top3": ["vanilla:thing:glowstone"]
+    },
+    {
+      "q": "rubby wand",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:item/ruby_wand"
+    },
+    {
+      "q": "maple log",
+      "class": "mine",
+      "mode": "easy",
+      "project": "sample-mod",
+      "expect": "project:msm_sample_mod:block/maple_log",
+      "top3": ["project:msm_sample_mod:block/stripped_maple_log"]
+    },
+    {
+      "q": "turn off showcase clips",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:play-showcase-clips"
+    },
+    {
+      "q": "minecraft folder",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:official-launcher-folder"
+    },
+    {
+      "q": "automatic updates",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:check-for-updates-automatically",
+      "top3": ["command:checkForUpdates"]
+    },
+    {
+      "q": "prism launcher",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:other-launchers"
+    },
+    {
+      "q": "ai key",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:ai-helper-key",
+      "top3": ["setting:ai-pictures-key"]
+    },
+    {
+      "q": "world backups",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:keep-world-backups",
+      "top3": ["guide:playing-and-testing.md#world-backups"]
+    },
+    {
+      "q": "export jar",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:exportFabricJar"
+    },
+    {
+      "q": "undo",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:undo"
+    },
+    {
+      "q": "play",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:play"
+    },
+    {
+      "q": "advanced mode",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:advancedMode",
+      "top3": ["command:toggleMode"]
+    },
+    {
+      "q": "save",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:save"
+    },
+    {
+      "q": "import blockbench",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:importBlockbench"
+    },
+    {
+      "q": "whats new",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:whatsNew"
+    },
+    {
+      "q": "surprise me",
+      "class": "command",
+      "mode": "very-easy",
+      "expect": "tile:surprise",
+      "top3": ["command:surpriseMe"]
+    },
+    {
+      "q": "blue sword that sets mobs on fire",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "behaviour": "sets-on-fire",
+      "answers": {
+        "weapon_type": "sword",
+        "colour": "#3c44aa",
+        "weapon_name": "Blue Sword"
+      }
+    },
+    {
+      "q": "custom ore that drops xp",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:custom_ore",
+      "behaviour": "drops-xp"
+    },
+    {
+      "q": "a block that explodes",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:simple-block",
+      "behaviour": "explodes-broken"
+    },
+    {
+      "q": "a sword that poisons",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "behaviour": "poisons"
+    },
+    {
+      "q": "a mob that flies",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:flying-mob",
+      "behaviour": "flies"
+    },
+    {
+      "q": "an animal you can ride",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:mount",
+      "behaviour": "ride"
+    },
+    {
+      "q": "a block that glows",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:simple-block",
+      "top3": ["flow:lights"],
+      "behaviour": "glows",
+      "answers": {
+        "light_level": 15
+      }
+    },
+    {
+      "q": "a wand that teleports you",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:scripted-item",
+      "behaviour": "teleports"
+    },
+    {
+      "q": "asdfgh",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "qwerty uiop",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "zzzz",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "lorem ipsum dolor",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "blorptastic",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "xyzzy plugh",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    }
+  ]
+}

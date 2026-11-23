@@ -21,5 +21,6 @@ export default definePlugin({
     elementKinds: [...dataPackKinds],
     elementTemplates: [...dataPackTemplates],
     validators: [...datapackValidators],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

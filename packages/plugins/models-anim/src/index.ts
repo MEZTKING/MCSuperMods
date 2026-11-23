@@ -21,5 +21,6 @@ export default definePlugin({
     elementKinds: [...modelsAnimKinds],
     elementTemplates: [...modelsAnimTemplates],
     validators: [...modelsAnimValidators],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

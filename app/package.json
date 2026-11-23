@@ -39,6 +39,7 @@
     "@msm/plugin-structures": "workspace:*",
     "@msm/plugin-worldgen": "workspace:*",
     "@msm/schemas": "workspace:*",
+    "@msm/search": "workspace:*",
     "@msm/sim": "workspace:*",
     "@msm/terrain": "workspace:*",
     "@msm/targets": "workspace:*",

@@ -23,6 +23,7 @@
     { "path": "packages/plugins/structures" },
     { "path": "packages/plugins/worldgen" },
     { "path": "packages/schemas" },
+    { "path": "packages/search" },
     { "path": "packages/sim" },
     { "path": "packages/terrain" },
     { "path": "packages/targets/all" },

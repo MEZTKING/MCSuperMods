@@ -253,5 +253,6 @@ export default definePlugin({
       ...soundValidators,
       ...boatValidators,
     ],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

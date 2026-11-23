@@ -1,0 +1,24 @@
+{
+  "name": "@msm/search",
+  "version": "0.0.0",
+  "description": "Search engine of the app's one search: text, index, ranking, answers and behaviours (ADR 0124). Pure and deterministic; run in a worker.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@msm/plugin-api": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "vitest": "catalog:"
+  }
+}

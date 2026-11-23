@@ -154,6 +154,7 @@ const plugin: Readonly<Plugin> = definePlugin({
   contributes: {
     projectStarters: [...libraryStarters],
     examples: [...libraryExamples],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });
 

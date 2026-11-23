@@ -9240,3 +9240,20 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B552's follow-up: `games.generated-path` (here) now refuses project functions under `msm_games/` (ADR 0113 D9), the check `validators-pieces.ts` left open; the storage `<ns>:msm_games` holds the keys `world_setup` and `start`.
 - B555: the Studio's form for the start (structure, `at`, spawn on the template) and the `world_generation` warning; B554: Play my game's world preset is `<ns>:<path>` of the world setup.
 - `packages/plugins/games/CLAUDE.md` layout lines (new `world-setup-files.ts`, `validators-world-setup.ts`, `templates/`) at the close; the vanilla Nether and End dimension JSON is now in three places (worldgen defaults, the library's world flows, here).
+
+## 2026-11-23 — executor — B652 search: scaffold and stubs
+
+**What**
+- New package `packages/search` (`@msm/search`, depends only on `@msm/plugin-api`): `src/types.ts` with the frozen interfaces (`SearchSource` with `tile`, `SearchEntry`, `SearchRequest`, `SearchAnswer`, `SearchHit`, the slim `SearchHitSlim` that crosses the worker, `SearchIndex`, descriptors for action and preview), `createSearchIndex` throwing "not built yet", empty `src/text/` (with `typos.ts` and `stem.ts` placeholders), `index/`, `rank/`, `slots/`, `compose/`, a smoke test and a short `CLAUDE.md`. The plugin data types are not redefined: they come from `@msm/plugin-api` (B651).
+- Registration points: `tools/check-deps/layers.json` (`@msm/search`), root `tsconfig.json` and `app/tsconfig.web.json` references, `app/package.json` dependency, `pnpm-lock.yaml`. No Turbo line was needed.
+- `app/src/renderer/src/search/`: empty stubs for `worker.ts`, `client.ts`, `host.ts`, `vanilla-names.ts`, `actions.ts`, `run-action.ts`, `ask-ai.ts`, `history.ts`, `sources/index.ts` and the sources `flows`, `templates`, `examples`, `kinds`, `project`, `vanilla`, `rules`, `settings`, `commands`, `guide`, `problems`, `tiles`, `showcases`; `plugin-data.ts` holds the one call every built-in plugin goes through (`validateSearchContributions(await c.searchData?.(), searchOwnThingsOf(c), BUILT_IN_SEARCH_LIMITS)`); `SearchPanel.tsx`, `SearchField.tsx`, `ResultPreview.tsx` return null; `components/settings-catalogue.ts` exports an empty list.
+- Ten built-in plugins (`resourcepack`, `datapack`, `structures`, `worldgen`, `blocks-items`, `models-anim`, `entities`, `scripting`, `controls`, `library`): `src/search.ts` exporting `SEARCH: PluginSearchData = {}` and `searchData: () => import('./search').then((m) => m.SEARCH)` in `contributes`.
+- `app/test/search/golden-queries.json` (B650's 82 draft queries, unchanged) with a skipped `golden.test.ts`; skipped `app/e2e/search-path.spec.ts` and `search-keyboard-path.spec.ts`; a Search row under "Surfaces that are not kinds" in `docs/LIVE-VIEW-AUDIT.md`.
+
+**Decisions**
+- The plugins `games` and `rules` were left to other workers' edits (the brief's instruction): they have no `src/search.ts` and no `searchData` line yet; the main session adds them.
+- The golden test reads the JSON with `readFileSync`, not an import, because `tsconfig.node.json` lists no JSON files.
+- `SearchMode` is repeated in `@msm/search` (the app's `UiMode`) so the package imports nothing of the app.
+
+**Next**
+- Main session: add `src/search.ts` and the `searchData` line to `packages/plugins/games` and `packages/plugins/rules`. Then B653 and the other wave 2 briefs.

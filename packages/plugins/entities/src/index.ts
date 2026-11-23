@@ -124,5 +124,6 @@ export default definePlugin({
       ...entitiesVehicleValidators,
       ...entitiesVillagerValidators,
     ],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

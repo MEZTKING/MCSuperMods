@@ -22,5 +22,6 @@ export default definePlugin({
     elementKinds: [...controlsKinds],
     elementTemplates: [...controlsTemplates],
     validators: [...controlsValidators],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

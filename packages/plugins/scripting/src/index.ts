@@ -46,5 +46,6 @@ export default definePlugin({
     elementKinds: [...scriptingKinds],
     elementTemplates: [...scriptingTemplates, ...commandTemplates, ...gameRuleTemplates],
     validators: [...scriptingValidators, ...commandValidators, ...gameRuleValidators],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });

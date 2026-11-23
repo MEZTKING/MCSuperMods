@@ -12,6 +12,7 @@
   "references": [
     { "path": "../packages/plugin-api" },
     { "path": "../packages/core" },
+    { "path": "../packages/search" },
     { "path": "../packages/sim" },
     { "path": "../packages/terrain" }
   ]

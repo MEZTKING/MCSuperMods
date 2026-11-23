@@ -376,6 +376,9 @@ importers:
       '@msm/schemas':
         specifier: workspace:*
         version: link:../packages/schemas
+      '@msm/search':
+        specifier: workspace:*
+        version: link:../packages/search
       '@msm/sim':
         specifier: workspace:*
         version: link:../packages/sim
@@ -914,6 +917,19 @@ importers:
       vscode-languageserver-textdocument:
         specifier: 'catalog:'
         version: 1.0.16
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))
+
+  packages/search:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

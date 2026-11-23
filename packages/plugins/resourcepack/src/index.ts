@@ -18,5 +18,6 @@ export default definePlugin({
   contributes: {
     elementKinds: [...resourcePackKinds],
     elementTemplates: [...resourcePackTemplates],
+    searchData: () => import('./search').then((m) => m.SEARCH),
   },
 });
