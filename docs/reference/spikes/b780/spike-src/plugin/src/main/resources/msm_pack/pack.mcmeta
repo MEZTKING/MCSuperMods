@@ -1,0 +1,8 @@
+{
+  "pack": {
+    "description": "B780 spike pack (in the plugin jar)",
+    "max_format": [121, 0],
+    "min_format": [121, 0],
+    "pack_format": 121
+  }
+}

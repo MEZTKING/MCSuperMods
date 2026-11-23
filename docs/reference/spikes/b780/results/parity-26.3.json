@@ -1,0 +1,366 @@
+{
+  "minecraft": "26.3",
+  "paper": "see README",
+  "rows": [
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "world start ran (storage world_setup:1b)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "difficulty normal",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "sky biome (the World Type was used)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "goals tab",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "red team",
+      "pass": true,
+      "detail": "PROBE team msm_sample_game_modes.arena.red = red prefix '[Red] ' friendlyFire false"
+    },
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "blue team",
+      "pass": true,
+      "detail": "PROBE team msm_sample_game_modes.arena.blue = blue prefix '[Blue] ' friendlyFire false"
+    },
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "Defeats on the sidebar",
+      "pass": true,
+      "detail": "PROBE sidebar msm_sample_game_modes.arena.points criteria playerKillCount name 'Defeats'"
+    },
+    {
+      "test": "1 the_game_is_set_up_when_the_world_loads",
+      "name": "round boss bar max 300",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "first player joined",
+      "pass": null,
+      "detail": "1742 ms at 8.5,-64,8.5"
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "first join advancement done",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "start flag set",
+      "pass": true,
+      "detail": "has the following contents: {start: 1b, world_setup: 1b}"
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "island grass at 2 66 2",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "island dirt at 2 65 2",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "chest naming its loot table",
+      "pass": true,
+      "detail": "{\"type\":\"minecraft:chest\",\"loot\":\"msm_sample_game_modes:sky_survival/start_chest\"}"
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "world spawn 5 67 3",
+      "pass": true,
+      "detail": "PROBE world minecraft:overworld difficulty NORMAL spawn 5 67 3"
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "first kit: 3 bread, slow falling, survival",
+      "pass": true,
+      "detail": "joined true bread 3 slowFalling true mode SURVIVAL health 20.0 dead false team none points unset tags [msm_sample_game_modes.area.sky_survival.home_island] at 5.5 67.0 3.5"
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "welcome said to the first player",
+      "pass": true,
+      "detail": "multiplayer.player.joined(msmskyfirst) | Welcome to Sky Survival! Everything you need is in the chest. Do not fall! | Your goals are on the Advancements screen ()."
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "still 3 bread 20 ticks later",
+      "pass": true,
+      "detail": "joined true bread 3 slowFalling true mode SURVIVAL health 20.0 dead false team none points unset tags [msm_sample_game_modes.area.sky_survival.home_island] at 5.5 67.0 3.5"
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "second player joined and got the kit",
+      "pass": true,
+      "detail": "joined true bread 3 slowFalling true mode SURVIVAL health 20.0 dead false team none points unset tags [msm_sample_game_modes.area.sky_survival.home_island] at 5.5 67.0 3.5"
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "island not placed again",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "home island area tags the player on it",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "pig to clear",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "reset placed the island",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "reset removed the pig",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "2 the_island_is_placed_once_and_the_kit_given_once",
+      "name": "reset left the player",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "phase 0 at the start",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "20 breaks each refilled from its phase",
+      "pass": true,
+      "detail": " seen melon,dirt,grass_block,dirt,grass_block,oak_leaves,dirt,oak_log,dirt,dirt,copper_ore,stone,coal_ore,gold_ore,redstone_ore,lapis_ore,copper_ore,redstone_ore,coal_ore,coal_ore"
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "phase 2 after 20 breaks",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "breaks 0 in the new phase",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "\"Underground\" said once",
+      "pass": true,
+      "detail": "Underground | Deep dark"
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "\"Deep dark\" said once",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "no \"Underground at last!\" (no Rules on Paper)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "3 the_one_block_refills_through_its_phases",
+      "name": "the bridge reaches the plugin once per break of phase 2 (10)",
+      "pass": true,
+      "detail": "10; executors none"
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "boss bar visible at the start, full",
+      "pass": true,
+      "detail": "PROBE bossbar visible true progress 1.0"
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "holder 300 at the start",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "running",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "the timer ended",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "holder 0 at the end",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "boss bar hidden after the end",
+      "pass": true,
+      "detail": "PROBE bossbar visible false progress 0.0"
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "title \"Round over\" reached the player",
+      "pass": true,
+      "detail": "Round over"
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "round_end rebuilt the arena",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "no point from the round end (no Rules on Paper)",
+      "pass": true,
+      "detail": "unset -> unset"
+    },
+    {
+      "test": "4 the_round_timer_ends_and_runs_its_end",
+      "name": "the bridge reached the plugin once for the round end",
+      "pass": true,
+      "detail": "1; executors none"
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "arena floor",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "arena wall",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "corner lantern",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "not tagged before walking in",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "tagged on entering",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "no team (no Rules on Paper)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "the bridge reached the plugin once for the entry, as the player",
+      "pass": true,
+      "detail": "1; executors msmarena"
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "untagged on leaving",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "pig to clear",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "reset removed the dirt",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "reset removed the pig",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "5 the_arena_is_entered_and_reset",
+      "name": "reset left the player",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "6 a_kill_scores_on_the_sidebar",
+      "name": "the winner scores one point on Defeats",
+      "pass": true,
+      "detail": "unset -> 1"
+    },
+    {
+      "test": "6 a_kill_scores_on_the_sidebar",
+      "name": "the loser saw the death screen packet",
+      "pass": null,
+      "detail": "1 (player_combat_kill)"
+    },
+    {
+      "test": "6 a_kill_scores_on_the_sidebar",
+      "name": "sidebar still Defeats",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "7 the_lucky_block_rule_fires_in_the_jar_only",
+      "name": "the lucky block item is not registered",
+      "pass": true,
+      "detail": "[18:18:16] [Server thread/INFO]: System chat: Unknown item 'msm_sample_game_modes:lucky_block'"
+    },
+    {
+      "test": "7 the_lucky_block_rule_fires_in_the_jar_only",
+      "name": "bridge functions present on Paper (the vanilla run expects them absent)",
+      "pass": null,
+      "detail": "present: they load and call the plugin command"
+    }
+  ]
+}

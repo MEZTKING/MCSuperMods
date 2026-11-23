@@ -1,0 +1,269 @@
+=== run-A0-vanilla-pack-console
+[ServerMain/INFO]: [bootstrap] Loading Paper 26.3-259-main@c7097a9 (2026-11-23T10:00:22Z) for Minecraft 26.3
+[ServerMain/INFO]: Found new data pack file/msm_sample_game_modes.zip, loading it automatically
+[ServerMain/INFO]: Found new data pack paper, loading it automatically
+[ServerMain/ERROR]: Failed to load function msm_sample_game_modes:msm_rules/signal/one_block/one_block/magic_block/broken/2
+[ServerMain/ERROR]: Failed to load function msm_sample_game_modes:msm_rules/signal/area/arena/arena/entered
+[ServerMain/ERROR]: Failed to load function msm_sample_game_modes:msm_rules/signal/timer/arena/round/ended
+[Server thread/INFO]: Done (24.629s)! For help, type "help"
+[Server thread/INFO]: System chat: There are 3 data pack(s) enabled: [vanilla (built-in)], [file/msm_sample_game_modes.zip (world)], [paper (built-in)]
+(lines 'Recoverable errors when loading section ... Unknown registry key ... msm_games/sky': 0)
+=== run-E-parity-extras-server
+[ServerMain/INFO]: [bootstrap] Loading Paper 26.3-259-main@c7097a9 (2026-11-23T10:00:22Z) for Minecraft 26.3
+[ServerMain/INFO]: [PluginInitializerManager] Paper plugins (1):
+ - msm_spike (0.0.1)
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap; source plugins/msm_spike-0.0.1.jar
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /msm_pack as msm_spike/msm_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /sample_pack as msm_spike/sample_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike packs discovered so far: [minecart_improvements, msm_spike/msm_pack, msm_spike/sample_pack, paper, redstone_experiments, trade_rebalance, vanilla]
+[ServerMain/INFO]: Found new data pack msm_spike/msm_pack, loading it automatically
+[ServerMain/INFO]: Found new data pack msm_spike/sample_pack, loading it automatically
+[ServerMain/INFO]: Found new data pack paper, loading it automatically
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap COMMANDS event #1 cause INITIAL
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_spike -> [msm_spike:msm_signal_msm_spike, msm_signal_msm_spike]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_sample_game_modes -> [msm_spike:msm_signal_msm_sample_game_modes, msm_signal_msm_sample_game_modes]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered [msm_spike:msm_spike_args, msm_spike_args]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msmshared -> [msm_spike:msmshared, msmshared]
+[ServerMain/ERROR]: Failed to load function msm_spike:late
+[Server thread/INFO]: [msm_spike] Loading server plugin msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] Enabling msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike enabled; bootstrap COMMANDS events so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin COMMANDS event cause INITIAL
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike first tick; enabled packs [vanilla, msm_spike/msm_pack, msm_spike/sample_pack, paper]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike all packs [minecart_improvements-, msm_spike/msm_pack+, msm_spike/sample_pack+, paper+, redstone_experiments-, trade_rebalance-, vanilla+]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #1 msm_signal_msm_spike hello (sender=CONSOLE executor=none at=8,-64,8 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin ran function msm_spike:hello -> true; signals so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike bench: 1000000 checks against 20 boxes in 133 ms (133 ns each; hits 0)
+[Server thread/INFO]: Done (24.702s)! For help, type "help"
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] hello ran
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #2 msm_signal_msm_spike load (sender=CONSOLE executor=none at=8,-64,8 in minecraft:overworld)
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] pack load function ran
+[User Authenticator #0/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmskyfirst result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmskyfirst first true
+[User Authenticator #1/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmskysecond result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmskysecond first true
+[User Authenticator #2/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmoneblock result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmoneblock first true
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed MELON at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed DIRT at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed GRASS_BLOCK at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed OAK_LEAVES at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed OAK_LOG at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed COPPER_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #3 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed STONE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #4 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed COAL_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #5 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed GOLD_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #6 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed REDSTONE_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #7 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed LAPIS_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #8 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #9 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #10 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #11 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #12 msm_signal_msm_sample_game_modes break2+msm_sample_game_modes+one_block+magic_block (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[User Authenticator #3/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmlistener result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmlistener first true
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #13 msm_signal_msm_sample_game_modes end+msm_sample_game_modes+arena+round (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[User Authenticator #4/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmarena result ALLOWED
+(lines 'Recoverable errors when loading section ... Unknown registry key ... msm_games/sky': 0)
+=== run-H-two-jars
+[ServerMain/INFO]: [bootstrap] Loading Paper 26.3-259-main@c7097a9 (2026-11-23T10:00:22Z) for Minecraft 26.3
+[ServerMain/INFO]: [PluginInitializerManager] Paper plugins (2):
+ - msm_spike (0.0.1), msm_spike_b (0.0.1)
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap; source plugins/msm_spike-0.0.1.jar
+[ServerMain/INFO]: [msm_spike_b] [msm_spike] msm_spike_b bootstrap; source plugins/msm_spike_b-0.0.1.jar
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /msm_pack as msm_spike/msm_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /sample_pack as msm_spike/sample_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike packs discovered so far: [minecart_improvements, msm_spike/msm_pack, msm_spike/sample_pack, paper, redstone_experiments, trade_rebalance, vanilla]
+[ServerMain/INFO]: [msm_spike_b] [msm_spike] msm_spike_b discovered pack /msm_pack as msm_spike_b/msm_pack
+[ServerMain/INFO]: [msm_spike_b] [msm_spike] msm_spike_b packs discovered so far: [minecart_improvements, msm_spike/msm_pack, msm_spike/sample_pack, msm_spike_b/msm_pack, paper, redstone_experiments, trade_rebalance, vanilla]
+[ServerMain/INFO]: Found new data pack msm_spike_b/msm_pack, loading it automatically
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap COMMANDS event #1 cause INITIAL
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_spike -> [msm_spike:msm_signal_msm_spike, msm_signal_msm_spike]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_sample_game_modes -> [msm_spike:msm_signal_msm_sample_game_modes, msm_signal_msm_sample_game_modes]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered [msm_spike:msm_spike_args, msm_spike_args]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msmshared -> [msm_spike:msmshared, msmshared]
+[Worker-Main-1/INFO]: [msm_spike_b] [msm_spike] msm_spike_b bootstrap COMMANDS event #1 cause INITIAL
+[Worker-Main-1/INFO]: [msm_spike_b] [msm_spike] msm_spike_b registered msm_signal_msm_spike_b -> [msm_signal_msm_spike_b, msm_spike_b:msm_signal_msm_spike_b]
+[Worker-Main-1/INFO]: [msm_spike_b] [msm_spike] msm_spike_b registered [msm_spike_b:msm_spike_b_args, msm_spike_b_args]
+[Worker-Main-1/INFO]: [msm_spike_b] [msm_spike] msm_spike_b registered msmshared -> [msmshared, msm_spike_b:msmshared]
+[ServerMain/ERROR]: Failed to load function msm_spike:late
+[ServerMain/ERROR]: Failed to load function msm_spike_b:late
+[Server thread/INFO]: [msm_spike] Loading server plugin msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] Enabling msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike enabled; bootstrap COMMANDS events so far 1
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b enabled; bootstrap COMMANDS events so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin COMMANDS event cause INITIAL
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b plugin COMMANDS event cause INITIAL
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike first tick; enabled packs [vanilla, msm_spike/msm_pack, msm_spike/sample_pack, paper, msm_spike_b/msm_pack]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike all packs [minecart_improvements-, msm_spike/msm_pack+, msm_spike/sample_pack+, msm_spike_b/msm_pack+, paper+, redstone_experiments-, trade_rebalance-, vanilla+]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #1 msm_signal_msm_spike hello (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin ran function msm_spike:hello -> true; signals so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike bench: 1000000 checks against 20 boxes in 159 ms (159 ns each; hits 0)
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b first tick; enabled packs [vanilla, msm_spike/msm_pack, msm_spike/sample_pack, paper, msm_spike_b/msm_pack]
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b all packs [minecart_improvements-, msm_spike/msm_pack+, msm_spike/sample_pack+, msm_spike_b/msm_pack+, paper+, redstone_experiments-, trade_rebalance-, vanilla+]
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b signal #1 msm_signal_msm_spike_b hello (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b plugin ran function msm_spike_b:hello -> true; signals so far 1
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b bench: 1000000 checks against 20 boxes in 119 ms (119 ns each; hits 0)
+[Server thread/INFO]: Done (13.594s)! For help, type "help"
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] hello ran
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #2 msm_signal_msm_spike load (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b signal #2 msm_signal_msm_spike_b load (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] pack load function ran
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b ran msmshared
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike ran msmshared
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #3 msm_signal_msm_spike hello (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike_b] [msm_spike] msm_spike_b signal #3 msm_signal_msm_spike_b hello (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] Disabling msm_spike v0.0.1
+(lines 'Recoverable errors when loading section ... Unknown registry key ... msm_games/sky': 0)
+=== run-I-jars-removed
+[ServerMain/INFO]: [bootstrap] Loading Paper 26.3-259-main@c7097a9 (2026-11-23T10:00:22Z) for Minecraft 26.3
+[ServerMain/WARN]: Missing data pack msm_spike/msm_pack
+[ServerMain/WARN]: Missing data pack msm_spike/sample_pack
+[ServerMain/WARN]: Missing data pack msm_spike_b/msm_pack
+[Worker-Main-1/ERROR]: Unknown biome, defaulting to plains
+[Server thread/ERROR]: Unknown biome, defaulting to plains
+[Server thread/INFO]: Done (15.144s)! For help, type "help"
+(lines 'Recoverable errors when loading section ... Unknown registry key ... msm_games/sky': 1080)
+=== run-J-jar-updated
+[ServerMain/INFO]: [bootstrap] Loading Paper 26.3-259-main@c7097a9 (2026-11-23T10:00:22Z) for Minecraft 26.3
+[ServerMain/INFO]: [PluginInitializerManager] Paper plugins (1):
+ - msm_spike (0.0.1)
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap; source plugins/msm_spike-0.0.2.jar
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /msm_pack as msm_spike/msm_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /sample_pack as msm_spike/sample_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike packs discovered so far: [minecart_improvements, msm_spike/msm_pack, msm_spike/sample_pack, paper, redstone_experiments, trade_rebalance, vanilla]
+[ServerMain/INFO]: Found new data pack msm_spike/msm_pack, loading it automatically
+[ServerMain/INFO]: Found new data pack msm_spike/sample_pack, loading it automatically
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap COMMANDS event #1 cause INITIAL
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_spike -> [msm_spike:msm_signal_msm_spike, msm_signal_msm_spike]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_sample_game_modes -> [msm_spike:msm_signal_msm_sample_game_modes, msm_signal_msm_sample_game_modes]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered [msm_spike:msm_spike_args, msm_spike_args]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msmshared -> [msm_spike:msmshared, msmshared]
+[ServerMain/ERROR]: Failed to load function msm_spike:late
+[Server thread/INFO]: [msm_spike] Loading server plugin msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] Enabling msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike enabled; bootstrap COMMANDS events so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin COMMANDS event cause INITIAL
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike first tick; enabled packs [vanilla, paper, msm_spike/msm_pack, msm_spike/sample_pack]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike all packs [minecart_improvements-, msm_spike/msm_pack+, msm_spike/sample_pack+, paper+, redstone_experiments-, trade_rebalance-, vanilla+]
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] hello v2 ran
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #1 msm_signal_msm_spike hello_v2 (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin ran function msm_spike:hello -> true; signals so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike bench: 1000000 checks against 20 boxes in 174 ms (174 ns each; hits 0)
+[Server thread/INFO]: Done (19.181s)! For help, type "help"
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #2 msm_signal_msm_spike load (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] pack load function ran
+[Server thread/INFO]: [msm_spike] Disabling msm_spike v0.0.1
+(lines 'Recoverable errors when loading section ... Unknown registry key ... msm_games/sky': 0)
+=== run-K-legacy
+[ServerMain/INFO]: [bootstrap] Loading Paper 26.3-259-main@c7097a9 (2026-11-23T10:00:22Z) for Minecraft 26.3
+[ServerMain/INFO]: [PluginInitializerManager] Paper plugins (1):
+ - msm_spike (0.0.1)
+ - msm_legacy (0.0.1)
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap; source plugins/msm_spike-0.0.2.jar
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /msm_pack as msm_spike/msm_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /sample_pack as msm_spike/sample_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike packs discovered so far: [file/legacy, minecart_improvements, msm_spike/msm_pack, msm_spike/sample_pack, paper, redstone_experiments, trade_rebalance, vanilla]
+[ServerMain/INFO]: Found new data pack file/legacy, loading it automatically
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap COMMANDS event #1 cause INITIAL
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_spike -> [msm_spike:msm_signal_msm_spike, msm_signal_msm_spike]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_sample_game_modes -> [msm_spike:msm_signal_msm_sample_game_modes, msm_signal_msm_sample_game_modes]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered [msm_spike:msm_spike_args, msm_spike_args]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msmshared -> [msm_spike:msmshared, msmshared]
+[ServerMain/ERROR]: Failed to load function msm_spike:late
+[ServerMain/ERROR]: Failed to load function msm_legacy:call
+[Server thread/INFO]: [msm_legacy] Loading server plugin msm_legacy v0.0.1
+[Server thread/INFO]: [msm_spike] Loading server plugin msm_spike v0.0.1
+[Server thread/INFO]: [msm_legacy] Enabling msm_legacy v0.0.1
+[Server thread/INFO]: [msm_legacy] [msm_spike] legacy enabled
+[Server thread/INFO]: [msm_spike] Enabling msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike enabled; bootstrap COMMANDS events so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin COMMANDS event cause INITIAL
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike first tick; enabled packs [vanilla, paper, msm_spike/msm_pack, msm_spike/sample_pack, file/legacy]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike all packs [file/legacy+, minecart_improvements-, msm_spike/msm_pack+, msm_spike/sample_pack+, paper+, redstone_experiments-, trade_rebalance-, vanilla+]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #1 msm_signal_msm_spike hello_v2 (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin ran function msm_spike:hello -> true; signals so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike bench: 1000000 checks against 20 boxes in 199 ms (199 ns each; hits 0)
+[Server thread/INFO]: Done (14.868s)! For help, type "help"
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] hello v2 ran
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #2 msm_signal_msm_spike load (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] pack load function ran
+[Server thread/INFO]: System chat: Unknown function msm_legacy:call
+[Server thread/INFO]: [msm_legacy] [msm_spike] legacy command msm_signal_msm_legacy typed_at_console from CONSOLE
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /msm_pack as msm_spike/msm_pack
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /sample_pack as msm_spike/sample_pack
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike packs discovered so far: [file/legacy, minecart_improvements, msm_spike/msm_pack, msm_spike/sample_pack, paper, redstone_experiments, trade_rebalance, vanilla]
+[Server thread/INFO]: System chat: There are 5 data pack(s) enabled: [vanilla (built-in)], [paper (built-in)], [msm_spike/msm_pack (plugin)], [msm_spike/sample_pack (plugin)], [file/legacy (world)]
+[Server thread/INFO]: System chat: Reloading!
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap COMMANDS event #2 cause RELOAD
+[Server thread/ERROR]: Failed to load function msm_spike:late
+[Server thread/ERROR]: Failed to load function msm_legacy:call
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin COMMANDS event cause RELOAD
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #3 msm_signal_msm_spike load (sender=CONSOLE executor=none at=5,67,3 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] Disabling msm_spike v0.0.1
+[Server thread/INFO]: [msm_legacy] Disabling msm_legacy v0.0.1
+(lines 'Recoverable errors when loading section ... Unknown registry key ... msm_games/sky': 0)
+=== run-L-zip-parity
+[ServerMain/INFO]: [bootstrap] Loading Paper 26.3-259-main@c7097a9 (2026-11-23T10:00:22Z) for Minecraft 26.3
+[ServerMain/INFO]: [PluginInitializerManager] Paper plugins (1):
+ - msm_spike (0.0.1)
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap; source plugins/msm_spike-no-sample.jar
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike discovered pack /msm_pack as msm_spike/msm_pack
+[ServerMain/INFO]: [msm_spike] [msm_spike] msm_spike packs discovered so far: [file/msm_sample_game_modes.zip, minecart_improvements, msm_spike/msm_pack, paper, redstone_experiments, trade_rebalance, vanilla]
+[ServerMain/INFO]: Found new data pack file/msm_sample_game_modes.zip, loading it automatically
+[ServerMain/INFO]: Found new data pack msm_spike/msm_pack, loading it automatically
+[ServerMain/INFO]: Found new data pack paper, loading it automatically
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike bootstrap COMMANDS event #1 cause INITIAL
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msm_signal_msm_spike -> [msm_spike:msm_signal_msm_spike, msm_signal_msm_spike]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered [msm_spike:msm_spike_args, msm_spike_args]
+[Worker-Main-1/INFO]: [msm_spike] [msm_spike] msm_spike registered msmshared -> [msm_spike:msmshared, msmshared]
+[ServerMain/ERROR]: Failed to load function msm_sample_game_modes:msm_rules/signal/one_block/one_block/magic_block/broken/2
+[ServerMain/ERROR]: Failed to load function msm_spike:late
+[ServerMain/ERROR]: Failed to load function msm_sample_game_modes:msm_rules/signal/area/arena/arena/entered
+[ServerMain/ERROR]: Failed to load function msm_sample_game_modes:msm_rules/signal/timer/arena/round/ended
+[Server thread/INFO]: [msm_spike] Loading server plugin msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] Enabling msm_spike v0.0.1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike enabled; bootstrap COMMANDS events so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin COMMANDS event cause INITIAL
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike first tick; enabled packs [vanilla, file/msm_sample_game_modes.zip, msm_spike/msm_pack, paper]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike all packs [file/msm_sample_game_modes.zip+, minecart_improvements-, msm_spike/msm_pack+, paper+, redstone_experiments-, trade_rebalance-, vanilla+]
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #1 msm_signal_msm_spike hello (sender=CONSOLE executor=none at=8,-64,8 in minecraft:overworld)
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike plugin ran function msm_spike:hello -> true; signals so far 1
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike bench: 1000000 checks against 20 boxes in 156 ms (156 ns each; hits 0)
+[Server thread/INFO]: Done (23.626s)! For help, type "help"
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] hello ran
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike signal #2 msm_signal_msm_spike load (sender=CONSOLE executor=none at=8,-64,8 in minecraft:overworld)
+[Server thread/INFO]: [Not Secure] [Server] [msm_spike] pack load function ran
+[User Authenticator #0/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmskyfirst result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmskyfirst first true
+[User Authenticator #1/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmskysecond result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmskysecond first true
+[User Authenticator #2/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmoneblock result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmoneblock first true
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed GRASS_BLOCK at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed DIRT at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed OAK_LOG at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed MELON at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed GOLD_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed STONE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed IRON_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed COPPER_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed LAPIS_ORE at 12.0,66.0,4.0 by msmoneblock
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike break allowed COAL_ORE at 12.0,66.0,4.0 by msmoneblock
+[User Authenticator #3/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmlistener result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmlistener first true
+[User Authenticator #4/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmarena result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmarena first true
+[User Authenticator #5/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmwinner result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmwinner first true
+[User Authenticator #6/INFO]: [msm_spike] [msm_spike] msm_spike pre-login msmloser result ALLOWED
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike join msmloser first true
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike death msmloser mode off drops 1 keepInventory false message msmloser was slain by msmwinner
+[Server thread/INFO]: [msm_spike] [msm_spike] msm_spike respawn msmloser at 5.5,101.0,3.5
+[Server thread/INFO]: [msm_spike] Disabling msm_spike v0.0.1
+(lines 'Recoverable errors when loading section ... Unknown registry key ... msm_games/sky': 0)

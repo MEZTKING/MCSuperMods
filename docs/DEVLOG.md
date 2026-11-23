@@ -11128,3 +11128,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - The orchestrator folds the README's "Changes this asks of the plan" into sections 2 and 3 and ADR 0132, and asks the user question 1 (Hide and seek's mark) with K18's evidence.
 - B723 takes the facts list (criteria, the 26.x advancement and entity predicate forms, entity data forms, command forms) and the 26.4 checker gap.
+## 2026-11-23 — executor — B780 spike: Paper for game modes
+
+**What**
+- Answered P1 to P18 of `docs/PLAN-paper.md` on Paper 26.3 build 259 (STABLE), fetched through PaperMC's Fill v3 service and run headless with JDK 25 and `-Xmx2G`; the README, the throwaway plugin, the headless stand-in players and the results are in `docs/reference/spikes/b780/`. No code outside that folder changed.
+- The sample game modes' vanilla data pack loads clean on Paper and passes all seven checks of `SampleGameModesParityTest`, replayed by console commands, the plugin's probes and stand-in players, both from `world/datapacks` (58 of 58) and from inside the plugin jar (57 of 57). With the bridge command registered at bootstrap, the bridge's three functions load and their signals reach the plugin.
+- P8 to P14 measured: 33 of the 44 argument types native; bans with an end time; break, place, damage and drop cancelled by boxes (about 130 ns a check); no death screen; chest menus and dialogs; a world per match in about 2 s.
+
+**Decisions**
+- Go for D2 (one self-contained jar per mod): two jars with the same runtime classes are kept apart, and their packs do not clash.
+- The CI route: a real Paper server with headless stand-in players in `tools/run-paper-server` (Node, packet ids from the server's own report at run time, never committed); MockBukkit only for event logic, pinned to an API build it supports (4.124.0 fails on build 259).
+- Packs and every command a function names must be registered in the bootstrapper; commands registered from `onEnable`, or a `plugin.yml`, are not there when functions are parsed (no-go for the Bukkit route, D8 holds).
+
+**Next**
+- The main session amends section 2 and 3 of the plan and ADR 0134 from the README's last section; PaperMC has no 26.4 snapshot build, so mc-26.4 gets no Paper facts; question 1 to the user should name `piston-data.mojang.com` too, which Paper reaches itself on its first start.
+- Guide limit: a world made from a Paper plugin's World Type must never start without the plugin (its biome becomes plains for good).

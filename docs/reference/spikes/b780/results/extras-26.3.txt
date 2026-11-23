@@ -1,0 +1,89 @@
+PASS P8 argument types :: integer -- 5 (Integer)
+PASS P8 argument types :: number -- 2.5 (Double)
+PASS P8 argument types :: word -- abc (String)
+PASS P8 argument types :: text -- hello world (String)
+PASS P8 argument types :: boolean -- true (Boolean)
+PASS P8 argument types :: player -- [CraftPlayer{name=msmextra, uuid=03ebb95c-15b2-39ed-92b9-f4c674a6b249}] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceab68)
+PASS P8 argument types :: players -- [CraftPlayer{name=msmextra, uuid=03ebb95c-15b2-39ed-92b9-f4c674a6b249}] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceadb8)
+PASS P8 argument types :: entity -- [CraftPlayer{name=msmextra, uuid=03ebb95c-15b2-39ed-92b9-f4c674a6b249}] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceb270)
+PASS P8 argument types :: position -- FinePositionImpl[x=1.5, y=2.0, z=3.5] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceb728)
+PASS P8 argument types :: block_position -- BlockPositionImpl[blockX=1, blockY=2, blockZ=3] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceb968)
+PASS P8 argument types :: item -- ItemStack{DIAMOND x 1} (CraftItemStack)
+PASS P8 argument types :: block -- org.bukkit.craftbukkit.block.CraftBlockState@d89b9a9 (CraftBlockState)
+PASS P8 argument types :: dimension -- CraftWorld{key=minecraft:overworld} (CraftWorld)
+PASS P8 argument types :: time -- 200 (Integer)
+PASS P8 argument types :: team_colour -- red (NamedTextColor)
+PASS P8 argument types :: hex_colour -- #FF0000 (TextColorImpl)
+PASS P8 argument types :: rotation -- RotationImpl[yaw=0.0, pitch=0.0] (VanillaArgumentProviderImpl$$Lambda/0x0000000036cef000)
+PASS P8 argument types :: angle -- io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cef470@1b89d3c (VanillaArgumentProviderImpl$$Lambda/0x0000000036cef470)
+PASS P8 argument types :: uuid -- 00000000-0000-0000-0000-000000000001 (UUID)
+PASS P8 argument types :: item_predicate -- io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4000@1c81593c (VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4000)
+PASS P8 argument types :: block_predicate -- io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cf44c8@610be0fa (VanillaArgumentProviderImpl$$Lambda/0x0000000036cf44c8)
+PASS P8 argument types :: effect -- CraftPotionEffectType{holder=Reference{ResourceKey[minecraft:mob_effect / minecraft:speed]=net.minecraft.world.effect.MobEffect@14e0b994}} (CraftPotionEffectType)
+PASS P8 argument types :: enchantment -- CraftEnchantment{holder=Reference{ResourceKey[minecraft:enchantment / minecraft:sharpness]=Enchantment Sharpness}} (CraftEnchantment)
+PASS P8 argument types :: biome -- TypedKeyImpl[key=minecraft:plains, registryKey=RegistryKeyImpl[key=minecraft:worldgen/biome]] (TypedKeyImpl)
+PASS P8 argument types :: structure -- TypedKeyImpl[key=minecraft:village_plains, registryKey=RegistryKeyImpl[key=minecraft:worldgen/structure]] (TypedKeyImpl)
+PASS P8 argument types :: entity_type -- PIG (EntityType)
+PASS P8 argument types :: particle -- FLAME (Particle)
+PASS P8 argument types :: game_mode -- CREATIVE (GameMode)
+PASS P8 argument types :: text_component -- hi (TextComponentImpl)
+PASS P8 argument types :: int_range -- io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4c48@3c9bdf9b (VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4c48)
+PASS P8 argument types :: identifier -- msm:test (NamespacedKey)
+PASS P8 argument types :: message -- SignedMessageResolverImpl[message=Message[text=hello there, parts=[Lnet.minecraft.commands.arguments.MessageArgument$Part;@4969b452]] (SignedMessageResolverImpl)
+PASS P8 argument types :: dialog -- PaperDialog{holder=Reference{ResourceKey[minecraft:dialog / minecraft:server_links]=ServerLinksDialog[common=CommonDialogData[title=translation{key='menu.server_links.title', args=[]}, externalTitle=O
+PASS P8 argument types :: the client stays connected with the command tree (all parsers sent)
+PASS P9 bridge :: function -> plugin command, as a player (execute as) -- msm_signal_msm_spike as_player (sender=CONSOLE executor=msmbridge at=5,101,3 in minecraft:overworld)
+PASS P9 bridge :: function -> plugin command, run by the player himself -- msm_signal_msm_spike as_player (sender=msmbridge executor=msmbridge at=5,101,3 in minecraft:overworld)
+PASS P9 bridge :: the signal command typed by an operator
+NOTE P9 bridge :: the signal command typed by a non-operator (no permission requirement in the spike) -- ran: the API needs an explicit requires()
+PASS P9 bridge :: plugin -> data pack function (dispatchCommand as the console) -- fn msm_spike:reply -> true in 329 us
+NOTE P9 bridge :: reload time to the load function -- 3328 ms
+FAIL P9 bridge :: COMMANDS event again at reload (bootstrap handler)
+FAIL P9 bridge :: COMMANDS event again at reload (plugin handler)
+FAIL P9 bridge :: packs discovered again at reload
+PASS P9 bridge :: the load tag ran again and reached the plugin
+NOTE P9 bridge :: late.mcfunction (names a command registered at enable) after reload -- loads now
+PASS P9 bridge :: the bridge still works after reload
+  [bot] msmban: kicked: Out of the game for 5 seconds (spike)
+PASS P10 ban with an end time :: the online player is kicked -- Out of the game for 5 seconds (spike)
+NOTE P10 ban with an end time :: kick message shown -- Out of the game for 5 seconds (spike)
+NOTE P10 ban with an end time :: entry -- 2026-11-23T18:19:47.851+0000
+PASS P10 ban with an end time :: joining again is refused while banned -- {"translate":"multiplayer.disconnect.banned.reason","with":["Out of the game for 5 seconds (spike)"],"extra":[{"translate":"multiplayer.disconnect.banned.expiration","with":["2026-11-23 at 18:19:47 UT
+NOTE P10 ban with an end time :: refusal message shown at login -- {"translate":"multiplayer.disconnect.banned.reason","with":["Out of the game for 5 seconds (spike)"],"extra":[{"translate":"multiplayer.disconnect.banned.expiration","with":["2026-11-23 at 18:19:47 UTC"]}]}
+PASS P10 ban with an end time :: joining is allowed after the end time
+NOTE P10 ban with an end time :: offline ban -- banned offline msmoffline (null) until 2026-11-23T18:19:53.012+0000
+PASS P10 ban with an end time :: an offline (never joined) player banned by name is refused -- {"translate":"multiplayer.disconnect.banned.reason","with":["Out of the game for 4 seconds (spike)"],"extra":[{"translate":"multiplayer.disconnect.banned.expiration","with":["2026-11-23 at 18:19:53 UT
+PASS P10 ban with an end time :: and allowed after the end time
+PASS P11 protected boxes :: a break inside the box is cancelled (block stays)
+PASS P11 protected boxes :: a break outside the box is allowed
+PASS P11 protected boxes :: damage inside the box is cancelled -- health 20.0 dead false mode SURVIVAL at 20 101 20 in world items 7 tags [] -> health 20.0 dead false mode SURVIVAL at 20 101 20 in world items 7 tags []
+PASS P11 protected boxes :: dropping an item inside the box is cancelled
+NOTE P11 protected boxes :: box check cost -- see the startup log line "bench:"
+NOTE P12 death :: cancel: PlayerDeathEvent -- death msmdeath mode cancel drops 2 keepInventory false message msmdeath died
+NOTE P12 death :: cancel: after -- health 20.0 dead false mode SURVIVAL at 40 101 40 in world items 8 tags []; death screen packets 0; health packet 20
+PASS P12 death :: cancelling PlayerDeathEvent: no death screen
+NOTE P12 death :: damage mode -- lethal damage turned into a respawn for msmdeath; dropped 2 stacks
+PASS P12 death :: turning lethal damage into a respawn: no death screen, items dropped -- health 20.0 dead false mode SURVIVAL at 5 67 3 in world items 0 tags [msm_sample_game_modes.area.sky_survival.home_island]
+NOTE P12 death :: game rule immediate_respawn (data pack): server lines -- [18:20:04] [Server thread/INFO]: [msm_spike] [msm_spike] msm_spike death msmdeath mode off drops 1 keepInventory false message msmdeath died / [18:20:04] [Server thread/INFO]: System chat: msmdeath died / [18:20:04] [Server thread/INFO]: System chat: Applied 1000.0 damage to msmdeath
+NOTE P12 death :: game rule immediate_respawn: death screen packet still sent (the client skips the screen itself) -- 1
+NOTE P12 death :: after respawn -- health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 0 tags [msm_sample_game_modes.area.arena.arena]
+PASS P13 menus :: a chest-like menu opens on the client -- {"container":1,"type":2,"title":"Shop (spike)"}
+PASS P13 menus :: a click reaches the plugin with the slot and item, cancelled -- menu click by msmmenu slot 11 raw 11 click LEFT item IRON_SWORD
+PASS P13 menus :: the player stays connected
+PASS P13 menus :: a dialog made through the API reaches the client -- 1
+NOTE P13 menus :: a vanilla dialog by command (data pack route) -- 2 dialog packets
+FAIL P14 worlds :: arena_1: made from the template
+NOTE P14 worlds :: arena_1: wall time -- 30041 ms
+FAIL P14 worlds :: arena_1: players sent in -- health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 3 tags [msm_sample_game_modes.area.arena.arena]
+FAIL P14 worlds :: arena_1: unloaded (players moved out first) -- undefined wall 30026 ms
+FAIL P14 worlds :: arena_2: made from the template
+NOTE P14 worlds :: arena_2: wall time -- 30005 ms
+FAIL P14 worlds :: arena_2: players sent in -- health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 3 tags [msm_sample_game_modes.area.arena.arena]
+FAIL P14 worlds :: arena_2: unloaded (players moved out first) -- undefined wall 30021 ms
+FAIL P14 worlds :: arena_3: made from the template
+NOTE P14 worlds :: arena_3: wall time -- 30010 ms
+FAIL P14 worlds :: arena_3: players sent in -- health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 3 tags [msm_sample_game_modes.area.arena.arena]
+FAIL P14 worlds :: arena_3: unloaded (players moved out first) -- undefined wall 30001 ms
+NOTE P14 worlds :: worlds left -- undefined
+PASS P14 worlds :: players still connected
+done: 56 passed, 12 failed

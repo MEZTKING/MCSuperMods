@@ -1,0 +1,61 @@
+PASS 1 the_game_is_set_up_when_the_world_loads :: world start ran (storage world_setup:1b)
+PASS 1 the_game_is_set_up_when_the_world_loads :: difficulty normal
+PASS 1 the_game_is_set_up_when_the_world_loads :: sky biome (the World Type was used)
+PASS 1 the_game_is_set_up_when_the_world_loads :: goals tab
+PASS 1 the_game_is_set_up_when_the_world_loads :: red team -- PROBE team msm_sample_game_modes.arena.red = red prefix '[Red] ' friendlyFire false
+PASS 1 the_game_is_set_up_when_the_world_loads :: blue team -- PROBE team msm_sample_game_modes.arena.blue = blue prefix '[Blue] ' friendlyFire false
+PASS 1 the_game_is_set_up_when_the_world_loads :: Defeats on the sidebar -- PROBE sidebar msm_sample_game_modes.arena.points criteria playerKillCount name 'Defeats'
+PASS 1 the_game_is_set_up_when_the_world_loads :: round boss bar max 300
+NOTE 2 the_island_is_placed_once_and_the_kit_given_once :: first player joined -- 1341 ms at 8.5,-64,8.5
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: first join advancement done
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: start flag set -- has the following contents: {start: 1b, world_setup: 1b}
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: island grass at 2 66 2
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: island dirt at 2 65 2
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: chest naming its loot table -- {"type":"minecraft:chest","loot":"msm_sample_game_modes:sky_survival/start_chest"}
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: world spawn 5 67 3 -- PROBE world minecraft:overworld difficulty NORMAL spawn 5 67 3
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: first kit: 3 bread, slow falling, survival -- joined true bread 3 slowFalling true mode SURVIVAL health 20.0 dead false team none points unset tags [msm_sample_game_modes.area.sky_survival.home_island] at 5.5 67.0 3.5
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: welcome said to the first player -- multiplayer.player.joined(msmskyfirst) | Welcome to Sky Survival! Everything you need is in the chest. Do not fall! | Your goals are on the Advancements screen ().
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: still 3 bread 20 ticks later -- joined true bread 3 slowFalling true mode SURVIVAL health 20.0 dead false team none points unset tags [msm_sample_game_modes.area.sky_survival.home_island] at 5.5 67.0 3.5
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: second player joined and got the kit -- joined true bread 3 slowFalling true mode SURVIVAL health 20.0 dead false team none points unset tags [msm_sample_game_modes.area.sky_survival.home_island] at 5.5 67.0 3.5
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: island not placed again
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: home island area tags the player on it
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: pig to clear
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: reset placed the island
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: reset removed the pig
+PASS 2 the_island_is_placed_once_and_the_kit_given_once :: reset left the player
+PASS 3 the_one_block_refills_through_its_phases :: phase 0 at the start
+PASS 3 the_one_block_refills_through_its_phases :: 20 breaks each refilled from its phase --  seen grass_block,dirt,dirt,oak_log,grass_block,grass_block,dirt,grass_block,melon,grass_block,gold_ore,stone,iron_ore,iron_ore,copper_ore,lapis_ore,copper_ore,coal_ore,stone,stone
+PASS 3 the_one_block_refills_through_its_phases :: phase 2 after 20 breaks
+PASS 3 the_one_block_refills_through_its_phases :: breaks 0 in the new phase
+PASS 3 the_one_block_refills_through_its_phases :: "Underground" said once -- Underground | Deep dark
+PASS 3 the_one_block_refills_through_its_phases :: "Deep dark" said once
+PASS 3 the_one_block_refills_through_its_phases :: no "Underground at last!" (no Rules on Paper)
+PASS 3 the_one_block_refills_through_its_phases :: the bridge reaches the plugin once per break of phase 2 (10) -- 0; executors 
+PASS 4 the_round_timer_ends_and_runs_its_end :: boss bar visible at the start, full -- PROBE bossbar visible true progress 1.0
+PASS 4 the_round_timer_ends_and_runs_its_end :: holder 300 at the start
+PASS 4 the_round_timer_ends_and_runs_its_end :: running
+PASS 4 the_round_timer_ends_and_runs_its_end :: the timer ended
+PASS 4 the_round_timer_ends_and_runs_its_end :: holder 0 at the end
+PASS 4 the_round_timer_ends_and_runs_its_end :: boss bar hidden after the end -- PROBE bossbar visible false progress 0.0
+PASS 4 the_round_timer_ends_and_runs_its_end :: title "Round over" reached the player -- Round over
+PASS 4 the_round_timer_ends_and_runs_its_end :: round_end rebuilt the arena
+PASS 4 the_round_timer_ends_and_runs_its_end :: no point from the round end (no Rules on Paper) -- unset -> unset
+PASS 4 the_round_timer_ends_and_runs_its_end :: the bridge reached the plugin once for the round end -- 0; executors 
+PASS 5 the_arena_is_entered_and_reset :: arena floor
+PASS 5 the_arena_is_entered_and_reset :: arena wall
+PASS 5 the_arena_is_entered_and_reset :: corner lantern
+PASS 5 the_arena_is_entered_and_reset :: not tagged before walking in
+PASS 5 the_arena_is_entered_and_reset :: tagged on entering
+PASS 5 the_arena_is_entered_and_reset :: no team (no Rules on Paper)
+PASS 5 the_arena_is_entered_and_reset :: the bridge reached the plugin once for the entry, as the player -- 0; executors 
+PASS 5 the_arena_is_entered_and_reset :: untagged on leaving
+PASS 5 the_arena_is_entered_and_reset :: pig to clear
+PASS 5 the_arena_is_entered_and_reset :: reset removed the dirt
+PASS 5 the_arena_is_entered_and_reset :: reset removed the pig
+PASS 5 the_arena_is_entered_and_reset :: reset left the player
+PASS 6 a_kill_scores_on_the_sidebar :: the winner scores one point on Defeats -- unset -> 1
+NOTE 6 a_kill_scores_on_the_sidebar :: the loser saw the death screen packet -- 1 (player_combat_kill)
+PASS 6 a_kill_scores_on_the_sidebar :: sidebar still Defeats
+PASS 7 the_lucky_block_rule_fires_in_the_jar_only :: the lucky block item is not registered -- [18:35:44] [Server thread/INFO]: System chat: Unknown item 'msm_sample_game_modes:lucky_block'
+PASS 7 the_lucky_block_rule_fires_in_the_jar_only :: the bridge functions are absent (failed to load, as on vanilla) -- give @a msm_sample_game_modes:lucky_block<--[HERE]
+done: 58 passed, 0 failed

@@ -1,0 +1,179 @@
+{
+  "minecraft": "26.3",
+  "rows": [
+    {
+      "test": "P9 bridge",
+      "name": "function -> plugin command, as a player (execute as)",
+      "pass": true,
+      "detail": "msm_signal_msm_spike as_player (sender=CONSOLE executor=msmbridge at=5,101,3 in minecraft:overworld)"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "function -> plugin command, run by the player himself",
+      "pass": true,
+      "detail": "msm_signal_msm_spike as_player (sender=msmbridge executor=msmbridge at=5,101,3 in minecraft:overworld)"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the signal command typed by an operator",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the signal command typed by a non-operator (no permission requirement in the spike)",
+      "pass": null,
+      "detail": "ran: the API needs an explicit requires()"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "plugin -> data pack function (dispatchCommand as the console)",
+      "pass": true,
+      "detail": "fn msm_spike:reply -> true in 224 us"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "reload time to the load function",
+      "pass": null,
+      "detail": "3143 ms"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "COMMANDS event again at reload (bootstrap handler)",
+      "pass": true,
+      "detail": "bootstrap COMMANDS event #2 cause RELOAD"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "COMMANDS event again at reload (plugin handler)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "packs discovered again at reload",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the load tag ran again and reached the plugin",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "late.mcfunction (names a command registered at enable) after reload",
+      "pass": null,
+      "detail": "still fails to load: functions are parsed before the enable-time COMMANDS handler runs"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the bridge still works after reload",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: made from the template",
+      "pass": false,
+      "detail": "world make arena_1 key msm_spike:arena_1 path ./world/dimensions/msm_spike/arena_1 in 3099 ms; template true in 1 ms; floor AIR"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: wall time",
+      "pass": null,
+      "detail": "3123 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: players sent in",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 0 101 0 in msm_spike_arena_1 items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: unloaded (players moved out first)",
+      "pass": true,
+      "detail": "world unload arena_1 -> true in 39 ms; path ./world/dimensions/msm_spike/arena_1 wall 107 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: folder deleted",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: made from the template",
+      "pass": false,
+      "detail": "world make arena_2 key msm_spike:arena_2 path ./world/dimensions/msm_spike/arena_2 in 1975 ms; template true in 0 ms; floor AIR"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: wall time",
+      "pass": null,
+      "detail": "2063 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: players sent in",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 0 101 0 in msm_spike_arena_2 items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: unloaded (players moved out first)",
+      "pass": true,
+      "detail": "world unload arena_2 -> true in 129 ms; path ./world/dimensions/msm_spike/arena_2 wall 201 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: folder deleted",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: made from the template",
+      "pass": false,
+      "detail": "world make arena_3 key msm_spike:arena_3 path ./world/dimensions/msm_spike/arena_3 in 1924 ms; template true in 0 ms; floor AIR"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: wall time",
+      "pass": null,
+      "detail": "1975 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: players sent in",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 0 101 0 in msm_spike_arena_3 items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: unloaded (players moved out first)",
+      "pass": true,
+      "detail": "world unload arena_3 -> true in 78 ms; path ./world/dimensions/msm_spike/arena_3 wall 155 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: folder deleted",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "worlds left",
+      "pass": null,
+      "detail": "undefined"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "players still connected",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

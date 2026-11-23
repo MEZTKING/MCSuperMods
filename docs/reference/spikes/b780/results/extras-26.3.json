@@ -1,0 +1,527 @@
+{
+  "minecraft": "26.3",
+  "rows": [
+    {
+      "test": "P8 argument types",
+      "name": "integer",
+      "pass": true,
+      "detail": "5 (Integer)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "number",
+      "pass": true,
+      "detail": "2.5 (Double)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "word",
+      "pass": true,
+      "detail": "abc (String)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "text",
+      "pass": true,
+      "detail": "hello world (String)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "boolean",
+      "pass": true,
+      "detail": "true (Boolean)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "player",
+      "pass": true,
+      "detail": "[CraftPlayer{name=msmextra, uuid=03ebb95c-15b2-39ed-92b9-f4c674a6b249}] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceab68)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "players",
+      "pass": true,
+      "detail": "[CraftPlayer{name=msmextra, uuid=03ebb95c-15b2-39ed-92b9-f4c674a6b249}] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceadb8)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "entity",
+      "pass": true,
+      "detail": "[CraftPlayer{name=msmextra, uuid=03ebb95c-15b2-39ed-92b9-f4c674a6b249}] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceb270)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "position",
+      "pass": true,
+      "detail": "FinePositionImpl[x=1.5, y=2.0, z=3.5] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceb728)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "block_position",
+      "pass": true,
+      "detail": "BlockPositionImpl[blockX=1, blockY=2, blockZ=3] (VanillaArgumentProviderImpl$$Lambda/0x0000000036ceb968)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "item",
+      "pass": true,
+      "detail": "ItemStack{DIAMOND x 1} (CraftItemStack)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "block",
+      "pass": true,
+      "detail": "org.bukkit.craftbukkit.block.CraftBlockState@d89b9a9 (CraftBlockState)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "dimension",
+      "pass": true,
+      "detail": "CraftWorld{key=minecraft:overworld} (CraftWorld)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "time",
+      "pass": true,
+      "detail": "200 (Integer)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "team_colour",
+      "pass": true,
+      "detail": "red (NamedTextColor)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "hex_colour",
+      "pass": true,
+      "detail": "#FF0000 (TextColorImpl)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "rotation",
+      "pass": true,
+      "detail": "RotationImpl[yaw=0.0, pitch=0.0] (VanillaArgumentProviderImpl$$Lambda/0x0000000036cef000)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "angle",
+      "pass": true,
+      "detail": "io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cef470@1b89d3c (VanillaArgumentProviderImpl$$Lambda/0x0000000036cef470)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "uuid",
+      "pass": true,
+      "detail": "00000000-0000-0000-0000-000000000001 (UUID)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "item_predicate",
+      "pass": true,
+      "detail": "io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4000@1c81593c (VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4000)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "block_predicate",
+      "pass": true,
+      "detail": "io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cf44c8@610be0fa (VanillaArgumentProviderImpl$$Lambda/0x0000000036cf44c8)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "effect",
+      "pass": true,
+      "detail": "CraftPotionEffectType{holder=Reference{ResourceKey[minecraft:mob_effect / minecraft:speed]=net.minecraft.world.effect.MobEffect@14e0b994}} (CraftPotionEffectType)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "enchantment",
+      "pass": true,
+      "detail": "CraftEnchantment{holder=Reference{ResourceKey[minecraft:enchantment / minecraft:sharpness]=Enchantment Sharpness}} (CraftEnchantment)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "biome",
+      "pass": true,
+      "detail": "TypedKeyImpl[key=minecraft:plains, registryKey=RegistryKeyImpl[key=minecraft:worldgen/biome]] (TypedKeyImpl)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "structure",
+      "pass": true,
+      "detail": "TypedKeyImpl[key=minecraft:village_plains, registryKey=RegistryKeyImpl[key=minecraft:worldgen/structure]] (TypedKeyImpl)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "entity_type",
+      "pass": true,
+      "detail": "PIG (EntityType)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "particle",
+      "pass": true,
+      "detail": "FLAME (Particle)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "game_mode",
+      "pass": true,
+      "detail": "CREATIVE (GameMode)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "text_component",
+      "pass": true,
+      "detail": "hi (TextComponentImpl)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "int_range",
+      "pass": true,
+      "detail": "io.papermc.paper.command.brigadier.argument.VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4c48@3c9bdf9b (VanillaArgumentProviderImpl$$Lambda/0x0000000036cf4c48)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "identifier",
+      "pass": true,
+      "detail": "msm:test (NamespacedKey)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "message",
+      "pass": true,
+      "detail": "SignedMessageResolverImpl[message=Message[text=hello there, parts=[Lnet.minecraft.commands.arguments.MessageArgument$Part;@4969b452]] (SignedMessageResolverImpl)"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "dialog",
+      "pass": true,
+      "detail": "PaperDialog{holder=Reference{ResourceKey[minecraft:dialog / minecraft:server_links]=ServerLinksDialog[common=CommonDialogData[title=translation{key='menu.server_links.title', args=[]}, externalTitle=Optional[translation{key='menu.server_links', args=[]}], canCloseWithEscape=true, pause=true, afterAc"
+    },
+    {
+      "test": "P8 argument types",
+      "name": "the client stays connected with the command tree (all parsers sent)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "function -> plugin command, as a player (execute as)",
+      "pass": true,
+      "detail": "msm_signal_msm_spike as_player (sender=CONSOLE executor=msmbridge at=5,101,3 in minecraft:overworld)"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "function -> plugin command, run by the player himself",
+      "pass": true,
+      "detail": "msm_signal_msm_spike as_player (sender=msmbridge executor=msmbridge at=5,101,3 in minecraft:overworld)"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the signal command typed by an operator",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the signal command typed by a non-operator (no permission requirement in the spike)",
+      "pass": null,
+      "detail": "ran: the API needs an explicit requires()"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "plugin -> data pack function (dispatchCommand as the console)",
+      "pass": true,
+      "detail": "fn msm_spike:reply -> true in 329 us"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "reload time to the load function",
+      "pass": null,
+      "detail": "3328 ms"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "COMMANDS event again at reload (bootstrap handler)",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "COMMANDS event again at reload (plugin handler)",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "packs discovered again at reload",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the load tag ran again and reached the plugin",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P9 bridge",
+      "name": "late.mcfunction (names a command registered at enable) after reload",
+      "pass": null,
+      "detail": "loads now"
+    },
+    {
+      "test": "P9 bridge",
+      "name": "the bridge still works after reload",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "the online player is kicked",
+      "pass": true,
+      "detail": "Out of the game for 5 seconds (spike)"
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "kick message shown",
+      "pass": null,
+      "detail": "Out of the game for 5 seconds (spike)"
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "entry",
+      "pass": null,
+      "detail": "2026-11-23T18:19:47.851+0000"
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "joining again is refused while banned",
+      "pass": true,
+      "detail": "{\"translate\":\"multiplayer.disconnect.banned.reason\",\"with\":[\"Out of the game for 5 seconds (spike)\"],\"extra\":[{\"translate\":\"multiplayer.disconnect.banned.expiration\",\"with\":[\"2026-11-23 at 18:19:47 UTC\"]}]}"
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "refusal message shown at login",
+      "pass": null,
+      "detail": "{\"translate\":\"multiplayer.disconnect.banned.reason\",\"with\":[\"Out of the game for 5 seconds (spike)\"],\"extra\":[{\"translate\":\"multiplayer.disconnect.banned.expiration\",\"with\":[\"2026-11-23 at 18:19:47 UTC\"]}]}"
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "joining is allowed after the end time",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "offline ban",
+      "pass": null,
+      "detail": "banned offline msmoffline (null) until 2026-11-23T18:19:53.012+0000"
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "an offline (never joined) player banned by name is refused",
+      "pass": true,
+      "detail": "{\"translate\":\"multiplayer.disconnect.banned.reason\",\"with\":[\"Out of the game for 4 seconds (spike)\"],\"extra\":[{\"translate\":\"multiplayer.disconnect.banned.expiration\",\"with\":[\"2026-11-23 at 18:19:53 UTC\"]}]}"
+    },
+    {
+      "test": "P10 ban with an end time",
+      "name": "and allowed after the end time",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P11 protected boxes",
+      "name": "a break inside the box is cancelled (block stays)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P11 protected boxes",
+      "name": "a break outside the box is allowed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P11 protected boxes",
+      "name": "damage inside the box is cancelled",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 20 101 20 in world items 7 tags [] -> health 20.0 dead false mode SURVIVAL at 20 101 20 in world items 7 tags []"
+    },
+    {
+      "test": "P11 protected boxes",
+      "name": "dropping an item inside the box is cancelled",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P11 protected boxes",
+      "name": "box check cost",
+      "pass": null,
+      "detail": "see the startup log line \"bench:\""
+    },
+    {
+      "test": "P12 death",
+      "name": "cancel: PlayerDeathEvent",
+      "pass": null,
+      "detail": "death msmdeath mode cancel drops 2 keepInventory false message msmdeath died"
+    },
+    {
+      "test": "P12 death",
+      "name": "cancel: after",
+      "pass": null,
+      "detail": "health 20.0 dead false mode SURVIVAL at 40 101 40 in world items 8 tags []; death screen packets 0; health packet 20"
+    },
+    {
+      "test": "P12 death",
+      "name": "cancelling PlayerDeathEvent: no death screen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P12 death",
+      "name": "damage mode",
+      "pass": null,
+      "detail": "lethal damage turned into a respawn for msmdeath; dropped 2 stacks"
+    },
+    {
+      "test": "P12 death",
+      "name": "turning lethal damage into a respawn: no death screen, items dropped",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 5 67 3 in world items 0 tags [msm_sample_game_modes.area.sky_survival.home_island]"
+    },
+    {
+      "test": "P12 death",
+      "name": "game rule immediate_respawn (data pack): server lines",
+      "pass": null,
+      "detail": "[18:20:04] [Server thread/INFO]: [msm_spike] [msm_spike] msm_spike death msmdeath mode off drops 1 keepInventory false message msmdeath died / [18:20:04] [Server thread/INFO]: System chat: msmdeath died / [18:20:04] [Server thread/INFO]: System chat: Applied 1000.0 damage to msmdeath"
+    },
+    {
+      "test": "P12 death",
+      "name": "game rule immediate_respawn: death screen packet still sent (the client skips the screen itself)",
+      "pass": null,
+      "detail": "1"
+    },
+    {
+      "test": "P12 death",
+      "name": "after respawn",
+      "pass": null,
+      "detail": "health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 0 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P13 menus",
+      "name": "a chest-like menu opens on the client",
+      "pass": true,
+      "detail": "{\"container\":1,\"type\":2,\"title\":\"Shop (spike)\"}"
+    },
+    {
+      "test": "P13 menus",
+      "name": "a click reaches the plugin with the slot and item, cancelled",
+      "pass": true,
+      "detail": "menu click by msmmenu slot 11 raw 11 click LEFT item IRON_SWORD"
+    },
+    {
+      "test": "P13 menus",
+      "name": "the player stays connected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P13 menus",
+      "name": "a dialog made through the API reaches the client",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "test": "P13 menus",
+      "name": "a vanilla dialog by command (data pack route)",
+      "pass": null,
+      "detail": "2 dialog packets"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: made from the template",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: wall time",
+      "pass": null,
+      "detail": "30041 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: players sent in",
+      "pass": false,
+      "detail": "health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: unloaded (players moved out first)",
+      "pass": false,
+      "detail": "undefined wall 30026 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: made from the template",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: wall time",
+      "pass": null,
+      "detail": "30005 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: players sent in",
+      "pass": false,
+      "detail": "health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: unloaded (players moved out first)",
+      "pass": false,
+      "detail": "undefined wall 30021 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: made from the template",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: wall time",
+      "pass": null,
+      "detail": "30010 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: players sent in",
+      "pass": false,
+      "detail": "health 20.0 dead false mode SURVIVAL at 5 101 3 in world items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: unloaded (players moved out first)",
+      "pass": false,
+      "detail": "undefined wall 30001 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "worlds left",
+      "pass": null,
+      "detail": "undefined"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "players still connected",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

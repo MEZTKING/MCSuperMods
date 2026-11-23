@@ -1,0 +1,10 @@
+import { Bot, packetIds } from './bot.mjs';
+const [report, port, name] = process.argv.slice(2);
+const ids = packetIds(report);
+const bot = new Bot({ name, port: Number(port), ids, protocol: 777, log: console.log });
+const t = Date.now();
+await bot.connect();
+console.log(`joined in ${Date.now() - t} ms at ${bot.pos}`);
+await new Promise((r) => setTimeout(r, 4000));
+console.log('chat', bot.takeChat(), 'titles', bot.titles, 'events', bot.events, 'health', bot.health, 'closed', bot.closed ?? false);
+bot.close();

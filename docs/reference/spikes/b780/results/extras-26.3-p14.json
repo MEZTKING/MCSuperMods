@@ -1,0 +1,125 @@
+{
+  "minecraft": "26.3",
+  "rows": [
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: made",
+      "pass": true,
+      "detail": "world make arena_1 key msm_spike:arena_1 path ./world/dimensions/msm_spike/arena_1 in 1531 ms; template true in 4 ms; floor AIR"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: the arena template placed in it (place template, run after the plugin's own command)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: wall time",
+      "pass": null,
+      "detail": "2285 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: players sent in",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 0 101 0 in msm_spike_arena_1 items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: unloaded (players moved out first)",
+      "pass": true,
+      "detail": "world unload arena_1 -> true in 82 ms; path ./world/dimensions/msm_spike/arena_1 wall 154 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_1: folder deleted",
+      "pass": true,
+      "detail": "world delete ./world/dimensions/msm_spike/arena_1 files 22 in 8 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: made",
+      "pass": true,
+      "detail": "world make arena_2 key msm_spike:arena_2 path ./world/dimensions/msm_spike/arena_2 in 1516 ms; template true in 0 ms; floor AIR"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: the arena template placed in it (place template, run after the plugin's own command)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: wall time",
+      "pass": null,
+      "detail": "2289 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: players sent in",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 0 101 0 in msm_spike_arena_2 items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: unloaded (players moved out first)",
+      "pass": true,
+      "detail": "world unload arena_2 -> true in 35 ms; path ./world/dimensions/msm_spike/arena_2 wall 101 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_2: folder deleted",
+      "pass": true,
+      "detail": "world delete ./world/dimensions/msm_spike/arena_2 files 22 in 23 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: made",
+      "pass": true,
+      "detail": "world make arena_3 key msm_spike:arena_3 path ./world/dimensions/msm_spike/arena_3 in 952 ms; template true in 0 ms; floor AIR"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: the arena template placed in it (place template, run after the plugin's own command)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: wall time",
+      "pass": null,
+      "detail": "1714 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: players sent in",
+      "pass": true,
+      "detail": "health 20.0 dead false mode SURVIVAL at 0 101 0 in msm_spike_arena_3 items 3 tags [msm_sample_game_modes.area.arena.arena]"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: unloaded (players moved out first)",
+      "pass": true,
+      "detail": "world unload arena_3 -> true in 97 ms; path ./world/dimensions/msm_spike/arena_3 wall 123 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "arena_3: folder deleted",
+      "pass": true,
+      "detail": "world delete ./world/dimensions/msm_spike/arena_3 files 22 in 8 ms"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "worlds left",
+      "pass": null,
+      "detail": "undefined"
+    },
+    {
+      "test": "P14 worlds",
+      "name": "players still connected",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

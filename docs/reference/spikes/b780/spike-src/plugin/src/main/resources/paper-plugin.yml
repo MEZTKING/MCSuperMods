@@ -1,0 +1,7 @@
+name: ${spikeId}
+version: '${version}'
+main: dev.mcsupermods.spike.paper.SpikePlugin
+bootstrapper: dev.mcsupermods.spike.paper.SpikeBootstrap
+api-version: '26.3'
+description: B780 spike plugin (throwaway)
+authors: [MCSuperMods]

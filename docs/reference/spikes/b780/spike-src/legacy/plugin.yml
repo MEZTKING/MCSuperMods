@@ -1,0 +1,7 @@
+name: msm_legacy
+version: '0.0.1'
+main: dev.mcsupermods.spike.legacy.LegacyPlugin
+api-version: '26.3'
+commands:
+  msm_signal_msm_legacy:
+    description: the function bridge, Bukkit style (spike)
