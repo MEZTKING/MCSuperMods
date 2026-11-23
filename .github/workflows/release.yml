@@ -7,8 +7,9 @@
 # section for that version as its body, then electron-builder
 # publishes into it (ADR 0018): the installer, its `.blockmap` and `latest.yml`, plus the
 # `@msm/plugin-api` tarball `msm-plugin-api-<version>.tgz` for third-party plugin authors
-# (ADR 0036), which a last step checks. The maintainer reviews and
-# publishes the draft by hand; the in-app updater only sees published releases.
+# (ADR 0036), which a last step checks. Once the assets and the installer size pass, the run
+# publishes the release itself (user, 2026-11-23: "publish them straight away from now on"), since
+# the in-app updater only sees published releases; a failed check leaves the draft unpublished.
 #
 # Manual runs (Actions > Release > Run workflow):
 # - with a version (for example 0.2.4) and optionally a commit: the workflow creates the tag
@@ -253,6 +254,15 @@ jobs:
               exit 1
             fi
           done
+      # Published straight away once every check above has passed (user, 2026-11-23); the
+      # updater only sees published releases. `publish-release.yml` stays for a draft left behind.
+      - name: Publish the release
+        if: env.RELEASE_TAG != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release edit "${RELEASE_TAG}" --draft=false --latest
       - uses: actions/upload-artifact@v7
         with:
           name: MCSuperMods-windows
