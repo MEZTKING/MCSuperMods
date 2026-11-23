@@ -40,6 +40,7 @@
     "src/renderer/src/preview/bundle-source.ts",
     "src/renderer/src/components/wizard/wizard-model.ts",
     "src/renderer/src/components/home/tiles.ts",
+    "src/renderer/src/components/ai/ai-limits-model.ts",
     "src/renderer/src/studios/completions.ts",
     "src/renderer/src/studios/templates.ts",
     "src/renderer/src/studios/rules/rules-model.ts",

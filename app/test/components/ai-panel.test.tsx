@@ -311,10 +311,10 @@ describe('AiPanel', () => {
     expect(useAiStore.getState().conversations['/projects/demo']?.runLimits).toBeNull();
   });
 
-  it('shows the privacy notice and Open Settings without a key', async () => {
+  it('shows the set-up card, what is sent and Open Settings without a key', async () => {
     const s = await setup(fakeAi({ set: false, tail: null }));
     const missing = await screen.findByTestId('ai-key-missing');
-    expect(missing.textContent).toContain('Textures, other files and file paths are never sent.');
+    expect(missing.textContent).toContain('Where files are on your computer.');
     await s.user.click(screen.getByTestId('ai-open-settings'));
     expect(s.onOpenSettings).toHaveBeenCalledOnce();
     expect(screen.queryByTestId('ai-input')).toBeNull();

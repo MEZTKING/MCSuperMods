@@ -264,7 +264,7 @@ type DialogState =
   | { type: 'rename-thing'; id: ResourceLocation; name: string }
   | { type: 'import'; namespace?: string }
   | { type: 'import-files'; mode: ImportMode }
-  | { type: 'settings' }
+  | { type: 'settings'; focus?: 'ai' }
   | { type: 'remove-asset'; namespace: string; path: string }
   | {
       /** A delete that removes exported ids (ADR 0102 D5): confirm first. */
@@ -285,7 +285,7 @@ type DialogState =
   | { type: 'whats-new'; version: string; notes?: string }
   | { type: 'welcome' }
   | { type: 'modpacks' }
-  | { type: 'ai-start' }
+  | { type: 'ai-start'; parent?: string }
   | {
       type: 'paint';
       namespace: string;
@@ -631,6 +631,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     return detach;
   }, [aiController]);
   const aiKeySet = useAiPanelStore((state) => state.keyStatus?.set === true);
+  const aiModel = useAiPanelStore((state) => state.settings?.model);
   // AI pictures (ADR 0093): the status of main's image services, for "Make with AI".
   const aiPicturesHost = useAiPicturesHost(bridge.aiPictures, () =>
     setDialog({ type: 'settings' }),
@@ -1554,19 +1555,41 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       aiController.setMode('build');
       return;
     }
-    setDialog({ type: 'ai-start' });
+    // Very easy asks only the mod's name, in the folder its New uses (ADR 0125 D5).
+    const ask = bridge.project.defaultParent;
+    if (usePreferences.getState().mode !== 'very-easy' || ask === undefined) {
+      setDialog({ type: 'ai-start' });
+      return;
+    }
+    ask().then(
+      (parent) => setDialog(parent === '' ? { type: 'ai-start' } : { type: 'ai-start', parent }),
+      () => setDialog({ type: 'ai-start' }),
+    );
   };
+  /** Starts the new project (in `folder` when the dialog asked a name); a text is a failure. */
   const startWithAi = async (
     description: string,
     pictures: readonly AiPicture[] = [],
-  ): Promise<void> => {
-    setDialog(null);
-    if (aiController === null) return;
-    await openWith('New project', () => session.newProject());
-    if (session.snapshot.project === null) return;
+    folder?: string,
+  ): Promise<string | null> => {
+    if (aiController === null) {
+      setDialog(null);
+      return null;
+    }
+    if (folder === undefined) {
+      setDialog(null);
+      await openWith('New project', () => session.newProject());
+    } else {
+      const outcome = await session.newProject({ folder });
+      if (!outcome.ok) return 'cancelled' in outcome ? null : outcome.reason;
+      setDialog(null);
+      await openWith('New mod', async () => outcome);
+    }
+    if (session.snapshot.project === null) return null;
     aiController.open();
     aiController.setMode('build');
     void aiController.send(description, [], pictures);
+    return null;
   };
   const chooseMode = (next: UiMode): void => {
     usePreferences.getState().setMode(next);
@@ -2037,6 +2060,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     });
   };
 
+  /** Opens Settings; `'ai'` lands on the AI helper's section with its key field (ADR 0125 D5). */
+  const openSettings = (focus?: 'ai'): void => {
+    setDialog(focus === undefined ? { type: 'settings' } : { type: 'settings', focus });
+    // Launchers may have gained instances since the last read; look again.
+    void refreshMinecraftStatus();
+    refreshLaunchers().catch(() => useUiStore.getState().setLauncherSettings(null));
+  };
+  /** Every "Open Settings" of the AI helper. */
+  const openAiSettings = (): void => openSettings('ai');
   const handlers: Record<MenuCommand, Action> = {
     new: () => {
       if (uiMode === 'very-easy') newMod();
@@ -2067,12 +2099,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportFabricJar,
     exportJavaProject,
     testInMinecraft,
-    settings: () => {
-      setDialog({ type: 'settings' });
-      // Launchers may have gained instances since the last read; look again.
-      void refreshMinecraftStatus();
-      refreshLaunchers().catch(() => useUiStore.getState().setLauncherSettings(null));
-    },
+    settings: () => openSettings(),
     renameElement: renameSelected,
     commandPalette: openPalette,
     checkForUpdates,
@@ -2764,7 +2791,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                     ? {}
                     : {
                         assistant: (
-                          <AiPanel controller={aiController} onOpenSettings={handlers.settings} />
+                          <AiPanel controller={aiController} onOpenSettings={openAiSettings} />
                         ),
                         onExplain: (problem: Problem) => aiController.explainProblem(problem),
                       })}
@@ -3100,11 +3127,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             {dialog?.type === 'ai-start' && (
               <AiStartDialog
                 keySet={aiKeySet}
-                onStart={(description, pictures) => void startWithAi(description, pictures)}
-                onOpenSettings={() => {
-                  setDialog(null);
-                  handlers.settings();
-                }}
+                ai={bridge.ai}
+                model={aiModel}
+                parent={dialog.parent ?? null}
+                onStart={(description, pictures, folder) =>
+                  startWithAi(description, pictures, folder)
+                }
+                onKeyReady={() => void aiController?.refreshKey()}
                 onClose={() => setDialog(null)}
               />
             )}
@@ -3358,6 +3387,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             />
             {dialog?.type === 'settings' && (
               <SettingsDialog
+                focus={dialog.focus}
                 mcVersion={mcVersion ?? 'unknown'}
                 status={minecraft.status}
                 progress={minecraft.progress}

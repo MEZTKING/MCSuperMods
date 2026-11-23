@@ -1713,6 +1713,45 @@ describe('App AI helper (ADR 0041 D8)', () => {
     expect(context.textContent).toContain('Expected a command.');
   });
 
+  it("opens Settings on the helper's section from the panel without a key (ADR 0125 D5)", async () => {
+    const scrolled: string[] = [];
+    const scroll = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = function (this: HTMLElement) {
+      scrolled.push(this.dataset.testid ?? '');
+    };
+    try {
+      await renderApp({ ai: fakeAi({ set: false, tail: null }) });
+      const user = userEvent.setup();
+      await user.click(screen.getByTestId('toolbar-ai-helper'));
+      expect(await screen.findByTestId('ai-setup')).toBeTruthy();
+      await user.click(screen.getByTestId('ai-open-settings'));
+      const section = await screen.findByTestId('settings-ai');
+      expect(section).toBeTruthy();
+      await waitFor(() => expect(scrolled).toContain('settings-ai'));
+      expect(within(section).getByTestId('ai-setup-key')).toBe(document.activeElement);
+    } finally {
+      HTMLElement.prototype.scrollIntoView = scroll;
+    }
+  });
+
+  it('starts a new mod with the helper in Very easy by its name, not a folder', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const ai = fakeAi();
+    const harness = await renderApp({ ai, noProject: true, defaultParent: '/docs/MCSuperMods' });
+    const user = userEvent.setup();
+    await harness.menu('newWithAi');
+    const dialog = await screen.findByTestId('ai-start-dialog');
+    expect(within(dialog).queryByText('Choose folder and build…')).toBeNull();
+    await user.type(within(dialog).getByTestId('ai-start-name'), 'Ruby Mod');
+    await user.type(within(dialog).getByTestId('ai-start-input'), 'A ruby sword.');
+    await user.click(within(dialog).getByRole('button', { name: 'Make my mod' }));
+    await waitFor(() => expect(harness.session.snapshot.root).toBe('/docs/MCSuperMods/Ruby Mod'));
+    expect(harness.picks).toBe(0);
+    await waitFor(() => expect(ai.starts.length).toBe(1));
+    expect(ai.starts[0]?.text).toBe('A ruby sword.');
+    expect(ai.starts[0]?.mode).toBe('build');
+  });
+
   it('has no AI helper tab or toolbar button without the AI services', async () => {
     await renderApp();
     expect(screen.queryByTestId('dock-tab-assistant')).toBeNull();

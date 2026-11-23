@@ -1,6 +1,6 @@
 import { type AiModelId, type AiSettings, DEFAULT_AI_SETTINGS } from '@msm/ai';
 import { Dialog } from 'radix-ui';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { AiPicturesPlatform } from '../../../shared/ai-pictures';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
 import type {
@@ -78,6 +78,12 @@ export interface SettingsDialogProps {
   onAiPicturesChanged?: (() => void) | undefined;
   /** Main's world backups (ADR 0102 D3); the "World backups" section is shown only with them. */
   worldBackups?: WorldBackupsPlatform | undefined;
+  /**
+   * `'ai'`: opened from the AI helper (ADR 0125 D5): the dialog opens scrolled to the helper's
+   * section with its key field focused, and keeps it in view while the sections above load,
+   * until the user scrolls, clicks or types.
+   */
+  focus?: 'ai' | undefined;
 }
 
 /** The label of a plugin state in Settings > Plugins. */
@@ -407,6 +413,25 @@ export function SettingsDialog(props: SettingsDialogProps) {
     [load],
   );
   const saveAi = useCallback((ai: AiSettings) => saveSettings({ ai }), [saveSettings]);
+  // Opened from the helper: its section is scrolled to the top of the view, and kept there
+  // while what is above it loads (the detected folder, the game locations and the status lines
+  // move it), until the user scrolls, clicks or types.
+  const pinAi = useRef(props.focus === 'ai' && props.ai !== undefined);
+  const unpinAi = (): void => {
+    pinAi.current = false;
+  };
+  const aiSection = useCallback((node: HTMLElement | null) => {
+    if (node === null || !pinAi.current) return;
+    const scroll = (): void => {
+      if (pinAi.current) node.scrollIntoView?.({ block: 'start' });
+    };
+    scroll();
+    const content = node.parentElement;
+    if (content === null || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(scroll);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -506,6 +531,13 @@ export function SettingsDialog(props: SettingsDialogProps) {
         <Dialog.Content
           aria-describedby={undefined}
           data-testid="settings-dialog"
+          onOpenAutoFocus={(event) => {
+            // The key field takes the focus instead of the first field.
+            if (props.focus === 'ai' && props.ai !== undefined) event.preventDefault();
+          }}
+          onWheel={unpinAi}
+          onPointerDown={unpinAi}
+          onKeyDown={unpinAi}
           className="fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[min(94vw,520px)] overflow-x-hidden overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
           <Dialog.Title className="mb-2 text-base font-semibold">Settings</Dialog.Title>
@@ -707,6 +739,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
 
             {props.ai !== undefined && (
               <AiSettingsSection
+                ref={aiSection}
+                focusKey={props.focus === 'ai'}
                 ai={props.ai}
                 load={loadAi}
                 save={saveAi}

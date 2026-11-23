@@ -1,85 +1,142 @@
 import {
   AI_MODELS,
   type AiEffort,
+  type AiMode,
   type AiModelId,
   type AiSettings,
   DEFAULT_AI_SETTINGS,
   modelInfo,
 } from '@msm/ai';
-import { useCallback, useEffect, useId, useState } from 'react';
-import type { AiKeyStatus, AiPlatform } from '../../../../shared/platform';
+import { forwardRef, useEffect, useId, useState } from 'react';
+import type { AiPlatform } from '../../../../shared/platform';
+import { usePreferences } from '../../store/preferences';
 import { fieldClass } from '../NewElementDialog';
-import { Button } from '../ui/Button';
-import { AI_PRIVACY_TEXT } from './AiKeyMissing';
+import { AiKeySetup } from './AiKeySetup';
+import { LimitField } from './AiLimitsPopover';
 import { modelChangeNotice } from './ai-controller';
+import {
+  LIMIT_LABELS,
+  LIMIT_RANGES,
+  LIMITS_HEADING,
+  LIMITS_INTRO,
+  withLimit,
+  withPacing,
+  worstCaseSentence,
+} from './ai-limits-model';
+import {
+  AI_GUIDE_URL,
+  EFFORT_WORDS,
+  modelOption,
+  modelOptionAdvanced,
+  noFallback,
+  pricesChecked,
+  SETUP_WORDS,
+} from './ai-setup-words';
 
-/** The user guide page of the AI helper. */
-export const AI_GUIDE_URL = 'https://meztking.github.io/MCSuperMods/ai-helper';
+export { keyStatusText } from './AiKeySetup';
+export { AI_GUIDE_URL } from './ai-setup-words';
 
 /** The fallback switch's label (ADR 0041 D7). */
-export const AI_FALLBACK_LABEL =
-  'Allow Anthropic to answer with another Claude model when a request is declined';
-
-/** The message shown when `safeStorage` cannot encrypt (ADR 0041 D1). */
-export const AI_ENCRYPTION_UNAVAILABLE = 'Encrypted storage is not available on this system';
-
-const EFFORTS: readonly { value: AiEffort; label: string }[] = [
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-  { value: 'xhigh', label: 'Extra high' },
-];
-
-/** The key status line: "Key set (…abcd)" or "No key". */
-export function keyStatusText(status: AiKeyStatus | null): string {
-  if (status === null) return 'Checking…';
-  if (!status.set) return 'No key';
-  return status.tail === null ? 'Key set' : `Key set (…${status.tail})`;
-}
+export const AI_FALLBACK_LABEL = SETUP_WORDS.fallback;
 
 function errorText(problem: unknown): string {
   return problem instanceof Error ? problem.message : String(problem);
 }
 
-/**
- * Settings > "AI helper" (ADR 0041 D1, D7): the API key (stored encrypted by main; the field
- * is cleared after saving and only the last four characters come back), Test and Clear, the
- * model, the effort per mode, the fallback switch, the privacy text and a link to the guide.
- */
-export function AiSettingsSection(props: {
-  ai: AiPlatform;
-  /** Reads the stored AI settings (defaults when unset). */
-  load(): Promise<AiSettings>;
-  /** Stores the AI settings. */
-  save(settings: AiSettings): Promise<void>;
-  /** Called after the settings or the key changed (the panel re-reads them). */
-  onChanged?: (() => void) | undefined;
-  /** The model the open conversation started with, or `null` without one. */
-  conversationModel?: AiModelId | null;
+/** One run size's default limits (Advanced). */
+function LimitsRow(props: {
+  size: AiMode;
+  settings: AiSettings;
+  disabled: boolean;
+  onChange(next: AiSettings): void;
 }) {
+  const { size, settings } = props;
+  const labels = LIMIT_LABELS[size];
+  const limits = settings.limits[size];
+  const stepsId = useId();
+  const tokensId = useId();
+  const paceId = useId();
+  return (
+    <div className="flex flex-col gap-1" data-testid={`settings-ai-limits-${size}`}>
+      <span className="flex flex-wrap items-center gap-1.5">
+        <label htmlFor={stepsId}>{labels.steps.before}</label>
+        <span className="w-24">
+          <LimitField
+            id={stepsId}
+            testId={`settings-ai-limit-steps-${size}`}
+            value={limits.maxToolTurns}
+            bounds={LIMIT_RANGES.steps}
+            onCommit={(value) => props.onChange(withLimit(settings, size, 'steps', value))}
+          />
+        </span>
+        <span>{labels.steps.after}</span>
+      </span>
+      <span className="flex flex-wrap items-center gap-1.5">
+        <label htmlFor={tokensId}>{labels.tokens.before}</label>
+        <span className="w-32">
+          <LimitField
+            id={tokensId}
+            testId={`settings-ai-limit-tokens-${size}`}
+            value={limits.maxOutputTokens}
+            bounds={LIMIT_RANGES.tokens}
+            step={1000}
+            onCommit={(value) => props.onChange(withLimit(settings, size, 'tokens', value))}
+          />
+        </span>
+        <span>{labels.tokens.after}</span>
+      </span>
+      <span className="flex items-center gap-1.5">
+        <input
+          id={paceId}
+          type="checkbox"
+          data-testid={`settings-ai-limit-pace-${size}`}
+          checked={limits.taskBudget}
+          disabled={props.disabled}
+          onChange={(event) => props.onChange(withPacing(settings, size, event.target.checked))}
+        />
+        <label htmlFor={paceId}>{labels.pace}</label>
+      </span>
+      <p className="text-xs text-muted" data-testid={`settings-ai-limit-cost-${size}`}>
+        {worstCaseSentence(settings.model, size, limits)}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Settings > "AI helper" (ADR 0041 D1, D7; ADR 0125 D5, D10): the set-up card with the saved
+ * key's line, then the model, the two efforts, the fallback switch and, in Advanced, the default
+ * limits per run size. With `focusKey` the key field takes the focus (the dialog scrolls the
+ * section into view).
+ */
+export const AiSettingsSection = forwardRef<
+  HTMLElement,
+  {
+    ai: AiPlatform;
+    /** Reads the stored AI settings (defaults when unset). */
+    load(): Promise<AiSettings>;
+    /** Stores the AI settings. */
+    save(settings: AiSettings): Promise<void>;
+    /** Called after the settings or the key changed (the panel re-reads them). */
+    onChanged?: (() => void) | undefined;
+    /** The model the open conversation started with, or `null` without one. */
+    conversationModel?: AiModelId | null;
+    /** Focus the key field (Settings opened from the helper). */
+    focusKey?: boolean;
+  }
+>(function AiSettingsSection(props, ref) {
   const { ai, load, onChanged } = props;
-  const [status, setStatus] = useState<AiKeyStatus | null>(null);
+  const mode = usePreferences((state) => state.mode);
+  const advanced = mode === 'advanced';
   const [settings, setSettings] = useState<AiSettings | null>(null);
-  const [key, setKey] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
-  const keyId = useId();
+  const [error, setError] = useState<string | null>(null);
   const modelId = useId();
   const chatId = useId();
   const buildId = useId();
   const fallbackId = useId();
 
-  const readStatus = useCallback(async () => {
-    try {
-      setStatus(await ai.keyStatus());
-    } catch (problem) {
-      setResult({ ok: false, text: errorText(problem) });
-    }
-  }, [ai]);
-
   useEffect(() => {
     let live = true;
-    void readStatus();
     load().then(
       (loaded) => {
         if (live) setSettings(loaded);
@@ -91,129 +148,68 @@ export function AiSettingsSection(props: {
     return () => {
       live = false;
     };
-  }, [load, readStatus]);
-
-  const run = async (work: () => Promise<{ ok: boolean; text: string } | null>) => {
-    setBusy(true);
-    setResult(null);
-    try {
-      setResult(await work());
-    } catch (problem) {
-      setResult({ ok: false, text: errorText(problem) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const saveKey = () =>
-    run(async () => {
-      await ai.setKey(key.trim());
-      setKey('');
-      await readStatus();
-      onChanged?.();
-      return { ok: true, text: 'Key saved.' };
-    });
-
-  const testKey = () =>
-    run(async () => {
-      const outcome = await ai.testKey();
-      return outcome.ok
-        ? { ok: true, text: 'The key works.' }
-        : { ok: false, text: `The key test failed (${outcome.errorClass}): ${outcome.error}` };
-    });
-
-  const clearKey = () =>
-    run(async () => {
-      await ai.clearKey();
-      await readStatus();
-      onChanged?.();
-      return { ok: true, text: 'Key cleared.' };
-    });
+  }, [load]);
 
   const change = async (next: AiSettings) => {
     const previous = settings;
     setSettings(next);
+    setError(null);
     try {
       await props.save(next);
       onChanged?.();
     } catch (problem) {
       setSettings(previous);
-      setResult({ ok: false, text: errorText(problem) });
+      setError(errorText(problem));
     }
   };
 
-  const encryption = status?.encryptionAvailable !== false;
   const current = settings ?? DEFAULT_AI_SETTINGS;
   const model = modelInfo(current.model);
+  const effortSelect = (size: AiMode, id: string, label: string) => (
+    <span className="flex flex-col gap-0.5">
+      <label htmlFor={id}>{label}</label>
+      <select
+        id={id}
+        className={fieldClass}
+        data-testid={`settings-ai-effort-${size}`}
+        value={current.effort[size]}
+        disabled={settings === null}
+        onChange={(event) =>
+          void change({
+            ...current,
+            effort: { ...current.effort, [size]: event.target.value as AiEffort },
+          })
+        }
+      >
+        {EFFORT_WORDS.map((entry) => (
+          <option key={entry.value} value={entry.value}>
+            {entry.label}
+          </option>
+        ))}
+      </select>
+    </span>
+  );
 
   return (
-    <section className="flex flex-col gap-1.5" data-testid="settings-ai" aria-label="AI helper">
-      <h3 className="mt-3 font-semibold">AI helper</h3>
-      <p className="text-xs text-muted" data-testid="settings-ai-privacy">
-        {AI_PRIVACY_TEXT}
-      </p>
-      <p className="text-sm" role="status" data-testid="settings-ai-key-status">
-        {keyStatusText(status)}
-      </p>
-      {!encryption && (
-        <p className="text-sm text-error" data-testid="settings-ai-encryption">
-          {AI_ENCRYPTION_UNAVAILABLE}, so a key cannot be saved.
-        </p>
-      )}
-      <label htmlFor={keyId}>Anthropic API key</label>
-      <input
-        id={keyId}
-        type="password"
-        autoComplete="off"
-        spellCheck={false}
-        className={fieldClass}
-        data-testid="settings-ai-key"
-        value={key}
-        placeholder={
-          status?.set === true ? 'Enter a new key to replace the stored one' : 'sk-ant-…'
-        }
-        onChange={(event) => setKey(event.target.value)}
-        onKeyDown={(event) => {
-          // The dialog is a form: Enter here saves the key, not the folder.
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            if (key.trim() !== '' && encryption && !busy) void saveKey();
-          }
-        }}
+    <section
+      ref={ref}
+      className="flex scroll-mt-2 flex-col gap-1.5"
+      data-testid="settings-ai"
+      aria-label={SETUP_WORDS.sectionHeading}
+    >
+      <h3 className="mt-3 font-semibold">{SETUP_WORDS.sectionHeading}</h3>
+      <AiKeySetup
+        ai={ai}
+        model={current.model}
+        manage
+        hideHeading
+        autoFocus={props.focusKey === true}
+        statusTestId="settings-ai-key-status"
+        sentTestId="settings-ai-privacy"
+        onChanged={() => onChanged?.()}
+        onReady={() => onChanged?.()}
       />
-      <div className="flex flex-wrap gap-1.5">
-        <Button
-          data-testid="settings-ai-save-key"
-          disabled={busy || !encryption || key.trim() === ''}
-          onClick={() => void saveKey()}
-        >
-          Save key
-        </Button>
-        <Button
-          data-testid="settings-ai-test-key"
-          disabled={busy || status?.set !== true}
-          onClick={() => void testKey()}
-        >
-          Test key
-        </Button>
-        <Button
-          data-testid="settings-ai-clear-key"
-          disabled={busy || status?.set !== true}
-          onClick={() => void clearKey()}
-        >
-          Clear key
-        </Button>
-      </div>
-      {result !== null && (
-        <p
-          className={`text-sm ${result.ok ? '' : 'text-error'}`}
-          role={result.ok ? 'status' : 'alert'}
-          data-testid="settings-ai-result"
-        >
-          {result.text}
-        </p>
-      )}
-      <label htmlFor={modelId}>Model</label>
+      <label htmlFor={modelId}>{SETUP_WORDS.model}</label>
       <select
         id={modelId}
         className={fieldClass}
@@ -224,8 +220,7 @@ export function AiSettingsSection(props: {
       >
         {AI_MODELS.map((entry) => (
           <option key={entry.id} value={entry.id}>
-            {entry.label} (about ${entry.pricing.inputPerMTok} in, ${entry.pricing.outputPerMTok}{' '}
-            out per million tokens)
+            {advanced ? modelOptionAdvanced(entry.id) : modelOption(entry.id)}
           </option>
         ))}
       </select>
@@ -235,51 +230,10 @@ export function AiSettingsSection(props: {
         </p>
       )}
       <div className="grid grid-cols-2 gap-1.5">
-        <span className="flex flex-col gap-0.5">
-          <label htmlFor={chatId}>Effort in chat</label>
-          <select
-            id={chatId}
-            className={fieldClass}
-            data-testid="settings-ai-effort-chat"
-            value={current.effort.chat}
-            disabled={settings === null}
-            onChange={(event) =>
-              void change({
-                ...current,
-                effort: { ...current.effort, chat: event.target.value as AiEffort },
-              })
-            }
-          >
-            {EFFORTS.map((entry) => (
-              <option key={entry.value} value={entry.value}>
-                {entry.label}
-              </option>
-            ))}
-          </select>
-        </span>
-        <span className="flex flex-col gap-0.5">
-          <label htmlFor={buildId}>Effort in build</label>
-          <select
-            id={buildId}
-            className={fieldClass}
-            data-testid="settings-ai-effort-build"
-            value={current.effort.build}
-            disabled={settings === null}
-            onChange={(event) =>
-              void change({
-                ...current,
-                effort: { ...current.effort, build: event.target.value as AiEffort },
-              })
-            }
-          >
-            {EFFORTS.map((entry) => (
-              <option key={entry.value} value={entry.value}>
-                {entry.label}
-              </option>
-            ))}
-          </select>
-        </span>
+        {effortSelect('chat', chatId, SETUP_WORDS.effortSmall)}
+        {effortSelect('build', buildId, SETUP_WORDS.effortBuild)}
       </div>
+      <p className="text-xs text-muted">{SETUP_WORDS.effortHint}</p>
       <span className="flex items-start gap-1.5">
         <input
           id={fallbackId}
@@ -293,20 +247,39 @@ export function AiSettingsSection(props: {
         <label htmlFor={fallbackId}>{AI_FALLBACK_LABEL}</label>
       </span>
       {!model.supportsFallbacks && (
-        <p className="text-xs text-muted">{model.label} has no fallback model.</p>
+        <p className="text-xs text-muted">{noFallback(current.model)}</p>
+      )}
+      {advanced && (
+        <div className="flex flex-col gap-2" data-testid="settings-ai-limits">
+          <h4 className="mt-1 text-sm font-semibold">{LIMITS_HEADING}</h4>
+          <p className="text-xs text-muted">{LIMITS_INTRO}</p>
+          {(['chat', 'build'] as const).map((size) => (
+            <LimitsRow
+              key={size}
+              size={size}
+              settings={current}
+              disabled={settings === null}
+              onChange={(next) => void change(next)}
+            />
+          ))}
+        </div>
+      )}
+      {error !== null && (
+        <p className="text-sm text-error" role="alert" data-testid="settings-ai-result">
+          {error}
+        </p>
       )}
       <p className="text-xs text-muted">
-        Prices are approximate (checked on {model.pricing.checkedOn}); the panel shows each
-        conversation's usage. Run limits per mode are changed in the panel for one run.{' '}
+        {pricesChecked(model.pricing.checkedOn)}{' '}
         <a
           href={AI_GUIDE_URL}
           target="_blank"
           rel="noreferrer noopener"
           className="text-accent underline"
         >
-          AI helper guide
+          {SETUP_WORDS.guide}
         </a>
       </p>
     </section>
   );
-}
+});
