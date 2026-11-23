@@ -147,15 +147,13 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
   await window.getByTestId('toolbar-new-project').click();
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
-  // Open the helper through the palette and switch to Build.
+  // Open the helper through the palette (no Chat or Build switch: the plan comes first).
   const palette = await openPalette(window, 'AI helper');
   await palette.getByTestId('command-aiHelper').click();
   await expect(palette).toBeHidden();
   await expect(window.getByTestId('dock-tab-assistant')).toHaveAttribute('aria-selected', 'true');
   const panel = window.getByTestId('ai-panel');
   await expect(panel).toBeVisible();
-  await panel.getByTestId('ai-mode-build').click();
-  await expect(panel.getByTestId('ai-mode-build')).toHaveAttribute('aria-pressed', 'true');
 
   await panel.getByTestId('ai-input').fill(RUBY_PROMPT);
   await panel.getByTestId('ai-send').click();
@@ -174,6 +172,7 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
     timeout: 30_000,
   });
   await expect(panel.getByTestId('ai-stop')).toBeHidden();
+  await panel.getByTestId('ai-status-look').click();
   const changeset = panel.getByTestId('ai-changeset');
   await expect(changeset).toBeVisible();
   const rows = changeset.locator('li[data-op]');
@@ -187,7 +186,7 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
   await expect(changeset).toContainText(`(${titles.length} of ${titles.length} kept)`);
 
   await panel.getByTestId('ai-apply').click();
-  await expect(panel.getByTestId('ai-transcript')).toContainText('Undo reverts them in one step.');
+  await expect(panel.getByTestId('ai-transcript')).toContainText(/Applied \d+ changes\./);
   await expect(changeset).toBeHidden();
 
   // The sidebar shows the new content, and there are no errors.
@@ -335,7 +334,6 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
 
   const panel = window.getByTestId('ai-panel');
   await expect(panel).toBeVisible();
-  await expect(panel.getByTestId('ai-mode-chat')).toHaveAttribute('aria-pressed', 'true');
   await expect(panel.getByTestId('ai-context')).toBeVisible();
   await expect(panel.getByTestId('ai-context-label')).not.toBeEmpty();
   await expect(panel.getByTestId('ai-input')).toHaveValue(
@@ -348,6 +346,7 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   await expect(transcript).toContainText('It looks like a typo.');
   await expect(transcript).toContainText('The checks report no errors');
   await expect(panel.getByTestId('ai-stop')).toBeHidden();
+  await panel.getByTestId('ai-status-look').click();
   const changeset = panel.getByTestId('ai-changeset');
   const rows = changeset.locator('li[data-op]');
   await expect(rows).toHaveCount(1);
@@ -355,7 +354,7 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   await expect(rows.first().locator('code')).toHaveText(WAND_ID);
 
   await panel.getByTestId('ai-apply').click();
-  await expect(transcript).toContainText('Applied 1 change. Undo reverts it in one step.');
+  await expect(transcript).toContainText('Applied 1 change.');
   await expect(await errorRows(window)).toHaveCount(0);
   await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
 

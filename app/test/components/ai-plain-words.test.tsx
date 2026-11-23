@@ -25,7 +25,7 @@ import { aiSession, type FakeAi, fakeAi } from './ai-fixtures';
  * (B688, `AiChangesetReview`; the tray is swept closed). Remove the entry when B688 has merged
  * (B690 at the latest).
  */
-const OTHER_BRIEFS: readonly string[] = ['ai-changeset'];
+const OTHER_BRIEFS: readonly string[] = [];
 
 const ATTRIBUTES = ['placeholder', 'title', 'aria-label', 'alt'] as const;
 
