@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import type { Element } from '@msm/core';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorArea } from '../../src/renderer/src/components/EditorArea';
@@ -29,6 +29,24 @@ describe('EditorArea notes callout', () => {
     expect(callout.querySelector('input, textarea, [contenteditable]')).toBeNull();
     await userEvent.setup().click(screen.getByTestId('element-notes-toggle'));
     expect(callout.open).toBe(false);
+  });
+
+  it('keeps the note as written under its More options when the plain one leaves part out', () => {
+    window.msmMoreOptionsOpen = false;
+    render(
+      <EditorArea
+        element={element('Mine it with a pickaxe. Its picture is textures/block/ruby_ore.png.')}
+        onApply={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId('element-notes-text').textContent).toBe('Mine it with a pickaxe.');
+    expect(screen.queryByTestId('element-notes-full')).toBeNull();
+    fireEvent.click(screen.getByTestId('more-options-element-notes'));
+    expect(screen.getByTestId('element-notes-full').textContent).toContain('ruby_ore.png');
+    cleanup();
+    render(<EditorArea element={element('Line one.\nLine two.')} onApply={vi.fn()} />);
+    expect(screen.queryByTestId('more-options-element-notes')).toBeNull();
+    window.msmMoreOptionsOpen = true;
   });
 
   it('has no callout without notes', () => {

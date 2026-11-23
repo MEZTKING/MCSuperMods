@@ -15,9 +15,11 @@ import { useEffect, useState } from 'react';
 import type { AiPictureStyle } from '../../../../shared/ai-pictures';
 import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import { useBlocksItemsStudioHost } from '../../studios/blocks-items/host';
+import { plainWordsIn } from '../../studios/plain-things';
 import { DrawButton } from '../art/DrawButton';
 import { metaChange, pictureChange } from '../mc-textures/picture-change';
 import { StartFromMinecraftButton } from '../mc-textures/StartFromMinecraftButton';
+import { InMore, usePlain } from '../ui/MoreOptions';
 import { useAiPictures } from './ai-pictures-host';
 import { MakeWithAiButton } from './MakeWithAiButton';
 import { defaultPrompt, styleForName } from './prompt';
@@ -73,6 +75,7 @@ export interface ModelPicturesAiProps {
 export function ModelPicturesAi(props: ModelPicturesAiProps) {
   const ai = useAiPictures();
   const host = useBlocksItemsStudioHost();
+  const plain = usePlain();
   const textures = useModelTextures(props.model);
   if (host?.applyChanges === undefined) return null;
   if (textures.length === 0) {
@@ -88,6 +91,13 @@ export function ModelPicturesAi(props: ModelPicturesAiProps) {
   return (
     <div className="flex flex-col gap-1" data-testid={props.testId}>
       <span className="text-xs text-muted">Pictures</span>
+      {plain && (
+        <InMore fallbackKey={`${props.testId}-ids`}>
+          <p className="font-mono text-muted text-xs" data-testid={`${props.testId}-ids`}>
+            {`Pictures: ${textures.join(', ')}`}
+          </p>
+        </InMore>
+      )}
       {textures.map((texture) => {
         const asset = textureAsset(texture);
         if (asset === null) return null;
@@ -99,7 +109,12 @@ export function ModelPicturesAi(props: ModelPicturesAiProps) {
         };
         return (
           <div key={texture} className="flex items-center gap-2 text-xs">
-            <span className="font-mono">{texture}</span>
+            {/* The picture's name; its id under the section's More options (ADR 0130). */}
+            {plain ? (
+              <span>{plainWordsIn(texture)}</span>
+            ) : (
+              <span className="font-mono">{texture}</span>
+            )}
             <DrawButton
               testId={`${rowId}-draw`}
               target={`${asset.namespace}:${asset.path}`}

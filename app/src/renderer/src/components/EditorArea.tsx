@@ -117,6 +117,14 @@ export function EditorArea({
   // A note says its ids in words, and leaves out sentences of code (ADR 0083 D3, ADR 0130 D2).
   const notes =
     element.meta.notes === undefined ? undefined : (plainNotes(element.meta.notes) ?? undefined);
+  // The note as written, when the plain one left something out: under its More options.
+  const spaced = (text: string | undefined) => text?.replace(/\s+/g, ' ').trim() ?? '';
+  const fullNotes =
+    element.meta.notes !== undefined &&
+    spaced(element.meta.notes) !== '' &&
+    spaced(element.meta.notes) !== spaced(notes)
+      ? element.meta.notes
+      : undefined;
   const name = nameOf(element);
 
   return (
@@ -175,7 +183,7 @@ export function EditorArea({
           <ScrollArea.Viewport className="size-full">
             <div className="flex flex-col gap-3 p-2" data-testid="editor-form">
               <NewHereTip kind={element.kind} />
-              {notes !== undefined && notes.trim() !== '' && (
+              {((notes !== undefined && notes.trim() !== '') || fullNotes !== undefined) && (
                 <details
                   open
                   data-testid="element-notes"
@@ -191,8 +199,18 @@ export function EditorArea({
                     className="mt-1 max-h-40 overflow-auto whitespace-pre-line"
                     data-testid="element-notes-text"
                   >
-                    {notes}
+                    {notes ?? ''}
                   </p>
+                  {fullNotes !== undefined && (
+                    <MoreOptions storageKey="element-notes" autoOpen={false}>
+                      <p
+                        className="max-h-40 overflow-auto whitespace-pre-line text-muted text-xs"
+                        data-testid="element-notes-full"
+                      >
+                        {fullNotes}
+                      </p>
+                    </MoreOptions>
+                  )}
                 </details>
               )}
               <NameSection element={element} onRename={onRename} onChangeId={onChangeId} />
