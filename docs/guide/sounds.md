@@ -36,7 +36,7 @@ The Creator's **Wood set** flow ([The Creator](creator.md)) asks **Door and trap
 
 ## Hear a sound
 
-Every line of **How it sounds** has a **Play** button once it names a sound: it plays the sound at the block's own volume and pitch, and for an event with several files it picks one by their weights, as the game does. Press it again (**Stop**) to stop; one sound plays at a time. **Play** is also beside every other sound you pick (the Studios' sound fields, the sound slots of Rules, the Creator's song field) and on every event and file of the **Sounds** element's **Preview** ([Live views](live-views.md#hear-every-sound)); in Very easy mode, **My things** lists your sounds under **Particles and sounds**.
+Every line of **How it sounds** has a **Play** button once it names a sound: it plays the sound at the block's own volume and pitch, and for an event with several files it picks one by their weights, as the game does. Press it again (**Stop**) to stop; one sound plays at a time. **Play** is also beside every other sound you pick (the Studios' sound fields, the sound slots of Rules, the Creator's song field) and on every event and file of the **Sounds** element's **Preview** ([Live views](live-views.md#hear-every-sound)); **My things** lists your sounds under **Particles and sounds**.
 
 Your own sounds always play. Minecraft's own sounds are read from your Minecraft folder when you press **Play**, never copied into your project; without your Minecraft folder set up, their button is off and offers **Find my Minecraft**. A sound here is heard flat: no distance, no echo and no sound category volume. Walking, landing and mining sounds are heard in the game.
 

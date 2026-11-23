@@ -39,14 +39,14 @@ The words shown under the description (**Sent: …**) go to the service with you
 | --- | --- | --- | --- |
 | **Block Studio**: each texture of the model and each slot of a typed block | a block face | `mc_texture`, tileable | 16 × 16 or 32 × 32 |
 | **Item Studio**: the textures of the item's model | an item or tool icon | `mc_item`, background removed | 16 × 16 or 32 × 32 |
-| **Mob Studio**: **Make a skin with AI**, beside **Draw a skin** | a fur, hide or scales tile laid on the model's own boxes, each side shaded | `mc_texture`, tileable | the model's texture size (64 × 64, 64 × 32…) |
+| **Mob Studio**: **Make a skin with AI**, beside **Draw its skin** | a fur, hide or scales tile laid on the model's own boxes, each side shaded | `mc_texture`, tileable | the model's texture size (64 × 64, 64 × 32…) |
 | **Villager look Studio**: each picture | clothes laid on the villager's body, robe, arms and legs | `mc_texture`, tileable | 64 × 64 |
 | **Particle Studio**: each frame | a small cut-out sprite | `mc_item`, background removed | 8 × 8 |
 | **Creator**: every picture field | a block face or item; a skin (on a humanoid); a painting of the size you chose; a particle | as above; paintings RD Plus's default style | as above |
 | **New texture…**: **Start from: Made with AI** (with a key) | any kind in the list, paintings too | by the kind | by the kind |
 | **Texture painter** | by the texture's folder: paintings, armour layers (64 × 32, laid on the armour or leggings), banner and shield patterns (a pale mask the loom dyes), pot patterns (pressed into fired clay), skins, villager looks, particles, blocks and items | by the kind | the texture's own size |
 
-Without a key the button reads **Set up AI pictures in Settings** and opens Settings. In Very easy mode it reads **Make it with AI**, and **Draw it for me** offers **Make it with AI instead** once a key is set.
+Without a key the button reads **Set up AI pictures in Settings** and opens Settings. **Draw it for me** offers **Make it with AI instead** once a key is set.
 
 ## The Make with AI window
 
@@ -93,6 +93,6 @@ With a key set, the Creator and **Surprise me** show a **Use AI pictures** switc
 
 - The shape check knows the things MCSuperMods can draw (armour, tools, weapons, gems, ingots, food, ores, planks, logs, bricks, leaves, blocks). Other things (a wand, a skin, a painting, a pattern) are checked for colour and seams only, or not at all.
 - The check compares outlines roughly: a chunky shape such as leggings or a gem is easier to pass than a chestplate.
-- A skin is one tile of fur or scales laid on every box, with eyes on the face; for markings, paint over it or use **Draw a skin**.
+- A skin is one tile of fur or scales laid on every box, with eyes on the face; for markings, paint over it or use **Draw its skin**.
 - OpenAI cannot start from MCSuperMods' drawing; its pictures are still checked.
 - The AI helper cannot make pictures yet.

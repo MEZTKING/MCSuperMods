@@ -6,7 +6,7 @@ Most of a game is plain data pack files, so it works in a vanilla data pack with
 
 ## Make a game in a few questions
 
-In Very easy mode, **Make a game** (under the heading **Games** on Home) shows eight pictures; in the [Creator](creator.md) the same flows are under **Games**. Every flow asks for a name first: the game's name is the World Type's name on Create New World and names its pieces.
+On Home, **Make a game** (under the heading **Games** on Home) shows eight pictures; in the [Creator](creator.md) the same flows are under **Games**. Every flow asks for a name first: the game's name is the World Type's name on Create New World and names its pieces.
 
 | Flow | Questions | What you get |
 |---|---|---|
@@ -19,7 +19,7 @@ In Very easy mode, **Make a game** (under the heading **Games** on Home) shows e
 | **Race** | **Checkpoints between the start and the finish**, **Timer** (Count up: a stopwatch, Count down from a time limit), **Time limit in seconds**, **Best time on the sidebar** | A start, checkpoints and a finish as areas, the time on the action bar and the best times on the sidebar |
 | **Goals** | **What is the tab called?**, **The goals** (fifteen, from Get some wood to Defeat the ender dragon), **The picture on the tab** (a flag or a timer drawn by MCSuperMods, or a Minecraft item) and **Colour of the flag or timer**, **Behind the goals** | A tab of goals in the advancements screen |
 
-The Creator's **Map** tab draws the world of a Skyblock, a one block game in empty sky and Sky islands while you answer ([The live world map](live-world.md)), and its **Live** tab the island, the arena or the lucky block. In Very easy mode, the fifth picture of **Make a world** opens the Skyblock flow too.
+The Creator's **Map** tab draws the world of a Skyblock, a one block game in empty sky and Sky islands while you answer ([The live world map](live-world.md)), and its **Live** tab the island, the arena or the lucky block. On Home, the fifth picture of **Make a world** opens the Skyblock flow too.
 
 For an adventure map, give the players' tools and keys the blocks they may break or use in the Item Studio's **Adventure mode** section ([Adventure mode](blocks-and-items.md#adventure-mode)).
 
@@ -27,7 +27,7 @@ Help > Examples… has one finished game per flow under **Games**: Cloud Farm, D
 
 ## The pieces of a game
 
-A game is made of six kinds of pieces. In Easy mode they are listed as **How my world starts**, **One blocks**, **Teams**, **Scores**, **Timers** and **Areas**, each with a Studio. Every Studio shows a live view that follows your edits, and outside Very easy a line **In chat or a function:** with the commands that reach the piece in the game.
+A game is made of six kinds of pieces. The list on the left shows them as **How my world starts**, **One blocks**, **Teams**, **Scores**, **Timers** and **Areas**, each with a Studio. Every Studio shows a live view that follows your edits, and in its **More options** a line **In chat or a function:** with the commands that reach the piece in the game.
 
 ### How my world starts
 
@@ -35,7 +35,7 @@ The **World Setup Studio**. A project has at most one.
 
 - **Your world**: the map of the world this makes, drawn live (nothing for **As normal**, which is the game's own world).
 - **The world**: **World** is **Empty sky**, **Floating islands**, **Flat** (with a **Block** and **How thick** for each layer), **As normal** or **My own world type** (one of your World Types). **Biome** is the sky's biome; **The Nether** and **The End** are **As normal** or **Empty**. Every choice but **As normal** becomes a World Type, named after the setup.
-- **Start island**: **Players start on a structure of mine**, then **The structure**, **Where its corner goes** and **Where players start, on the structure** (picked on the structure seen from above). The island is placed by a function when the first player joins. Outside Very easy, **Place it while the world generates** places it as the world is made instead; the game then turns it at random and nothing is placed with "Generate structures" off, so the first join is the default.
+- **Start island**: **Players start on a structure of mine**, then **The structure**, **Where its corner goes** and **Where players start, on the structure** (picked on the structure seen from above). The island is placed by a function when the first player joins. Under **More options**, **Place it while the world generates** places it as the world is made instead; the game then turns it at random and nothing is placed with "Generate structures" off, so the first join is the default.
 - **Players**: **Start as** (the game mode), **Difficulty** and **How far from the start players appear (blocks)**.
 - **Game rules when the world starts**: Minecraft's rules and your own, set once when the world first starts.
 - **What new players get**, once each: **Their kit** (**Nothing**, **These items** or **Items from a loot table**), effects, a **Welcome message**, a **Welcome screen** (one of your dialogs) and **Goals (their first advancement)**.

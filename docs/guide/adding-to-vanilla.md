@@ -32,7 +32,7 @@ Untick **Generate in the world** for an ore that only exists through commands an
 Two things to know about the ore:
 
 - **Only new chunks get it.** The game places ores when it first generates a chunk. Land you have already explored keeps what it had, so look in a new world or travel to land you have not visited yet.
-- **It replaces stone-like blocks, not dirt or gravel.** The feature's targets are `minecraft:tag_match` tests on the two replaceable tags, so veins also run through granite, diorite and andesite pockets, as vanilla ores do. Edit the feature in the Worldgen Studio or **Raw JSON** to change the targets ([Worldgen](worldgen.md)).
+- **It replaces stone-like blocks, not dirt or gravel.** The feature's targets are `minecraft:tag_match` tests on the two replaceable tags, so veins also run through granite, diorite and andesite pockets, as vanilla ores do. Edit the feature in the Worldgen Studio or **Edit as raw text** to change the targets ([Worldgen](worldgen.md)).
 
 ## World additions
 
@@ -42,7 +42,7 @@ A **World addition** element adds placed features and natural mob spawns to biom
 - **Features**: **Add feature** adds a row with a placed feature and its generation step. Ores go in `underground_ores`, flowers and grass in `vegetal_decoration`. The **Ore in the overworld** template names `<its own id>_placed`: make that placed feature and its feature in the Worldgen Studio, or point the row at one you have.
 - **Spawns**: **Add spawn** adds a row with an entity type, a category (such as `monster` or `creature`), a weight and the smallest and largest group. This is how a vanilla mob, or another mod's, spawns in more biomes; your own mobs can also use the Entity Studio's **Spawning** section ([Entities and models](entities-and-models.md#spawning)).
 
-**Advanced (all fields)** shows the same data as a plain form, and **Raw JSON** as text. **Problems** checks the biome, tag, feature and entity ids, reports a spawn whose largest group is smaller than its smallest (`blocks-items.spawn-group-size`, an error), and warns when a biome of your project already lists a placed feature that an addition adds to it again (`blocks-items.duplicate-biome-feature`): in the same step the addition does nothing there (the game skips a feature the step already has), and in another step the feature generates twice, once in each step.
+**Every setting** shows the same data as a plain form, and **Edit as raw text** as text. **Problems** checks the biome, tag, feature and entity ids, reports a spawn whose largest group is smaller than its smallest (`blocks-items.spawn-group-size`, an error), and warns when a biome of your project already lists a placed feature that an addition adds to it again (`blocks-items.duplicate-biome-feature`): in the same step the addition does nothing there (the game skips a feature the step already has), and in another step the feature generates twice, once in each step.
 
 **Add your own placed features, not vanilla ones.** An added feature goes to the end of its step, after the features vanilla runs later in that step. If the row names a vanilla placed feature (such as `minecraft:ore_diamond` or `minecraft:flower_plains`), vanilla biomes that list it earlier in the step now disagree with the biomes you added it to, and the world can stop with "Feature order cycle". **Problems** warns about it (`blocks-items.addition-vanilla-feature`), and the row's **Make my own copy** button makes a placed feature of your own in one undo step, with the vanilla one's configured feature and placement, and points the row at it. When the game's own file cannot be read, the copy names the configured feature and has no placement yet: open it and add where it goes (the Placed Feature Studio's templates help). Any added feature also moves the placement seeds of the vanilla features after it in that step, so the same world seed decorates a little differently with your mod ([Worldgen](worldgen.md#features-and-steps)).
 
@@ -57,7 +57,7 @@ To make one by hand, add **Extra mob drop** from the **Additions** category (one
 - **Loot tables**: the tables to add to. **Suggest tables of** narrows the suggestions to **Mobs**, **Blocks** or **Chests**, so typing `zombie` with **Mobs** offers `minecraft:entities/zombie`.
 - **Drops**: each row is one drop with its item, the smallest and largest count, the chance in per cent and **Only when a player kills it**. **Add drop** adds a row. Each drop is rolled once each time the table is used.
 
-A drop that does more (several entries, enchantment bonuses, its own functions) is a full vanilla loot pool: the row then says to edit it under **Advanced (all fields)** or in **Raw JSON**. **Problems** checks every pool against the vanilla loot pool format of the project's Minecraft version, and warns about an item that is neither a vanilla item nor one of the project's (`blocks-items.unknown-loot-item`).
+A drop that does more (several entries, enchantment bonuses, its own functions) is a full vanilla loot pool: the row then says to edit it under **Every setting** or in **Edit as raw text**. **Problems** checks every pool against the vanilla loot pool format of the project's Minecraft version, and warns about an item that is neither a vanilla item nor one of the project's (`blocks-items.unknown-loot-item`).
 
 What to expect in the game:
 
@@ -136,7 +136,7 @@ Limits:
 
 ## Other data kinds
 
-These vanilla data kinds have no Studio: **Add element** offers each with its default content (and the form, **Advanced (all fields)** and **Raw JSON** as for any vanilla kind). They work in a plain data pack.
+These vanilla data kinds have no Studio: **Add element** offers each with its default content (and the form, **Every setting** and **Edit as raw text** as for any vanilla kind). They work in a plain data pack.
 
 | Kind | Sidebar | What it does |
 |---|---|---|

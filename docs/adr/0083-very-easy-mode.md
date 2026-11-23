@@ -40,3 +40,5 @@ Recorded at close (2026-11-14) from B372 (the ThingPicker), B375, B376, B378 (af
 ## Status
 
 Accepted (2026-11-14; findings recorded at close the same day; shipped in 1.5.1, a draft awaiting the user's Windows test), with the defaults below; the user may still veto them. Vetoable defaults: a third mode rather than a simpler Easy; the label "Very easy"; new installs starting in Very easy; the tile list, its order and wording; hiding the sidebar, Problems panel, target switch and exports in Very easy; the "Things to fix" strip and its fallback; "Paint the picture" as the missing-picture fix; Rename changing the shown name only; the mode row beside the old switch; the default project folder `<Documents>/MCSuperMods/<name>`; "Share my mod" as the only export shown.
+
+Superseded in its mode switch by [ADR 0130](0130-one-mode-more-options.md) (2026-11-23): one mode, with More options in each section. Its Home, plain words and Things to fix live on.

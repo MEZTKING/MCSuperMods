@@ -41,7 +41,7 @@ Select a structure template to open the Structure Studio. The **Preview** tab of
 - **Palette** lists every block state with how many times it is used.
 - **Jigsaw blocks** has one card per jigsaw block: **Pool** (with whether the pool is In project, Vanilla or Missing), **Name**, **Target**, **Final state**, **Joint**, **Placement priority** and **Selection priority**.
 - **Export structures (.nbt)…** and **Export structures (.schem)…** export every structure template in the project, as described in [Export structures](#export-structures).
-- **Advanced (all fields)** shows the whole element as a form.
+- **Every setting** shows the whole element as a form.
 
 Blocks themselves cannot be edited in MCSuperMods: change them in the game and use **Replace from file…**. Only the first palette is read when a file has several random palettes.
 
@@ -73,7 +73,7 @@ Select a template pool to open the Template Pool Studio.
 - **Pieces** lists the pool's elements. Each has a **Weight** (how likely it is picked), an **Element type** (a single structure template, a list, a feature or the empty element), the **Location** of the structure template, its **Processors** (a processor list, for example one that mosses some cobblestone) and its **Projection** (`rigid` keeps the piece's shape, `terrain_matching` follows the ground, as paths do). Use **Add piece**, the move buttons and remove to change the list.
 - **Connections** shows, for every jigsaw block in the pool's pieces from your project, the pool it asks for (In project, Vanilla or Missing) and whether that pool has a piece with a jigsaw of the right name: "<target> found", "No jigsaw named <target>", or "Not checked" when the pool is a vanilla one.
 - **Used by** lists the structures that start with this pool and the pools whose pieces point their jigsaws at it; select an id to go there.
-- **Advanced (all fields)** shows the whole element as a form.
+- **Every setting** shows the whole element as a form.
 
 The **Problems** tab warns about the same things: `structures.jigsaw-target-missing` when no piece of the target pool has a jigsaw of that name, and `structures.pool-empty` when a pool has no pieces and no fallback.
 

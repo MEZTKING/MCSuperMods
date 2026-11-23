@@ -6,18 +6,18 @@ The pictures are MCSuperMods' own drawings. They are never copied, traced, recol
 
 ## Draw a picture
 
-**Draw…** sits beside **Make with AI** on these picture fields (in Very easy mode it reads **Draw it for me**):
+**Draw it for me** sits beside **Make it with AI** on these picture fields:
 
 - the **Creator's** picture fields, including mob skins;
 - the **Block Studio**'s picture rows and texture slots, and the **Item Studio**'s picture rows;
-- the **Particle Studio**, where the button reads **Draw frames…** and draws all four frames in one step ([Particles](particles.md#pictures));
+- the **Particle Studio**, where the button draws all four frames in one step ([Particles](particles.md#pictures));
 - the **texture painter**, where a pick replaces the picture on the canvas as one painter step;
 - **New texture…**, under **Start from** ([New texture from a drawn picture](#new-texture-from-a-drawn-picture));
-- the **Mob Studio**'s **Draw a skin** and the **Villager look Studio**'s pictures, each with **Make with AI** beside it.
+- the **Mob Studio**'s **Draw its skin** and the **Villager look Studio**'s pictures, each with **Make it with AI** beside it.
 
-In Very easy mode, once a key for AI pictures is set, the **Draw it for me** window also offers **Make it with AI instead**.
+Once a key for AI pictures is set, the **Draw it for me** window also offers **Make it with AI instead**.
 
-The **Draw a picture** window (Very easy: **Draw it for me**) says "MCSuperMods draws it here in a Minecraft-like style, without a key or the internet. You can paint over it afterwards." and asks:
+The **Draw it for me** window says "MCSuperMods draws it here in a Minecraft-like style, without a key or the internet. You can paint over it afterwards." and asks for a **Colour**, then shows six variations. Its **More options** asks the rest:
 
 - **What is it?** Tiles with a small picture and a name: a sword, planks, leaves, an ore and so on. The list is cut down to what fits the field: a block texture offers block pictures, an item field offers items, an effect icon offers icons. The tile that matches the field's name is chosen to begin with. A skin field offers **Skin**.
 - **Colour.** A colour well, ten theme swatches (Ruby, Frost, Ember, Moss, Sky, Void, Sun, Coral, Amber and Storm, the same ones Surprise me uses) and, where the field knows it, **The thing's colour**. In the Creator the field knows the colour you gave the thing, and the window starts on it.
@@ -29,7 +29,7 @@ Six variations are shown at once (a particle shows "4 frames" under each). They 
 
 Each pick is one undo step: **Edit > Undo** puts the old picture back, or removes a new one. A picture drawn for an empty slot becomes a new texture and the slot names it.
 
-In **Very easy mode** the window is shorter. The thing being drawn is chosen from where you are, so you only pick the **Colour** and one of the six variations.
+Without opening **More options**, the thing being drawn is chosen from where you are, so you only pick the **Colour** and one of the six variations. **More options** also says where the picture is saved.
 
 ## Where the pictures come from
 
@@ -44,7 +44,7 @@ Each picture is decided by what it is, its colours, finish, detail and a number 
 
 ## Draw a skin
 
-The Entity Studio has **Draw a skin** beside the texture picker (Very easy: **Draw its skin**). It draws the mob's skin on the boxes of its own model: each face is shaded by the way it faces, with eyes on the face and a second colour for the belly and spots. The window asks for the coat (**Fur**, **Scales**, **Smooth**, **Stone** or **Slime**), **Colour**, **Second colour** and **Detail**, then shows six variations; **Use this skin** writes the picture over the texture the mob names, or makes a new one in the mob's namespace and names it, as one undo step. See [Entities and models](entities-and-models.md#the-entity-studio).
+The Entity Studio has **Draw its skin** beside the texture picker . It draws the mob's skin on the boxes of its own model: each face is shaded by the way it faces, with eyes on the face and a second colour for the belly and spots. The window asks for the coat (**Fur**, **Scales**, **Smooth**, **Stone** or **Slime**), **Colour**, **Second colour** and **Detail**, then shows six variations; **Use this skin** writes the picture over the texture the mob names, or makes a new one in the mob's namespace and names it, as one undo step. See [Entities and models](entities-and-models.md#the-entity-studio).
 
 The button is greyed out, with the reason beside it, when there is nothing to draw on: "Choose a model first.", "The model is not part of this project.", "This model's faces are mapped one by one" (the model gives each face its own place on the picture, so there are no boxes to shade) or "This model has no boxes to draw on." Use **Draw…** on the texture for an even coat instead.
 
@@ -58,9 +58,9 @@ In the Particle Studio, **Draw frames…** draws all four frames of a spark, orb
 
 ## Start from a Minecraft texture
 
-You can also start from one of Minecraft's own textures and draw on it. **Start from a Minecraft texture…** sits beside **Draw…** in the texture painter, in the Block and Item Studios' picture rows and texture slots, in the Mob Studio beside **Draw a skin** and on each frame of the Particle Studio; **New texture…** offers it under **Start from** as **A Minecraft texture** (the button then reads **Pick…**).
+You can also start from one of Minecraft's own textures and draw on it. **Start from a Minecraft texture…** sits beside **Draw…** in the texture painter, in the Block and Item Studios' picture rows and texture slots, in the Mob Studio beside **Draw its skin** and on each frame of the Particle Studio; **New texture…** offers it under **Start from** as **A Minecraft texture** (the button then reads **Pick…**).
 
-It opens a picker of the textures in your own Minecraft. They are listed by name, made from the file names (Stone, Stone bricks, Full (heart)), in the folders **Blocks**, **Items**, **Mobs**, **Particles**, **GUI** and **Paintings**, with a search box and small pictures drawn pixel-sharp as they come into view. Ids such as `minecraft:block/stone` show only in Advanced mode. A moving texture (water, lava, fire) says **Moving**. Pick one and it becomes the start of your own picture: in the painter it replaces the canvas at its own size as one painter step (**Undo** in the painter takes it back), and elsewhere it is written as one undo step.
+It opens a picker of the textures in your own Minecraft. They are listed by name, made from the file names (Stone, Stone bricks, Full (heart)), in the folders **Blocks**, **Items**, **Mobs**, **Particles**, **GUI** and **Paintings**, with a search box and small pictures drawn pixel-sharp as they come into view. Ids such as `minecraft:block/stone` show only inside a **More options**. A moving texture (water, lava, fire) says **Moving**. Pick one and it becomes the start of your own picture: in the painter it replaces the canvas at its own size as one painter step (**Undo** in the painter takes it back), and elsewhere it is written as one undo step.
 
 A moving texture is a strip of frames, one under another. It opens as the whole strip, as the painter shows any strip. When you save it while it is still a strip, MCSuperMods writes its own `.png.mcmeta` beside it with the same frame timing, so it moves in the game too.
 
@@ -74,9 +74,9 @@ It opens the same picker. The texture you pick opens in the painter, titled for 
 
 The resource pack export and **Install** carry your picture; turn the pack on in Minecraft's **Resource Packs** screen to see it. Previews of your own blocks and items that use the texture show your version.
 
-## Draw it for me in Very easy mode
+## Draw it for me
 
-Wherever a picture can be made in Very easy mode, **Draw it for me** replaces **Draw…**. Pick the **Colour**, pick one of the six variations and **Use this picture**. The mod's own things are already drawn when you make them ([Very easy mode](very-easy.md)); this is for choosing another look afterwards.
+Wherever a picture can be made, **Draw it for me** draws it. Pick the **Colour**, pick one of the six variations and **Use this picture**. The mod's own things are already drawn when you make them ([Plain words and More options](more-options.md)); this is for choosing another look afterwards.
 
 ## Drawing, painting, Picture to texture and Make with AI
 

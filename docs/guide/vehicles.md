@@ -8,7 +8,7 @@ Vehicles need the **Fabric mod jar**. A vanilla pack leaves them out, and a reso
 
 There are three ways to make one:
 
-- the Creator's **Car**, **Tank**, **Plane** and **Boat** flows (group **Vehicles**), or **Make a vehicle** on Home in Very easy mode;
+- the Creator's **Car**, **Tank**, **Plane** and **Boat** flows (group **Vehicles**), or **Make a vehicle** on Home;
 - **Add element** (Ctrl+N) and a template under **Vehicles**: Go-kart, Car, Tank, Biplane, Helicopter, Motorboat, Raft and Hovercraft;
 - the AI helper, which uses the same flows ([The AI helper](ai-helper.md)).
 
@@ -27,7 +27,7 @@ Open the Creator and choose a flow under **Vehicles**. The defaults make a worki
 
 **Create** makes the vehicle, its model, its texture painted from boxes the app draws itself, the paints, the item picture and the recipe. It creates with its untouched defaults and zero problems. Reopen the flow with **Edit in Creator** ([The Creator](creator.md)).
 
-In Very easy mode, **Make a vehicle** (heading **Vehicles**: "Cars, tanks, planes and boats you can drive.") asks **What kind?** (Car, Tank, Plane, Boat) and **What is it called?**, then opens the made vehicle with **Try it** and **Play** offered. Its page is a short form: **How fast**, **Needs fuel** (with **What fuel?**), **Has a cannon** (for a Tank), **How many seats** and **Colour**.
+On Home, **Make a vehicle** (heading **Vehicles**: "Cars, tanks, planes and boats you can drive.") asks **What kind?** (Car, Tank, Plane, Boat) and **What is it called?**, then opens the made vehicle with **Try it** and **Play** offered. Its page is a short form: **How fast**, **Needs fuel** (with **What fuel?**), **Has a cannon** (for a Tank), **How many seats** and **Colour**.
 
 ## The Vehicle Studio
 

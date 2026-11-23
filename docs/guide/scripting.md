@@ -8,7 +8,7 @@ The quickest start is the **Scripted ore** starter (**New from starter…**): th
 
 ## Rules first, then scripts
 
-Most small behaviours need no code: "when a player uses this block, with a 50 per cent chance give a Ruby, and count the uses" is a [rule](rules.md), with conditions, chances, counters, repeats and waits. Rules that need logic are compiled to a script for you, so rules and scripts are the same engine. Write a script yourself when the catalogue of rule steps cannot do what you want: reading and changing items in detail, entity data, raycasts, commands built from text, or anything outside the steps. A rule that compiled to a script can be read in Advanced mode under **What this becomes** and **Copy as my own script** turns it into a script of your own to change (the rules are turned off in the same undo step; see [Rules](rules.md#copy-as-my-own-script)).
+Most small behaviours need no code: "when a player uses this block, with a 50 per cent chance give a Ruby, and count the uses" is a [rule](rules.md), with conditions, chances, counters, repeats and waits. Rules that need logic are compiled to a script for you, so rules and scripts are the same engine. Write a script yourself when the catalogue of rule steps cannot do what you want: reading and changing items in detail, entity data, raycasts, commands built from text, or anything outside the steps. A rule that compiled to a script can be read under **What this becomes** in the rule book's **More options** and **Copy as my own script** turns it into a script of your own to change (the rules are turned off in the same undo step; see [Rules](rules.md#copy-as-my-own-script)).
 
 ## What a script can do
 
@@ -44,7 +44,7 @@ The same problems are listed in **Problems** at the bottom, with the script's id
 - **Syntax errors** (code `typescript.syntax`, for example "Expression expected. (TS1109)"): the script cannot be read. They are errors and block the Fabric mod jar: **Fabric mod (.jar)…** in the Export menu is greyed out with "Fix 1 error first (see Problems).", and the command palette leaves the command out.
 - **Type problems** (code `typescript.semantic`, for example "Property 'nope' does not exist on type 'Msm'. (TS2339)"): a name or value that does not fit the API. They are warnings and do not block the export, because the game is more forgiving than the checker, but each one is very likely a bug.
 
-**Raw JSON** shows the same script as a list of lines, one string per line.
+**Edit as raw text** shows the same script as a list of lines, one string per line.
 
 ## The API in plain words
 

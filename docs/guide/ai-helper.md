@@ -4,7 +4,7 @@ The **AI helper** is an optional assistant built into MCSuperMods. Say what you 
 
 The helper runs on Anthropic's Claude models with your own key. MCSuperMods works exactly as before without a key; the helper is simply not available.
 
-The words on the helper's screens follow your view mode ([Very easy, Easy or Advanced](very-easy.md)). Very easy and Easy say the same plain sentences, and Easy also shows the files behind each thing; Advanced adds ids, kinds, numbers and Anthropic's own reasons, and uses Apply and Discard where the others say **Add to my mod** and **Throw away**. This page names both where they differ.
+The helper's screens use plain words: no ids, kinds or file names ([Plain words and More options](more-options.md)). Where there is more to see, such as the files behind what it made or the cost in figures, it is under **More options**.
 
 ## Set it up
 
@@ -18,7 +18,7 @@ The card says that using the helper costs money on your Anthropic account (with 
 
 The card also lists **What is sent**. The key is never shown again, only its last four characters. Where the computer cannot lock the key away safely (some Linux systems without a keyring), the card says so and the key cannot be saved.
 
-All of this, and more, is also in **Settings** (the gear icon) under **AI helper**: the same card with the saved key's line, **Check again** and **Remove the key**; **Model** (each with the cost of a first question: Claude Opus 5.5 is the default and the most capable, Claude Sonnet 5.5 is in between, Claude Haiku 5.5 is the cheapest); **Effort for questions and small changes** and **Effort for whole builds** (**Low**, **Medium**, **High** or **Extra high**; more effort thinks for longer and costs more; the defaults are Medium and High); and **Let Anthropic answer with another Claude model when this one declines**, on by default (Claude Haiku 5.5 has no other model to fall back to). In Advanced the Model list also gives the price per million tokens, and **Default limits** appears (see [Limits](#limits-in-settings)). **AI helper guide** opens this page; **All AI helper settings** in the panel opens the section with its top in view.
+All of this, and more, is also in **Settings** (the gear icon) under **AI helper**: the same card with the saved key's line, **Check again** and **Remove the key**; **Model** (each with the cost of a first question: Claude Opus 5.5 is the default and the most capable, Claude Sonnet 5.5 is in between, Claude Haiku 5.5 is the cheapest); **Effort for questions and small changes** and **Effort for whole builds** (**Low**, **Medium**, **High** or **Extra high**; more effort thinks for longer and costs more; the defaults are Medium and High); and **Let Anthropic answer with another Claude model when this one declines**, on by default (Claude Haiku 5.5 has no other model to fall back to). **AI helper guide** opens this page; **All AI helper settings** in the panel opens the section with its top in view.
 
 ## Open the helper
 
@@ -36,13 +36,13 @@ You can show the helper a picture: paste a screenshot (Ctrl+V), drop a picture o
 
 ### While it works
 
-One line under the conversation, the state line, tells you what is happening and counts the seconds: "Thinking… (4 s)", "Looking at your mod…", "Making it… 2 things so far" and "Checking it works…". It shows at most one button. While it works that is **Stop**, which ends the run at once and keeps what was made. A tool line such as "Read the Ruby Sword" is shown in the conversation as it goes; in Advanced you can open one to see what was sent and got back, and the helper's reasoning shows as a closed **Thinking** line (in Very easy and Easy it is left out). The conversation follows the newest entry until you scroll up; then **New below** brings you back.
+One line under the conversation, the state line, tells you what is happening and counts the seconds: "Thinking… (4 s)", "Looking at your mod…", "Making it… 2 things so far" and "Checking it works…". It shows at most one button. While it works that is **Stop**, which ends the run at once and keeps what was made. A tool line such as "Read the Ruby Sword" is shown in the conversation as it goes; the helper's reasoning is left out. The conversation follows the newest entry until you scroll up; then **New below** brings you back.
 
 When the helper needs you, the line says "Your turn" and what to do, and nothing claims to be working: "Your turn: choose what to do with the plan." or "Your turn: keep going or stop?".
 
 ## A big ask: the plan
 
-For a whole mod the helper first proposes a plan: **Here is my plan**, a line for each thing it would make ("Ruby Pickaxe, a tool"; in Advanced with its kind and id), and the pictures it needs. Nothing has been made yet. The state line says it is your turn, and the plan has these buttons:
+For a whole mod the helper first proposes a plan: **Here is my plan**, a line for each thing it would make ("Ruby Pickaxe, a tool"), and the pictures it needs. Nothing has been made yet. The state line says it is your turn, and the plan has these buttons:
 
 - **Make all of it** builds every line without stopping.
 - **One at a time** builds a line, then pauses with **Keep going** and **Stop**.
@@ -55,35 +55,35 @@ The run ends with a short summary of what it made and what to do next.
 
 ## Look before you add
 
-When the helper has made something, the state line reads, for example, "1 thing is ready. Nothing is in your mod yet." (Advanced: "1 proposed change is ready. Nothing is applied yet."), with **Look**. What it made waits in a tray between the conversation and the box, headed "Ready to add: 1 thing" (Easy adds "n files behind them"; Advanced reads "Proposed changes (n of n kept)"). **Look**, or the heading, opens it.
+When the helper has made something, the state line reads, for example, "1 thing is ready. Nothing is in your mod yet.", with **Look**. What it made waits in a tray between the conversation and the box, headed "Ready to add: 1 thing". **Look**, or the heading, opens it.
 
 Open, the tray shows **cards**, one for each thing: its name, what it is, a picture of it where it has one, and what it comes with (a recipe, a drop, a name). A card says New, Changed or Taken out. Problems the checks found are said in plain words on the card. **See it** shows the thing as the game would draw it before it is in your mod, and follows what you keep or leave out.
 
 - **Keep** on a card is ticked by default; untick a thing to leave it out.
-- **Files behind this** (Easy) opens the files a thing is made of, in words ("Model", "Recipe", "Names"). Very easy shows no files. In Advanced there are no cards: each file has its own tick, and **Before and after** shows its JSON before and after.
+- **More options**, under the cards, lists every file behind them, each with its own tick, and **Before and after** shows its text before and after.
 - A card that says "Not added: …" no longer fits your mod, for example because you edited that thing in the meantime.
-- **Add to my mod** (**Make these changes** when something is changed or taken out; **Apply** in Advanced) puts every kept thing in as one step.
-- **Throw away** (**Discard** in Advanced) drops everything waiting after asking; nothing was added.
+- **Add to my mod** (**Make these changes** when something is changed or taken out) puts every kept thing in as one step.
+- **Throw away** drops everything waiting after asking; nothing was added.
 
 The helper can go on chatting after an add; it sees the mod as it now is.
 
 ## After adding
 
-A notice names what was added: "Added 1 thing to your mod: Ruby Sword." (Advanced: "Applied 1 change.") with up to two buttons:
+A notice names what was added: "Added 1 thing to your mod: Ruby Sword." with up to two buttons:
 
-- **Show me** opens the thing: its Studio for one thing, Home's **My things** for several (a thing made by a Creator set opens that Creator page in Very easy). Advanced says **Show**.
-- **Undo** takes the whole step out again. The toolbar's Undo and Ctrl+Z do the same. The notice then says "Taken out again." (Advanced: "Undone.").
-- **Put back** puts it in again (**Redo** in Advanced). Undo is offered only while the helper's step is the last thing you did; after another edit it is not.
+- **Show me** opens the thing: its Studio for one thing, Home's **My things** for several (a thing made by a Creator set opens that Creator page).
+- **Undo** takes the whole step out again. The toolbar's Undo and Ctrl+Z do the same. The notice then says "Taken out again.".
+- **Put back** puts it in again. Undo is offered only while the helper's step is the last thing you did; after another edit it is not.
 
 After that, export as usual ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)). Redraw drawn textures with **Draw…**, or replace them with your own ([Drawing pictures](pictures.md)).
 
 ## Ask the helper about a problem
 
-In Very easy, each line of **Things to fix** has **Ask the helper**. It opens the helper with the problem attached and nothing sent: a chip above the box reads, for example, "About: Ruby Sword, it has no shape picture to show". Edit the box or remove the chip (**Remove the context**) and press **Send** when you are ready. In Easy and Advanced, **Explain** on a row of the **Problems** tab does the same, and **Ask AI** in the editor header (also "Ask the AI helper about this element" in the palette) asks about the selected element ("Tell me about this element."). Advanced's chip names the code and id ("Problem … on …", "Element … (kind)").
+Each line of **Things to fix** has **Ask the helper**. It opens the helper with the problem attached and nothing sent: a chip above the box reads, for example, "About: Ruby Sword, it has no shape picture to show". Edit the box or remove the chip (**Remove the context**) and press **Send** when you are ready. **Explain** on a row of the **Problems** tab does the same, and **Ask AI** in the editor header (also "Ask the AI helper about this element" in the palette) asks about the selected element ("Tell me about this element.").
 
 ## It searches the library first
 
-Before it makes anything by hand, the helper looks in MCSuperMods' own library with your words, using the same search as [Search everything](search.md): Creator flows, starters, templates, examples, kinds and Minecraft's ids. When a flow or starter fits ("a blue sword", "a pet that follows me"), it uses it with the answers your words give, such as the colour and the name, so what it makes matches what the Creator makes. In Advanced the conversation shows this as a line such as "Searched the library for `blue sword`". This search reads only the library and Minecraft's ids, never your mod's things and never Minecraft's names from your Minecraft folder.
+Before it makes anything by hand, the helper looks in MCSuperMods' own library with your words, using the same search as [Search everything](search.md): Creator flows, starters, templates, examples, kinds and Minecraft's ids. When a flow or starter fits ("a blue sword", "a pet that follows me"), it uses it with the answers your words give, such as the colour and the name, so what it makes matches what the Creator makes. This search reads only the library and Minecraft's ids, never your mod's things and never Minecraft's names from your Minecraft folder.
 
 The other way round works too: with a key set, the last row of the search is **Ask the AI helper**. It opens the helper with your words in its box (with no mod open, New project with the AI helper), and nothing is sent until you press **Send**.
 
@@ -96,7 +96,7 @@ Nothing leaves your computer until you press **Send**. Then MCSuperMods sends to
 
 Textures, other files and file paths are never sent, except pictures you add to a message yourself. The key stays in MCSuperMods' main process (the part that talks to Anthropic) and is never given to the window you work in. Chats are kept in memory only, one per mod: closing MCSuperMods forgets them.
 
-When a context chip is attached, **See exactly what is sent** shows the exact block that goes with the message (**Hide what is sent** folds it); in a message already sent, **See exactly what was sent** does the same. Advanced shows the block by default.
+When a context chip is attached, **See exactly what is sent** shows the exact block that goes with the message (**Hide what is sent** folds it); in a message already sent, **See exactly what was sent** does the same.
 
 The helper's textures are drawn on your computer, like the Creator's; the model only asks for a picture kind, a colour and a few choices ([Drawing pictures](pictures.md)).
 
@@ -108,7 +108,7 @@ AI conversations themselves are not saved: closing MCSuperMods forgets them (see
 
 ## What it costs
 
-Everything the helper does is billed to your Anthropic account at Anthropic's API prices, and MCSuperMods adds no charge. The set-up card and the Model list in Settings show what a typical question costs on your model, worked out by MCSuperMods from the size of the helper's instructions and the price table (read on 2026-11-22), so they always show the current figure; nobody types it in. In November 2026, on Claude Opus 5.5, that was about $0.29 for a first question (or one after an hour's pause) and about $0.05 for each question after it within the hour; making a whole mod costs more. Sonnet is about half and Haiku a good deal less, and less capable. The figure can grow a little as MCSuperMods teaches the helper about new features. Under the conversation, "This chat has cost about $0.11 so far." keeps the running estimate (Advanced adds the tokens, the requests and the model). It is an estimate: your Anthropic account's usage page is the real bill, and [Anthropic's pricing page](https://platform.claude.com/docs/en/about-claude/pricing) has the current prices.
+Everything the helper does is billed to your Anthropic account at Anthropic's API prices, and MCSuperMods adds no charge. The set-up card and the Model list in Settings show what a typical question costs on your model, worked out by MCSuperMods from the size of the helper's instructions and the price table (read on 2026-11-22), so they always show the current figure; nobody types it in. In November 2026, on Claude Opus 5.5, that was about $0.29 for a first question (or one after an hour's pause) and about $0.05 for each question after it within the hour; making a whole mod costs more. Sonnet is about half and Haiku a good deal less, and less capable. The figure can grow a little as MCSuperMods teaches the helper about new features. Under the conversation, "This chat has cost about $0.11 so far." keeps the running estimate (the panel's **More options** adds the tokens, the requests and the model). It is an estimate: your Anthropic account's usage page is the real bill, and [Anthropic's pricing page](https://platform.claude.com/docs/en/about-claude/pricing) has the current prices.
 
 ## When something goes wrong
 
@@ -132,13 +132,13 @@ A failed or stopped run ends with one sentence on the state line and one button.
 | "Adding to your mod did not work. Nothing was changed." | Ask the helper to make it again. |
 | A card says "Not added: …" | The thing changed in your mod since the helper made it. Ask for it again. |
 
-Advanced adds the reason in brackets: the error's name, Anthropic's own words for a refusal, and the numbers of a limit stop. "Encrypted storage is not available" means the computer has no keyring (GNOME Keyring or KWallet on Linux); without it the helper cannot be used.
+"Encrypted storage is not available" means the computer has no keyring (GNOME Keyring or KWallet on Linux); without it the helper cannot be used.
 
 ## Limits in Settings
 
-Every run has limits, so a long build cannot run up a surprise bill. The defaults live in **Settings → AI helper → Default limits**, which appears in Advanced: **Stop a small ask after** 24 **steps** and **and after about** 100,000 **tokens written**; **Stop a whole build after** 150 **steps** and about 600,000 **tokens written**; and a switch for each size, **Let the helper pace a small ask to its tokens** and **Let the helper pace a whole build to its tokens**, so the model plans to finish inside its budget. The section also states the most a stopped run can have cost at the defaults.
+Every run has limits, so a long build cannot run up a surprise bill. The defaults live in **Settings → AI helper → Default limits**, under its **More options**: **Stop a small ask after** 24 **steps** and **and after about** 100,000 **tokens written**; **Stop a whole build after** 150 **steps** and about 600,000 **tokens written**; and a switch for each size, **Let the helper pace a small ask to its tokens** and **Let the helper pace a whole build to its tokens**, so the model plans to finish inside its budget. The section also states the most a stopped run can have cost at the defaults.
 
-In Advanced the panel's **Run limits** changes them for the next run only (**Tool turns**, **Output tokens**, **Tell the model its output budget**, **Use defaults**, **Done**). A run that stops at its limit can simply be continued with **Keep going**, or by sending "continue". Very easy and Easy have no limit settings and need none.
+The panel's **More options**, at its bottom, has **Run limits**, which changes them for the next run only (**Tool turns**, **Output tokens**, **Tell the model its output budget**, **Use defaults**, **Done**). A run that stops at its limit can simply be continued with **Keep going**, or by sending "continue".
 
 ## Limits of this version
 

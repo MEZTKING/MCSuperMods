@@ -9,7 +9,7 @@ Both need the **Fabric mod jar**. A vanilla pack leaves them out and says so ([L
 - **Add element** (Ctrl+N), then a template under **Controls and HUD**: `msm_key_bind_dash` (key Z) or `msm_key_bind_ability` (key K), then the **Key bind Studio**; or
 - use the example **Controls: a dash ability** in **Help → Examples…**.
 
-Very easy mode shows no key by itself: make one by choosing the rule **When the player presses a key** in [Rules](rules.md), which asks **Press the key you want**.
+Home shows no key by itself: make one by choosing the rule **When the player presses a key** in [Rules](rules.md), which asks **Press the key you want**.
 
 ### The Key bind Studio
 

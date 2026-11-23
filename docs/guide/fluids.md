@@ -8,7 +8,7 @@ One fluid makes three things: the **liquid block** (what players see and swim in
 
 There are four ways:
 
-- in Very easy mode, **Make a block** offers the card **Fluid** ("A liquid of your own, with its bucket.") ([Very easy mode](very-easy.md));
+- on Home, **Make a block** offers the card **Fluid** ("A liquid of your own, with its bucket.") ([Plain words and More options](more-options.md));
 - the Creator's **Fluid** flow (group **Blocks**; Fabric mod jar only). Its answers:
   - **What is it called?**, and **How does it behave?**: **Like water: you swim in it and it puts out fire**, **Like lava: it burns, glows and flows slowly** or **Like neither: you walk through it**;
   - **Colour**, and **Pictures**: **Moving water or lava, in my colour** (vanilla's own moving pictures under your colour) or **Still pictures drawn in my colour** (pictures MCSuperMods draws), with **My own picture** to use one of yours;
@@ -23,7 +23,7 @@ There are four ways:
 - **Add element** (Ctrl+N), the templates under **Fluids**: **Water-like fluid** (a green liquid, `swamp_water`), **Lava-like fluid** (a glowing golden one, `molten_gold`), **Fluid with a cauldron and bottle** and **Fluid that mixes with water**;
 - the examples **Oil well** (a thick dark liquid that flows slowly, never refills, slows down whoever wades in and lies in lakes in deserts) and **Berry juice** (a cauldron, a bottle and mixing).
 
-Selecting a fluid opens the Fluid Studio. In My things in Very easy mode a fluid's card is a **Liquid**.
+Selecting a fluid opens the Fluid Studio. In My things a fluid's card is a **Liquid**.
 
 ## The Fluid Studio
 

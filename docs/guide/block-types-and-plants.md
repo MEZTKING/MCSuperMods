@@ -73,7 +73,7 @@ The list of **Models** under the textures names each model the type needs. **Own
 
 ## Burning and stripping
 
-Fire needs two numbers, kept in the block's `msm:flammable` component in **Advanced (all fields)** (the flows set them for you):
+Fire needs two numbers, kept in the block's `msm:flammable` component in **Every setting** (the flows set them for you):
 
 - `burn_odds` (0 to 300): how readily fire spreads to the block;
 - `ignite_odds` (0 to 300): how readily the block burns away once alight.
@@ -82,7 +82,7 @@ Vanilla planks are 5 and 20, logs 5 and 5, leaves 30 and 60. Mojang's own source
 
 `msm:strippable` (`into`: a block id; **Axe strips into** in the Block Studio's **Mining** section) lets an axe turn the block into another, the way logs become stripped logs; the axis is kept when both blocks have one. Any item whose `minecraft:block_transformer` names the axe strips it, so vanilla axes, your own axes and axes of other mods work.
 
-`msm:flattenable` (`into`) lets a shovel make the block into another, as dirt into a path, and `msm:tillable` (`into`, and an optional `drops`, an item dropped once) lets a hoe till it, as dirt into farmland or rooted dirt into dirt with hanging roots. Both work only when there is air above the block and the click is not on its underside, as in vanilla. Set them in the Block Studio's **Mining** section with **Shovel flattens into**, **Hoe tills into** and **Drops once** (or in **Advanced (all fields)**); the sample project's `loam` flattens into `loam_path` and tills into `loam_farmland`.
+`msm:flattenable` (`into`) lets a shovel make the block into another, as dirt into a path, and `msm:tillable` (`into`, and an optional `drops`, an item dropped once) lets a hoe till it, as dirt into farmland or rooted dirt into dirt with hanging roots. Both work only when there is air above the block and the click is not on its underside, as in vanilla. Set them in the Block Studio's **Mining** section with **Shovel flattens into**, **Hoe tills into** and **Drops once** (or in **Every setting**); the sample project's `loam` flattens into `loam_path` and tills into `loam_farmland`.
 
 For Minecraft's own blocks, the same rules (and burning and ageing) are an element of their own: see [Rules for vanilla blocks](adding-to-vanilla.md#rules-for-vanilla-blocks).
 

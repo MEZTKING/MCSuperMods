@@ -14,7 +14,7 @@ All five need the **Fabric mod jar**: the runtime comes inside it. A vanilla pac
 
 There are four ways:
 
-- in Very easy mode, the Home tile **Make a trader** ("A mob that trades with you, or a new job for villagers.", under **Creatures**) opens the Creator on the **Wandering merchant** flow or the **Village job** flow ([Very easy mode](very-easy.md));
+- the Home tile **Make a trader** ("A mob that trades with you, or a new job for villagers.", under **Creatures**) opens the Creator on the **Wandering merchant** flow or the **Village job** flow ([Plain words and More options](more-options.md));
 - the Creator's **Wandering merchant** flow (group **Mobs**; Fabric mod jar only). Its answers are:
   - **What does it sell?** (an item, such as `minecraft:glow_berries` or one of your own), **How many at a time?** and **For how many emeralds?**, with **Also sells (2)** and **Also sells (3)** if you want up to three wares;
   - **Sales before it runs out**: how many times each trade works before the merchant has to restock;
@@ -73,7 +73,7 @@ Villagers also take your **beds** as homes: a bed of your own (the block type **
 
 A villager look dresses the villagers born or spawned in some biomes, and the zombie villagers there, in clothes of your own. It is only a look, as Minecraft's are: it brings no trades and has no name.
 
-- In Very easy mode, **Make a trader** also offers the **Villager look** flow.
+- On Home, **Make a trader** also offers the **Villager look** flow.
 - The Creator's **Villager look** flow (Fabric mod jar only). Its answers: **What is the look called?**, **Where villagers wear it** (**Cherry groves**, **Meadows**, **Birch forests**, **Dark forests**, **Mushroom fields**, **Badlands**, or **Flower forests and sunflower plains**), **Clothes colour**, **Hem colour** and **A sash**. MCSuperMods draws the robe for villagers and zombie villagers.
 - **Add element**, the template **Villager look** (category **Villagers and traders**), or the example **Villager look: Blossom villagers**.
 

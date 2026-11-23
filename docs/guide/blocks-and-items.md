@@ -15,7 +15,7 @@ To set the mod's name, version, authors and licence, add **Mod metadata** from t
 
 ## The Block Studio
 
-Selecting a block opens the Block Studio. Empty fields use the game's defaults. **Advanced (all fields)** at the top shows every field of the element as a plain form, and **Raw JSON** edits the same data as text. Each picture row and texture slot has **Draw…** beside **Make with AI**: it draws the picture in a Minecraft-like style, without a key ([Drawing pictures](pictures.md)).
+Selecting a block opens the Block Studio. Empty fields use the game's defaults. **Every setting**, near the bottom, shows every field as a plain form, and **Edit as raw text** (under **Where it goes**, **More options**) edits the same data as text. Each picture row and texture slot has **Draw…** beside **Make with AI**: it draws the picture in a Minecraft-like style, without a key ([Drawing pictures](pictures.md)).
 
 - **Appearance**: **Model** is the block model shown in the world and in the hand, for example `minecraft:block/stone` or a model of your own project (the arrow button next to it opens your model). **Display name** is the name players see.
 - **Mining**: **Hardness** (how long the block takes to mine; default 1.5) and **Resistance** (against explosions; default 6). **Tool** makes the block mine fast with that tool (pickaxe, axe, shovel or hoe). **Minimum tier** is the weakest tool tier that still gets drops, for example `iron` for an iron pickaxe or better. A tool or a minimum tier also means the block drops nothing when mined by hand. **Requires the right tool for drops** sets that on its own, without a tool or tier.
@@ -33,7 +33,7 @@ Selecting a block opens the Block Studio. Empty fields use the game's defaults. 
 
 ## The Item Studio
 
-Selecting an item opens the Item Studio, with **Advanced (all fields)** and **Raw JSON** as for blocks.
+Selecting an item opens the Item Studio, with **Every setting** and **Edit as raw text** as for blocks.
 
 - **Item**: **Model**, **Display name**, **Stack size** (1 to 99), **Rarity** and **Creative tab**. Items with durability always stack to 1.
 - **Food**: tick **Edible** to make the item food, with **Nutrition** (hunger points restored), **Saturation** and **Can always eat** (eat even when not hungry).
@@ -45,7 +45,7 @@ Selecting an item opens the Item Studio, with **Advanced (all fields)** and **Ra
 - **Adventure mode**: what a player in Adventure mode may do with the item (see [Adventure mode](#adventure-mode)).
 - **Events**: as for blocks, with the item's **Triggers**: on a hit, on use on a block, while held and while worn (see [Triggers](#triggers)).
 
-Status effects have a Studio of their own, the **Effect Studio** ([Status effects and throwables](effects-and-throwables.md#the-effect-studio)). Bags and bundles have the **Inventory** section; armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
+Status effects have a Studio of their own, the **Effect Studio** ([Status effects and throwables](effects-and-throwables.md#the-effect-studio)). Bags and bundles have the **Inventory** section; armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Every setting** or **Edit as raw text**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
 
 ### Adventure mode
 
@@ -54,7 +54,7 @@ In Adventure mode a player cannot break or place blocks at all, except with an i
 - **Can break**: the blocks a player in Adventure mode can break while holding the item.
 - **Can place on**: the blocks the player can use the item on, or place it on when it is a block.
 
-**Add a block** opens the block picker (your own blocks first, then Minecraft's, by name and picture); **Add a group of blocks…** adds a whole group, such as every log. Each block has a remove button, and every change is one step for **Undo**. Easy and Very easy show names only; Advanced also shows each id. Below the lists the item's tooltip shows the lines the game adds: "Can break:" and "Can be placed on:", each followed by the blocks (the game names every block of a group; MCSuperMods names the group). The lists change nothing in Survival or Creative. They are the vanilla components `minecraft:can_break` and `minecraft:can_place_on` in the item's `msm:components`; a list written by hand with more than blocks and groups (block states, say) is shown and kept as it is, and is changed in **Advanced (all fields)** or **Raw JSON**.
+**Add a block** opens the block picker (your own blocks first, then Minecraft's, by name and picture); **Add a group of blocks…** adds a whole group, such as every log. Each block has a remove button, and every change is one step for **Undo**. The list shows names only; its **More options** also shows each id. Below the lists the item's tooltip shows the lines the game adds: "Can break:" and "Can be placed on:", each followed by the blocks (the game names every block of a group; MCSuperMods names the group). The lists change nothing in Survival or Creative. They are the vanilla components `minecraft:can_break` and `minecraft:can_place_on` in the item's `msm:components`; a list written by hand with more than blocks and groups (block states, say) is shown and kept as it is, and is changed in **Every setting** or **Edit as raw text**.
 
 ## Events and actions
 
@@ -239,7 +239,7 @@ An item can hold other items. There are two kinds, chosen in the Item Studio's *
 - **A bag that holds things** opens a window like a chest, a hopper or a dispenser when a player uses it, and keeps what is inside the item, so a backpack goes into a chest with its contents. Choose the **Layout** (**Chest (rows of 9)**, **Hopper (5 slots)** or **Dispenser (3 by 3)**), **Rows (1 to 6)** (for the chest layout only), a **picture** for the slots, **Open it with** (**Right-click** or **Sneak and right-click**), an **Open sound** and a **Close sound** (the barrel's by default) and the events **When it is opened** and **When it is closed**, where `self` and `other` are the player.
 - **Works like a bundle** is vanilla's bundle: click items onto it to put them in and right-click to take them out, and it shows its open and closed pictures (**Closed bundle**, **Open bundle, back** and **Open bundle, front**). Bundles keep vanilla's capacity; use a bag when you need more.
 
-A bag or bundle always stacks to one. The Creator's **Backpack** flow (group **Gear**) makes a bag: **Name**, **Colour**, **Rows (1 to 6)** (3 by default), **Open it with**, **Crafting recipe** (leather round a chest, a string strap) and an optional dyed copy through a transmute recipe (**Dye recipe**, **Dye**). In Very easy mode the **Make an item** tile offers **A bag that holds things** ("Opens when you right-click it").
+A bag or bundle always stacks to one. The Creator's **Backpack** flow (group **Gear**) makes a bag: **Name**, **Colour**, **Rows (1 to 6)** (3 by default), **Open it with**, **Crafting recipe** (leather round a chest, a string strap) and an optional dyed copy through a transmute recipe (**Dye recipe**, **Dye**). The **Make an item** tile on Home offers **A bag that holds things** ("Opens when you right-click it").
 
 The rules, in plain words:
 

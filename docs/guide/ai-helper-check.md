@@ -2,7 +2,7 @@
 
 Every test of the [AI helper](ai-helper.md) so far has run against a scripted stand-in for the model. This page is a list of twelve things to try on Windows with a real Anthropic key, so that the real model's behaviour gets seen once. Each step says what to do and what you should see. If you see something else, note the step number and what was on the screen (a screenshot helps) and tell the developer.
 
-The whole list costs a few dollars at most on Claude Opus 5.5, most of it in step 6. Use Claude Sonnet 5.5 under **Settings**, **AI helper**, **Model** to spend about half. Use a mod you do not mind changing, and set the view mode to **Very easy** unless a step says otherwise ([view modes](very-easy.md)).
+The whole list costs a few dollars at most on Claude Opus 5.5, most of it in step 6. Use Claude Sonnet 5.5 under **Settings**, **AI helper**, **Model** to spend about half. Use a mod you do not mind changing, and leave every **More options** closed unless a step says otherwise ([Plain words and More options](more-options.md)).
 
 ## 1. Set up with a wrong key, then a right one
 
@@ -22,7 +22,7 @@ The set-up card (and **Settings**, **AI helper**, **Model**) gives the typical c
 
 You should see, under the conversation, a line such as "This chat has cost about $0.11 so far." Compare it with the card's figure and with your Anthropic account's usage page (it can take a few minutes to update). Write down all three. The line is an estimate, so a difference of a few cents is normal; one that is several times larger or smaller is worth reporting. See [What it costs](ai-helper.md#what-it-costs).
 
-## 3. "Make a ruby sword" in Very easy
+## 3. "Make a ruby sword"
 
 Press **New chat**, type or choose "Make a ruby sword" and press **Send**.
 

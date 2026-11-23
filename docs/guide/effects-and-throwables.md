@@ -32,7 +32,7 @@ Select any of them later and choose **Edit in Creator** to change an answer, for
 
 ## The Effect Studio
 
-To make an effect by hand, choose **Add element** (Ctrl+N) and pick a template under **Effects**: **Status effect** (a good effect that chimes and sparkles when it starts), **Damage over time effect** (like poison) or **Stat boost effect** (faster and stronger per level). Effects are listed in the sidebar under **Status effects**. Selecting one opens the **Effect Studio**; **Advanced (all fields)** and **Raw JSON** work as for blocks and items.
+To make an effect by hand, choose **Add element** (Ctrl+N) and pick a template under **Effects**: **Status effect** (a good effect that chimes and sparkles when it starts), **Damage over time effect** (like poison) or **Stat boost effect** (faster and stronger per level). Effects are listed in the sidebar under **Status effects**. Selecting one opens the **Effect Studio**; **Every setting** and **Edit as raw text** work as for blocks and items.
 
 - **Effect**: **Display name**, **Category** (beneficial, harmful or neutral), **Colour**, **Particle (instead of the swirl)** and **Sound when added**. The particle can be one of your own ([Particles](particles.md)); it must be a type without options (a type that needs options is reported by **Problems**).
 - **Icon**: the effect's icon with **Paint icon** (see [Effect icons](#effect-icons)). Without an icon the Studio says so: the game shows a blank square.

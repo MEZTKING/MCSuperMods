@@ -4,12 +4,12 @@ Rules say what your blocks, items, mobs and effects do when something happens, i
 
 Rules are for people who do not want to code, and they are as strong as most small scripts: conditions, chances, counters, repeats and waits are all there. When you need more than the catalogue offers, use a [script](scripting.md) instead.
 
-Rules are part of the Fabric mod jar. Export the **Fabric mod jar** ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)), press **Play** ([Playing and testing](playing-and-testing.md)) or use **Share my mod** ([Very easy mode](very-easy.md)).
+Rules are part of the Fabric mod jar. Export the **Fabric mod jar** ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)), press **Play** ([Playing and testing](playing-and-testing.md)) or use **Share my mod** ([Plain words and More options](more-options.md)).
 
 ## Where rules live
 
 - **In a Studio.** The Block, Item, Mob and Effect Studios have a **Rules** section just above the events: "Rules say what this block does when something happens. No code needed." It lists the rules about the thing you are editing and has **Add a rule**. A new rule starts with the thing's most natural moment already chosen: "A player uses the block" for a block, "A player uses the item" for an item, "The mob is hurt" for a mob, "The effect starts" for an effect.
-- **In the Rule book.** All rules are kept in rule books. A project starts with none; the first rule you add makes the project's book, `<namespace>:rules`, in the same undo step. **Open the rule book** in a Rules section opens it with every rule of the project. In Very easy mode, **Make things happen** on Home opens it ([Very easy mode](very-easy.md)).
+- **In the Rule book.** All rules are kept in rule books. A project starts with none; the first rule you add makes the project's book, `<namespace>:rules`, in the same undo step. **Open the rule book** in a Rules section opens it with every rule of the project. **Make things happen** on Home opens it ([Plain words and More options](more-options.md)).
 - **From a template.** **Add element** (Ctrl+N) has six templates in the category **Rules**: **Welcome message**, **Jump pad**, **Lucky block**, **Healing spring**, **Click counter** and **Mob drops a reward**. They use only vanilla ids, so each works in a project of its own.
 - **From an example.** Help > Examples… has **Rules: a lucky block** (breaking the Lucky Block counts, and with a 60 per cent chance drops one to three Lucky Coins, else spawns a silverfish; using a coin gives a minute of Luck) and **Rules: a guard mob** (every five seconds the Guard warns every player within 12 blocks and makes them glow; it calls for help when hurt). See [Templates, starters and examples](templates-and-examples.md).
 - **The AI helper** writes rule books too ([The AI helper](ai-helper.md)).
@@ -150,13 +150,13 @@ MCSuperMods compiles a rule in one of two ways, and you do not have to choose:
 - A **plain** rule is on a block, item, mob or effect of your own, has no **Only if**, uses plain numbers (nothing random or read from the game), only steps the game's own events can do (Give an item, Heal, Hurt, Launch, Give an effect, Place a block, Run a function, Light a portal, Play a sound, Spawn particles, Play an animation), and only people and mobs the moment has (a random tick has no player to give things to). It becomes ordinary **events** on the thing, the same ones you could write in the Events editor.
 - **Every other rule** compiles to a **script**. Everything else works the same; the script is written for you and is checked like your own scripts. When one rule needs a script, the other rules on the same thing and moment join it, so the order stays what you see.
 
-In Advanced mode the rule book shows **What this becomes**: the events and the generated script, for reading. They cannot be edited there; they are made again whenever the rules change.
+The rule book's **More options** shows **What this becomes**: the events and the generated script, for reading. They cannot be edited there; they are made again whenever the rules change.
 
 A hand-made event on the same moment runs before any rule.
 
 ## Copy as my own script
 
-In Advanced mode the rule book also has **Copy as my own script**, for when you want to take over by hand what the rules do. As one undo step ("Copy <book> as my own script") it:
+The rule book's **More options** also has **Copy as my own script**, for when you want to take over by hand what the rules do. As one undo step ("Copy <book> as my own script") it:
 
 - adds a normal script, named after the book with `_script` at the end (`my_mod:rules_script`), holding the code the rules made, so you can change it in the Script Studio;
 - gives each block, item, mob or effect the book's events as its own events, named `<thing>_script_<moment>` (they still call the script's handlers, and keep the cooldown or interval the rules had);
@@ -174,7 +174,7 @@ A hand-made event whose actions can all be written as steps has **Turn into rule
 
 - **A new moment needs a restart.** The first rule that gives a block, say, "A player breaks the block" changes the block itself, so Minecraft must start again to read it. Editing rules on a moment the thing already has reloads in the running game. See [Playing and testing](playing-and-testing.md).
 - **Rules need the Fabric mod jar.** Vanilla packs carry no rules. Exporting a resource or data pack says: "Rules are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to play with your rules."
-- **Rules with logic are not in the Java project.** The [Java eject](eject.md) has events but no scripts, so a rule that needs a script does nothing there. The Export Java project dialog lists those rules, and **Problems** says: "The rule "<name>" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events." To change that code by hand, use **Copy as my own script** in the rule book (Advanced mode, see above); the script still needs porting to Java by hand for the eject.
+- **Rules with logic are not in the Java project.** The [Java eject](eject.md) has events but no scripts, so a rule that needs a script does nothing there. The Export Java project dialog lists those rules, and **Problems** says: "The rule "<name>" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events." To change that code by hand, use **Copy as my own script** in the rule book's **More options** (see above); the script still needs porting to Java by hand for the eject.
 - **Placing and explosion rules are scripts.** They listen to the two Script API 1.6 events, so they are not in the Java project either (`export.not-in-eject`). Rules on crafting, picking up, eating, sleeping, waking and advancements are scripts too, and so are not in it. A plain rule on a command is part of the command's event and is.
 - **Pictures and sounds.** Pictures of Minecraft's own things need your Minecraft files (Settings, Game locations). Minecraft's sounds cannot be played in the editor; you see their names. Sounds of your own project play.
 - **Time limits.** One script call may run for two seconds; a very long repeat or a long chain of waits is stopped.

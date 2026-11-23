@@ -39,7 +39,7 @@ Select a status effect of your project. The Effect Studio's **Potion** section l
   - **Splash version (gunpowder)** and **Lingering version and tipped arrows (dragon's breath)**, both on by default.
 - **Brewing chain**: every brewing stand step the export writes, as "input + ingredient, gives output", for example "Potion (Awkward) + Amethyst Shard gives Potion (Moon Leap)". With every option on there are 15 steps: the potion, its longer and its stronger version in each of the three bottles, and gunpowder and dragon's breath for each version.
 
-Every edit is one undo step. **Advanced (all fields)** and **Raw JSON** show the same potion as data.
+Every edit is one undo step. **Every setting** and **Edit as raw text** show the same potion as data.
 
 ## Ids, names and colour
 
@@ -71,7 +71,7 @@ A data pack cannot add a potion to the game: potions are a fixed list the game b
 - Only potions are brewed: a brewing step that makes an item that is not a potion is not possible yet.
 - Brewing stand fuel stays blaze powder (an item can be made fuel with the vanilla `minecraft:brewing_fuel` component under [Vanilla components](blocks-and-items.md#vanilla-components)).
 - No instant effects (like instant health) and no custom bottle item or colour.
-- The Recipe Studio has no brewing layout: edit brewing recipes in the form or **Raw JSON**.
+- The Recipe Studio has no brewing layout: edit brewing recipes in the form or **Edit as raw text**.
 - MCSuperMods does not check your ingredient against the vanilla brewing recipes; the ingredients the Creator offers are safe.
 - Effects of other mods that register after yours cannot be used in your potions.
 

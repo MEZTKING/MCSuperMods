@@ -25,3 +25,5 @@ The sidebar groups elements under raw kind ids (`MINECRAFT:EQUIPMENT`, `MSM:ITEM
 ## Status
 
 Accepted (2026-11-06) by the user's request; for app 1.1.0.
+
+Superseded in its mode switch by [ADR 0130](0130-one-mode-more-options.md) (2026-11-23): one mode, with More options in each section. Its Home, plain words and Things to fix live on.

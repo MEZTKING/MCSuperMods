@@ -9,7 +9,7 @@ For a one-off test with another launcher, or to install the mod into a world you
 ## What you need
 
 - [Prism Launcher](https://prismlauncher.org/), installed, started once and **signed in to a Microsoft account**. MCSuperMods cannot start Minecraft itself, because Minecraft needs your sign-in, and the official launcher and CurseForge cannot be told to start an instance. If the toolbar says **Prism Launcher not found**, open the panel it offers (**Get Prism Launcher**): it says how to install and sign in, and has **Find Prism** and **Choose Prism's folder…**. Once found it says "Found Prism Launcher. Press Play to start."
-- A project with no errors. If a mistake stops the mod from being built, Play says "Play blocked by N error(s); nothing was sent to the game. See Problems." (in Very easy mode the same errors are in **Things to fix**).
+- A project with no errors. If a mistake stops the mod from being built, Play says "Play blocked by N error(s); nothing was sent to the game. See Problems." (the same errors are in **Things to fix**).
 
 ## Play
 

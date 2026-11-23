@@ -14,7 +14,7 @@ It is a preview, not the game. A strip across the top always says **Preview, not
 
 ## Open it
 
-- **Try it** in the toolbar, before **Play**. It is there in all three modes, Very easy included.
+- **Try it** in the toolbar, before **Play**. 
 - **View > Try it**, or **F6**.
 - **File > Try it**.
 - The command palette: "Try it: walk around your blocks and mobs in the app".

@@ -109,9 +109,9 @@ Pictures, models, sounds, fonts, shaders and the other things the game draws or 
 A **Play** button plays a sound as the game picks it: the event's files by their weights, at the event's volume and pitch. Press it again (it says **Stop**) to stop; one sound plays at a time, and starting another stops the first. You find it:
 
 - in the **Sounds** element's **Preview**: each sound event with **Play**, its subtitle and whether it replaces Minecraft's sounds or adds to them; each file of the event with its own **Play**, volume, pitch, weight and chance; and which file a press picked;
-- beside every sound you pick: the sound tiles of the picker (so every sound slot in Rules and every sound choice in Very easy), the chip of a sound once you have picked it in a rule, every sound field of the Studios (a mob's sounds, a block's **How it sounds**, the Effect, Item, Profession and Vehicle Studios, portals and containers), the Creator's song field and the sounds form;
+- beside every sound you pick: the sound tiles of the picker (so every sound slot in Rules and every sound choice by name), the chip of a sound once you have picked it in a rule, every sound field of the Studios (a mob's sounds, a block's **How it sounds**, the Effect, Item, Profession and Vehicle Studios, portals and containers), the Creator's song field and the sounds form;
 - in a damage type's **Death lines**, under **When hurt**;
-- in My things, under **Particles and sounds** (see [Very easy mode](very-easy.md#my-things)).
+- in My things, under **Particles and sounds** (see [Plain words and More options](more-options.md#my-things)).
 
 Your own sounds always play. Minecraft's own sounds are not inside the game's jar: they are read one at a time from your Minecraft folder when you press Play. Without your Minecraft folder set up, the button for one of them is off and offers **Find my Minecraft**. See [Block sounds](sounds.md).
 
@@ -153,7 +153,7 @@ A **Music disc song** has **Play** and **Stop**, a time line, the song's length 
 
 ### In the Creator and in My things
 
-The Creator's **Live** tab shows these views for the Music disc, Goat horn, Banner pattern, Armour trim, Pot pattern, Creative tab and Villager look flows. In Very easy mode, **My things** has a section **Particles and sounds**: a card for each particle and each sound, with **Play** on a sound's card, each opening its view.
+The Creator's **Live** tab shows these views for the Music disc, Goat horn, Banner pattern, Armour trim, Pot pattern, Creative tab and Villager look flows. **My things** has a section **Particles and sounds**: a card for each particle and each sound, with **Play** on a sound's card, each opening its view.
 
 ## Limits
 

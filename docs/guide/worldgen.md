@@ -8,7 +8,7 @@ Every worldgen element shows live in the **Preview** tab: dimensions and World T
 
 ## Make a world in a few questions
 
-**Make a world** on Home (in Very easy mode) and the Creator's **Worlds** group offer five flows. Each makes a **World Type**: you choose it under **More > World Type** when you create a world in Minecraft.
+**Make a world** on Home and the Creator's **Worlds** group offer five flows. Each makes a **World Type**: you choose it under **More > World Type** when you create a world in Minecraft.
 
 | Flow | Questions | What you get |
 |---|---|---|
@@ -22,7 +22,7 @@ Every flow also asks for a **Name** (the World Type's name on Create New World).
 
 Good to know:
 
-- **Empty sky with a start island**: this makes the empty world only. The start island, its chest and the things you start with come from the **Skyblock** flow under **Games** ([Game modes](game-modes.md)), which **Make a world** offers in its place in Very easy mode. On its own, players start in the air and fall: play it in Creative, or add a start island in the World Setup Studio.
+- **Empty sky with a start island**: this makes the empty world only. The start island, its chest and the things you start with come from the **Skyblock** flow under **Games** ([Game modes](game-modes.md)), which **Make a world** offers in its place on Home. On its own, players start in the air and fall: play it in Creative, or add a start island in the World Setup Studio.
 - **Caves only** with a roof: players start on top of the rock roof and dig down.
 - Each flow has an example under **Help > Examples…**, category **Worlds**: Coral Isles, Frost Peaks, Endless Blossom, Ember Caverns and Cloud Realm. Three of them are cards in [See what you can make](showcase.md).
 - The templates **Noise settings: islands**, **Noise settings: tall mountains**, **Noise settings: caves only** and **Noise settings: empty sky** (category **Worldgen (advanced)**) are the same land on their own, to build on.
@@ -54,7 +54,7 @@ Biomes only appear in **new** worlds: choose the World Type when creating the wo
 
 ## The Biome Studio
 
-Select a biome to open the Biome Studio. **Advanced (all fields)** switches to the full form for anything the Studio does not show.
+Select a biome to open the Biome Studio. **Every setting** switches to the full form for anything the Studio does not show.
 
 - **Climate**: **Temperature**, **Downfall**, **Precipitation** and **Temperature modifier**. Temperature also decides snow and the colour of grass and leaves when you do not set them.
 - **Colours**: seven colour pickers, for the water, grass, foliage and dry foliage colours and the sky, fog and water fog colours, plus the **Grass colour modifier**. In Minecraft 26.3 the sky, fog and water fog colours are stored as `minecraft:visual/*` attributes of the biome, not as effects; the Studio writes them in the right place. Clear a colour to fall back to the game's default.

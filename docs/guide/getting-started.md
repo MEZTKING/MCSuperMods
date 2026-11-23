@@ -62,7 +62,7 @@ The three textures, `ruby_ore.png`, `ruby_block.png` and `ruby.png`, are drawn b
 Select an element in the list. The middle area has two tabs:
 
 - **Form**: a form built from Minecraft's own data definitions, with drop-downs, number fields and id pickers that only offer valid values. Some kinds have a dedicated view: blocks open the **Block Studio** and items the **Item Studio**, recipes show a crafting grid, tags a list, functions a command editor with completion.
-- **Raw JSON**: the same element as text, for when you know exactly what you want. Both tabs edit the same data.
+- **Edit as raw text**: the same element as text, for when you know exactly what you want. Both tabs edit the same data.
 
 Every element from a starter has a **Notes** box above the editor that explains its fields and what to change. Click **Notes** to fold it away.
 
@@ -154,14 +154,11 @@ Minecraft Java reads three sorts of add-on, and MCSuperMods makes all three from
 
 Each element in the list belongs to one of them; the packs a starter fills are listed in [Project starters](templates-and-examples.md#project-starters). A project with only pack content can be exported as vanilla packs that work without any mod.
 
-## Easy and Advanced mode
+## The list and More options
 
-MCSuperMods has two ways to show a project. Switch with the mode button on the toolbar (it reads **Easy mode** or **Advanced mode**), **View → Switch Easy / Advanced Mode** or the command palette. A new install starts in Easy mode.
+The list on the left shows what you made first: each set from the Creator under its name (for example "Ruby (Gear set)"), then items, blocks, recipes and the rest under plain names. The files behind them (models, item looks, block states, pack and mod settings, names and text) are folded under **More**. The box at the top of the list searches names, kinds and ids, and a click on a group's heading folds or unfolds it; MCSuperMods remembers which groups you folded.
 
-- **Easy mode** lists what you made first: each set from the Creator under its name (for example "Ruby (Gear set)"), then items, blocks, recipes and the rest under plain names. The files behind them (models, item looks, block states, pack and mod settings, names and text) are folded under **More**. The editor shows the form only.
-- **Advanced mode** lists every group with its kind id next to the name and offers **Raw JSON**.
-
-In both modes the box at the top of the list searches names and kinds, and a click on a group's heading folds or unfolds it; MCSuperMods remembers which groups you folded.
+The editor shows each thing in plain words. Every part ends in **More options**, which holds its rarer settings and ids; **Every setting** lists everything at once, and **Where it goes** has **Edit as raw text**. See [Plain words and More options](more-options.md).
 
 ## Start with the AI helper
 
