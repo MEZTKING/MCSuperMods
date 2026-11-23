@@ -11391,3 +11391,11 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B765: mount `OfferCardHost` once, call `instances.plan`, then `useInstancesStore.getState().prepare({ plan, request, jars, locations })`; a `mine` outcome selects that location; `made.gameDir` is the instance's folder. B769: the server card can reuse `OfferCard` with `makeLabel`; the local server settings (white list, online mode) have no Settings line yet.
 - `describeRecipe` could say "Fabric's mod library" and the address itself, so the renderer's rewording can go.
+
+## 2026-11-23 — main session — wave stopped for the user's credits
+
+What: 1.5.8 published (commit 2834ec6, main moved after green CI; release published itself). Merged on the dev branch since: B701 one toolbar row, B703 plain lists, I1 toolbar wiring, B711 menus and guide, B713 gallery polish, B721 Game Studio scaffold, B722 game and kit format, B723 plugin API 1.27.0, B724 round engine (126 kinds, 311 templates), B725 hearts, tracker, head start and the kill pair, B726 the other eight mechanics (floor expander registered by the main session), B761 recipes and managed instances (staging on in Play), B762 local server in interop, B763 instances and the server in main, B764 the offer card and Settings' Instances MSM made, B780 Paper spike folded into PLAN-paper and ADR 0134.
+
+Decisions: AI target_facts leaves out command fragments as it does forms; App.test's target-upgrade toast waits 10 s (heavy step); the kill pair uses the killer's advancement plus death scores (ADR 0132 finding).
+
+Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game commands) and B729 (Rules 4 for games) were stopped mid-way at the user's request; their worktrees under the scratchpad are not kept, so rerun them from their briefs. Then B765 (mount OfferCardHost, Play through recipes), B728, B730 onward, plan C after its spike, one-mode waves 3-5 (B705-B710, B715, B716 with B711's leftovers in PLAN-one-mode-rest.md). Unmeasured: the four e2e specs after B711; the full app suite after B724-B726 and B764 (local-server.test "taken port" flaked once under load). Next release cut: CHANGELOG [Unreleased] holds the toolbar, plain words and gallery lines; add games, instances and server lines when they are visible.
