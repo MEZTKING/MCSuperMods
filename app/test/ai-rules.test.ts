@@ -628,7 +628,7 @@ const luckyScript = (): AiModelScript =>
         content: [
           {
             type: 'text',
-            text: 'The lucky block and its rules are ready to review. The textures are placeholders to replace, and the rules need the Fabric mod jar.',
+            text: 'The lucky block and its rules are ready to review. The textures are drawn for you; redraw them any time, and the rules need the Fabric mod jar.',
           },
         ],
       },

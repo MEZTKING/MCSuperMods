@@ -6,10 +6,10 @@ import { z } from 'zod';
 import { elementDataSchema, kindIdSchema, namespaceSchema, resourceIdSchema } from './common';
 
 /**
- * The placeholder texture patterns of the library's generator (`PlaceholderPattern` in
+ * The texture pattern names of the library's generator (`PlaceholderPattern` in
  * `@msm/plugin-library`); kept in step by hand because `@msm/ai` may not depend on plugins.
  */
-export const PLACEHOLDER_PATTERN_NAMES = [
+export const TEXTURE_PATTERN_NAMES = [
   'plain',
   'ore',
   'gem',
@@ -84,7 +84,7 @@ export const PLACEHOLDER_PATTERN_NAMES = [
 
 /**
  * The recipes of the library's drawn art (`ART_RECIPE_IDS` in `@msm/plugin-library`, ADR 0092 D7,
- * D15), in the table's order; kept in step by hand like {@link PLACEHOLDER_PATTERN_NAMES}.
+ * D15), in the table's order; kept in step by hand like {@link TEXTURE_PATTERN_NAMES}.
  */
 export const ART_RECIPE_NAMES = [
   'plain',
@@ -240,7 +240,7 @@ export const createTextureInput = z
         'What to draw (the system prompt lists the recipes in words). Blocks, 16x16 under textures/block: plain, stone, cobblestone, polished_stone, bricks, pillar_side, pillar_top, ore (speckles on stone), deepslate_ore, block (storage block; finishes gem, metal, rough), block_front (furnace-like front), bark, log_top, stripped_log, stripped_log_top, planks, door_top, door_bottom, trapdoor, leaves, sapling (also the item texture), crop_stage0 to crop_stage3 (sprouts to ripe), portal (see-through portal surface), portal_frame, dirt, grass_top, grass_side, sand, gravel. Items, 16x16 under textures/item: gem, ingot, disc, spawn_egg, sword, pickaxe, axe, shovel, hoe, spear, mace, knife, boomerang, ball, bow and bow_pulling_0 to bow_pulling_2, crossbow, crossbow_pulling_0 to crossbow_pulling_2, crossbow_arrow, crossbow_firework, shield, bottle, flask, totem, smithing_template, horse_armor, wolf_armor, helmet, chestplate, leggings, boots, fruit, pie, seeds, produce. Worn armour: armor_layer_1 and armor_layer_2 (64x32, under textures/entity/equipment/humanoid and humanoid_leggings), horse_armor_layer (64x64, textures/entity/equipment/horse_body), wolf_armor_layer (64x32, textures/entity/equipment/wolf_body). effect_icon (18x18 status effect icon under textures/mob_effect; finishes drop, heart, star, flame, swirl). particle_spark, particle_orb, particle_puff, particle_leaf (8x8 under textures/particle; the first of four frames).',
       ),
     pattern: z
-      .enum(PLACEHOLDER_PATTERN_NAMES)
+      .enum(TEXTURE_PATTERN_NAMES)
       .optional()
       .describe(
         'Older name for what to draw, still accepted: a pattern name, drawn with its recipe (egg is spawn_egg; every other pattern has the recipe of the same name). Give recipe instead; recipe wins when both are given.',

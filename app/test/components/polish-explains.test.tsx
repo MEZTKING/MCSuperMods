@@ -10,7 +10,7 @@ import type { Element, Problem, Project } from '@msm/core';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { attachElementToAi, attachProblemToAi } from '../../src/renderer/src/App';
+import { attachElementToAi } from '../../src/renderer/src/App';
 import { elementChipLabel, problemChipLabel } from '../../src/renderer/src/ai/context-blocks';
 import { AiPanel } from '../../src/renderer/src/components/ai/AiPanel';
 import {
@@ -283,9 +283,7 @@ describe('Ask the helper on a Things to fix row (ADR 0125 D11)', () => {
             project={project}
             problems={[MISSING_MODEL]}
             onShow={vi.fn()}
-            onAsk={(problem) =>
-              attachProblemToAi(controller, problem, session.snapshot.project, mode)
-            }
+            onAsk={(problem) => controller.explainProblem(problem)}
           />
           <AiPanel controller={controller} onOpenSettings={vi.fn()} />
         </>,
@@ -316,10 +314,23 @@ describe('Ask the helper on a Things to fix row (ADR 0125 D11)', () => {
     },
   );
 
+  it('labels the chip by the mode it is given, with no relabel by the app', async () => {
+    const { controller } = await host('easy');
+    expect('setMode' in controller).toBe(false);
+    controller.explainProblem(MISSING_MODEL, 'very-easy');
+    expect(controller.draft().context?.label).toBe(
+      'About: Ruby Sword, it has no shape picture (model) to show. Pick a picture for it',
+    );
+    controller.explainProblem(MISSING_MODEL, 'advanced');
+    expect(controller.draft().context?.label).toBe(
+      'Problem blocks-items.missing-model on demo:ruby_sword',
+    );
+  });
+
   it('keeps the code and id on the chip in Advanced, and labels Ask AI by mode', async () => {
     const { session, controller } = await host('advanced');
     render(<AiPanel controller={controller} onOpenSettings={vi.fn()} />);
-    attachProblemToAi(controller, MISSING_MODEL, session.snapshot.project, 'advanced');
+    controller.explainProblem(MISSING_MODEL, 'advanced');
     expect((await screen.findByTestId('ai-context-label')).textContent).toBe(
       'Problem blocks-items.missing-model on demo:ruby_sword',
     );

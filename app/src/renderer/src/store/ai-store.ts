@@ -81,7 +81,7 @@ export type AiDisplayMessage =
   | {
       seq: number;
       role: 'plan';
-      /** The plan as it is now (the same object {@link AiConversation.plan} holds while latest). */
+      /** The plan as it is now. */
       state: AiPlanState;
       /** A decided or cancelled plan whose run has ended closes to one line (ADR 0125 D1). */
       closed: boolean;
@@ -173,11 +173,6 @@ export interface AiCheckpointState {
 export interface AiConversation {
   /** The id main knows the conversation by. */
   id: string;
-  /**
-   * @deprecated The run size now comes from the caller of `send` (ADR 0125 D2); kept until the
-   * panel's switch and `App.tsx` stop using it (B685, B689), deleted at B693.
-   */
-  mode: AiMode;
   messages: AiDisplayMessage[];
   /** The current or last run; `null` before the first. */
   run: RunState | null;
@@ -185,13 +180,6 @@ export interface AiConversation {
   changeset: PendingChangeset;
   /** The changeset's items as of its last change, so components re-render. */
   changesetItems: readonly ChangeItem[];
-  /**
-   * The latest plan, mirrored from its transcript entry.
-   *
-   * @deprecated Read the `plan` entries of {@link messages} (ADR 0125 D1); kept for today's
-   * panel until B685 and B686, deleted at B693.
-   */
-  plan: AiPlanState | null;
   /**
    * The checkpoint waiting for the user. Read through `conversationStatus`; kept as a field (the
    * step's buttons need its summary).
@@ -212,7 +200,6 @@ export interface AiConversation {
 export function newConversation(
   id: string,
   options: {
-    mode?: AiMode;
     limits?: Record<AiMode, AiRunLimits>;
     changeset?: PendingChangeset;
   } = {},
@@ -220,12 +207,10 @@ export function newConversation(
   const changeset = options.changeset ?? new PendingChangeset();
   return {
     id,
-    mode: options.mode ?? 'chat',
     messages: [],
     run: null,
     changeset,
     changesetItems: changeset.items,
-    plan: null,
     checkpoint: null,
     usage: emptyUsage(),
     usageBefore: emptyUsage(),
@@ -238,10 +223,7 @@ export function newConversation(
 }
 
 /** The limits the next run of `size` uses: the run override, else the size's default. */
-export function limitsFor(
-  conversation: AiConversation,
-  size: AiMode = conversation.mode,
-): AiRunLimits {
+export function limitsFor(conversation: AiConversation, size: AiMode = 'chat'): AiRunLimits {
   return conversation.runLimits ?? conversation.limits[size];
 }
 
@@ -317,14 +299,13 @@ function lastUserSeq(conversation: AiConversation): number | null {
 }
 
 /**
- * Starts a run of `size` (default: the deprecated conversation mode, which is `chat` unless
- * today's switch changed it) with that size's limits; the run override is used up. The run
+ * Starts a run of `size` (default `chat`; the caller of `send` says, ADR 0125 D2) with that size's limits; the run override is used up. The run
  * remembers the newest user message, which Try again sends again.
  */
 export function startRun(
   conversation: AiConversation,
   runId: string,
-  size: AiMode = conversation.mode,
+  size: AiMode = 'chat',
   now: number = Date.now(),
 ): AiConversation {
   return {
@@ -366,16 +347,23 @@ export function doneNotice(
   );
 }
 
-/** Replaces the plan (and its transcript entry); `closed` is set on the entry when given. */
+/** The newest plan of the transcript (waiting, decided or ended), or `null` before the first. */
+export function latestPlan(conversation: AiConversation): AiPlanState | null {
+  for (let i = conversation.messages.length - 1; i >= 0; i--) {
+    const message = conversation.messages[i];
+    if (message?.role === 'plan') return message.state;
+  }
+  return null;
+}
+
+/** Replaces a plan's transcript entry; `closed` is set on the entry when given. */
 function setPlan(
   conversation: AiConversation,
-  plan: AiPlanState | null,
+  plan: AiPlanState,
   closed?: boolean,
 ): AiConversation {
-  if (plan === null) return { ...conversation, plan };
   return {
     ...conversation,
-    plan,
     messages: conversation.messages.map((message) =>
       message.role === 'plan' && message.seq === plan.seq
         ? { ...message, state: plan, ...(closed === undefined ? {} : { closed }) }
@@ -481,10 +469,6 @@ export function applyEvent(
             : { stopDetails: structuredClone(event.stopDetails) }),
         },
         checkpoint: null,
-        plan:
-          conversation.plan?.status === 'pending'
-            ? { ...conversation.plan, status: 'cancelled' }
-            : conversation.plan,
       };
       next = closePlans(next, runId);
       const text = doneNotice(event.reason, event.message, event.stopDetails, event.errorClass);
@@ -519,8 +503,8 @@ export function recordToolResult(
 }
 
 /**
- * Shows a plan waiting for the user's decision: a `plan` entry at this place of the transcript,
- * mirrored into {@link AiConversation.plan}. An earlier plan still waiting is cancelled.
+ * Shows a plan waiting for the user's decision: a `plan` entry at this place of the transcript
+ * ({@link latestPlan} from then on). An earlier plan still waiting is cancelled.
  */
 export function showPlan(
   conversation: AiConversation,
@@ -545,16 +529,16 @@ export function showPlan(
     ...conversation,
     messages: [...messages, { seq, role: 'plan', state, closed: false }],
     nextSeq: seq + 1,
-    plan: state,
   };
 }
 
 /** Records the user's plan decision ("Step through" turns step mode on). */
 export function decidePlan(conversation: AiConversation, decision: PlanDecision): AiConversation {
-  if (conversation.plan === null) return conversation;
+  const current = latestPlan(conversation);
+  if (current === null) return conversation;
   return setPlan(conversation, {
-    ...conversation.plan,
-    plan: { ...conversation.plan.plan, items: structuredClone(decision.items) },
+    ...current,
+    plan: { ...current.plan, items: structuredClone(decision.items) },
     status: 'decided',
     decision: structuredClone(decision),
     stepMode: decision.decision === 'step',
@@ -577,7 +561,7 @@ export function reachCheckpoint(
   input: CheckpointInput,
   runId: string | null,
 ): AiConversation {
-  const current = conversation.plan;
+  const current = latestPlan(conversation);
   if (current === null) return { ...conversation, checkpoint: null };
   const plan = {
     ...current,
@@ -734,7 +718,7 @@ export interface AiStoreState {
   ensureConversation(
     root: string,
     newId: () => string,
-    options?: { mode?: AiMode; limits?: Record<AiMode, AiRunLimits> },
+    options?: { limits?: Record<AiMode, AiRunLimits> },
   ): AiConversation;
   /** Replaces the conversation of `root` with a fresh one (same changeset cleared). */
   resetConversation(root: string, id: string): void;
@@ -742,8 +726,6 @@ export interface AiStoreState {
   dropConversation(root: string): void;
   /** Applies a pure transition to the conversation of `root` (no-op when missing). */
   update(root: string, transition: (conversation: AiConversation) => AiConversation): void;
-  /** @deprecated The run size comes from the caller of `send` (ADR 0125 D2); deleted at B693. */
-  setMode(root: string, mode: AiMode): void;
   setLimits(root: string, limits: Record<AiMode, AiRunLimits>): void;
   setRunLimits(root: string, limits: AiRunLimits | null): void;
   appendUser(
@@ -752,7 +734,7 @@ export interface AiStoreState {
     contextBlocks?: readonly string[],
     images?: readonly string[],
   ): void;
-  /** Starts a run of `size` (default: the deprecated conversation mode). */
+  /** Starts a run of `size` (default `chat`). */
   startRun(root: string, runId: string, size?: AiMode): void;
   applyRunEvent(root: string, runId: string, event: AiEvent): void;
   /** Shows the plan and resolves with the user's decision (see {@link resolvePlan}). */
@@ -824,7 +806,7 @@ export const useAiStore = create<AiStoreState>((set, get) => {
       changeset.clear();
       const fresh = newConversation(id, {
         changeset,
-        ...(current === undefined ? {} : { mode: current.mode, limits: current.limits }),
+        ...(current === undefined ? {} : { limits: current.limits }),
       });
       set((state) => ({ conversations: { ...state.conversations, [root]: fresh } }));
       mirror(root, changeset);
@@ -839,12 +821,6 @@ export const useAiStore = create<AiStoreState>((set, get) => {
     },
 
     update,
-
-    setMode(root, mode) {
-      update(root, (conversation) =>
-        conversation.mode === mode ? conversation : { ...conversation, mode },
-      );
-    },
 
     setLimits(root, limits) {
       update(root, (conversation) => ({ ...conversation, limits: structuredClone(limits) }));

@@ -21,6 +21,7 @@ import {
   conversationStatus,
 } from '../../src/renderer/src/components/ai/ai-status';
 import {
+  forbiddenIn,
   statusWords,
   toolLine,
   type UiMode,
@@ -29,7 +30,12 @@ import {
 } from '../../src/renderer/src/components/ai/ai-words';
 import { lineDiff } from '../../src/renderer/src/components/ai/line-diff';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
-import { type AiConversation, applyEvent, useAiStore } from '../../src/renderer/src/store/ai-store';
+import {
+  type AiConversation,
+  applyEvent,
+  latestPlan,
+  useAiStore,
+} from '../../src/renderer/src/store/ai-store';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import type { AppSettingsView } from '../../src/shared/platform';
@@ -557,8 +563,9 @@ describe('AiPanel by state and mode', () => {
     expect((screen.getByTestId('ai-send') as HTMLButtonElement).disabled).toBe(false);
     await s.user.click(screen.getByTestId('ai-send'));
     const conversation = useAiStore.getState().conversations[ROOT];
-    expect(conversation?.plan?.decision?.decision).toBe('revise');
-    expect(conversation?.plan?.decision?.comments).toBe('make it red');
+    const plan = conversation === undefined ? null : latestPlan(conversation);
+    expect(plan?.decision?.decision).toBe('revise');
+    expect(plan?.decision?.comments).toBe('make it red');
     expect(s.ai.starts).toHaveLength(0);
   });
 
@@ -578,6 +585,20 @@ describe('AiPanel by state and mode', () => {
     expect(s.ai.starts[0]?.mode).toBe('build');
     expect(s.ai.starts[0]?.text).toMatch(/^Make a whole mod/);
   });
+
+  it.each(WORDS_MODES)(
+    'says a new chat is not kept after closing the app in %s (F19)',
+    async (mode) => {
+      usePreferences.setState({ mode });
+      await setup();
+      const empty = await screen.findByTestId('ai-empty');
+      const line = within(empty).getByTestId('ai-not-saved');
+      expect(line.textContent).toBe(
+        'Chats are not saved: they last until you close MCSuperMods or start a new one.',
+      );
+      expect(forbiddenIn(line.textContent ?? '')).toEqual([]);
+    },
+  );
 
   it('wires Try again, Keep going and Check my key', async () => {
     const s = await setup();

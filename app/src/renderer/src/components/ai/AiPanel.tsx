@@ -7,6 +7,7 @@ import {
   type AiConversation,
   type AiDisplayMessage,
   isRunning,
+  latestPlan,
   limitsFor,
   useAiStore,
 } from '../../store/ai-store';
@@ -459,7 +460,7 @@ export function AiPanel(props: {
 
   const renderPlan = (message: PlanMessage) => {
     const plan = message.state;
-    const latest = conversation.plan === plan;
+    const latest = latestPlan(conversation) === plan;
     return (
       <AiPlanView
         plan={plan}
@@ -544,6 +545,9 @@ export function AiPanel(props: {
                 </li>
               ))}
             </ul>
+            <p className="text-xs text-muted" data-testid="ai-not-saved">
+              {words.notSaved}
+            </p>
           </div>
         )}
         <AiTranscript

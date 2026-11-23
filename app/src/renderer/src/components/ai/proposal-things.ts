@@ -395,6 +395,24 @@ export function thingsOf(items: readonly ChangeItem[]): AiMadeThing[] {
     }));
 }
 
+/**
+ * The name of each thing-kind element the items make or change, by id, as the cards name it
+ * (the proposal's language files first, then the element's own name or words of its id). The
+ * See it pane names its things with these, so it says what the cards say (ADR 0125 open item).
+ */
+export function proposalNames(items: readonly ChangeItem[]): Map<string, string> {
+  const bundle = bundleOf(items);
+  const names = new Map<string, string>();
+  for (const item of items) {
+    if (item.op === 'delete' || item.op === 'asset') continue;
+    if (item.kind === undefined || !isThingKind(item.kind)) continue;
+    const id = item.op === 'rename' ? (item.to ?? item.elementId) : item.elementId;
+    if (id === undefined || names.has(id)) continue;
+    names.set(id, nameOf(bundle, item, id));
+  }
+  return names;
+}
+
 // Counts and words -------------------------------------------------------------------------
 
 /** The counts the review's heading takes (`reviewHeading` of `ai-words.ts`). */

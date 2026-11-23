@@ -202,8 +202,8 @@ export {
   type CreateElementsInput,
   type CreateTextureInput,
   type DeleteElementInput,
-  PLACEHOLDER_PATTERN_NAMES,
   type RenameElementInput,
+  TEXTURE_PATTERN_NAMES,
   TEXTURE_SEED_MAX,
   type UpdateElementInput,
 } from './tools/propose';

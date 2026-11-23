@@ -15,6 +15,7 @@ import {
   followAppliedNotice,
   isRunning,
   keepGoingRequest,
+  latestPlan,
   limitsFor,
   newConversation,
   pendingPlan,
@@ -226,23 +227,30 @@ describe('ai-store reducers', () => {
     expect(startRun(newConversation('c'), 'r').run?.mode).toBe('chat');
   });
 
-  it('uses the run limits once, then the mode defaults again', () => {
-    let state = newConversation('c', { mode: 'build' });
-    expect(limitsFor(state)).toEqual(DEFAULT_LIMITS.build);
+  it('uses the run limits once, then the size defaults again', () => {
+    let state = newConversation('c');
+    expect(limitsFor(state)).toEqual(DEFAULT_LIMITS.chat);
+    expect(limitsFor(state, 'build')).toEqual(DEFAULT_LIMITS.build);
     state = {
       ...state,
       runLimits: { maxToolTurns: 5, maxOutputTokens: 30_000, taskBudget: false },
     };
-    state = startRun(state, 'r');
+    state = startRun(state, 'r', 'build');
     expect(state.run?.limits).toEqual({
       maxToolTurns: 5,
       maxOutputTokens: 30_000,
       taskBudget: false,
     });
     expect(state.run?.mode).toBe('build');
-    expect(limitsFor(state)).toEqual(DEFAULT_LIMITS.build);
+    expect(limitsFor(state, 'build')).toEqual(DEFAULT_LIMITS.build);
   });
 });
+
+/** The newest plan of the conversation of `root` in the store. */
+function latest(root: string) {
+  const conversation = useAiStore.getState().conversations[root];
+  return conversation === undefined ? null : latestPlan(conversation);
+}
 
 describe('useAiStore', () => {
   beforeEach(() => {
@@ -255,8 +263,7 @@ describe('useAiStore', () => {
     const store = useAiStore.getState();
     const first = store.ensureConversation('/p/a', () => 'conv-a');
     expect(store.ensureConversation('/p/a', () => 'other')).toBe(first);
-    store.ensureConversation('/p/b', () => 'conv-b', { mode: 'build' });
-    expect(useAiStore.getState().conversations['/p/b']?.mode).toBe('build');
+    store.ensureConversation('/p/b', () => 'conv-b');
     first.changeset.add({ op: 'create', elementId: 'demo:a', kind: 'msm:block', after: {} });
     expect(useAiStore.getState().conversations['/p/a']?.changesetItems).toHaveLength(1);
     expect(useAiStore.getState().conversations['/p/b']?.changesetItems).toHaveLength(0);
@@ -283,16 +290,15 @@ describe('useAiStore', () => {
     store.ensureConversation('/p', () => 'c');
     store.startRun('/p', 'r1');
     const decision = store.proposePlan('/p', plan, 'r1');
-    expect(useAiStore.getState().conversations['/p']?.plan?.status).toBe('pending');
+    expect(latest('/p')?.status).toBe('pending');
     store.resolvePlan('/p', { decision: 'step', items: plan.items.slice(0, 1), comments: '' });
     await expect(decision).resolves.toEqual({
       decision: 'step',
       items: plan.items.slice(0, 1),
       comments: '',
     });
-    const state = useAiStore.getState().conversations['/p'];
-    expect(state?.plan).toMatchObject({ status: 'decided', stepMode: true });
-    expect(state?.plan?.plan.items).toHaveLength(1);
+    expect(latest('/p')).toMatchObject({ status: 'decided', stepMode: true });
+    expect(latest('/p')?.plan.items).toHaveLength(1);
 
     const checkpoint = store.checkpoint(
       '/p',
@@ -302,7 +308,7 @@ describe('useAiStore', () => {
     expect(useAiStore.getState().conversations['/p']?.checkpoint?.input.completedItemIds).toEqual([
       'ore',
     ]);
-    expect(useAiStore.getState().conversations['/p']?.plan?.completed).toEqual(['ore']);
+    expect(latest('/p')?.completed).toEqual(['ore']);
     store.resolveCheckpoint('/p', 'stop');
     await expect(checkpoint).resolves.toBe('stop');
     expect(useAiStore.getState().conversations['/p']?.checkpoint).toBeNull();
@@ -320,20 +326,25 @@ describe('useAiStore', () => {
     ).resolves.toBe('continue');
     void store.proposePlan('/p', plan, 'r1');
     store.applyRunEvent('/p', 'r1', { type: 'done', reason: 'cancelled' });
-    expect(useAiStore.getState().conversations['/p']?.plan?.status).toBe('cancelled');
+    expect(latest('/p')?.status).toBe('cancelled');
   });
 
-  it('resets a conversation with a new id, keeping mode and limits and clearing the changeset', () => {
+  it('resets a conversation with a new id, keeping the limits and clearing the changeset', () => {
     const store = useAiStore.getState();
-    const first = store.ensureConversation('/p', () => 'c1');
-    store.setMode('/p', 'build');
+    const first = store.ensureConversation('/p', () => 'c1', {
+      limits: { chat: DEFAULT_LIMITS.build, build: DEFAULT_LIMITS.build },
+    });
     store.setRunLimits('/p', { maxToolTurns: 3, maxOutputTokens: 20_000, taskBudget: true });
     first.changeset.add({ op: 'create', elementId: 'demo:a', kind: 'msm:block', after: {} });
     store.appendUser('/p', 'Hi');
     store.resetConversation('/p', 'c2');
     const fresh = useAiStore.getState().conversations['/p'];
     expect(fresh?.id).toBe('c2');
-    expect(fresh?.mode).toBe('build');
+    expect(fresh?.limits.chat).toEqual(DEFAULT_LIMITS.build);
+    expect(fresh).not.toHaveProperty('mode');
+    expect(fresh).not.toHaveProperty('plan');
+    // The Chat/Build switch is gone (ADR 0125 D2): the run's size comes from `send`'s caller.
+    expect('setMode' in useAiStore.getState()).toBe(false);
     expect(fresh?.messages).toEqual([]);
     expect(fresh?.runLimits).toBeNull();
     expect(fresh?.changesetItems).toEqual([]);
@@ -343,7 +354,7 @@ describe('useAiStore', () => {
 });
 
 describe('the plan in the conversation', () => {
-  it('is a transcript entry at the place it was proposed, mirrored into conversation.plan', () => {
+  it('is a transcript entry at the place it was proposed, read back by latestPlan', () => {
     let state = running();
     state = applyEvent(state, 'run-1', { type: 'text_delta', text: 'Here is a plan.' });
     state = showPlan(state, plan, 'run-1');
@@ -356,7 +367,7 @@ describe('the plan in the conversation', () => {
     ]);
     const entry = pendingPlan(state);
     expect(entry?.seq).toBe(2);
-    expect(entry?.state).toBe(state.plan);
+    expect(entry?.state).toBe(latestPlan(state));
     state = decidePlan(state, { decision: 'build_all', items: plan.items, comments: '' });
     expect(pendingPlan(state)).toBeUndefined();
     const decided = state.messages[2];
@@ -384,7 +395,7 @@ describe('the plan in the conversation', () => {
     state = decidePlan(state, { decision: 'build_all', items: plan.items, comments: '' });
     // The model says both are built; nothing is proposed yet.
     state = reachCheckpoint(state, { completedItemIds: ['ore', 'gem'], summary: 'Both.' }, 'run-1');
-    const current = state.plan;
+    const current = latestPlan(state);
     if (current === null) throw new Error('No plan.');
     expect(current.completed).toEqual(['ore', 'gem']);
     expect(tickedItemIds(current, state)).toEqual([]);
@@ -400,7 +411,7 @@ describe('the plan in the conversation', () => {
   });
 
   it('reads a typed answer to a waiting plan or step', () => {
-    const waiting = showPlan(running(), plan, 'run-1').plan;
+    const waiting = latestPlan(showPlan(running(), plan, 'run-1'));
     if (waiting === null) throw new Error('No plan.');
     for (const text of ['go', 'Yes', ' OK! ', 'go.']) {
       expect(typedPlanDecision(waiting, text)).toEqual({

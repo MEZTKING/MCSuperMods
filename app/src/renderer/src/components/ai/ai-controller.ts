@@ -13,8 +13,8 @@
  *   was made as things; its notice follows the command stack (added, taken out again, put
  *   back: D4). {@link AiController.discard} drops them.
  * - {@link AiController.explainProblem} and {@link AiController.askAboutElement} open the panel
- *   in chat mode with a context block waiting in the input area; nothing is sent until the user
- *   presses Send.
+ *   with a context block waiting in the input area; nothing is sent until the user presses Send
+ *   (the run is then a chat-sized one).
  *
  * The panel's own state (the key status, the Settings model, the conversation's model and the
  * input drafts) lives in {@link useAiPanelStore}.
@@ -35,7 +35,11 @@ import {
 import type { Problem, Project, ResourceLocation } from '@msm/core';
 import { create } from 'zustand';
 import type { AiKeyStatus, AiPlatform, AppSettingsView } from '../../../../shared/platform';
-import { elementContextBlock, problemContextBlock } from '../../ai/context-blocks';
+import {
+  elementContextBlock,
+  problemChipLabel,
+  problemContextBlock,
+} from '../../ai/context-blocks';
 import { projectContextOf } from '../../ai/project-context';
 import { createToolExecutor } from '../../ai/tool-executor';
 import type { ChangesetPlanOptions } from '../../changeset/changeset';
@@ -68,6 +72,7 @@ import {
   applyResultText,
   DISCARDED_TEXT,
   modelChangeWords,
+  type UiMode,
 } from './ai-words';
 
 /** A context block waiting in the input area, shown as a chip with its text quoted. */
@@ -90,7 +95,7 @@ export interface AiDraft {
 
 /** What {@link AiController.send} may be told besides the message. */
 export interface AiSendOptions {
-  /** The run's size (ADR 0125 D2); default the deprecated conversation mode, `chat` unless set. */
+  /** The run's size (ADR 0125 D2); default `chat`. */
   size?: AiMode;
 }
 
@@ -289,19 +294,6 @@ export class AiController {
     });
   }
 
-  /**
-   * Switches the open conversation's mode (not while a run is in progress).
-   *
-   * @deprecated The run's size comes from the caller of {@link send} (ADR 0125 D2); kept until
-   * the panel and `App.tsx` stop calling it (B685, B689), deleted at B693.
-   */
-  setMode(mode: AiMode): void {
-    const conversation = this.conversation();
-    const root = this.root;
-    if (conversation === null || root === null || isRunning(conversation)) return;
-    useAiStore.getState().setMode(root, mode);
-  }
-
   /** The open project's input area. */
   draft(): AiDraft {
     const root = this.root;
@@ -329,23 +321,28 @@ export class AiController {
   }
 
   /**
-   * Opens the panel in chat mode with the problem as a context block (its code, message,
-   * element id and path, and the element's kind and data) and a default question.
+   * Explain (the Problems tab) and Ask the helper (Things to fix): opens the panel with the
+   * problem as a context block (its code, message, element id and path, and the element's kind
+   * and data) and a default question, and sends nothing. The chip is labelled for the view mode
+   * (`problemChipLabel`: plain words in Very easy and Easy, the code and id in Advanced; ADR 0125
+   * D11); `mode` defaults to the preference.
    */
-  explainProblem(problem: Problem): void {
+  explainProblem(problem: Problem, mode: UiMode = usePreferences.getState().mode): void {
     const project = this.#session.snapshot.project;
     const element =
       problem.elementId === undefined || project === null
         ? null
         : findElement(project, problem.elementId);
-    const where = problem.elementId === undefined ? '' : ` on ${problem.elementId}`;
     this.#prefill(
-      { label: `Problem ${problem.code}${where}`, block: problemContextBlock(problem, element) },
+      {
+        label: problemChipLabel(problem, project, mode),
+        block: problemContextBlock(problem, element),
+      },
       EXPLAIN_PROBLEM_TEXT,
     );
   }
 
-  /** Opens the panel in chat mode with the element (kind and data) as a context block. */
+  /** Opens the panel with the element (kind and data) as a context block. */
   askAboutElement(id: ResourceLocation): void {
     const project = this.#session.snapshot.project;
     const element = project === null ? null : findElement(project, id);
@@ -358,7 +355,6 @@ export class AiController {
 
   #prefill(context: AiContextDraft, text: string): void {
     this.open();
-    this.setMode('chat');
     const current = this.draft();
     this.setDraft({ text: current.text.trim() === '' ? text : current.text, context });
     useAiPanelStore.setState((state) => ({ focusRequest: state.focusRequest + 1 }));
@@ -419,7 +415,7 @@ export class AiController {
       return null;
     }
     if (isRunning(conversation) || (text.trim() === '' && pictures.length === 0)) return null;
-    const size = options.size ?? conversation.mode;
+    const size = options.size ?? 'chat';
     if (text.trim() === '') {
       // The API needs some text with the pictures.
       text =

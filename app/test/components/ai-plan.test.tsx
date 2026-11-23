@@ -30,8 +30,10 @@ import {
 } from '../../src/renderer/src/components/ai/ai-words';
 import {
   type AiConversation,
+  type AiPlanState,
   addUserMessage,
   decidePlan,
+  latestPlan,
   newConversation,
   reachCheckpoint,
   showPlan,
@@ -84,11 +86,11 @@ function projectOf(elements: { id: string; kind: string; data: unknown }[]): Pro
 function renderPlan(
   conversation: AiConversation,
   mode: UiMode,
-  extra: { closed?: boolean; project?: Project | null } = {},
+  extra: { closed?: boolean; project?: Project | null; plan?: AiPlanState } = {},
 ) {
   const onDecide = vi.fn<(decision: PlanDecision) => void>();
   const onCheckpoint = vi.fn<(decision: 'continue' | 'stop') => void>();
-  const plan = conversation.plan;
+  const plan = extra.plan ?? latestPlan(conversation);
   if (plan === null) throw new Error('The conversation has no plan.');
   render(
     <AiPlanView
@@ -255,7 +257,7 @@ describe('the plan (ADR 0125 wording table)', () => {
       { completedItemIds: ['sword', 'pick', 'ore'], summary: 'Done.' },
       'r',
     );
-    const plan = stepping.plan;
+    const plan = latestPlan(stepping);
     if (plan === null) throw new Error('No plan.');
     expect(plan.completed).toEqual(['sword', 'pick', 'ore']);
     expect(planLines(plan, stepping, null, 'easy').map((line) => line.ticked)).toEqual([
@@ -298,18 +300,20 @@ describe('the plan (ADR 0125 wording table)', () => {
 
   it('closes a plan that was never answered as not started', () => {
     const conversation = planned();
-    const plan = conversation.plan;
+    const plan = latestPlan(conversation);
     if (plan === null) throw new Error('No plan.');
-    const cancelled = { ...conversation, plan: { ...plan, status: 'cancelled' as const } };
-    renderPlan(cancelled, 'easy', { closed: true });
+    renderPlan(conversation, 'easy', {
+      closed: true,
+      plan: { ...plan, status: 'cancelled' },
+    });
     expect(screen.getByTestId('ai-plan').textContent).toBe('Plan: Ruby tools. Not started.');
   });
 
   it('says a cancelled plan in words while it is still open', () => {
     const conversation = planned();
-    const plan = conversation.plan;
+    const plan = latestPlan(conversation);
     if (plan === null) throw new Error('No plan.');
-    renderPlan({ ...conversation, plan: { ...plan, status: 'cancelled' } }, 'easy');
+    renderPlan(conversation, 'easy', { plan: { ...plan, status: 'cancelled' } });
     expect(screen.getByTestId('ai-plan-state').textContent).toBe(PLAN_VIEW_WORDS.cancelled);
   });
 

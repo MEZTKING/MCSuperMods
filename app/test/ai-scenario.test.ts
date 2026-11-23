@@ -244,7 +244,7 @@ describe('AI helper scenario: the ruby tools mod (build mode)', () => {
     const failed = [...record.results.entries()].filter(([, answer]) => answer.isError);
     expect(failed.map(([id, answer]) => `${id}: ${answer.content}`)).toEqual([]);
 
-    // The changeset: the expected elements, the starter and placeholder textures, no conflicts.
+    // The changeset: the expected elements, the starter and drawn textures, no conflicts.
     const items = changeset.items;
     expect(items.filter((item) => item.conflict !== undefined)).toEqual([]);
     const created = items.filter((item) => item.op === 'create').map((item) => item.elementId);
@@ -253,7 +253,7 @@ describe('AI helper scenario: the ruby tools mod (build mode)', () => {
       .filter((item) => item.op === 'asset')
       .map((item) => `${item.asset?.namespace}:${item.asset?.path}`);
     expect([...assets].sort()).toEqual([...RUBY_ASSETS].sort());
-    // The two create_texture placeholders.
+    // The two create_texture pictures.
     expect(assets).toContain('ruby:textures/item/ruby_pickaxe.png');
     expect(assets).toContain('ruby:textures/item/ruby_axe.png');
     // The starters' pack.mcmeta elements are not proposed (the project has one), nor are the
@@ -591,7 +591,7 @@ const dartScript = (): AiModelScript =>
         content: [
           {
             type: 'text',
-            text: 'The poison dart is ready to review. The texture is a placeholder to replace.',
+            text: 'The poison dart is ready to review. The texture is drawn for you; redraw it any time.',
           },
         ],
       },
@@ -710,7 +710,7 @@ const mapleScript = (): AiModelScript =>
         content: [
           {
             type: 'text',
-            text: 'The maple wood set is ready to review. The textures are placeholders to replace.',
+            text: 'The maple wood set is ready to review. The textures are drawn for you; redraw them any time.',
           },
         ],
       },
@@ -860,7 +860,7 @@ const foxScript = (): AiModelScript =>
         content: [
           {
             type: 'text',
-            text: 'The pet fox is ready to review. Its skin is a placeholder to replace.',
+            text: 'The pet fox is ready to review. Its skin is drawn for you; redraw it any time.',
           },
         ],
       },
@@ -1063,7 +1063,7 @@ const kartScript = (): AiModelScript =>
         input: { elements: [{ id: 'karts:speed_bar', kind: 'msm:hud', data: KART_HUD }] },
       },
     ],
-    'The go-kart and its speed bar are ready to review. The texture is a placeholder to replace; vehicles and HUD elements need the Fabric mod jar and a game restart.',
+    'The go-kart and its speed bar are ready to review. The texture is drawn for you; redraw it any time; vehicles and HUD elements need the Fabric mod jar and a game restart.',
   );
 
 describe('AI helper scenario: the go-kart with a speed bar (build mode)', () => {
@@ -1212,7 +1212,7 @@ const cottageScript = (): AiModelScript =>
         },
       },
     ],
-    'The cottage bed, lantern, rug and tab are ready to review. The pictures are placeholders to replace; new blocks and the tab need the Fabric mod jar.',
+    'The cottage bed, lantern, rug and tab are ready to review. The pictures are drawn for you; redraw them any time; new blocks and the tab need the Fabric mod jar.',
   );
 
 describe('AI helper scenario: the cottage with a bed and lanterns (build mode)', () => {
@@ -1401,7 +1401,7 @@ const merchantScript = (mob: Record<string, Json>): AiModelScript =>
       { name: 'create_elements', input: { elements: LEVEL_2_ELEMENTS } },
       { name: 'update_element', input: { id: MERCHANT_ID, data: mob } },
     ],
-    'The copper merchant is ready to review: it sells copper ingots and copper blocks for emeralds, and once players have traded with it a lightning rod and a spyglass. The pictures are placeholders to replace; the merchant needs the Fabric mod jar.',
+    'The copper merchant is ready to review: it sells copper ingots and copper blocks for emeralds, and once players have traded with it a lightning rod and a spyglass. The pictures are drawn for you; redraw them any time; the merchant needs the Fabric mod jar.',
   );
 
 describe('AI helper scenario: a merchant who sells copper (build mode)', () => {

@@ -28,7 +28,7 @@ There is no Chat or Build switch: a small ask and a whole mod use the same box. 
 
 ## Ask for something
 
-An empty panel asks **What would you like to make?** and offers four example asks: "Make a ruby sword", "Make a block that glows in the dark", "Make a friendly animal that follows me" and "Make a whole mod about rubies: ore, gem, tools and armour". Pressing one fills the box; nothing is sent until you press **Send**. Enter sends too, and Shift+Enter starts a new line.
+An empty panel asks **What would you like to make?** and offers four example asks: "Make a ruby sword", "Make a block that glows in the dark", "Make a friendly animal that follows me" and "Make a whole mod about rubies: ore, gem, tools and armour". Pressing one fills the box; nothing is sent until you press **Send**. Enter sends too, and Shift+Enter starts a new line. Under them a line says "Chats are not saved: they last until you close MCSuperMods or start a new one."
 
 You can show the helper a picture: paste a screenshot (Ctrl+V), drop a picture on the box or choose **Picture** (up to four per message); the × on a thumbnail removes it. "Make this" with a picture of an item or a mob is a good start.
 

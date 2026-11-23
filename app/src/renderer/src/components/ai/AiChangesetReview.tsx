@@ -200,7 +200,9 @@ export function AiChangesetReview(props: {
       <h3 className="font-semibold" data-testid="ai-review-heading">
         {reviewHeading(counts, mode)}
       </h3>
-      {project !== null && <AiSeeIt project={project} items={items} running={props.running} />}
+      {project !== null && (
+        <AiSeeIt project={project} items={items} running={props.running} mode={mode} />
+      )}
       <AiProposalCards things={things} mode={mode} onToggle={props.onToggle} />
       {advanced &&
         CHANGE_OPS.map((op) => {

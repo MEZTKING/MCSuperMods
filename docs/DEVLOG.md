@@ -10378,3 +10378,19 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - `sources/flows.ts`: give the `scripts` group (or the Scripted behaviour flow) the sort `item`, so "a wand that teleports you" gets its rule.
 - B672: the data pack guide section; then "what is a datapack" expects it.
 - B673: the bars and numbers of the report go into ADR 0124's findings.
+
+## 2026-11-23 — executor — AI helper leftovers (ADR 0125's open items)
+
+**What**
+- See it names things as the cards do: `proposalNames` in `proposal-things.ts` (the proposal's language files first, then the element's own name or words of its id, through the same `nameOf` the cards use) names the pane's things, so a sword whose name is only in the proposal's language file reads "Ruby Sword" in both. Tests: `ai-see-it.test.tsx` "takes the names from the proposal's language file first, like the cards".
+- See it's rename line by mode: `renameWords` says "Old Stone renamed" or "Old Stone renamed to Ruby Stone" in Very easy and Easy, and keeps "demo:old_stone renamed to demo:ruby_stone" in Advanced; `AiSeeIt` takes `mode` (default the preference) and the review passes its own. Tests: the two rename tests in `ai-see-it.test.tsx`.
+- The dead mode switch removed: `AiConversation.mode`, `AiConversation.plan`, the store's and the controller's `setMode` are gone; a run's size is `chat` unless `send`'s caller says `build`; the newest plan is read from the transcript by the new `latestPlan` (`decidePlan`, `reachCheckpoint` and the panel's plan entry use it). `explainProblem(problem, mode?)` labels the chip itself (`problemChipLabel`, mode default the preference), so `App.tsx`'s `attachProblemToAi` and its relabel are deleted and Explain calls the controller directly (same chips as before). Tests: `ai-store.test.ts` (no `setMode`, no `mode` or `plan` on a fresh conversation, `latestPlan`), `polish-explains.test.tsx` ("labels the chip by the mode it is given, with no relabel by the app"; Things to fix's Ask the helper now calls `explainProblem` alone), `ai-plan.test.tsx` and `ai-panel.test.tsx` moved to `latestPlan`.
+- F19: the empty panel's last line, `notSaved` in `ai-words.ts`: "Chats are not saved: they last until you close MCSuperMods or start a new one." in every mode (`ai-not-saved`), the guide's words; `docs/guide/ai-helper.md` names it under the example asks. Test: `ai-panel.test.tsx` "says a new chat is not kept after closing the app" in each mode.
+- F17: `PLACEHOLDER_PATTERN_NAMES` is `TEXTURE_PATTERN_NAMES` (`packages/ai/src/tools/propose.ts`, `index.ts`); the scripted answers of `ai-scenario.test.ts` (six) and `ai-rules.test.ts` (one) say the pictures are drawn for you. Test: `ai-patterns.test.ts` checks no export of `@msm/ai` and no scripted answer says "placeholder". The prompt text and its budget are unchanged.
+
+**Decisions**
+- `store/ai-store.ts` and `packages/ai` were outside the named owner folders but hold what the brief named (`conversation.plan`, `setMode`, `PLACEHOLDER_PATTERN_NAMES`), so they were changed there. `attachElementToAi` keeps its relabel in `App.tsx` (only the problem lines were in scope).
+- A rename whose name stays the same says "Old Stone renamed" rather than naming it twice.
+
+**Next**
+- ADR 0125's Open items can drop the See it, `setMode`/`conversation.plan`, F19 panel line and "placeholder" entries at the next docs close; Show me's Item Studio ids in Very easy and `CHARS_PER_TOKEN` stay open.

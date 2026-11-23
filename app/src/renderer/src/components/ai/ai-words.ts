@@ -118,6 +118,8 @@ export interface AiWords {
   /** One more sentence of the empty panel, or `null`. */
   readonly emptyExtra: string | null;
   readonly examples: readonly AiExampleAsk[];
+  /** The empty panel's last line: chats are not kept after MCSuperMods closes (F19). */
+  readonly notSaved: string;
   readonly inputPlaceholder: string;
   readonly send: string;
   readonly newChat: string;
@@ -173,6 +175,7 @@ const PLAIN: AiWords = Object.freeze({
     'Say it in your own words. I show you what I would make first. Nothing is added to your mod until you say so.',
   emptyExtra: null,
   examples: EXAMPLE_ASKS,
+  notSaved: 'Chats are not saved: they last until you close MCSuperMods or start a new one.',
   inputPlaceholder: 'Type what you want, then press Send',
   send: 'Send',
   newChat: 'New chat',

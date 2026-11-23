@@ -32,7 +32,7 @@ import type {
   RecentProjectView,
   WorldInfo,
 } from '../../shared/platform';
-import { elementChipLabel, problemChipLabel } from './ai/context-blocks';
+import { elementChipLabel } from './ai/context-blocks';
 import { SoundPlayerProvider, type SoundSources, SoundSourcesProvider } from './audio/provider';
 import { createVanillaSoundReader } from './audio/vanilla-sounds';
 import { namespaceOfId } from './changeset/creator-sets';
@@ -378,27 +378,13 @@ export function showMeTarget(
 }
 
 /** What the helpers below need of the AI controller. */
-type AiAttach = Pick<AiController, 'explainProblem' | 'askAboutElement' | 'draft' | 'setDraft'>;
+type AiAttach = Pick<AiController, 'askAboutElement' | 'draft' | 'setDraft'>;
 
 /** Gives the waiting context chip the label of the view mode (ADR 0125 D11). */
 function relabelAiContext(controller: AiAttach, label: string): void {
   const draft = controller.draft();
   if (draft.context === null) return;
   controller.setDraft({ ...draft, context: { ...draft.context, label } });
-}
-
-/**
- * Explain (the Problems tab) and Ask the helper (Things to fix): opens the helper with the
- * problem attached, labelled for the view mode, and sends nothing (ADR 0125 D11).
- */
-export function attachProblemToAi(
-  controller: AiAttach,
-  problem: Problem,
-  project: Project | null,
-  mode: UiMode,
-): void {
-  controller.explainProblem(problem);
-  relabelAiContext(controller, problemChipLabel(problem, project, mode));
 }
 
 /** Ask AI on an element: opens the helper with the element attached, and sends nothing. */
@@ -1747,12 +1733,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   /** Explain (Problems) and Ask the helper (Things to fix): the problem attached, nothing sent. */
   const explainWithAi = (problem: Problem): void => {
     if (aiController === null) return;
-    attachProblemToAi(
-      aiController,
-      problem,
-      session.snapshot.project,
-      usePreferences.getState().mode,
-    );
+    aiController.explainProblem(problem, usePreferences.getState().mode);
   };
   /** Ask AI on an element: the element attached, nothing sent. */
   const askAiAbout = (id: ResourceLocation): void => {

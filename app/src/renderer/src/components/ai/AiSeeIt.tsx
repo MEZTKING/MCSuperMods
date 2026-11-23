@@ -2,7 +2,9 @@
  * The AI review's **See it** pane (B615; ADR 0120 D7, ADR 0125 D3): the project as it would be
  * with every kept, fitting change applied (the state `planChangeItems` builds, so a changed
  * element shows its new look), one live view at a time with the other things in a strip, picked
- * by display name. Deleted and renamed elements are named in a line, not drawn. Unticking a
+ * by the names the proposal's cards use (`proposalNames`: its language files first). Deleted and
+ * renamed elements are named in a line, not drawn; a rename is said in names in Very easy and
+ * Easy and with both ids in Advanced. Unticking a
  * change takes it out of the picture 150 ms later; while the helper is still working the pane
  * says "More may follow". A proposal with nothing to picture says so in one line.
  *
@@ -26,8 +28,11 @@ import { LIVE_VIEW_DEBOUNCE_MS } from '../../liveviews/frame/live-data';
 import { type LiveThing, liveThings, nothingToPicture } from '../../liveviews/live-things';
 import { hasLiveView } from '../../liveviews/registry';
 import type { VanillaAssetReader } from '../../preview/model-chain';
+import { usePreferences } from '../../store/preferences';
 import { useUiStore } from '../../store/ui-store';
 import { thingName } from '../thing-picker/thing-sources';
+import type { UiMode } from './ai-words';
+import { proposalNames } from './proposal-things';
 
 const LiveThings = lazy(() => import('../../liveviews/LiveThings'));
 
@@ -45,9 +50,33 @@ export interface SeeItPreview {
   readonly files: ReadonlyMap<string, Uint8Array>;
 }
 
+/**
+ * The removed line's phrase for a rename: "Old Stone renamed to Ruby Stone" (or "Old Stone
+ * renamed" when the name stays) in Very easy and Easy, "demo:a renamed to demo:b" in Advanced.
+ */
+export function renameWords(
+  item: ChangeItem,
+  before: Project,
+  after: Project,
+  names: ReadonlyMap<string, string>,
+  mode: UiMode,
+): string {
+  const from = item.from ?? item.elementId;
+  const to = item.to ?? item.elementId;
+  if (mode === 'advanced') return `${from ?? '?'} renamed to ${to ?? '?'}`;
+  const old = from === undefined ? 'Something' : thingName(before, from);
+  const now = to === undefined ? undefined : (names.get(to) ?? thingName(after, to));
+  return now === undefined || now === old ? `${old} renamed` : `${old} renamed to ${now}`;
+}
+
 /** What {@link seeItPreview} shows; pure (the project is never changed). */
-export function seeItPreview(project: Project, items: readonly ChangeItem[]): SeeItPreview {
+export function seeItPreview(
+  project: Project,
+  items: readonly ChangeItem[],
+  mode: UiMode = 'easy',
+): SeeItPreview {
   const plan = planChangeItems(project, items);
+  const names = proposalNames(items);
   const applied = new Set(plan.applied);
   const ids: string[] = [];
   const removed: string[] = [];
@@ -65,14 +94,18 @@ export function seeItPreview(project: Project, items: readonly ChangeItem[]): Se
         removed.push(`${thingName(project, item.elementId)} deleted`);
       }
     } else if (item.op === 'rename') {
-      removed.push(`${item.from ?? '?'} renamed to ${item.to ?? item.elementId ?? '?'}`);
+      removed.push(renameWords(item, project, plan.state, names, mode));
     } else if (item.elementId !== undefined && item.kind !== undefined && hasLiveView(item.kind)) {
       ids.push(item.elementId);
     } else {
       unpictured += 1;
     }
   }
-  return { project: plan.state, things: liveThings(plan.state, ids), removed, unpictured, files };
+  const things = liveThings(plan.state, ids).map((thing) => {
+    const name = names.get(thing.element.id);
+    return name === undefined ? thing : { ...thing, name };
+  });
+  return { project: plan.state, things, removed, unpictured, files };
 }
 
 const identities = new WeakMap<object, number>();
@@ -123,6 +156,8 @@ export interface AiSeeItProps {
   readonly vanillaAssets?: VanillaAssetReader | null;
   /** The project's folder; default: the open project's. */
   readonly projectRoot?: string | null;
+  /** The view mode; default: the preference. */
+  readonly mode?: UiMode;
 }
 
 /** The pane; see the module comment. */
@@ -138,7 +173,9 @@ export function AiSeeIt(props: AiSeeItProps) {
     const timer = setTimeout(() => setShown({ key, items: latest.current }), LIVE_VIEW_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [key, shown.key]);
-  const preview = useMemo(() => seeItPreview(project, shown.items), [project, shown]);
+  const preferred = usePreferences((state) => state.mode);
+  const mode = props.mode ?? preferred;
+  const preview = useMemo(() => seeItPreview(project, shown.items, mode), [project, shown, mode]);
   const openRoot = useUiStore((state) => state.snapshot?.root ?? null);
   const cacheReady = useUiStore((state) => state.minecraft.status?.cache != null);
   const targetId = project.targets[0];

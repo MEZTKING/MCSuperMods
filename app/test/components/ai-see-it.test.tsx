@@ -12,6 +12,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import type { ChangeItem } from '../../src/renderer/src/changeset/changeset';
 import { AiChangesetReview } from '../../src/renderer/src/components/ai/AiChangesetReview';
 import { AiSeeIt, seeItPreview } from '../../src/renderer/src/components/ai/AiSeeIt';
+import { thingsOf } from '../../src/renderer/src/components/ai/proposal-things';
 import { useLiveViewPrefs } from '../../src/renderer/src/liveviews/view-prefs';
 
 vi.mock('../../src/renderer/src/liveviews/client', async (importOriginal) => {
@@ -145,6 +146,54 @@ describe('seeItPreview', () => {
     expect(shown.things).toEqual([]);
     expect(shown.removed).toEqual(['Old Stone deleted']);
     expect(shown.unpictured).toBe(1);
+  });
+});
+
+describe('See it names things as the cards do (ADR 0125 open items)', () => {
+  const sword = create('demo:ruby_sword', 'msm:item', { format: 1, model: 'demo:item/ruby_sword' });
+  const swordNames = create('demo:en_us', 'minecraft:lang', {
+    'item.demo.ruby_sword': 'Ruby Sword',
+  });
+
+  it('takes the names from the proposal’s language file first, like the cards', () => {
+    const shown = seeItPreview(project, [sword, swordNames]);
+    expect(shown.things.map((thing) => thing.name)).toEqual(['Ruby Sword']);
+    expect(thingsOf([sword, swordNames]).map((thing) => thing.name)).toEqual(['Ruby Sword']);
+  });
+
+  const rename: ChangeItem = {
+    itemId: 'item-rename',
+    op: 'rename',
+    elementId: 'demo:ruby_stone' as ResourceLocation,
+    from: 'demo:old_stone' as ResourceLocation,
+    to: 'demo:ruby_stone' as ResourceLocation,
+    kind: 'msm:block',
+    before: existing.data,
+    after: existing.data,
+    accepted: true,
+    problems: [],
+  };
+
+  it('says a rename in names in Very easy and Easy, and with ids in Advanced', () => {
+    for (const mode of ['very-easy', 'easy'] as const) {
+      const shown = seeItPreview(project, [rename], mode);
+      expect(shown.removed).toEqual(['Old Stone renamed']);
+      expect(shown.removed.join(' ')).not.toMatch(/\b[a-z0-9_]+:[a-z0-9_/]+\b/);
+    }
+    const renamed = { ...rename, after: { ...existing.data, display_name: 'Ruby Stone' } };
+    expect(seeItPreview(project, [renamed], 'very-easy').removed).toEqual([
+      'Old Stone renamed to Ruby Stone',
+    ]);
+    expect(seeItPreview(project, [rename], 'advanced').removed).toEqual([
+      'demo:old_stone renamed to demo:ruby_stone',
+    ]);
+  });
+
+  it('draws the rename line in the mode it is given', () => {
+    render(<AiSeeIt project={project} items={[rename]} mode="very-easy" projectRoot={null} />);
+    expect(screen.getByTestId('ai-see-it-removed').textContent).toBe(
+      'Not drawn: Old Stone renamed.',
+    );
   });
 });
 
