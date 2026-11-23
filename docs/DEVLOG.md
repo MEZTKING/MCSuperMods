@@ -10210,3 +10210,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - `packages/sim/CLAUDE.md` "Contents" (`src/commands/vanilla.ts` line) can name `team`, `spawnpoint`, `advancement` and `team=`; the guide's `try-it.md` the same (B561/B562).
 - Advancement criteria still never trigger by themselves in Try it (the adventure map's and race's `minecraft:location` lines need `advancement grant` typed); a trigger for `location` on an area's tag would let those games play through.
+
+## 2026-11-23 — executor — B631 e2e of the looks and sounds views
+
+**What**
+- `app/e2e/live-views-looks-path.spec.ts` (B620's skipped stub, now three tests; SwiftShader WebGL as `entities-path`). The project is written by the spec itself: MSM's own pictures (an 8-bit RGBA encoder in the spec), a two-letter bitmap font, two header-only Ogg files (`ogg.ts`) and the elements that use them in namespace `looks_demo` (resource pack and data pack, 26.3). No Minecraft folder: every view draws from the project's files.
+- Sounds: one project event (`looks_demo:block.hum`, volume 0.5, pitch 1.5) plays from three places, the sounds view, a cat's voice (`sound-variant-play-adult_sounds-ambient_sound`) and a goat horn call (`instrument-play`); each press goes `idle` to `playing` with `data-start-ms`, a second press stops it. A music disc song shows its file's length (`song-file` `data-seconds` 12.00, `matches`) and the comparator, and plays its 12-second file.
+- Looks: a painting (`live-painting-picture` 2 by 1, then 1 by 1 on another picture after a Raw JSON edit); a banner pattern on banner and shield (`live-banner-dye` changes `data-pattern-dye` on both, an edit of `asset_id` changes the front picture, the dye stays); a trim material on the project's pattern (`live-trim-swatch` `data-key`/`data-colour` against the spec's palettes; `live-trim-armour` to an armour whose `trim_overrides` swap the palette; an edit of `palette_id` shown on another armour); a wolf variant on the 3D body (`variant-body` `data-mode` body, `data-layers` the project picture, the tame look, then an edit of the wild picture); a pot pattern (`live-pot-face-*` `data-patterned`, a side unticked).
+- Font: typed text in `font-sample-text`; the scale-1 `font-line` `data-width` grows from "A" to "AB" and doubles for "ABAB", the other scales are the same line times the scale, a lacking letter is named in `font-missing`. Day strip: `day-period` `data-span` 48000, keyframes at `data-x` 0 and 50, no `day-undrawable`.
+
+**Decisions**
+- The fake audio out is installed by the spec in the page, not by an `MSM_E2E_*` switch: before the first press it replaces `decodeAudioData`, `createBufferSource` and `createGain` on `AudioContext.prototype` (the player makes its context at its first sound) and records each started sound's file length (read from the Ogg header), volume and pitch in `window.__msmPlayed`. The real player, resolver, file reads and button run unchanged; no source file was touched. Sounds here are not streamed (a streamed sound goes through a media element, which this fake does not cover).
+- The press-to-player time is logged and held under 1,000 ms (B619's 200 ms budget is the unit tests'); measured 7 to 72 ms.
+
+**Checks**
+- `live-views-looks-path` green three runs in a row (3 of 3 each, 41 to 46 s); `smoke.spec.ts` and `tryit-path` 9 of 9; `pnpm --filter @msm/app smoke`; `pnpm lint`; `pnpm typecheck`. `app/out` and `app/e2e/output` deleted after.
+
+**Next**
+- B633: the root `CLAUDE.md` e2e spec count at the batch close (this spec was already counted as a file since B620).
