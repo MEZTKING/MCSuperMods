@@ -8,8 +8,6 @@
  * through `forbiddenIn`. The Notes callout of a copied example says its note in plain words. A
  * section's More options holds the ids (D3).
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
 import {
   CommandStack,
   commands,
@@ -27,12 +25,12 @@ import { builtInTargets } from '@msm/targets';
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { forbiddenIn } from '../../../src/renderer/src/components/ai/ai-words';
 import { EditorArea } from '../../../src/renderer/src/components/EditorArea';
 import { ElementForm } from '../../../src/renderer/src/studios/ElementForm';
 import type { SchemaContextState } from '../../../src/renderer/src/studios/use-schema-context';
 import { schemaIndex } from '../forms/schemas';
 import { PRELOAD_TIMEOUT_MS, preloadChunks } from '../lazy-chunks';
+import { exampleProject, leaksIn } from '../plain-sweep';
 import { schemaState } from './blocks-items/harness';
 
 vi.mock('../../../src/renderer/src/components/texture-editor/png-canvas', () => ({
@@ -40,9 +38,6 @@ vi.mock('../../../src/renderer/src/components/texture-editor/png-canvas', () => 
     new Uint8Array([image.width, image.height]),
   decodePicture: async () => ({ width: 1, height: 1, data: new Uint8ClampedArray(4) }),
 }));
-
-const ROOT = join(__dirname, '..', '..', '..', '..');
-const EXAMPLES = join(ROOT, 'examples');
 
 const KINDS: ElementKind[] = [
   blocksItemsPlugin,
@@ -54,52 +49,6 @@ const KINDS: ElementKind[] = [
 
 function kindOf(id: string): ElementKind | undefined {
   return KINDS.find((entry) => entry.id === id);
-}
-
-function walk(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? walk(path) : [path];
-  });
-}
-
-/** A library example or flow on disk (`examples/<folder>`) as a project. */
-function exampleProject(folder: string): Project {
-  const base = join(EXAMPLES, folder);
-  const byNamespace = new Map<string, Project['namespaces'][number]>();
-  const namespace = (name: string) => {
-    let entry = byNamespace.get(name);
-    if (entry === undefined) {
-      entry = { name, elements: [], assets: [] };
-      byNamespace.set(name, entry);
-    }
-    return entry;
-  };
-  for (const path of walk(join(base, 'content'))) {
-    if (!path.endsWith('.json')) continue;
-    const parsed = JSON.parse(readFileSync(path, 'utf8')) as Element;
-    const name = relative(join(base, 'content'), path).split(sep)[0] as string;
-    namespace(name).elements.push(parsed);
-  }
-  try {
-    for (const path of walk(join(base, 'assets'))) {
-      const [name, ...rest] = relative(join(base, 'assets'), path).split(sep);
-      namespace(name as string).assets.push({
-        path: rest.join('/'),
-        mediaType: path.endsWith('.png') ? 'image/png' : 'application/octet-stream',
-      });
-    }
-  } catch {
-    // An example without assets.
-  }
-  return {
-    formatVersion: 1,
-    name: folder,
-    targets: [],
-    plugins: [],
-    settings: {},
-    namespaces: [...byNamespace.values()],
-  };
 }
 
 /** One Studio over a real element. */
@@ -148,54 +97,6 @@ const CASES: readonly Case[] = [
   { studio: 'Statistic', folder: 'all-kinds', id: 'msm_examples:bells_rung' },
   { studio: 'Rule book', folder: 'rules', id: 'msm_examples:lucky_block_rules' },
 ];
-
-/** One readable string and where it is (the nearest test id, for the failure message). */
-interface Readable {
-  text: string;
-  at: string;
-}
-
-const placeOf = (node: globalThis.Element | null): string =>
-  node?.closest('[data-testid]')?.getAttribute('data-testid') ?? '?';
-
-/** Every readable string under `root`: text nodes, input values and the readable attributes. */
-function readableStrings(root: HTMLElement): Readable[] {
-  const out: Readable[] = [];
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
-    if (node.parentElement?.closest('style, script') != null) continue;
-    // A text node inside an <option> of a closed select still reads when it opens.
-    const text = node.textContent?.trim() ?? '';
-    if (text !== '') out.push({ text, at: placeOf(node.parentElement) });
-  }
-  for (const element of root.querySelectorAll('*')) {
-    for (const attribute of ['placeholder', 'title', 'aria-label', 'alt']) {
-      const value = element.getAttribute(attribute);
-      if (value !== null && value.trim() !== '') out.push({ text: value, at: placeOf(element) });
-    }
-    const typed =
-      (element instanceof HTMLInputElement && ['text', 'search'].includes(element.type)) ||
-      element instanceof HTMLTextAreaElement;
-    if (typed && element.value.trim() !== '') {
-      out.push({ text: element.value, at: placeOf(element) });
-    }
-  }
-  return out;
-}
-
-/** A clock time or a ratio (`1:30`, `8:00`): not an id, though `ID_PATTERN` matches it. */
-const DIGITS_ONLY = /^\d+:\d+$/;
-
-/** The leaks of `root`: each string with what it holds that the plain view forbids. */
-function leaksIn(root: HTMLElement): string[] {
-  return readableStrings(root)
-    .map((entry) => ({
-      ...entry,
-      found: forbiddenIn(entry.text).filter((hit) => !DIGITS_ONLY.test(hit)),
-    }))
-    .filter((entry) => entry.found.length > 0)
-    .map((entry) => `[${entry.at}] ${entry.found.join(', ')} in "${entry.text.slice(0, 160)}"`);
-}
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
 let schema: SchemaContextState;
