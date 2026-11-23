@@ -916,8 +916,9 @@ describe('the prompt in topic files (B681)', () => {
   // (B613), a script's particle count is capped at 1000 only with motion, and no mob flow
   // offers the cube_creature preset. B617 moved it once more, for the data live views topic
   // (`src/prompt/live-views.ts`: the kinds with a live view, their labels and the limits). B553
-  // moved it for Rules 3's 25 catalogue ids for games, and ADR 0127 for the step `set_on_fire`.
-  const PINNED = '63c1bbed945d86f541173d345d540f8e6b739dde5a7111713695ae4d136b0529';
+  // moved it for Rules 3's 25 catalogue ids for games, ADR 0127 for the step `set_on_fire`, and B558
+  // for Try it's games grounds ("Empty sky", "One of my buildings") and the commands `place` and `random`.
+  const PINNED = 'f2184869b0eb1b14e32c083c842bbbc4c563dabe948c6355b0226b269b17dfc0';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');

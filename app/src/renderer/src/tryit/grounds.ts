@@ -8,19 +8,38 @@
  * ground draws only about right and what it leaves out (limits WL3 to WL5, WL8, WL15 to WL17).
  * The land itself is made in the terrain worker (`session-source.ts` `GeneratedGround`).
  *
+ * B558 adds the games grounds (ADR 0117 D4): "Empty sky" (`void`: the world setup's start
+ * structure in empty sky, the player on it holding the kit) and "One of my buildings"
+ * (`structure`: a project structure template as the ground), made by `@msm/sim`'s
+ * `voidGamesGround` and `structureGamesGround` from {@link gamesProjectOf}.
+ *
  * The user's presets are kept in the renderer's local storage beside the app's other view
  * preferences (`store/preferences.ts`): per user of this computer, never in the project.
  */
 
 import type { Project } from '@msm/plugin-api';
 import {
+  AREA_KIND,
   flatGround,
+  type GamesElement,
+  type GamesGroundMade,
+  type GamesProject,
   type GroundBlocks,
   type GroundKind,
+  idWords,
   normaliseQuickOptions,
+  OBJECTIVE_KIND,
+  ONE_BLOCK_KIND,
   QUICK_PRESETS,
   type QuickWorldOptions,
   quickWorld,
+  readTemplate,
+  type StructureTemplateBlocks,
+  structureGamesGround,
+  TEAM_KIND,
+  TIMER_KIND,
+  voidGamesGround,
+  WORLD_SETUP_KIND,
 } from '@msm/sim';
 import { create } from 'zustand';
 import type { TryItAreaCentre, TryItWorldArea, TryItWorldInfo } from '../../../shared/platform';
@@ -48,6 +67,12 @@ export type GroundChoice =
       readonly seed: string;
       /** The block the window is centred on. */
       readonly centre: { readonly x: number; readonly z: number };
+    }
+  | { readonly kind: 'void' }
+  | {
+      readonly kind: 'structure';
+      /** The structure template's id. */
+      readonly structure: string;
     };
 
 /** One world of the project a generated ground can be cut from. */
@@ -85,6 +110,16 @@ export const GROUND_CHOICES: readonly { kind: GroundKind; label: string; line: s
     kind: 'generated',
     label: 'My world generation',
     line: 'The land your own world makes, around where you stand.',
+  },
+  {
+    kind: 'void',
+    label: 'Empty sky',
+    line: 'Your game’s start island in empty sky, holding what new players get.',
+  },
+  {
+    kind: 'structure',
+    label: 'One of my buildings',
+    line: 'One of your project’s structures as the ground, where your game puts it.',
   },
 ];
 
@@ -125,12 +160,16 @@ export function describeGround(choice: GroundChoice): string {
     }
     case 'generated':
       return `${choice.world.label}, seed ${choice.seed}`;
+    case 'void':
+      return 'Empty sky';
+    case 'structure':
+      return `${idWords(choice.structure)}`;
   }
 }
 
 /** The blocks of a ground that needs nothing from main (`world` needs {@link worldGround}). */
 export function groundBlocksFor(
-  choice: Exclude<GroundChoice, { kind: 'world' | 'generated' }>,
+  choice: Exclude<GroundChoice, { kind: 'world' | 'generated' | 'void' | 'structure' }>,
 ): GroundBlocks | undefined {
   switch (choice.kind) {
     case 'grid':
@@ -145,6 +184,102 @@ export function groundBlocksFor(
 /** A world area main read, as a ground. */
 export function worldGround(area: TryItWorldArea): GroundBlocks {
   return { size: area.size, palette: area.palette, blocks: area.blocks };
+}
+
+// ---- The games grounds (B558) ------------------------------------------------------------------
+
+const GAMES_KINDS: ReadonlySet<string> = new Set([
+  WORLD_SETUP_KIND,
+  ONE_BLOCK_KIND,
+  TEAM_KIND,
+  OBJECTIVE_KIND,
+  TIMER_KIND,
+  AREA_KIND,
+]);
+
+const STRUCTURE_TEMPLATE_KIND = 'minecraft:structure_template';
+
+/** Whether a project has any games element (Try it then loads its games side panel). */
+export function projectHasGames(project: Project | null | undefined): boolean {
+  return (
+    project?.namespaces?.some((namespace) =>
+      (namespace.elements ?? []).some((element) => GAMES_KINDS.has(element.kind)),
+    ) ?? false
+  );
+}
+
+/** The project's games elements and structure templates, as `@msm/sim` reads them. */
+export function gamesProjectOf(project: Project | null | undefined): GamesProject {
+  const elements: GamesElement[] = [];
+  const templates = new Map<string, StructureTemplateBlocks>();
+  for (const namespace of project?.namespaces ?? []) {
+    for (const element of namespace.elements ?? []) {
+      if (GAMES_KINDS.has(element.kind)) {
+        elements.push({ id: element.id, kind: element.kind, data: element.data });
+      } else if (element.kind === STRUCTURE_TEMPLATE_KIND) {
+        const template = readTemplate(element.data);
+        if (template !== undefined) templates.set(element.id, template);
+      }
+    }
+  }
+  return { elements, templates };
+}
+
+/** The project's buildings the structure ground offers, in plain words. */
+export function groundBuildings(games: GamesProject): { id: string; label: string }[] {
+  return [...games.templates.keys()].sort().map((id) => ({ id, label: idWords(id) }));
+}
+
+/** Words for the void ground's tab: what it will show for this project. */
+export function voidGroundWords(games: GamesProject): string {
+  const setup = games.elements.find((element) => element.kind === WORLD_SETUP_KIND);
+  if (setup === undefined) {
+    return 'Your project has no world setup yet ("How my world starts"): the sky will be empty.';
+  }
+  return 'Your start island floats in the middle; you stand where new players start, holding what they get. The magic block, timers and areas work as your game’s functions run them.';
+}
+
+/** The ground and plan of a games choice, or the reason it cannot be made. */
+export function gamesGroundFor(
+  choice: Extract<GroundChoice, { kind: 'void' | 'structure' }>,
+  games: GamesProject,
+): GamesGroundMade | string {
+  if (choice.kind === 'void') return voidGamesGround(games);
+  return (
+    structureGamesGround(games, choice.structure) ??
+    'That building is no longer in your project. Choose another.'
+  );
+}
+
+/** An outline the view draws: boxes in block units from `pos` (`render/camera.ts`'s shape). */
+export interface OutlineBoxes {
+  readonly pos: { readonly x: number; readonly y: number; readonly z: number };
+  readonly boxes: readonly (readonly [number, number, number, number, number, number])[];
+}
+
+/**
+ * The picked block's outline with the games areas' boxes added (B558), so the view draws both
+ * in one pass; either may be `null`.
+ */
+export function withAreaOutline(
+  picked: OutlineBoxes | null,
+  areas: OutlineBoxes | null,
+): OutlineBoxes | null {
+  if (areas === null) return picked;
+  if (picked === null) return areas;
+  const dx = areas.pos.x - picked.pos.x;
+  const dy = areas.pos.y - picked.pos.y;
+  const dz = areas.pos.z - picked.pos.z;
+  return {
+    pos: picked.pos,
+    boxes: [
+      ...picked.boxes,
+      ...areas.boxes.map(
+        ([x0, y0, z0, x1, y1, z1]) =>
+          [x0 + dx, y0 + dy, z0 + dz, x1 + dx, y1 + dy, z1 + dz] as const,
+      ),
+    ],
+  };
 }
 
 /** The line "What happened" gets when a world area is in. */
@@ -275,7 +410,7 @@ export function generatedSources(project: Project | null): GeneratedSourceChoice
   const dimensions: GeneratedSourceChoice[] = [];
   const presets: GeneratedSourceChoice[] = [];
   for (const namespace of project?.namespaces ?? []) {
-    for (const element of namespace.elements) {
+    for (const element of namespace.elements ?? []) {
       const id = withNamespace(element.id);
       if (element.kind === DIMENSION_KIND) {
         dimensions.push({

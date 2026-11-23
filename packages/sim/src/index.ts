@@ -11,6 +11,7 @@ export * from './controls/index.js';
 export * from './entities/index.js';
 export * from './events/index.js';
 export * from './fluids/index.js';
+export * from './games/index.js';
 export * from './grounds/index.js';
 export * from './items/bags.js';
 export * from './local-source.js';

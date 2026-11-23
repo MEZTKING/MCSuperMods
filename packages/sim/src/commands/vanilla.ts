@@ -9,6 +9,12 @@
  * `store result|success score` and `run`. Macro lines are filled in by the function runner
  * (`functions.ts`) before they reach this module.
  *
+ * B558 (ADR 0117 D4, games): `random value|roll` (from the area's seeded source) and `place
+ * template` (through the host's `placeTemplate`, the project's templates) run too, and absolute
+ * positions are the world's: `CommandState.corner` is where the area's block 0, 0, 0 stands
+ * (0, 0, 0 but on a games ground), so the games kinds' functions, written for world positions,
+ * work in the area.
+ *
  * Every other command, and every form of a listed command the preview does not run (`execute
  * store ... storage`, `clone from`, `data merge`, a selector filter such as `gamemode=`), is one
  * "Only in Minecraft" line naming it, never silent. The behaviour is written from the command
@@ -48,7 +54,9 @@ export const VANILLA_COMMANDS: readonly string[] = Object.freeze([
   'give',
   'kill',
   'particle',
+  'place',
   'playsound',
+  'random',
   'return',
   'say',
   'schedule',
@@ -154,6 +162,12 @@ export interface VanillaHost {
   predicate(id: string, situation: Situation): PredicateAnswer | undefined;
   /** The block ids of a block tag; `undefined` when the tag does not resolve. */
   blockTag(id: string): readonly string[] | undefined;
+  /**
+   * Places a structure template with its corner at `corner` (area positions, B558's
+   * `place template`): the blocks placed, or `undefined` when no template of that id is known.
+   * Without it `place template` runs only in the game.
+   */
+  placeTemplate?(id: string, corner: BlockPos, origin: SimOrigin | undefined): number | undefined;
 }
 
 /** What a running command reports to and asks of the runner. */
@@ -199,6 +213,13 @@ export class CommandState {
   readonly scheduled: Scheduled[] = [];
   /** The last dialog `dialog show` opened (B611's view can show it), or `null`. */
   dialog: { readonly id: string; readonly tick: number } | null = null;
+  /**
+   * Where the area's corner (its block 0, 0, 0) stands in the world (B558): absolute positions
+   * in commands, selectors' `x=`, `y=` and `z=`, and the positions predicates see are the
+   * world's. A games ground moves it so the lowered functions' world positions land in the
+   * area; every other ground leaves it at 0, 0, 0. "Clear the area" keeps it.
+   */
+  corner: Vec3 = { x: 0, y: 0, z: 0 };
 
   /** Forgets everything ("Clear the area"). */
   clear(): void {
@@ -523,7 +544,7 @@ function readVec3(cur: Cursor): Vec3Spec {
   return spec;
 }
 
-function resolveVec3(spec: Vec3Spec, src: Source, centre: boolean): Vec3 {
+function resolveVec3(rc: RunContext, spec: Vec3Spec, src: Source, centre: boolean): Vec3 {
   const [a, b, c] = spec;
   if (a.rel === '^') {
     const forward = lookDirection(src.yaw, src.pitch);
@@ -537,12 +558,14 @@ function resolveVec3(spec: Vec3Spec, src: Source, centre: boolean): Vec3 {
       z: src.pos.z + left.z * a.n + up.z * b.n + forward.z * c.n,
     };
   }
-  const axis = (coord: Coord, base: number, centred: boolean): number =>
-    coord.rel === '~' ? base + coord.n : coord.n + (centred && coord.whole ? 0.5 : 0);
+  // An absolute coordinate is the world's: the area's corner stands at `state.corner` (B558).
+  const { corner } = rc.state;
+  const axis = (coord: Coord, base: number, centred: boolean, shift: number): number =>
+    coord.rel === '~' ? base + coord.n : coord.n - shift + (centred && coord.whole ? 0.5 : 0);
   return {
-    x: axis(a, src.pos.x, centre),
-    y: axis(b, src.pos.y, false),
-    z: axis(c, src.pos.z, centre),
+    x: axis(a, src.pos.x, centre, corner.x),
+    y: axis(b, src.pos.y, false, corner.y),
+    z: axis(c, src.pos.z, centre, corner.z),
   };
 }
 
@@ -793,10 +816,12 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
     return matches(rc, selector.filters, src, self) ? [self] : [];
   }
   const f = selector.filters;
+  // `x=`, `y=` and `z=` are world positions (B558: the area's corner is `state.corner`).
+  const { corner } = rc.state;
   const base: Vec3 = {
-    x: f.at.x ?? src.pos.x,
-    y: f.at.y ?? src.pos.y,
-    z: f.at.z ?? src.pos.z,
+    x: f.at.x === undefined ? src.pos.x : f.at.x - corner.x,
+    y: f.at.y === undefined ? src.pos.y : f.at.y - corner.y,
+    z: f.at.z === undefined ? src.pos.z : f.at.z - corner.z,
   };
   let found = selector.kind === 'e' || selector.kind === 'n' ? everyone(host) : [PLAYER as Actor];
   found = found.filter((actor) => matches(rc, f, { ...src, pos: base }, actor));
@@ -1226,7 +1251,7 @@ function teleport(cur: Cursor): Run {
       const target = found[0];
       if (target === undefined) throw new Failed('No entity was found');
       where = positionOf(rc.host, target) ?? src.pos;
-    } else where = resolveVec3(to.pos, src, true);
+    } else where = resolveVec3(rc, to.pos, src, true);
     let moved = 0;
     for (const actor of movers) {
       if (actor.kind === 'mob') {
@@ -1249,6 +1274,56 @@ function teleport(cur: Cursor): Run {
 }
 
 const COMMANDS: Readonly<Record<string, Compile>> = {
+  // B558: the games kinds roll their chances with `random value` (one block, B552).
+  random(cur) {
+    const action = cur.next('value, roll or reset');
+    if (action === 'reset') throw new NotHere('/random reset');
+    if (action !== 'value' && action !== 'roll') throw new BadLine(`Unknown action '${action}'`);
+    const range = readRange(cur.next('a range'));
+    const sequence = cur.optional();
+    cur.end();
+    if (range.min === undefined || range.max === undefined) {
+      throw new BadLine('The range must have both ends');
+    }
+    const min = range.min;
+    const max = range.max;
+    if (!Number.isInteger(min) || !Number.isInteger(max) || max <= min) {
+      throw new BadLine('The range must hold at least two whole numbers');
+    }
+    return (rc, src) => {
+      if (sequence !== undefined) rc.only('named random sequences (/random with a sequence)');
+      const value = min + Math.floor(rc.host.random.next() * (max - min + 1));
+      if (action === 'roll') {
+        rc.chat(`${sourceName(rc, src)} rolled ${value} (from ${min} to ${max})`, src.origin);
+      } else {
+        rc.feedback(`Randomly chose ${value} (from ${min} to ${max})`, src.origin);
+      }
+      return ok(value);
+    };
+  },
+
+  // B558: a games area's reset and the world setup's start place templates.
+  place(cur) {
+    const what = cur.next('feature, jigsaw, structure or template');
+    if (what !== 'template') throw new NotHere(`/place ${what}`);
+    const id = cur.id('a template');
+    const at = cur.done ? undefined : readVec3(cur);
+    const rest: string[] = [];
+    while (!cur.done) rest.push(cur.next('an argument'));
+    return (rc, src) => {
+      const placer = rc.host.placeTemplate;
+      if (placer === undefined) throw new NotHere('/place template');
+      if (rest.length > 0 && rest[0] !== 'none') {
+        rc.only('a turned, mirrored or partly placed template (it is placed as it is)', src.origin);
+      }
+      const corner = blockOf(at === undefined ? src.pos : resolveVec3(rc, at, src, false));
+      const placed = placer.call(rc.host, id, corner, src.origin);
+      if (placed === undefined) throw new Failed(`Template ${id} not found`);
+      rc.feedback(`Template ${id} placed at ${posWords(corner)}.`, src.origin);
+      return ok();
+    };
+  },
+
   say(cur) {
     const message = cur.rest();
     if (message === '') throw new BadLine('Expected a message');
@@ -1366,7 +1441,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     }
     cur.end();
     return (rc, src) => {
-      const pos = blockOf(resolveVec3(at, src, false));
+      const pos = blockOf(resolveVec3(rc, at, src, false));
       if (!rc.host.world.inBounds(pos)) {
         rc.only('blocks outside the test area', src.origin);
         throw new Failed('That position is not loaded');
@@ -1403,8 +1478,8 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     cur.end();
     return (rc, src) => {
       const box = boxOf(
-        blockOf(resolveVec3(from, src, false)),
-        blockOf(resolveVec3(to, src, false)),
+        blockOf(resolveVec3(rc, from, src, false)),
+        blockOf(resolveVec3(rc, to, src, false)),
       );
       checkVolume(box);
       if (block.nbt) rc.only('block entity data on /fill', src.origin);
@@ -1459,11 +1534,11 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     cur.end();
     return (rc, src) => {
       const source = boxOf(
-        blockOf(resolveVec3(begin, src, false)),
-        blockOf(resolveVec3(end, src, false)),
+        blockOf(resolveVec3(rc, begin, src, false)),
+        blockOf(resolveVec3(rc, end, src, false)),
       );
       checkVolume(source);
-      const start = blockOf(resolveVec3(dest, src, false));
+      const start = blockOf(resolveVec3(rc, dest, src, false));
       const target: Box3 = {
         min: start,
         max: {
@@ -1532,7 +1607,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     const nbt = cur.optional();
     cur.end();
     return (rc, src) => {
-      const pos = at === undefined ? src.pos : resolveVec3(at, src, true);
+      const pos = at === undefined ? src.pos : resolveVec3(rc, at, src, true);
       const result = rc.host.entities.spawn(type, {
         pos: { x: Math.floor(pos.x), y: Math.floor(pos.y) - 1, z: Math.floor(pos.z) },
         face: 'up',
@@ -1655,7 +1730,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     void category;
     return (rc, src) => {
       const found = selectSome(rc, targets, src, true);
-      const position = at === undefined ? src.pos : resolveVec3(at, src, true);
+      const position = at === undefined ? src.pos : resolveVec3(rc, at, src, true);
       rc.host.effect({
         kind: 'sound',
         id: sound,
@@ -1691,7 +1766,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     cur.end();
     return (rc, src) => {
       if (viewers !== undefined) selectSome(rc, viewers, src, true);
-      const centre = at === undefined ? src.pos : resolveVec3(at, src, false);
+      const centre = at === undefined ? src.pos : resolveVec3(rc, at, src, false);
       const d =
         delta === undefined
           ? { x: 0, y: 0, z: 0 }
@@ -2296,7 +2371,7 @@ function readTest(cur: Cursor): Test {
       const at = readVec3(cur);
       const predicate = readBlockPredicate(cur.next('a block'));
       return (rc, src) => {
-        const state = blockAt(rc, blockOf(resolveVec3(at, src, false)));
+        const state = blockAt(rc, blockOf(resolveVec3(rc, at, src, false)));
         return state === undefined ? false : blockMatches(rc, predicate, state);
       };
     }
@@ -2371,7 +2446,11 @@ function situationOf(rc: RunContext, src: Source): Situation {
   const self = src.executor;
   const situation: Situation = {
     context: 'minecraft:command',
-    position: [src.pos.x, src.pos.y, src.pos.z],
+    position: [
+      src.pos.x + rc.state.corner.x,
+      src.pos.y + rc.state.corner.y,
+      src.pos.z + rc.state.corner.z,
+    ],
     dimension: src.dimension,
     weather: { raining: false, thundering: false },
     time: { clock: AREA_DIMENSION, ticks: rc.host.timeOfDay() },
@@ -2393,7 +2472,7 @@ function situationOf(rc: RunContext, src: Source): Situation {
       tags: [...(rc.state.tags.get(key) ?? [])],
       scores: rc.state.scoresOf(key),
       effects,
-      position: [pos.x, pos.y, pos.z],
+      position: [pos.x + rc.state.corner.x, pos.y + rc.state.corner.y, pos.z + rc.state.corner.z],
     },
   };
 }
@@ -2447,7 +2526,7 @@ function compileExecute(cur: Cursor): Run {
           });
         } else {
           const at = readVec3(cur);
-          steps.push({ fork: (_rc, src) => [{ ...src, pos: resolveVec3(at, src, true) }] });
+          steps.push({ fork: (rc, src) => [{ ...src, pos: resolveVec3(rc, at, src, true) }] });
         }
         break;
       }

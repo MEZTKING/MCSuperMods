@@ -1,0 +1,282 @@
+/**
+ * Try it for games (ADR 0117 D4, B558): what `LocalWorldSource.games` holds.
+ *
+ * The games kinds' own lowered functions run in the function engine like any project function
+ * (limit M15 since ADR 0120): the one block refills by phase, timers count, areas tag the player
+ * and fire their hooks, teams and objectives are made. This controller adds what the engine
+ * cannot do and what the side panel draws:
+ * - the games grounds' area corner (`CommandState.corner`), so the functions' world positions
+ *   land in the area (`setup.ts`, `grounds/void.ts`, `grounds/structure.ts`);
+ * - the mock first join on the void ground, once per ground and after "Clear the area";
+ * - `place template` from the project's structure templates (an area's reset, Rebuild now);
+ * - the game mode: adventure stops breaking (the preview's items carry no `can_break`);
+ * - the mock cobblestone generator (`generator.ts`);
+ * - walks in and out of areas said in "What happened" (`areas.ts`);
+ * - the status the side panel draws: one blocks, timers, the sidebar, teams and areas.
+ */
+
+import type { BlockCatalogue } from '../blocks/catalogue.js';
+import type { FunctionEngine } from '../commands/functions.js';
+import { PREVIEW_PLAYER_NAME } from '../commands/parse.js';
+import { PLAYER, type SimInventory } from '../events/actions.js';
+import { type GroundKind, groundState } from '../grounds/ground.js';
+import { templateCells } from '../grounds/structure.js';
+import type { PlayerController } from '../player/controller.js';
+import type { BlockPos, Box, SimLog, SimOrigin } from '../types.js';
+import type { SimWorld } from '../world/sim-world.js';
+import { type AreaView, AreaWatch, areaOutline, areaViews } from './areas.js';
+import { type GamesProject, hasGames, NO_GAMES } from './data.js';
+import { MockGenerator } from './generator.js';
+import { type OneBlockStatus, oneBlockStatuses } from './one-block.js';
+import type { GamesPlan } from './setup.js';
+import { type SidebarView, sidebarOf, type TeamLook, teamLooks } from './teams.js';
+import { type TimerStatus, timerStatuses } from './timers.js';
+
+/** What the games controller works on. */
+export interface GamesHost {
+  readonly world: SimWorld;
+  catalogue(): BlockCatalogue;
+  readonly player: PlayerController;
+  readonly functions: FunctionEngine;
+  readonly log: SimLog;
+  now(): number;
+  inventory(): SimInventory;
+}
+
+/** The game modes Try it knows. */
+export type GameMode = 'survival' | 'creative' | 'adventure' | 'spectator';
+
+/** What the side panel draws (`GamesArea.status`). */
+export interface GamesStatus {
+  /** The games ground in, or `null` on another ground. */
+  readonly ground: 'void' | 'structure' | null;
+  /** The game mode the join set, or `null` before a join (Try it's own: anything breaks). */
+  readonly gameMode: GameMode | null;
+  readonly oneBlocks: readonly OneBlockStatus[];
+  readonly timers: readonly TimerStatus[];
+  readonly teams: readonly TeamLook[];
+  /** The team the player is on (picked in the side panel), or `null`. */
+  readonly team: TeamLook | null;
+  readonly sidebar: SidebarView | null;
+  readonly areas: readonly (AreaView & { readonly inside: boolean })[];
+}
+
+const ZERO: BlockPos = Object.freeze({ x: 0, y: 0, z: 0 });
+
+/** The games controller; see the module comment. */
+export class GamesArea {
+  private readonly host: GamesHost;
+  private games: GamesProject = NO_GAMES;
+  private active = false;
+  private plan: GamesPlan | null = null;
+  private prepared: GamesPlan | null = null;
+  private joinPending = false;
+  private mode: GameMode | null = null;
+  private teamId: string | null = null;
+  private readonly generator: MockGenerator;
+  private readonly watch = new AreaWatch();
+
+  constructor(host: GamesHost) {
+    this.host = host;
+    this.generator = new MockGenerator(host);
+    host.world.onChange((change) => {
+      if (this.active) this.generator.changed(change.pos, change.state);
+    });
+  }
+
+  /** The project's games (the app hands them in after each edit). */
+  setProject(games: GamesProject): void {
+    this.games = games;
+    this.active = hasGames(games);
+    if (this.teamId !== null && !games.elements.some((one) => one.id === this.teamId)) {
+      this.teamId = null;
+    }
+  }
+
+  /** The project's games as last handed in. */
+  get project(): GamesProject {
+    return this.games;
+  }
+
+  /** The plan of the games ground about to load (call before `loadGround`). */
+  prepare(plan: GamesPlan | null): void {
+    this.prepared = plan;
+  }
+
+  /** The games ground's plan while one is in. */
+  get current(): GamesPlan | null {
+    return this.plan;
+  }
+
+  /** A ground was loaded: a games ground takes its prepared plan; any other has none. */
+  groundLoaded(kind: GroundKind): void {
+    this.plan =
+      (kind === 'void' || kind === 'structure') && this.prepared?.kind === kind
+        ? this.prepared
+        : null;
+    this.prepared = null;
+    this.host.functions.state.corner = this.plan?.corner ?? ZERO;
+  }
+
+  /** The area was emptied and filled again: the join waits for the next tick. */
+  clear(): void {
+    this.generator.clear();
+    this.watch.clear();
+    this.mode = null;
+    this.joinPending = this.plan?.join != null;
+  }
+
+  /** One tick, after the function engine's (the load tag has run before the join). */
+  tick(): void {
+    if (this.joinPending) {
+      this.joinPending = false;
+      this.join();
+    }
+    if (!this.active) return;
+    this.generator.tick();
+    this.watch.tick(this.areas(), this.host.functions.state.tags.get(PREVIEW_PLAYER_NAME), (text) =>
+      this.host.log.info(text),
+    );
+  }
+
+  /** The mock first join (see `setup.ts`). */
+  private join(): void {
+    const join = this.plan?.join;
+    if (join == null) return;
+    const { host } = this;
+    if (join.spawn !== null) {
+      host.player.teleport(join.spawn);
+      host.player.setFlying(false);
+    }
+    this.mode = gameModeOf(join.gameMode);
+    host.log.info(
+      'You joined the game for the first time: you stand at the world spawn and get what new players get.',
+    );
+    if (host.functions.exists(join.firstJoin)) {
+      host.functions.runFunction(join.firstJoin, { as: PLAYER, quiet: true });
+    } else {
+      for (const item of join.items) host.inventory().give(item.item, item.count);
+    }
+    if (this.mode === 'adventure') {
+      host.log.info(
+        'You play in adventure mode: blocks do not break (the side panel can change it).',
+      );
+    } else if (this.mode === 'spectator') {
+      host.log.onlyInMinecraft('spectator mode (Try it lets you walk and fly as usual)');
+    }
+  }
+
+  /** Sets the game mode (the side panel's "Play as"); `null` is Try it's own. */
+  setGameMode(mode: GameMode | null): void {
+    this.mode = mode;
+  }
+
+  /** The game mode now. */
+  get gameMode(): GameMode | null {
+    return this.mode;
+  }
+
+  /** The team the player is on in Try it (limit M14), or `null`. */
+  setTeam(id: string | null): void {
+    this.teamId = id;
+  }
+
+  /**
+   * Whether the player may break the block: not in adventure mode, where only an item whose
+   * `can_break` names the block breaks it, and the preview's items carry no components.
+   */
+  mayBreak(): boolean {
+    if (this.mode !== 'adventure') return true;
+    this.host
+      .catalogue()
+      .sayOnce(
+        'games.adventure',
+        'breaking blocks in adventure mode with an item whose can_break allows it (Try it’s items carry no components, so nothing breaks here)',
+      );
+    return false;
+  }
+
+  /**
+   * `place template` (the engine's host): the project's template placed with its corner at
+   * `corner`. The blocks placed, or `undefined` when the project has no such template.
+   */
+  placeTemplate(id: string, corner: BlockPos, origin: SimOrigin | undefined): number | undefined {
+    const template = this.games.templates.get(id);
+    if (template === undefined) {
+      if (id.startsWith('minecraft:')) {
+        this.host.log.onlyInMinecraft(`placing Minecraft’s own structure ${id}`, origin);
+      }
+      return undefined;
+    }
+    const { world } = this.host;
+    const catalogue = this.host.catalogue();
+    let placed = 0;
+    let cut = false;
+    for (const { pos, state } of templateCells(template, corner)) {
+      if (!world.inBounds(pos)) {
+        cut = true;
+        continue;
+      }
+      const parsed = groundState(state);
+      if (parsed.name === 'minecraft:air' || parsed.name === 'minecraft:structure_void') {
+        if (parsed.name === 'minecraft:air' && world.get(pos) !== null) world.set(pos, null);
+        continue;
+      }
+      const normal = catalogue.normalise(parsed);
+      if (normal === null) continue;
+      world.set(pos, normal);
+      placed += 1;
+    }
+    if (cut) {
+      this.host.log.info(`Part of ${id} lies outside the test area and was not placed.`, origin);
+    }
+    return placed;
+  }
+
+  /** "Rebuild now": runs the area's own reset function. False when it has none. */
+  rebuild(areaId: string): boolean {
+    const view = this.areas().find((one) => one.id === areaId);
+    if (view?.reset == null || !this.host.functions.exists(view.reset)) return false;
+    this.host.functions.runFunction(view.reset, { as: null, quiet: true });
+    this.host.log.info(`You rebuilt the area ${view.name}.`);
+    return true;
+  }
+
+  /** Every area, moved into the test area. */
+  areas(): AreaView[] {
+    const { world } = this.host;
+    return areaViews(this.games, this.host.functions.state.corner, {
+      x: world.sizeX,
+      y: world.sizeY,
+      z: world.sizeZ,
+    });
+  }
+
+  /** The areas' outline for the view, or `null` when none lies in the test area. */
+  outline(): { readonly pos: BlockPos; readonly boxes: readonly Box[] } | null {
+    return this.active ? areaOutline(this.areas()) : null;
+  }
+
+  /** What the side panel draws. */
+  status(): GamesStatus {
+    const { functions, world } = this.host;
+    const state = functions.state;
+    const teams = teamLooks(this.games);
+    const team = teams.find((one) => one.id === this.teamId) ?? null;
+    const inside = this.watch.now;
+    return {
+      ground: this.plan?.kind ?? null,
+      gameMode: this.mode,
+      oneBlocks: oneBlockStatuses(this.games, state, state.corner, (pos) => world.inBounds(pos)),
+      timers: timerStatuses(this.games, state),
+      teams,
+      team,
+      sidebar: sidebarOf(this.games, state, team?.colour ?? null),
+      areas: this.areas().map((view) => ({ ...view, inside: inside.has(view.id) })),
+    };
+  }
+}
+
+function gameModeOf(text: string): GameMode {
+  return text === 'creative' || text === 'adventure' || text === 'spectator' ? text : 'survival';
+}

@@ -3,3 +3,5 @@ export * from './flat.js';
 export * from './generated.js';
 export * from './ground.js';
 export * from './quick.js';
+export * from './structure.js';
+export * from './void.js';

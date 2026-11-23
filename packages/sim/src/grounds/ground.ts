@@ -12,10 +12,20 @@ import { AREA_SIZE_X, AREA_SIZE_Y, AREA_SIZE_Z, type BlockState } from '../types
 
 /**
  * The grounds Try it offers (ADR 0087 D1): MSM's grid, the flat world, a Quick world, an area of
- * one of the user's saves, and `generated`, a window of the world the project's own dimension or
- * world preset generates (ADR 0119 D8, `generated.ts`).
+ * one of the user's saves, `generated`, a window of the world the project's own dimension or
+ * world preset generates (ADR 0119 D8, `generated.ts`), and the games grounds (ADR 0117 D4,
+ * B558): `void`, empty sky with the world setup's start structure (`void.ts`), and `structure`,
+ * one of the project's structure templates (`structure.ts`).
  */
-export const GROUND_KINDS = Object.freeze(['grid', 'flat', 'quick', 'world', 'generated'] as const);
+export const GROUND_KINDS = Object.freeze([
+  'grid',
+  'flat',
+  'quick',
+  'world',
+  'generated',
+  'void',
+  'structure',
+] as const);
 
 /** One of {@link GROUND_KINDS}. */
 export type GroundKind = (typeof GROUND_KINDS)[number];
@@ -92,6 +102,13 @@ export class GroundBuilder {
       this.index.set(state, slot);
     }
     this.cells[(y * this.size.z + z) * this.size.x + x] = slot;
+  }
+
+  /** Adds a state to the palette without placing it (B558: pictures to prepare). */
+  keep(state: string): void {
+    if (this.index.has(state)) return;
+    this.index.set(state, this.palette.length);
+    this.palette.push(state);
   }
 
   /** The state string of a cell; air outside the area. */

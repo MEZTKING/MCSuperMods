@@ -6,6 +6,9 @@
  * loads it ({@link GroundPickerProps.onApply}) and the picker shows the progress and any error
  * in plain words. When the area has something to lose, "Use this ground" asks first.
  *
+ * Empty sky and One of my buildings (B558, ADR 0117 D4) are the games grounds: the first says
+ * what it will show for the project, the second lists the project's structures by name.
+ *
  * {@link GeneratedGroundPanel} is the side panel's part of a generated ground: Move up, Move
  * down, Make the land around me, Show on the map, the Preview tag, the stage arriving, the
  * set-up banner and the notes.
@@ -15,6 +18,7 @@
 
 import type { Project } from '@msm/plugin-api';
 import {
+  type GamesProject,
   GENERATED_MOVE_BLOCKS,
   type GroundKind,
   QUICK_LIMITS,
@@ -51,6 +55,7 @@ import {
   type GroundChoice,
   generatedSources,
   generatedStripLine,
+  groundBuildings,
   lastOpenElementId,
   NO_GENERATED_HERE,
   NO_GENERATED_SOURCE,
@@ -62,6 +67,7 @@ import {
   terrainViewKey,
   unreadableReason,
   useGroundPresets,
+  voidGroundWords,
 } from './grounds';
 import type {
   GeneratedGroundState,
@@ -108,6 +114,8 @@ export interface GroundPickerProps {
    * `null` (or absent) when this window cannot make land.
    */
   generated?: GeneratedPickerProps | null;
+  /** The project's games and structures (B558), for Empty sky and One of my buildings. */
+  games?: GamesProject | null;
   /** Loads the choice; a rejection is shown in the picker. Resolves when the area is ready. */
   onApply(choice: GroundChoice, progress: (text: string) => void): Promise<void>;
   onClose(): void;
@@ -159,6 +167,14 @@ export function GroundPicker(props: GroundPickerProps) {
   const [genSeed, setGenSeed] = useState(generated?.seed ?? '0');
   const [genX, setGenX] = useState(String(generated?.centre.x ?? 0));
   const [genZ, setGenZ] = useState(String(generated?.centre.z ?? 0));
+
+  // The games grounds (B558).
+  const buildings = useMemo(
+    () => (props.games == null ? [] : groundBuildings(props.games)),
+    [props.games],
+  );
+  const [building, setBuilding] = useState<string | null>(null);
+  const chosenBuilding = buildings.find((one) => one.id === building) ?? buildings[0] ?? null;
 
   useEffect(() => {
     if (kind !== 'world' || worldList !== null || props.worlds === null) return;
@@ -256,6 +272,11 @@ export function GroundPicker(props: GroundPickerProps) {
           centre: at,
         };
       }
+      case 'void':
+        return { kind: 'void' };
+      case 'structure':
+        if (chosenBuilding === null) return 'Your project has no buildings yet.';
+        return { kind: 'structure', structure: chosenBuilding.id };
     }
   };
 
@@ -740,6 +761,43 @@ export function GroundPicker(props: GroundPickerProps) {
     </div>
   );
 
+  const voidPanel = (
+    <p className="text-muted" data-testid="tryit-void">
+      {props.games == null
+        ? 'Empty sky: your game’s start island in the middle.'
+        : voidGroundWords(props.games)}
+    </p>
+  );
+
+  const structurePanel = (
+    <div className="flex flex-col gap-2" data-testid="tryit-structure">
+      {buildings.length === 0 ? (
+        <p className="text-muted" data-testid="tryit-structure-none">
+          Your project has no buildings yet. Make one in Minecraft, save it with a structure block
+          and bring it in.
+        </p>
+      ) : (
+        <ul className="flex max-h-48 flex-col gap-1 overflow-auto" aria-label="Your buildings">
+          {buildings.map((one) => (
+            <li key={one.id}>
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name="tryit-structure-building"
+                  data-testid="tryit-structure-building"
+                  data-id={one.id}
+                  checked={chosenBuilding?.id === one.id}
+                  onChange={() => setBuilding(one.id)}
+                />
+                {one.label}
+              </label>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
   return (
     <div
       role="dialog"
@@ -766,7 +824,7 @@ export function GroundPicker(props: GroundPickerProps) {
           <X size={16} aria-hidden />
         </button>
       </div>
-      <div role="radiogroup" aria-label="Ground" className="grid grid-cols-2 gap-1 lg:grid-cols-5">
+      <div role="radiogroup" aria-label="Ground" className="grid grid-cols-2 gap-1 lg:grid-cols-4">
         {GROUND_CHOICES.map((entry) => (
           // biome-ignore lint/a11y/useSemanticElements: a button row reads better than radios here.
           <button
@@ -791,6 +849,8 @@ export function GroundPicker(props: GroundPickerProps) {
         {kind === 'quick' && quickPanel}
         {kind === 'world' && worldPanel}
         {kind === 'generated' && generatedPanel}
+        {kind === 'void' && voidPanel}
+        {kind === 'structure' && structurePanel}
       </div>
       {busy !== null && (
         <p role="status" data-testid="tryit-ground-progress" className="text-muted">

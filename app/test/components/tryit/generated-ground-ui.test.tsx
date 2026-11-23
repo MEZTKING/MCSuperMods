@@ -84,7 +84,8 @@ describe('My world generation in the grounds list (B584)', () => {
       label: 'My world generation',
       line: 'The land your own world makes, around where you stand.',
     });
-    expect(GROUND_CHOICES).toHaveLength(5);
+    // The games grounds (B558) follow it.
+    expect(GROUND_CHOICES.map((choice) => choice.kind).indexOf('generated')).toBe(4);
   });
 
   it('lists the project’s dimensions, then each world type’s dimensions', () => {

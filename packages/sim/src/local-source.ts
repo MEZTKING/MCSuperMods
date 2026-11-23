@@ -101,6 +101,8 @@ import {
   WATER_BLOCK,
   WATER_BUCKET,
 } from './fluids/cauldrons.js';
+import { type GamesProject, NO_GAMES } from './games/data.js';
+import { GamesArea } from './games/games-area.js';
 import {
   emptyGround,
   GROUND_AIR,
@@ -185,6 +187,8 @@ export interface LocalSourceOptions {
    * in functions (B606); without it only the project's files are read.
    */
   readonly vanillaData?: DataLookup;
+  /** The project's games elements and structure templates (B558); none by default. */
+  readonly games?: GamesProject;
 }
 
 /** How the local source runs scripts (B400). */
@@ -301,6 +305,11 @@ export class LocalWorldSource implements WorldSource {
   readonly scripts: ScriptBridge | null;
   /** Functions and the game's own commands (B606). */
   readonly functions: FunctionEngine;
+  /**
+   * Game modes (B558, ADR 0117 D4): the games grounds' corner, the mock first join, `place
+   * template`, the game mode, the mock generator and the side panel's status.
+   */
+  readonly games: GamesArea;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -572,10 +581,21 @@ export class LocalWorldSource implements WorldSource {
           return tag.dropped ? undefined : tag.members.map((member) => member.id);
         },
         data: () => this.evalContext().lookup,
+        placeTemplate: (id, corner, origin) => this.games.placeTemplate(id, corner, origin),
       },
       this.files,
       this.target,
     );
+    this.games = new GamesArea({
+      world: this.world,
+      catalogue: () => this.blockCatalogue,
+      player: this.player,
+      functions: this.functions,
+      log: this.log,
+      now: () => this.ticks,
+      inventory: () => this.triggers.inventory,
+    });
+    this.games.setProject(options.games ?? NO_GAMES);
     this.parity2.commands.useFunctions({
       runLine: (line) => this.functions.runChatLine(line),
       runFunction: (id, args, origin) => this.functions.runFunction(id, { args, origin }).answer,
@@ -668,6 +688,8 @@ export class LocalWorldSource implements WorldSource {
    */
   loadGround(kind: GroundKind, ground: GroundBlocks = emptyGround()): GroundLoadResult {
     this.groundKind = kind;
+    // A games ground (B558) takes the plan `games.prepare` gave it: its corner in the world.
+    this.games.groundLoaded(kind);
     this.groundBlocks = ground;
     const ids = new Set<string>();
     for (const text of ground.palette) {
@@ -713,6 +735,7 @@ export class LocalWorldSource implements WorldSource {
     this.traders.clear();
     this.mobs2.clear();
     this.functions.clear();
+    this.games.clear();
     this.emit({ type: 'entities', entities: [] });
     const ground = this.groundBlocks;
     const { size } = ground;
@@ -957,6 +980,8 @@ export class LocalWorldSource implements WorldSource {
   tick(): void {
     this.ticks += 1;
     this.functions.tick();
+    // The games' join and generator follow the functions (B558).
+    this.games.tick();
     const wasRiding = this.vehicles.riding !== null;
     const gotOut = this.vehicles.tick(this.input);
     if (!wasRiding) this.player.step(this.input);
@@ -1189,6 +1214,7 @@ export class LocalWorldSource implements WorldSource {
     this.traders.clear();
     this.mobs2.clear();
     this.functions.clear();
+    this.games.clear();
     this.traceNow.clear();
     this.emit({ type: 'entities', entities: [] });
     this.log.info('You cleared the area.');
@@ -1514,6 +1540,8 @@ export class LocalWorldSource implements WorldSource {
 
   /** Breaks a block as the player: `msm:on_break` fires before it goes (`playerWillDestroy`). */
   private breakNow(pos: BlockPos): void {
+    // Adventure mode set by a games join (B558).
+    if (!this.games.mayBreak()) return;
     if (this.screenNow !== null && samePos(this.screenNow.pos, pos)) this.closeScreen();
     if (this.world.get(pos) !== null) {
       this.triggers.blockBreaking(pos);

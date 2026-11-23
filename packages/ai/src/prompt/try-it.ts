@@ -17,6 +17,8 @@ export const TRY_IT_PROMPT_GROUNDS = Object.freeze([
   'Quick world',
   'From my world',
   'My world generation',
+  'Empty sky',
+  'One of my buildings',
 ]);
 
 /** The tools the paragraph names (the tool strip of the Try it view). */
@@ -42,7 +44,9 @@ export const TRY_IT_PROMPT_COMMANDS = Object.freeze([
   'give',
   'kill',
   'particle',
+  'place',
   'playsound',
+  'random',
   'return',
   'say',
   'schedule',

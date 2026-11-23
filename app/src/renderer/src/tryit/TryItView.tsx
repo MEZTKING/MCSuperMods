@@ -51,8 +51,10 @@ import {
 import { Box, Car, Egg, FlaskConical, Hand, Pause, Play, StepForward, X } from 'lucide-react';
 import {
   type KeyboardEvent,
+  lazy,
   type MouseEvent,
   type ReactNode,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -77,7 +79,11 @@ import {
   describeGround,
   GROUND_CHOICES,
   type GroundChoice,
+  gamesGroundFor,
+  gamesProjectOf,
   groundBlocksFor,
+  projectHasGames,
+  withAreaOutline,
   worldAreaLine,
   worldErrorText,
   worldGround,
@@ -118,6 +124,10 @@ import {
 import { StateReadout, type TryItReadout } from './state-readout';
 import { MerchantScreen } from './traders/MerchantScreen';
 import { useTryItStore } from './tryit-store';
+
+/** The games looks (B558): a lazy chunk, loaded only for a project with games. */
+const GamesPanel = lazy(() => import('./games/GamesPanel'));
+
 import { driverCamera } from './vehicles/camera';
 import { VEHICLE_KEYS, vehicleKey } from './vehicles/keys';
 import { vehicleThings } from './vehicles/things';
@@ -533,6 +543,11 @@ export default function TryItView(props: TryItViewProps) {
     [area, area?.files],
   );
   const skies = useMemo(() => projectSkies(project), [project]);
+  // The games grounds' buildings and start (B558), read only while the ground picker is open.
+  const pickerGames = useMemo(
+    () => (groundsOpen === null ? null : gamesProjectOf(project)),
+    [groundsOpen, project],
+  );
   const sky = skies.find((one) => one.dimension === skyChoice) ?? null;
   const blockIds = useMemo(
     () =>
@@ -803,7 +818,17 @@ export default function TryItView(props: TryItViewProps) {
     }
     let ground: GroundBlocks | undefined;
     const lines: string[] = [];
-    if (choice.kind === 'world') {
+    if (choice.kind === 'void' || choice.kind === 'structure') {
+      // The games grounds (B558): the plan sets the area's corner and the mock first join.
+      progress('Making the ground…');
+      const games = gamesProjectOf(project);
+      const made = gamesGroundFor(choice, games);
+      if (typeof made === 'string') throw new Error(made);
+      area.source.games.setProject(games);
+      area.source.games.prepare(made.plan);
+      ground = made.ground.ground;
+      lines.push(...made.plan.lines);
+    } else if (choice.kind === 'world') {
       if (worlds === null) throw new Error('Your worlds cannot be read in this window.');
       progress(`Reading the area of ${choice.worldName}…`);
       let read: TryItWorldArea;
@@ -997,15 +1022,23 @@ export default function TryItView(props: TryItViewProps) {
                   }
                 }
                 picked={() => {
+                  // The games areas' boxes are drawn with the picked block's outline (B558).
+                  const areas = area.source.games.outline();
                   const at = pointed();
-                  if (at?.kind !== 'block') return null;
+                  if (at?.kind !== 'block') return withAreaOutline(null, areas);
                   if (at.block.pos.y < 0) {
-                    return { pos: at.block.pos, boxes: [[0, 1, 0, 1, 1, 1]] };
+                    return withAreaOutline(
+                      { pos: at.block.pos, boxes: [[0, 1, 0, 1, 1, 1]] },
+                      areas,
+                    );
                   }
                   const state = area.source.world.get(at.block.pos);
-                  return state === null
-                    ? null
-                    : { pos: at.block.pos, boxes: area.source.catalogue.outline(state) };
+                  return withAreaOutline(
+                    state === null
+                      ? null
+                      : { pos: at.block.pos, boxes: area.source.catalogue.outline(state) },
+                    areas,
+                  );
                 }}
                 blockIds={blockIds}
                 files={area.files}
@@ -1117,6 +1150,18 @@ export default function TryItView(props: TryItViewProps) {
                 target={area.target}
               />
             )}
+            {area !== null && projectHasGames(project) && (
+              <Suspense fallback={null}>
+                <GamesPanel
+                  source={area.source}
+                  project={project}
+                  onChanged={() => {
+                    rerender();
+                    wrapperRef.current?.focus({ preventScroll: true });
+                  }}
+                />
+              </Suspense>
+            )}
             {screenOpen !== null && <MockScreen screen={screenOpen} onClose={closeScreen} />}
             {area?.source.traders.open != null && (
               <MerchantScreen
@@ -1174,6 +1219,7 @@ export default function TryItView(props: TryItViewProps) {
                           ) ?? generated.picker.initial,
                       }
                 }
+                games={pickerGames}
                 onApply={applyGround}
                 onClose={() => {
                   setGroundsOpen(null);
