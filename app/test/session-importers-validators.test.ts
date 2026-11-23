@@ -322,7 +322,10 @@ describe('ProjectSession validators', () => {
   it('collects validators and runs those whose kinds changed', () => {
     const all = collectValidators([...builtInPlugins, testPlugin]);
     expect(all.some((entry) => entry.validator.id === 'test.no-bad-functions')).toBe(true);
+    // The games plugin's world setup validator reads functions too: it refuses a project
+    // function under the generated `<ns>:msm_games/` folder (ADR 0113 D9, B551).
     expect(validatorsFor(all, new Set(['minecraft:function'])).map((e) => e.pluginId)).toEqual([
+      'msm.games',
       'test.fakes',
     ]);
     expect(changedKinds(null, null)).toEqual(new Set());
