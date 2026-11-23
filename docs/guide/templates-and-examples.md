@@ -4,11 +4,11 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (293) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (69) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (195) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (309) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (82) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (215) | **Help → Examples…** | A commented project or element to open or copy |
 
-Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting and rules plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
+Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting, rules and games plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
 No starter or example contains Mojang files. Textures are small pictures that MCSuperMods draws itself in a Minecraft-like style ([Drawing pictures](pictures.md)); the music disc plays a track from your own copy of the game.
 
@@ -97,6 +97,8 @@ Screen effects and shader programs work in a plain resource pack. Their `.vsh`, 
 | Pack metadata | `pack` | `minecraft:pack_mcmeta` | The pack description shown in the game (pack.mcmeta). (default name `pack`) |
 
 #### Recipes
+
+To add a recipe, choose **Add element** (Ctrl+N), type `recipe` into **Find a template** and pick the kind of recipe below, or search for "recipe" and choose **Add to my mod** on one. A shaped recipe opens in the Recipe Studio with a 3 by 3 crafting grid: put an item in each cell and choose the result; shapeless and cooking recipes list their ingredients. Most Creator flows (a block, a food, a weapon, a gear set) ask for a crafting recipe of their own, and the **Recipe pack** starter holds one recipe of each common type. Recipes are data pack files: they work in the vanilla data pack export and in the Fabric mod jar, and in the game `/reload` reads them again.
 
 | Template | id | Kind | Notes |
 |---|---|---|---|
@@ -559,6 +561,25 @@ Rule books (`msm:rules`) give things behaviour with no code (see [Rules](rules.m
 | Click counter | `msm_rules_click_counter` | `msm:rules` | Counts how many times each player has used a Lever and shows the count above the hotbar. Change the block to your own. |
 | Mob drops a reward | `msm_rules_mob_reward` | `msm:rules` | Zombies drop an emerald one time in ten when they die. Change the mob to your own and the item to your own reward. |
 
+#### Games
+
+The pieces of a game (see [Game modes](game-modes.md)): how a world starts, one blocks, teams, scores, timers and areas. They lower to data pack files only, so they work in the vanilla data pack export as well as in the Fabric mod jar. Category **Games**.
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Empty sky world | `world_setup_empty_sky` | `msm:world_setup` | A world type of empty sky with a sky biome of your own, survival on normal; add a start island for players to stand on. |
+| Flat building world | `world_setup_flat_build` | `msm:world_setup` | A flat world type of grass on dirt in creative, with the time and weather standing still and no mobs. |
+| Floating islands world | `world_setup_sky_islands` | `msm:world_setup` | A world type of floating islands over the overworld's biomes, survival on normal. |
+| Adventure in the normal world | `world_setup_adventure` | `msm:world_setup` | No world type of its own: players start in adventure mode on hard, keep their things when they die and get a welcome. |
+| One block in three phases | `msm_games_one_block_classic` | `msm:one_block` | One block at 0 64 0 that turns into the next block each time it is broken: plains, then underground with ores, then the Nether, with a chest and an animal now and then; after the last phase it starts again. |
+| Red team | `msm_games_team_red` | `msm:team` | A team with red names and a [Red] tag before them; team mates cannot hurt each other and see each other when invisible. |
+| Blue team | `msm_games_team_blue` | `msm:team` | A team with blue names and a [Blue] tag before them; team mates cannot hurt each other and see each other when invisible. |
+| Points on the sidebar | `msm_games_objective_points` | `msm:objective` | A score shown on the right of the screen, changed only by commands and Rules (for goals, coins or rounds won), with gold numbers. |
+| Player kills in the player list | `msm_games_objective_kills` | `msm:objective` | Counts how many players each player has defeated, shown beside the names in the player list (Tab). |
+| Five-minute countdown | `msm_games_timer_countdown` | `msm:timer` | Counts down from five minutes on a red boss bar at the top of the screen, started by a Rules step or a function. |
+| Stopwatch for a race | `msm_games_timer_stopwatch` | `msm:timer` | Counts the seconds up to an hour above the hotbar, for races and parkour; started by a Rules step or a function. |
+| Arena | `msm_games_area_arena` | `msm:area` | A 32 by 16 by 32 box of the Overworld that knows when players walk in or out; add structures under Reset to rebuild it. |
+
 ## Project starters
 
 A starter creates a whole project in an empty folder. Open the list in any of these ways:
@@ -642,6 +663,14 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Tank (Creator: Vehicles) | `vehicle-tank` | resource, data, mod | A slow, tough tank that turns on the spot, with a turret that follows your view and a cannon firing exploding shells, which can need loading: its boxed model, texture in your colour, paints, item picture, the shell and crafting recipes. |
 | Plane (Creator: Vehicles) | `vehicle-plane` | resource, data, mod | A biplane that takes off when it is fast enough and flies where you look, with one or two seats and fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. |
 | Boat (Creator: Vehicles) | `vehicle-boat` | resource, data, mod | A motorboat that floats on water, with two to four seats, an engine or paddle sound, a horn and, if you choose, fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. |
+| Skyblock (Creator: Games) | `skyblock` | resource, data | A game in a world of empty sky: a World Type of your own where players start on a small island with a chest (a lava bucket and ice for a cobblestone generator, seeds, a sapling and bone meal), placed when the first player joins, with extra wandering trader trades, recipes for sand and gravel, and goals. Works in a vanilla data pack. |
+| One block (Creator: Games) | `one-block` | resource, data | A game on one magic block that turns into the next block each time it is broken, phase after phase (plains, underground, the deep dark, the Nether, the ocean, the End), with a chest and a mob now and then, in an empty sky or high above your world. Works in a vanilla data pack. |
+| Sky islands (Creator: Games) | `sky-islands` | resource, data | A World Type of islands floating over the void, of the overworld's biomes or of one biome, with a start island where players begin. Works in a vanilla data pack. |
+| Lucky block (Creator: Games) | `lucky-block` | resource, data, mod | A block of your own that does something random when broken: prizes from a loot table, a mob, an explosion, a small building or an effect, each as often as you choose, made with a Rule book. Needs the Fabric mod jar. |
+| Adventure map (Creator: Games) | `adventure-map` | data | The start of an adventure map: adventure mode with a welcome message or screen, the game rules you pick set when the world starts, checkpoints that set where players respawn, and goals that mark the way. Build the map in the game. Works in a vanilla data pack. |
+| Arena game (Creator: Games) | `arena-game` | data | Two to four teams fighting rounds in an arena, with defeats on the sidebar, a round timer on the boss bar and the arena rebuilt for each round, started with a function. Works in a vanilla data pack. |
+| Race (Creator: Games) | `race` | data | A race from a start through checkpoints to a finish, timed on the action bar, with the best times on the sidebar. Works in a vanilla data pack. |
+| Goals (Creator: Games) | `goals` | resource, data | A tab of goals in the advancements screen: get an item, craft something, defeat a mob, visit a place or reach a height, with a flag, a timer or an item on the tab. Works in a vanilla data pack. |
 | Scripted ore | `scripted_ore` | resource, data, mod | The Custom ore starter with three scripts: sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. |
 | Scripted behaviour (Creator: Scripts) | `scripted-item` | resource, mod | An item that runs a script when used: it heals you, launches you upward, strikes lightning where you look or gives you an effect. The script opens in the Script Studio. |
 
@@ -720,7 +749,7 @@ Two wishes from the research are simplified: the Orchard tree's pie is eaten who
 
 ### All examples
 
-There is one example for each of the 118 element kinds, the behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; growing plants and pots: ember vines with glowing berries, a sea ribbon, glow moss, a dune reed, a spine cactus, reed bamboo, a wide leaf and a clay planter; containers and machines: a loot crate in a structure, an ore crusher, a shulker crate, bronze fittings that age, a twin crate and a private crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; villagers: a roadside merchant with trades of its own and a fair trader who remembers you; mobs 2: a minnow you catch in a bucket, a hovering wisp that roosts and a finch that fetches and rides your shoulder; fluids 2: berry juice with a cauldron, a bottle and mixing; enchantments: frost boots that freeze water as Frost Walker does; vehicles: a seaside; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), seventeen **Popular ideas** (below), plus four themed starters listed again under **Starters**: 195 in all. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Banner pattern, Armour trim, Glider, Pot pattern, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Cave plants, Desert plants, Flower pot, Portal, Particle, Car, Tank, Plane, Boat, Wandering merchant, Village job, Villager look, Game rule, Fluid and the others) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 124 element kinds (the six games kinds under **Game kits**), the behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; growing plants and pots: ember vines with glowing berries, a sea ribbon, glow moss, a dune reed, a spine cactus, reed bamboo, a wide leaf and a clay planter; containers and machines: a loot crate in a structure, an ore crusher, a shulker crate, bronze fittings that age, a twin crate and a private crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; villagers: a roadside merchant with trades of its own and a fair trader who remembers you; mobs 2: a minnow you catch in a bucket, a hovering wisp that roosts and a finch that fetches and rides your shoulder; fluids 2: berry juice with a cauldron, a bottle and mixing; enchantments: frost boots that freeze water as Frost Walker does; vehicles: a seaside; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), seventeen **Popular ideas** (below), eight **Games**, one from each game flow (Cloud Farm, Deep Block, Blossom Isles, Star Block, Crystal Road, Four Kingdoms, Canyon Dash and Explorer), plus four themed starters listed again under **Starters**: 215 in all. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Banner pattern, Armour trim, Glider, Pot pattern, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Cave plants, Desert plants, Flower pot, Portal, Particle, Car, Tank, Plane, Boat, Wandering merchant, Village job, Villager look, Game rule, Fluid and the others) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -916,6 +945,20 @@ There is one example for each of the 118 element kinds, the behaviour examples (
 | Mini tank | `example_popular_mini_tank` | Popular ideas | `msm:entity` | A slow armoured tank whose Firing Lever shoots an explosive shell where the driver looks, repaired with iron ingots. An interim vehicle: a rideable mob with a script, until MSM has a vehicle kind. Inspired by: tanks. |
 | Patchwork biplane | `example_popular_biplane` | Popular ideas | `msm:entity` | A flying machine that burns fuel while it flies, shows a fuel gauge above the hotbar and refuels with coal. An interim vehicle: a rideable mob with a script, until MSM has a vehicle kind. Inspired by: planes and flying machines. |
 | Willow boats | `example_popular_willow_boats` | Popular ideas | `msm:item` | A willow wood set with a boat and a chest boat of its own wood, paddled as vanilla boats and crafted from willow planks. Inspired by: boats of every wood. |
+| Cloud Farm | `example_game_cloud_farm` | Games | `msm:world_setup` | A Skyblock on a round island with a tree, food in the chest and an empty Nether too, from the Skyblock flow. |
+| Deep Block | `example_game_deep_block` | Games | `msm:one_block` | A one block game that goes underground, into the deep dark and on to the Nether, fifty breaks a phase, from the One block flow. |
+| Blossom Isles | `example_game_blossom_isles` | Games | `msm:world_setup` | Islands of cherry grove floating over the void, with a start island, from the Sky islands flow. |
+| Star Block | `example_game_star_block` | Games | `msm:block` | A blue lucky block with a star on it that often builds a hut, sometimes drops prizes and rarely brings a creeper, from the Lucky block flow. |
+| Crystal Road | `example_game_crystal_road` | Games | `msm:world_setup` | An adventure map on flat land with a welcome screen, always day, no monsters, four checkpoints and goals, from the Adventure map flow. |
+| Four Kingdoms | `example_game_four_kingdoms` | Games | `msm:team` | Four teams with bows in a large quartz arena, three-minute rounds and ten defeats to win, from the Arena game flow. |
+| Canyon Dash | `example_game_canyon_dash` | Games | `msm:area` | A race through three checkpoints against a ninety-second time limit, with the best times on the sidebar, from the Race flow. |
+| Explorer | `example_game_explorer` | Games | `minecraft:advancement` | A tab of goals for travellers: a desert, an ocean, the heights and the depths, the Nether and the End, with a green timer on the tab, from the Goals flow. |
+| World setup: an island in the sky | `example_msm_world_setup` | Game kits | `msm:world_setup` | How a world starts: a World Type of empty sky, a tiny island placed at the first join, the spawn on it and a welcome for each new player. |
+| One block: grass, then stone | `example_msm_one_block` | Game kits | `msm:one_block` | A block at 0 100 0 that turns into the next block each time it is broken: grass and wood for 50 breaks, then stone and ores, then again. |
+| Team: the gold team | `example_msm_team` | Game kits | `msm:team` | A team with gold names and a star before them, whose players cannot hurt each other. |
+| Objective: coins on the sidebar | `example_msm_objective` | Game kits | `msm:objective` | A score shown on the right of the screen, changed by commands and Rules. |
+| Timer: a one-minute countdown | `example_msm_timer` | Game kits | `msm:timer` | One minute counting down on a blue boss bar, started when the world starts, again and again. |
+| Area: a pen rebuilt on reset | `example_msm_area` | Game kits | `msm:area` | A box that knows when players walk in or out, and rebuilds its fence when reset. |
 | Custom ore project | `starter_custom_ore` | Starters | `msm:block` | The Custom ore starter: a real ruby ore block, the ruby item and a block of ruby, with loot, recipes, a tag, advancements and the mod metadata. |
 | Recipe pack project | `starter_recipe_pack` | Starters | `minecraft:recipe` | The Recipe pack starter: one recipe of each common type and an advancement. |
 | Custom music disc project | `starter_music_disc` | Starters | `minecraft:jukebox_song` | The Custom music disc starter: a jukebox song, its disc model and texture. |
@@ -927,11 +970,12 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 118 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 124 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The blocks and items behaviour examples (Sturdy pickaxe, Beacon stone, Fuel log, Life-steal sword, Night-vision helmet, Brewed with your own item, Elm wood set, Shale stone set, Onion crop, Silver birch tree, Crusher, Vault door, Loot crate in a structure, Ore crusher, Shulker crate) |
 | `examples/entities/` | `msm_examples` | The entity behaviour examples (Hostile mob, Natural spawning, Tameable fox-like pet, Rideable flying mount, Archer with a throwable, Fish school with biome variants, Boss with a boss bar, Drawn without GeckoLib), each with its model, animations and textures |
 | `examples/scripts/` | `msm_examples` | The script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect, Script: kill counter, Script: full set bonus, Script: teleport staff, Script: boss fight bar) |
 | `examples/popular/<name>/` | `msm_examples` | Each Popular ideas example as a project of its own: `glowshard/`, `ember_drake/`, `cottage_furniture/`, `camp_stove/`, `pull_charm/`, `sunken_crypt/`, `amber_realm/`, `boomerang/`, `paper_glider/`, `rocket_boots/`, `orchard_tree/`, `spell_scrolls/`, `coordinates_bar/`, `go_kart/`, `mini_tank/`, `biplane/` and `willow_boats/` |
+| `examples/games/<name>/` | `msm_examples` | Each Games example as a project of its own: `cloud_farm/`, `deep_block/`, `blossom_isles/`, `star_block/`, `crystal_road/`, `four_kingdoms/`, `canyon_dash/` and `explorer/` |
 | `examples/starters/custom_ore/` | `msm_starter` | The Custom ore starter |
 | `examples/starters/recipe_pack/` | `msm_starter` | The Recipe pack starter |
 | `examples/starters/music_disc/` | `msm_starter` | The Custom music disc starter |

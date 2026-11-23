@@ -307,11 +307,9 @@
       "q": "what is a datapack",
       "class": "how-to",
       "mode": "easy",
-      "expect": "starter:data_pack",
-      "top3": ["guide:getting-started#_10-a-data-pack-the-functions-starter"],
-      "notes": "No guide section explains data packs by name (gap for B672)",
-      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. The draft's templates-and-examples#templates section no longer exists (now Element templates). `needs` added: the expectation waits on B672's section; until then it is run and reported, not counted.",
-      "needs": "B672's guide section on data packs (SQ16); then expect it first and the Data pack starter in the top three"
+      "expect": "guide:getting-started#what-is-a-data-pack",
+      "top3": ["guide:getting-started#_10-a-data-pack-the-functions-starter", "starter:data_pack"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. The draft's templates-and-examples#templates section no longer exists (now Element templates). B672: Getting started has a section What is a data pack? (data packs, resource packs and the Fabric mod jar), so the question finds it first and `needs` is gone; the Functions starter's section follows, and the Data pack starter is a reader's next look (not scored)."
     },
     {
       "q": "minecraft:iron_ingot",
@@ -1675,6 +1673,15 @@
       "class": "how-to",
       "mode": "easy",
       "expect": "guide:effects-and-throwables#make-a-throwable"
+    },
+    {
+      "q": "how does search work",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:search#search-everything",
+      "same": ["guide:search#open-the-search", "guide:search#what-you-see"],
+      "top3": ["command:searchEverything"],
+      "reason": "B672: the findable rule (ADR 0124 D15) for the new guide page Search everything: the page, or its first sections on opening the search and what it shows, answers the question."
     }
   ]
 }

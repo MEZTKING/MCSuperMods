@@ -142,7 +142,17 @@ Functions are lists of commands the game runs. This starter sets up the usual wi
    - stand on a gold block: you run faster;
    - `/function my_functions:greet` says hello; `/function #my_functions:all` runs every function in your tag.
 
-The [templates list](templates-and-examples.md#all-templates) has 241 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 118 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
+The [templates list](templates-and-examples.md#all-templates) has 309 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 215 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
+
+## What is a data pack?
+
+Minecraft Java reads three sorts of add-on, and MCSuperMods makes all three from the same project:
+
+- A **data pack** changes how a world plays, with no new code: recipes, loot tables, advancements, tags, functions (lists of commands), structures, biomes and dimensions. It is a folder or `.zip` with a `data` folder and a `pack.mcmeta`, and it lives in one world, in that world's `datapacks` folder; `/reload` reads it again. **File → Export Data Pack…** writes one, and **Install → Data pack to a world…** puts it in a world. The **Data pack** starter (a load message, a function and a recipe) and the **Functions** starter above are data packs.
+- A **resource pack** changes how the game looks and sounds: textures, models, names, sounds and fonts. It has an `assets` folder instead, goes in the game's `resourcepacks` folder and is chosen under Options → Resource Packs… in the game. The **Resource pack** starter makes one.
+- A **Fabric mod jar** adds what packs cannot: new blocks, items, mobs, liquids, vehicles, scripts and rules. It goes in the `mods` folder of a game with Fabric Loader and Fabric API, and carries the project's data and resource pack files inside it ([Export the Fabric mod jar](#8-export-the-fabric-mod-jar)).
+
+Each element in the list belongs to one of them; the packs a starter fills are listed in [Project starters](templates-and-examples.md#project-starters). A project with only pack content can be exported as vanilla packs that work without any mod.
 
 ## Easy and Advanced mode
 
@@ -155,9 +165,11 @@ In both modes the box at the top of the list searches names and kinds, and a cli
 
 ## Start with the AI helper
 
-**New project with the AI helper…** (the arrow next to **New**, **File**, the Welcome or the empty editor area) asks what your mod should add, makes a new project in a folder you choose and starts the AI helper's Build mode with your description. See [The AI helper](ai-helper.md); it needs your own Anthropic API key.
+**New project with the AI helper…** (the arrow next to **New**, **File**, the Welcome or the empty editor area) asks what your mod should add, makes a new project in a folder you choose and starts the AI helper on a whole build with your description. See [The AI helper](ai-helper.md); it needs your own Anthropic API key.
 
 ## Command palette and shortcuts
+
+To find anything at all, use the search: the bar on the empty editor area, the toolbar's **Search or make anything** field, **Edit → Search…** or Ctrl+K. It finds things to make, your own things, Minecraft's things, settings, commands and pages of this guide from plain words; see [Search everything](search.md).
 
 Press **Ctrl+Shift+P** to open the command palette and type part of a command's name: "export", "install", "examples", "rename". Every menu and toolbar action is there, including **Choose install target…**, **Toggle Raw JSON**, **Go to definition of the focused reference** and **Find usages of the selected element**.
 
@@ -170,6 +182,7 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 | Ctrl+Shift+Z or Ctrl+Y | Redo |
 | Ctrl+N | Add element (template picker) |
 | F2 | Rename the selected element (also updates every reference to it) |
+| Ctrl+K | Search everything (also **Edit → Search…**) |
 | Ctrl+Shift+P | Command palette |
 | F5 | Play: open your mod in Minecraft's test world (see [Playing and testing](playing-and-testing.md)) |
 | Ctrl+R | Reload in Game: send your changes to the running test world |

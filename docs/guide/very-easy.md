@@ -16,7 +16,11 @@ Nothing is hidden for good. Very easy only hides things: a hand-made event, a te
 
 ## The Very easy window
 
-The toolbar has only what you need: **Home**, Undo, Redo, **Try it**, **Play** and **Reload** with the game's status, **Share my mod**, the AI helper, Help and the mode row. There is no sidebar, no Problems tab and no target in the status bar. Anything wrong appears in **Things to fix**.
+The toolbar has only what you need: **Home**, the search field **Search or make anything**, Undo, Redo, **Try it**, **Play** and **Reload** with the game's status, **Share my mod**, the AI helper, Help and the mode row. There is no sidebar, no Problems tab and no target in the status bar. Anything wrong appears in **Things to fix**.
+
+## What do you want to make?
+
+The large bar at the top of Home, **What do you want to make?**, is there with a mod open or not. Type what you want in your own words, such as "blue sword", "make a pig fly" or "skyblock", and pick a result: **Make this** opens the questions with your answers already filled in, and **Add to my mod** makes it straight away (Undo takes it back). The same search finds your own things (**Open**), Minecraft's things (**Make something with it**), Things to fix (**Fix it**) and how-to pages of this guide (**Show me how**). Ctrl+K (Cmd+K on a Mac) opens it from anywhere. Nothing you type leaves your computer. See [Search everything](search.md).
 
 ## Start a new mod
 
@@ -167,3 +171,4 @@ Very easy shows the question pages and the sections that matter and hides the re
 - [Playing and testing](playing-and-testing.md) for Play, Reload and the test world.
 - [The Creator](creator.md) for every question page.
 - [The AI helper](ai-helper.md) to describe what you want.
+- [Search everything](search.md) to find anything by its name or in your own words.

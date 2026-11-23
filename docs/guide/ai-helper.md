@@ -81,6 +81,12 @@ After that, export as usual ([Blocks and items](blocks-and-items.md#export-a-fab
 
 In Very easy, each line of **Things to fix** has **Ask the helper**. It opens the helper with the problem attached and nothing sent: a chip above the box reads, for example, "About: Ruby Sword, it has no shape picture to show". Edit the box or remove the chip (**Remove the context**) and press **Send** when you are ready. In Easy and Advanced, **Explain** on a row of the **Problems** tab does the same, and **Ask AI** in the editor header (also "Ask the AI helper about this element" in the palette) asks about the selected element ("Tell me about this element."). Advanced's chip names the code and id ("Problem … on …", "Element … (kind)").
 
+## It searches the library first
+
+Before it makes anything by hand, the helper looks in MCSuperMods' own library with your words, using the same search as [Search everything](search.md): Creator flows, starters, templates, examples, kinds and Minecraft's ids. When a flow or starter fits ("a blue sword", "a pet that follows me"), it uses it with the answers your words give, such as the colour and the name, so what it makes matches what the Creator makes. In Advanced the conversation shows this as a line such as "Searched the library for `blue sword`". This search reads only the library and Minecraft's ids, never your mod's things and never Minecraft's names from your Minecraft folder.
+
+The other way round works too: with a key set, the last row of the search is **Ask the AI helper**. It opens the helper with your words in its box (with no mod open, New project with the AI helper), and nothing is sent until you press **Send**.
+
 ## What is sent
 
 Nothing leaves your computer until you press **Send**. Then MCSuperMods sends to Anthropic, under your key:

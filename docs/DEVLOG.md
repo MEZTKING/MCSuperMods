@@ -10530,3 +10530,24 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B671: test ids `search-ask-ai-line`, `search-row-plugin`, `ai-start-context`.
 - B672: the guide can say Ask the AI helper from search fills New project with the AI helper when no mod is open.
+## 2026-11-23 — executor — B672 search guide and words
+
+**What**
+- New guide page `docs/guide/search.md` (**Search everything**): the five ways in (Home's **What do you want to make?**, the same bar on the empty editor area and the no-mod screen, the toolbar's **Search or make anything**, Ctrl/Cmd+K and Edit > **Search…**, the palette ranked by the same search with **Search everything…**), the **Try:** examples per mode, the sections and **Best match**/**Best matches**, **Closest things**, the Nothing close line and **Add it to my Wishlist**, the rows' source words, the chips (**Showing results for …**, **I understood:**, **Not understood:**), answers from words and the one "that …" part, the live picture before making, D9's buttons per result type, the scope chips and Advanced's signs, the keys, **Ask the AI helper**, privacy and **Remember my searches**/**Clear my searches** (last 20 searches and 50 chosen results), plugins' search words, and SL1–SL17 in plain words. Every quoted label checked by grep against `app/src/renderer/src` (and `app/src/main/menu.ts` for Search…).
+- `getting-started.md`: a section **What is a data pack?** (data packs, resource packs and the Fabric mod jar; B666's follow-up), search beside the command palette, Ctrl+K in the shortcuts table, the template and example counts (309, 215), and "starts the AI helper on a whole build" in place of the removed Build mode.
+- `templates-and-examples.md`: a how-to paragraph under **Recipes** (Add element, Find a template, search, the Recipe Studio's grid, the flows' recipes, the Recipe pack starter); the twelve games templates (category **Games**), the eight game flows in the starters table, the eight **Games** and six **Game kits** examples, `examples/games/`, the counts (309 templates, 82 starters, 215 examples, 124 per-kind examples).
+- `ai-helper.md`: **It searches the library first** (the `search_library` route, the Advanced line "Searched the library for …", ids only, nothing of the mod) and **Ask the AI helper** from search. `plugins.md`: a **Search words** section (plugin API 1.23.0 `searchData`, own things only, no stop or intent words, the third-party limits, all or nothing, the Settings > Plugins lines), a contributions row and the `plugin.search-data-refused` troubleshooting row. `very-easy.md`: the bar and the toolbar field. `README.md` and the site sidebar: the new page after Very easy mode; the AI helper, plugins and templates rows brought up to date.
+- `CHANGELOG.md` 1.5.5: the AI helper line's search button is **Ask the AI helper** (it read "Ask the helper", the Things to fix label). No other changelog change.
+- `app/test/search/golden-queries.json`: "what is a datapack" expects `guide:getting-started#what-is-a-data-pack` and its `needs` is gone; new query "how does search work" expects the guide page (its first two sections as `same`), each with a `reason`.
+- Checks: `golden.test.ts`, `misspellings.test.ts`, `WhatsNew.test.tsx`, `Markdown.test.tsx`, `GuideDialog.test.tsx`, `test/main/guide.test.ts` and `test/components/search` (11 files, 374 tests, `--maxWorkers=2`); `pnpm --filter ./docs/site build` (offline, dead links checked; `dist` and `cache` deleted); Biome on the JSON and the site config.
+
+**Decisions**
+- "how do I add a recipe" already expected `templates-and-examples#recipes` with no `needs`; the Recipes heading gains a how-to paragraph so the answer reads as one, and the query is unchanged.
+- The data pack section lives in Getting started beside the Functions starter, not on a page of its own; its anchor is the answer and the Data pack starter stays a top-three look (unscored), as it now ranks below the two guide sections.
+- The AI prompt topic files hold no search label, so they are untouched (no hash re-pin).
+- The search page does not quote "Minecraft's own pig stays as it is" or "I could only use the first part": neither line is in the app's code; it says the same in plain words.
+
+**Next**
+- B673: `docs/CLAUDE.md` lists the guide pages; add `search.md` there at the close.
+- `App.tsx`'s `askAiWith` opens the helper with the words but not B669's hints block (`askAi` in `search/ask-ai.ts` with its context), and no key gives no quiet line in the panel (ADR 0124 D12 asks for one when nothing is close): wire `askAi` and pass its outcome's `line`.
+- `templates-and-examples.md`'s starters table still lacks the Make a world flows and a few later starters; a full recount of that page against the library is worth a small docs brief.

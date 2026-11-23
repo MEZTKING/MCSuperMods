@@ -17,6 +17,7 @@ In plugin API 1.x a plugin can contribute:
 | Examples | Entries in **Help → Examples…**, to open as a new project or copy into yours. |
 | Validators | Errors and warnings in **Problems**, checked while you edit. |
 | Importers | New file types in **File → Import Structure…**, which picks the importer by file extension. |
+| Search words | The plugin's things found by [search](search.md) under words of its own: other names for its ideas, keywords on its templates, starters and kinds, hints for its starters' questions and extra rows that open its own things. See [Search words](#search-words). |
 | Exporters | Entries under **More exports** in the menu next to **Export .zip**, named "<exporter name> into a folder…", under **File → More Exports**, and in the command palette as "Export <exporter name> into a folder…". An exporter with options asks for them first; then it writes its files into a folder you choose. Errors in the layers it packages block it, like any export. The sample plugin's **Greeting list** writes `greetings.txt`. |
 
 A plugin cannot add its own editors or Studio views, its own commands or menu entries, or new Minecraft versions. Its kinds always use the generic form. A plugin that tries to contribute editors, commands or targets still loads, with a `plugin.capability-unsupported` warning, and those parts are ignored.
@@ -52,6 +53,19 @@ To remove a plugin, delete its folder and restart. Elements of a removed plugin'
 | **Failed** | The plugin started but stopped working: it crashed or took too long to answer. It stays unavailable until you restart MCSuperMods. |
 
 Each reason starts with a code such as `plugin.api-incompatible`; [Troubleshooting](#troubleshooting) explains them. With no plugins installed, the section says "No plugins installed. Copy a plugin's folder into the plugins folder to add it."
+
+## Search words
+
+From plugin API 1.23.0 a plugin can give [search](search.md) words of its own through `contributes.searchData`: groups of words that mean the same ("welcome message", "join message", "motd"), keywords on its templates, starters and kinds, hints for its starters' questions, behaviours that answer its own starters and extra rows (doors) that open its own things. It is plain data; no code of the plugin runs while you search. MCSuperMods asks for it once, at start-up.
+
+The words are checked before search uses them:
+
+- They may name only the plugin's own templates, starters, examples, kinds and commands. Words about another plugin's things, or MCSuperMods' own, are refused.
+- They cannot add words that search skips or reads as a wish ("how", "make", "open"); such fields are left out with the warning `search.unknown-field`.
+- Limits: at most 500 lines (each word group, colour, keyword list, question hint, behaviour and door is one line), 50 behaviours and 50 doors, 64 words in one list, 64 characters in one word, phrase, title or id, 200 characters in a sentence and 4,096 characters in one value.
+- **All or nothing.** If one line fails the check, all of the plugin's search words are left out. The plugin still loads and works; search then finds its things by their titles only.
+
+**Settings → Plugins** shows one line for each plugin with search words: "Search finds it by its own words (N lines)." or "Loaded without its search words: they did not pass the check.", with the warning `plugin.search-data-refused` and up to five of the problems the check found. A row that comes from a plugin's door ends "From <plugin name>." The sample Greetings plugin has search words in `src/search.ts`; `tools/new-plugin --external` writes a commented example into `src/index.ts`.
 
 ## Trust and the sandbox
 
@@ -134,6 +148,7 @@ The plugin API follows semantic versioning. Every 1.x release only adds to the A
 | `plugin.crashed` | The plugin threw an error while starting, or stopped. | Restart MCSuperMods; if it repeats, report it to the plugin's author. |
 | `plugin.timeout` | The plugin took too long to start or to answer, so it was stopped. | Restart MCSuperMods; if it repeats, report it to the plugin's author. |
 | `plugin.unavailable` | In **Problems**: an element belongs to a plugin that has stopped working since start-up. Exports are blocked until the plugin runs again. | Restart MCSuperMods. |
+| `plugin.search-data-refused` | A warning: the plugin's search words did not pass the check, so search finds its things by their titles only. The problems are listed under it. | Ask the plugin's author; the rest of the plugin works. |
 | `plugin.bad-result` | A plugin function returned something MCSuperMods cannot use. | Report it to the plugin's author. |
 
 The design behind plugins is in [ADR 0035](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0035-plugin-sandbox-and-capability-manifest.md) (sandbox and manifest) and [ADR 0036](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0036-plugin-api-1.0-and-compatibility-policy.md) (plugin API 1.0 and its compatibility policy).
