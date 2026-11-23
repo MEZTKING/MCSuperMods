@@ -14,6 +14,7 @@
  */
 
 import * as terrain from '@msm/terrain';
+import { createProcessorHost, isProcessorRequest } from '../processors/host';
 import type { PieceTemplate as ReaderPieceTemplate } from '../vanilla-pieces';
 import { jigsawState, type PiecePart, partsCells } from './cells';
 import type {
@@ -221,5 +222,11 @@ interface WorkerScope {
 if (typeof (globalThis as { WorkerGlobalScope?: unknown }).WorkerGlobalScope !== 'undefined') {
   const scope = globalThis as unknown as WorkerScope;
   const host = createAssemblyHost(terrain, (answer) => scope.postMessage(answer));
-  scope.onmessage = (event) => host.receive(event.data);
+  // B641: the processor view's messages go to the processors host.
+  const processors = createProcessorHost(terrain, (answer) => scope.postMessage(answer));
+  scope.onmessage = (event) => {
+    const message: unknown = event.data;
+    if (isProcessorRequest(message)) processors.receive(message);
+    else host.receive(event.data);
+  };
 }
