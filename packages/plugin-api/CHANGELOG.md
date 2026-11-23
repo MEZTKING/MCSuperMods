@@ -2,6 +2,23 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.23.0 — 2026-11-23
+
+Search data (ADR 0124 D5, D7, D13; the interface as corrected by the B650 spike). `API_VERSION` is `1.23.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `PluginContributions.searchData?(): MaybePromise<PluginSearchData>`: a plugin's search data, called once when the host builds its search index rather than at start, so a built-in plugin keeps it in its own lazily loaded module (`searchData: () => import('./search').then((m) => m.SEARCH)`). Data only; a third-party plugin's call resolves through its sandbox.
+- `PluginSearchData { vocabulary?; behaviours?; entries?; keywords?; questions? }`: `keywords` gives extra words for the plugin's own templates, starters and kinds by id, and `questions` gives `SearchQuestionHint`s for its own starters' questions by starter id and question id.
+- `SearchVocabulary { words?; colours? }`, `SearchWordGroup { idea; same; near?; slang?; phrases?; misspellings?; vanillaIds? }`, `SearchColour { names; colour }` (`#rrggbb`, lower case).
+- `SearchBehaviour { id; phrases; sentence; appliesTo; flows?; answers?; rule?; beside? }` with `SearchBehaviourSubject` (`'item' | 'block' | 'mob' | 'vehicle'`): what a made thing does, made by the flow itself, its answers, one Rules rule (`$thing` is the made thing) or one companion flow.
+- `SearchEntryContribution { id; title; sentence; words?; opens }` with `SearchEntryOpensType` (`'starter' | 'template' | 'example' | 'kind' | 'command'`): an extra door to one of the plugin's own things. It has no `supports` function: its availability follows the thing it opens.
+- `SearchQuestionHint { role?; words?; after?; never?; sameAs?; appliesWhen?; choiceWords? }`: how a flow's question may be answered from a query's words.
+- `validateSearchContributions(input, own, limits?)`, `searchOwnThingsOf(contributions)`, `SearchOwnThings`, `SearchLimits`, `SearchValidation`: a pure check, never throwing, that the host and the sandbox both run. It returns a plain-data copy of the lines that pass and one `search.<check>` problem (RFC 6901 `path` into the search data) per dropped line: malformed, over a length or count limit, not plain JSON, a duplicate id, or naming something other than the plugin's own things (entries, keywords and hints always; behaviours for third-party plugins). Unknown fields are left out with a warning.
+- `BUILT_IN_SEARCH_LIMITS` (3,000 lines, 300 behaviours, 300 entries) and `THIRD_PARTY_SEARCH_LIMITS` (500, 50, 50; behaviours name only the plugin's own starters); both: 64 strings in a list, 64 characters a word, phrase, title or id, 200 a sentence, 4,096 characters of JSON a value. A line is one word group, colour, keywords list or question hint.
+
+### Migration from 1.22.0
+
+None. A plugin that contributes search data should declare `^1.23.0`; a host older than 1.23.0 ignores `searchData`.
+
 ## 1.22.0 — 2026-11-23
 
 The game kits' Creator group and target facts (ADR 0113 D8, measured by the B547 spike). `API_VERSION` is `1.22.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

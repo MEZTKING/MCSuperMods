@@ -63,6 +63,26 @@ export type { Plugin } from './plugin';
 export { definePlugin, PluginDefinitionError } from './plugin';
 export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
 export type {
+  PluginSearchData,
+  SearchBehaviour,
+  SearchBehaviourSubject,
+  SearchColour,
+  SearchEntryContribution,
+  SearchEntryOpensType,
+  SearchLimits,
+  SearchOwnThings,
+  SearchQuestionHint,
+  SearchValidation,
+  SearchVocabulary,
+  SearchWordGroup,
+} from './search';
+export {
+  BUILT_IN_SEARCH_LIMITS,
+  searchOwnThingsOf,
+  THIRD_PARTY_SEARCH_LIMITS,
+  validateSearchContributions,
+} from './search';
+export type {
   BiomeAttributeFacts,
   BlockFacts,
   CommandArgumentFacts,

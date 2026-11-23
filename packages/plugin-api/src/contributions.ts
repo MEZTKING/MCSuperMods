@@ -12,6 +12,7 @@ import type { ElementTemplate, ExampleProject, ProjectStarter } from './library'
 import type { Asset, Element } from './model';
 import type { OutputFile, OutputLayer, OutputSink } from './output';
 import type { Problem, ProblemReporter } from './problems';
+import type { PluginSearchData, validateSearchContributions } from './search';
 import type { Target, TargetFacts } from './target';
 
 /**
@@ -444,4 +445,20 @@ export interface PluginContributions {
    * 1.15.0.
    */
   projectExpanders?: ProjectExpander[];
+  /**
+   * The plugin's search data: its words, behaviours, extra doors and question hints; see
+   * {@link PluginSearchData}. Called once by the host when it builds its search index, not at
+   * start, so a built-in plugin can keep the data in its own lazily loaded module. The result is
+   * data only: the host copies it through {@link validateSearchContributions}, which drops
+   * anything that is not plain data, past the limits or about another plugin's things. A
+   * third-party plugin's call resolves through its sandbox. Since 1.23.0 (ADR 0124 D13).
+   *
+   * @example
+   * ```ts
+   * searchData: () => import('./search').then((module) => module.SEARCH),
+   * ```
+   *
+   * @returns The search data, or a Promise of it.
+   */
+  searchData?(): MaybePromise<PluginSearchData>;
 }

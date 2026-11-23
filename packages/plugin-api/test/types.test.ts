@@ -38,6 +38,7 @@ import type {
   ParticleFacts,
   PlantSoilFacts,
   PluginContributions,
+  PluginSearchData,
   Problem,
   Project,
   ProjectExpander,
@@ -45,6 +46,10 @@ import type {
   ResourceFolderKey,
   RuntimeKeyFacts,
   ScoreboardFacts,
+  SearchBehaviour,
+  SearchEntryContribution,
+  SearchQuestionHint,
+  SearchWordGroup,
   SoundSetFacts,
   StatFacts,
   StatFormatName,
@@ -1076,5 +1081,33 @@ describe('1.0.0 additions', () => {
       data: { a: 1 },
     };
     expectTypeOf(change).toEqualTypeOf<MigrationChange>();
+  });
+  it('types lazy search data on contributions (1.23.0)', async () => {
+    expectTypeOf<NonNullable<PluginContributions['searchData']>>().returns.toEqualTypeOf<
+      MaybePromise<PluginSearchData>
+    >();
+    expectTypeOf<SearchWordGroup['misspellings']>().toEqualTypeOf<string[] | undefined>();
+    expectTypeOf<SearchBehaviour['flows']>().toEqualTypeOf<string[] | undefined>();
+    expectTypeOf<SearchBehaviour['appliesTo']>().toEqualTypeOf<
+      ('item' | 'block' | 'mob' | 'vehicle')[]
+    >();
+    expectTypeOf<SearchEntryContribution['opens']['type']>().toEqualTypeOf<
+      'starter' | 'template' | 'example' | 'kind' | 'command'
+    >();
+    expectTypeOf<SearchQuestionHint['role']>().toEqualTypeOf<
+      'name' | 'main-colour' | 'main-number' | undefined
+    >();
+    const data: PluginSearchData = {
+      vocabulary: { words: [{ idea: 'sword', same: ['blade'] }], colours: [] },
+      behaviours: [],
+      entries: [],
+      keywords: { ruby_block: ['gem block'] },
+      questions: { weapon: { name: { role: 'name' } } },
+    };
+    const contributions: PluginContributions = { searchData: async () => data };
+    expect(await contributions.searchData?.()).toBe(data);
+    // A 1.22.0-shaped contributions object without search data stays assignable.
+    const older: PluginContributions = { commands: [] };
+    expect(older.searchData).toBeUndefined();
   });
 });
