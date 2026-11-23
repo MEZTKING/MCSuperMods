@@ -1,0 +1,2 @@
+{"schemaVersion": 1, "id": "b720spike", "version": "0.0.1", "name": "B720 spike (throwaway)", "environment": "*",
+ "entrypoints": {"main": ["b720.B720Spike"]}, "depends": {"fabricloader": "*", "fabric-api": "*"}}

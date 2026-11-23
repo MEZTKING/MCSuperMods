@@ -11113,3 +11113,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - The main session amends section 2, section 3 and draft ADR 0133 as the README's "Changes asked of the plan" says, adds the white-list question, then starts B761.
+
+## 2026-11-23 — executor — B720 spike: community games on a data pack
+
+**What**
+- Answered K1 to K21 of `docs/PLAN-game-studio.md` on 26.3 and 26.4-snapshot-7: `docs/reference/spikes/b720/README.md` (answers, the table "type, mechanic, form that worked, cost", the facts for B723, the changes asked of the plan's sections 2 and 3 and of ADR 0132), `results/` (both servers' scenarios, the kill-credit rerun, the compass read variants, the offline form check), `spike-src/` (the throwaway stand-in player mod, driver, data pack generator, form check). Nothing under `engine-mod/` was touched; no code is shipped.
+- Method: a Fabric dedicated server per target with a throwaway mod that stands in up to 17 real `ServerPlayer`s on embedded connections, acting through the game's network handlers, plus a plain data pack holding all the game logic; one restart of the same world. Both targets answered every question the same way.
+- Findings: the four batch 1 types play as a data pack and cost 0.004 to 0.1 ms a tick with 16 players (bar 1.0 ms); 26.x advancement conditions take one loot condition and entity predicates are sub-predicate maps (the older forms stop the server loading); "kept out for a time" is server running time; `spawnpoint` outlives a broken bed; `entity.death` fires for players but misses the kill credit for void knocks; a block display cannot ride a player, so Hide and seek follows by teleport and catches seekers with an interaction entity (plays without mods in a simpler form); the 26.4 offline checker refuses one `summon block_display` line the 26.4 server runs.
+
+**Decisions**
+- Stand-ins on a dedicated server instead of a GameTest (K2, K6, K15 need leaving, joining and a restart); the README's K20 lists the four additions `ParityEars` needs for B736 (load acceptance, teleport confirmation, the listener's tick with keep-alives, saved data on rejoin).
+- No client GameTest: what players see across dimensions, under a held start, as a seeker, and immediate respawn are listed as in-game checks.
+
+**Next**
+- The orchestrator folds the README's "Changes this asks of the plan" into sections 2 and 3 and ADR 0132, and asks the user question 1 (Hide and seek's mark) with K18's evidence.
+- B723 takes the facts list (criteria, the 26.x advancement and entity predicate forms, entity data forms, command forms) and the 26.4 checker gap.

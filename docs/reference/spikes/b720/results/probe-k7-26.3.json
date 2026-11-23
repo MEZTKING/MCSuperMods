@@ -1,0 +1,329 @@
+[
+ {
+  "cmd": "gamerule spawn_monsters false",
+  "out": [
+   "B720LOG t=0 as=- LOAD loads=1 round=",
+   "System chat: Game rule spawn_monsters is now set to false"
+  ]
+ },
+ {
+  "cmd": "b720 join Ann",
+  "out": [
+   "B720 t=1 saved data for Ann: false",
+   "Ann[embedded] logged in with entity id 1 at (0.0, 0.0, 0.0)",
+   "System chat: Ann joined the game",
+   "B720 t=1 joined Ann Ann hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp Ann 30 -60 -20",
+  "out": [
+   "System chat: Teleported Ann to 30.500000, -60.000000, -19.500000"
+  ]
+ },
+ {
+  "cmd": "tag Ann add b720.runner",
+  "out": [
+   "System chat: Added tag 'b720.runner' to Ann"
+  ]
+ },
+ {
+  "cmd": "b720 join H0",
+  "out": [
+   "B720 t=3 saved data for H0: false",
+   "H0[embedded] logged in with entity id 2 at (0.0, 0.0, 0.0)",
+   "System chat: H0 joined the game",
+   "B720 t=3 joined H0 H0 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H0 10 -60 10",
+  "out": [
+   "System chat: Teleported H0 to 10.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H0 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H0"
+  ]
+ },
+ {
+  "cmd": "b720 join H1",
+  "out": [
+   "B720 t=4 saved data for H1: false",
+   "H1[embedded] logged in with entity id 3 at (0.0, 0.0, 0.0)",
+   "System chat: H1 joined the game",
+   "B720 t=4 joined H1 H1 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H1 11 -60 10",
+  "out": [
+   "System chat: Teleported H1 to 11.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H1 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H1"
+  ]
+ },
+ {
+  "cmd": "b720 join H2",
+  "out": [
+   "B720 t=7 saved data for H2: false",
+   "H2[embedded] logged in with entity id 4 at (0.0, 0.0, 0.0)",
+   "System chat: H2 joined the game",
+   "B720 t=7 joined H2 H2 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H2 12 -60 10",
+  "out": [
+   "System chat: Teleported H2 to 12.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H2 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H2"
+  ]
+ },
+ {
+  "cmd": "b720 join H3",
+  "out": [
+   "B720 t=8 saved data for H3: false",
+   "H3[embedded] logged in with entity id 5 at (0.0, 0.0, 0.0)",
+   "System chat: H3 joined the game",
+   "B720 t=8 joined H3 H3 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H3 13 -60 10",
+  "out": [
+   "System chat: Teleported H3 to 13.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H3 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H3"
+  ]
+ },
+ {
+  "cmd": "b720 join H4",
+  "out": [
+   "B720 t=8 saved data for H4: false",
+   "H4[embedded] logged in with entity id 6 at (0.0, 0.0, 0.0)",
+   "System chat: H4 joined the game",
+   "B720 t=8 joined H4 H4 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H4 14 -60 10",
+  "out": [
+   "System chat: Teleported H4 to 14.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H4 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H4"
+  ]
+ },
+ {
+  "cmd": "b720 join H5",
+  "out": [
+   "B720 t=10 saved data for H5: false",
+   "H5[embedded] logged in with entity id 7 at (0.0, 0.0, 0.0)",
+   "System chat: H5 joined the game",
+   "B720 t=10 joined H5 H5 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H5 15 -60 10",
+  "out": [
+   "System chat: Teleported H5 to 15.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H5 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H5"
+  ]
+ },
+ {
+  "cmd": "b720 join H6",
+  "out": [
+   "B720 t=11 saved data for H6: false",
+   "H6[embedded] logged in with entity id 8 at (0.0, 0.0, 0.0)",
+   "System chat: H6 joined the game",
+   "B720 t=11 joined H6 H6 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H6 16 -60 10",
+  "out": [
+   "System chat: Teleported H6 to 16.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H6 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H6"
+  ]
+ },
+ {
+  "cmd": "b720 join H7",
+  "out": [
+   "B720 t=12 saved data for H7: false",
+   "H7[embedded] logged in with entity id 9 at (0.0, 0.0, 0.0)",
+   "System chat: H7 joined the game",
+   "B720 t=12 joined H7 H7 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H7 17 -60 10",
+  "out": [
+   "System chat: Teleported H7 to 17.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H7 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H7"
+  ]
+ },
+ {
+  "cmd": "b720 join H8",
+  "out": [
+   "B720 t=13 saved data for H8: false",
+   "H8[embedded] logged in with entity id 10 at (0.0, 0.0, 0.0)",
+   "System chat: H8 joined the game",
+   "B720 t=13 joined H8 H8 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H8 18 -60 10",
+  "out": [
+   "System chat: Teleported H8 to 18.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H8 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H8"
+  ]
+ },
+ {
+  "cmd": "b720 join H9",
+  "out": [
+   "B720 t=14 saved data for H9: false",
+   "H9[embedded] logged in with entity id 11 at (0.0, 0.0, 0.0)",
+   "System chat: H9 joined the game",
+   "B720 t=14 joined H9 H9 hp=20.00 max=20.00 mode=survival dead=false pos=0.00,0.00,0.00 dim=minecraft:overworld removed=false"
+  ]
+ },
+ {
+  "cmd": "tp H9 19 -60 10",
+  "out": [
+   "System chat: Teleported H9 to 19.500000, -60.000000, 10.500000"
+  ]
+ },
+ {
+  "cmd": "tag H9 add b720.hunter",
+  "out": [
+   "System chat: Added tag 'b720.hunter' to H9"
+  ]
+ },
+ {
+  "cmd": "item replace entity @a[tag=b720.hunter] weapon.mainhand with minecraft:compass[minecraft:custom_data={b720_tracker:1b}]",
+  "out": [
+   "System chat: Replaced slot(s) on 10 entities with [Compass]"
+  ]
+ },
+ {
+  "cmd": "summon minecraft:marker 0 -60 0 {Tags:[\"b720.trk\"]}",
+  "out": [
+   "System chat: Summoned new Marker"
+  ]
+ },
+ {
+  "cmd": "tick sprint 5",
+  "out": []
+ },
+ {
+  "cmd": "b720 time 50 execute as @a[tag=b720.runner,limit=1] run function b720:k7/read",
+  "out": []
+ },
+ {
+  "cmd": "tick sprint 1",
+  "out": []
+ },
+ {
+  "cmd": "b720 time 50 execute as @a[tag=b720.runner,limit=1] run function b720:k7/read_once",
+  "out": [
+   "B720 t=15 time n=50 first=25.267 median=0.976 min=0.558 mean=2.316 ms /execute as @a[tag=b720.runner,limit=1] run function b720:k7/read"
+  ]
+ },
+ {
+  "cmd": "tick sprint 1",
+  "out": []
+ },
+ {
+  "cmd": "b720 time 50 execute as @a[tag=b720.runner,limit=1] run function b720:k7/read_marker",
+  "out": []
+ },
+ {
+  "cmd": "tick sprint 1",
+  "out": []
+ },
+ {
+  "cmd": "b720 time 50 function b720:k7/refresh_every_tick",
+  "out": [
+   "B720 t=16 time n=50 first=4.655 median=0.633 min=0.344 mean=1.364 ms /execute as @a[tag=b720.runner,limit=1] run function b720:k7/read_once",
+   "B720 t=16 time n=50 first=2.323 median=0.635 min=0.406 mean=1.405 ms /execute as @a[tag=b720.runner,limit=1] run function b720:k7/read_marker"
+  ]
+ },
+ {
+  "cmd": "tick sprint 1",
+  "out": [
+   "B720 t=17 time n=50 first=48.183 median=1.668 min=0.954 mean=3.814 ms /function b720:k7/refresh_every_tick"
+  ]
+ },
+ {
+  "cmd": "b720 time 50 function b720:k7/refresh_once",
+  "out": []
+ },
+ {
+  "cmd": "tick sprint 1",
+  "out": [
+   "B720 t=19 time n=50 first=3.023 median=0.771 min=0.570 mean=0.908 ms /function b720:k7/refresh_once"
+  ]
+ },
+ {
+  "cmd": "b720 time 50 function b720:k7/refresh_cheap",
+  "out": []
+ },
+ {
+  "cmd": "tick sprint 1",
+  "out": [
+   "B720 t=23 time n=50 first=3.895 median=0.554 min=0.427 mean=0.773 ms /function b720:k7/refresh_cheap"
+  ]
+ },
+ {
+  "cmd": "b720 time 50 function b720:k7/set_all with storage b720:k7",
+  "out": []
+ },
+ {
+  "cmd": "tick sprint 1",
+  "out": []
+ },
+ {
+  "cmd": "data get entity H3 Inventory[0].components",
+  "out": [
+   "System chat: H3 has the following entity data: {\"minecraft:lodestone_tracker\": {tracked: 0b, target: {pos: [I; 30, -60, -20], dimension: \"minecraft:overworld\"}}, \"minecraft:custom_data\": {b720_tracker: 1b}}"
+  ]
+ }
+]
