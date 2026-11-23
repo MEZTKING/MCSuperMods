@@ -15,7 +15,12 @@
  * @packageDocumentation
  */
 
-import { parseBlockState, readNbt, structureTemplateFromNbt } from '@msm/plugin-structures';
+import {
+  parseBlockState,
+  readNbt,
+  type StructureTemplateData,
+  structureTemplateFromNbt,
+} from '@msm/plugin-structures';
 import type { VanillaStructureTemplates } from '../../../../shared/platform';
 
 /** Mirrors `JigsawOrientation` in `@msm/terrain`: the side a jigsaw faces, then its top. */
@@ -154,6 +159,15 @@ const ORIENTATIONS: ReadonlySet<string> = new Set<JigsawOrientation>([
 export function parsePieceTemplate(id: string, bytes: Uint8Array): PieceTemplate {
   const { root } = readNbt(bytes);
   const { data } = structureTemplateFromNbt(root);
+  return pieceTemplateFromData(id, data);
+}
+
+/**
+ * A template's JSON (the `minecraft:structure_template` element's data, or a parsed file) as a
+ * {@link PieceTemplate}, by the rules of {@link parsePieceTemplate}. The assembly view (B640)
+ * reads the project's own templates through it.
+ */
+export function pieceTemplateFromData(id: string, data: StructureTemplateData): PieceTemplate {
   const entityAt = new Map<string, string>();
   for (const entity of data.block_entities ?? []) entityAt.set(entity.pos.join(','), entity.nbt);
   const blocks: TemplateBlock[] = data.blocks.map(([x, y, z, state]) => {

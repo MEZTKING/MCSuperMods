@@ -1,15 +1,15 @@
 /**
  * Batch 4's views (ADR 0122, Live views 4: assembled structures): one entry per kind, each lazily
- * importing a stub file of this folder that says "not yet" inside the frame until its brief builds
- * it: B640 the assembly (template pool and jigsaw structure), B641 processors. A brief edits its
- * own files only; this index is B635's and is not touched again. A kind is in one index only (a
- * test checks).
+ * importing its view: B640's assembly (`assembly/AssemblyView.tsx`) for the template pool and the
+ * jigsaw structure, and the processor list's (a stub until B641 builds it). A kind is in one
+ * index only (a test checks).
  */
 
 import type { LiveViewLoader } from '../registry';
 
-const templatePool: LiveViewLoader = () => import('./TemplatePoolView');
-const structure: LiveViewLoader = () => import('./JigsawStructureView');
+// B640: one view for both kinds; it picks the pool's or the structure's by the element's kind.
+const templatePool: LiveViewLoader = () => import('./assembly/AssemblyView');
+const structure: LiveViewLoader = () => import('./assembly/AssemblyView');
 const processorList: LiveViewLoader = () => import('./ProcessorListView');
 
 /** The kinds of batch 4 whose view is in the preview panel (`previewKind: 'live_view'`). */

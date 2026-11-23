@@ -8,7 +8,8 @@
  * data-testids: `pool-studio`, `pool-advanced-toggle`, `pool-fallback`, `pool-piece-<n>`,
  * `pool-piece-<n>-weight`, `pool-piece-<n>-type`, `pool-piece-<n>-location`,
  * `pool-piece-<n>-processors`, `pool-piece-<n>-projection`, `pool-add-piece`,
- * `pool-connections`, `pool-connection-<n>`, `pool-used-by`.
+ * `pool-connections`, `pool-connection-<n>`, `pool-used-by`, `pool-see-assembled` (B640: **See it
+ * assembled** shows the pool's live view, Assemble from here, under the button).
  *
  * @packageDocumentation
  */
@@ -16,9 +17,11 @@
 import type { Json, ResourceLocation } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { type FormProblem, isWithin, ProblemList } from '../../forms';
+import { createVanillaDataReader, NOT_SET_UP_VANILLA_DATA } from '../../liveviews/vanilla-data';
+import { useUiStore } from '../../store/ui-store';
 import type { StudioProps } from '../types';
 import {
   normaliseId,
@@ -39,6 +42,9 @@ import {
   SelectField,
   stringChoices,
 } from './pickers';
+
+/** The live views' host (B640): loaded when the link is first pressed, not with the Studio. */
+const BundleLiveView = lazy(() => import('../../liveviews/BundleLiveView'));
 
 type JsonObject = { [key: string]: Json };
 
@@ -181,9 +187,61 @@ export function TemplatePoolStudio(props: StudioProps) {
           />
         </>
       )}
+      <SeeItAssembled {...props} />
       <ConnectionsPanel connections={connections} onOpen={host?.openElement} />
       <UsedByPanel connections={connections} onOpen={host?.openElement} />
     </section>
+  );
+}
+
+/**
+ * **See it assembled** (B640): the pool's live view, Assemble from here, under the button. It
+ * follows the Studio's edits as the preview panel's does.
+ */
+function SeeItAssembled(props: StudioProps) {
+  const { project, element, target } = props;
+  const [open, setOpen] = useState(false);
+  const root = useUiStore((state) => state.snapshot?.root ?? null);
+  const cacheReady = useUiStore((state) => state.minecraft.status?.cache != null);
+  const vanilla = useMemo(
+    () =>
+      cacheReady
+        ? createVanillaDataReader({ mcVersion: target.mcVersion })
+        : NOT_SET_UP_VANILLA_DATA,
+    [cacheReady, target.mcVersion],
+  );
+  const onSetup = useCallback(
+    () =>
+      useUiStore.getState().setMessage({
+        kind: 'info',
+        text: 'Set up your Minecraft folder in Settings, under Game locations, to use Minecraft’s own pieces here.',
+      }),
+    [],
+  );
+  return (
+    <div className="flex flex-col gap-2" data-testid="pool-assembled">
+      <div>
+        <Button
+          aria-expanded={open}
+          data-testid="pool-see-assembled"
+          onClick={() => setOpen((before) => !before)}
+        >
+          {open ? 'Hide the assembly' : 'See it assembled'}
+        </Button>
+      </div>
+      {open && (
+        <Suspense fallback={<p className="text-muted text-xs">Loading the view…</p>}>
+          <BundleLiveView
+            project={project}
+            element={element}
+            mcVersion={target.mcVersion}
+            vanilla={vanilla}
+            projectRoot={root}
+            onSetup={onSetup}
+          />
+        </Suspense>
+      )}
+    </div>
   );
 }
 

@@ -180,4 +180,14 @@ describe('Template Pool Studio', () => {
     expect(screen.getByTestId('schema-form')).toBeTruthy();
     expect(screen.queryByTestId('pool-piece-0')).toBeNull();
   });
+
+  it('shows the pool assembled under See it assembled (B640)', async () => {
+    renderStudio({ project: projectOf(startPool, hut), subject: startPool, schema });
+    expect(screen.queryByRole('region', { name: 'Assemble from here' })).toBeNull();
+    await userEvent.setup().click(screen.getByTestId('pool-see-assembled'));
+    expect(
+      await screen.findByRole('region', { name: 'Assemble from here' }, { timeout: 10_000 }),
+    ).toBeTruthy();
+    expect(screen.getByTestId('pool-see-assembled').textContent).toBe('Hide the assembly');
+  });
 });

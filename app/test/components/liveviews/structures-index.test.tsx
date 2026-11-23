@@ -19,8 +19,7 @@ afterEach(cleanup);
 // is not measured by `waitFor`'s one-second wait.
 beforeAll(async () => {
   await Promise.all([
-    import('../../../src/renderer/src/liveviews/structures/TemplatePoolView'),
-    import('../../../src/renderer/src/liveviews/structures/JigsawStructureView'),
+    import('../../../src/renderer/src/liveviews/structures/assembly/AssemblyView'),
     import('../../../src/renderer/src/liveviews/structures/ProcessorListView'),
   ]);
 }, 60_000);
@@ -42,11 +41,8 @@ describe('the structures index (B635)', () => {
   });
 
   it('says not yet inside the frame, naming the brief', async () => {
-    for (const [kind, brief] of [
-      ['minecraft:worldgen/template_pool', 'B640'],
-      ['minecraft:worldgen/structure', 'B640'],
-      ['minecraft:worldgen/processor_list', 'B641'],
-    ] as const) {
+    // B640 built the template pool's and the structure's (`structures/assembly/`).
+    for (const [kind, brief] of [['minecraft:worldgen/processor_list', 'B641']] as const) {
       const View = liveViewComponent(kind);
       expect(View, kind).not.toBeNull();
       if (View === null) continue;
