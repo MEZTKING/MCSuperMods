@@ -998,7 +998,13 @@ describe('App project target (ADR 0037 D4)', () => {
     );
     const user = userEvent.setup();
     await user.click(within(dialog).getByTestId('upgrade-target-dialog-submit'));
-    await toast(`Project target changed to ${snapshotTarget.id}.`);
+    // Upgrading loads the second target and lowers the whole project again, which takes
+    // more than findByText's default second when CI runs every package's tests at once.
+    await screen.findByText(
+      `Project target changed to ${snapshotTarget.id}.`,
+      { ignore: 'script, style, body > [role="status"]' },
+      { timeout: 10_000 },
+    );
     expect(harness.session.snapshot.project?.targets).toEqual([snapshotTarget.id]);
     expect(screen.getByTestId('project-target').textContent).toBe(`${snapshotTarget.id}snapshot`);
 
