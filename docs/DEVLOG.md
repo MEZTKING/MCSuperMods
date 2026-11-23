@@ -11184,3 +11184,17 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B701 or the integration updates the listed spec and `App.test.tsx` lines; B705 to B709 and B715 use `plain-sweep.ts`.
+
+## 2026-11-23 — executor — B721 Game and map Studio: scaffold and stubs
+
+**What**
+- Every shared registration point of `docs/PLAN-game-studio.md` batch 1, so later briefs never share a file: `msm:game` and `msm:kit` in `packages/plugins/games/src/kinds/game.ts` and `kit.ts` (imported by the kind index), the game's lowering stubs (`lowering/game/` with `round.ts`, `lobby.ts`, `roles.ts` and `mechanics/` with one file per mechanic of D2 and the contract types `GameLoweringContext` and `MechanicLowering`), `lowering/kit.ts`, `validators-game.ts`, `validators-kit.ts`, `validators-mechanics/` (one check per mechanic), `templates/game.ts`; the Game and Kit Studio stubs with their two lazy entries in `studios/games/studios.tsx`; the hub's folder `app/src/renderer/src/gamehub/` (the nine tabs in the mock-up's order, a store, the catalogue's heading, `rounds/`); `packages/sim/src/players/`; four game type starter files under `packages/plugins/library/src/starters/games/` with `spec.ts`, and `examples/community-games.ts`; `fixtures/sample-community-games/README.md`; the empty parity class `SampleCommunityGamesParityTest` and its `fabric.mod.json` entry; the fixture's CI steps; the empty e2e files `game-hub-path` and `game-types-path`.
+- Nothing shows yet: each kind's file has a flag (`GAME_KIND_LISTED`, `KIT_KIND_LISTED`, `false`) that keeps the kind, its template, validator and Studio out of every list; each game type's file has `listed: false`; the CI steps run only once the fixture's golden test exists (`hashFiles`).
+- Checked: `pnpm lint` (with check-deps), `pnpm typecheck`, `pnpm test` (27 of 27 tasks, app 432 files), `./gradlew -p parity build` (26.3, JDK 25), `pnpm --filter @msm/app build` and check-size (renderer 19.6 MB, first paint 4.9 MB; the asar was not measured, it needs `dist:dir`).
+
+**Decisions**
+- Flags in the new files rather than registering the kinds at once: registering would have changed pinned lists (the plugin's kind list, the games Studio entries, one example per kind), and the brief asks for every existing test unchanged. B722 sets the two flags; B733 sets `listed`.
+- The plugin's `src/index.ts` gained exports (the flags, kinds, lowering and validator stubs) so the app can read the flags; nothing else in it changed.
+
+**Next**
+- B722 (format) and B723 (plugin API 1.27.0 and facts) in wave A1.
