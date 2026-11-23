@@ -35,6 +35,27 @@ export const listProblemsInput = z.object({
     .describe('Only problems of this severity. An "error" blocks export.'),
   cursor: cursorSchema.optional(),
 });
+/** Most results `search_library` returns per page (and its default). */
+export const SEARCH_LIBRARY_MAX = 25;
+export const SEARCH_LIBRARY_DEFAULT = 10;
+/** Most results `search_library` pages through for one query. */
+export const SEARCH_LIBRARY_TOTAL = 100;
+
+export const searchLibraryInput = z.object({
+  query: z
+    .string()
+    .min(1)
+    .max(200)
+    .describe('The user\'s words, as typed, for example "a blue sword that sets mobs on fire".'),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(SEARCH_LIBRARY_MAX)
+    .optional()
+    .describe(`Most results per page; default ${SEARCH_LIBRARY_DEFAULT}.`),
+  cursor: cursorSchema.optional(),
+});
 export const listTemplatesInput = z.object({
   kind: kindIdSchema.optional(),
   category: z.string().max(100).optional().describe('A template category as listed earlier.'),
@@ -57,6 +78,7 @@ export type KindSchemaInput = z.infer<typeof kindSchemaInput>;
 export type ListElementsInput = z.infer<typeof listElementsInput>;
 export type ReadElementInput = z.infer<typeof readElementInput>;
 export type ListProblemsInput = z.infer<typeof listProblemsInput>;
+export type SearchLibraryInput = z.infer<typeof searchLibraryInput>;
 export type ListTemplatesInput = z.infer<typeof listTemplatesInput>;
 export type TemplateDataInput = z.infer<typeof templateDataInput>;
 export type ListStartersInput = z.infer<typeof listStartersInput>;
@@ -106,6 +128,13 @@ export const READ_TOOLS = [
     input: listProblemsInput,
     description:
       'Lists the current problems of the project (severity, code, message, element id, JSON path), optionally for one element or one severity. Returns { items, nextCursor? }. Errors block export; warnings and infos do not. To check your proposals, use run_checks instead.',
+  },
+  {
+    name: 'search_library',
+    group: 'read',
+    input: searchLibraryInput,
+    description:
+      'Searches what MSM can make, with the search of the app: the flows and starters (with their parameters, defaults and the values understood from the words), templates, examples, kinds, Rules parts and vanilla ids (ids only). Typos and other words for a thing are fine. Returns { items, nextCursor? }, best first; each item has its source and the id to use with add_starter, template_data or kind_schema. Call it before list_starters or list_templates.',
   },
   {
     name: 'list_templates',

@@ -10456,3 +10456,25 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B672: the labels "What do you want to make?", "Search or make anything", Edit > Search… (Ctrl/Cmd+K) and the palette's "Search everything…".
 - B560's quirks fix also edits `built-in-commands.ts`; merge with `searchEverything` at the end of the list.
 - A small fix outside this brief: `blocks-items-path`'s heading locator for Extra drops needs scoping (or the live view's heading another level), since the loot live view landed.
+## 2026-11-23 — executor — B669 search for the AI helper
+
+**What**
+- `@msm/ai`: the read-only tool `search_library { query, limit?, cursor? }` (ADR 0124 D12), placed before `list_templates`; limit 1 to 25 (default 10), at most 100 results paged with `nextCursor` like the other read tools; `SEARCH_LIBRARY_DEFAULT`, `SEARCH_LIBRARY_MAX`, `SEARCH_LIBRARY_TOTAL` exported. The catalogue has 23 tools; its frozen hash re-pinned.
+- The prompt's starter rule (`prompt/core.ts`) now says to find a starter with `search_library` and the user's words, its parameters and the values the words give, before `list_starters` or `list_templates`. Size 103,655 to 103,775 characters (budget 104,000 unchanged); the pinned prompt hash re-pinned with its comment line.
+- `app/src/renderer/src/ai/library-search.ts` (new): the app's own engine in process over the static layer (`collectStatic` over the built-in plugins with their search data and the session's library, without settings and palette commands) and the vanilla ids (`vanillaLayer(registries, null)`: words from the ids, never the jar's names); built once per session and target and imported dynamically by the executor, so the engine stays out of the first paint.
+- `tool-executor.ts`: the `search_library` handler and `libraryItem`: flows and starters as `{ source, id, use: 'add_starter', title, sentence, parameters (id, label, type, default, choices, range), values }`, templates with their kind, examples, kinds, Rules parts, vanilla as `{ source, id, sort }` only; one item per library id; nothing of the project. An optional `options.library` replaces the search (tests, a later wiring to the panel's client).
+- `search/ask-ai.ts`: `askAiHints(hits)` (a lead line and at most four lines of library ids and understood answers; no title, no project thing, no answer naming a mod id) and `askAi(query, hits, host)`: with a mod open the panel waits with the words and the hints as a context block (`AiController.prefillMessage`, new), with none `host.newProjectWithAi(draft)`, without a key or a helper nothing opens and the outcome carries `NO_KEY_LINE` or `NO_HELPER_LINE`. Nothing is sent until the user presses Send.
+- `components/ai/ai-words.ts`: the Advanced transcript line "Searched the library for `<words>`" (hidden in Very easy and Easy like the other read tools).
+- Tests: `packages/ai` (schema of the tool, 147 tests), `app/test/ai-tool-executor.test.ts` (four `search_library` tests: values for "a blue swrod", templates and vanilla ids only, paging and bad cursors, nonsense and abort), `app/test/ai-scenario.test.ts` (search first: `search_library` then `add_starter` with the values, checks clean, applied in one step), `app/test/components/search/ask-ai.test.ts` (new: the hints block holds no project content and no jar name; the three routes; the real controller fills the panel and starts no run).
+
+**Decisions**
+- AI helper 2 (ADR 0125 D2) removed the Chat and Build modes, so `askAi` opens the helper with the words as a draft message, not "in Build mode"; the run's size comes from the Send.
+- `askAi` takes a third argument, the host (the controller and New project with the AI helper), since `App.tsx` and the panel are B667's; the panel's `onAskAi(text, hits)` wraps it.
+- The executor builds its own in-process index rather than using the panel's worker client: the client is not wired yet (B667), and the helper's search must work in every run and test. Titles are given for library things only; vanilla results are ids.
+- The prompt stays within 104,000 by one rewritten sentence; no raise, no ADR 0125 D7 line.
+- `ask-ai.ts` declares its own `AskAiContext` and `AskAiDraft` (the shapes of the controller's) so it does not pull the controller and its DOM code into the node type project; its test lives under `test/components/search/`.
+- `components/ai/ai-words.ts` (outside the named files) needed the new tool's Advanced line: its test requires a line for every tool.
+
+**Next**
+- B667: wire `onAskAi={(text, hits) => askAi(text, hits, { controller: aiController, newProjectWithAi })}` in `App.tsx`, where `newProjectWithAi` opens the `ai-start` dialog with `draft.text` as its description and sends `draft.context?.block` as a context block with the first message; show the outcome's `line` quietly when `status` is `unavailable`.
+- B672: the guide's AI helper page can mention that the helper searches the library first.

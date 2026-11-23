@@ -1661,3 +1661,100 @@ describe('AI helper scenario: a cave garden (build mode)', () => {
     });
   }
 });
+
+/**
+ * Search first (ADR 0124 D12, B669): "a blue sword" is found with `search_library`, whose result
+ * names the Sword flow and the values the words gave, and the helper proposes it through
+ * `add_starter` with those values.
+ */
+const BLUE_SWORD_PROMPT = 'a blue sword';
+const BLUE_SWORD_VALUES = { weapon_name: 'Blue Sword', colour: '#3c44aa', weapon_type: 'sword' };
+
+const blueSwordScript = (): AiModelScript =>
+  aiModelScriptSchema.parse({
+    turns: [
+      {
+        content: [
+          { type: 'text', text: 'I will look for the right flow first.' },
+          { type: 'tool_use', name: 'search_library', input: { query: BLUE_SWORD_PROMPT } },
+        ],
+      },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'add_starter',
+            input: { starterId: 'weapon', namespace: 'blue', values: BLUE_SWORD_VALUES },
+          },
+        ],
+      },
+      { content: [{ type: 'tool_use', name: 'run_checks', input: { scope: 'all' } }] },
+      {
+        content: [
+          {
+            type: 'text',
+            text: 'The blue sword is proposed. Nothing is in the mod until you add it.',
+          },
+        ],
+      },
+    ],
+  }) as AiModelScript;
+
+describe('AI helper scenario: search first, then the flow with its values (ADR 0124 D12)', () => {
+  it('calls search_library, then add_starter with the values the search understood', async () => {
+    const { session } = await openSession();
+    const changeset = new PendingChangeset();
+    const client = new ScriptedModelClient(blueSwordScript());
+    const conversation = createConversation('conversation-search', 'claude-opus-5-5');
+
+    const { result, record } = await run(session, changeset, client, conversation, {
+      mode: 'chat',
+      text: BLUE_SWORD_PROMPT,
+    });
+    expect(result.reason).toBe('end_turn');
+    expect(client.remaining).toBe(0);
+    expect(
+      [...record.results.entries()]
+        .filter(([, answer]) => answer.isError)
+        .map(([id, answer]) => `${id}: ${answer.content}`),
+    ).toEqual([]);
+
+    const uses = conversation.messages
+      .flatMap((message) =>
+        message.role === 'assistant' && typeof message.content !== 'string' ? message.content : [],
+      )
+      .filter((block) => block.type === 'tool_use');
+    expect(uses.map((block) => (block.type === 'tool_use' ? block.name : ''))).toEqual([
+      'search_library',
+      'add_starter',
+      'run_checks',
+    ]);
+    // The search's answer reached the model, and it names the flow add_starter then used with
+    // the values the words gave.
+    const searchId = uses[0]?.type === 'tool_use' ? uses[0].id : '';
+    const search = JSON.parse(record.results.get(searchId)?.content ?? '{}') as {
+      items: { source: string; id: string; use?: string; values?: Record<string, Json> }[];
+    };
+    const weapon = search.items.find((item) => item.source === 'flow' && item.id === 'weapon');
+    expect(weapon?.use).toBe('add_starter');
+    expect(weapon?.values).toMatchObject({
+      colour: BLUE_SWORD_VALUES.colour,
+      weapon_type: BLUE_SWORD_VALUES.weapon_type,
+    });
+    const sent = toolResultsOf(client.requests[1]?.messages ?? []);
+    expect(sent.get(searchId)).toBe(record.results.get(searchId)?.content);
+
+    // The flow's sword is proposed, blue, and the checks find no error.
+    const created = changeset.items.filter((item) => item.op === 'create');
+    expect(created.length).toBeGreaterThan(0);
+    expect(created.some((item) => String(item.elementId).startsWith('blue:'))).toBe(true);
+    const checkId = uses[2]?.type === 'tool_use' ? uses[2].id : '';
+    const checks = JSON.parse(record.results.get(checkId)?.content ?? '{}') as {
+      counts: { error: number };
+    };
+    expect(checks.counts.error).toBe(0);
+    const applied = await session.applyChangeset(changeset.items);
+    expect(applied.skipped).toEqual([]);
+    expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+  });
+});

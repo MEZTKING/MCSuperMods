@@ -16,6 +16,7 @@ const EXAMPLES: { [N in AiToolName]: AiToolInputs[N] } = {
   list_elements: { kind: 'msm:block', namespace: 'ruby_tools', filter: 'ore', cursor: '200' },
   read_element: { id: 'ruby_tools:ruby_ore' },
   list_problems: { elementId: 'ruby_tools:ruby_ore', severity: 'error' },
+  search_library: { query: 'a blue swrod', limit: 5 },
   list_templates: { kind: 'minecraft:recipe', category: 'Recipes' },
   template_data: { templateId: 'datapack.recipe.shaped', id: 'ruby_tools:ruby_block' },
   list_starters: {},
@@ -91,6 +92,7 @@ describe('tool catalogue', () => {
       'list_elements',
       'read_element',
       'list_problems',
+      'search_library',
       'list_templates',
       'template_data',
       'list_starters',
@@ -152,6 +154,34 @@ describe('tool catalogue', () => {
     );
   });
 
+  it('search_library takes words, a bounded limit and a cursor (ADR 0124 D12)', () => {
+    expect(parseToolInput('search_library', { query: 'ore' }).ok).toBe(true);
+    expect(parseToolInput('search_library', { query: 'ore', limit: 25, cursor: '25' }).ok).toBe(
+      true,
+    );
+    expect(parseToolInput('search_library', { query: '' }).ok).toBe(false);
+    expect(parseToolInput('search_library', { query: 'x'.repeat(201) }).ok).toBe(false);
+    expect(parseToolInput('search_library', { query: 'ore', limit: 0 }).ok).toBe(false);
+    expect(parseToolInput('search_library', { query: 'ore', limit: 26 }).ok).toBe(false);
+    expect(parseToolInput('search_library', { query: 'ore', limit: 2.5 }).ok).toBe(false);
+    expect(parseToolInput('search_library', {}).ok).toBe(false);
+    const tool = toolParams().find((t) => t.name === 'search_library');
+    expect(tool?.input_schema).toMatchObject({
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string', minLength: 1, maxLength: 200 },
+        limit: { type: 'integer', minimum: 1, maximum: 25 },
+        cursor: { type: 'string' },
+      },
+      additionalProperties: false,
+    });
+    const read = TOOL_CATALOGUE.find((t) => t.name === 'search_library');
+    expect(read?.group).toBe('read');
+    expect(read?.description).toContain('before list_starters or list_templates');
+    expect(read?.description).toContain('ids only');
+  });
+
   it('caps create_elements at 64 elements', () => {
     const element = { id: 'a:b', kind: 'minecraft:recipe', data: {} };
     expect(parseToolInput('create_elements', { elements: Array(64).fill(element) }).ok).toBe(true);
@@ -197,7 +227,8 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B557: create_texture's recipe list gained the lucky block, flag
+  // The hash last changed with B669: the read-only search_library (ADR 0124 D12) before
+  // list_templates. Before that with B557: create_texture's recipe list gained the lucky block, flag
   // and timer of the game flows (ADR 0117 D2). Before that with B682: propose_plan is called first only for a whole mod or more
   // than three main things (ADR 0125 D2), and no description says "placeholder" or "changeset"
   // (D13). Before that with B539: create_texture's recipe list gained the boat, the boat
@@ -208,11 +239,11 @@ describe('tool catalogue is frozen (ADR 0055 D11)', () => {
   // Before that with B498: create_texture draws MSM's Minecraft-like art from a recipe (with the
   // older pattern still accepted), a second colour, a finish and a seed, and its description and
   // add_starter's and list_starters' no longer call the pictures placeholders (ADR 0092 D15).
-  it('has 22 tools in the documented order with unchanged schemas', () => {
+  it('has 23 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
-    expect(TOOL_CATALOGUE).toHaveLength(22);
+    expect(TOOL_CATALOGUE).toHaveLength(23);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '5cbb15ca47e3876b7f40b13aa5655606c8a7d1a37f8ad020cb6111271341ac24',
+      'ff54504be77f230254911ce82740098ebe36f1192ca6a3ffffba2425872567e9',
     );
   });
 });

@@ -924,7 +924,9 @@ describe('the prompt in topic files (B681)', () => {
   // Try it's commands moved it for advancement, spawnpoint and team in the Try it commands list.
   // B632 moved it for the looks and sounds topic (`src/prompt/looks.ts`: the kinds with a look or
   // Play, their labels and the limits 3L1 to 3L12).
-  const PINNED = '11614bd4dbc52e01e5e7e16e37a54f10d57c7417d93fce6663327cc5bd2c89c1';
+  // B669 moved it for search_library: a starter is found with the user's words before listing
+  // (ADR 0124 D12).
+  const PINNED = 'eab51e725c550d25123921b6266cd18e32ea477b2db3fd0ce6dd4825e3a422f2';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -967,6 +969,13 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
 
   it('stays within its size budget of 104,000 characters (ADR 0125 D7, raised by B617, B553, B561 the Try it commands and B632)', () => {
     expect(text.length).toBeLessThanOrEqual(104_000);
+  });
+
+  it('searches the library before listing starters or templates (ADR 0124 D12, B669)', () => {
+    expect(text).toContain(
+      "search_library with the user's words finds it, its parameters and the values the words give, before list_starters or list_templates",
+    );
+    expect(TOOL_CATALOGUE.some((tool) => tool.name === 'search_library')).toBe(true);
   });
 
   it('F8 a: boats are the msm:boat component, never "not available"', () => {

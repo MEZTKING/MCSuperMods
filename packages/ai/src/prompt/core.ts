@@ -51,7 +51,7 @@ Rules:
 - Never claim that anything has been applied, created or changed in the project. Say that you have proposed it and that nothing is in the mod until the user adds it.
 - Every id is "namespace:path" in lower case. Use the project's namespace unless the user names another; never create elements in the "minecraft" or "msm" namespaces.
 - Before writing data for a kind you have not used in this conversation, read its schema (kind_schema) or a template (list_templates, template_data). Never invent fields or values the schema does not have.
-- Prefer a starter (list_starters, add_starter) when one matches the request, then adjust its elements.`;
+- Prefer a starter when one matches the request: search_library with the user's words finds it, its parameters and the values the words give, before list_starters or list_templates; then add_starter and adjust its elements.`;
 
 export const CORE_MIDDLE = `- Batch related elements in one create_elements call. Call run_checks after every batch of proposals, fix every error it reports, and call it again before you finish.
 - When a tool returns an error, read it, correct your input and try again; do not ask the user to fix tool errors.

@@ -33,6 +33,8 @@ import {
   type ProposePlanInput,
   parseToolInput,
   READ_ELEMENT_MAX_BYTES,
+  SEARCH_LIBRARY_DEFAULT,
+  SEARCH_LIBRARY_TOTAL,
 } from '@msm/ai';
 import {
   type Element,
@@ -42,7 +44,7 @@ import {
   type Project,
   type ResourceLocation,
 } from '@msm/core';
-import type { StarterParameter } from '@msm/plugin-api';
+import type { Json as PluginJson, ProjectStarter, StarterParameter } from '@msm/plugin-api';
 import {
   ART_RECIPE_IDS,
   type ArtRecipeId,
@@ -54,6 +56,7 @@ import {
   PLACEHOLDER_PATTERNS,
   type PlaceholderPattern,
 } from '@msm/plugin-library';
+import type { SearchHit } from '@msm/search';
 import {
   bundleToNewItems,
   type ChangeItem,
@@ -63,11 +66,13 @@ import {
 } from '../changeset/changeset';
 import { creatorValues, stampItems } from '../changeset/creator-sets';
 import { defaultRawValues, toValues, validateParameter } from '../components/wizard/wizard-model';
+import type { SearchActionDescriptor } from '../search/sources/shared';
 import { assetImportError } from '../session/asset-files';
 import { assertElementIdAllowed, presentSingletonKinds } from '../session/element-defaults';
 import type { ProjectSession } from '../session/project-session';
 import { templateContext, templatesFor } from '../studios/templates';
 import { addWish } from '../wishlist/wishlist';
+import type { LibrarySearch } from './library-search';
 import { projectContextOf } from './project-context';
 import { kindSchemaSummary, kindSchemaSummaryOptions } from './schema-summary';
 
@@ -202,10 +207,11 @@ function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/** One page of `items` from `cursor` (an offset this tool returned). */
+/** One page of `items` from `cursor` (an offset this tool returned), `size` items long. */
 function page<T>(
   items: readonly T[],
   cursor: string | undefined,
+  size: number = LIST_PAGE_SIZE,
 ): { items: T[]; nextCursor?: string } {
   let start = 0;
   if (cursor !== undefined) {
@@ -217,7 +223,7 @@ function page<T>(
     }
     start = Number(cursor);
   }
-  const end = start + LIST_PAGE_SIZE;
+  const end = start + size;
   const out: { items: T[]; nextCursor?: string } = { items: items.slice(start, end) };
   if (end < items.length) out.nextCursor = String(end);
   return out;
@@ -297,12 +303,104 @@ function withSignal<T>(work: () => Promise<T>, signal: AbortSignal): Promise<T> 
   });
 }
 
+/** A starter parameter as `search_library` shows it: its id, label, type, default and range. */
+function libraryParameter(parameter: StarterParameter): Record<string, unknown> {
+  const out: Record<string, unknown> = {
+    id: parameter.id,
+    label: parameter.label,
+    type: parameter.type,
+  };
+  const value = plainJson(parameter.default);
+  if (value !== undefined) out.default = value;
+  if (parameter.type === 'choice' || parameter.type === 'set') {
+    out.choices = parameter.choices.map((choice) => choice.value);
+  }
+  if (parameter.type === 'number') {
+    if (parameter.min !== undefined) out.min = parameter.min;
+    if (parameter.max !== undefined) out.max = parameter.max;
+  }
+  return out;
+}
+
+/** A value as plain JSON, or `undefined` (functions and cycles are left out). */
+function plainJson(value: unknown): PluginJson | undefined {
+  if (value === undefined || typeof value === 'function') return undefined;
+  try {
+    const text = JSON.stringify(value);
+    return text === undefined ? undefined : (JSON.parse(text) as PluginJson);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * One `search_library` result (ADR 0124 D12): the library id to use with add_starter,
+ * template_data or kind_schema, its title and sentence, and for a flow or starter its parameters
+ * with their defaults and the values understood from the words. A vanilla result is its id and
+ * sort only, never a name from the user's jar.
+ */
+export function libraryItem(
+  hit: SearchHit,
+  starters: ReadonlyMap<string, ProjectStarter>,
+): Record<string, unknown> | null {
+  const { entry } = hit;
+  const action = entry.action as SearchActionDescriptor;
+  const about = {
+    title: entry.title,
+    ...(entry.sentence === undefined ? {} : { sentence: entry.sentence }),
+    ...(entry.available ? {} : { available: false, reason: entry.unavailableReason ?? '' }),
+  };
+  switch (action.type) {
+    case 'flow':
+    case 'starter': {
+      const starter = starters.get(action.starter);
+      const values = { ...(action.values ?? {}), ...(hit.answers ?? {}) };
+      return {
+        source: action.type === 'flow' ? 'flow' : 'starter',
+        id: action.starter,
+        use: 'add_starter',
+        ...about,
+        parameters: (starter?.parameters ?? []).map(libraryParameter),
+        ...(Object.keys(values).length === 0 ? {} : { values }),
+      };
+    }
+    case 'template':
+      return {
+        source: 'template',
+        id: action.template,
+        kind: action.kind,
+        use: 'template_data',
+        ...about,
+      };
+    case 'example':
+      return { source: 'example', id: action.example, ...about };
+    case 'kind':
+      return { source: 'kind', id: action.kind, use: 'kind_schema', ...about };
+    case 'rule-part':
+      return { source: 'rule', part: action.part, id: action.id, ...about };
+    case 'vanilla':
+      return { source: 'vanilla', id: action.id, sort: action.sort };
+    default:
+      return null;
+  }
+}
+
+/** What else the executor may be given. */
+export interface ToolExecutorOptions {
+  /**
+   * The library search of `search_library`; default the session's own (`library-search.ts`,
+   * imported when first asked, so the engine stays out of the first paint).
+   */
+  library?: () => Promise<LibrarySearch>;
+}
+
 /**
  * Builds the executor of one conversation's tool requests.
  *
  * @param session - The open project session.
  * @param changeset - The conversation's pending changeset; proposals add items to it.
  * @param decisions - Asks the user about plans and checkpoints.
+ * @param options - The library search of `search_library`, when not the session's own.
  * @returns A function answering each request; it never throws (failures are `isError`
  *   results).
  */
@@ -310,7 +408,11 @@ export function createToolExecutor(
   session: ProjectSession,
   changeset: PendingChangeset,
   decisions: DecisionHost,
+  options: ToolExecutorOptions = {},
 ): (request: AiToolRequest, signal: AbortSignal) => Promise<AiToolResult> {
+  const library =
+    options.library ??
+    (() => import('./library-search').then((module) => module.sessionLibrarySearch(session)));
   const planOptions: ChangesetPlanOptions = {
     renameReferences: (state, from) => session.referencesForRename(state, from),
   };
@@ -537,6 +639,25 @@ export function createToolExecutor(
         .filter((problem) => severity === undefined || problem.severity === severity)
         .map((problem) => problemView(problem, true));
       return { value: page(all, cursor) };
+    },
+
+    search_library: async ({ query, limit, cursor }, signal) => {
+      const search = await withSignal(library, signal);
+      const hits = await withSignal(() => search.search(query), signal);
+      const starters = new Map(session.library.starters.map((starter) => [starter.id, starter]));
+      // One item per library id: a tile or an extra door folds into its flow, which takes the
+      // first values the words gave.
+      const byId = new Map<string, Record<string, unknown>>();
+      for (const hit of hits) {
+        const item = libraryItem(hit, starters);
+        if (item === null) continue;
+        const key = `${String(item.source)} ${String(item.id)}`;
+        const held = byId.get(key);
+        if (held === undefined) byId.set(key, item);
+        else if (held.values === undefined && item.values !== undefined) held.values = item.values;
+      }
+      const all = [...byId.values()].slice(0, SEARCH_LIBRARY_TOTAL);
+      return { value: { query, ...page(all, cursor, limit ?? SEARCH_LIBRARY_DEFAULT) } };
     },
 
     list_templates: async ({ kind, category, cursor }) => {

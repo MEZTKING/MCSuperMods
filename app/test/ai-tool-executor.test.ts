@@ -257,6 +257,80 @@ describe('createToolExecutor: read tools', () => {
     ).toBe('Ruby');
   });
 
+  it('search_library finds flows with their parameters, defaults and the values the words give (ADR 0124 D12)', async () => {
+    const fixture = await setup();
+    const { result, value } = await fixture.call('search_library', { query: 'a blue swrod' });
+    expect(result.isError, result.content).toBeFalsy();
+    expect(value.query).toBe('a blue swrod');
+    expect(value.items.length).toBeGreaterThan(0);
+    expect(value.items.length).toBeLessThanOrEqual(10);
+    const weapon = value.items.find(
+      (item: { source: string; id: string }) => item.source === 'flow' && item.id === 'weapon',
+    );
+    expect(weapon).toMatchObject({ use: 'add_starter', title: 'Sword' });
+    expect(weapon.values).toMatchObject({ weapon_type: 'sword', colour: expect.any(String) });
+    const tier = weapon.parameters.find((parameter: { id: string }) => parameter.id === 'tier');
+    expect(tier).toMatchObject({ type: 'choice', default: 'iron' });
+    expect(tier.choices).toContain('diamond');
+    // One item per library id: the tile and the flow fold into one.
+    const keys = value.items.map(
+      (item: { source: string; id: string }) => `${item.source} ${item.id}`,
+    );
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('search_library finds templates, examples and vanilla ids, never a vanilla name', async () => {
+    const fixture = await setup();
+    let { value } = await fixture.call('search_library', { query: 'shaped recipe', limit: 3 });
+    expect(value.items[0]).toMatchObject({
+      source: 'template',
+      id: 'recipe_shaped',
+      kind: 'minecraft:recipe',
+      use: 'template_data',
+    });
+    ({ value } = await fixture.call('search_library', { query: 'oak log' }));
+    const log = value.items.find((item: { id: string }) => item.id === 'minecraft:oak_log');
+    expect(log).toEqual({ source: 'vanilla', id: 'minecraft:oak_log', sort: 'thing' });
+    for (const item of value.items.filter(
+      (entry: { source: string }) => entry.source === 'vanilla',
+    )) {
+      expect(Object.keys(item).sort()).toEqual(['id', 'sort', 'source']);
+    }
+    // Nothing of the project: its elements are list_elements' to read.
+    ({ value } = await fixture.call('search_library', { query: 'greet' }));
+    expect(JSON.stringify(value)).not.toContain('demo:greet');
+  });
+
+  it('search_library pages with nextCursor and rejects a cursor it did not return', async () => {
+    const fixture = await setup();
+    const first = await fixture.call('search_library', { query: 'sword', limit: 2 });
+    expect(first.value.items).toHaveLength(2);
+    expect(first.value.nextCursor).toBe('2');
+    const second = await fixture.call('search_library', {
+      query: 'sword',
+      limit: 2,
+      cursor: first.value.nextCursor,
+    });
+    expect(second.value.items).toHaveLength(2);
+    expect(second.value.items).not.toEqual(first.value.items);
+    await expectError(fixture, 'search_library', { query: 'sword', cursor: 'x' }, 'invalid_input');
+    await expectError(fixture, 'search_library', { query: '' }, 'invalid_input');
+    await expectError(fixture, 'search_library', { query: 'sword', limit: 99 }, 'invalid_input');
+  });
+
+  it('search_library answers nonsense with no items and honours the abort signal', async () => {
+    const fixture = await setup();
+    const { result, value } = await fixture.call('search_library', { query: 'zzqxv wqpz' });
+    expect(result.isError).toBeFalsy();
+    expect(value.items).toEqual([]);
+    expect(value.nextCursor).toBeUndefined();
+    const abort = new AbortController();
+    abort.abort();
+    const cancelled = await fixture.call('search_library', { query: 'sword' }, abort.signal);
+    expect(cancelled.result.isError).toBe(true);
+    expect(cancelled.value.error.code).toBe('cancelled');
+  });
+
   it('target_facts, script_api_typings and pending_changes', async () => {
     const fixture = await setup();
     let { value } = await fixture.call('target_facts');

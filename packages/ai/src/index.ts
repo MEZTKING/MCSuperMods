@@ -218,6 +218,12 @@ export type {
   ProjectSummaryInput,
   ReadElementInput,
   ScriptApiTypingsInput,
+  SearchLibraryInput,
   TargetFactsInput,
   TemplateDataInput,
+} from './tools/read';
+export {
+  SEARCH_LIBRARY_DEFAULT,
+  SEARCH_LIBRARY_MAX,
+  SEARCH_LIBRARY_TOTAL,
 } from './tools/read';

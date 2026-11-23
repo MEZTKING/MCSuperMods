@@ -353,6 +353,23 @@ export class AiController {
     );
   }
 
+  /**
+   * Ask the AI helper from search (ADR 0124 D12, B669): opens the panel with `text` as the
+   * message and `context` (the search hints) as its context block, and sends nothing. The words
+   * replace what the input held, as the user asked them now; a run of the size the user's Send
+   * chooses follows only when the user presses Send.
+   *
+   * @returns Whether the panel was filled (a mod is open).
+   */
+  prefillMessage(text: string, context: AiContextDraft | null): boolean {
+    if (this.root === null) return false;
+    this.open();
+    const current = this.draft();
+    this.setDraft({ ...current, text, context });
+    useAiPanelStore.setState((state) => ({ focusRequest: state.focusRequest + 1 }));
+    return true;
+  }
+
   #prefill(context: AiContextDraft, text: string): void {
     this.open();
     const current = this.draft();

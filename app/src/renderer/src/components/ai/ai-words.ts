@@ -725,6 +725,8 @@ function advancedToolLine(message: Pick<ToolMessage, 'name' | 'input' | 'result'
       return `Read${code('id')}`;
     case 'list_problems':
       return 'Listed problems';
+    case 'search_library':
+      return `Searched the library for${code('query')}`;
     case 'list_templates':
       return 'Listed templates';
     case 'template_data':
