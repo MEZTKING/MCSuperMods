@@ -1,0 +1,14 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "clear @s * 2147483647",
+      "item replace entity @s inventory.3 with minecraft:diamond_shovel[minecraft:can_break={blocks:\"minecraft:snow_block\"}] 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/kit/captain_kit/give.mcfunction",
+    "schema": null
+  }
+]

@@ -21,8 +21,8 @@ describe('@msm/plugin-games', () => {
   });
 });
 
-describe('games kinds (B549)', () => {
-  it('registers the six games kinds in order, with their schema refs and folders', () => {
+describe('games kinds (B549, B724)', () => {
+  it('registers the eight games kinds in order, with their schema refs and folders', () => {
     expect(GAMES_KIND_IDS).toEqual([
       'msm:world_setup',
       'msm:one_block',
@@ -30,6 +30,8 @@ describe('games kinds (B549)', () => {
       'msm:objective',
       'msm:timer',
       'msm:area',
+      'msm:game',
+      'msm:kit',
     ]);
     const kinds = plugin.contributes.elementKinds ?? [];
     expect(kinds.map((kind) => kind.id)).toEqual([...GAMES_KIND_IDS]);
@@ -41,10 +43,12 @@ describe('games kinds (B549)', () => {
       [MSM_SCHEMA_REFS.objective, 'objective'],
       [MSM_SCHEMA_REFS.timer, 'timer'],
       [MSM_SCHEMA_REFS.area, 'area'],
+      [MSM_SCHEMA_REFS.game, 'game'],
+      [MSM_SCHEMA_REFS.kit, 'kit'],
     ]);
   });
 
-  it('lowers the default data of every kind to files (B551 and B552)', async () => {
+  it('lowers the default data of every kind to files (B551, B552 and B724)', async () => {
     const [target] = builtInTargets;
     if (target === undefined) throw new Error('no built-in target');
     for (const kind of gamesKinds) {

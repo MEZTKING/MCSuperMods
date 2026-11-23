@@ -2,19 +2,19 @@
  * The kind `msm:kit` (ADR 0132 D3; plan `docs/PLAN-game-studio.md`): items, armour, the off
  * hand and effects given in one go. B721 made this file as a stub so that the plugin's kind
  * index never changes again; B722 gave it its schema (`::msm::games::Kit` in `@msm/schemas`'
- * `games.mcdoc`) and its default data; B724 fills the lowering and sets
- * {@link KIT_KIND_LISTED} to `true` once the kit lowers to something.
+ * `games.mcdoc`) and its default data; B724 gave it its lowering (one `give` function) and
+ * listed it ({@link KIT_KIND_LISTED}).
  */
 import type { ElementKind, Json } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { lowerKit } from '../lowering/kit';
 
 /**
- * Whether the plugin contributes `msm:kit` yet. `false` until the kit lowers to its `give`
- * function (B724): while it is `false`, the kind, its validator and its Studio are left out.
- * B722 gave the kind its schema but left this off on purpose.
+ * Whether the plugin contributes `msm:kit`: `true` since B724 made a kit lower to its `give`
+ * function. While it was `false` (B721, B722), the kind, its template, validator and Studio were
+ * left out of every list.
  */
-export const KIT_KIND_LISTED = false;
+export const KIT_KIND_LISTED = true;
 
 /** The kind's schema reference (`::msm::games::Kit`). */
 const KIT_SCHEMA = MSM_SCHEMA_REFS.kit;

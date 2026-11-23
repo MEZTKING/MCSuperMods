@@ -4,6 +4,7 @@
  * with no false "Unknown ... id" warning.
  */
 import type { Element } from '@msm/plugin-api';
+import { addGameGeneratedIds, addKitGeneratedIds } from './game/generated-ids';
 import { oneBlockPhaseFunctionNames } from './one-block';
 import {
   areaTag,
@@ -40,8 +41,9 @@ export const GAMES_CHECKER_CATEGORIES: readonly string[] = Object.freeze([
  * {@link worldSetupGeneratedIds} and its `tag/worldgen/world_preset` entry `minecraft:normal`,
  * and the {@link GAMES_CHECKER_CATEGORIES}: `objective` (`<ns>.<path>`, `<ns>.msm_timers`,
  * `<ns>.msm_one_block`), `team` (`<ns>.<path>`), `tag` (an area's `<ns>.area.<path>` and its
- * `.now`) and `bossbar` (a timer's `<ns>:msm_games/timer/<path>`). Sorted, without duplicates;
- * empty for another kind or an element that cannot be lowered.
+ * `.now`) and `bossbar` (a timer's `<ns>:msm_games/timer/<path>`); for `msm:game` and `msm:kit`,
+ * the ids of `game/generated-ids.ts`. Sorted, without duplicates; empty for another kind or an
+ * element that cannot be lowered.
  */
 export function gamesGeneratedIds(element: Element): Record<string, string[]> {
   const ids = new Map<string, Set<string>>();
@@ -65,6 +67,15 @@ export function gamesGeneratedIds(element: Element): Record<string, string[]> {
 type Add = (category: string, ...ids: string[]) => void;
 
 function collect(element: Element, add: Add): void {
+  // The Game and map Studio's kinds (ADR 0132, B724): read from their own lowering.
+  if (element.kind === 'msm:game') {
+    addGameGeneratedIds(element, add);
+    return;
+  }
+  if (element.kind === 'msm:kit') {
+    addKitGeneratedIds(element, add);
+    return;
+  }
   if (element.kind === 'msm:world_setup') {
     for (const [registry, list] of Object.entries(worldSetupGeneratedIds(element))) {
       add(registry, ...list);

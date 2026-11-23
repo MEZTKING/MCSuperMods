@@ -1,8 +1,8 @@
 /**
  * Lowering of `msm:game` (ADR 0132 D1, D2): the round engine every game type shares (`round.ts`,
  * `lobby.ts`, `roles.ts`) and the game's mechanics (`mechanics/`), as functions under
- * `<ns>:msm_games/game/`. B721 stub: a game lowers to nothing until B724 (the round engine)
- * and B725 and B726 (the mechanics) fill it.
+ * `<ns>:msm_games/game/<path>/` (B724; the names are in `names.ts`). The mechanics (B725, B726)
+ * attach to the round's hook tags (`GAME_HOOKS`) and call its `out` and `end`.
  */
 import type { Element, OutputFile, TargetFacts } from '@msm/plugin-api';
 import { dataOf, isRecord, splitId } from '../shared-functions';

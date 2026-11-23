@@ -1,0 +1,19 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "clear @s * 2147483647",
+      "item replace entity @s hotbar.0 with minecraft:stone_axe 1",
+      "give @s minecraft:bread 16",
+      "give @s minecraft:compass[minecraft:custom_name={text:\"Finder\",color:\"gold\"}] 1",
+      "item replace entity @s armor.feet with minecraft:leather_boots 1",
+      "item replace entity @s weapon.offhand with minecraft:shield 1",
+      "effect give @s minecraft:speed 30 1 true",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/kit/runner_kit/give.mcfunction",
+    "schema": null
+  }
+]

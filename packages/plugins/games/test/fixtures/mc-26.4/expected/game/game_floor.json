@@ -1,0 +1,721 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_game dummy",
+      "scoreboard objectives add demo.msm_deaths deathCount",
+      "scoreboard objectives add demo.msm_died dummy",
+      "execute unless score #floor.made demo.msm_game matches 1 run function demo:msm_games/game/floor/first_load",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/floor/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #floor.ticks demo.msm_game 1",
+      "execute if score #floor.state demo.msm_game matches 0..1 run function demo:msm_games/game/floor/state/waiting",
+      "execute if score #floor.state demo.msm_game matches 2 run function demo:msm_games/game/floor/state/playing",
+      "execute if score #floor.ticks demo.msm_game matches 20.. run function demo:msm_games/game/floor/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/floor/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.made demo.msm_game 1",
+      "scoreboard players set #floor.state demo.msm_game 0",
+      "scoreboard players set #floor.round demo.msm_game 0",
+      "scoreboard players set #floor.time demo.msm_game 0",
+      "scoreboard players set #floor.ticks demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/first_load.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.ticks demo.msm_game 0",
+      "scoreboard players operation #floor.was demo.msm_game = #floor.state demo.msm_game",
+      "execute if score #floor.was demo.msm_game matches 0 run function demo:msm_games/game/floor/second/waiting",
+      "execute if score #floor.was demo.msm_game matches 1 run function demo:msm_games/game/floor/second/countdown",
+      "execute if score #floor.was demo.msm_game matches 2 run function demo:msm_games/game/floor/second/playing",
+      "execute if score #floor.was demo.msm_game matches 3 run function demo:msm_games/game/floor/second/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.waiting demo.msm_game 0",
+      "execute store result score #floor.waiting demo.msm_game if entity @a",
+      "execute if score #floor.waiting demo.msm_game matches 2.. run function demo:msm_games/game/floor/start",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/second/waiting.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.waiting demo.msm_game 0",
+      "execute store result score #floor.waiting demo.msm_game if entity @a",
+      "execute if score #floor.waiting demo.msm_game matches ..1 run function demo:msm_games/game/floor/countdown/cancel",
+      "scoreboard players remove #floor.time demo.msm_game 1",
+      "execute if score #floor.state demo.msm_game matches 1 if score #floor.time demo.msm_game matches 1.. run title @a actionbar [{\"text\":\"Floor starts in \"},{\"score\":{\"name\":\"#floor.time\",\"objective\":\"demo.msm_game\"}},{\"text\":\" s\"}]",
+      "execute if score #floor.state demo.msm_game matches 1 if score #floor.time demo.msm_game matches ..0 run function demo:msm_games/game/floor/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/second/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #floor.time demo.msm_game 1",
+      "function #demo:msm_games/game/floor/second",
+      "execute if score #floor.state demo.msm_game matches 2 if score #floor.time demo.msm_game matches 300.. run function demo:msm_games/game/floor/time_up",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/second/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players remove #floor.time demo.msm_game 1",
+      "execute if score #floor.time demo.msm_game matches ..0 run function demo:msm_games/game/floor/finish",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/second/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.floor.in,scores={demo.msm_deaths=1..}] run function demo:msm_games/game/floor/died",
+      "execute as @e[type=minecraft:player,tag=demo.game.floor.dead] run function demo:msm_games/game/floor/respawned",
+      "execute as @a unless score @s demo.msm_game = #floor.round demo.msm_game run function demo:msm_games/game/floor/late",
+      "function #demo:msm_games/game/floor/tick",
+      "function demo:msm_games/game/floor/win/check",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/state/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #floor.state demo.msm_game matches 0 run function demo:msm_games/game/floor/countdown/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #floor.state demo.msm_game matches 1 run function demo:msm_games/game/floor/stop/countdown",
+      "execute if score #floor.state demo.msm_game matches 2..3 run function demo:msm_games/game/floor/stop/round",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/stop.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/floor/countdown/cancel",
+      "function #demo:msm_games/game/floor/stopped",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/stop/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/timer/round_clock/stop",
+      "function demo:msm_games/game/floor/reset",
+      "function demo:msm_games/game/floor/lobby/send",
+      "tellraw @a {\"text\":\"Floor: the round was stopped.\"}",
+      "function #demo:msm_games/game/floor/stopped",
+      "function #demo:msm_games/game/floor/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/stop/round.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #floor.state demo.msm_game matches 2 run function demo:msm_games/game/floor/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/end.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.state demo.msm_game 0",
+      "tellraw @a {\"text\":\"Floor: the countdown stopped.\"}",
+      "function #demo:msm_games/game/floor/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/countdown/cancel.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.state demo.msm_game 2",
+      "scoreboard players set #floor.time demo.msm_game 0",
+      "scoreboard players set #floor.ticks demo.msm_game 0",
+      "scoreboard players add #floor.round demo.msm_game 1",
+      "function #demo:msm_games/game/floor/starting",
+      "tag @a remove demo.game.floor.player",
+      "tag @a remove demo.game.floor.in",
+      "tag @a remove demo.game.floor.out",
+      "tag @a remove demo.game.floor.watching",
+      "tag @a remove demo.game.floor.dead",
+      "tag @a remove demo.game.floor.has_role",
+      "tag @a remove demo.game.floor.own_kit",
+      "tag @a remove demo.game.floor.winner",
+      "execute as @a[sort=random,limit=16] run function demo:msm_games/game/floor/join",
+      "execute as @a[tag=!demo.game.floor.player] run function demo:msm_games/game/floor/watch",
+      "scoreboard players set #floor.started demo.msm_game 0",
+      "execute store result score #floor.started demo.msm_game if entity @a[tag=demo.game.floor.in]",
+      "function demo:msm_games/timer/round_clock/start",
+      "gamemode survival @a[tag=demo.game.floor.in]",
+      "execute as @a[tag=demo.game.floor.in] run function #demo:msm_games/game/floor/player_in",
+      "tellraw @a {\"text\":\"Floor: the round has started.\"}",
+      "function #demo:msm_games/game/floor/started",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/begin.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.floor.player",
+      "tag @s add demo.game.floor.in",
+      "scoreboard players operation @s demo.msm_game = #floor.round demo.msm_game",
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players set @s demo.msm_died 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/join.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.floor.watching",
+      "scoreboard players operation @s demo.msm_game = #floor.round demo.msm_game",
+      "gamemode spectator @s",
+      "tellraw @s {\"text\":\"The round of Floor is full: you can watch until it ends.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/watch.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.floor.watching",
+      "scoreboard players operation @s demo.msm_game = #floor.round demo.msm_game",
+      "gamemode spectator @s",
+      "tellraw @s {\"text\":\"A round of Floor is being played: you can watch until it ends.\"}",
+      "function #demo:msm_games/game/floor/player_joined",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/late.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players add @s demo.msm_died 1",
+      "tag @s add demo.game.floor.dead",
+      "function #demo:msm_games/game/floor/player_died",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/died.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.floor.dead",
+      "function #demo:msm_games/game/floor/player_respawned",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/respawned.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.floor.in] run function demo:msm_games/game/floor/out/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/out.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.floor.in",
+      "tag @s add demo.game.floor.out",
+      "gamemode spectator @s",
+      "function #demo:msm_games/game/floor/player_out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/out/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.floor.out] run function demo:msm_games/game/floor/back/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/back.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.floor.out",
+      "tag @s add demo.game.floor.in",
+      "gamemode survival @s",
+      "function #demo:msm_games/game/floor/player_back",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/back/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.state demo.msm_game 3",
+      "scoreboard players set #floor.time demo.msm_game 5",
+      "scoreboard players set #floor.ticks demo.msm_game 0",
+      "function demo:msm_games/timer/round_clock/stop",
+      "scoreboard players set #floor.count demo.msm_game 0",
+      "execute store result score #floor.count demo.msm_game if entity @a[tag=demo.game.floor.winner]",
+      "execute if score #floor.count demo.msm_game matches 1.. run tellraw @a [{\"selector\":\"@a[tag=demo.game.floor.winner]\"},{\"text\":\" won the round of Floor!\"}]",
+      "execute if score #floor.count demo.msm_game matches 0 run tellraw @a {\"text\":\"Nobody won the round of Floor.\"}",
+      "execute if score #floor.count demo.msm_game matches 1.. run function #demo:msm_games/game/floor/won",
+      "function #demo:msm_games/game/floor/ended",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/floor/reset",
+      "function demo:msm_games/game/floor/start",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/finish.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamemode survival @a[tag=demo.game.floor.out]",
+      "gamemode survival @a[tag=demo.game.floor.watching]",
+      "tag @a remove demo.game.floor.player",
+      "tag @a remove demo.game.floor.in",
+      "tag @a remove demo.game.floor.out",
+      "tag @a remove demo.game.floor.watching",
+      "tag @a remove demo.game.floor.dead",
+      "tag @a remove demo.game.floor.has_role",
+      "tag @a remove demo.game.floor.own_kit",
+      "scoreboard players set #floor.state demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/reset.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.state demo.msm_game 1",
+      "scoreboard players set #floor.time demo.msm_game 5",
+      "scoreboard players set #floor.ticks demo.msm_game 0",
+      "tellraw @a {\"text\":\"Floor starts in 5 seconds.\"}",
+      "function #demo:msm_games/game/floor/countdown",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/countdown/begin.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a unless score @s demo.msm_game = @s demo.msm_game run function demo:msm_games/game/floor/lobby/arrive",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/state/waiting.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #floor.state demo.msm_game matches 2 run function demo:msm_games/game/floor/win/0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/win/check.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #floor.alive demo.msm_game 0",
+      "execute store result score #floor.alive demo.msm_game if entity @a[tag=demo.game.floor.in]",
+      "execute if score #floor.started demo.msm_game matches 2.. if score #floor.alive demo.msm_game matches ..1 run function demo:msm_games/game/floor/win/0/won",
+      "execute if score #floor.started demo.msm_game matches ..1 if score #floor.alive demo.msm_game matches ..0 run function demo:msm_games/game/floor/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/win/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/floor/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/time_up.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.floor.in] run tag @s add demo.game.floor.winner",
+      "function demo:msm_games/game/floor/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/win/0/won.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.floor.in] run tag @s add demo.game.floor.winner",
+      "function demo:msm_games/game/floor/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/win/1/won.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #floor.state demo.msm_game matches 2 run function demo:msm_games/game/floor/win/1/won",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/win/1/timer.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/floor/win/1/timer"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/timer/round_clock/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/lobby.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/countdown.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/player_out.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/player_back.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/player_joined.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/won.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/floor/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players operation @s demo.msm_game = #floor.round demo.msm_game",
+      "execute in minecraft:overworld run tp @s 100.5 70 100.5",
+      "gamemode adventure @s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/lobby/arrive.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run tp @a 100.5 70 100.5",
+      "gamemode adventure @a",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/floor/lobby/send.mcfunction",
+    "schema": null
+  }
+]

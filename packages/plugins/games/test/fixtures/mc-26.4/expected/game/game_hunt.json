@@ -1,0 +1,775 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_game dummy",
+      "scoreboard objectives add demo.msm_deaths deathCount",
+      "scoreboard objectives add demo.msm_died dummy",
+      "execute unless score #hunt.made demo.msm_game matches 1 run function demo:msm_games/game/hunt/first_load",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/hunt/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #hunt.ticks demo.msm_game 1",
+      "execute if score #hunt.state demo.msm_game matches 0..1 run function demo:msm_games/game/hunt/state/waiting",
+      "execute if score #hunt.state demo.msm_game matches 2 run function demo:msm_games/game/hunt/state/playing",
+      "execute if score #hunt.ticks demo.msm_game matches 20.. run function demo:msm_games/game/hunt/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/hunt/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.made demo.msm_game 1",
+      "scoreboard players set #hunt.state demo.msm_game 0",
+      "scoreboard players set #hunt.round demo.msm_game 0",
+      "scoreboard players set #hunt.time demo.msm_game 0",
+      "scoreboard players set #hunt.ticks demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/first_load.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.ticks demo.msm_game 0",
+      "scoreboard players operation #hunt.was demo.msm_game = #hunt.state demo.msm_game",
+      "execute if score #hunt.was demo.msm_game matches 0 run function demo:msm_games/game/hunt/second/waiting",
+      "execute if score #hunt.was demo.msm_game matches 1 run function demo:msm_games/game/hunt/second/countdown",
+      "execute if score #hunt.was demo.msm_game matches 2 run function demo:msm_games/game/hunt/second/playing",
+      "execute if score #hunt.was demo.msm_game matches 3 run function demo:msm_games/game/hunt/second/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute unless score #hunt.built demo.msm_game matches 1 run function demo:msm_games/game/hunt/lobby/build",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/second/waiting.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute unless score #hunt.built demo.msm_game matches 1 run function demo:msm_games/game/hunt/lobby/build",
+      "scoreboard players remove #hunt.time demo.msm_game 1",
+      "execute if score #hunt.state demo.msm_game matches 1 if score #hunt.time demo.msm_game matches 1.. run title @a actionbar [{\"text\":\"Hunt starts in \"},{\"score\":{\"name\":\"#hunt.time\",\"objective\":\"demo.msm_game\"}},{\"text\":\" s\"}]",
+      "execute if score #hunt.state demo.msm_game matches 1 if score #hunt.time demo.msm_game matches ..0 run function demo:msm_games/game/hunt/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/second/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #hunt.time demo.msm_game 1",
+      "function #demo:msm_games/game/hunt/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/second/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players remove #hunt.time demo.msm_game 1",
+      "execute if score #hunt.time demo.msm_game matches ..0 run function demo:msm_games/game/hunt/finish",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/second/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.hunt.in,scores={demo.msm_deaths=1..}] run function demo:msm_games/game/hunt/died",
+      "execute as @e[type=minecraft:player,tag=demo.game.hunt.dead] run function demo:msm_games/game/hunt/respawned",
+      "execute as @a unless score @s demo.msm_game = #hunt.round demo.msm_game run function demo:msm_games/game/hunt/late",
+      "function #demo:msm_games/game/hunt/tick",
+      "function demo:msm_games/game/hunt/win/check",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/state/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #hunt.state demo.msm_game matches 0 run function demo:msm_games/game/hunt/countdown/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #hunt.state demo.msm_game matches 1 run function demo:msm_games/game/hunt/stop/countdown",
+      "execute if score #hunt.state demo.msm_game matches 2..3 run function demo:msm_games/game/hunt/stop/round",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/stop.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/hunt/countdown/cancel",
+      "function #demo:msm_games/game/hunt/stopped",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/stop/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/hunt/reset",
+      "function demo:msm_games/game/hunt/lobby/send",
+      "tellraw @a {\"text\":\"Hunt: the round was stopped.\"}",
+      "function #demo:msm_games/game/hunt/stopped",
+      "function #demo:msm_games/game/hunt/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/stop/round.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #hunt.state demo.msm_game matches 2 run function demo:msm_games/game/hunt/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/end.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.state demo.msm_game 0",
+      "tellraw @a {\"text\":\"Hunt: the countdown stopped.\"}",
+      "function #demo:msm_games/game/hunt/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/countdown/cancel.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.state demo.msm_game 2",
+      "scoreboard players set #hunt.time demo.msm_game 0",
+      "scoreboard players set #hunt.ticks demo.msm_game 0",
+      "scoreboard players add #hunt.round demo.msm_game 1",
+      "function #demo:msm_games/game/hunt/starting",
+      "tag @a remove demo.game.hunt.player",
+      "tag @a remove demo.game.hunt.in",
+      "tag @a remove demo.game.hunt.out",
+      "tag @a remove demo.game.hunt.watching",
+      "tag @a remove demo.game.hunt.dead",
+      "tag @a remove demo.game.hunt.has_role",
+      "tag @a remove demo.game.hunt.own_kit",
+      "tag @a remove demo.game.hunt.role.runner",
+      "tag @a remove demo.game.hunt.role.hunter",
+      "tag @a remove demo.game.hunt.winner",
+      "execute as @a[sort=random,limit=8] run function demo:msm_games/game/hunt/join",
+      "execute as @a[tag=!demo.game.hunt.player] run function demo:msm_games/game/hunt/watch",
+      "scoreboard players set #hunt.started demo.msm_game 0",
+      "execute store result score #hunt.started demo.msm_game if entity @a[tag=demo.game.hunt.in]",
+      "function demo:msm_games/game/hunt/roles/deal",
+      "function demo:msm_games/game/hunt/teams/count",
+      "scoreboard players operation #hunt.teams_started demo.msm_game = #hunt.teams demo.msm_game",
+      "advancement revoke @a only minecraft:end/kill_dragon",
+      "gamemode survival @a[tag=demo.game.hunt.in]",
+      "execute as @a[tag=demo.game.hunt.in] run function #demo:msm_games/game/hunt/player_in",
+      "tellraw @a {\"text\":\"Hunt: the round has started.\"}",
+      "function #demo:msm_games/game/hunt/started",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/begin.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.hunt.player",
+      "tag @s add demo.game.hunt.in",
+      "scoreboard players operation @s demo.msm_game = #hunt.round demo.msm_game",
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players set @s demo.msm_died 0",
+      "team leave @s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/join.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.hunt.watching",
+      "scoreboard players operation @s demo.msm_game = #hunt.round demo.msm_game",
+      "gamemode spectator @s",
+      "tellraw @s {\"text\":\"The round of Hunt is full: you can watch until it ends.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/watch.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.hunt.watching",
+      "scoreboard players operation @s demo.msm_game = #hunt.round demo.msm_game",
+      "gamemode spectator @s",
+      "tellraw @s {\"text\":\"A round of Hunt is being played: you can watch until it ends.\"}",
+      "function #demo:msm_games/game/hunt/player_joined",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/late.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players add @s demo.msm_died 1",
+      "tag @s add demo.game.hunt.dead",
+      "function #demo:msm_games/game/hunt/player_died",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/died.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.hunt.dead",
+      "execute if entity @s[tag=demo.game.hunt.in,tag=demo.game.hunt.role.runner] run function demo:msm_games/kit/runner_kit/give",
+      "execute if entity @s[tag=demo.game.hunt.in,tag=demo.game.hunt.role.hunter] run function demo:msm_games/kit/hunter_kit/give",
+      "function #demo:msm_games/game/hunt/player_respawned",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/respawned.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.hunt.in] run function demo:msm_games/game/hunt/out/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/out.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.hunt.in",
+      "tag @s add demo.game.hunt.out",
+      "gamemode spectator @s",
+      "function #demo:msm_games/game/hunt/player_out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/out/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.hunt.out] run function demo:msm_games/game/hunt/back/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/back.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.hunt.out",
+      "tag @s add demo.game.hunt.in",
+      "gamemode survival @s",
+      "function #demo:msm_games/game/hunt/player_back",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/back/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.state demo.msm_game 3",
+      "scoreboard players set #hunt.time demo.msm_game 5",
+      "scoreboard players set #hunt.ticks demo.msm_game 0",
+      "scoreboard players set #hunt.count demo.msm_game 0",
+      "execute store result score #hunt.count demo.msm_game if entity @a[tag=demo.game.hunt.winner]",
+      "execute if score #hunt.count demo.msm_game matches 1.. run tellraw @a [{\"selector\":\"@a[tag=demo.game.hunt.winner]\"},{\"text\":\" won the round of Hunt!\"}]",
+      "execute if score #hunt.count demo.msm_game matches 0 run tellraw @a {\"text\":\"Nobody won the round of Hunt.\"}",
+      "execute if score #hunt.count demo.msm_game matches 1.. run function #demo:msm_games/game/hunt/won",
+      "function #demo:msm_games/game/hunt/ended",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/hunt/reset",
+      "function demo:msm_games/game/hunt/lobby/send",
+      "function #demo:msm_games/game/hunt/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/finish.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamemode survival @a[tag=demo.game.hunt.out]",
+      "gamemode survival @a[tag=demo.game.hunt.watching]",
+      "team leave @a[tag=demo.game.hunt.player]",
+      "tag @a remove demo.game.hunt.player",
+      "tag @a remove demo.game.hunt.in",
+      "tag @a remove demo.game.hunt.out",
+      "tag @a remove demo.game.hunt.watching",
+      "tag @a remove demo.game.hunt.dead",
+      "tag @a remove demo.game.hunt.has_role",
+      "tag @a remove demo.game.hunt.own_kit",
+      "tag @a remove demo.game.hunt.role.runner",
+      "tag @a remove demo.game.hunt.role.hunter",
+      "scoreboard players set #hunt.state demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/reset.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.state demo.msm_game 1",
+      "scoreboard players set #hunt.time demo.msm_game 10",
+      "scoreboard players set #hunt.ticks demo.msm_game 0",
+      "tellraw @a {\"text\":\"Hunt starts in 10 seconds.\"}",
+      "function #demo:msm_games/game/hunt/countdown",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/countdown/begin.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a unless score @s demo.msm_game = @s demo.msm_game run function demo:msm_games/game/hunt/lobby/arrive",
+      "function demo:msm_games/game/hunt/lobby/keep",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/state/waiting.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #hunt.state demo.msm_game matches 2 run function demo:msm_games/game/hunt/win/0",
+      "execute if score #hunt.state demo.msm_game matches 2 run function demo:msm_games/game/hunt/win/1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/win/check.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.alive demo.msm_game 0",
+      "execute store result score #hunt.alive demo.msm_game if entity @a[tag=demo.game.hunt.in,tag=demo.game.hunt.role.runner,scores={demo.msm_died=0}]",
+      "scoreboard players set #hunt.count demo.msm_game 0",
+      "execute store result score #hunt.count demo.msm_game if entity @a[tag=demo.game.hunt.player,tag=demo.game.hunt.role.runner]",
+      "execute if score #hunt.count demo.msm_game matches 1.. if score #hunt.alive demo.msm_game matches ..0 run function demo:msm_games/game/hunt/win/0/won",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/win/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.hunt.in,tag=demo.game.hunt.role.runner,advancements={minecraft:end/kill_dragon=true}] run tag @s add demo.game.hunt.winner",
+      "execute if entity @a[tag=demo.game.hunt.winner] run function demo:msm_games/game/hunt/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/win/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.hunt.player,tag=demo.game.hunt.role.hunter] run tag @s add demo.game.hunt.winner",
+      "function demo:msm_games/game/hunt/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/win/0/won.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/lobby.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/countdown.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/player_out.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/player_back.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/player_joined.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/won.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/hunt/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players operation @s demo.msm_game = #hunt.round demo.msm_game",
+      "execute in minecraft:overworld run tp @s 0.5 65 0.5",
+      "gamemode adventure @s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/lobby/arrive.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run execute store result score #hunt.built demo.msm_game run place template demo:lobby_hut -4 64 -4",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/lobby/build.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run tp @a 0.5 65 0.5",
+      "gamemode adventure @a",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/lobby/send.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run tp @a[tag=!demo.area.lobby,gamemode=!creative,gamemode=!spectator] 0.5 65 0.5",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/lobby/keep.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #hunt.teams demo.msm_game 0",
+      "execute if entity @a[tag=demo.game.hunt.in,team=demo.runners] run scoreboard players add #hunt.teams demo.msm_game 1",
+      "execute if entity @a[tag=demo.game.hunt.in,team=demo.hunters] run scoreboard players add #hunt.teams demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/teams/count.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.hunt.in,tag=!demo.game.hunt.has_role,sort=random,limit=1] run function demo:msm_games/game/hunt/role/runner/give",
+      "execute as @a[tag=demo.game.hunt.in,tag=!demo.game.hunt.has_role] run function demo:msm_games/game/hunt/role/hunter/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/roles/deal.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.hunt.has_role",
+      "tag @s add demo.game.hunt.role.runner",
+      "team join demo.runners @s",
+      "tag @s add demo.game.hunt.own_kit",
+      "function demo:msm_games/kit/runner_kit/give",
+      "tellraw @s [{\"text\":\"You are \"},{\"text\":\"Runner\",\"bold\":true},{\"text\":\".\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/role/runner/give.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.hunt.has_role",
+      "tag @s add demo.game.hunt.role.hunter",
+      "team join demo.hunters @s",
+      "tag @s add demo.game.hunt.own_kit",
+      "function demo:msm_games/kit/hunter_kit/give",
+      "tellraw @s [{\"text\":\"You are \"},{\"text\":\"Hunter\",\"bold\":true},{\"text\":\".\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/hunt/role/hunter/give.mcfunction",
+    "schema": null
+  }
+]

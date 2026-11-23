@@ -182,6 +182,8 @@ const SAMPLES: readonly {
 
 describe('the games Studio entries', () => {
   it('has one lazy Studio with a Very easy list per games kind', () => {
+    // The Game and Kit Studios (ADR 0132) are listed since B724 listed their kinds; until B732
+    // they are B721's stubs.
     expect(studios.map((entry) => entry.kindId)).toEqual([
       'msm:world_setup',
       'msm:one_block',
@@ -189,6 +191,8 @@ describe('the games Studio entries', () => {
       'msm:objective',
       'msm:timer',
       'msm:area',
+      'msm:game',
+      'msm:kit',
     ]);
     for (const entry of studios) expect(entry.common?.length).toBeGreaterThan(0);
   });

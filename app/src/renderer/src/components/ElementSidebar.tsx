@@ -118,6 +118,9 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:objective': 'Scores',
   'msm:timer': 'Timers',
   'msm:area': 'Areas',
+  // The Game and map Studio's kinds (ADR 0132, listed by B724).
+  'msm:game': 'Games',
+  'msm:kit': 'Kits',
 };
 
 /** Groups the sidebar folds under "More": the files behind content (ADR 0047 D1). */

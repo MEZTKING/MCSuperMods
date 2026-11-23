@@ -1,0 +1,828 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_game dummy",
+      "scoreboard objectives add demo.msm_deaths deathCount",
+      "scoreboard objectives add demo.msm_died dummy",
+      "scoreboard objectives add demo.msm_team trigger",
+      "execute unless score #battle.made demo.msm_game matches 1 run function demo:msm_games/game/battle/first_load",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/battle/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #battle.ticks demo.msm_game 1",
+      "execute if score #battle.state demo.msm_game matches 0..1 run function demo:msm_games/game/battle/state/waiting",
+      "execute if score #battle.state demo.msm_game matches 2 run function demo:msm_games/game/battle/state/playing",
+      "execute if score #battle.ticks demo.msm_game matches 20.. run function demo:msm_games/game/battle/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/battle/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.made demo.msm_game 1",
+      "scoreboard players set #battle.state demo.msm_game 0",
+      "scoreboard players set #battle.round demo.msm_game 0",
+      "scoreboard players set #battle.time demo.msm_game 0",
+      "scoreboard players set #battle.ticks demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/first_load.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.ticks demo.msm_game 0",
+      "scoreboard players operation #battle.was demo.msm_game = #battle.state demo.msm_game",
+      "execute if score #battle.was demo.msm_game matches 0 run function demo:msm_games/game/battle/second/waiting",
+      "execute if score #battle.was demo.msm_game matches 1 run function demo:msm_games/game/battle/second/countdown",
+      "execute if score #battle.was demo.msm_game matches 2 run function demo:msm_games/game/battle/second/playing",
+      "execute if score #battle.was demo.msm_game matches 3 run function demo:msm_games/game/battle/second/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players enable @a demo.msm_team",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/second/waiting.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players enable @a demo.msm_team",
+      "scoreboard players remove #battle.time demo.msm_game 1",
+      "execute if score #battle.state demo.msm_game matches 1 if score #battle.time demo.msm_game matches 1.. run title @a actionbar [{\"text\":\"Battle starts in \"},{\"score\":{\"name\":\"#battle.time\",\"objective\":\"demo.msm_game\"}},{\"text\":\" s\"}]",
+      "execute if score #battle.state demo.msm_game matches 1 if score #battle.time demo.msm_game matches ..0 run function demo:msm_games/game/battle/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/second/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #battle.time demo.msm_game 1",
+      "function #demo:msm_games/game/battle/second",
+      "execute if score #battle.state demo.msm_game matches 2 if score #battle.time demo.msm_game matches 600.. run function demo:msm_games/game/battle/time_up",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/second/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players remove #battle.time demo.msm_game 1",
+      "execute if score #battle.time demo.msm_game matches ..0 run function demo:msm_games/game/battle/finish",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/second/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.battle.in,scores={demo.msm_deaths=1..}] run function demo:msm_games/game/battle/died",
+      "execute as @e[type=minecraft:player,tag=demo.game.battle.dead] run function demo:msm_games/game/battle/respawned",
+      "execute as @a unless score @s demo.msm_game = #battle.round demo.msm_game run function demo:msm_games/game/battle/late",
+      "function #demo:msm_games/game/battle/tick",
+      "function demo:msm_games/game/battle/win/check",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/state/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #battle.state demo.msm_game matches 0 run function demo:msm_games/game/battle/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #battle.state demo.msm_game matches 1 run function demo:msm_games/game/battle/stop/countdown",
+      "execute if score #battle.state demo.msm_game matches 2..3 run function demo:msm_games/game/battle/stop/round",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/stop.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/battle/countdown/cancel",
+      "function #demo:msm_games/game/battle/stopped",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/stop/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/battle/reset",
+      "function demo:msm_games/game/battle/lobby/send",
+      "tellraw @a {\"text\":\"Battle: the round was stopped.\"}",
+      "function #demo:msm_games/game/battle/stopped",
+      "function #demo:msm_games/game/battle/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/stop/round.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #battle.state demo.msm_game matches 2 run function demo:msm_games/game/battle/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/end.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.state demo.msm_game 0",
+      "tellraw @a {\"text\":\"Battle: the countdown stopped.\"}",
+      "function #demo:msm_games/game/battle/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/countdown/cancel.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.state demo.msm_game 2",
+      "scoreboard players set #battle.time demo.msm_game 0",
+      "scoreboard players set #battle.ticks demo.msm_game 0",
+      "scoreboard players add #battle.round demo.msm_game 1",
+      "function #demo:msm_games/game/battle/starting",
+      "tag @a remove demo.game.battle.player",
+      "tag @a remove demo.game.battle.in",
+      "tag @a remove demo.game.battle.out",
+      "tag @a remove demo.game.battle.watching",
+      "tag @a remove demo.game.battle.dead",
+      "tag @a remove demo.game.battle.has_role",
+      "tag @a remove demo.game.battle.own_kit",
+      "tag @a remove demo.game.battle.role.captain",
+      "tag @a remove demo.game.battle.winner",
+      "execute as @a[sort=random,limit=12] run function demo:msm_games/game/battle/join",
+      "execute as @a[tag=!demo.game.battle.player] run function demo:msm_games/game/battle/watch",
+      "scoreboard players set #battle.started demo.msm_game 0",
+      "execute store result score #battle.started demo.msm_game if entity @a[tag=demo.game.battle.in]",
+      "function demo:msm_games/game/battle/roles/deal",
+      "function demo:msm_games/game/battle/teams/split",
+      "function demo:msm_games/game/battle/teams/count",
+      "scoreboard players operation #battle.teams_started demo.msm_game = #battle.teams demo.msm_game",
+      "scoreboard players set @a[tag=demo.game.battle.player] demo.kills 0",
+      "gamemode survival @a[tag=demo.game.battle.in]",
+      "execute as @a[tag=demo.game.battle.in] run function #demo:msm_games/game/battle/player_in",
+      "tellraw @a {\"text\":\"Battle: the round has started.\"}",
+      "function #demo:msm_games/game/battle/started",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/begin.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.battle.player",
+      "tag @s add demo.game.battle.in",
+      "scoreboard players operation @s demo.msm_game = #battle.round demo.msm_game",
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players set @s demo.msm_died 0",
+      "team leave @s",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/join.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.battle.watching",
+      "scoreboard players operation @s demo.msm_game = #battle.round demo.msm_game",
+      "gamemode spectator @s",
+      "tellraw @s {\"text\":\"The round of Battle is full: you can watch until it ends.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/watch.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.battle.watching",
+      "scoreboard players operation @s demo.msm_game = #battle.round demo.msm_game",
+      "gamemode spectator @s",
+      "tellraw @s {\"text\":\"A round of Battle is being played: you can watch until it ends.\"}",
+      "function #demo:msm_games/game/battle/player_joined",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/late.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players add @s demo.msm_died 1",
+      "tag @s add demo.game.battle.dead",
+      "function #demo:msm_games/game/battle/player_died",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/died.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.battle.dead",
+      "execute if entity @s[tag=demo.game.battle.in,tag=demo.game.battle.role.captain] run function demo:msm_games/kit/captain_kit/give",
+      "function #demo:msm_games/game/battle/player_respawned",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/respawned.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.battle.in] run function demo:msm_games/game/battle/out/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/out.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.battle.in",
+      "tag @s add demo.game.battle.out",
+      "gamemode spectator @s",
+      "function #demo:msm_games/game/battle/player_out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/out/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.battle.out] run function demo:msm_games/game/battle/back/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/back.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.battle.out",
+      "tag @s add demo.game.battle.in",
+      "gamemode survival @s",
+      "function #demo:msm_games/game/battle/player_back",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/back/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.state demo.msm_game 3",
+      "scoreboard players set #battle.time demo.msm_game 5",
+      "scoreboard players set #battle.ticks demo.msm_game 0",
+      "scoreboard players set #battle.count demo.msm_game 0",
+      "execute store result score #battle.count demo.msm_game if entity @a[tag=demo.game.battle.winner]",
+      "execute if score #battle.count demo.msm_game matches 1.. run tellraw @a [{\"selector\":\"@a[tag=demo.game.battle.winner]\"},{\"text\":\" won the round of Battle!\"}]",
+      "execute if score #battle.count demo.msm_game matches 0 run tellraw @a {\"text\":\"Nobody won the round of Battle.\"}",
+      "execute if score #battle.count demo.msm_game matches 1.. run function #demo:msm_games/game/battle/won",
+      "function #demo:msm_games/game/battle/ended",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/battle/reset",
+      "function demo:msm_games/game/battle/lobby/send",
+      "function #demo:msm_games/game/battle/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/finish.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamemode survival @a[tag=demo.game.battle.out]",
+      "gamemode survival @a[tag=demo.game.battle.watching]",
+      "team leave @a[tag=demo.game.battle.player]",
+      "tag @a remove demo.game.battle.player",
+      "tag @a remove demo.game.battle.in",
+      "tag @a remove demo.game.battle.out",
+      "tag @a remove demo.game.battle.watching",
+      "tag @a remove demo.game.battle.dead",
+      "tag @a remove demo.game.battle.has_role",
+      "tag @a remove demo.game.battle.own_kit",
+      "tag @a remove demo.game.battle.role.captain",
+      "scoreboard players set #battle.state demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/reset.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a unless score @s demo.msm_game = @s demo.msm_game run function demo:msm_games/game/battle/lobby/arrive",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/state/waiting.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #battle.state demo.msm_game matches 2 run function demo:msm_games/game/battle/win/0",
+      "execute if score #battle.state demo.msm_game matches 2 run function demo:msm_games/game/battle/win/1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/win/check.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/battle/teams/count",
+      "execute if score #battle.teams_started demo.msm_game matches 2.. if score #battle.teams demo.msm_game matches ..1 run function demo:msm_games/game/battle/win/0/won",
+      "execute if score #battle.teams_started demo.msm_game matches ..1 if score #battle.teams demo.msm_game matches ..0 run function demo:msm_games/game/battle/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/win/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.sum demo.msm_game 0",
+      "execute as @a[tag=demo.game.battle.player,team=demo.red] run scoreboard players operation #battle.sum demo.msm_game += @s demo.kills",
+      "execute if score #battle.sum demo.msm_game matches 10.. run function demo:msm_games/game/battle/teams/won/0",
+      "scoreboard players set #battle.sum demo.msm_game 0",
+      "execute as @a[tag=demo.game.battle.player,team=demo.blue] run scoreboard players operation #battle.sum demo.msm_game += @s demo.kills",
+      "execute if score #battle.sum demo.msm_game matches 10.. run function demo:msm_games/game/battle/teams/won/1",
+      "execute if entity @a[tag=demo.game.battle.winner] run function demo:msm_games/game/battle/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/win/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/battle/win/2/won",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/time_up.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @a[tag=demo.game.battle.in,team=demo.red] run function demo:msm_games/game/battle/teams/won/0",
+      "execute if entity @a[tag=demo.game.battle.in,team=demo.blue] run function demo:msm_games/game/battle/teams/won/1",
+      "function demo:msm_games/game/battle/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/win/0/won.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.best demo.msm_game -2147483648",
+      "execute as @a[tag=demo.game.battle.player] run scoreboard players operation #battle.best demo.msm_game > @s demo.kills",
+      "execute as @a[tag=demo.game.battle.player] if score @s demo.kills = #battle.best demo.msm_game run tag @s add demo.game.battle.winner",
+      "function demo:msm_games/game/battle/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/win/2/won.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.battle.player,team=demo.red] run tag @s add demo.game.battle.winner",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/teams/won/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.battle.player,team=demo.blue] run tag @s add demo.game.battle.winner",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/teams/won/1.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/lobby.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/countdown.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/player_out.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/player_back.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/player_joined.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/won.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/battle/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players operation @s demo.msm_game = #battle.round demo.msm_game",
+      "execute in minecraft:overworld run tp @s 0.5 100 0.5",
+      "gamemode adventure @s",
+      "tellraw @s {\"text\":\"Pick a team with /trigger demo.msm_team: set 1 for Red, set 2 for Blue.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/lobby/arrive.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute in minecraft:overworld run tp @a 0.5 100 0.5",
+      "gamemode adventure @a",
+      "tellraw @a {\"text\":\"Pick a team with /trigger demo.msm_team: set 1 for Red, set 2 for Blue.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/lobby/send.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "team join demo.red @a[tag=demo.game.battle.in,team=,scores={demo.msm_team=1}]",
+      "team join demo.blue @a[tag=demo.game.battle.in,team=,scores={demo.msm_team=2}]",
+      "scoreboard players reset @a demo.msm_team",
+      "execute as @a[tag=demo.game.battle.in,team=,sort=random] run function demo:msm_games/game/battle/teams/smallest",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/teams/split.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.team0 demo.msm_game 0",
+      "execute store result score #battle.team0 demo.msm_game if entity @a[tag=demo.game.battle.in,team=demo.red]",
+      "scoreboard players set #battle.team1 demo.msm_game 0",
+      "execute store result score #battle.team1 demo.msm_game if entity @a[tag=demo.game.battle.in,team=demo.blue]",
+      "scoreboard players operation #battle.min demo.msm_game = #battle.team0 demo.msm_game",
+      "scoreboard players operation #battle.min demo.msm_game < #battle.team1 demo.msm_game",
+      "execute if score #battle.team0 demo.msm_game = #battle.min demo.msm_game run function demo:msm_games/game/battle/teams/join/0",
+      "execute if score #battle.team1 demo.msm_game = #battle.min demo.msm_game run function demo:msm_games/game/battle/teams/join/1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/teams/smallest.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "team join demo.red @s",
+      "scoreboard players set #battle.min demo.msm_game -1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/teams/join/0.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "team join demo.blue @s",
+      "scoreboard players set #battle.min demo.msm_game -1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/teams/join/1.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #battle.teams demo.msm_game 0",
+      "execute if entity @a[tag=demo.game.battle.in,team=demo.red] run scoreboard players add #battle.teams demo.msm_game 1",
+      "execute if entity @a[tag=demo.game.battle.in,team=demo.blue] run scoreboard players add #battle.teams demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/teams/count.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.battle.in,tag=!demo.game.battle.has_role,sort=random,limit=2] run function demo:msm_games/game/battle/role/captain/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/roles/deal.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.battle.has_role",
+      "tag @s add demo.game.battle.role.captain",
+      "tag @s add demo.game.battle.own_kit",
+      "function demo:msm_games/kit/captain_kit/give",
+      "tellraw @s [{\"text\":\"You are \"},{\"text\":\"Captain\",\"bold\":true},{\"text\":\".\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/battle/role/captain/give.mcfunction",
+    "schema": null
+  }
+]

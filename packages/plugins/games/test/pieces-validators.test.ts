@@ -8,6 +8,7 @@ import { createRegistryIndex, validateJson } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { beforeAll, describe, expect, it } from 'vitest';
 import plugin, {
+  gamesKinds,
   MAX_ONE_BLOCKS,
   PIECES_PROBLEM_CODES,
   piecesTemplates,
@@ -323,7 +324,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       '%s validates and lowers',
       async (_id, template) => {
         const tools = await toolsFor(bundle);
-        const kind = PIECE_KINDS[template.kind];
+        // The Game and map Studio's game and kit (B724) are in the same list.
+        const kind =
+          PIECE_KINDS[template.kind] ?? gamesKinds.find((entry) => entry.id === template.kind);
         if (kind === undefined) throw new Error(`no kind ${template.kind}`);
         const data = (await template.data({} as never)) as Json;
         const problems = validateJson(data, tools.schemas.resolveSchemaRef(kind.schema), {

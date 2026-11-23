@@ -2259,7 +2259,11 @@ function typeCheck(script: string): string[] {
  * its library brief lands. `minecraft:wolf_sound_variant` is not a kind at all while vanilla-mcdoc
  * lacks `step_sound` (ADR 0064 D5).
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [
+  // The Game and map Studio's kinds (ADR 0132), listed by B724: examples in B733.
+  'msm:game',
+  'msm:kit',
+];
 
 // Tests --------------------------------------------------------------------------------------
 

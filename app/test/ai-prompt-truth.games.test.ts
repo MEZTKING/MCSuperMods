@@ -75,6 +75,12 @@ interface GamesSources {
   readonly numbers: Readonly<Record<keyof typeof GAMES_PROMPT_NUMBERS, unknown>>;
 }
 
+/**
+ * Games kinds listed before the prompt's games topic names them: the Game and map Studio's
+ * `msm:game` and `msm:kit` (ADR 0132), listed by B724; B738 writes their topic and empties this.
+ */
+const KINDS_AWAITING_THE_PROMPT: readonly string[] = ['msm:game', 'msm:kit'];
+
 function gamesSources(): GamesSources {
   const files = Object.fromEntries(
     Object.entries(FILES).map(([key, path]) => [key, readRepoFile(path)]),
@@ -82,7 +88,7 @@ function gamesSources(): GamesSources {
   const games = libraryStarters.filter((starter) => starter.creator?.group === 'games');
   return {
     files,
-    kinds: [...GAMES_KIND_IDS],
+    kinds: GAMES_KIND_IDS.filter((kind) => !KINDS_AWAITING_THE_PROMPT.includes(kind)),
     flows: games.map((starter) => starter.id),
     jarFlows: games.filter((starter) => starter.supports !== undefined).map((s) => s.id),
     flowTitles: Object.fromEntries(games.map((starter) => [starter.id, starter.title])),

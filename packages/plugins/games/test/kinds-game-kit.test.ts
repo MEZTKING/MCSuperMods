@@ -14,8 +14,7 @@ import { GAME_KIND_LISTED, gameKind, KIT_KIND_LISTED, kitKind } from '../src/kin
 
 /**
  * The kinds `msm:game` and `msm:kit` (ADR 0132 D1 to D3): B722 gave them their schema and
- * default data. They stay out of the plugin's contributions until B724 makes them lower to
- * files and turns their flags on.
+ * default data; B724 made them lower to files and turned their flags on.
  */
 const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
 
@@ -26,12 +25,15 @@ describe('msm:game and msm:kit (B722)', () => {
     expect([gameKind.folder, kitKind.folder]).toEqual(['game', 'kit']);
   });
 
-  it('are still left out of the plugin until they lower to files (B724)', () => {
-    expect(GAME_KIND_LISTED).toBe(false);
-    expect(KIT_KIND_LISTED).toBe(false);
+  it('are listed by the plugin now that they lower to files (B724)', () => {
+    expect(GAME_KIND_LISTED).toBe(true);
+    expect(KIT_KIND_LISTED).toBe(true);
     const ids = (plugin.contributes.elementKinds ?? []).map((kind) => kind.id);
-    expect(ids).not.toContain('msm:game');
-    expect(ids).not.toContain('msm:kit');
+    expect(ids).toContain('msm:game');
+    expect(ids).toContain('msm:kit');
+    const templates = (plugin.contributes.elementTemplates ?? []).map((template) => template.id);
+    expect(templates).toContain('msm_games_game_empty');
+    expect(templates).toContain('msm_games_kit_empty');
   });
 });
 

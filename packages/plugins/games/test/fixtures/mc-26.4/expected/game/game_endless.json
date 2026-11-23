@@ -1,0 +1,643 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard objectives add demo.msm_game dummy",
+      "scoreboard objectives add demo.msm_deaths deathCount",
+      "scoreboard objectives add demo.msm_died dummy",
+      "execute unless score #forever.made demo.msm_game matches 1 run function demo:msm_games/game/forever/first_load",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/load.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/forever/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #forever.ticks demo.msm_game 1",
+      "execute if score #forever.state demo.msm_game matches 2 run function demo:msm_games/game/forever/state/playing",
+      "execute if score #forever.ticks demo.msm_game matches 20.. run function demo:msm_games/game/forever/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/tick.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:msm_games/game/forever/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/load"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/load.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": [
+        "#demo:msm_games/tick"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/function/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #forever.made demo.msm_game 1",
+      "scoreboard players set #forever.state demo.msm_game 0",
+      "scoreboard players set #forever.round demo.msm_game 0",
+      "scoreboard players set #forever.time demo.msm_game 0",
+      "scoreboard players set #forever.ticks demo.msm_game 0",
+      "scoreboard players set #forever.autostart demo.msm_game 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/first_load.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #forever.ticks demo.msm_game 0",
+      "scoreboard players operation #forever.was demo.msm_game = #forever.state demo.msm_game",
+      "execute if score #forever.was demo.msm_game matches 0 run function demo:msm_games/game/forever/second/waiting",
+      "execute if score #forever.was demo.msm_game matches 1 run function demo:msm_games/game/forever/second/countdown",
+      "execute if score #forever.was demo.msm_game matches 2 run function demo:msm_games/game/forever/second/playing",
+      "execute if score #forever.was demo.msm_game matches 3 run function demo:msm_games/game/forever/second/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/second.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #forever.waiting demo.msm_game 0",
+      "execute store result score #forever.waiting demo.msm_game if entity @a",
+      "execute if score #forever.autostart demo.msm_game matches 1 if score #forever.waiting demo.msm_game matches 1.. run function demo:msm_games/game/forever/start_world",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/second/waiting.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players remove #forever.time demo.msm_game 1",
+      "execute if score #forever.state demo.msm_game matches 1 if score #forever.time demo.msm_game matches 1.. run title @a actionbar [{\"text\":\"Forever starts in \"},{\"score\":{\"name\":\"#forever.time\",\"objective\":\"demo.msm_game\"}},{\"text\":\" s\"}]",
+      "execute if score #forever.state demo.msm_game matches 1 if score #forever.time demo.msm_game matches ..0 run function demo:msm_games/game/forever/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/second/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players add #forever.time demo.msm_game 1",
+      "function #demo:msm_games/game/forever/second",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/second/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players remove #forever.time demo.msm_game 1",
+      "execute if score #forever.time demo.msm_game matches ..0 run function demo:msm_games/game/forever/finish",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/second/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.forever.in,scores={demo.msm_deaths=1..}] run function demo:msm_games/game/forever/died",
+      "execute as @e[type=minecraft:player,tag=demo.game.forever.dead] run function demo:msm_games/game/forever/respawned",
+      "execute as @a unless score @s demo.msm_game = #forever.round demo.msm_game run function demo:msm_games/game/forever/late",
+      "function #demo:msm_games/game/forever/tick",
+      "function demo:msm_games/game/forever/win/check",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/state/playing.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #forever.state demo.msm_game matches 0 run function demo:msm_games/game/forever/begin",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/start.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #forever.state demo.msm_game matches 1 run function demo:msm_games/game/forever/stop/countdown",
+      "execute if score #forever.state demo.msm_game matches 2..3 run function demo:msm_games/game/forever/stop/round",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/stop.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/forever/countdown/cancel",
+      "function #demo:msm_games/game/forever/stopped",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/stop/countdown.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/forever/reset",
+      "tellraw @a {\"text\":\"Forever: the round was stopped.\"}",
+      "function #demo:msm_games/game/forever/stopped",
+      "function #demo:msm_games/game/forever/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/stop/round.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #forever.state demo.msm_game matches 2 run function demo:msm_games/game/forever/ending",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/end.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #forever.state demo.msm_game 0",
+      "tellraw @a {\"text\":\"Forever: the countdown stopped.\"}",
+      "function #demo:msm_games/game/forever/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/countdown/cancel.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #forever.state demo.msm_game 2",
+      "scoreboard players set #forever.time demo.msm_game 0",
+      "scoreboard players set #forever.ticks demo.msm_game 0",
+      "scoreboard players add #forever.round demo.msm_game 1",
+      "function #demo:msm_games/game/forever/starting",
+      "tag @a remove demo.game.forever.player",
+      "tag @a remove demo.game.forever.in",
+      "tag @a remove demo.game.forever.out",
+      "tag @a remove demo.game.forever.watching",
+      "tag @a remove demo.game.forever.dead",
+      "tag @a remove demo.game.forever.has_role",
+      "tag @a remove demo.game.forever.own_kit",
+      "tag @a remove demo.game.forever.role.player",
+      "tag @a remove demo.game.forever.winner",
+      "execute as @a[sort=random,limit=100] run function demo:msm_games/game/forever/join",
+      "execute as @a[tag=!demo.game.forever.player] run function demo:msm_games/game/forever/watch",
+      "scoreboard players set #forever.started demo.msm_game 0",
+      "execute store result score #forever.started demo.msm_game if entity @a[tag=demo.game.forever.in]",
+      "function demo:msm_games/game/forever/roles/deal",
+      "scoreboard players set @a[tag=demo.game.forever.player] demo.kills 0",
+      "gamemode survival @a[tag=demo.game.forever.in]",
+      "execute as @a[tag=demo.game.forever.in] run function #demo:msm_games/game/forever/player_in",
+      "tellraw @a {\"text\":\"Forever: the round has started.\"}",
+      "function #demo:msm_games/game/forever/started",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/begin.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.forever.player",
+      "tag @s add demo.game.forever.in",
+      "scoreboard players operation @s demo.msm_game = #forever.round demo.msm_game",
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players set @s demo.msm_died 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/join.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.forever.watching",
+      "scoreboard players operation @s demo.msm_game = #forever.round demo.msm_game",
+      "gamemode spectator @s",
+      "tellraw @s {\"text\":\"The round of Forever is full: you can watch until it ends.\"}",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/watch.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/forever/join",
+      "function demo:msm_games/game/forever/role/player/give",
+      "gamemode survival @s",
+      "function #demo:msm_games/game/forever/player_in",
+      "function #demo:msm_games/game/forever/player_joined",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/late.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set @s demo.msm_deaths 0",
+      "scoreboard players add @s demo.msm_died 1",
+      "tag @s add demo.game.forever.dead",
+      "function #demo:msm_games/game/forever/player_died",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/died.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.forever.dead",
+      "function #demo:msm_games/game/forever/player_respawned",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/respawned.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.forever.in] run function demo:msm_games/game/forever/out/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/out.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.forever.in",
+      "tag @s add demo.game.forever.out",
+      "gamemode spectator @s",
+      "function #demo:msm_games/game/forever/player_out",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/out/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if entity @s[tag=demo.game.forever.out] run function demo:msm_games/game/forever/back/now",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/back.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s remove demo.game.forever.out",
+      "tag @s add demo.game.forever.in",
+      "gamemode survival @s",
+      "function #demo:msm_games/game/forever/player_back",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/back/now.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #forever.state demo.msm_game 3",
+      "scoreboard players set #forever.time demo.msm_game 5",
+      "scoreboard players set #forever.ticks demo.msm_game 0",
+      "scoreboard players set #forever.count demo.msm_game 0",
+      "execute store result score #forever.count demo.msm_game if entity @a[tag=demo.game.forever.winner]",
+      "execute if score #forever.count demo.msm_game matches 1.. run tellraw @a [{\"selector\":\"@a[tag=demo.game.forever.winner]\"},{\"text\":\" won the round of Forever!\"}]",
+      "execute if score #forever.count demo.msm_game matches 0 run tellraw @a {\"text\":\"Nobody won the round of Forever.\"}",
+      "execute if score #forever.count demo.msm_game matches 1.. run function #demo:msm_games/game/forever/won",
+      "function #demo:msm_games/game/forever/ended",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/ending.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "function demo:msm_games/game/forever/reset",
+      "function #demo:msm_games/game/forever/lobby",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/finish.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "gamemode survival @a[tag=demo.game.forever.out]",
+      "gamemode survival @a[tag=demo.game.forever.watching]",
+      "tag @a remove demo.game.forever.player",
+      "tag @a remove demo.game.forever.in",
+      "tag @a remove demo.game.forever.out",
+      "tag @a remove demo.game.forever.watching",
+      "tag @a remove demo.game.forever.dead",
+      "tag @a remove demo.game.forever.has_role",
+      "tag @a remove demo.game.forever.own_kit",
+      "tag @a remove demo.game.forever.role.player",
+      "scoreboard players set #forever.state demo.msm_game 0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/reset.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "scoreboard players set #forever.autostart demo.msm_game 0",
+      "function demo:msm_games/game/forever/start",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/start_world.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute if score #forever.state demo.msm_game matches 2 run function demo:msm_games/game/forever/win/0",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/win/check.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.forever.player,scores={demo.kills=50..}] run tag @s add demo.game.forever.winner",
+      "execute if entity @a[tag=demo.game.forever.winner] run function demo:msm_games/game/forever/end",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/win/0.mcfunction",
+    "schema": null
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/lobby.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/countdown.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/starting.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/player_in.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/started.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/tick.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/second.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/player_died.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/player_respawned.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/player_out.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/player_back.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/player_joined.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/won.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/ended.json",
+    "schema": "tag:function"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/function/msm_games/game/forever/stopped.json",
+    "schema": "tag:function"
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "execute as @a[tag=demo.game.forever.in,tag=!demo.game.forever.has_role] run function demo:msm_games/game/forever/role/player/give",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/roles/deal.mcfunction",
+    "schema": null
+  },
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "tag @s add demo.game.forever.has_role",
+      "tag @s add demo.game.forever.role.player",
+      "tellraw @s [{\"text\":\"You are \"},{\"text\":\"Player\",\"bold\":true},{\"text\":\".\"}]",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/game/forever/role/player/give.mcfunction",
+    "schema": null
+  }
+]

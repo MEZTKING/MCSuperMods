@@ -127,6 +127,18 @@ export const SEARCH: PluginSearchData = {
     ],
     'msm:timer': ['timer', 'countdown', 'stopwatch', 'clock', 'time limit', 'boss bar', 'seconds'],
     'msm:area': ['area', 'zone', 'region', 'arena', 'box', 'enter', 'leave', 'reset'],
+    // The Game and map Studio's kinds (ADR 0132; B724).
+    'msm:game': [
+      'game',
+      'game mode',
+      'minigame',
+      'round',
+      'lobby',
+      'roles',
+      'win',
+      'last one standing',
+    ],
+    'msm:kit': ['kit', 'starter kit', 'loadout', 'gear', 'items', 'armour', 'class'],
     // Templates.
     msm_games_one_block_classic: ['oneblock', 'one block', 'skyblock', 'phases', 'refills'],
     msm_games_team_red: ['red', 'team', 'side', 'faction'],
@@ -136,6 +148,8 @@ export const SEARCH: PluginSearchData = {
     msm_games_timer_countdown: ['countdown', 'time limit', 'timer', 'round', 'boss bar'],
     msm_games_timer_stopwatch: ['stopwatch', 'race', 'time trial', 'speedrun', 'timer'],
     msm_games_area_arena: ['arena', 'zone', 'pvp', 'battle', 'reset', 'area'],
+    msm_games_game_empty: ['game', 'empty game', 'minigame', 'round', 'lobby', 'game mode'],
+    msm_games_kit_empty: ['kit', 'loadout', 'starter kit', 'gear', 'class'],
     world_setup_empty_sky: ['skyblock', 'void', 'empty', 'sky island', 'start island', 'nothing'],
     world_setup_flat_build: ['flat', 'superflat', 'creative', 'build', 'flat world'],
     world_setup_sky_islands: ['floating islands', 'sky islands', 'islands in the sky', 'skylands'],

@@ -1,0 +1,15 @@
+[
+  {
+    "language": "mcfunction",
+    "layer": "datapack",
+    "lines": [
+      "item replace entity @s hotbar.0 with minecraft:iron_sword[minecraft:enchantments={\"minecraft:sharpness\":2},minecraft:unbreakable={}] 1",
+      "item replace entity @s armor.head with minecraft:iron_helmet 1",
+      "item replace entity @s armor.chest with minecraft:iron_chestplate 1",
+      ""
+    ],
+    "merge": null,
+    "path": "data/demo/function/msm_games/kit/hunter_kit/give.mcfunction",
+    "schema": null
+  }
+]
