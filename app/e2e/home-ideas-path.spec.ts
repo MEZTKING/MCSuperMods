@@ -53,20 +53,22 @@ function setEnv(key: string, value: string | undefined): void {
 
 /** The highest card number mounted on the page, or -1. */
 async function lastCard(window: Page): Promise<number> {
-  return window.evaluate(() => {
-    let most = -1;
-    for (const element of document.querySelectorAll('[data-testid^="idea-card-"]')) {
-      const n = Number((element.getAttribute('data-testid') ?? '').slice('idea-card-'.length));
-      if (Number.isInteger(n) && n > most) most = n;
-    }
-    return most;
-  });
+  const ids = await window
+    .locator('[data-testid^="idea-card-"]')
+    .evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute('data-testid') ?? ''),
+    );
+  let most = -1;
+  for (const id of ids) {
+    const n = Number(id.slice('idea-card-'.length));
+    if (Number.isInteger(n) && n > most) most = n;
+  }
+  return most;
 }
 
 const cardCount = (window: Page): Promise<number> =>
   window.locator('[data-testid^="idea-card-"]').count();
-const elementCount = (window: Page): Promise<number> =>
-  window.evaluate(() => document.querySelectorAll('*').length);
+const elementCount = (window: Page): Promise<number> => window.locator('*').count();
 
 /** For the screenshots: a large window (drawn at device scale 2) and no notice over Home. */
 async function forShots(launched: LaunchedApp): Promise<void> {

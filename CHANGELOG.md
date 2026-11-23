@@ -6,9 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.7.
+
+## [1.5.7] - 2026-11-23
+
 ### Added
 
-- Home (Very easy): **More ideas**, an endless, windowed list of mod ideas under the Showcase (each a Surprise me seed, with a drawn picture, a clip on hover, **Make this** and **Shuffle**), and **Your mods** as cards above it (picture, things, last opened, **Open**, **Show in folder**, **Remove from this list**, **See all my mods**, a line for a missing folder); both findable by search (ADR 0128 D1, D2, D4–D6).
+- **More ideas on Home.** Under See what you can make, an endless list of mods to scroll through: each card is a mod Surprise me makes from its own number, with a picture, a moving clip when you point at it and **Make this**, which makes exactly that mod. The list is the same each time you come back; **Shuffle** gives you new ones.
+- **Your mods as cards.** Your mods now sit at the top of Home as cards with the mod's picture, how many things it has and when you last opened it, with **Open**, **Show in folder** and **Remove from this list**, and **See all my mods** past eight. A mod whose folder has gone says so.
+- **See a structure put together.** A template pool's live view (and **See it assembled** in the Template Pool Studio) builds a structure from your pools piece by piece: **Step** adds one piece and lights the two jigsaw blocks that met, and the list says why a piece did not fit. A jigsaw structure shows its whole building. Minecraft's own pieces come from your Minecraft folder.
+
+### Changed
+
+- **Sharper previews.** The cards' clips draw at your screen's own sharpness, and their pictures are drawn pixel for pixel, no longer blurred.
+- **Search finds more.** An exact id such as `minecraft:stone` comes first, "very easy mode" and "whats new" find their own entries, "how does try it work" is read as a question, swapped letters ("tnak") are forgiven, a misspelt name is corrected ("a blue swrod" makes Blue Sword), and Set on fire, Never wears out, Starts enchanted and Frost Walker can be found.
+
+### Fixed
+
+- The world cards (a world of islands, of tall mountains) no longer show an empty grey frame: when not playing, each shows a picture of its own land.
 
 ## [1.5.6] - 2026-11-23
 
