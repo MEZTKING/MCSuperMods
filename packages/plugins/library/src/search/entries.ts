@@ -187,7 +187,7 @@ const BLOCKS: SearchEntryContribution[] = [
     'A block that gives off light.',
     'simple-block',
     { light_level: 15 },
-    ['light block', 'lamp block'],
+    ['light', 'lamp', 'lit'],
   ),
   flow(
     'shulker-box',

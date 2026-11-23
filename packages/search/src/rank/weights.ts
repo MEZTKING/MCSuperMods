@@ -3,6 +3,9 @@
  * The starting values are the B650 spike's after its one tuning pass (`spike-src/engine.ts`,
  * version 1: 87.8 % first and 95.1 % in the top three over the 82 draft queries), with the
  * signals the spike did not have (order, closeness, history, the mod's own kinds) kept small.
+ * B666 tuned seven of them against the fixed query set (`app/test/search/golden-queries.json`,
+ * 240 queries; `docs/reference/search-golden-report.md` has the numbers before and after): each
+ * changed value says why beside it.
  */
 
 import type { SearchIntent } from '../text';
@@ -32,7 +35,8 @@ export const FIELD_WEIGHT: Readonly<Record<Field, number>> = {
 /** BM25F length normalisation per field (0: none, 1: full). */
 export const FIELD_B: Readonly<Record<Field, number>> = {
   title: 0.6,
-  words: 0.5,
+  // B666 (was 0.5): a flow's long keyword list no longer loses to a door's two words.
+  words: 0.3,
   answers: 0.3,
   sentence: 0.75,
   ids: 0.5,
@@ -119,7 +123,9 @@ export const SOURCE_WEIGHT: Readonly<Record<SearchIntent, Readonly<Record<Search
       rule: 0.7,
       setting: 0.75,
       command: 0.75,
-      guide: 0.6,
+      // B666 (was 0.6): a section titled like a command or setting ("Import a structure",
+      // "World backups") no longer comes before it when the words carry no intent.
+      guide: 0.5,
       problem: 0.45,
     },
     make: {
@@ -128,17 +134,22 @@ export const SOURCE_WEIGHT: Readonly<Record<SearchIntent, Readonly<Record<Search
       starter: 0.9,
       example: 0.8,
       template: 0.75,
-      kind: 0.6,
+      // B666 (was 0.6): "a new block" opens the Block tile or flow, not the empty element form.
+      kind: 0.45,
       project: 0.7,
-      vanilla: 0.55,
+      // B666 (was 0.55): under the make lean a flow that makes the thing beats the game's own
+      // thing of that exact name (B650's "netherite pick").
+      vanilla: 0.45,
       rule: 0.7,
       setting: 0.3,
-      command: 0.5,
+      // B666 (was 0.5): "new project" and "add namespace" read as make; still below `none`.
+      command: 0.7,
       guide: 0.5,
       problem: 0.3,
     },
     learn: {
-      flow: 0.75,
+      // B666 (was 0.75): "how to make particles" finds the guide before the flow.
+      flow: 0.65,
       tile: 0.7,
       starter: 0.6,
       example: 0.65,
@@ -203,7 +214,8 @@ export const SOURCE_WEIGHT: Readonly<Record<SearchIntent, Readonly<Record<Search
       starter: 0.5,
       example: 0.5,
       template: 0.5,
-      kind: 0.9,
+      // B666 (was 0.9): a kind's id (`msm:block`) beats the open mod's elements of that kind.
+      kind: 1.2,
       project: 1.2,
       vanilla: 1.2,
       rule: 0.6,

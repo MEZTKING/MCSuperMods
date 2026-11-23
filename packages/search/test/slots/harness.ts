@@ -56,7 +56,13 @@ export function harness(): Harness {
   const reader = createAnswerReader({
     plugins: [{ plugin: 'fixture', data: pluginData() }],
     flows: flowFacts(),
-    things: [{ id: 'mod:ruby', name: 'Ruby', sort: 'item' }],
+    // The open mod's thing, and the game's things as the host hands them in with their sorts.
+    things: [
+      { id: 'mod:ruby', name: 'Ruby', sort: 'item' },
+      { id: 'base:pig', name: 'Pig', sort: 'mob' },
+      { id: 'base:diamond', name: 'Diamond', sort: 'item' },
+      { id: 'base:bone', name: 'Bone', sort: 'item' },
+    ],
     validate,
   });
   let last: Omit<Reading, 'answer'> | undefined;

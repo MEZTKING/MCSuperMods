@@ -10355,3 +10355,26 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - The `can_break` / `can_place_on` Item Studio fields (B562's other finding).
 - Optional: a way to type the name of a team or score made elsewhere in the picker (today only Raw JSON or Advanced data); the `who` of **The score of** reading is still the default player, like the other readings with a who.
+
+## 2026-11-23 — executor — B666 the fixed query set and tuning
+
+**What**
+- `app/test/search/golden-queries.json`: 240 queries (B650's 82 and 158 new) in the eleven classes of ADR 0124 D16 (plain 28, how-to 28, misspelt 24, command 24, mine 22, slang 20, id 20, behaviour 20, american 18, setting 18, nonsense 18), each with class, mode, expected first result, and where it applies `same` (a door, folded card or guide page that counts as the result), `top3`, `answers`, `behaviour`, `project`, `needs` and `reason`. 43 of B650's draft carry a `reason` (ids respelt as B660's `entryIds`, B655's per-sort behaviour ids, doors, the Skyblock flow now that B557 landed, guide pages B661 indexes).
+- `app/test/search/golden-runner.ts` (new): the search as the app builds it (host and sources; the guide through main's guide service; each target's vanilla layer with and without the made-up names file; an empty mod or `fixtures/sample-mod`), scoring (first, top three, mean reciprocal rank, answers), the bars, the report's tables. `golden.test.ts`: the bars in all eight configurations, nonsense with no Best match, every named id present on both targets, answers, determinism on a fresh build, the availability rule (every third flow marked unavailable, as no flow is unavailable on either target today). `misspellings.test.ts`: every flow title with one seeded wrong letter in Very easy and Easy on both targets. `GOLDEN_REPORT=<file>` writes the tables.
+- Tuning: seven numbers in `packages/search/src/rank/weights.ts` (words length normalisation, the make lean's vanilla, kind and command weights, the guide with no intent, flows under the learn intent, kinds under the id intent), each with its reason beside it; the library's and the games plugin's search words (cube, furnace and grinder, pie, potion near status effect, items near storage, mob and animal, void world, op, the Blank starter's "new project", the Glowing block door, the Floating islands choice word "void", skyblock's sky island).
+- The answer reader (`slots/things.ts`, `slots/name.ts`): a thing named by an idea or a typed id takes its listed sort, and only a thing of the flow's sort stands in for the title's sort word, so "custom ore that drops xp" no longer names a Custom mob "Custom Ore" (B663); six new cases in `test/slots/answers.test.ts`, the harness given the game's things with their sorts.
+- `docs/reference/search-golden-report.md` (new): before and after per class and configuration, what was tuned and why, the misses, the waiting queries, follow-ups.
+- Numbers (counted queries; the same on both targets and with or without the names file): sample mod 205 (88.4 %) first and 225 (97.0 %) top three before, 225 (97.0 %) and 230 (99.1 %) after; empty mod 182 (87.1 %) and 203 (97.1 %) before, 202 (96.7 %) and 207 (99.0 %) after. B650's 82 draft queries as the engine stood: 59 of 82 first (72.0 %) and 68 top three on the sample mod; after, 78 (95.1 %) and 79. Every bar met in every configuration; how-to is the closest (76.9 % first against 75 %). Flow titles with a wrong letter: 65 of 67 per target.
+- Checks: `pnpm lint`, `pnpm typecheck`; `@msm/search` 218 tests; app `test/search` and `test/components/search` 388 tests (`--maxWorkers=2`); library 2,350, games 225, rules search 8; exporters `library.test.ts` 1,602 with `examples/` unchanged. The app was not built (disk).
+
+**Decisions**
+- A door that opens the expected flow, a card or door folded into it, or a guide page and its section counts through an explicit `same` line with its reason, not a rule in the scorer.
+- Queries whose expectation needs an engine change outside B666's files carry `needs` and are run and reported but not counted (8: four ids, `very easy mode`, `whats new`, `how does try it work`, and `what is a datapack` for B672). The three engine fixes were measured in the worktree and reverted, not committed.
+- The confidence floor stays 3; `none.command` stays 0.75 (0.9 fixed "import structure" but broke "texture pack" and "automatic updates").
+- The two misspelling misses (Tank as `tnak`, Mob skin as `soin`) are pinned in the test as engine findings, not fitted with vocabulary lines for the seed.
+
+**Next**
+- Engine (a later brief): exact id on whole ids only (`query.ts`); stop words kept for the exact-title check (`very`, `whats`); "how … work" read as the question; a typo candidate for a swap in a four-letter word and a better tie than frequency. Then remove the `needs` lines and the misspelling test's known list.
+- `sources/flows.ts`: give the `scripts` group (or the Scripted behaviour flow) the sort `item`, so "a wand that teleports you" gets its rule.
+- B672: the data pack guide section; then "what is a datapack" expects it.
+- B673: the bars and numbers of the report go into ADR 0124's findings.

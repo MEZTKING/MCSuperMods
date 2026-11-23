@@ -143,7 +143,7 @@ const GEAR: SearchWordGroup[] = [
 const BLOCKS: SearchWordGroup[] = [
   {
     idea: 'block',
-    same: ['cube'],
+    same: [],
     misspellings: ['blok', 'blcok'],
   },
   {
@@ -216,7 +216,7 @@ const BLOCKS: SearchWordGroup[] = [
       'storage crate',
       'storage box',
     ],
-    near: ['inventory', 'items'],
+    near: ['inventory'],
     vanillaIds: ['minecraft:chest', 'minecraft:barrel'],
   },
   { idea: 'shulker box', same: ['shulker'], vanillaIds: ['minecraft:shulker_box'] },
@@ -228,17 +228,9 @@ const BLOCKS: SearchWordGroup[] = [
   },
   {
     idea: 'machine',
-    same: [
-      'machines',
-      'furnace',
-      'grinder',
-      'crusher',
-      'smelter',
-      'oven',
-      'processor',
-      'generator',
-    ],
-    near: ['recipes', 'fuel', 'redstone', 'tech'],
+    same: ['machines', 'crusher', 'smelter', 'oven', 'processor', 'generator'],
+    // The doors Furnace and Grinder are kinds of machine, not the word for one (B666).
+    near: ['furnace', 'grinder', 'recipes', 'fuel', 'redstone', 'tech'],
     misspellings: ['machien', 'mashine'],
     vanillaIds: ['minecraft:furnace', 'minecraft:blast_furnace', 'minecraft:smoker'],
   },
@@ -341,7 +333,9 @@ const FOOD_AND_MAGIC: SearchWordGroup[] = [
   },
   {
     idea: 'cake',
-    same: ['cakes', 'pie', 'pies', 'tart', 'dessert', 'gateau'],
+    same: ['cakes', 'dessert', 'gateau'],
+    // A pie is the Cake flow's other style, with a door of its own (B666).
+    near: ['pie', 'pies', 'tart'],
     vanillaIds: ['minecraft:cake', 'minecraft:pumpkin_pie'],
   },
   {
@@ -359,7 +353,7 @@ const FOOD_AND_MAGIC: SearchWordGroup[] = [
   {
     idea: 'status effect',
     same: ['effect', 'effects', 'buff', 'debuff', 'mob effect', 'status'],
-    near: ['potion', 'curse', 'blessing'],
+    near: ['curse', 'blessing'],
   },
   {
     idea: 'particle',
@@ -392,10 +386,11 @@ const MOBS: SearchWordGroup[] = [
       'npc',
       'critter',
     ],
-    near: ['animal', 'enemy'],
+    // Not `animal` (B666): "mob" would read as the four-legged body and pick the Farm animal.
+    near: ['enemy'],
     misspellings: ['mobb', 'creture', 'monstor'],
   },
-  { idea: 'animal', same: ['animals', 'wildlife'], near: ['mob', 'creature'] },
+  { idea: 'animal', same: ['animals', 'wildlife'], near: ['creature'] },
   { idea: 'enemy', same: ['enemies', 'hostile mob', 'baddie'], near: ['monster'] },
   {
     idea: 'pet',
@@ -598,7 +593,7 @@ const WORLDS: SearchWordGroup[] = [
   },
   {
     idea: 'skyblock',
-    same: ['sky block', 'void world', 'empty world'],
+    same: ['sky block'],
     phrases: ['empty sky', 'one island', 'start island', 'island in the sky'],
     near: ['void', 'sky'],
   },
@@ -609,7 +604,7 @@ const WORLDS: SearchWordGroup[] = [
     same: ['sky island', 'floating island', 'floating islands'],
     near: ['skyblock', 'sky'],
   },
-  { idea: 'void', same: ['empty', 'air world'] },
+  { idea: 'void', same: ['empty', 'air world', 'void world', 'empty world'] },
   {
     idea: 'islands',
     same: ['island', 'archipelago', 'atolls', 'ocean world', 'sea world'],

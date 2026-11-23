@@ -675,6 +675,8 @@ export const VOCABULARY: SearchVocabulary = {
     { idea: 'pig', same: ['piggy'], vanillaIds: ['base:pig'] },
     { idea: 'diamond', same: ['diamonds'], vanillaIds: ['base:diamond'] },
     { idea: 'bone', same: ['bones'], vanillaIds: ['base:bone'] },
+    // An idea whose word is not the thing's name (B666: "custom ore" read as an ore's id).
+    { idea: 'gem', same: ['gems'], vanillaIds: ['base:diamond'] },
     { idea: 'experience', same: [], slang: ['xp'] },
     { idea: 'wand', same: ['staff'] },
     { idea: 'animal', same: ['creature'] },

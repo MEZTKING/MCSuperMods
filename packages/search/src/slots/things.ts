@@ -24,6 +24,8 @@ export interface SearchThing {
 /** Things compiled once for matching. */
 export interface ThingList {
   readonly things: readonly { readonly thing: SearchThing; readonly phrase: Phrase }[];
+  /** The sort of each listed thing by id, for things named by a typed id or an idea (B666). */
+  readonly sorts: ReadonlyMap<string, string>;
 }
 
 /** Things longer than this many words are not matched by name. */
@@ -31,15 +33,23 @@ const MAX_NAME_WORDS = 6;
 
 export function thingList(things: readonly SearchThing[] | undefined): ThingList {
   const out: { thing: SearchThing; phrase: Phrase }[] = [];
+  const sorts = new Map<string, string>();
   for (const thing of Array.isArray(things) ? things : []) {
     if (typeof thing?.id !== 'string' || typeof thing.name !== 'string') continue;
+    if (typeof thing.sort === 'string' && !sorts.has(thing.id)) sorts.set(thing.id, thing.sort);
     const phrase = phraseOf(thing.name);
     if (phrase === undefined || phrase.keys.length > MAX_NAME_WORDS) continue;
     out.push({ thing, phrase });
   }
   // Longer names first, so `iron block` is found before `iron`.
   out.sort((a, b) => b.phrase.keys.length - a.phrase.keys.length);
-  return { things: out };
+  return { things: out, sorts };
+}
+
+/** The listed sort of a thing named by id, as a mention's field. */
+function sortOf(list: ThingList, id: string): { sort?: string } {
+  const sort = list.sorts.get(id);
+  return sort === undefined ? {} : { sort };
 }
 
 /** The things named in the words, left to right, none overlapping. */
@@ -66,10 +76,12 @@ export function findThings(
       if (t.start >= id.start && t.end <= id.end) inside.push(i);
     });
     if (inside.length === 0) continue;
+    const whole = id.text.replace(/^#/, '');
     claim({
       start: inside[0] as number,
       end: (inside[inside.length - 1] as number) + 1,
-      id: id.text.replace(/^#/, ''),
+      id: whole,
+      ...sortOf(list, whole),
     });
   }
   // Things by name.
@@ -83,7 +95,7 @@ export function findThings(
     for (const idea of ideas) {
       const id = groups.get(idea)?.vanillaIds[0];
       if (id === undefined) continue;
-      claim({ start: i, end: i + 1, id });
+      claim({ start: i, end: i + 1, id, ...sortOf(list, id) });
       break;
     }
   }

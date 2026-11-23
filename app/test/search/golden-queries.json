@@ -1,5 +1,5 @@
 {
-  "about": "B650 first draft of the fixed query set (ADR 0124 D16): 80 hand-written queries in eleven classes, each with the result it can really reach on the corpus at 0cb3abe. `expect` is the expected first result, `top3` the other ids that count for the top three, `answers` the expected flow answers, `behaviour` the expected behaviour id, `needs` a condition on later work (SQ16), `mode` the door (very-easy: Home's bar; easy: the toolbar; advanced: the toolbar in Advanced), `project` the open mod. Never regenerated: a change needs a reason.",
+  "about": "The fixed query set (ADR 0124 D16): B650's 82 draft queries and B666's additions, in eleven classes. `expect` is the expected first result (an entry id as B660's `entryIds` spells it; `null`: no Best match), `same` ids that count as that result (a door that opens the expected flow, a card folded into its tile, a guide page and its section), `top3` other ids a reader may look for (not scored), `answers` the expected answers and `behaviour` the expected behaviour of the expected hit, `needs` a condition on later work (SQ16), `mode` the door (very-easy: Home's bar; easy: the toolbar; advanced: the toolbar in Advanced), `project` the open mod (else an empty mod). Never regenerated: a change needs a `reason`.",
   "queries": [
     {
       "q": "blue sword",
@@ -10,7 +10,9 @@
         "weapon_type": "sword",
         "colour": "#3c44aa",
         "weapon_name": "Blue Sword"
-      }
+      },
+      "same": ["entry:msm.library:sword"],
+      "reason": "B666: B654's door opens the expected flow with a choice made (the same Creator), so it counts as the expected result (Sword: the Weapon flow with Sword chosen)."
     },
     {
       "q": "make a pig fly",
@@ -78,9 +80,10 @@
       "q": "creper",
       "class": "misspelt",
       "mode": "easy",
-      "expect": "vanilla:entity_type:creeper",
+      "expect": "vanilla:mob:creeper",
       "corrected": "creeper",
-      "notes": "name made from the id"
+      "notes": "name made from the id",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "netherrite sword",
@@ -91,7 +94,9 @@
       "answers": {
         "weapon_type": "sword",
         "tier": "netherite"
-      }
+      },
+      "same": ["entry:msm.library:sword"],
+      "reason": "B666: B654's door opens the expected flow with a choice made (the same Creator), so it counts as the expected result (Sword: the Weapon flow with Sword chosen)."
     },
     {
       "q": "enchantmant",
@@ -110,13 +115,16 @@
       "class": "misspelt",
       "mode": "very-easy",
       "expect": "tile:vehicle",
-      "top3": ["flow:vehicle-car", "flow:vehicle-tank", "flow:vehicle-plane", "flow:vehicle-boat"]
+      "top3": ["flow:vehicle-car", "flow:vehicle-tank", "flow:vehicle-plane", "flow:vehicle-boat"],
+      "same": ["card:vehicle"],
+      "reason": "B666: The vehicle Showcase card folds into the vehicle tile (B660); the panel shows whichever scored higher."
     },
     {
       "q": "skeliton",
       "class": "misspelt",
       "mode": "easy",
-      "expect": "vanilla:entity_type:skeleton"
+      "expect": "vanilla:mob:skeleton",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "custum ore",
@@ -128,21 +136,27 @@
       "q": "glyder",
       "class": "misspelt",
       "mode": "very-easy",
-      "expect": "flow:glider"
+      "expect": "flow:glider",
+      "same": ["entry:msm.library:elytra"],
+      "reason": "B666: The door Elytra has the Glider flow's own action, so the two fold and the panel shows whichever scored higher."
     },
     {
       "q": "armor",
       "class": "american",
       "mode": "very-easy",
-      "expect": "tile:armour",
-      "top3": ["flow:gear-set", "flow:armour-trim"]
+      "expect": "entry:msm.library:armour",
+      "top3": ["flow:gear-set", "flow:armour-trim"],
+      "same": ["tile:armour"],
+      "reason": "B666: B654 added the door Armour (the Gear set flow with the four armour pieces), which makes armour straight away; the Make armour tile, a chooser, counts as well."
     },
     {
       "q": "armour",
       "class": "american",
       "mode": "very-easy",
-      "expect": "tile:armour",
-      "top3": ["flow:gear-set", "flow:armour-trim"]
+      "expect": "entry:msm.library:armour",
+      "top3": ["flow:gear-set", "flow:armour-trim"],
+      "same": ["tile:armour"],
+      "reason": "B666: B654 added the door Armour (the Gear set flow with the four armour pieces), which makes armour straight away; the Make armour tile, a chooser, counts as well."
     },
     {
       "q": "gray wool",
@@ -166,19 +180,18 @@
       "q": "mob behavior",
       "class": "american",
       "mode": "easy",
-      "expect": "guide:mob-behaviours.md#the-quick-way-the-creator-flows",
-      "top3": [
-        "guide:mob-behaviours.md#movement",
-        "guide:mob-behaviours.md#habits",
-        "guide:mob-behaviours.md#kind-of-mob-and-base"
-      ]
+      "expect": "guide:mob-behaviours#mob-behaviours",
+      "top3": ["guide:mob-behaviours#the-quick-way-the-creator-flows"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. B661 indexes each guide page's own title (B650's lesson), and the page is the answer to a page's name."
     },
     {
       "q": "skyblock",
       "class": "slang",
       "mode": "very-easy",
-      "expect": "flow:world-empty-sky",
-      "needs": "Until the game modes plan's B557; then expect its Skyblock flow first and world-empty-sky in the top three"
+      "expect": "flow:skyblock",
+      "same": ["entry:msm.library:skyblock"],
+      "top3": ["flow:world-empty-sky"],
+      "reason": "B666: Its `needs` is met: B557 added the Skyblock flow, so it comes first and Empty sky stays in the top three (SQ16); the library's Skyblock door has the flow's action."
     },
     {
       "q": "netherite pick",
@@ -189,7 +202,9 @@
       "answers": {
         "pieces": ["pickaxe"],
         "tier": "netherite"
-      }
+      },
+      "same": ["entry:msm.library:pickaxe"],
+      "reason": "B666: B654's door opens the expected flow with a choice made (the same Creator), so it counts as the expected result (Pickaxe: the Gear set flow with the pickaxe)."
     },
     {
       "q": "give xp",
@@ -207,7 +222,9 @@
       "q": "op sword",
       "class": "slang",
       "mode": "very-easy",
-      "expect": "flow:weapon"
+      "expect": "flow:weapon",
+      "same": ["entry:msm.library:sword"],
+      "reason": "B666: B654's door Sword opens the Weapon flow with Sword chosen (the same Creator), so it counts as the expected result."
     },
     {
       "q": "pet doggo",
@@ -231,65 +248,70 @@
       "q": "how do I add a recipe",
       "class": "how-to",
       "mode": "easy",
-      "expect": "starter:recipe_pack",
-      "top3": ["kind:minecraft:recipe", "template:recipe_shaped", "example:example_recipe"],
-      "notes": "The guide has no recipe section today (gap for B672); the plan's draft expected one"
+      "expect": "guide:templates-and-examples#recipes",
+      "top3": ["starter:recipe_pack", "kind:minecraft:recipe"],
+      "notes": "The guide has no recipe section today (gap for B672); the plan's draft expected one",
+      "reason": "B666: The guide now has a Recipes section (templates and examples), so a how-to finds the guide first, as the plan's draft wanted."
     },
     {
       "q": "how do I test my mod",
       "class": "how-to",
       "mode": "easy",
-      "expect": "guide:playing-and-testing.md#play",
-      "top3": [
-        "guide:blocks-and-items.md#test-in-minecraft",
-        "guide:getting-started.md#9-try-it-in-minecraft",
-        "guide:playing-and-testing.md#what-you-need"
-      ]
+      "expect": "guide:playing-and-testing#play",
+      "top3": ["guide:blocks-and-items#test-in-minecraft"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. B661 indexes the page's own title: Playing and testing opens the same page as its Play section. The draft's getting-started#9-try-it-in-minecraft section no longer exists.",
+      "same": ["guide:playing-and-testing#playing-and-testing"]
     },
     {
       "q": "how to make a portal",
       "class": "how-to",
       "mode": "easy",
-      "expect": "guide:creator.md#make-a-portal",
-      "top3": ["flow:portal"]
+      "expect": "guide:portals#make-a-portal-in-the-creator",
+      "top3": ["flow:portal"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. The Portals page (written after the draft) and its section Make a portal in the Creator answer it as well as the Creator page's section.",
+      "same": ["guide:portals#portals", "guide:creator#make-a-portal"]
     },
     {
       "q": "how do rules work",
       "class": "how-to",
       "mode": "easy",
-      "expect": "guide:rules.md#where-rules-live",
-      "top3": [
-        "guide:rules.md#one-rule-one-sentence",
-        "guide:rules.md#plain-rules-and-rules-with-logic"
-      ]
+      "expect": "guide:rules#where-rules-live",
+      "top3": ["guide:rules#one-rule-one-sentence", "guide:rules#plain-rules-and-rules-with-logic"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. B661 indexes the page's own title: the Rules page opens at its top, above Where rules live.",
+      "same": ["guide:rules#rules-make-things-happen-without-code"]
     },
     {
       "q": "how to export a modpack",
       "class": "how-to",
       "mode": "easy",
-      "expect": "guide:modpacks.md#export-modpack-mrpack-"
+      "expect": "guide:modpacks#export-modpack-mrpack",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "how do I make a mob",
       "class": "how-to",
       "mode": "easy",
-      "expect": "guide:creator.md#make-a-mob",
-      "top3": ["flow:custom_mob", "guide:mob-behaviours.md#the-quick-way-the-creator-flows"]
+      "expect": "guide:creator#make-a-mob",
+      "top3": ["flow:custom_mob", "guide:mob-behaviours#the-quick-way-the-creator-flows"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "how to reload the game",
       "class": "how-to",
       "mode": "easy",
-      "expect": "guide:playing-and-testing.md#reload",
-      "top3": ["command:reloadGame"]
+      "expect": "guide:playing-and-testing#reload",
+      "top3": ["command:reloadGame"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "what is a datapack",
       "class": "how-to",
       "mode": "easy",
       "expect": "starter:data_pack",
-      "top3": ["guide:templates-and-examples.md#templates"],
-      "notes": "No guide section explains data packs by name (gap for B672)"
+      "top3": ["guide:getting-started#_10-a-data-pack-the-functions-starter"],
+      "notes": "No guide section explains data packs by name (gap for B672)",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. The draft's templates-and-examples#templates section no longer exists (now Element templates). `needs` added: the expectation waits on B672's section; until then it is run and reported, not counted.",
+      "needs": "B672's guide section on data packs (SQ16); then expect it first and the Data pack starter in the top three"
     },
     {
       "q": "minecraft:iron_ingot",
@@ -301,7 +323,8 @@
       "q": "minecraft:creeper",
       "class": "id",
       "mode": "advanced",
-      "expect": "vanilla:entity_type:creeper"
+      "expect": "vanilla:mob:creeper",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "msm:block",
@@ -319,113 +342,131 @@
       "q": "minecraft:plains",
       "class": "id",
       "mode": "advanced",
-      "expect": "vanilla:worldgen/biome:plains"
+      "expect": "vanilla:biome:plains",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. `needs` added: it comes first only while the names file leaves the title equal to the id.",
+      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
     },
     {
       "q": "minecraft:speed",
       "class": "id",
       "mode": "advanced",
-      "expect": "vanilla:mob_effect:speed"
+      "expect": "vanilla:effect:speed",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. `needs` added: it comes first only while the names file leaves the title equal to the id.",
+      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
     },
     {
       "q": "ruby sword",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:item/ruby_sword",
-      "top3": ["flow:weapon"]
+      "expect": "project:element:msm_sample_mod:ruby_sword",
+      "top3": ["flow:weapon"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "maple door",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:block/maple_door"
+      "expect": "project:element:msm_sample_mod:maple_door",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "ruby ore",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:block/ruby_ore",
-      "top3": ["flow:custom_ore"]
+      "expect": "project:element:msm_sample_mod:ruby_ore",
+      "top3": ["flow:custom_ore"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "zombie drops ruby",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:loot_addition/zombie_drops_ruby",
-      "top3": ["example:example_msm_loot_addition"]
+      "expect": "project:element:msm_sample_mod:zombie_drops_ruby",
+      "top3": ["example:example_msm_loot_addition"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "open ruby bow",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:item/ruby_bow"
+      "expect": "project:element:msm_sample_mod:ruby_bow",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "glow stone",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:block/glow_stone",
-      "top3": ["vanilla:thing:glowstone"]
+      "expect": "project:element:msm_sample_mod:glow_stone",
+      "top3": ["vanilla:thing:glowstone"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "rubby wand",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:item/ruby_wand"
+      "expect": "project:element:msm_sample_mod:ruby_wand",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "maple log",
       "class": "mine",
       "mode": "easy",
       "project": "sample-mod",
-      "expect": "project:msm_sample_mod:block/maple_log",
-      "top3": ["project:msm_sample_mod:block/stripped_maple_log"]
+      "expect": "project:element:msm_sample_mod:maple_log",
+      "top3": ["project:element:msm_sample_mod:stripped_maple_log"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "turn off showcase clips",
       "class": "setting",
       "mode": "easy",
-      "expect": "setting:play-showcase-clips"
+      "expect": "setting:showcase-clips",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "minecraft folder",
       "class": "setting",
       "mode": "easy",
-      "expect": "setting:official-launcher-folder"
+      "expect": "setting:minecraft-folder",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "automatic updates",
       "class": "setting",
       "mode": "easy",
-      "expect": "setting:check-for-updates-automatically",
-      "top3": ["command:checkForUpdates"]
+      "expect": "setting:auto-update",
+      "top3": ["command:checkForUpdates"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "prism launcher",
       "class": "setting",
       "mode": "easy",
-      "expect": "setting:other-launchers"
+      "expect": "setting:launcher-folders",
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "ai key",
       "class": "setting",
       "mode": "easy",
-      "expect": "setting:ai-helper-key",
-      "top3": ["setting:ai-pictures-key"]
+      "expect": "setting:ai-key",
+      "top3": ["setting:ai-pictures-key"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "world backups",
       "class": "setting",
       "mode": "easy",
-      "expect": "setting:keep-world-backups",
-      "top3": ["guide:playing-and-testing.md#world-backups"]
+      "expect": "setting:backups-keep",
+      "top3": ["guide:playing-and-testing#world-backups"],
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results."
     },
     {
       "q": "export jar",
@@ -468,7 +509,9 @@
       "q": "whats new",
       "class": "command",
       "mode": "easy",
-      "expect": "command:whatsNew"
+      "expect": "command:whatsNew",
+      "needs": "B666's finding: a stop word that is a title's own word is dropped from the title and the query alike (`very` in Very easy mode, `whats` in What's new), so a shorter title or the learn intent wins; with them kept, it comes first (measured, not committed)",
+      "reason": "B666: `needs` added: the engine drops `whats` from the command's title and reads it as the learn intent."
     },
     {
       "q": "surprise me",
@@ -487,28 +530,34 @@
         "weapon_type": "sword",
         "colour": "#3c44aa",
         "weapon_name": "Blue Sword"
-      }
+      },
+      "same": ["entry:msm.library:sword"],
+      "reason": "B666: B654's door opens the expected flow with a choice made (the same Creator), so it counts as the expected result (Sword: the Weapon flow with Sword chosen)."
     },
     {
       "q": "custom ore that drops xp",
       "class": "behaviour",
       "mode": "very-easy",
       "expect": "flow:custom_ore",
-      "behaviour": "drops-xp"
+      "behaviour": "block-drops-xp",
+      "reason": "B666: B655's rules behaviours are per sort of thing (block-drops-xp, block-explodes, item-teleports), as B659 noted."
     },
     {
       "q": "a block that explodes",
       "class": "behaviour",
       "mode": "very-easy",
       "expect": "flow:simple-block",
-      "behaviour": "explodes-broken"
+      "behaviour": "block-explodes",
+      "reason": "B666: B655's rules behaviours are per sort of thing (block-drops-xp, block-explodes, item-teleports), as B659 noted."
     },
     {
       "q": "a sword that poisons",
       "class": "behaviour",
       "mode": "very-easy",
       "expect": "flow:weapon",
-      "behaviour": "poisons"
+      "behaviour": "poisons",
+      "same": ["entry:msm.library:sword"],
+      "reason": "B666: B654's door opens the expected flow with a choice made (the same Creator), so it counts as the expected result (Sword: the Weapon flow with Sword chosen)."
     },
     {
       "q": "a mob that flies",
@@ -540,7 +589,9 @@
       "class": "behaviour",
       "mode": "very-easy",
       "expect": "flow:scripted-item",
-      "behaviour": "teleports"
+      "behaviour": "item-teleports",
+      "reason": "B666: B655's rules behaviours are per sort of thing (block-drops-xp, block-explodes, item-teleports), as B659 noted. The door Magic wand has the Scripted behaviour flow's own action, so the two fold and the panel shows the door.",
+      "same": ["entry:msm.library:magic-wand"]
     },
     {
       "q": "asdfgh",
@@ -577,6 +628,1053 @@
       "class": "nonsense",
       "mode": "very-easy",
       "expect": null
+    },
+    {
+      "q": "make a sword",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "same": ["entry:msm.library:sword"],
+      "answers": {
+        "weapon_type": "sword"
+      }
+    },
+    {
+      "q": "a new block",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:simple-block",
+      "same": ["tile:block"]
+    },
+    {
+      "q": "make a tree",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:tree"
+    },
+    {
+      "q": "a new crop",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:crop"
+    },
+    {
+      "q": "make a boss",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:boss"
+    },
+    {
+      "q": "make a painting",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:painting"
+    },
+    {
+      "q": "make a plane",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:vehicle-plane"
+    },
+    {
+      "q": "make a backpack",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:backpack"
+    },
+    {
+      "q": "a new enchantment",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:enchantment"
+    },
+    {
+      "q": "a farm animal",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:farm-animal"
+    },
+    {
+      "q": "make a lucky block",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:lucky-block",
+      "same": ["entry:msm.library:lucky-block"]
+    },
+    {
+      "q": "make a race",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:race",
+      "same": ["entry:msm.library:parkour"]
+    },
+    {
+      "q": "wood planks and doors",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:wood-set"
+    },
+    {
+      "q": "a machine that smelts",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:machine",
+      "same": ["entry:msm.library:furnace"]
+    },
+    {
+      "q": "a new particle",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:particle"
+    },
+    {
+      "q": "a custom command",
+      "class": "plain",
+      "mode": "easy",
+      "expect": "flow:custom-command"
+    },
+    {
+      "q": "a bed",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:bed"
+    },
+    {
+      "q": "make a cake",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:cake"
+    },
+    {
+      "q": "potoin",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:potion"
+    },
+    {
+      "q": "zombe",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:mob:zombie"
+    },
+    {
+      "q": "diamon sword",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:thing:diamond_sword"
+    },
+    {
+      "q": "wepon",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:weapon"
+    },
+    {
+      "q": "backpak",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:backpack"
+    },
+    {
+      "q": "machien",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:machine"
+    },
+    {
+      "q": "portel",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:portal"
+    },
+    {
+      "q": "dimond ore",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:thing:diamond_ore"
+    },
+    {
+      "q": "netherack",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:thing:netherrack"
+    },
+    {
+      "q": "pumkin pie",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:thing:pumpkin_pie"
+    },
+    {
+      "q": "creeeper",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:mob:creeper"
+    },
+    {
+      "q": "sheild",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "same": ["entry:msm.library:shield"]
+    },
+    {
+      "q": "skelleton horse",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:mob:skeleton_horse"
+    },
+    {
+      "q": "partical",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:particle"
+    },
+    {
+      "q": "endreman",
+      "class": "misspelt",
+      "mode": "easy",
+      "expect": "vanilla:mob:enderman"
+    },
+    {
+      "q": "villagr trade",
+      "class": "misspelt",
+      "mode": "very-easy",
+      "expect": "flow:villager-trade"
+    },
+    {
+      "q": "gray concrete",
+      "class": "american",
+      "mode": "easy",
+      "expect": "vanilla:thing:gray_concrete"
+    },
+    {
+      "q": "light gray dye",
+      "class": "american",
+      "mode": "easy",
+      "expect": "vanilla:thing:light_gray_dye"
+    },
+    {
+      "q": "armor stand",
+      "class": "american",
+      "mode": "easy",
+      "expect": "vanilla:thing:armor_stand",
+      "same": ["vanilla:mob:armor_stand"],
+      "notes": "Both an item and an entity of the same id and name"
+    },
+    {
+      "q": "horse armor",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "entry:msm.library:horse-armour"
+    },
+    {
+      "q": "a gray sword",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "same": ["entry:msm.library:sword"],
+      "answers": {
+        "colour": "#474f52"
+      }
+    },
+    {
+      "q": "mob behaviors",
+      "class": "american",
+      "mode": "easy",
+      "expect": "guide:mob-behaviours#mob-behaviours"
+    },
+    {
+      "q": "colorful particles",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "flow:particle"
+    },
+    {
+      "q": "netherite armor",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "flow:gear-set",
+      "same": ["entry:msm.library:armour"],
+      "answers": {
+        "tier": "netherite"
+      }
+    },
+    {
+      "q": "organize creative tabs",
+      "class": "american",
+      "mode": "easy",
+      "expect": "flow:creative-tab"
+    },
+    {
+      "q": "a red colored sword",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "same": ["entry:msm.library:sword"],
+      "answers": {
+        "colour": "#b02e26"
+      }
+    },
+    {
+      "q": "gray glazed terracotta",
+      "class": "american",
+      "mode": "easy",
+      "expect": "vanilla:thing:gray_glazed_terracotta"
+    },
+    {
+      "q": "color of a potion",
+      "class": "american",
+      "mode": "very-easy",
+      "expect": "flow:potion"
+    },
+    {
+      "q": "tp to spawn",
+      "class": "slang",
+      "mode": "easy",
+      "expect": "rule:step:teleport"
+    },
+    {
+      "q": "xp bottle",
+      "class": "slang",
+      "mode": "easy",
+      "expect": "vanilla:thing:experience_bottle",
+      "same": ["vanilla:mob:experience_bottle"],
+      "notes": "The bottle is both an item and a thrown entity of the same id and name"
+    },
+    {
+      "q": "a doggo",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "entry:msm.library:dog",
+      "same": ["flow:pet"]
+    },
+    {
+      "q": "kitty",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:pet",
+      "same": ["entry:msm.library:cat"]
+    },
+    {
+      "q": "pvp",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "entry:msm.library:pvp-arena",
+      "same": ["flow:arena-game"]
+    },
+    {
+      "q": "parkour",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "entry:msm.library:parkour",
+      "same": ["flow:race"]
+    },
+    {
+      "q": "oneblock",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:one-block",
+      "same": ["entry:msm.library:oneblock"]
+    },
+    {
+      "q": "op armor",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "flow:gear-set",
+      "same": ["entry:msm.library:armour"]
+    },
+    {
+      "q": "nade",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "entry:msm.library:grenade",
+      "same": ["flow:throwable"]
+    },
+    {
+      "q": "superflat",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "entry:msm.library:superflat-biome"
+    },
+    {
+      "q": "texture pack",
+      "class": "slang",
+      "mode": "easy",
+      "expect": "starter:resource_pack"
+    },
+    {
+      "q": "nether portal",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "entry:msm.library:nether-portal",
+      "same": ["flow:portal"]
+    },
+    {
+      "q": "how do I export my mod as a jar",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:blocks-and-items#export-a-fabric-mod-jar",
+      "same": [
+        "guide:getting-started#_8-export-the-fabric-mod-jar",
+        "guide:entities-and-models#export-the-mod-jar-and-the-renderer"
+      ],
+      "top3": ["command:exportFabricJar"]
+    },
+    {
+      "q": "how do I make a potion",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:potions#potions-and-brewing",
+      "same": [
+        "guide:creator#make-a-potion",
+        "guide:potions#make-a-potion-in-the-creator",
+        "guide:potions#make-a-potion-from-an-effect"
+      ]
+    },
+    {
+      "q": "how to make a vehicle",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:vehicles#vehicles",
+      "same": ["guide:vehicles#make-a-vehicle-in-the-creator"]
+    },
+    {
+      "q": "how do I make a boat",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:boats#boats",
+      "same": ["guide:boats#make-a-boat"]
+    },
+    {
+      "q": "how do I make a fluid",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:fluids#fluids",
+      "same": ["guide:fluids#make-a-fluid"]
+    },
+    {
+      "q": "how to make particles",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:particles#particles",
+      "same": ["guide:particles#make-a-particle-in-the-creator", "guide:creator#make-a-particle"]
+    },
+    {
+      "q": "how does try it work",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:try-it#try-it",
+      "same": ["guide:try-it#what-it-is"],
+      "needs": "B666's finding: `work` in \"how does … work\" counts as a word to match, so sections that say \"works\" beat the page; read as part of the question, the page comes first (measured, not committed)"
+    },
+    {
+      "q": "how to eject to java",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:eject#eject-to-a-java-project",
+      "same": ["guide:eject#export-the-java-project"]
+    },
+    {
+      "q": "how do key binds work",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:keys-and-hud#keys-and-the-screen",
+      "same": ["guide:keys-and-hud#make-a-key", "guide:keys-and-hud#the-key-bind-studio"]
+    },
+    {
+      "q": "how do I make a structure generate",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:structures#make-a-structure-generate"
+    },
+    {
+      "q": "how do I draw a picture",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:pictures#draw-a-picture",
+      "same": ["guide:pictures#drawing-pictures"]
+    },
+    {
+      "q": "how do I import a structure",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:structures#import-a-structure"
+    },
+    {
+      "q": "how do I back up my world",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:playing-and-testing#world-backups"
+    },
+    {
+      "q": "how do I make a game",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:creator#make-a-game",
+      "same": ["guide:game-modes#game-modes"]
+    },
+    {
+      "q": "minecraft:diamond_sword",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:thing:diamond_sword"
+    },
+    {
+      "q": "minecraft:zombie",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:mob:zombie"
+    },
+    {
+      "q": "minecraft:desert",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:biome:desert"
+    },
+    {
+      "q": "minecraft:sharpness",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:enchantment:sharpness"
+    },
+    {
+      "q": "minecraft:haste",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:effect:haste"
+    },
+    {
+      "q": "minecraft:heart",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:particle:heart"
+    },
+    {
+      "q": "minecraft:oak_log",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:thing:oak_log"
+    },
+    {
+      "q": "msm:item",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "kind:msm:item"
+    },
+    {
+      "q": "msm:entity",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "kind:msm:entity",
+      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
+    },
+    {
+      "q": "msm:rules",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "kind:msm:rules"
+    },
+    {
+      "q": "minecraft:loot_table",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "kind:minecraft:loot_table"
+    },
+    {
+      "q": "minecraft:entity.pig.ambient",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:sound:entity.pig.ambient"
+    },
+    {
+      "q": "msm_sample_mod:ruby_sword",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "project:element:msm_sample_mod:ruby_sword",
+      "project": "sample-mod"
+    },
+    {
+      "q": "minecraft:stone",
+      "class": "id",
+      "mode": "advanced",
+      "expect": "vanilla:thing:stone",
+      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
+    },
+    {
+      "q": "ruby helmet",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_helmet",
+      "project": "sample-mod"
+    },
+    {
+      "q": "maple planks",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:maple_planks",
+      "project": "sample-mod"
+    },
+    {
+      "q": "chime block",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:chime_block",
+      "project": "sample-mod"
+    },
+    {
+      "q": "ruby crown",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_crown",
+      "project": "sample-mod"
+    },
+    {
+      "q": "ruby boomerang",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_boomerang",
+      "project": "sample-mod"
+    },
+    {
+      "q": "maple sapling",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:maple_sapling",
+      "project": "sample-mod"
+    },
+    {
+      "q": "ruby rush",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_rush",
+      "project": "sample-mod"
+    },
+    {
+      "q": "ruby elixir",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_elixir",
+      "project": "sample-mod"
+    },
+    {
+      "q": "maple fence gate",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:maple_fence_gate",
+      "project": "sample-mod"
+    },
+    {
+      "q": "ruby glass",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_glass",
+      "project": "sample-mod"
+    },
+    {
+      "q": "maple tree",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:maple_tree",
+      "project": "sample-mod",
+      "same": [
+        "project:element:msm_sample_mod:maple_tree_placed",
+        "project:element:msm_sample_mod:maple_trees"
+      ]
+    },
+    {
+      "q": "ruby berries",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_berries",
+      "project": "sample-mod"
+    },
+    {
+      "q": "open ruby pickaxe",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_pickaxe",
+      "project": "sample-mod"
+    },
+    {
+      "q": "ruby horse armour",
+      "class": "mine",
+      "mode": "easy",
+      "expect": "project:element:msm_sample_mod:ruby_horse_armor",
+      "project": "sample-mod"
+    },
+    {
+      "q": "where packs are installed",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:install-target"
+    },
+    {
+      "q": "vanilla assets",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:vanilla-assets"
+    },
+    {
+      "q": "remember my searches",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:remember-searches"
+    },
+    {
+      "q": "clear my searches",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:clear-searches"
+    },
+    {
+      "q": "restore a backup",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:backups-restore"
+    },
+    {
+      "q": "back up before installing",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:backups-before-install"
+    },
+    {
+      "q": "ai model",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:ai-model"
+    },
+    {
+      "q": "image service",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:ai-pictures-service"
+    },
+    {
+      "q": "plugins folder",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:plugins-folder"
+    },
+    {
+      "q": "how many backups to keep",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:backups-keep"
+    },
+    {
+      "q": "anthropic key",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:ai-key"
+    },
+    {
+      "q": "backups folder",
+      "class": "setting",
+      "mode": "easy",
+      "expect": "setting:backups-folder"
+    },
+    {
+      "q": "redo",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:redo"
+    },
+    {
+      "q": "open project",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:openProject"
+    },
+    {
+      "q": "new project",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:newProject"
+    },
+    {
+      "q": "export resource pack",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:exportResourcePack"
+    },
+    {
+      "q": "export data pack",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:exportDataPack"
+    },
+    {
+      "q": "find usages",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:findUsages"
+    },
+    {
+      "q": "raw json",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:toggleRawJson"
+    },
+    {
+      "q": "export java project",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:exportJavaProject"
+    },
+    {
+      "q": "import structure",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:importStructure"
+    },
+    {
+      "q": "test in minecraft",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:testInMinecraft"
+    },
+    {
+      "q": "easy mode",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:easyMode"
+    },
+    {
+      "q": "very easy mode",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:veryEasyMode",
+      "needs": "B666's finding: a stop word that is a title's own word is dropped from the title and the query alike (`very` in Very easy mode, `whats` in What's new), so a shorter title or the learn intent wins; with them kept, it comes first (measured, not committed)"
+    },
+    {
+      "q": "wishlist",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:wishlist"
+    },
+    {
+      "q": "install data pack",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:installDataPack"
+    },
+    {
+      "q": "add namespace",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:addNamespace"
+    },
+    {
+      "q": "rename element",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:renameElement"
+    },
+    {
+      "q": "a block that drops xp",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:simple-block",
+      "behaviour": "block-drops-xp"
+    },
+    {
+      "q": "a mob that explodes",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:custom_mob",
+      "behaviour": "mob-explodes"
+    },
+    {
+      "q": "a sword that sets mobs on fire",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "same": ["entry:msm.library:sword"],
+      "behaviour": "sets-on-fire"
+    },
+    {
+      "q": "a mob that swims",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:water-mob",
+      "behaviour": "swims"
+    },
+    {
+      "q": "a mob that shoots arrows",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:custom_mob",
+      "same": ["entry:msm.library:archer-mob"],
+      "behaviour": "shoots-arrows"
+    },
+    {
+      "q": "a block that plays music",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:simple-block",
+      "behaviour": "block-plays-music"
+    },
+    {
+      "q": "a pickaxe that mines faster",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:gear-set",
+      "same": ["entry:msm.library:pickaxe"],
+      "behaviour": "mines-faster"
+    },
+    {
+      "q": "a mob that drops diamonds",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:custom_mob",
+      "behaviour": "mob-drops-diamonds"
+    },
+    {
+      "q": "an item that heals you",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:scripted-item",
+      "behaviour": "heals-you",
+      "answers": {
+        "behaviour": "heal"
+      }
+    },
+    {
+      "q": "a pet that sits on your shoulder",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:pet",
+      "same": ["entry:msm.library:parrot"],
+      "behaviour": "sits-on-shoulder"
+    },
+    {
+      "q": "a block that spawns zombies",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:simple-block",
+      "behaviour": "block-spawns-zombies"
+    },
+    {
+      "q": "a wand that strikes lightning",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:scripted-item",
+      "same": ["entry:msm.library:magic-wand", "entry:msm.library:lightning-staff"],
+      "answers": {
+        "behaviour": "lightning"
+      }
+    },
+    {
+      "q": "qqqq",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "fjdksla",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "zxcvbnm",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "blibber blabber",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "hjkl",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "wqxz",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "plorf snizzle",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "glorbix",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "xqzv jrkp",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "mnbvcxz poiuy",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "aaaaaaaa",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "vlemp quosh",
+      "class": "nonsense",
+      "mode": "very-easy",
+      "expect": null
+    },
+    {
+      "q": "how do I make a trader",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:villagers-and-traders#make-a-trader"
+    },
+    {
+      "q": "how do I make a creative tab",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:commands-and-tabs#make-a-creative-tab"
+    },
+    {
+      "q": "how to export as a map",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:maps#export-as-a-map",
+      "same": ["guide:maps#maps"]
+    },
+    {
+      "q": "how do I make a machine",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:containers-and-machines#make-a-machine-in-the-creator",
+      "same": ["guide:containers-and-machines#containers-and-machines"]
+    },
+    {
+      "q": "how do I tame a mob",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:mob-behaviours#taming"
+    },
+    {
+      "q": "how do I make a throwable",
+      "class": "how-to",
+      "mode": "easy",
+      "expect": "guide:effects-and-throwables#make-a-throwable"
     }
   ]
 }

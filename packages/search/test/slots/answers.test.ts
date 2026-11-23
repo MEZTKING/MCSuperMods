@@ -58,6 +58,14 @@ const CASES: Case[] = [
     answers: { weapon_type: 'sword' },
   },
   { q: 'a mob that flies', entry: 'flow:flying-mob', behaviour: 'flies' },
+  // B666 (B663's "Custom Ore"): only a thing of the flow's own sort stands in for the title's
+  // sort word, whether named by the game's name, by an idea with an id or by a typed id.
+  { q: 'flying piggy', entry: 'flow:flying-mob', answers: { mob_name: 'Flying Piggy' } },
+  { q: 'flying bone', entry: 'flow:flying-mob', none: ['mob_name'] },
+  { q: 'flying bones', entry: 'flow:flying-mob', none: ['mob_name'] },
+  { q: 'flying base:bone', entry: 'flow:flying-mob', none: ['mob_name'] },
+  { q: 'flying ruby', entry: 'flow:flying-mob', none: ['mob_name'] },
+  { q: 'flying gem', entry: 'flow:flying-mob', none: ['mob_name'] },
   { q: 'an animal you can ride', entry: 'flow:mount', behaviour: 'ride' },
   {
     q: 'a block that glows',

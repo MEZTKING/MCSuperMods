@@ -4,7 +4,9 @@
  * "called" or "named", the colour and the thing's noun in title case ("Blue Sword": the noun is
  * the label of the choice that took it, or the typed noun when the flow's title has it), or a
  * thing named in the words in place of the sort word of the flow's title, when another word of
- * the title was typed ("make a pig fly" for the "Flying mob": "Flying Pig"). The name must pass the question's check (its pattern and length, by the host's
+ * the title was typed ("make a pig fly" for the "Flying mob": "Flying Pig"); only a thing known
+ * to be of the flow's sort stands in for it, so "custom ore" never names a Custom mob "Custom
+ * Ore" (B666). The name must pass the question's check (its pattern and length, by the host's
  * validator); otherwise none.
  */
 
@@ -111,7 +113,8 @@ export function assignName(state: SlotState, context: NameContext): void {
     const place = titleWords.findIndex((w) => keyOf(w.toLowerCase()) === sortKey);
     if (place < 0) return;
     for (const thing of context.things) {
-      if (thing.sort !== undefined && thing.sort !== context.sort) continue;
+      // A thing of another or of an unknown sort is not the sort word's stand-in (B666).
+      if (thing.sort !== context.sort) continue;
       const at = indexesOf(thing);
       if (at.some((i) => state.used.has(i))) continue;
       const words = [...titleWords];

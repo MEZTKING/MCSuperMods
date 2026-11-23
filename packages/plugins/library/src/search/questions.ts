@@ -260,7 +260,7 @@ const DIMENSION_TERRAIN: SearchQuestionHint = {
   choiceWords: {
     overworld: ['normal', 'hills', 'mountains', 'like the overworld'],
     amplified: ['amplified', 'towering', 'huge mountains', 'spiky'],
-    floating_islands: ['floating', 'sky islands', 'islands', 'void'],
+    floating_islands: ['floating', 'sky islands', 'islands'],
     caves: ['cave', 'caves', 'underground', 'cavern'],
     nether: ['nether', 'hell', 'caverns'],
     end: ['end', 'ender'],

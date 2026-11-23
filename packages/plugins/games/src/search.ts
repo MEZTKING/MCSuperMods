@@ -14,8 +14,8 @@ export const SEARCH: PluginSearchData = {
     words: [
       {
         idea: 'skyblock',
-        same: ['sky block', 'skyblocks', 'sky island', 'void world', 'void island'],
-        near: ['island in the sky', 'empty world', 'survival island'],
+        same: ['sky block', 'skyblocks', 'void island'],
+        near: ['island in the sky', 'survival island'],
         slang: ['sb'],
         misspellings: ['skyblok', 'skybock', 'skyblcok'],
       },
