@@ -141,7 +141,9 @@ describe('no answer without a typed word behind it (D7)', () => {
     h = harness();
   });
 
-  it('names the words behind every answer, over 400 seeded queries', () => {
+  // Heavy: 400 seeded queries, each read again with its words cut out (2026-11-23). An explicit
+  // timeout, never a retry.
+  it('names the words behind every answer, over 400 seeded queries', { timeout: 60_000 }, () => {
     const next = random(659);
     for (let n = 0; n < 400; n++) {
       const text = query(next, POOL, 8);

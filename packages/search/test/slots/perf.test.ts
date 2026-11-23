@@ -39,7 +39,9 @@ describe('the answer reader in the query budget', () => {
     ];
   });
 
-  it('keeps the p95 of a query within the budget', () => {
+  // Heavy: hundreds of timed queries over the full-size made-up corpus (2026-11-23). An explicit
+  // timeout, never a retry; the budget itself is checked inside.
+  it('keeps the p95 of a query within the budget', { timeout: 60_000 }, () => {
     for (const text of queries) engine.query({ text, mode: 'easy' });
     const times: number[] = [];
     for (let round = 0; round < 3; round++) {
