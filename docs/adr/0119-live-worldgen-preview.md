@@ -361,7 +361,7 @@ Read from the code at 30b3fed, before the plan's work; moved here from the plan 
 | WF17 | A showcase clip's ground was `grid`, `flat` or `quick`. | `app/src/renderer/src/showcase/clip.ts` | `generated` added. |
 | WF18 | Home's tiles are data (`MakeTileAction`), hidden when their flow is not offered. | `app/src/renderer/src/components/home/tiles.ts` | `replacedBy` on a flows action (`SKYBLOCK_HAND_OVER`). |
 | WF19 | The reference pack holds notes, measured tables and a region reader, with no game code; `tools/run-fabric-server` starts a real server. | `docs/reference/vanilla-worldgen/README.md`, `tools/` | The standing fixture is `fixtures/worldgen-parity/`. |
-| WF20 | The game modes plan owns the void, flat and sky island world types, the start structure and a void Try it ground. | `docs/PLAN-game-modes.md` | The empty sky flow hands over to its Skyblock flow. |
+| WF20 | The game modes plan owns the void, flat and sky island world types, the start structure and a void Try it ground. | the game modes plan (deleted at B562; [ADR 0114](0114-void-and-island-worlds-and-the-start-structure.md), [ADR 0117](0117-game-modes-flows-studios-try-it-and-tests.md)) | The empty sky flow hands over to its Skyblock flow. |
 | WF21 | On both targets `worldgen/feature` and `worldgen/carver` are the folders, and biome colours and spawns are attributes. | `docs/HANDOFF.md` "Earlier lessons" | — |
 | WF22 | The level reader gave world names and no seed. | `packages/interop/src/world/level.ts` | `world/worldgen-settings.ts` `readWorldSeed`. |
 

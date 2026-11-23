@@ -1,6 +1,6 @@
 # B547 spike: void worlds, start structures, first join, one block, teams, areas and maps
 
-Answers Y1 to Y16 of the game modes plan (`docs/PLAN-game-modes.md`), measured on 2026-11-22 on this cloud machine (4 cores, 15 GB) for the targets 26.3 and 26.4-snapshot-7. Nothing here is built, linted or shipped; the spike code was deleted from `engine-mod/` before the commit and is kept in `spike-src/` for reference.
+Answers Y1 to Y16 of the game modes plan (deleted at its close, B562; the answers in short are in [ADR 0117](../../../adr/0117-game-modes-flows-studios-try-it-and-tests.md)), measured on 2026-11-22 on this cloud machine (4 cores, 15 GB) for the targets 26.3 and 26.4-snapshot-7. Nothing here is built, linted or shipped; the spike code was deleted from `engine-mod/` before the commit and is kept in `spike-src/` for reference.
 
 Clean room: `javap` signatures only (`DimensionOriginStructurePlacement`, `StructurePlacement`, `WorldCreationUiState`, `WorldOpenFlows`, `LevelSettings`, `StructureBlockEntity`, `ServerLevel`, `ServerStatsCounter`, `ServerPlayerGameMode`, `ServerTickRateManager`); no Mojang method body was read. Vanilla data (the `the_void` biome, the `flat` world preset, structure sets, one vanilla structure template's key layout, loot table forms) was read from the cached server jars into the scratchpad at run time and deleted; no vanilla file is kept here. Game screenshots were taken (named below) but are not kept, because they show the game's textures.
 

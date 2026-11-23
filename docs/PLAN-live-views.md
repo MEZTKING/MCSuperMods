@@ -407,7 +407,7 @@ Batch 2 is closed (B618, 2026-11-23): its fact table 2F1–2F15, the spike's ans
 | 4F2 | Kinds: `structure_template` (JSON lowered to `.nbt`; over 48 a side is a warning), `template_pool`, `structure`, `structure_set`, `processor_list` | game modes plan G5; `packages/plugins/structures/src/kinds/` |
 | 4F3 | Live worldgen draws start markers (B585, limit WL5; `app/src/renderer/src/terrain/markers.ts`) and left structures in the ground as reserve B595, not run, with owner folder `packages/terrain/src/structures/` | ADR 0119 findings and limits |
 | 4F4 | deepslate has structure placement (where a structure may start) and a structure renderer; no jigsaw assembly and no processors | ADR 0119 context; (verify at implementation) |
-| 4F5 | The game modes plan adds chests and loot tables to the Structure Studio (B555) and a structure as a Try it ground (B558) | `docs/PLAN-game-modes.md` |
+| 4F5 | The game modes plan adds chests and loot tables to the Structure Studio (B555) and a structure as a Try it ground (B558) | the game modes plan (deleted at B562; [ADR 0116](adr/0116-play-my-game-map-export-and-builds-from-the-game.md), [ADR 0117](adr/0117-game-modes-flows-studios-try-it-and-tests.md)) |
 | 4F6 | The Jigsaw structure flow makes a village of huts placed by `random_spread` | game modes plan G22 |
 | 4F7 | The jar extraction holds no structure files today | `packages/interop/src/minecraft-install/extract.ts` |
 | 4F8 | Try it's area is 48 by 48 by 32 blocks (or what live worldgen's WS13 allowed) | `packages/sim/CLAUDE.md` |
