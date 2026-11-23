@@ -850,3 +850,22 @@ describe('a dialog opened from More by keyboard keeps the focus (B701)', () => {
     await waitFor(() => expect(document.activeElement).toBe(more));
   });
 });
+
+describe('More opened again straight after it closed (B701)', () => {
+  it('stays open: the closed menu does not take the focus back late', async () => {
+    renderToolbar(everything());
+    const more = screen.getByTestId('toolbar-more');
+    more.focus();
+    fireEvent.keyDown(more, { key: 'Enter' });
+    await screen.findByTestId('toolbar-settings');
+    // Escape closes it; before Radix hands the focus back (a timer), More opens again.
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(screen.queryByTestId('toolbar-settings')).toBeNull();
+    more.focus();
+    fireEvent.keyDown(more, { key: 'Enter' });
+    expect(screen.getByTestId('toolbar-settings')).toBeTruthy();
+    await new Promise((settle) => setTimeout(settle, 50));
+    expect(screen.queryByTestId('toolbar-settings')).not.toBeNull();
+    expect(more.getAttribute('aria-expanded')).toBe('true');
+  });
+});

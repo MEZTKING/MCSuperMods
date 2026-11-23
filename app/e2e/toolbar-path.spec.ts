@@ -173,15 +173,25 @@ test('the toolbar is one row at 900, 1280 and 1920 px wide', async () => {
   await window.screenshot({ path: join(outputDir, 'toolbar-path.png') });
 });
 
-/** Tabs into the toolbar (its one tab stop), then End to More. */
-async function focusMore(window: Page): Promise<void> {
-  const inRow = () =>
-    window.evaluate(() => {
-      const doc = (globalThis as unknown as PageGlobal).document;
-      return doc.activeElement?.closest('[role="toolbar"][aria-label="Mod"]') != null;
-    });
-  for (let i = 0; i < 80 && !(await inRow()); i += 1) await window.keyboard.press('Tab');
-  expect(await inRow()).toBe(true);
+/** Whether the focus is on a control of the row (not the row itself). */
+function onRowControl(window: Page): Promise<boolean> {
+  return window.evaluate(() => {
+    const active = (globalThis as unknown as PageGlobal).document.activeElement;
+    const row = active?.closest('[role="toolbar"][aria-label="Mod"]');
+    return row != null && row !== active;
+  });
+}
+
+/**
+ * Tabs into the toolbar (its one tab stop) and moves to More with End. The row itself can take a
+ * Tab after a pointer press in it (Radix then skips its entry focus); the next Tab goes on to
+ * its control.
+ */
+async function tabToMore(window: Page): Promise<void> {
+  for (let i = 0; i < 80 && !(await onRowControl(window)); i += 1) {
+    await window.keyboard.press('Tab');
+  }
+  expect(await onRowControl(window)).toBe(true);
   // The row moves focus for End a moment later (Radix's roving focus), so End only when needed
   // and wait for it: a late move would take the focus out of a menu opened meanwhile.
   if ((await focusedTestId(window)) !== 'toolbar-more') {
@@ -190,13 +200,19 @@ async function focusMore(window: Page): Promise<void> {
   }
 }
 
-/** Opens More by keyboard and moves to `id` with the arrow keys. */
-async function arrowTo(window: Page, id: string): Promise<void> {
-  await focusMore(window);
+/**
+ * Opens More by keyboard and moves to `id` with the arrow keys. More has the focus to start with
+ * (after the first entry, which reaches it by Tab: how many Tabs it takes from where a closed
+ * dialog leaves the focus depends on the page).
+ */
+async function arrowTo(window: Page, id: string, byTab = false): Promise<void> {
+  if (byTab) await tabToMore(window);
+  else await window.getByTestId('toolbar-more').focus();
   await window.keyboard.press('Enter');
   await expect(window.getByTestId('toolbar-settings')).toBeVisible();
+  // The menu focuses its first entry when it opens by keyboard, or itself when the pointer moved
+  // since (Chromium moves it when the page changes under it); the arrows go on from either.
   // Radix moves the focus for an arrow key a moment later: wait for each move.
-  await expect.poll(() => focusedTestId(window)).toBe('toolbar-new-project');
   for (let i = 0; i < 20; i += 1) {
     const here = await focusedTestId(window);
     if (here === id) break;
@@ -260,6 +276,8 @@ test('every More entry opens by keyboard alone', async () => {
   await expect(pack).toBeVisible();
   // The new mod's message comes a moment after the mod; wait for it so it lands before a dialog.
   await expect(toast(window)).toBeVisible();
+  // Keyboard alone from here: the pointer rests away from the toolbar and its tooltips.
+  await window.mouse.move(5, 700);
 
   const dialogs: readonly (readonly [string, string])[] = [
     ['toolbar-new-project', 'new-mod-dialog'],
@@ -271,7 +289,7 @@ test('every More entry opens by keyboard alone', async () => {
     ['toolbar-settings', 'settings-dialog'],
   ];
   for (const [entry, dialog] of dialogs) {
-    await arrowTo(window, entry);
+    await arrowTo(window, entry, entry === dialogs[0]?.[0]);
     await window.keyboard.press('Enter');
     await closeDialog(window, dialog);
   }
@@ -283,11 +301,6 @@ test('every More entry opens by keyboard alone', async () => {
   await expect(importDialog).toBeVisible();
   await window.keyboard.press('Escape');
   await expect(importDialog).toHaveCount(0);
-
-  // New mod with the AI helper…, with a mod open, opens the helper.
-  await arrowTo(window, 'toolbar-new-with-ai');
-  await window.keyboard.press('Enter');
-  await expect(window.getByTestId('ai-panel')).toBeVisible();
 
   // The submenus open with Right and close with Left.
   for (const [submenu, first] of [
@@ -321,6 +334,12 @@ test('every More entry opens by keyboard alone', async () => {
   await window.keyboard.press('Enter');
   await expect(window.getByTestId('toolbar-settings')).toHaveCount(0);
   await expect(pack).toBeVisible();
+
+  // New mod with the AI helper…, with a mod open, opens the helper (last: the
+  // helper takes the focus into its panel).
+  await arrowTo(window, 'toolbar-new-with-ai');
+  await window.keyboard.press('Enter');
+  await expect(window.getByTestId('ai-panel')).toBeVisible();
 });
 
 test('the shortcuts do what they did', async () => {

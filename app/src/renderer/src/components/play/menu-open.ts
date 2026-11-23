@@ -13,6 +13,10 @@
  * dialog, and the next Escape closed the tooltip instead of the dialog. After a chosen entry the
  * focus therefore goes back to the button only when nothing else took it.
  *
+ * Radix hands the focus back on a timer after the menu closed. When the menu opens again before
+ * that timer runs (Escape, then Enter at once on a busy machine), the late hand-back would move
+ * the focus out of the open menu and close it; a menu that is open again keeps the focus.
+ *
  * @packageDocumentation
  */
 
@@ -34,20 +38,30 @@ export interface MenuOpen {
 export function useMenuOpen(onOpen?: () => void): MenuOpen {
   const [open, setOpen] = useState(false);
   const chosen = useRef(false);
+  const isOpen = useRef(false);
   const trigger = useRef<HTMLButtonElement | null>(null);
   return {
     root: {
       open,
       onOpenChange: (next) => {
+        isOpen.current = next;
         setOpen(next);
         if (next) onOpen?.();
       },
     },
     content: {
       onKeyDown: (event) => {
-        if (event.key === 'Escape') setOpen(false);
+        if (event.key !== 'Escape') return;
+        isOpen.current = false;
+        setOpen(false);
       },
       onCloseAutoFocus: (event) => {
+        if (isOpen.current) {
+          // Opened again since it closed: the focus belongs to the open menu.
+          chosen.current = false;
+          event.preventDefault();
+          return;
+        }
         if (!chosen.current) return;
         chosen.current = false;
         // Radix would focus the button now; a dialog the entry opened has focus already.
