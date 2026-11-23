@@ -263,7 +263,8 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   let lastExportFolder: string | null = null;
 
   const settings = createSettingsStore({ msmHome: deps.msmHome, installEnv: deps.installEnv });
-  const installFs = deps.installFs ?? withAtomicWrites(createNodeInstallFileSystem({ rename: true }));
+  const installFs =
+    deps.installFs ?? withAtomicWrites(createNodeInstallFileSystem({ rename: true }));
   const locations = createLocationResolver({ fs: installFs, env: deps.installEnv, settings });
   // ADR 0102: data pack installs into a world back the world up first.
   const backups = createWorldBackupService({
