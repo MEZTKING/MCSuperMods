@@ -273,7 +273,7 @@ This plan runs now. Waves 0 and 1 touch none of Live views 2's wave 4 files and 
 - **The real model is still unseen.** Every test here is scripted. D2 (one prompt, no switch) changes what the model is told; B692's check list, or B694, is the safeguard, and D2 keeps a fallback (the switch back, renamed).
 - **B615 slips.** Then B688 waits; everything else in wave 2 does not depend on it, and the tray shows today's list under the new headings until B688 lands.
 - **The one-hour cache.** It costs twice a normal write once an hour and saves a write after every pause; for one question in a session it costs more (about 22 cents instead of 14 on Opus 5.5, by the estimate above). The setting stays in `loop.ts` as one constant so the user's veto is a one-line change.
-- **Size.** If the renderer passes 18.5 MB a brief stops and reports; ADR 0123 D4's follow-up is then next.
+- **Size.** If the renderer's first paint passes 5.5 MB or its total 20.5 MB, a brief stops and reports (ADR 0126 D4 as amended; the old 18.5 MB line is superseded).
 
 ## Notes from implementation
 

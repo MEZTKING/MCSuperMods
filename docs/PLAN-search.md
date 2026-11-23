@@ -35,7 +35,7 @@ Working plan for the user's request of 2026-11-22: "Make an elite search bar so 
 
 ## Size
 
-`app.asar` is 26.2 of 32 MB and the renderer 17.6 of 19 MB (after B587; stop lines 31 and 18.5 MB, [ADR 0123](adr/0123-gzipped-vendored-target-data.md)). The live views plan budgets 0.4, 0.4 and 0.2 MB of renderer output for its three batches, which is already more than the 0.9 MB of room (SF21). So:
+`app.asar` is 26.2 of 32 MB and the renderer 17.6 of 19 MB (after B587; stop lines 31 and 18.5 MB, [ADR 0123](adr/0123-gzipped-vendored-target-data.md)). The live views plan budgets 0.4, 0.4 and 0.2 MB of renderer output for its three batches, which is already more than the 0.9 MB of room (SF21). So: (Since 2026-11-23, ADR 0126 D4 as amended: `tools/check-size` budgets the renderer's first paint at 6 MB with a stop line of 5.5 MB, and the renderer total at 21 MB with a stop line of 20.5 MB; at the change first paint was 4.53 MB and the total 18.48 MB.)
 
 - **Draft budgets (set by B650):** renderer output at most **0.2 MB** in all, in lazy chunks (the engine and the worker chunk about 0.05 MB, the panel and preview pane about 0.06 MB, the plugins' search data about 0.08 MB); nothing in the first-paint bundle but the bar and the client's stub. `app.asar` at most 0.3 MB.
 - **The guide stays out of the renderer and out of `app.asar`:** its Markdown (0.79 MB) is packaged with `extraResources` and read by main (ADR 0124 D14).
