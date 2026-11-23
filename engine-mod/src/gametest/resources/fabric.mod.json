@@ -82,6 +82,7 @@
     "fabric-client-gametest": [
       "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmDevClientGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPlayMyGameClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmControlsClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmVehicleClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmVanillaBlocksClientGameTest",

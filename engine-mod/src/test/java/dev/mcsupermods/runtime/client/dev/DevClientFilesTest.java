@@ -9,6 +9,8 @@ import dev.mcsupermods.runtime.client.dev.DevClientFiles.Handled;
 import dev.mcsupermods.runtime.client.dev.DevClientFiles.PlayRequest;
 import dev.mcsupermods.runtime.client.dev.DevClientFiles.Status;
 import java.util.Optional;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameType;
 import org.junit.jupiter.api.Test;
 
 /** {@code play.json}, {@code request.json} and {@code status.json} as B366's {@code dev-session.ts} writes and reads them. */
@@ -31,6 +33,37 @@ class DevClientFilesTest {
         assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(PLAY.replace("\"seq\": 4", "\"seq\": \"4\"")));
         assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(PLAY.replace("msm-test-ruby", "../ruby")));
         assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(PLAY.replace("msm-test-ruby", "a/b")));
+    }
+
+    private static final String GAME_PLAY = "{\n  \"difficulty\": \"hard\",\n  \"format\": 1,\n  \"gameMode\": \"adventure\",\n"
+            + "  \"kind\": \"game\",\n  \"preset\": \"ruby:sky_block\",\n  \"seq\": 5,\n  \"world\": \"msm-game-ruby\"\n}\n";
+
+    @Test
+    void gamePlayRequestAsTheAppWritesIt() {
+        assertEquals(Optional.of(new PlayRequest(5, "msm-game-ruby",
+                new DevWorldSettings.GameWorld("ruby:sky_block", GameType.ADVENTURE, Difficulty.HARD))),
+                DevClientFiles.parsePlayRequest(GAME_PLAY));
+        assertEquals(Optional.of(new PlayRequest(4, "msm-test-ruby")),
+                DevClientFiles.parsePlayRequest(PLAY.replace("\"seq\"", "\"kind\": \"test\",\n  \"seq\"")));
+    }
+
+    @Test
+    void invalidGamePlayRequestsAreEmpty() {
+        assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(GAME_PLAY.replace("\"game\"", "\"other\"")));
+        assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(GAME_PLAY.replace("\"kind\": \"game\"", "\"kind\": 1")));
+        assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(GAME_PLAY.replace("adventure", "hardcore")));
+        assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(GAME_PLAY.replace("\"hard\"", "\"extreme\"")));
+        assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(GAME_PLAY.replace("ruby:sky_block", "sky_block")));
+        assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(GAME_PLAY.replace("  \"preset\": \"ruby:sky_block\",\n", "")));
+        // A game is only ever made in msm-game-<ns>.
+        assertEquals(Optional.empty(), DevClientFiles.parsePlayRequest(GAME_PLAY.replace("msm-game-ruby", "msm-test-ruby")));
+    }
+
+    @Test
+    void statusTextWithASeed() {
+        String text = DevClientFiles.statusText(new Status(GameState.WORLD, "msm-game-ruby", null, 5, "1.8.0", "-4172144997902289642"));
+        assertEquals("{\n  \"format\": 1,\n  \"handled\": null,\n  \"runtime\": \"1.8.0\",\n  \"seed\": \"-4172144997902289642\",\n"
+                + "  \"state\": \"world\",\n  \"time\": 5,\n  \"world\": \"msm-game-ruby\"\n}\n", text);
     }
 
     @Test
@@ -91,5 +124,7 @@ class DevClientFilesTest {
         assertEquals("MCSuperMods: reloaded (1 change)", DevClientFiles.chatLine(Action.RELOAD, 1));
         assertEquals("MCSuperMods: reloaded (0 changes)", DevClientFiles.chatLine(Action.RELOAD, 0));
         assertEquals("MCSuperMods: reopened the test world (2 changes)", DevClientFiles.chatLine(Action.REOPEN, 2));
+        assertEquals("MCSuperMods: reopened your game (1 change)", DevClientFiles.chatLine(Action.REOPEN, 1, true));
+        assertEquals("MCSuperMods: reloaded (2 changes)", DevClientFiles.chatLine(Action.RELOAD, 2, true));
     }
 }

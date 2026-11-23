@@ -6,7 +6,9 @@
  * `window.msm.play`; main does every file and process step.
  *
  * The store is connected once to the session and the bridge with {@link connectPlay}, so
- * `PlayControls` needs no props. The chip's words and the restart reasons come from main
+ * `PlayControls` needs no props. Play my game (ADR 0116 D1, B554) is the same Play with the
+ * project's world setup ({@link playGameSettings}): it opens or makes `msm-game-<ns>`; Start over
+ * renames that world as New test world renames the test world. The chip's words and the restart reasons come from main
  * (`PlayStatus.label`, `PlayRestartReason.text`); the words here are the renderer's own.
  *
  * @packageDocumentation
@@ -18,6 +20,7 @@ import { blockItemIdOf } from '@msm/plugin-blocks-items';
 import { create } from 'zustand';
 import type {
   PlatformAdapter,
+  PlayGameSettings,
   PlayInput,
   PlayOutputFile,
   PlayPlatform,
@@ -25,6 +28,7 @@ import type {
   PlayResult,
   PlaySetupItem,
   PlayStatus,
+  PlayWorldKind,
   ReloadInput,
   ReloadResult,
   TestWorldResult,
@@ -61,10 +65,23 @@ export const PLAY_CONTROL_LABELS = {
   prismNotFound:
     'Prism Launcher was still not found. Start it once after installing it, or choose its folder.',
   prismFound: 'Found Prism Launcher. Press Play to start.',
+  playGame: 'Play my game',
+  playGameTip: 'Play your game the way players will: its own world, game mode and difficulty',
+  playGameOff: 'Add a world setup first (Make a game), so Minecraft knows how your world starts.',
+  startOver: 'Start over',
+  startOverOff: 'Close Minecraft first.',
+  seed: 'Seed',
 } as const;
 
 /** What the controls run now (the chip's progress line belongs to it). */
-export type PlayOperation = 'play' | 'reload' | 'restart' | 'new-world' | 'find-prism';
+export type PlayOperation =
+  | 'play'
+  | 'play-game'
+  | 'reload'
+  | 'restart'
+  | 'new-world'
+  | 'start-over'
+  | 'find-prism';
 
 /** The session calls Play needs; a {@link ProjectSession} has them all. */
 export type PlaySession = Pick<
@@ -113,9 +130,14 @@ export interface PlayState {
   /** Reads the status for the open project's target again. */
   refresh(): Promise<void>;
   play(): Promise<void>;
+  /** Play my game: the project's world setup in `msm-game-<ns>` (ADR 0116 D1). */
+  playMyGame(): Promise<void>;
   reload(): Promise<void>;
+  /** Restarts the game into the world it was last played in (test world or game). */
   restart(): Promise<void>;
   newTestWorld(): Promise<void>;
+  /** Start over: renames Play my game's world; the next Play my game makes a fresh one. */
+  startOver(): Promise<void>;
   openInstanceFolder(): Promise<void>;
   /** Opens the Restart needed dialog with the status's reasons. */
   showRestartNeeded(): void;
@@ -146,8 +168,58 @@ export function playChipState(status: PlayStatus | null): PlayChipState | null {
 export function gameRunning(status: PlayStatus | null): boolean {
   return (
     status !== null &&
-    (status.state === 'starting' || status.state === 'test-world' || status.state === 'other-world')
+    (status.state === 'starting' ||
+      status.state === 'test-world' ||
+      status.state === 'game-world' ||
+      status.state === 'other-world')
   );
+}
+
+/** The start of Play my game's world folder (`@msm/interop` `gameWorldFolder`). */
+const GAME_WORLD_PREFIX = 'msm-game-';
+
+/** Which world the last Play was for, from the status (`testWorld` is `dev.json`'s world). */
+export function lastPlayKind(status: PlayStatus | null): PlayWorldKind {
+  return status?.testWorld?.startsWith(GAME_WORLD_PREFIX) === true ? 'game' : 'test';
+}
+
+const GAME_MODES: readonly PlayGameSettings['gameMode'][] = [
+  'survival',
+  'creative',
+  'adventure',
+  'spectator',
+];
+const DIFFICULTIES: readonly PlayGameSettings['difficulty'][] = [
+  'peaceful',
+  'easy',
+  'normal',
+  'hard',
+];
+
+/**
+ * Play my game's settings from the project's world setup (`msm:world_setup`, at most one;
+ * ADR 0116 D1), or `null` without one. The world preset is the world setup's own id `<ns>:<path>`
+ * for a `void`, `flat` or `sky_islands` world (the games plugin writes the preset under that id,
+ * B551), the chosen preset for `preset`, and `minecraft:normal` for `vanilla`. Game mode and
+ * difficulty default as the schema does (survival, normal).
+ */
+export function playGameSettings(project: Project): PlayGameSettings | null {
+  const setup = namespaceOrder(project).find((element) => element.kind === 'msm:world_setup');
+  if (setup === undefined) return null;
+  const data = record(setup.data);
+  const world = record(data?.world);
+  const type = world?.type;
+  const preset =
+    type === 'vanilla'
+      ? 'minecraft:normal'
+      : type === 'preset'
+        ? typeof world?.preset === 'string'
+          ? world.preset
+          : 'minecraft:normal'
+        : setup.id;
+  const gameMode = GAME_MODES.find((mode) => mode === data?.game_mode) ?? 'survival';
+  const difficulty = DIFFICULTIES.find((level) => level === data?.difficulty) ?? 'normal';
+  return { preset, gameMode, difficulty };
 }
 
 /** The project's namespaces for Play: its own (not `minecraft`) first, in project order. */
@@ -259,6 +331,7 @@ function elementOfPath(path: string, ids: ReadonlySet<string>): string | undefin
 /** The status bar line after a Play or Restart that worked. */
 export function playResultMessage(result: Extract<PlayResult, { ok: true }>): string {
   const parts: string[] = [];
+  const game = result.world.startsWith(GAME_WORLD_PREFIX);
   if (result.instanceCreated) {
     parts.push(`Made the test instance "${result.instanceName}" in Prism Launcher.`);
   }
@@ -266,7 +339,9 @@ export function playResultMessage(result: Extract<PlayResult, { ok: true }>): st
     parts.push(
       result.restarted
         ? 'Minecraft is starting again with your changes.'
-        : 'Minecraft is starting. It opens the test world by itself.',
+        : game
+          ? 'Minecraft is starting. It opens your game by itself.'
+          : 'Minecraft is starting. It opens the test world by itself.',
     );
   } else if (result.note !== null) {
     parts.push(result.note);
@@ -279,8 +354,16 @@ export function playResultMessage(result: Extract<PlayResult, { ok: true }>): st
   return parts.join(' ');
 }
 
-/** The status bar line after New test world. */
-export function newWorldMessage(result: Extract<TestWorldResult, { ok: true }>): string {
+/** The status bar line after New test world (or, for `game`, Start over). */
+export function newWorldMessage(
+  result: Extract<TestWorldResult, { ok: true }>,
+  kind: PlayWorldKind = 'test',
+): string {
+  if (kind === 'game') {
+    return result.renamedTo === null
+      ? 'The next Play my game makes a fresh world.'
+      : `The old game world is kept as "${result.renamedTo}". The next Play my game makes a fresh one.`;
+  }
   return result.renamedTo === null
     ? 'The next Play makes a fresh test world.'
     : `The old test world is kept as "${result.renamedTo}". The next Play makes a fresh one.`;
@@ -350,7 +433,7 @@ export const usePlayStore = create<PlayState>()((set, get) => {
   const targetOf = (host: PlayHost): string | null =>
     host.session.snapshot.project === null ? null : host.session.target.id;
 
-  const runPlay = async (op: 'play' | 'restart'): Promise<void> => {
+  const runPlay = async (op: 'play' | 'restart', kind: PlayWorldKind): Promise<void> => {
     const { host, running, status } = get();
     if (host === null || running !== null || host.session.snapshot.project === null) return;
     if (status?.instance === 'no-prism') {
@@ -358,7 +441,11 @@ export const usePlayStore = create<PlayState>()((set, get) => {
       return;
     }
     const notify = notifyOf(host);
-    set({ running: op, restartDialog: null });
+    if (kind === 'game' && playGameSettings(host.session.snapshot.project) === null) {
+      notify({ kind: 'error', text: PLAY_CONTROL_LABELS.playGameOff });
+      return;
+    }
+    set({ running: op === 'play' && kind === 'game' ? 'play-game' : op, restartDialog: null });
     try {
       const built = await saveAndBuild(host, (progress) => set({ progress }));
       if (built === null) return;
@@ -367,13 +454,19 @@ export const usePlayStore = create<PlayState>()((set, get) => {
         return;
       }
       set({ progress: null });
+      const game = kind === 'game' ? playGameSettings(built.project) : null;
+      if (kind === 'game' && game === null) {
+        notify({ kind: 'error', text: PLAY_CONTROL_LABELS.playGameOff });
+        return;
+      }
       const input: PlayInput = {
         targetId: host.session.target.id,
         modId: built.modId,
         jar: built.jar,
         outputs: built.outputs,
         namespaces: playNamespaces(built.project),
-        items: playItems(built.project),
+        items: game === null ? playItems(built.project) : [],
+        ...(game === null ? {} : { game }),
       };
       const result = op === 'play' ? await host.play.play(input) : await host.play.restart(input);
       if (!result.ok) {
@@ -388,6 +481,34 @@ export const usePlayStore = create<PlayState>()((set, get) => {
       notify({ kind: 'error', text: `Play failed: ${messageOf(error)}` });
     } finally {
       set({ running: null, progress: null });
+      await get().refresh();
+    }
+  };
+
+  /** New test world (`test`) or Start over (`game`). */
+  const renameWorld = async (kind: PlayWorldKind): Promise<void> => {
+    const { host, running } = get();
+    if (host === null || running !== null) return;
+    const project = host.session.snapshot.project;
+    const namespace = project === null ? undefined : playNamespaces(project)[0];
+    if (namespace === undefined) return;
+    const notify = notifyOf(host);
+    set({ running: kind === 'game' ? 'start-over' : 'new-world' });
+    try {
+      const result =
+        kind === 'game'
+          ? await host.play.newWorld(host.session.target.id, namespace, 'game')
+          : await host.play.newWorld(host.session.target.id, namespace);
+      notify(
+        result.ok
+          ? { kind: 'info', text: newWorldMessage(result, kind) }
+          : { kind: 'error', text: result.message },
+      );
+    } catch (error) {
+      const what = kind === 'game' ? PLAY_CONTROL_LABELS.startOver : PLAY_CONTROL_LABELS.newWorld;
+      notify({ kind: 'error', text: `${what} failed: ${messageOf(error)}` });
+    } finally {
+      set({ running: null });
       await get().refresh();
     }
   };
@@ -420,8 +541,9 @@ export const usePlayStore = create<PlayState>()((set, get) => {
       }
     },
 
-    play: () => runPlay('play'),
-    restart: () => runPlay('restart'),
+    play: () => runPlay('play', 'test'),
+    playMyGame: () => runPlay('play', 'game'),
+    restart: () => runPlay('restart', lastPlayKind(get().status)),
 
     async reload() {
       const { host, running, status } = get();
@@ -459,28 +581,8 @@ export const usePlayStore = create<PlayState>()((set, get) => {
       }
     },
 
-    async newTestWorld() {
-      const { host, running } = get();
-      if (host === null || running !== null) return;
-      const project = host.session.snapshot.project;
-      const namespace = project === null ? undefined : playNamespaces(project)[0];
-      if (namespace === undefined) return;
-      const notify = notifyOf(host);
-      set({ running: 'new-world' });
-      try {
-        const result = await host.play.newWorld(host.session.target.id, namespace);
-        notify(
-          result.ok
-            ? { kind: 'info', text: newWorldMessage(result) }
-            : { kind: 'error', text: result.message },
-        );
-      } catch (error) {
-        notify({ kind: 'error', text: `New test world failed: ${messageOf(error)}` });
-      } finally {
-        set({ running: null });
-        await get().refresh();
-      }
-    },
+    newTestWorld: () => renameWorld('test'),
+    startOver: () => renameWorld('game'),
 
     async openInstanceFolder() {
       const { host, status } = get();

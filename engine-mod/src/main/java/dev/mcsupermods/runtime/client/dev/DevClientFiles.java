@@ -26,8 +26,18 @@ public final class DevClientFiles {
 
     private DevClientFiles() {}
 
-    /** {@code play.json}: open (or create) {@code world} once at the title screen. */
-    public record PlayRequest(long seq, String world) {}
+    /**
+     * {@code play.json}: open (or create) {@code world} once at the title screen.
+     *
+     * @param game for Play my game ({@code kind: "game"}, ADR 0116 D1), how a new world is made; null for the test world
+     *             ({@code kind} absent or {@code "test"})
+     */
+    public record PlayRequest(long seq, String world, DevWorldSettings.GameWorld game) {
+        /** A test world request. */
+        public PlayRequest(long seq, String world) {
+            this(seq, world, null);
+        }
+    }
 
     /** What a {@link DevRequest} asks for. */
     public enum Action {
@@ -89,8 +99,15 @@ public final class DevClientFiles {
      * @param handled the last handled request, or null before any
      * @param time    milliseconds since the epoch
      * @param runtime the runtime's version
+     * @param seed    the open world's seed as a decimal string (B554: Play my game's random seed shown in the app), or
+     *                null outside a world
      */
-    public record Status(GameState state, String world, Handled handled, long time, String runtime) {}
+    public record Status(GameState state, String world, Handled handled, long time, String runtime, String seed) {
+        /** A status without a seed. */
+        public Status(GameState state, String world, Handled handled, long time, String runtime) {
+            this(state, world, handled, time, runtime, null);
+        }
+    }
 
     /** Parses {@code play.json}. */
     public static Optional<PlayRequest> parsePlayRequest(String text) {
@@ -103,7 +120,19 @@ public final class DevClientFiles {
         if (seq.isEmpty() || world.isEmpty() || !DevFiles.isWorldFolder(world.get())) {
             return Optional.empty();
         }
-        return Optional.of(new PlayRequest(seq.get(), world.get()));
+        JsonElement kind = obj.get().get("kind");
+        if (kind == null || kind.isJsonNull() || "test".equals(string(kind).orElse(null))) {
+            return Optional.of(new PlayRequest(seq.get(), world.get()));
+        }
+        if (!"game".equals(string(kind).orElse(null))) {
+            return Optional.empty();
+        }
+        Optional<DevWorldSettings.GameWorld> game = DevWorldSettings.gameWorld(string(obj.get().get("preset")).orElse(null),
+                string(obj.get().get("gameMode")).orElse(null), string(obj.get().get("difficulty")).orElse(null));
+        if (game.isEmpty() || !DevWorldSettings.isGameFolder(world.get())) {
+            return Optional.empty();
+        }
+        return Optional.of(new PlayRequest(seq.get(), world.get(), game.get()));
     }
 
     /** Parses {@code request.json}. */
@@ -160,6 +189,9 @@ public final class DevClientFiles {
             obj.add("handled", handled);
         }
         obj.addProperty("runtime", status.runtime());
+        if (status.seed() != null) {
+            obj.addProperty("seed", status.seed());
+        }
         obj.addProperty("state", status.state().json());
         obj.addProperty("time", status.time());
         if (status.world() == null) {
@@ -172,7 +204,12 @@ public final class DevClientFiles {
 
     /** The chat line after a reload or reopen: {@code MCSuperMods: reloaded (3 changes)}. */
     public static String chatLine(Action action, int changes) {
-        String what = action == Action.REOPEN ? "reopened the test world" : "reloaded";
+        return chatLine(action, changes, false);
+    }
+
+    /** As {@link #chatLine(Action, int)}; a reopen in a Play my game world says "reopened your game". */
+    public static String chatLine(Action action, int changes, boolean game) {
+        String what = action == Action.REOPEN ? (game ? "reopened your game" : "reopened the test world") : "reloaded";
         return "MCSuperMods: " + what + " (" + changes + (changes == 1 ? " change)" : " changes)");
     }
 

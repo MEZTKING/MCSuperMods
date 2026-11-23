@@ -16,6 +16,8 @@
  * is, unused slots are emptied, chests no longer needed are removed only when present), so the
  * runtime may treat any failed line as an error. Game rule ids are version facts
  * (`TargetFacts.dev.gameRules`) passed in.
+ *
+ * Play my game (ADR 0116 D1) writes {@link gameSetupFunctionText} instead: no lines at all.
  */
 
 /** Marks the lines run once, on a new world. */
@@ -145,6 +147,28 @@ export function setupFunctionText(fn: SetupFunction): string {
     ...fn.setup,
     REFILL_SECTION,
     ...fn.refill,
+    '',
+  ].join('\n');
+}
+
+/**
+ * Play my game's setup function (ADR 0116 D1): both sections empty. A game world gets no test
+ * area, chests, hotbar items or game rule changes; the project's own data pack functions (the
+ * world setup's start and first join) set it up as they will for a player. The runtime also
+ * runs no setup function in a `msm-game-<ns>` world, whatever the file holds (B554).
+ */
+export const GAME_SETUP_FUNCTION: SetupFunction = Object.freeze({
+  setup: [],
+  refill: [],
+  leftOut: 0,
+}) as SetupFunction;
+
+/** The text of {@link GAME_SETUP_FUNCTION}: the markers only, under a header saying why. */
+export function gameSetupFunctionText(): string {
+  return [
+    '# MCSuperMods game world (written by MCSuperMods): Play my game runs no test area, chests or game rules',
+    SETUP_SECTION,
+    REFILL_SECTION,
     '',
   ].join('\n');
 }

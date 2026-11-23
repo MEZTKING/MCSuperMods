@@ -1,7 +1,8 @@
 /**
  * The Play controls (ADR 0084 D1, D6, D7): Play, Reload, the game status chip with its
- * progress line, and a small menu with "New test world", "Restart" and "Open the test
- * instance's folder". It takes no props: it reads the session and the bridge through the
+ * progress line, the open world's seed in Play my game, and a small menu with "Play my game"
+ * and "Start over" (ADR 0116 D1), "New test world", "Restart" and "Open the test instance's
+ * folder". It takes no props: it reads the session and the bridge through the
  * Play store ({@link connectPlay}) and renders nothing until the store is connected and a
  * project is open. The Restart needed dialog and the Prism setup panel open from here.
  *
@@ -18,6 +19,7 @@ import {
   type PlayChipState,
   type PlaySession,
   playChipState,
+  playGameSettings,
   usePlayStore,
 } from '../../store/play-store';
 import { Button, buttonClass } from '../ui/Button';
@@ -48,6 +50,7 @@ const CHIP_CLASS: Record<PlayChipState, string> = {
   'not-running': 'border-border text-muted',
   starting: 'border-border text-text',
   'test-world': 'border-accent text-accent',
+  'game-world': 'border-accent text-accent',
   'other-world': 'border-warning text-warning',
   'restart-needed': 'border-warning text-warning',
 };
@@ -103,6 +106,8 @@ export function PlayControls() {
   const chip = playChipState(status);
   const running_ = gameRunning(status);
   const canReload = status?.canReload === true;
+  const hasGame = playGameSettings(snapshot.project) !== null;
+  const seed = status?.state === 'game-world' ? (status.seed ?? null) : null;
 
   const chipContent = (
     <>
@@ -153,6 +158,24 @@ export function PlayControls() {
         <DropdownMenu.Portal>
           <DropdownMenu.Content align="start" sideOffset={4} className={menuContentClass}>
             <MenuItem
+              label={PLAY_CONTROL_LABELS.playGame}
+              testId="play-menu-play-game"
+              reason={hasGame ? null : PLAY_CONTROL_LABELS.playGameOff}
+              onSelect={() => void store.playMyGame()}
+            />
+            <MenuItem
+              label={PLAY_CONTROL_LABELS.startOver}
+              testId="play-menu-start-over"
+              reason={
+                !hasGame
+                  ? PLAY_CONTROL_LABELS.playGameOff
+                  : running_
+                    ? PLAY_CONTROL_LABELS.startOverOff
+                    : null
+              }
+              onSelect={() => void store.startOver()}
+            />
+            <MenuItem
               label={PLAY_CONTROL_LABELS.newWorld}
               testId="play-menu-new-world"
               reason={running_ ? PLAY_CONTROL_LABELS.newWorldOff : null}
@@ -196,6 +219,11 @@ export function PlayControls() {
       ) : (
         <span className={chipClass} data-testid="play-chip" data-state={chip ?? 'checking'}>
           {chipContent}
+        </span>
+      )}
+      {seed !== null && (
+        <span className="text-xs text-muted" data-testid="play-seed">
+          {PLAY_CONTROL_LABELS.seed} {seed}
         </span>
       )}
       <span

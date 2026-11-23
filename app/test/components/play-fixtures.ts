@@ -24,6 +24,25 @@ export function element(id: ResourceLocation, kind: string, data: Json = {}): El
   return { formatVersion: 1, id, kind, data, meta: { createdAt: '2000-01-01T00:00:00.000Z' } };
 }
 
+/** {@link playProject} with a world setup (Play my game, ADR 0116 D1). */
+export function gameProject(
+  world: Json = { type: 'void', nether: 'vanilla', end: 'vanilla' },
+): Project {
+  const project = playProject();
+  const demo = project.namespaces[1];
+  if (demo !== undefined) {
+    demo.elements.push(
+      element('demo:sky_block', 'msm:world_setup', {
+        world,
+        game_mode: 'adventure',
+        difficulty: 'hard',
+        game_rules: {},
+      }),
+    );
+  }
+  return project;
+}
+
 /** A project with an item, two blocks (one without an item), two mobs (one without an egg). */
 export function playProject(): Project {
   return {
@@ -137,6 +156,7 @@ export const CHIP_LABELS: Readonly<Record<PlayGameState, string>> = {
   'not-running': 'Game not running',
   starting: 'Starting…',
   'test-world': 'In the test world',
+  'game-world': 'In my game',
   'other-world': 'In another world',
 };
 
@@ -159,9 +179,17 @@ export function statusFor(
     gameDir: state === 'no-prism' ? null : '/prism/instances/MCSuperMods Test (26.3)/minecraft',
     state,
     testWorld: 'msm-test-demo',
-    world: state === 'test-world' ? 'msm-test-demo' : state === 'other-world' ? 'other' : null,
+    world:
+      state === 'test-world'
+        ? 'msm-test-demo'
+        : state === 'game-world'
+          ? 'msm-game-demo'
+          : state === 'other-world'
+            ? 'other'
+            : null,
+    seed: state === 'game-world' ? '1234567890123' : null,
     handled: null,
-    canReload: state === 'test-world',
+    canReload: state === 'test-world' || state === 'game-world',
     restartNeeded: reasons,
     label,
     busy: null,

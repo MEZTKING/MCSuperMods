@@ -44,6 +44,15 @@ function playRequest(input: PlayInputOf): PlayInputOf {
       id: item.id,
       ...(item.count === undefined ? {} : { count: item.count }),
     })),
+    ...(input.game === undefined
+      ? {}
+      : {
+          game: {
+            preset: input.game.preset,
+            gameMode: input.game.gameMode,
+            difficulty: input.game.difficulty,
+          },
+        }),
   };
 }
 
@@ -220,8 +229,12 @@ const bridge: MsmBridge = {
         ...(input.names === undefined ? {} : { names: { ...input.names } }),
       }),
     restart: (input) => ipcRenderer.invoke(InvokeChannels.playRestart, playRequest(input)),
-    newWorld: (targetId, namespace) =>
-      ipcRenderer.invoke(InvokeChannels.playNewWorld, { targetId, namespace }),
+    newWorld: (targetId, namespace, kind) =>
+      ipcRenderer.invoke(InvokeChannels.playNewWorld, {
+        targetId,
+        namespace,
+        ...(kind === undefined ? {} : { kind }),
+      }),
     onStatus(listener) {
       const handler = (_event: IpcRendererEvent, status: unknown): void => {
         if (isPlayStatusPayload(status)) listener(status as PlayStatus);

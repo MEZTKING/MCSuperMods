@@ -3,8 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerPendingEdit } from '../../src/renderer/src/session/pending-edits';
 import {
   connectPlay,
+  lastPlayKind,
   newWorldMessage,
   playChipState,
+  playGameSettings,
   playItems,
   playNames,
   playNamespaces,
@@ -21,6 +23,7 @@ import {
   type FakeSession,
   fakeBridge,
   fakeSession,
+  gameProject,
   JAR,
   LOWERED,
   NEW_BLOCK_REASON,
@@ -415,5 +418,98 @@ describe('Play store actions', () => {
     expect(bridge.play.play).not.toHaveBeenCalled();
     expect(messages).toEqual([{ kind: 'error', text: 'Play failed: disk full' }]);
     expect(vi.isMockFunction(session.save)).toBe(true);
+  });
+});
+
+describe('Play my game (ADR 0116 D1)', () => {
+  it('reads the world setup: its own id as the world type, its game mode and difficulty', () => {
+    expect(playGameSettings(playProject())).toBeNull();
+    expect(playGameSettings(gameProject())).toEqual({
+      preset: 'demo:sky_block',
+      gameMode: 'adventure',
+      difficulty: 'hard',
+    });
+    expect(
+      playGameSettings(gameProject({ type: 'vanilla', nether: 'vanilla', end: 'vanilla' })),
+    ).toMatchObject({ preset: 'minecraft:normal' });
+    expect(
+      playGameSettings(
+        gameProject({
+          type: 'preset',
+          preset: 'minecraft:large_biomes',
+          nether: 'vanilla',
+          end: 'vanilla',
+        }),
+      ),
+    ).toMatchObject({ preset: 'minecraft:large_biomes' });
+    const plain = gameProject();
+    const setup = plain.namespaces[1]?.elements.find((e) => e.kind === 'msm:world_setup');
+    if (setup !== undefined) setup.data = { world: { type: 'flat' } };
+    expect(playGameSettings(plain)).toEqual({
+      preset: 'demo:sky_block',
+      gameMode: 'survival',
+      difficulty: 'normal',
+    });
+  });
+
+  it('knows which world the last Play was for', () => {
+    expect(lastPlayKind(null)).toBe('test');
+    expect(lastPlayKind(statusFor('test-world'))).toBe('test');
+    expect(lastPlayKind(statusFor('game-world', { testWorld: 'msm-game-demo' }))).toBe('game');
+  });
+
+  it('sends the game settings and no chest items, and words the result', async () => {
+    const bridge = fakeBridge();
+    bridge.play.play.mockImplementation(async () => ({ ...PLAY_OK, world: 'msm-game-demo' }));
+    await connect(fakeSession({ project: gameProject() }), bridge);
+    await usePlayStore.getState().playMyGame();
+    const input = bridge.play.play.mock.calls[0]?.[0] as PlayInput;
+    expect(input).toMatchObject({
+      namespaces: ['demo', 'minecraft'],
+      items: [],
+      game: { preset: 'demo:sky_block', gameMode: 'adventure', difficulty: 'hard' },
+    });
+    expect(messages).toEqual([
+      { kind: 'info', text: 'Minecraft is starting. It opens your game by itself.' },
+    ]);
+  });
+
+  it('says what is missing without a world setup and sends nothing', async () => {
+    const { bridge, session } = await connect();
+    await usePlayStore.getState().playMyGame();
+    expect(bridge.play.play).not.toHaveBeenCalled();
+    expect(session.buildContentJar).not.toHaveBeenCalled();
+    expect(messages[0]?.kind).toBe('error');
+  });
+
+  it('a test Play sends no game settings, and Restart restarts the game it was in', async () => {
+    const bridge = fakeBridge(statusFor('game-world', { testWorld: 'msm-game-demo' }));
+    await connect(fakeSession({ project: gameProject() }), bridge);
+    await usePlayStore.getState().restart();
+    const restarted = bridge.play.restart.mock.calls[0]?.[0] as PlayInput | undefined;
+    expect(restarted?.game).toMatchObject({
+      preset: 'demo:sky_block',
+    });
+    await usePlayStore.getState().play();
+    const played = bridge.play.play.mock.calls[0]?.[0] as PlayInput | undefined;
+    expect(played).toBeDefined();
+    expect(played?.game).toBeUndefined();
+  });
+
+  it('Start over renames the game world and words the result', async () => {
+    const bridge = fakeBridge();
+    bridge.play.newWorld.mockImplementation(async () => ({
+      ok: true,
+      renamedTo: 'msm-game-demo-old-1',
+    }));
+    await connect(fakeSession({ project: gameProject() }), bridge);
+    await usePlayStore.getState().startOver();
+    expect(bridge.play.newWorld).toHaveBeenCalledWith('mc-26.3', 'demo', 'game');
+    expect(messages[0]?.text).toBe(
+      'The old game world is kept as "msm-game-demo-old-1". The next Play my game makes a fresh one.',
+    );
+    expect(newWorldMessage({ ok: true, renamedTo: null }, 'game')).toBe(
+      'The next Play my game makes a fresh world.',
+    );
   });
 });

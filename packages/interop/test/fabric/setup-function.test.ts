@@ -7,6 +7,8 @@ import {
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   type DevGameRuleIds,
+  GAME_SETUP_FUNCTION,
+  gameSetupFunctionText,
   REFILL_SECTION,
   SETUP_CHEST_COUNT,
   SETUP_CHEST_SLOTS,
@@ -167,3 +169,13 @@ for (const target of TARGETS) {
     });
   });
 }
+
+describe('Play my game setup function (ADR 0116 D1)', () => {
+  it('has the markers and no lines: no test area, chests or game rules', () => {
+    const text = gameSetupFunctionText();
+    const lines = text.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
+    expect(lines).toEqual([]);
+    expect(text).toContain(`${SETUP_SECTION}\n${REFILL_SECTION}\n`);
+    expect(GAME_SETUP_FUNCTION).toEqual({ setup: [], refill: [], leftOut: 0 });
+  });
+});

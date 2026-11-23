@@ -31,6 +31,9 @@ import net.minecraft.world.level.storage.LevelResource;
  * own saved data, never in the dev folder). Each server run refills once, so opening the world again (Play, or a reopen
  * request) refills the chests; {@code /reload} does not. A line that does not parse logs an error; a line that ran but
  * did nothing (such as an {@code execute if} whose test failed) is counted in one info line.
+ *
+ * <p>A Play my game world ({@code msm-game-<ns>}, ADR 0116 D1, B554) runs no setup function at all, whatever the file
+ * holds: no test area, chests or game rule changes. The game's own data pack functions set it up, as for a player.
  */
 public final class DevSetup {
     public static final Identifier ID = Identifier.fromNamespaceAndPath(MsmRuntime.MOD_ID, "dev_setup");
@@ -64,6 +67,11 @@ public final class DevSetup {
     /** {@code JOIN} in dev mode: the first join of this server run in the test world runs the function (next tick). */
     static void playerJoined(MinecraftServer server, DevMode.State state, ServerPlayer player) {
         if (!isDevWorld(server, state.info()) || !RAN_THIS_START.compareAndSet(false, true)) {
+            return;
+        }
+        if (DevFiles.isGameWorldFolder(worldFolder(server))) {
+            MsmRuntime.LOGGER.info("[{}] dev: {} is a game world; no setup function, test area or chests", MsmRuntime.MOD_ID,
+                    worldFolder(server));
             return;
         }
         server.execute(() -> run(server, state.setupFunction()));

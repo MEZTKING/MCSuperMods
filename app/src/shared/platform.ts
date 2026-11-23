@@ -571,6 +571,21 @@ export interface PlaySetupItem {
   count?: number;
 }
 
+/**
+ * Play my game (ADR 0116 D1): how a new `msm-game-<ns>` world is made, from the project's world
+ * setup. The runtime adds structures on, a random seed and commands on; no test area, chests or
+ * game rule changes.
+ */
+export interface PlayGameSettings {
+  /** The world preset id: the world setup's own id `<ns>:<path>`, its chosen preset, or `minecraft:normal`. */
+  preset: string;
+  gameMode: 'survival' | 'creative' | 'adventure' | 'spectator';
+  difficulty: 'peaceful' | 'easy' | 'normal' | 'hard';
+}
+
+/** Which world a Play, Restart or Start over is for: the test world or the game (ADR 0116 D1). */
+export type PlayWorldKind = 'test' | 'game';
+
 /** What Play (and Restart) needs from the renderer. */
 export interface PlayInput {
   targetId: string;
@@ -583,6 +598,11 @@ export interface PlayInput {
   namespaces: string[];
   /** Project items, block items and spawn eggs in the order to show them; the first nine go in the hotbar. */
   items: PlaySetupItem[];
+  /**
+   * Play my game: open or make `msm-game-<ns>` with these settings instead of the test world
+   * (`items` are then not used). Absent: the test world.
+   */
+  game?: PlayGameSettings;
 }
 
 /** What Reload needs from the renderer. */
@@ -642,7 +662,7 @@ export type PlayResult =
       instanceCreated: boolean;
       /** The instance's game folder (for "Open the test instance's folder"). */
       gameDir: string;
-      /** The test world's folder name, `msm-test-<namespace>`. */
+      /** The world's folder name, `msm-test-<namespace>` or, for Play my game, `msm-game-<namespace>`. */
       world: string;
       /** `true` when the running game was asked to quit first. */
       restarted: boolean;
@@ -712,9 +732,16 @@ export type TestWorldResult =
 
 /**
  * Where the game is, for the status chip (ADR 0084 D7): no Prism Launcher, not running,
- * starting (Prism started, title screen or loading), in the test world, or in another world.
+ * starting (Prism started, title screen or loading), in the test world, in the game world of
+ * Play my game (ADR 0116 D1), or in another world.
  */
-export type PlayGameState = 'no-prism' | 'not-running' | 'starting' | 'test-world' | 'other-world';
+export type PlayGameState =
+  | 'no-prism'
+  | 'not-running'
+  | 'starting'
+  | 'test-world'
+  | 'game-world'
+  | 'other-world';
 
 /** The Play status, read by main from the managed instance's `status.json`. */
 export interface PlayStatus {
@@ -731,9 +758,14 @@ export interface PlayStatus {
   testWorld: string | null;
   /** The world open in the game, or `null`. */
   world: string | null;
+  /**
+   * The open world's seed as the runtime reports it (a decimal string; Play my game's is
+   * random), or `null` outside a world or from an older runtime.
+   */
+  seed: string | null;
   /** The outcome of the last request the game handled, or `null`. */
   handled: { seq: number; ok: boolean; message?: string } | null;
-  /** Whether Reload can run now (the game is in the test world). */
+  /** Whether Reload can run now (the game is in the test world or the game world). */
   canReload: boolean;
   /** The last Reload's restart reasons, until the next Play. */
   restartNeeded: PlayRestartReason[];
@@ -759,8 +791,11 @@ export interface PlayPlatform {
   reload(input: ReloadInput): Promise<ReloadResult>;
   /** Quits the running game, installs and starts it again (the same as {@link play}). */
   restart(input: PlayInput): Promise<PlayResult>;
-  /** Renames `saves/msm-test-<namespace>` to `...-old-<n>`; the next Play creates a fresh world. */
-  newWorld(targetId: string, namespace: string): Promise<TestWorldResult>;
+  /**
+   * Renames `saves/msm-test-<namespace>` (or, with `kind` `game`, Play my game's
+   * `msm-game-<namespace>`: "Start over") to `...-old-<n>`; the next Play creates a fresh world.
+   */
+  newWorld(targetId: string, namespace: string, kind?: PlayWorldKind): Promise<TestWorldResult>;
   /** Subscribes to status changes (every second while a window is focused, and after each operation). */
   onStatus(listener: (status: PlayStatus) => void): () => void;
 }

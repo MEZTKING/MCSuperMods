@@ -777,6 +777,17 @@ const playOutputFile = z
   })
   .strict();
 const playNamespace = z.string().regex(/^[a-z0-9_.-]{1,64}$/);
+/** Play my game's settings (ADR 0116 D1). */
+const playGame = z
+  .object({
+    preset: z
+      .string()
+      .regex(/^[a-z0-9_.-]{1,64}:[a-z0-9_./-]{1,256}$/)
+      .refine((id) => !id.includes('//') && !id.endsWith('/'), { message: 'Not a world type id' }),
+    gameMode: z.enum(['survival', 'creative', 'adventure', 'spectator']),
+    difficulty: z.enum(['peaceful', 'easy', 'normal', 'hard']),
+  })
+  .strict();
 const playInput = z
   .object({
     targetId,
@@ -794,6 +805,7 @@ const playInput = z
           .strict(),
       )
       .max(PLAY_ITEMS_MAX),
+    game: playGame.optional(),
   })
   .strict();
 const reloadInput = z
@@ -884,9 +896,20 @@ export const playStatusSchema = z
     instanceName: z.string().min(1).max(255),
     instance: z.enum(['ready', 'missing', 'no-prism']),
     gameDir: absolutePath.nullable(),
-    state: z.enum(['no-prism', 'not-running', 'starting', 'test-world', 'other-world']),
+    state: z.enum([
+      'no-prism',
+      'not-running',
+      'starting',
+      'test-world',
+      'game-world',
+      'other-world',
+    ]),
     testWorld: worldDir.nullable(),
     world: worldDir.nullable(),
+    seed: z
+      .string()
+      .regex(/^-?\d{1,20}$/)
+      .nullable(),
     handled: z
       .object({
         seq: z.number().int().positive(),
@@ -1452,7 +1475,9 @@ export const ipcContract = {
   [InvokeChannels.playReload]: { request: reloadInput, response: reloadResult },
   [InvokeChannels.playRestart]: { request: playInput, response: playResult },
   [InvokeChannels.playNewWorld]: {
-    request: z.object({ targetId, namespace: playNamespace }).strict(),
+    request: z
+      .object({ targetId, namespace: playNamespace, kind: z.enum(['test', 'game']).optional() })
+      .strict(),
     response: z.union([
       z.object({ ok: z.literal(true), renamedTo: worldDir.nullable() }).strict(),
       playFailure,

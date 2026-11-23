@@ -241,7 +241,8 @@ export function createIpcHandlers(
         ...(req.names === undefined ? {} : { names: req.names }),
       }),
     [InvokeChannels.playRestart]: (req) => platform.play.restart(playInput(req)),
-    [InvokeChannels.playNewWorld]: (req) => platform.play.newTestWorld(req.targetId, req.namespace),
+    [InvokeChannels.playNewWorld]: (req) =>
+      platform.play.newTestWorld(req.targetId, req.namespace, req.kind ?? 'test'),
   };
 }
 
@@ -268,6 +269,7 @@ function playInput(req: PlayRequest): PlayInput {
       id: item.id,
       ...(item.count === undefined ? {} : { count: item.count }),
     })),
+    ...(req.game === undefined ? {} : { game: { ...req.game } }),
   };
 }
 

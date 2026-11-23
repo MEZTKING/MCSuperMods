@@ -4,7 +4,9 @@
  *
  * - `dev.json` ({@link DevInfo}): written by main at Play; its presence turns the runtime's
  *   dev mode on (client with an integrated server only, ADR 0084 D4).
- * - `play.json` ({@link PlayRequest}): a play request, handled once at the title screen.
+ * - `play.json` ({@link PlayRequest}): a play request, handled once at the title screen: the
+ *   test world (`msm-test-<ns>`), or Play my game (`msm-game-<ns>`, ADR 0116 D1) with the world
+ *   setup's world preset, game mode and difficulty.
  * - `request.json` ({@link DevRequest}): a reload, reopen or quit request.
  * - `status.json` ({@link DevStatus}): written by the runtime, read by main.
  * - `installed.json` ({@link InstalledDevRecord}): what the installed jar holds, written by
@@ -66,11 +68,48 @@ export interface DevInfo {
   appVersion: string;
 }
 
-/** `play.json`: open (or create) {@link PlayRequest.world} once at the title screen. */
+/** Which world a Play opens: the test world (ADR 0084) or the game (Play my game, ADR 0116 D1). */
+export type PlayKind = 'test' | 'game';
+
+/** A game mode as the world setup and `play.json` name it. */
+export type PlayGameMode = 'survival' | 'creative' | 'adventure' | 'spectator';
+/** A difficulty as the world setup and `play.json` name it. */
+export type PlayDifficulty = 'peaceful' | 'easy' | 'normal' | 'hard';
+
+export const PLAY_GAME_MODES: readonly PlayGameMode[] = [
+  'survival',
+  'creative',
+  'adventure',
+  'spectator',
+];
+export const PLAY_DIFFICULTIES: readonly PlayDifficulty[] = ['peaceful', 'easy', 'normal', 'hard'];
+
+/**
+ * How Play my game makes a new world (ADR 0116 D1): the world setup's world preset (from the
+ * content jar's data, or a dev data pack placed in the world folder before creation, B547 Y15),
+ * its game mode and difficulty. The runtime adds structures on, no bonus chest, commands on and
+ * a random seed; no test area, chests or game rule changes.
+ */
+export interface PlayGame {
+  /** The world preset id, `<ns>:<path>`: the world setup's own id, or `minecraft:normal`. */
+  preset: string;
+  gameMode: PlayGameMode;
+  difficulty: PlayDifficulty;
+}
+
+/**
+ * `play.json`: open (or create) {@link PlayRequest.world} once at the title screen. Without
+ * `kind` (or with `test`) it is the test world; with `kind: 'game'` it is Play my game and
+ * carries {@link PlayGame}'s fields.
+ */
 export interface PlayRequest {
   format: 1;
   seq: number;
   world: string;
+  kind?: PlayKind;
+  preset?: string;
+  gameMode?: PlayGameMode;
+  difficulty?: PlayDifficulty;
 }
 
 /** What a {@link DevRequest} asks for. */
@@ -117,6 +156,11 @@ export interface DevStatus {
   time: number;
   /** The runtime's version. */
   runtime: string;
+  /**
+   * The open world's seed as a decimal string (a 64-bit number), written by runtime 1.5.4 and
+   * later while in a world (B554); absent outside a world or from an older runtime.
+   */
+  seed?: string;
 }
 
 /** One file of the installed jar or the overlay, by its jar path. */
@@ -199,6 +243,39 @@ export function devWorldFolder(namespace: string): string {
   return `msm-test-${namespace}`;
 }
 
+/** The start of Play my game's world folder names. */
+export const GAME_WORLD_PREFIX = 'msm-game-';
+
+/** Play my game's world folder name: `msm-game-<namespace>` (ADR 0116 D1; one per project and target). */
+export function gameWorldFolder(namespace: string): string {
+  if (!NAMESPACE.test(namespace)) {
+    throw new Error(`${JSON.stringify(namespace)} is not a valid namespace.`);
+  }
+  return `${GAME_WORLD_PREFIX}${namespace}`;
+}
+
+/** The world folder of a Play of `kind`: {@link devWorldFolder} or {@link gameWorldFolder}. */
+export function playWorldFolder(kind: PlayKind, namespace: string): string {
+  return kind === 'game' ? gameWorldFolder(namespace) : devWorldFolder(namespace);
+}
+
+/** Whether `world` is a Play my game world (`msm-game-` and at least one more character). */
+export function isGameWorldFolder(world: string): boolean {
+  return (
+    WORLD_FOLDER.test(world) &&
+    world.startsWith(GAME_WORLD_PREFIX) &&
+    world.length > GAME_WORLD_PREFIX.length
+  );
+}
+
+/** A world preset id as `play.json` carries it. */
+const PRESET_ID = /^[a-z0-9_.-]{1,64}:[a-z0-9_./-]{1,256}$/;
+
+/** Whether `id` is a world preset id `play.json` may carry. */
+export function isPresetId(id: string): boolean {
+  return PRESET_ID.test(id) && !id.includes('//') && !id.endsWith('/');
+}
+
 /**
  * The folder an old test world is renamed to by "New test world": `<world>-old-<n>` with the
  * smallest `n` from 1 not among `existing` (folder names in `saves/`). Never deletes.
@@ -270,9 +347,35 @@ export function nextRequest(
   };
 }
 
-/** The next `play.json`, sharing the sequence with {@link nextRequest}. */
-export function nextPlayRequest(current: DevSequence, world: string): PlayRequest {
-  return { format: DEV_FILE_FORMAT, seq: nextSeq(current), world: assertWorldFolder(world) };
+/**
+ * The next `play.json`, sharing the sequence with {@link nextRequest}. With `game` it is a Play
+ * my game request, whose world must be a {@link gameWorldFolder}.
+ */
+export function nextPlayRequest(current: DevSequence, world: string, game?: PlayGame): PlayRequest {
+  const base: PlayRequest = {
+    format: DEV_FILE_FORMAT,
+    seq: nextSeq(current),
+    world: assertWorldFolder(world),
+  };
+  if (game === undefined) return base;
+  if (!isGameWorldFolder(world)) {
+    throw new Error(`${JSON.stringify(world)} is not a game world folder (msm-game-<namespace>).`);
+  }
+  return { ...base, kind: 'game', ...checkedGame(game) };
+}
+
+/** `game` checked: a preset id, a known game mode and difficulty. Throws otherwise. */
+export function checkedGame(game: PlayGame): PlayGame {
+  if (!isPresetId(game.preset)) {
+    throw new Error(`${JSON.stringify(game.preset)} is not a world type id.`);
+  }
+  if (!PLAY_GAME_MODES.includes(game.gameMode)) {
+    throw new Error(`${JSON.stringify(game.gameMode)} is not a game mode.`);
+  }
+  if (!PLAY_DIFFICULTIES.includes(game.difficulty)) {
+    throw new Error(`${JSON.stringify(game.difficulty)} is not a difficulty.`);
+  }
+  return { preset: game.preset, gameMode: game.gameMode, difficulty: game.difficulty };
 }
 
 /** A fresh `installed.json` for a Play (the overlay is empty: the new jar holds everything). */
@@ -354,13 +457,31 @@ export function parseDevInfo(text: string | null): DevInfo | null {
   return { format: 1, namespaces: [...(namespaces as string[])], target, world, appVersion };
 }
 
-/** Parses `play.json`. */
+/** Parses `play.json` (as the runtime: a `game` request needs every game field and a game folder). */
 export function parsePlayRequest(text: string | null): PlayRequest | null {
   const obj = parseObject(text);
   if (obj === null || !isSeq(obj.seq) || !isString(obj.world) || !WORLD_FOLDER.test(obj.world)) {
     return null;
   }
-  return { format: 1, seq: obj.seq, world: obj.world };
+  const base = { format: 1 as const, seq: obj.seq, world: obj.world };
+  if (obj.kind === undefined || obj.kind === null || obj.kind === 'test') return base;
+  if (obj.kind !== 'game' || !isGameWorldFolder(obj.world)) return null;
+  const { preset, gameMode, difficulty } = obj;
+  if (
+    !isString(preset) ||
+    !isPresetId(preset) ||
+    !PLAY_GAME_MODES.includes(gameMode as PlayGameMode) ||
+    !PLAY_DIFFICULTIES.includes(difficulty as PlayDifficulty)
+  ) {
+    return null;
+  }
+  return {
+    ...base,
+    kind: 'game',
+    preset,
+    gameMode: gameMode as PlayGameMode,
+    difficulty: difficulty as PlayDifficulty,
+  };
 }
 
 /** Parses `request.json`. */
@@ -382,6 +503,8 @@ export function parseDevStatus(text: string | null): DevStatus | null {
   if (state !== 'title' && state !== 'loading' && state !== 'world') return null;
   if (world !== null && !(isString(world) && WORLD_FOLDER.test(world))) return null;
   if (typeof time !== 'number' || !Number.isFinite(time) || !isString(runtime)) return null;
+  const seed = obj.seed;
+  if (seed !== undefined && !(isString(seed) && /^-?\d{1,20}$/.test(seed))) return null;
   let parsedHandled: DevHandled | null = null;
   if (handled !== null) {
     if (typeof handled !== 'object' || Array.isArray(handled)) return null;
@@ -394,7 +517,15 @@ export function parseDevStatus(text: string | null): DevStatus | null {
       ...(isString(h.message) ? { message: h.message } : {}),
     };
   }
-  return { format: 1, state, world, handled: parsedHandled, time, runtime };
+  return {
+    format: 1,
+    state,
+    world,
+    handled: parsedHandled,
+    time,
+    runtime,
+    ...(isString(seed) ? { seed } : {}),
+  };
 }
 
 /** Parses `installed.json`; invalid entries make the whole record invalid. */

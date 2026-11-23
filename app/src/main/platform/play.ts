@@ -14,6 +14,12 @@
  * holds the `.msm-managed.json` marker. The user's other instances and settings are never
  * touched (Play does not change the install target).
  *
+ * Play my game (ADR 0116 D1, B554) is the same Play with `PlayInput.game`: it opens or makes
+ * `msm-game-<ns>` with the world setup's world preset (the content jar's data, which every Play
+ * installs), game mode and difficulty; the runtime picks a random seed and reports it in
+ * `status.json`. Its setup function has no lines (no test area, chests or game rules). Reload
+ * works in it as in the test world; Start over renames it as New test world does.
+ *
  * File formats, change sorting and the setup function live in `@msm/interop` `fabric/`; this
  * module adds the managed instance, path containment, scripts, the clock and the spawn.
  *
@@ -24,6 +30,7 @@ import { realpath as realpathNode, rename as renameNode } from 'node:fs/promises
 import { dirname, join, normalize } from 'node:path';
 import {
   cachedFabricApi,
+  checkedGame,
   classifyChanges,
   contentJarModsFileName,
   createManagedInstance,
@@ -40,19 +47,21 @@ import {
   devFileText,
   devInfo,
   devPaths,
-  devWorldFolder,
   ensureFabricApi,
   type FabricApiInstall,
   type FabricTestFacts,
   fetchDownloader,
   findLauncherProgram,
+  GAME_SETUP_FUNCTION,
   type GameLocation,
+  gameSetupFunctionText,
   hashOutputs,
   type InstallFileSystem,
   installContentJar,
   installedDevRecord,
   installedFiles,
   isGameRunning,
+  isGameWorldFolder,
   isHandled,
   type LauncherProgramEnv,
   launchArguments,
@@ -70,6 +79,7 @@ import {
   parseDevStatus,
   parseInstalledDevRecord,
   parsePlayRequest,
+  playWorldFolder,
   QUIT_WAIT_MS,
   type RestartReason,
   readMmcConfig,
@@ -96,6 +106,7 @@ import type {
   PlayRestartReason,
   PlayResult,
   PlayStatus,
+  PlayWorldKind,
   ReloadInput,
   ReloadResult,
   ScriptTranspileOutcome,
@@ -131,6 +142,7 @@ export const PLAY_STATE_LABELS: Readonly<Record<PlayGameState, string>> = {
   'not-running': 'Game not running',
   starting: 'Starting…',
   'test-world': 'In the test world',
+  'game-world': 'In my game',
   'other-world': 'In another world',
 };
 /** The chip's words when a Reload found changes that need a restart and the game runs. */
@@ -146,8 +158,11 @@ export interface PlayService {
   reload(input: ReloadInput): Promise<ReloadResult>;
   /** Restart: the same as {@link play} (asks the running game to quit, then starts it). */
   restart(input: PlayInput): Promise<PlayResult>;
-  /** Renames the test world to `<world>-old-<n>`; the next Play creates a fresh one. */
-  newTestWorld(targetId: string, namespace: string): Promise<TestWorldResult>;
+  /**
+   * Renames the test world (or, with `kind` `game`, Play my game's world: Start over) to
+   * `<world>-old-<n>`; the next Play creates a fresh one.
+   */
+  newTestWorld(targetId: string, namespace: string, kind?: PlayWorldKind): Promise<TestWorldResult>;
   /** Subscribes to status changes (polls and operations); returns an unsubscribe function. */
   onStatus(listener: (status: PlayStatus) => void): () => void;
   /**
@@ -448,6 +463,7 @@ export function createPlayService(deps: PlayDeps): PlayService {
         state,
         testWorld: null,
         world: null,
+        seed: null,
         handled: null,
         canReload: false,
         label: PLAY_STATE_LABELS[state],
@@ -462,7 +478,9 @@ export function createPlayService(deps: PlayDeps): PlayService {
       state =
         status.state === 'world'
           ? status.world !== null && status.world === testWorld
-            ? 'test-world'
+            ? isGameWorldFolder(testWorld)
+              ? 'game-world'
+              : 'test-world'
             : 'other-world'
           : 'starting';
     } else {
@@ -481,8 +499,9 @@ export function createPlayService(deps: PlayDeps): PlayService {
       state,
       testWorld,
       world: running ? (status?.world ?? null) : null,
+      seed: running && status?.state === 'world' ? (status.seed ?? null) : null,
       handled: status?.handled ?? null,
-      canReload: state === 'test-world',
+      canReload: state === 'test-world' || state === 'game-world',
       label,
     };
   };
@@ -574,7 +593,13 @@ export function createPlayService(deps: PlayDeps): PlayService {
     const namespace = input.namespaces[0];
     if (namespace === undefined)
       throw new PlayFailure('bad-input', 'The project has no namespace.');
-    const world = devWorldFolder(namespace);
+    let game: ReturnType<typeof checkedGame> | undefined;
+    try {
+      game = input.game === undefined ? undefined : checkedGame(input.game);
+    } catch (error) {
+      throw new PlayFailure('bad-input', messageOf(error));
+    }
+    const world = playWorldFolder(game === undefined ? 'test' : 'game', namespace);
 
     setProgress(targetId, op, 'Getting the test instance ready…');
     const root = await findPrismRoot(fs, deps.env, deps.settings);
@@ -610,7 +635,10 @@ export function createPlayService(deps: PlayDeps): PlayService {
     const outputs = await hashOutputs(devSources(input.outputs), sha256);
     let setup: ReturnType<typeof setupFunctionLines>;
     try {
-      setup = setupFunctionLines({ gameRules: target.dev.gameRules, items: input.items });
+      setup =
+        game === undefined
+          ? setupFunctionLines({ gameRules: target.dev.gameRules, items: input.items })
+          : GAME_SETUP_FUNCTION;
     } catch (error) {
       throw new PlayFailure('bad-input', messageOf(error));
     }
@@ -673,7 +701,12 @@ export function createPlayService(deps: PlayDeps): PlayService {
     if (nextOptions !== options) {
       await writeInGame(location, checked, optionsPath, textEncoder.encode(nextOptions));
     }
-    await writeInGame(location, checked, paths.setup, textEncoder.encode(setupFunctionText(setup)));
+    await writeInGame(
+      location,
+      checked,
+      paths.setup,
+      textEncoder.encode(game === undefined ? setupFunctionText(setup) : gameSetupFunctionText()),
+    );
     await writeInGame(
       location,
       checked,
@@ -687,7 +720,7 @@ export function createPlayService(deps: PlayDeps): PlayService {
       text(devInfo({ namespaces: input.namespaces, target: targetId, world, appVersion })),
     );
     const latest = await readSession(gameDir);
-    const playRequest = nextPlayRequest(sequence(latest), world);
+    const playRequest = nextPlayRequest(sequence(latest), world, game);
     await writeInGame(location, checked, paths.play, text(playRequest));
 
     setProgress(targetId, op, 'Starting Prism Launcher…');
@@ -745,7 +778,9 @@ export function createPlayService(deps: PlayDeps): PlayService {
     if (!isGameRunning(status, now()) || status?.state !== 'world' || status.world !== world) {
       throw new PlayFailure(
         'not-in-world',
-        'Reload works while Minecraft is in the test world. Press Play first.',
+        isGameWorldFolder(world)
+          ? 'Reload works while Minecraft is in your game. Press Play my game first.'
+          : 'Reload works while Minecraft is in the test world. Press Play first.',
       );
     }
     setProgress(targetId, 'reload', 'Comparing your changes…');
@@ -864,7 +899,7 @@ export function createPlayService(deps: PlayDeps): PlayService {
       restart,
       message:
         action === 'reopen'
-          ? `Reopening the test world for ${changes.pending} ${plural}. New land shows only in new chunks.`
+          ? `Reopening ${isGameWorldFolder(world) ? 'your game' : 'the test world'} for ${changes.pending} ${plural}. New land shows only in new chunks.`
           : `Reloading ${changes.pending} ${plural} in Minecraft.`,
     };
   };
@@ -916,7 +951,7 @@ export function createPlayService(deps: PlayDeps): PlayService {
     play: (input) => guarded(input.targetId, () => runPlay(input, 'play')),
     restart: (input) => guarded(input.targetId, () => runPlay(input, 'restart')),
     reload: (input) => guarded(input.targetId, () => runReload(input)),
-    async newTestWorld(targetId, namespace) {
+    async newTestWorld(targetId, namespace, kind = 'test') {
       watchedTarget = targetId;
       try {
         const managed = await findManaged(targetId);
@@ -928,10 +963,13 @@ export function createPlayService(deps: PlayDeps): PlayService {
           return {
             ok: false,
             code: 'game-running',
-            message: 'Close Minecraft first, then choose New test world again.',
+            message:
+              kind === 'game'
+                ? 'Close Minecraft first, then choose Start over again.'
+                : 'Close Minecraft first, then choose New test world again.',
           };
         }
-        const world = devWorldFolder(namespace);
+        const world = playWorldFolder(kind, namespace);
         const saves = join(gameDir, 'saves');
         if (!(await fs.exists(join(saves, world)))) return { ok: true, renamedTo: null };
         await checkedFolderInGame(

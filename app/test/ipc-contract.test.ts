@@ -155,6 +155,7 @@ const playStatus = {
   state: 'test-world',
   testWorld: 'msm-test-ruby',
   world: 'msm-test-ruby',
+  seed: null,
   handled: { seq: 3, ok: true },
   canReload: true,
   restartNeeded: [],
@@ -964,6 +965,36 @@ describe('IPC contract', () => {
       expect(schema.response.safeParse(sample.response[1]).success).toBe(false);
     });
   }
+
+  it('carries Play my game (ADR 0116 D1): the game settings, the seed and Start over', () => {
+    const play = ipcContract[InvokeChannels.playPlay].request;
+    const game = { preset: 'ruby:sky_block', gameMode: 'adventure', difficulty: 'hard' };
+    expect(play.safeParse({ ...playInput, game }).success).toBe(true);
+    expect(play.safeParse({ ...playInput, game: { ...game, preset: 'sky' } }).success).toBe(false);
+    expect(play.safeParse({ ...playInput, game: { ...game, preset: 'a:b/' } }).success).toBe(false);
+    expect(play.safeParse({ ...playInput, game: { ...game, gameMode: 'hardcore' } }).success).toBe(
+      false,
+    );
+    expect(play.safeParse({ ...playInput, game: { ...game, extra: 1 } }).success).toBe(false);
+    const status = ipcContract[InvokeChannels.playStatus].response;
+    const inGame = {
+      ...playStatus,
+      state: 'game-world',
+      testWorld: 'msm-game-ruby',
+      world: 'msm-game-ruby',
+      seed: '-4172144997902289642',
+      label: 'In my game',
+    };
+    expect(status.safeParse(inGame).success).toBe(true);
+    expect(status.safeParse({ ...inGame, seed: '12a' }).success).toBe(false);
+    const newWorld = ipcContract[InvokeChannels.playNewWorld].request;
+    expect(
+      newWorld.safeParse({ targetId: 'mc-26.3', namespace: 'ruby', kind: 'game' }).success,
+    ).toBe(true);
+    expect(
+      newWorld.safeParse({ targetId: 'mc-26.3', namespace: 'ruby', kind: 'map' }).success,
+    ).toBe(false);
+  });
 
   it('has unique channel names prefixed msm:v1:', () => {
     const names = [...Object.values(InvokeChannels), ...Object.values(EventChannels)];

@@ -1,5 +1,6 @@
 package dev.mcsupermods.runtime.client.dev;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.client.dev.DevClientFiles.Action;
 import dev.mcsupermods.runtime.client.dev.DevClientFiles.DevRequest;
@@ -21,14 +22,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.LevelResource;
 
 /**
  * Runtime dev mode, client side (ADR 0084 D2, D4, D5, D6; B374). Inert unless {@code <gameDir>/msm-dev/dev.json} is a valid
@@ -40,7 +49,10 @@ import net.minecraft.network.chat.Component;
  *       while the title screen shows, once the start-up loading overlay is gone). A new play request (its {@code seq}
  *       above the last handled) is consumed (the file is deleted) and opens {@code saves/<world>} with
  *       {@code WorldOpenFlows.openWorld}, or creates it with {@code createFreshLevel} and {@link DevWorldSettings} when the
- *       folder does not exist.</li>
+ *       folder holds no {@code level.dat} yet (a folder holding only a dev data pack placed before creation is made, B547
+ *       Y15). A test world request makes the flat creative test world; a Play my game request ({@code kind: "game"},
+ *       ADR 0116 D1, B554) makes {@code msm-game-<ns>} with its world preset, game mode and difficulty, structures on and
+ *       a random seed.</li>
  *   <li>{@code ClientTickEvents.END_CLIENT_TICK} polls {@code request.json}'s modification time every
  *       {@value DevWorldSettings#REQUEST_POLL_TICKS} ticks and handles a new request: {@code reload} runs {@code /reload}
  *       on the integrated server through its command dispatcher (the server side reloads the overlays and scripts, B369),
@@ -49,10 +61,11 @@ import net.minecraft.network.chat.Component;
  *       a server run); {@code quit} saves, leaves and stops the game. Reload and reopen say
  *       {@code MCSuperMods: reloaded (N changes)} or {@code MCSuperMods: reopened the test world (N changes)} in chat.</li>
  *   <li>{@code status.json} is written every {@value DevWorldSettings#STATUS_WRITE_TICKS} ticks, at once when the state
- *       changes or a request is handled, and before the game stops on a quit request.</li>
+ *       changes or a request is handled, and before the game stops on a quit request; in a world it carries the world's
+ *       seed (B554).</li>
  * </ul>
  *
- * <p>Every request is handled once: the last handled {@code seq} starts from the previous run's {@code status.json}. All
+ * <p>Reload and reopen work the same in a test world and in a game world. Every request is handled once: the last handled {@code seq} starts from the previous run's {@code status.json}. All
  * work runs on the client thread; the only cross-thread fact is the reload count from the server thread.
  */
 public final class DevClient {
@@ -76,11 +89,15 @@ public final class DevClient {
         final boolean assets;
         final int changes;
         final String world;
+        /** How a new world is made for a Play my game request, else null. */
+        DevWorldSettings.GameWorld game;
         Phase phase;
         int startTick;
         int reloadsBefore;
         CompletableFuture<Void> assetsReload;
         boolean cancelled;
+        /** The experimental settings screen was answered for this open (game worlds only). */
+        boolean backupAnswered;
 
         Pending(long seq, Action action, boolean assets, int changes, String world, Phase phase, int startTick) {
             this.seq = seq;
@@ -249,19 +266,31 @@ public final class DevClient {
         }
         MsmRuntime.LOGGER.info("[{}] dev play request {}: opening {}", MsmRuntime.MOD_ID, request.get().seq(), request.get().world());
         pending = new Pending(request.get().seq(), null, false, 0, request.get().world(), Phase.OPENING, tick);
+        pending.game = request.get().game();
         openWorld(mc, pending);
     }
 
-    /** Opens {@code p.world}, creating it when the folder does not exist; the outcome is followed by {@link #advance}. */
+    /**
+     * Opens {@code p.world}, creating it when the folder holds no {@code level.dat}; the outcome is followed by
+     * {@link #advance}.
+     */
     private void openWorld(Minecraft mc, Pending p) {
         p.phase = Phase.OPENING;
         p.startTick = tick;
         try {
-            if (mc.getLevelSource().levelExists(p.world)) {
+            if (worldMade(mc, p.world)) {
                 mc.createWorldOpenFlows().openWorld(p.world, () -> {
                     p.cancelled = true;
                     mc.gui.setScreen(new TitleScreen());
                 });
+            } else if (p.game != null) {
+                DevWorldSettings.GameWorld game = p.game;
+                long seed = DevWorldSettings.randomSeed();
+                MsmRuntime.LOGGER.info("[{}] dev: creating the game world {} (world type {}, {}, {}, seed {})", MsmRuntime.MOD_ID,
+                        p.world, game.preset(), game.gameType().getName(), game.difficulty().getSerializedName(), seed);
+                mc.createWorldOpenFlows().createFreshLevel(p.world, DevWorldSettings.gameLevelSettings(p.world, game),
+                        DevWorldSettings.gameWorldOptions(seed), registries -> DevWorldSettings.gameDimensions(registries, game),
+                        new TitleScreen());
             } else {
                 MsmRuntime.LOGGER.info("[{}] dev: creating the test world {}", MsmRuntime.MOD_ID, p.world);
                 mc.createWorldOpenFlows().createFreshLevel(p.world, DevWorldSettings.levelSettings(p.world),
@@ -269,8 +298,26 @@ public final class DevClient {
             }
         } catch (RuntimeException e) {
             MsmRuntime.LOGGER.error("[{}] dev: opening {} failed", MsmRuntime.MOD_ID, p.world, e);
-            finish(mc, false, "The test world could not be opened; see the game log.");
+            finish(mc, false, capitalised(place(p.world)) + " could not be opened; see the game log.");
         }
+    }
+
+    /** Whether {@code saves/<world>} is a made world (it has a {@code level.dat}), not only a folder with packs in it. */
+    private static boolean worldMade(Minecraft mc, String world) {
+        if (!mc.getLevelSource().levelExists(world)) {
+            return false;
+        }
+        Path folder = mc.getLevelSource().getBaseDir().resolve(world);
+        return Files.isRegularFile(folder.resolve(LevelResource.LEVEL_DATA_FILE.id()));
+    }
+
+    /** "the test world", or "your game" for a Play my game world. */
+    private static String place(String world) {
+        return world != null && DevWorldSettings.isGameFolder(world) ? "your game" : "the test world";
+    }
+
+    private static String capitalised(String words) {
+        return Character.toUpperCase(words.charAt(0)) + words.substring(1);
     }
 
     // ---- request.json ----
@@ -366,13 +413,17 @@ public final class DevClient {
             case OPENING -> {
                 if (inWorld(mc)) {
                     afterData(mc, p);
+                } else if (!p.backupAnswered && DevWorldSettings.isGameFolder(p.world)
+                        && mc.gui.screen() instanceof BackupConfirmScreen screen) {
+                    p.backupAnswered = true;
+                    skipBackup(screen, p.world);
                 } else if (p.cancelled) {
-                    finish(mc, false, "Opening the test world was cancelled.");
+                    finish(mc, false, "Opening " + place(p.world) + " was cancelled.");
                 } else if (mc.level == null && mc.gui.screen() instanceof TitleScreen
                         && elapsed > DevWorldSettings.OPEN_FAILED_GRACE_TICKS) {
-                    finish(mc, false, "The test world could not be opened; see the game log.");
+                    finish(mc, false, capitalised(place(p.world)) + " could not be opened; see the game log.");
                 } else if (elapsed > DevWorldSettings.OPEN_TIMEOUT_TICKS) {
-                    finish(mc, false, "The test world did not open in time.");
+                    finish(mc, false, capitalised(place(p.world)) + " did not open in time.");
                 }
             }
             case RELOADING_DATA -> {
@@ -402,6 +453,39 @@ public final class DevClient {
         }
     }
 
+    /**
+     * A game world with its own world type opens behind the game's "experimental settings" screen every time (B547 Y14).
+     * The world is MSM's own copy of the game (backed up by the app's world backups, ADR 0102), so a dev open answers it
+     * with "I Know What I'm Doing!" and goes on; Reload's reopen would otherwise wait for a click. Found by the button's
+     * translation key; when it is not there the screen stays for the user to answer.
+     */
+    private static void skipBackup(BackupConfirmScreen screen, String world) {
+        for (AbstractWidget widget : Screens.getWidgets(screen)) {
+            if (widget instanceof AbstractButton button && widget.getMessage().getContents() instanceof TranslatableContents key
+                    && DevWorldSettings.BACKUP_SKIP_BUTTON_KEY.equals(key.getKey())) {
+                MsmRuntime.LOGGER.info("[{}] dev: {} uses its own world type; opening it without a backup (experimental settings screen)",
+                        MsmRuntime.MOD_ID, world);
+                button.onPress(ENTER);
+                return;
+            }
+        }
+        MsmRuntime.LOGGER.warn("[{}] dev: the experimental settings screen for {} has no skip button; it waits for the player",
+                MsmRuntime.MOD_ID, world);
+    }
+
+    /** A plain Enter press, for {@link AbstractButton#onPress} (the interface is the same on every version). */
+    private static final InputWithModifiers ENTER = new InputWithModifiers() {
+        @Override
+        public int input() {
+            return InputConstants.KEY_RETURN;
+        }
+
+        @Override
+        public int modifiers() {
+            return 0;
+        }
+    };
+
     /** The data part is done (world open or data packs reloaded): reload the resource packs when asked, else finish. */
     private void afterData(Minecraft mc, Pending p) {
         if (p.assets) {
@@ -428,7 +512,8 @@ public final class DevClient {
             if (!ok) {
                 mc.player.sendSystemMessage(Component.literal("MCSuperMods: " + message));
             } else if (p.action == Action.RELOAD || p.action == Action.REOPEN) {
-                mc.player.sendSystemMessage(Component.literal(DevClientFiles.chatLine(p.action, p.changes)));
+                mc.player.sendSystemMessage(Component.literal(DevClientFiles.chatLine(p.action, p.changes,
+                        p.world != null && DevWorldSettings.isGameFolder(p.world))));
             }
         }
     }
@@ -451,6 +536,23 @@ public final class DevClient {
         return server == null ? null : DevSetup.worldFolder(server);
     }
 
+    /** The open world's seed as a decimal string, or null outside a world. */
+    private static String seed(String world) {
+        if (world == null) {
+            return null;
+        }
+        IntegratedServer server = Minecraft.getInstance().getSingleplayerServer();
+        if (server == null) {
+            return null;
+        }
+        try {
+            ServerLevel overworld = server.overworld();
+            return overworld == null ? null : Long.toString(overworld.getSeed());
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
     private void writeStatus(GameState state, String world) {
         lastState = state;
         lastWorld = world;
@@ -460,7 +562,7 @@ public final class DevClient {
                     .map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
         }
         String text = DevClientFiles.statusText(
-                new DevClientFiles.Status(state, world, handled, System.currentTimeMillis(), runtimeVersion));
+                new DevClientFiles.Status(state, world, handled, System.currentTimeMillis(), runtimeVersion, seed(world)));
         Path file = devDir.resolve(DevClientFiles.STATUS_FILE);
         Path temp = devDir.resolve(DevClientFiles.STATUS_FILE + ".tmp");
         try {

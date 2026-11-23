@@ -313,6 +313,7 @@ export const PLAY_GAME_STATES = [
   'not-running',
   'starting',
   'test-world',
+  'game-world',
   'other-world',
 ] as const;
 

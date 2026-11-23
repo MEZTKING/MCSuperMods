@@ -13,6 +13,7 @@ import {
   type FakeSession,
   fakeBridge,
   fakeSession,
+  gameProject,
   RESTART_NEEDED,
   RESTART_REASONS,
   reloadOk,
@@ -56,6 +57,7 @@ describe('PlayControls', () => {
     ['not-running', CHIP_LABELS['not-running'], 'Game not running'],
     ['starting', CHIP_LABELS.starting, 'Starting…'],
     ['test-world', CHIP_LABELS['test-world'], 'In the test world'],
+    ['game-world', CHIP_LABELS['game-world'], 'In my game'],
     ['other-world', CHIP_LABELS['other-world'], 'In another world'],
   ] as const;
 
@@ -184,6 +186,42 @@ describe('PlayControls', () => {
     );
     await user.click(screen.getByTestId('play-menu-restart'));
     await waitFor(() => expect(bridge.play.restart).toHaveBeenCalledTimes(1));
+  });
+
+  it('menu offers Play my game and Start over only with a world setup', async () => {
+    await mount();
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('play-menu'));
+    const off = 'Add a world setup first (Make a game), so Minecraft knows how your world starts.';
+    expect(screen.getByTestId('play-menu-play-game').textContent).toContain('Play my game');
+    expect(screen.getByTestId('play-menu-play-game-reason').textContent).toBe(off);
+    expect(screen.getByTestId('play-menu-start-over-reason').textContent).toBe(off);
+  });
+
+  it('menu plays my game and starts over; the seed shows in my game', async () => {
+    const { bridge } = await mount(fakeBridge(), fakeSession({ project: gameProject() }));
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('play-menu'));
+    expect(screen.queryByTestId('play-menu-play-game-reason')).toBeNull();
+    await user.click(screen.getByTestId('play-menu-play-game'));
+    await waitFor(() => expect(bridge.play.play).toHaveBeenCalledTimes(1));
+    expect(bridge.play.play.mock.calls[0]?.[0]).toMatchObject({
+      game: { preset: 'demo:sky_block' },
+    });
+    await user.click(screen.getByTestId('play-menu'));
+    await user.click(screen.getByTestId('play-menu-start-over'));
+    await waitFor(() =>
+      expect(bridge.play.newWorld).toHaveBeenCalledWith('mc-26.3', 'demo', 'game'),
+    );
+    expect(screen.queryByTestId('play-seed')).toBeNull();
+    act(() => bridge.push(statusFor('game-world', { testWorld: 'msm-game-demo' })));
+    expect(screen.getByTestId('play-chip').textContent).toBe('In my game');
+    expect(screen.getByTestId('play-seed').textContent).toBe('Seed 1234567890123');
+    expect((screen.getByTestId('play-reload') as HTMLButtonElement).disabled).toBe(false);
+    await user.click(screen.getByTestId('play-menu'));
+    expect(screen.getByTestId('play-menu-start-over-reason').textContent).toBe(
+      'Close Minecraft first.',
+    );
   });
 });
 

@@ -58,6 +58,17 @@ class DevFilesTest {
     }
 
     @Test
+    void gameWorldFolders() {
+        // B554: Play my game's worlds run no setup function.
+        assertTrue(DevFiles.isGameWorldFolder("msm-game-ruby"));
+        assertTrue(DevFiles.isGameWorldFolder("msm-game-ruby-old-1"));
+        assertFalse(DevFiles.isGameWorldFolder("msm-game-"));
+        assertFalse(DevFiles.isGameWorldFolder("msm-test-ruby"));
+        assertFalse(DevFiles.isGameWorldFolder("msm-game-a/b"));
+        assertFalse(DevFiles.isGameWorldFolder(null));
+    }
+
+    @Test
     void setupFunctionSections() {
         String text = "# MCSuperMods test world (written by MCSuperMods; changes are replaced at the next Play)\n"
                 + "say before any marker\n" + DevFiles.SETUP_SECTION + "\ntime set 6000\n\ngamerule advance_time false\r\n"

@@ -13,6 +13,7 @@ const CHIP_LABELS = {
   'not-running': 'Game not running',
   starting: 'Starting…',
   'test-world': 'In the test world',
+  'game-world': 'In my game',
   'other-world': 'In another world',
 };
 

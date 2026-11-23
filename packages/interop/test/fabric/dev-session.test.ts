@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  checkedGame,
   DEV_RESOURCE_PACK_ID,
   type DevStatus,
   devDataPackPath,
@@ -8,9 +9,12 @@ import {
   devPaths,
   devWorldFolder,
   GAME_RUNNING_STALE_MS,
+  gameWorldFolder,
   installedDevRecord,
   isGameRunning,
+  isGameWorldFolder,
   isHandled,
+  isPresetId,
   nextPlayRequest,
   nextRequest,
   oldWorldFolder,
@@ -19,6 +23,7 @@ import {
   parseDevStatus,
   parseInstalledDevRecord,
   parsePlayRequest,
+  playWorldFolder,
 } from '../../src/index';
 
 const HASH = 'a'.repeat(64);
@@ -197,5 +202,82 @@ describe('stable JSON and parsing', () => {
       ),
     ).toBeNull();
     expect(() => devInfo({ namespaces: [], target: 't', world: 'w', appVersion: '1' })).toThrow();
+  });
+});
+
+describe('Play my game (ADR 0116 D1)', () => {
+  const game = { preset: 'ruby:sky_block', gameMode: 'adventure', difficulty: 'hard' } as const;
+
+  it('names the game world beside the test world', () => {
+    expect(gameWorldFolder('ruby')).toBe('msm-game-ruby');
+    expect(playWorldFolder('game', 'ruby')).toBe('msm-game-ruby');
+    expect(playWorldFolder('test', 'ruby')).toBe('msm-test-ruby');
+    expect(() => gameWorldFolder('Ruby')).toThrow();
+    expect(isGameWorldFolder('msm-game-ruby')).toBe(true);
+    expect(isGameWorldFolder('msm-game-')).toBe(false);
+    expect(isGameWorldFolder('msm-test-ruby')).toBe(false);
+    expect(oldWorldFolder('msm-game-ruby', ['msm-game-ruby-old-1'])).toBe('msm-game-ruby-old-2');
+  });
+
+  it('writes a game play request and reads it back', () => {
+    const request = nextPlayRequest({}, 'msm-game-ruby', game);
+    expect(request).toEqual({
+      format: 1,
+      seq: 1,
+      world: 'msm-game-ruby',
+      kind: 'game',
+      preset: 'ruby:sky_block',
+      gameMode: 'adventure',
+      difficulty: 'hard',
+    });
+    const text = devFileText(request);
+    expect(text).toBe(
+      '{\n  "difficulty": "hard",\n  "format": 1,\n  "gameMode": "adventure",\n  "kind": "game",\n' +
+        '  "preset": "ruby:sky_block",\n  "seq": 1,\n  "world": "msm-game-ruby"\n}\n',
+    );
+    expect(parsePlayRequest(text)).toEqual(request);
+    // A test request stays as before (no kind), so older runtimes read it.
+    expect(nextPlayRequest({}, 'msm-test-ruby')).toEqual({
+      format: 1,
+      seq: 1,
+      world: 'msm-test-ruby',
+    });
+    expect(parsePlayRequest('{"format":1,"kind":"test","seq":2,"world":"msm-test-ruby"}')).toEqual({
+      format: 1,
+      seq: 2,
+      world: 'msm-test-ruby',
+    });
+  });
+
+  it('refuses a game request that the runtime would refuse', () => {
+    expect(() => nextPlayRequest({}, 'msm-test-ruby', game)).toThrow(/game world/);
+    expect(() => nextPlayRequest({}, 'msm-game-ruby', { ...game, preset: 'sky' })).toThrow();
+    expect(() =>
+      nextPlayRequest({}, 'msm-game-ruby', { ...game, gameMode: 'hardcore' as never }),
+    ).toThrow();
+    expect(() =>
+      nextPlayRequest({}, 'msm-game-ruby', { ...game, difficulty: 'extreme' as never }),
+    ).toThrow();
+    const good = devFileText(nextPlayRequest({}, 'msm-game-ruby', game));
+    for (const bad of [
+      good.replace('"game"', '"other"'),
+      good.replace('adventure', 'hardcore'),
+      good.replace('"hard"', '"extreme"'),
+      good.replace('ruby:sky_block', 'ruby:sky/'),
+      good.replace('msm-game-ruby', 'msm-test-ruby'),
+      good.replace('  "preset": "ruby:sky_block",\n', ''),
+    ]) {
+      expect(parsePlayRequest(bad)).toBeNull();
+    }
+    expect(isPresetId('minecraft:normal')).toBe(true);
+    expect(isPresetId('a:b//c')).toBe(false);
+    expect(checkedGame(game)).toEqual(game);
+  });
+
+  it('reads the seed the runtime reports', () => {
+    const withSeed = { ...status(5), world: 'msm-game-ruby', seed: '-4172144997902289642' };
+    expect(parseDevStatus(devFileText(withSeed))).toEqual(withSeed);
+    expect(parseDevStatus(devFileText(status(5)))).toEqual(status(5));
+    expect(parseDevStatus(devFileText({ ...status(5), seed: 'x' } as DevStatus))).toBeNull();
   });
 });

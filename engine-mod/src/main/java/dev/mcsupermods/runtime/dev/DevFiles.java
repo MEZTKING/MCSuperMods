@@ -29,6 +29,9 @@ public final class DevFiles {
     /** Marks the lines run on a new world after the setup, and on every later Play. */
     public static final String REFILL_SECTION = "# msm:refill";
 
+    /** The start of Play my game's world folder names ({@code @msm/interop} {@code gameWorldFolder}, ADR 0116 D1). */
+    public static final String GAME_WORLD_FOLDER_PREFIX = "msm-game-";
+
     private static final Pattern NAMESPACE = Pattern.compile("[a-z0-9_.-]{1,64}");
     private static final Pattern WORLD_FOLDER = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,127}");
 
@@ -118,6 +121,15 @@ public final class DevFiles {
             }
         }
         return new SetupFunction(setup, refill);
+    }
+
+    /**
+     * Whether {@code worldFolder} is a Play my game world ({@code msm-game-<ns>}): a world folder name with that start and at
+     * least one more character. The server side runs no setup function in one (B554).
+     */
+    public static boolean isGameWorldFolder(String worldFolder) {
+        return isWorldFolder(worldFolder) && worldFolder.startsWith(GAME_WORLD_FOLDER_PREFIX)
+                && worldFolder.length() > GAME_WORLD_FOLDER_PREFIX.length();
     }
 
     /** One safe folder segment, as the app writes world folder names. */

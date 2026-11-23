@@ -679,6 +679,98 @@ describe('Play service', () => {
     ]);
   });
 
+  it('plays my game in msm-game-<ns>: the world setup, no setup lines, the seed, Reload and Start over', async () => {
+    const GAME = 'msm-game-ruby';
+    const game = { preset: 'ruby:sky_block', gameMode: 'adventure', difficulty: 'hard' } as const;
+    const result = await service.play(input({ game, items: [] }));
+    expect(playSchema.parse(result)).toEqual(result);
+    expect(result).toMatchObject({ ok: true, world: GAME, itemsLeftOut: 0, launched: true });
+    expect(await readJson(devFile('dev.json'))).toMatchObject({ world: GAME });
+    expect(parsePlayRequest(await readFile(devFile('play.json'), 'utf8'))).toEqual({
+      format: 1,
+      seq: 1,
+      world: GAME,
+      kind: 'game',
+      ...game,
+    });
+    // No test area, chests, hotbar or game rules: the markers only.
+    const setup = await readFile(devFile('setup.mcfunction'), 'utf8');
+    expect(setup.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'))).toEqual(
+      [],
+    );
+    // The world preset comes with the jar (every Play installs it).
+    expect((await readdir(join(gameDir(), 'mods'))).includes('ruby.jar')).toBe(true);
+
+    // The runtime reports the world and its random seed.
+    clock += 20_000;
+    await mkdir(join(gameDir(), 'msm-dev'), { recursive: true });
+    await writeFile(
+      devFile('status.json'),
+      `${JSON.stringify({ format: 1, handled: { seq: 1, ok: true }, runtime: '1.8.0', seed: '-4172144997902289642', state: 'world', time: clock, world: GAME })}\n`,
+    );
+    const status = await service.status('t');
+    expect(playStatusSchema.parse(status)).toEqual(status);
+    expect(status).toMatchObject({
+      state: 'game-world',
+      label: 'In my game',
+      testWorld: GAME,
+      world: GAME,
+      seed: '-4172144997902289642',
+      canReload: true,
+    });
+
+    // Reload works in the game world, into its own dev data pack.
+    const reload = await service.reload({
+      targetId: 't',
+      modId: 'ruby',
+      outputs: replace(baseOutputs(), 'data/ruby/recipe/ruby.json', { type: 'shapeless' }),
+    });
+    expect(reload).toMatchObject({ ok: true, action: 'reload', changes: 1 });
+    expect(
+      await readJson(
+        join(
+          gameDir(),
+          'saves',
+          GAME,
+          'datapacks',
+          'msm-dev',
+          'data',
+          'ruby',
+          'recipe',
+          'ruby.json',
+        ),
+      ),
+    ).toEqual({ type: 'shapeless' });
+
+    // Start over: refused while the game runs, then renames the game world only.
+    await mkdir(join(gameDir(), 'saves', WORLD), { recursive: true });
+    expect(await service.newTestWorld('t', 'ruby', 'game')).toMatchObject({
+      ok: false,
+      code: 'game-running',
+      message: 'Close Minecraft first, then choose Start over again.',
+    });
+    clock += 60_000;
+    expect((await service.status('t')).seed).toBeNull();
+    expect(await service.newTestWorld('t', 'ruby', 'game')).toEqual({
+      ok: true,
+      renamedTo: `${GAME}-old-1`,
+    });
+    expect((await readdir(join(gameDir(), 'saves'))).sort()).toEqual([`${GAME}-old-1`, WORLD]);
+
+    // A test Play afterwards goes back to the test world and its setup.
+    await service.play(input());
+    expect(await readJson(devFile('dev.json'))).toMatchObject({ world: WORLD });
+    expect(await readFile(devFile('setup.mcfunction'), 'utf8')).toContain('ruby:ruby_block');
+  });
+
+  it('refuses Play my game settings the runtime would refuse', async () => {
+    const result = await service.play(
+      input({ game: { preset: 'sky', gameMode: 'survival', difficulty: 'normal' } }),
+    );
+    expect(result).toMatchObject({ ok: false, code: 'bad-input' });
+    expect(writes).toEqual([]);
+  });
+
   it('pushes status changes while polling', async () => {
     const seen: string[] = [];
     const off = service.onStatus((status) => {
