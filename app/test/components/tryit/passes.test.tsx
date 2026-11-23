@@ -1,12 +1,19 @@
 // @vitest-environment happy-dom
 import { SimWorld } from '@msm/sim';
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ResourceFolders } from '../../../src/renderer/src/preview/model-chain';
 import { ParticleField } from '../../../src/renderer/src/tryit/render/particles';
 import { NO_WEBGL_MESSAGE, TryItScene } from '../../../src/renderer/src/tryit/render/TryItScene';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../lazy-chunks';
 
 afterEach(cleanup);
+// The canvas is a lazy chunk (deepslate, gl-matrix; ADR 0085 D12): loaded once here, so the
+// alert does not wait on Vitest transforming it, which took over findBy's second under load.
+beforeAll(
+  () => preloadChunks(() => import('../../../src/renderer/src/tryit/render/TryItCanvas')),
+  PRELOAD_TIMEOUT_MS,
+);
 
 const folders: ResourceFolders = {
   atlases: 'atlases',
@@ -42,7 +49,9 @@ describe('Try it canvas with particles and portals', () => {
         onWebGLUnavailable={() => (unavailable += 1)}
       />,
     );
-    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(
+      await screen.findByRole('alert', undefined, { timeout: LAZY_CHUNK_TIMEOUT_MS }),
+    ).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toBe(NO_WEBGL_MESSAGE);
     expect(unavailable).toBe(1);
   });

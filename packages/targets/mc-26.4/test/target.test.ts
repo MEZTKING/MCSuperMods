@@ -571,6 +571,7 @@ describe('target mc-26.4', () => {
     // The game's data pack (dynamic) registries a data component can name (ADR 0050).
     const dataPack = new Set([
       'banner_pattern',
+      'block_transformer',
       'cat_sound_variant',
       'cat_variant',
       'chicken_sound_variant',

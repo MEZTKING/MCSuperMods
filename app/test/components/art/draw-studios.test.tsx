@@ -30,13 +30,17 @@ import {
 import type { SchemaContextState } from '../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../fixtures';
 import { schemaIndex } from '../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../lazy-chunks';
 import { renderOnStack, schemaState } from '../studios/blocks-items/harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
 let schema: SchemaContextState;
 beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex());
-});
+  // The Draw dialog is a lazy chunk (ADR 0092 D17): loaded once here, so findBy does not race
+  // Vitest transforming it (over its one-second default when the whole suite ran at once).
+  await preloadChunks(() => import('../../../src/renderer/src/components/art/DrawPictureDialog'));
+}, PRELOAD_TIMEOUT_MS);
 afterEach(cleanup);
 
 const RUBY = [196, 28, 52] as const;
@@ -96,7 +100,7 @@ describe('Draw… on a Block Studio texture slot', () => {
     expect(button.textContent).toBe('Draw…');
     expect(screen.queryByTestId('block-texture-all-ai')).toBeNull();
     fireEvent.click(button);
-    await screen.findByTestId('draw-dialog');
+    await screen.findByTestId('draw-dialog', undefined, { timeout: LAZY_CHUNK_TIMEOUT_MS });
     click('draw-option-leaves');
     click('draw-new-looks');
     click('draw-variation-2');
@@ -133,7 +137,7 @@ describe('Draw… on a model picture row', () => {
     );
     const button = await screen.findByTestId('item-model-ai-demo-item-ruby-sword-draw');
     fireEvent.click(button);
-    await screen.findByTestId('draw-dialog');
+    await screen.findByTestId('draw-dialog', undefined, { timeout: LAZY_CHUNK_TIMEOUT_MS });
     expect(screen.getByTestId('draw-option-sword').getAttribute('aria-selected')).toBe('true');
     click('draw-use');
     await waitFor(() => expect(calls).toHaveLength(1));

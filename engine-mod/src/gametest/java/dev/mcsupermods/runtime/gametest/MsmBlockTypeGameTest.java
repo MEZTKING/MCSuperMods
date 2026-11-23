@@ -391,6 +391,32 @@ public class MsmBlockTypeGameTest {
         helper.succeed();
     }
 
+    // msm:components minecraft:block_transformer (B614 follow-up): decoded once data packs are loaded
+
+    @GameTest
+    public void itemNamingABlockTransformerTransformsTheBlock(GameTestHelper helper) {
+        // clay_glazer passes through minecraft:block_transformer naming the data pack's msm_runtime_gametest:glaze
+        // (clay to terracotta), as vanilla's axe names minecraft:axe.
+        ItemStack glazer = new ItemStack(item("clay_glazer"));
+        helper.assertTrue(glazer.has(DataComponents.BLOCK_TRANSFORMER), "block_transformer is not set on the item");
+        helper.assertValueEqual(glazer.get(DataComponents.BLOCK_TRANSFORMER).unwrapKey().map(k -> k.identifier()),
+                java.util.Optional.of(Identifier.fromNamespaceAndPath("msm_runtime_gametest", "glaze")), "transformer");
+        BlockPos clay = new BlockPos(2, 1, 2);
+        BlockPos stone = new BlockPos(1, 1, 2);
+        helper.setBlock(clay, Blocks.CLAY);
+        helper.setBlock(stone, Blocks.STONE);
+        ServerPlayer player = player(helper, new Vec3(2.5, 1, 5.5));
+        hold(player, glazer);
+        InteractionResult result = use(helper, player, clay, Direction.SOUTH);
+        helper.assertTrue(result.consumesAction(), "transform result " + result);
+        helper.assertBlockPresent(Blocks.TERRACOTTA, clay);
+        helper.assertValueEqual(player.getMainHandItem().getDamageValue(), 1, "glazer damage");
+        // The transformer's rule matches clay only: stone stays.
+        use(helper, player, stone, Direction.SOUTH);
+        helper.assertBlockPresent(Blocks.STONE, stone);
+        helper.succeed();
+    }
+
     @GameTest
     public void stickDoesNotStrip(GameTestHelper helper) {
         BlockPos log = new BlockPos(2, 1, 2);

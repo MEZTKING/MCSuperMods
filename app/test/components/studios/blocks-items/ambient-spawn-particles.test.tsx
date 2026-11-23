@@ -13,6 +13,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 import { renderOnStack, schemaState } from './harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
@@ -23,7 +24,17 @@ beforeAll(async () => {
     // The harness's registry view has no project ids: `wild:spark` stands in for one.
     particle_type: ['minecraft:ash', 'minecraft:end_rod', 'minecraft:flame', 'wild:spark'],
   });
-});
+  // The Ambient particles and Portal sections are lazy chunks of the Block Studio: loaded once
+  // here, so findBy does not race Vitest transforming them (over its one-second default when
+  // the whole suite ran at once).
+  await preloadChunks(
+    () => import('../../../../src/renderer/src/studios/blocks-items/AmbientParticlesSection'),
+    () => import('../../../../src/renderer/src/studios/blocks-items/PortalSection'),
+  );
+}, PRELOAD_TIMEOUT_MS);
+
+/** Waits for a lazy section. */
+const LAZY = { timeout: LAZY_CHUNK_TIMEOUT_MS };
 afterEach(cleanup);
 
 const BLOCK = 'demo:lamp' as ResourceLocation;
@@ -58,7 +69,7 @@ const click = (testId: string) => fireEvent.click(screen.getByTestId(testId));
 describe('Ambient particles section', () => {
   it('is lazy, adds the first project particle and edits every field as one step each', async () => {
     const { stack, data } = renderOnStack(block(), schema, { others: [SPARK] });
-    await screen.findByTestId('block-ambient-toggle');
+    await screen.findByTestId('block-ambient-toggle', undefined, LAZY);
     expect(screen.queryByTestId('block-ambient-chance')).toBeNull();
     click('block-ambient-toggle');
     expect(ambient(data)).toEqual({ particle: 'demo:spark' });
@@ -95,7 +106,7 @@ describe('Ambient particles section', () => {
       block({ components: { 'msm:ambient_particles': { particle: 'minecraft:flame' } } }),
       schema,
     );
-    await screen.findByTestId('block-ambient-particle-kind');
+    await screen.findByTestId('block-ambient-particle-kind', undefined, LAZY);
     expect(
       [...(screen.getByTestId('block-ambient-particle-kind') as HTMLSelectElement).options].map(
         (option) => option.text,
@@ -136,7 +147,7 @@ describe('Ambient particles section', () => {
       schema,
     );
     await screen.findByTestId('block-studio');
-    await screen.findByTestId('block-portal');
+    await screen.findByTestId('block-portal', undefined, LAZY);
     expect(screen.queryByTestId('block-ambient')).toBeNull();
     expect(screen.queryByTestId('block-ambient-loading')).toBeNull();
   });

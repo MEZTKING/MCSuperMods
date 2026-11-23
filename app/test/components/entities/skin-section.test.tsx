@@ -42,13 +42,24 @@ import type { SchemaContextState } from '../../../src/renderer/src/studios/use-s
 import { fakeHost, fakePictures, testCodec } from '../ai-pictures-fake';
 import { element } from '../fixtures';
 import { schemaIndex } from '../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../lazy-chunks';
 import { projectOf, renderOnStack, schemaState } from '../studios/blocks-items/harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
 let schema: SchemaContextState;
 beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex());
-});
+  // The Draw dialog and MSM's drawing for the AI window are lazy chunks (ADR 0092 D17): loaded
+  // once here, so no wait below races Vitest transforming them, which took over findBy's
+  // one-second default when the whole suite ran at once.
+  await preloadChunks(
+    () => import('../../../src/renderer/src/components/art/DrawPictureDialog'),
+    () => import('../../../src/renderer/src/components/ai-pictures/reference'),
+  );
+}, PRELOAD_TIMEOUT_MS);
+
+/** Waits for what follows a click that draws or makes pictures (real work, slow under load). */
+const WORK = { timeout: LAZY_CHUNK_TIMEOUT_MS };
 afterEach(() => {
   cleanup();
   usePreferences.setState({ mode: 'advanced' });
@@ -170,7 +181,7 @@ describe('Draw a skin', () => {
     expect(button.textContent).toBe('Draw a skin');
     expect(button.disabled).toBe(false);
     fireEvent.click(button);
-    const dialog = await screen.findByTestId('draw-dialog');
+    const dialog = await screen.findByTestId('draw-dialog', undefined, WORK);
     expect(dialog.textContent).toContain('Draw a skin: demo:textures/entity/golem.png');
     const coats = Array.from(
       (screen.getByTestId('draw-finish') as HTMLSelectElement).options,
@@ -182,7 +193,7 @@ describe('Draw a skin', () => {
     click('draw-variation-2');
     expect(screen.getByTestId('draw-use').textContent).toBe('Use this skin');
     click('draw-use');
-    await waitFor(() => expect(calls).toHaveLength(1));
+    await waitFor(() => expect(calls).toHaveLength(1), WORK);
     const [call] = calls;
     expect(call?.label).toBe('Draw a skin textures/entity/golem.png');
     expect(call?.writes).toEqual([]);
@@ -208,11 +219,11 @@ describe('Draw a skin', () => {
       }),
     );
     click('entity-draw-skin');
-    await screen.findByTestId('draw-dialog');
+    await screen.findByTestId('draw-dialog', undefined, WORK);
     fireEvent.change(screen.getByTestId('draw-finish'), { target: { value: 'scales' } });
     fireEvent.change(screen.getByTestId('draw-accent'), { target: { value: '#f0e0a0' } });
     click('draw-use');
-    await waitFor(() => expect(calls).toHaveLength(1));
+    await waitFor(() => expect(calls).toHaveLength(1), WORK);
     expect(calls[0]?.items).toEqual([]);
     expect(calls[0]?.writes).toEqual([
       {
@@ -254,7 +265,7 @@ describe('Draw a skin', () => {
     const button = screen.getByTestId('entity-draw-skin');
     expect(button.textContent).toBe('Draw its skin');
     fireEvent.click(button);
-    const dialog = await screen.findByTestId('draw-dialog');
+    const dialog = await screen.findByTestId('draw-dialog', undefined, WORK);
     expect(dialog.textContent).toContain('Draw its skin:');
     expect(screen.queryByTestId('draw-finish')).toBeNull();
     expect(screen.getAllByTestId(/^draw-variation-\d$/)).toHaveLength(6);
@@ -283,17 +294,18 @@ describe('Make a skin with AI (ADR 0093, 2026-11-22)', () => {
     const button = screen.getByTestId('entity-ai-skin') as HTMLButtonElement;
     expect(button.textContent).toBe('Make a skin with AI');
     fireEvent.click(button);
-    expect((await screen.findByTestId('ai-pictures-shape')).textContent).toBe(
+    expect((await screen.findByTestId('ai-pictures-shape', undefined, WORK)).textContent).toBe(
       'Mob skin: 64 × 32, laid on the model',
     );
-    await waitFor(() =>
-      expect(screen.getByTestId('ai-pictures-cost').textContent).toContain('$0.24'),
+    await waitFor(
+      () => expect(screen.getByTestId('ai-pictures-cost').textContent).toContain('$0.24'),
+      WORK,
     );
     fireEvent.click(screen.getByTestId('ai-pictures-generate'));
-    await screen.findByTestId('ai-pictures-result-0');
+    await screen.findByTestId('ai-pictures-result-0', undefined, WORK);
     expect(platform.requests[0]).toMatchObject({ style: 'skin', size: 16, transparent: false });
     fireEvent.click(screen.getByTestId('ai-pictures-use'));
-    await waitFor(() => expect(calls).toHaveLength(1));
+    await waitFor(() => expect(calls).toHaveLength(1), WORK);
     expect(calls[0]?.label).toBe('Make with AI textures/entity/golem.png');
     const asset = calls[0]?.items.find((item) => item.op === 'asset')?.asset;
     const skin = await testCodec.decode(asset?.bytes ?? new Uint8Array(8));

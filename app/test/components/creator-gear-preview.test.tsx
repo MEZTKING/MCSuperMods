@@ -53,6 +53,9 @@ async function build(
   });
 }
 
+/** How long a wait for the Creator's rebuild (the starter lowered again) may take. */
+const REBUILD_TIMEOUT_MS = 10_000;
+
 function renderDialog(session: ProjectSession, pickImage?: PickImage) {
   render(
     <CreatorDialog
@@ -257,10 +260,14 @@ describe('Creator previews of the 0.8.0 flows', () => {
     expect(screen.getByTestId('param-image-summary').textContent).toBe(
       'PNG image, 64 by 32 pixels',
     );
-    await waitFor(() =>
-      expect(screen.getByTestId('creator-painting-fit').textContent).toBe(
-        'The picture is 64 by 32 pixels: 32 pixels per block.',
-      ),
+    // The card follows the Creator's rebuild, which lowers the whole starter again: real work
+    // that took over waitFor's one-second default when the whole suite ran at once.
+    await waitFor(
+      () =>
+        expect(screen.getByTestId('creator-painting-fit').textContent).toBe(
+          'The picture is 64 by 32 pixels: 32 pixels per block.',
+        ),
+      { timeout: REBUILD_TIMEOUT_MS },
     );
 
     await user.click(screen.getByTestId('param-image-clear'));

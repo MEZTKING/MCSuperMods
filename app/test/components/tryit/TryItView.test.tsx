@@ -71,7 +71,13 @@ describe('Try it view', () => {
   it('shows the first-run card once', async () => {
     view();
     await ready();
-    expect(screen.getByTestId('tryit-card').textContent).toContain(CARD_LINES[0]);
+    const card = screen.getByTestId('tryit-card').textContent ?? '';
+    for (const line of CARD_LINES) expect(card).toContain(line);
+    // Commands and functions run in Try it (B606, B613): only /spreadplayers and unknown forms
+    // stay in the game.
+    expect(card).toContain('Commands run here: your functions');
+    expect(card).toContain('/spreadplayers');
+    expect(card).not.toContain('Not here: commands');
     fireEvent.click(screen.getByTestId('tryit-card-close'));
     expect(screen.queryByTestId('tryit-card')).toBeNull();
     cleanup();

@@ -37,7 +37,8 @@ public final class VanillaComponents {
             Identifier.withDefaultNamespace("trim"),
             Identifier.withDefaultNamespace("damage_resistant"),
             Identifier.withDefaultNamespace("blocks_attacks"),
-            Identifier.withDefaultNamespace("damage_type"));
+            Identifier.withDefaultNamespace("damage_type"),
+            Identifier.withDefaultNamespace("block_transformer"));
 
     private static final Logger LOGGER = LoggerFactory.getLogger("msm_test");
     private static RegistryAccess staticRegistries;

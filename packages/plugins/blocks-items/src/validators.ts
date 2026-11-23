@@ -215,6 +215,7 @@ export function potionNeedsJarProblem(elementId?: Element['id']): Problem {
  * `ComponentPassthrough.DELAYED` in `engine-mod`), so they may name data pack registry entries.
  */
 export const DELAYED_PASSTHROUGH_COMPONENTS: readonly string[] = Object.freeze([
+  'block_transformer',
   'blocks_attacks',
   'damage_resistant',
   'damage_type',

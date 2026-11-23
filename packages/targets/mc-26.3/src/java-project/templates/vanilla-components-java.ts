@@ -3,7 +3,7 @@
  * Mojang names) as a plain helper. Each `msm:components` entry is decoded with its own Codec
  * over `RegistryOps` on the built-in registries; the delayed list (components naming a data
  * pack registry: `jukebox_playable`, `provides_trim_material`, `trim`, `damage_resistant`,
- * `blocks_attacks`, `damage_type`) is decoded once data packs are loaded; any other failure is
+ * `blocks_attacks`, `damage_type`, `block_transformer`) is decoded once data packs are loaded; any other failure is
  * logged and the entry is left out, as the runtime does.
  *
  * @packageDocumentation
@@ -57,7 +57,8 @@ public final class VanillaComponents {
             Identifier.withDefaultNamespace("trim"),
             Identifier.withDefaultNamespace("damage_resistant"),
             Identifier.withDefaultNamespace("blocks_attacks"),
-            Identifier.withDefaultNamespace("damage_type"));
+            Identifier.withDefaultNamespace("damage_type"),
+            Identifier.withDefaultNamespace("block_transformer"));
 
     private static final Logger LOGGER = LoggerFactory.getLogger(${javaString(modId)});
     private static RegistryAccess staticRegistries;

@@ -14,6 +14,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Fixed
 
 - AI pictures' clean-up no longer turns a flat area into stripes or speckles of different shades.
+- The AI pictures' outline check now fails a round blob for every armour piece, tool, bow, ingot and gem: it also compares the corners, points and gaps where MCSuperMods' drawing differs from a plain oval. MCSuperMods' drawn leggings now have a clear gap between the legs (the Gear set and Glowshard leggings icons change with them).
+- An item can carry `minecraft:block_transformer` through `msm:components` (naming a block transformer of your data pack, or Minecraft's `minecraft:axe`, `shovel` or `hoe`): using it changes blocks as the transformer says. Before, the game refused it at load.
+- Try it's first-run card no longer says commands do not run there: it says your functions and most of the game's own commands run in the chat box, and that `/spreadplayers` and the forms Try it does not know run only in the game.
 
 - Five data pack forms that stop a real Minecraft server from starting are now refused before export, with plain words: a predicate or item modifier file that is a list or a bare id, a time check without its clock, a damage tag named without `#`, and a block transformer state in the old `{Name}` form.
 - The function checker no longer breaks on valid lines that use a fake player name such as `#count` in a score (`execute if score`, `scoreboard players get` and `operation`, `team join`, a score in `tellraw`), a named random sequence, a `place jigsaw` target, or a block or particle from your own mod; these lines now check cleanly, and if the checker ever stops early it says so as a note instead of failing.

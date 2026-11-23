@@ -491,9 +491,12 @@ export const target: Target = {
     },
     // dataPackComponents (ADR 0050): data components whose value names a data pack registry
     // entry, derived 2026-11-07 from this target's vendored vanilla-mcdoc; the targets tests
-    // derive it again from the mcdoc and must agree.
+    // derive it again from the mcdoc and must agree. `block_transformer` added 2026-11-22: javap
+    // shows `DataComponents.BLOCK_TRANSFORMER` is a `Holder<BlockTransformer>` of the data pack
+    // registry `block_transformer`, which the tests' list of data pack registries had missed.
     dataPackComponents: [
       'banner_patterns',
+      'block_transformer',
       'blocks_attacks',
       'cat/sound_variant',
       'cat/variant',

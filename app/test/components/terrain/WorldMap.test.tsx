@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import type { Element, OutputFile, Project, Target } from '@msm/plugin-api';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type MapRegion,
   TerrainClient,
@@ -260,30 +260,40 @@ describe('WorldMap', () => {
     show(r, start, OWN_WORLD);
     await settle(r.local);
     const before = r.local.sent.length;
-    const edited = element('demo:land', 'minecraft:worldgen/noise_settings', { sea_level: 50 });
-    const startedAt = performance.now();
-    act(() => r.edit(project([edited, OWN_WORLD, MOOR])));
-    // Nothing is asked before the debounce ends.
-    await act(async () => new Promise((resolve) => setTimeout(resolve, TERRAIN_DEBOUNCE_MS / 2)));
-    expect(r.local.sent.length).toBe(before);
-    let coarseAt: number | null = null;
-    for (let i = 0; i < 40 && coarseAt === null; i += 1) {
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        await r.local.flush();
-      });
+    const coarseAsked = (): boolean => {
       const after = r.local.sent.slice(before);
-      if (
+      return (
         after.some((m) => m.type === 'world') &&
         biomeRequests(after).some((m) => m.pass === 'coarse')
-      ) {
-        coarseAt = performance.now();
+      );
+    };
+    // The debounce is timed on a fake clock: under a loaded machine wall-clock timers fire late,
+    // so the test steps the clock itself and nothing here depends on how fast the machine is.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const edited = element('demo:land', 'minecraft:worldgen/noise_settings', { sea_level: 50 });
+      act(() => r.edit(project([edited, OWN_WORLD, MOOR])));
+      // Nothing is asked before the debounce ends, however long the work in between takes.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(TERRAIN_DEBOUNCE_MS - 1);
+        await r.local.flush();
+      });
+      expect(r.local.sent.length).toBe(before);
+      // The last millisecond: the files are read again and the coarse pass is asked, with no
+      // more waiting than the zero-delay steps the work itself takes.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      for (let i = 0; i < 20 && !coarseAsked(); i += 1) {
+        await act(async () => {
+          await r.local.flush();
+          await vi.advanceTimersByTimeAsync(0);
+        });
       }
+    } finally {
+      vi.useRealTimers();
     }
-    expect(coarseAt).not.toBeNull();
-    const elapsed = (coarseAt as number) - startedAt;
-    expect(elapsed).toBeGreaterThanOrEqual(TERRAIN_DEBOUNCE_MS - 5);
-    expect(elapsed).toBeLessThan(TERRAIN_DEBOUNCE_MS + 250);
+    expect(coarseAsked()).toBe(true);
     const world = r.local.sent.slice(before).find((m) => m.type === 'world');
     expect(
       (world as Extract<WorkerInbound, { type: 'world' }>).spec.project['worldgen/noise_settings'],

@@ -14,6 +14,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 import { renderOnStack, schemaState } from './harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
@@ -23,7 +24,15 @@ beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex(), {
     dimension: ['overworld', 'the_nether', 'the_end', 'demo:sky'],
   });
-});
+  // The Portal section is a lazy chunk of the Block Studio: loaded once here, so findBy does not
+  // race Vitest transforming it (over its one-second default when the whole suite ran at once).
+  await preloadChunks(
+    () => import('../../../../src/renderer/src/studios/blocks-items/PortalSection'),
+  );
+}, PRELOAD_TIMEOUT_MS);
+
+/** Waits for the lazy section. */
+const LAZY = { timeout: LAZY_CHUNK_TIMEOUT_MS };
 afterEach(cleanup);
 
 const ID = 'demo:gate' as ResourceLocation;
@@ -80,7 +89,7 @@ describe('Portal section', () => {
       destination: 'minecraft:the_nether',
       events: { arrived: { actions: [] } },
     });
-    expect(await screen.findByTestId('block-portal')).toBeTruthy();
+    expect(await screen.findByTestId('block-portal', undefined, LAZY)).toBeTruthy();
     act(() => stack.undo());
     expect(read(data).type).toBeUndefined();
     expect(read(data).components).toEqual({ 'msm:on_interact': { event: 'arrived' } });
@@ -88,7 +97,7 @@ describe('Portal section', () => {
 
   it('edits the frame and the igniter', async () => {
     const { stack, data } = renderOnStack(portal(), schema);
-    await screen.findByTestId('block-portal-frame');
+    await screen.findByTestId('block-portal-frame', undefined, LAZY);
     expect(screen.queryByTestId('block-portal-frame-block')).toBeNull();
     commit('block-portal-frame', '#demo:frames');
     expect(read(data).frame).toBe('#demo:frames');
@@ -110,7 +119,7 @@ describe('Portal section', () => {
 
   it('edits the travel fields, removing the group with its last field', async () => {
     const { stack, data } = renderOnStack(portal(), schema);
-    await screen.findByTestId('block-portal-destination');
+    await screen.findByTestId('block-portal-destination', undefined, LAZY);
     expect([...select('block-portal-destination').options].map((option) => option.value)).toEqual([
       '',
       'demo:sky',
@@ -164,7 +173,7 @@ describe('Portal section', () => {
 
   it('edits the looks: particle, dust colour, count and sounds with None', async () => {
     const { stack, data } = renderOnStack(portal(), schema);
-    await screen.findByTestId('block-portal-particle');
+    await screen.findByTestId('block-portal-particle', undefined, LAZY);
     fireEvent.input(screen.getByTestId('block-portal-colour'), { target: { value: '#e0561c' } });
     fireEvent.change(screen.getByTestId('block-portal-colour'), { target: { value: '#e0561c' } });
     expect(read(data).particles).toEqual({ color: 0xe0561c });
@@ -191,7 +200,7 @@ describe('Portal section', () => {
 
   it("applies a portal's own rules to the other sections", async () => {
     const { data } = renderOnStack(portal(), schema);
-    await screen.findByTestId('block-portal');
+    await screen.findByTestId('block-portal', undefined, LAZY);
     // Textures: the portal surface only, no own models.
     expect(screen.getByTestId('block-texture-portal')).toBeTruthy();
     expect(screen.queryByTestId('block-own-models-toggle')).toBeNull();

@@ -37,7 +37,8 @@ public final class ComponentPassthrough {
      * Components whose value names an element or a tag of a data pack registry, decoded once data packs are loaded:
      * ADR 0044 D1's three holders ({@code jukebox_playable}, {@code provides_trim_material}, {@code trim}) and three
      * components that name damage types ({@code damage_resistant} and {@code blocks_attacks} by tag,
-     * {@code damage_type} by id).
+     * {@code damage_type} by id), and {@code block_transformer} (a {@code block_transformer} registry entry, the data
+     * pack's {@code data/<ns>/block_transformer/} files: an item with it transforms blocks when used, as an axe strips).
      */
     public static final Set<Identifier> DELAYED = Set.of(
             Identifier.withDefaultNamespace("jukebox_playable"),
@@ -45,7 +46,8 @@ public final class ComponentPassthrough {
             Identifier.withDefaultNamespace("trim"),
             Identifier.withDefaultNamespace("damage_resistant"),
             Identifier.withDefaultNamespace("blocks_attacks"),
-            Identifier.withDefaultNamespace("damage_type"));
+            Identifier.withDefaultNamespace("damage_type"),
+            Identifier.withDefaultNamespace("block_transformer"));
 
     private static RegistryAccess staticRegistries;
 

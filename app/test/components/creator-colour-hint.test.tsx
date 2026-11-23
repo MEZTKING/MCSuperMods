@@ -7,12 +7,18 @@ import type { Project } from '@msm/core';
 import type { StarterParameter } from '@msm/plugin-api';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { CreatorDialog } from '../../src/renderer/src/components/creator/CreatorDialog';
 import { colourHintOf } from '../../src/renderer/src/components/creator/CreatorImageField';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { aiSession } from './ai-fixtures';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from './lazy-chunks';
+
+beforeAll(
+  () => preloadChunks(() => import('../../src/renderer/src/components/art/DrawPictureDialog')),
+  PRELOAD_TIMEOUT_MS,
+);
 
 afterEach(() => {
   cleanup();
@@ -79,7 +85,7 @@ describe('the Creator image field and the flow colour', () => {
       const user = renderDialog(session);
       await user.click(screen.getByTestId('creator-flow-stone-set'));
       fireEvent.click(await screen.findByTestId('param-picture_stone-draw'));
-      await screen.findByTestId('draw-dialog');
+      await screen.findByTestId('draw-dialog', undefined, { timeout: LAZY_CHUNK_TIMEOUT_MS });
       expect(screen.getByTestId('draw-swatch-thing')).toBeTruthy();
       const well = screen.getByTestId('draw-colour') as HTMLInputElement;
       expect(well.value.toLowerCase()).toBe(stoneColour(session));

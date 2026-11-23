@@ -1,6 +1,7 @@
 /**
  * The checks every AI picture passes before it is shown (ADR 0093, 2026-11-22): its shape
- * against MSM's own drawing of the same thing (the overlap of the two masks), its colour against
+ * against MSM's own drawing of the same thing (the overlap of the two masks, the drawing's gaps
+ * kept clear and its marks, the per-slot mask of where it is no round blob), its colour against
  * the asked colour (the hue distance of its main colour), and for a block face whether it tiles
  * ({@link seamCheck}). A picture that fails is never placed silently: the round tries once more
  * with a stronger prompt, then shows MSM's drawing with a plain line. Pure.
@@ -25,6 +26,18 @@ export const MIN_SHAPE_OVERLAP = 0.6;
 export const MIN_GAPS_KEPT = 0.5;
 export const MIN_GAP_PIXELS = 4;
 
+/**
+ * The least share of the drawing's own marks a picture must share, when the drawing has at
+ * least {@link MIN_MARK_PIXELS} of them. A slot's marks are where its drawing differs from a
+ * plain oval in the same box: an ingot's sharp corners, a gem's point, the gap between leggings,
+ * a sword's clear sides. They are the per-slot mask of the check, read from MSM's drawing of the
+ * slot; a round blob is near the oval, so it shares few of them (0.12 to 0.34 of every slot's
+ * on 2026-11-22) and fails, while the drawing thickened, thinned or moved by a pixel keeps
+ * 0.53 or more.
+ */
+export const MIN_MARKS_KEPT = 0.45;
+export const MIN_MARK_PIXELS = 8;
+
 /** The square both outlines are fitted into before they are compared. */
 const SHAPE_GRID = 16;
 
@@ -45,6 +58,8 @@ export interface AiCheck {
   overlap?: number;
   /** The share of the reference's gaps the picture keeps clear (0 to 1). */
   gaps?: number;
+  /** The share of the reference's marks (its corners, points and gaps) the picture shares. */
+  marks?: number;
   /** The main hue's distance from the asked colour's, when both have a hue. */
   hueDistance?: number;
 }
@@ -109,22 +124,67 @@ export function fittedMask(image: RgbaImage, grid = SHAPE_GRID): boolean[] {
 }
 
 /**
- * How well `image`'s outline matches `reference`'s: the overlap of the two fitted masks and the
- * share of the reference's gaps (clear pixels with drawn pixels on both sides along their row
- * or their column) that `image` keeps clear (`null` when the
- * reference has too few gaps to judge).
+ * The plain oval in the box of the drawn pixels of a fitted `mask` (nothing when it is empty):
+ * what a round blob of the same size fills.
  */
-export function shapeMatch(
-  image: RgbaImage,
-  reference: RgbaImage,
-): { overlap: number; gaps: number | null } {
+export function boxOval(mask: readonly boolean[], grid = SHAPE_GRID): boolean[] {
+  let x0 = grid;
+  let y0 = grid;
+  let x1 = -1;
+  let y1 = -1;
+  for (let y = 0; y < grid; y += 1) {
+    for (let x = 0; x < grid; x += 1) {
+      if (!mask[y * grid + x]) continue;
+      x0 = Math.min(x0, x);
+      y0 = Math.min(y0, y);
+      x1 = Math.max(x1, x);
+      y1 = Math.max(y1, y);
+    }
+  }
+  const oval = new Array<boolean>(grid * grid).fill(false);
+  if (x1 < 0) return oval;
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  const rx = (x1 - x0 + 1) / 2;
+  const ry = (y1 - y0 + 1) / 2;
+  for (let y = 0; y < grid; y += 1) {
+    for (let x = 0; x < grid; x += 1) {
+      oval[y * grid + x] = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+    }
+  }
+  return oval;
+}
+
+/** How well a picture's outline matches the drawing's ({@link shapeMatch}). */
+export interface ShapeMatch {
+  overlap: number;
+  /** The share of the drawing's gaps kept clear, or `null` with too few to judge. */
+  gaps: number | null;
+  /** The share of the drawing's marks shared, or `null` with too few to judge. */
+  marks: number | null;
+}
+
+/**
+ * How well `image`'s outline matches `reference`'s: the overlap of the two fitted masks, the
+ * share of the reference's gaps (clear pixels with drawn pixels on both sides along their row
+ * or their column) that `image` keeps clear, and the share of the reference's marks (the pixels
+ * where it differs from the plain oval in its box, {@link MIN_MARKS_KEPT}) that `image` agrees
+ * with; `gaps` and `marks` are `null` when the reference has too few to judge.
+ */
+export function shapeMatch(image: RgbaImage, reference: RgbaImage): ShapeMatch {
   const a = fittedMask(image);
   const b = fittedMask(reference);
+  const oval = boxOval(b);
   let both = 0;
   let either = 0;
+  let markCount = 0;
+  let marksShared = 0;
   for (let at = 0; at < a.length; at += 1) {
     if (a[at] && b[at]) both += 1;
     if (a[at] || b[at]) either += 1;
+    if (oval[at] === b[at]) continue;
+    markCount += 1;
+    if (a[at] === b[at]) marksShared += 1;
   }
   // The reference's gaps: clear pixels between drawn pixels on their row or column.
   let gapCount = 0;
@@ -151,6 +211,7 @@ export function shapeMatch(
   return {
     overlap: either === 0 ? 1 : both / either,
     gaps: gapCount < MIN_GAP_PIXELS ? null : kept / gapCount,
+    marks: markCount < MIN_MARK_PIXELS ? null : marksShared / markCount,
   };
 }
 
@@ -204,7 +265,12 @@ export function checkPicture(image: RgbaImage, target: AiCheckTarget): AiCheck {
     const match = shapeMatch(image, target.reference);
     out.overlap = match.overlap;
     if (match.gaps !== null) out.gaps = match.gaps;
-    if (match.overlap < MIN_SHAPE_OVERLAP || (match.gaps !== null && match.gaps < MIN_GAPS_KEPT)) {
+    if (match.marks !== null) out.marks = match.marks;
+    if (
+      match.overlap < MIN_SHAPE_OVERLAP ||
+      (match.gaps !== null && match.gaps < MIN_GAPS_KEPT) ||
+      (match.marks !== null && match.marks < MIN_MARKS_KEPT)
+    ) {
       failures.push('shape');
     }
   }

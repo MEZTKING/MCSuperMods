@@ -135,7 +135,8 @@ export const TRYIT_GUIDE_URL = 'https://meztking.github.io/MCSuperMods/try-it#li
 export const CARD_LINES = [
   'Real here: how your blocks and mobs look, their states, and which rule runs.',
   'Rough here: walking and flying, and mobs, which only wander.',
-  'Not here: commands, redstone, survival (health, hunger, drops). Play in Minecraft for those.',
+  'Commands run here: your functions (with your load and tick functions and Run a function) and most of the game’s own commands, typed in the chat box. /spreadplayers and the forms Try it does not know run only in the game; What happened says which.',
+  'Not here: redstone, survival (health, hunger, drops). Play in Minecraft for those.',
 ] as const;
 /** The clock speeds offered. */
 export const CLOCK_SPEEDS = [0.25, 0.5, 1, 2, 4, 8] as const;

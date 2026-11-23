@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:block_transformer": "msm_runtime_gametest:glaze",
+      "minecraft:damage": 0,
+      "minecraft:max_damage": 64
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}
