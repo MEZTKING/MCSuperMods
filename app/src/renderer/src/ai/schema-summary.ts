@@ -58,7 +58,8 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  *
  * Vanilla parity 3 batch 2 (B543): `msm:rules` has 62 triggers, 47 steps, 21 conditions and 14
  * values (B534) and its text is about 23,500 characters, so its lists and cases go to 80 and its
- * length to 27,000, with room for the next catalogue additions. `msm:entity` has 16 goal types
+ * length to 27,000, with room for the next catalogue additions. Rules 3 for games (B553: 66
+ * triggers, 61 steps, 25 conditions, 17 values) takes the full text to 28,218 characters: 31,000. `msm:entity` has 16 goal types
  * (ADR 0109 adds six) and 18 event action types: depth 7 with cases up to 24 shows every goal's
  * and action's fields, the bucket, the dash and the trader's reputation (about 11,100
  * characters). The fluid's mixing, cauldron and bottle, the item's `msm:boat` and boat
@@ -68,7 +69,7 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>
 > = Object.freeze({
-  'msm:rules': Object.freeze({ maxDepth: 8, maxChars: 27_000, maxList: 80, maxCases: 80 }),
+  'msm:rules': Object.freeze({ maxDepth: 8, maxChars: 31_000, maxList: 80, maxCases: 80 }),
   'msm:block': Object.freeze({ maxDepth: 4, maxChars: 22_000, maxList: 48, maxCases: 48 }),
   'msm:vehicle': Object.freeze({ maxDepth: 5, maxChars: 6_000 }),
   'msm:key_bind': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),

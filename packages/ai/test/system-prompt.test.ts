@@ -915,8 +915,9 @@ describe('the prompt in topic files (B681)', () => {
   // more, for three sentences its truth test found false: Try it runs an event's run_function
   // (B613), a script's particle count is capped at 1000 only with motion, and no mob flow
   // offers the cube_creature preset. B617 moved it once more, for the data live views topic
-  // (`src/prompt/live-views.ts`: the kinds with a live view, their labels and the limits).
-  const PINNED = '60528e3f394c1311e82e35afb241a29ecf4f0e43441c0e02a369be87c4f65f93';
+  // (`src/prompt/live-views.ts`: the kinds with a live view, their labels and the limits). B553
+  // moved it for Rules 3's 25 catalogue ids for games.
+  const PINNED = 'dc4ef0059ecd303816b038400e2971699cbf3948466fb5a9c708cc8ed33ef114';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -957,8 +958,8 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
     expect(text).not.toMatch(/build mode|chat mode|switch to/i);
   });
 
-  it('stays within its size budget of 98,000 characters (ADR 0125 D7, raised by B617)', () => {
-    expect(text.length).toBeLessThanOrEqual(98_000);
+  it('stays within its size budget of 99,000 characters (ADR 0125 D7, raised by B617 and B553)', () => {
+    expect(text.length).toBeLessThanOrEqual(99_000);
   });
 
   it('F8 a: boats are the msm:boat component, never "not available"', () => {

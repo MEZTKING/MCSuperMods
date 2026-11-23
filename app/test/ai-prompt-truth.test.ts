@@ -920,9 +920,9 @@ describe('the prompt as a whole (ADR 0125 D2, D7)', () => {
     expect(systemPrompt('chat')).toBe(systemPrompt('build'));
   });
 
-  it('stays within its budget of 98,000 characters', () => {
+  it('stays within its budget of 99,000 characters', () => {
     // The budget of ADR 0125 D7: raise it only with a line in ADR 0125 (raised from 96,000 by B617).
-    expect(systemPrompt().length).toBeLessThanOrEqual(98_000);
+    expect(systemPrompt().length).toBeLessThanOrEqual(99_000);
   });
 });
 

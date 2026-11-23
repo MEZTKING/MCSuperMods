@@ -9,7 +9,7 @@
  * profession and the trade data kinds show every field within the defaults, and a type that
  * contains itself no longer overflows the stack.
  * Vanilla parity 3 batch 2 (B543, B544): `msm:entity` shows the swoop and roost goals and the
- * open_dialog action with their fields, and `msm:rules` stays under its 27,000 characters.
+ * open_dialog action with their fields, and `msm:rules` stays under its 31,000 characters.
  */
 import { CONDITIONS, STEPS, TRIGGERS } from '@msm/plugin-rules';
 import { builtInTargets } from '@msm/targets';
@@ -284,13 +284,13 @@ describe('kind_schema for vanilla parity 3 batch 2 (B543)', () => {
       }
     });
 
-    it(`keeps msm:rules under 27,000 characters on ${targetId}`, async () => {
+    it(`keeps msm:rules under 31,000 characters on ${targetId}`, async () => {
       const index = await schemaIndexFor(bundle);
       const options = kindSchemaSummaryOptions('msm:rules');
-      expect(options.maxChars).toBe(27_000);
+      expect(options.maxChars).toBe(31_000);
       const text = kindSchemaSummary(index.resolveSchemaRef('msm:rules'), options);
       expect(text).not.toContain('(truncated');
-      expect(text.length).toBeLessThan(27_000);
+      expect(text.length).toBeLessThan(31_000);
     });
   }
 });
