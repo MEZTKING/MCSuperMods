@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Tooltip } from 'radix-ui';
+import { Toast, Tooltip } from 'radix-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   describeInstallTarget,
@@ -456,5 +456,49 @@ describe('the search field (ADR 0124 D10, B667)', () => {
   it('shows no field without onSearch', () => {
     renderToolbar(props());
     expect(screen.queryByTestId('toolbar-search')).toBeNull();
+  });
+});
+
+describe('a toast that appears while a toolbar menu is open (B701, the launchers-path flake)', () => {
+  /** A status toast that the test shows while the menu is open, as `StatusToast` does. */
+  function ToastLater(props: { show: boolean }) {
+    return (
+      <>
+        {props.show && (
+          <Toast.Root duration={60_000}>
+            <Toast.Description>Packs now install to Prism Launcher.</Toast.Description>
+          </Toast.Root>
+        )}
+        <Toast.Viewport />
+      </>
+    );
+  }
+
+  function renderWithToast(p: ToolbarProps, show: boolean) {
+    return (
+      <Toast.Provider>
+        <Tooltip.Provider>
+          <Toolbar {...p} />
+        </Tooltip.Provider>
+        <ToastLater show={show} />
+      </Toast.Provider>
+    );
+  }
+
+  it('Escape still closes the menu, so the next press on its button opens it', async () => {
+    const p = props({ installTarget: TARGETS[0] ?? null, onInstall: vi.fn() });
+    const view = render(renderWithToast(p, false));
+    const user = userEvent.setup();
+    const trigger = screen.getByTestId('toolbar-install-menu');
+    await user.click(trigger);
+    expect(screen.getByTestId('install-target')).toBeTruthy();
+    // The message of a target change lands after the menu opened: a newer dismissable layer.
+    view.rerender(renderWithToast(p, true));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('install-target')).toBeNull());
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    // The next press opens the menu again (before the fix it toggled the open menu shut).
+    await user.click(trigger);
+    expect(screen.getByTestId('install-target')).toBeTruthy();
   });
 });

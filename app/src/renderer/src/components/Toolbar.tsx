@@ -31,6 +31,7 @@ import {
   launcherLabel,
   loaderLabel,
 } from './install-target';
+import { useMenuOpen } from './play/menu-open';
 import { PlayControls } from './play/PlayControls';
 import { buttonClass, iconButtonClass } from './ui/Button';
 import { Tip } from './ui/Tip';
@@ -293,8 +294,9 @@ function ToolMenu(props: {
   /** A submenu after the entries (the Export menu's "More exports"). */
   more?: { label: string; testId: string; entries: readonly MenuEntry[] };
 }) {
+  const menu = useMenuOpen();
   return (
-    <DropdownMenu.Root modal={false}>
+    <DropdownMenu.Root modal={false} {...menu.root}>
       <Tip label={props.tip}>
         <DropdownMenu.Trigger asChild disabled={props.disabled === true}>
           <RadixToolbar.Button
@@ -309,7 +311,12 @@ function ToolMenu(props: {
         </DropdownMenu.Trigger>
       </Tip>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content align="start" sideOffset={4} className={menuContentClass}>
+        <DropdownMenu.Content
+          align="start"
+          sideOffset={4}
+          className={menuContentClass}
+          {...menu.content}
+        >
           {props.header}
           {props.entries.map((entry) => {
             const disabled = entry.reason !== null || entry.onSelect === undefined;
@@ -386,13 +393,9 @@ function RecentMenu(props: {
   iconSize: number;
 }) {
   const { projects } = props;
+  const menu = useMenuOpen(props.onMenuOpen);
   return (
-    <DropdownMenu.Root
-      modal={false}
-      onOpenChange={(open) => {
-        if (open) props.onMenuOpen?.();
-      }}
-    >
+    <DropdownMenu.Root modal={false} {...menu.root}>
       <Tip label="Open a recent project">
         <DropdownMenu.Trigger asChild>
           <RadixToolbar.Button
@@ -411,6 +414,7 @@ function RecentMenu(props: {
           sideOffset={4}
           aria-label="Recent projects"
           className={`${menuContentClass} max-w-[min(90vw,32rem)]`}
+          {...menu.content}
         >
           {projects.length === 0 ? (
             <DropdownMenu.Item
