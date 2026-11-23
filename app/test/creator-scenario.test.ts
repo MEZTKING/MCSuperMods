@@ -23,15 +23,20 @@
  * - the Particle flow (ADR 0081 D3) creates with its defaults and no problems at all, exports
  *   (the particle and its block only in the jar, the description and pictures also in the
  *   resource pack), reopens with nothing to apply, with every choice changed and with a picture
- *   of one's own, and keeps a particle field edited by hand.
+ *   of one's own, and keeps a particle field edited by hand;
+ * - `makeFlow` (B657, ADR 0124 D9 "Add to my mod"): a flow made at once with given answers and
+ *   one behaviour's rule (or one companion flow) applies as one undo step "Make <name>",
+ *   validates and exports with no errors, and one Undo gives the starting project back.
  */
 
 import { createMemoryFileSystem, type Element, type Json, type Project } from '@msm/core';
 import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
 import type { ProjectStarter } from '@msm/plugin-api';
 import { paintingPng } from '@msm/plugin-library';
+import rulesPlugin from '@msm/plugin-rules';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
+import { createScriptingService } from '../src/main/platform/scripting';
 import { createToolExecutor, type DecisionHost } from '../src/renderer/src/ai/tool-executor';
 import { PendingChangeset } from '../src/renderer/src/changeset/changeset';
 import {
@@ -44,6 +49,7 @@ import {
   planCreate,
   reopenPlan,
 } from '../src/renderer/src/changeset/creator-sets';
+import { makeFlow, ruleBookItem } from '../src/renderer/src/changeset/make-flow';
 import { pngDataUrl, toValues } from '../src/renderer/src/components/wizard/wizard-model';
 import type { ProjectSession } from '../src/renderer/src/session/project-session';
 import { newSession } from './session-fixture';
@@ -857,5 +863,171 @@ describe('Creator scenario: Particle flow (ADR 0081 D3)', () => {
     await applyCreatorPlan(session, creatorChanges(again), creatorLabel(again, flow.title));
     expect(elementOf(session, PARTICLE)?.data).toEqual(edited);
     expect(await errorsAfterValidation(session)).toEqual([]);
+  });
+});
+
+/** A behaviour of the Rules plugin's search data (B655) by id. */
+async function rulesBehaviour(id: string) {
+  const data = await rulesPlugin.contributes.searchData?.();
+  const found = data?.behaviours?.find((entry) => entry.id === id);
+  if (found?.rule === undefined) throw new Error(`No rules behaviour ${id}.`);
+  return found;
+}
+
+const hasPlaceholder = (value: Json): boolean => JSON.stringify(value).includes('$thing');
+
+/** A session that can transpile the scripts rules compile to, as Surprise me's test opens. */
+async function openScriptingSession() {
+  const fs = createMemoryFileSystem();
+  const { session, platform } = newSession(
+    fs,
+    {},
+    { scripting: createScriptingService(), validationDelay: 0 },
+  );
+  platform.exports = {
+    ...platform.exports,
+    runtimeJar: async () => runtimeBytes,
+    geckolibJar: async () => geckolibBytes,
+  };
+  await session.newProject();
+  await session.schemas();
+  await session.flushValidation();
+  return { session };
+}
+
+describe('makeFlow: a flow made at once with answers and a rule (B657)', () => {
+  it('makes a block that drops xp as one undo step, and Undo gives the starting project back', async () => {
+    const { session } = await openScriptingSession();
+    const before = project(session);
+    const behaviour = await rulesBehaviour('block-drops-xp');
+    const made = await makeFlow(session, before, {
+      flowId: 'simple-block',
+      values: {
+        block_name: 'Blue Tiles',
+        colour: '#3355ff',
+        light_level: 'bright',
+        hardness: -4,
+        nope: 1,
+      },
+      rule: behaviour.rule as Json,
+      appliesTo: behaviour.appliesTo,
+      newSetId: () => SET_ID,
+    });
+    expect(made.label).toBe('Make Blue Tiles');
+    expect(made.made.name).toBe('Blue Tiles');
+    expect(made.made.dropped.sort()).toEqual(['hardness', 'light_level', 'nope']);
+    expect(made.made.values.colour).toBe('#3355ff');
+    expect(made.made.values.light_level).toBe(0);
+    expect(made.rule).toEqual({
+      bookId: 'demo:blue_tiles_rules',
+      subject: 'demo:blue_tiles',
+      key: 'block_drops_xp',
+    });
+    expect(made.notes).toEqual([]);
+    expect(made.beside).toBeNull();
+    // Nothing is written before the apply.
+    expect(project(session)).toBe(before);
+
+    const result = await session.applyChangeset(made.items, made.label);
+    expect(result.skipped).toEqual([]);
+    expect(session.snapshot.undoLabel).toBe('Make Blue Tiles');
+    expect(elementOf(session, 'demo:blue_tiles')?.meta.creator).toMatchObject({
+      flowId: 'simple-block',
+      setId: SET_ID,
+      values: { block_name: 'Blue Tiles', colour: '#3355ff' },
+    });
+    const book = elementOf(session, 'demo:blue_tiles_rules');
+    expect(book?.kind).toBe('msm:rules');
+    expect(book?.meta.creator).toBeUndefined();
+    expect(hasPlaceholder(book?.data as Json)).toBe(false);
+    const rules = (book?.data ?? { rules: [] }) as {
+      rules: { when: { subject: string }; name: string }[];
+    };
+    const rule = rules.rules[0];
+    expect(rule?.when.subject).toBe('demo:blue_tiles');
+    expect(rule?.name).toBe('When a player breaks it, it gives experience');
+    expect(await errorsAfterValidation(session)).toEqual([]);
+    const jar = await session.buildContentJar({ [SEPARATE_RUNTIME_OPTION]: true });
+    expect(errorsOf(jar.report)).toEqual([]);
+
+    expect(session.undo()).toBe(true);
+    expect(project(session)).toEqual(before);
+  });
+
+  it('replaces $thing everywhere in the rule and numbers a rule book name that is taken', async () => {
+    const { session } = await openSession();
+    const behaviour = await rulesBehaviour('item-single-use');
+    // A rule book of that name is already in the project.
+    await session.applyChangeset(
+      new PendingChangeset().add(ruleBookItem('demo:blue_wand_rules' as never, [])),
+      'Add a rule book',
+    );
+    const before = project(session);
+    const made = await makeFlow(session, before, {
+      flowId: 'scripted-item',
+      values: { item_name: 'Blue Wand', behaviour: 'launch' },
+      rule: behaviour.rule as Json,
+      appliesTo: behaviour.appliesTo,
+    });
+    expect(made.rule?.bookId).toBe('demo:blue_wand_rules_2');
+    const book = made.items.find((item) => item.elementId === 'demo:blue_wand_rules_2');
+    expect(hasPlaceholder(book?.after as Json)).toBe(false);
+    expect(JSON.stringify(book?.after)).toContain('"item":"demo:blue_wand"');
+    await session.applyChangeset(made.items, made.label);
+    expect(await errorsAfterValidation(session)).toEqual([]);
+    expect(session.undo()).toBe(true);
+    expect(project(session)).toEqual(before);
+  });
+
+  it('makes a companion flow beside the first, each its own set, in one undo step', async () => {
+    const { session } = await openSession();
+    const before = project(session);
+    let sets = 0;
+    const made = await makeFlow(session, before, {
+      flowId: 'weapon',
+      values: { weapon_name: 'Blue Sword', weapon_type: 'sword', colour: '#3355ff' },
+      beside: { starter: 'enchantment', values: { effect: 'fire', applies_to: 'swords' } },
+      newSetId: () => `set-${++sets}`,
+    });
+    expect(made.label).toBe('Make Blue Sword');
+    expect(made.beside?.flowId).toBe('enchantment');
+    expect(made.beside?.setId).toBe('set-2');
+    expect(made.rule).toBeNull();
+    await session.applyChangeset(made.items, made.label);
+    expect(session.snapshot.undoLabel).toBe('Make Blue Sword');
+    expect(elementOf(session, 'demo:blue_sword')?.meta.creator?.setId).toBe('set-1');
+    const enchantment = project(session)
+      .namespaces.flatMap((namespace) => namespace.elements)
+      .find((entry) => entry.kind === 'minecraft:enchantment');
+    expect(enchantment?.meta.creator).toMatchObject({
+      flowId: 'enchantment',
+      setId: 'set-2',
+      values: { effect: 'fire', applies_to: 'swords' },
+    });
+    expect(await errorsAfterValidation(session)).toEqual([]);
+    expect(session.undo()).toBe(true);
+    expect(project(session)).toEqual(before);
+  });
+
+  it('skips what the project already has, and leaves the rule out with a note', async () => {
+    const { session } = await openSession();
+    const behaviour = await rulesBehaviour('block-drops-xp');
+    const request = {
+      flowId: 'simple-block',
+      values: { block_name: 'Blue Tiles' },
+      rule: behaviour.rule as Json,
+      appliesTo: behaviour.appliesTo,
+    };
+    const first = await makeFlow(session, project(session), request);
+    await session.applyChangeset(first.items, first.label);
+    const again = await makeFlow(session, project(session), request);
+    expect(again.made.skippedNames).toContain('Blue Tiles');
+    expect(again.rule).toBeNull();
+    expect(again.notes).toEqual([
+      'The rule was left out: your mod already has Blue Tiles, so it was not made again.',
+    ]);
+    await expect(
+      makeFlow(session, project(session), { flowId: 'no-such-flow', values: {} }),
+    ).rejects.toThrow('There is no flow "no-such-flow".');
   });
 });

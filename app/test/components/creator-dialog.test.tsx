@@ -7,6 +7,7 @@ import {
   type CreatorCreated,
   CreatorDialog,
   type CreatorEditRequest,
+  type CreatorStart,
 } from '../../src/renderer/src/components/creator/CreatorDialog';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
 import { aiSession } from './ai-fixtures';
@@ -21,7 +22,11 @@ function projectOf(session: ProjectSession): Project {
 
 function renderDialog(
   session: ProjectSession,
-  options: { edit?: CreatorEditRequest; onCreated?: (result: CreatorCreated) => void } = {},
+  options: {
+    edit?: CreatorEditRequest;
+    start?: CreatorStart;
+    onCreated?: (result: CreatorCreated) => void;
+  } = {},
 ) {
   const onClose = vi.fn();
   const onCreated = vi.fn(options.onCreated ?? (() => {}));
@@ -31,6 +36,7 @@ function renderDialog(
       project={projectOf(session)}
       namespaces={['demo']}
       edit={options.edit ?? null}
+      start={options.start ?? null}
       folders={session.target.folders.resource}
       readProjectAsset={(namespace, path) => session.readAsset(namespace, path).catch(() => null)}
       vanilla={null}
@@ -185,5 +191,65 @@ describe('CreatorDialog', () => {
     await user.click(screen.getByTestId('creator-cancel'));
     expect(onClose).toHaveBeenCalled();
     expect(session.snapshot.project).toBe(before);
+  });
+
+  it('opens on a new set with given answers, dropping the ones that fail the check (B657)', async () => {
+    const { session } = await aiSession();
+    const { user, onCreated } = renderDialog(session, {
+      start: {
+        flowId: 'weapon',
+        values: {
+          weapon_name: 'Blue Sword',
+          colour: '#3355ff',
+          weapon_type: 'sword',
+          // Not a choice of the question, a number of the wrong type, no such question.
+          tier: 'plastic',
+          durability: 'lots',
+          wings: true,
+        },
+        note: 'Filled in from your words: blue, sword.',
+      },
+    });
+    expect(screen.queryByTestId('creator-flows')).toBeNull();
+    expect(screen.getByTestId('creator-start-note').textContent).toBe(
+      'Filled in from your words: blue, sword.',
+    );
+    expect((screen.getByTestId('param-weapon_name') as HTMLInputElement).value).toBe('Blue Sword');
+    expect((screen.getByTestId('param-tier') as HTMLSelectElement).value).toBe('iron');
+    expect((screen.getByTestId('param-durability') as HTMLInputElement).value).toBe('500');
+    // The preview follows the given answers.
+    await waitFor(() =>
+      expect(screen.getByTestId('creator-create').hasAttribute('disabled')).toBe(false),
+    );
+    await user.click(screen.getByTestId('creator-tab-elements'));
+    expect(screen.getByTestId('creator-element-demo:blue_sword').dataset.status).toBe('create');
+    // And follows an edit as it follows typed answers.
+    const name = screen.getByTestId('param-weapon_name');
+    await user.clear(name);
+    await user.type(name, 'Sky Blade');
+    await waitFor(() => expect(screen.getByTestId('creator-element-demo:sky_blade')).toBeTruthy());
+    await user.click(screen.getByTestId('creator-create'));
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(session.snapshot.undoLabel).toBe('Create Weapon');
+    expect(element(session, 'demo:sky_blade')?.meta.creator).toMatchObject({
+      flowId: 'weapon',
+      setId: SET_ID,
+      values: { weapon_type: 'sword', colour: '#3355ff', tier: 'iron' },
+    });
+  });
+
+  it('opens the picker when the given flow is unknown, and drops the note on Back', async () => {
+    const { session } = await aiSession();
+    const first = renderDialog(session, { start: { flowId: 'no-such-flow', values: {} } });
+    expect(screen.getByTestId('creator-flows')).toBeTruthy();
+    first.view.unmount();
+    const { user } = renderDialog(session, {
+      start: { flowId: 'food', values: { food_name: 'Blue Pie' }, note: 'From your words.' },
+    });
+    expect(screen.getByTestId('creator-start-note')).toBeTruthy();
+    await user.click(screen.getByTestId('creator-back'));
+    await user.click(screen.getByTestId('creator-flow-food'));
+    expect(screen.queryByTestId('creator-start-note')).toBeNull();
+    expect((screen.getByTestId('param-food_name') as HTMLInputElement).value).toBe('Ruby Apple');
   });
 });

@@ -7,7 +7,8 @@
  * tinted placeholder), builds the bundles and plans them one after another against the
  * project, exactly as the Creator would, so every set reopens in the Creator and nothing
  * clashes with what the project or an earlier thing already has. With rules it may add one
- * rule book ("sometimes an extra gem drops from the ore").
+ * rule book ("sometimes an extra gem drops from the ore"). The planning (sets, the rule book,
+ * clashes, folding) is the search's own **Add to my mod** module, `changeset/make-flow.ts`.
  *
  * Pure and seeded: the same seed, theme, project and target give the same mod. No DOM.
  *
@@ -22,14 +23,17 @@ import type {
   StarterParameter,
   TargetFacts,
 } from '@msm/plugin-api';
-import { type ChangeItem, type NewChangeItem, planChangeItems } from '../changeset/changeset';
+import type { ChangeItem } from '../changeset/changeset';
+import { creatorValues } from '../changeset/creator-sets';
 import {
-  creatorChanges,
-  creatorValues,
-  isMergeableKind,
-  planCreate,
-  SINGLETON_KINDS,
-} from '../changeset/creator-sets';
+  bundleClashes,
+  foldItems,
+  freeId,
+  planSet,
+  planStep,
+  RULES_KIND,
+  ruleBookItem,
+} from '../changeset/make-flow';
 import {
   FLOW_RECIPES,
   type FlowRecipe,
@@ -39,10 +43,11 @@ import {
   type SurpriseTheme,
 } from './themes';
 
+export { bundleClashes, foldItems } from '../changeset/make-flow';
 export { FLOW_RECIPES, SURPRISE_THEMES, type SurpriseTheme } from './themes';
 
 /** The rule book kind (`@msm/plugin-rules`); the generator does not import the plugin. */
-export const SURPRISE_RULES_KIND = 'msm:rules';
+export const SURPRISE_RULES_KIND = RULES_KIND;
 
 /** The largest seed; seeds are whole numbers from 1. */
 export const MAX_SEED = 999_999;
@@ -297,31 +302,6 @@ function elementsOf(project: Project): Element[] {
   return project.namespaces.flatMap((namespace) => namespace.elements);
 }
 
-/**
- * Whether a bundle's ids or files clash with what `project` already has. Pack and mod settings,
- * language files and tags are shared; so is an id the same flow made for another of its sets
- * (the Custom ore flow's advancement tab root, the Custom mob flow's death function), which the
- * Creator keeps as it is.
- */
-export function bundleClashes(bundle: ContentBundle, project: Project, flowId?: string): boolean {
-  const ids = new Map(elementsOf(project).map((element) => [element.id as string, element]));
-  for (const entry of bundle.elements) {
-    if (SINGLETON_KINDS.includes(entry.kind)) continue;
-    const existing = ids.get(entry.id);
-    if (existing === undefined) continue;
-    if (existing.kind === entry.kind && isMergeableKind(entry.kind)) continue;
-    if (flowId !== undefined && existing.meta.creator?.flowId === flowId) continue;
-    return true;
-  }
-  for (const asset of bundle.assets) {
-    const recorded = project.namespaces
-      .find((namespace) => namespace.name === asset.namespace)
-      ?.assets.some((entry) => entry.path === asset.path);
-    if (recorded === true) return true;
-  }
-  return false;
-}
-
 /** The kinds whose things a surprise lists by name, in order. */
 const NAMED_KINDS = ['msm:block', 'msm:item', 'msm:entity', 'msm:effect', 'msm:potion'];
 
@@ -438,39 +418,6 @@ function nameAttempts(
   return attempts;
 }
 
-/**
- * One item per element: an update of an element an earlier item creates goes into that create,
- * and two updates of one element become one (the first `before`, the last `after`). The
- * session's changeset replays its commands, so an element made by the same command cannot be
- * changed again by it.
- */
-export function foldItems(items: readonly ChangeItem[]): ChangeItem[] {
-  const out: ChangeItem[] = [];
-  const byElement = new Map<string, number>();
-  for (const item of items) {
-    const id = item.elementId;
-    const index = id === undefined ? undefined : byElement.get(id);
-    const earlier = index === undefined ? undefined : out[index];
-    if (item.op === 'update' && earlier !== undefined && index !== undefined) {
-      out[index] = { ...earlier, after: item.after as Json };
-      continue;
-    }
-    if (id !== undefined && (item.op === 'create' || item.op === 'update')) {
-      byElement.set(id, out.length);
-    }
-    out.push(item);
-  }
-  return out;
-}
-
-const toItems = (items: readonly NewChangeItem[], start: number): ChangeItem[] =>
-  items.map((item, index) => ({
-    ...item,
-    itemId: `surprise-${start + index + 1}`,
-    accepted: true,
-    problems: [],
-  }));
-
 /** The ore block and its gem among the things, for the rule. */
 function oreAndGem(
   things: readonly SurpriseThing[],
@@ -506,34 +453,28 @@ function oreAndGem(
   };
 }
 
-/** The rule book data: breaking the ore sometimes drops one more gem. */
-function luckyRuleBook(ore: string, gem: string, percent: number): Json {
+/** The rule: breaking the ore sometimes drops one more gem. */
+function luckyRule(ore: string, gem: string, percent: number): Json {
   return {
-    counters: [],
-    format: 1,
-    rules: [
+    do: [
       {
+        conditions: [{ condition: 'chance', percent }],
         do: [
+          { count: 1, item: gem, step: 'drop_item' },
           {
-            conditions: [{ condition: 'chance', percent }],
-            do: [
-              { count: 1, item: gem, step: 'drop_item' },
-              {
-                sound: 'minecraft:entity.experience_orb.pickup',
-                step: 'play_sound',
-                where: 'player',
-              },
-              { step: 'show_action_bar', text: ['Lucky find!'] },
-            ],
-            match: 'all',
-            step: 'if',
+            sound: 'minecraft:entity.experience_orb.pickup',
+            step: 'play_sound',
+            where: 'player',
           },
+          { step: 'show_action_bar', text: ['Lucky find!'] },
         ],
-        key: 'lucky_find',
-        name: 'Lucky find',
-        when: { subject: ore, trigger: 'block_broken' },
+        match: 'all',
+        step: 'if',
       },
     ],
+    key: 'lucky_find',
+    name: 'Lucky find',
+    when: { subject: ore, trigger: 'block_broken' },
   };
 }
 
@@ -586,12 +527,17 @@ export async function rollSurprise(input: SurpriseInput): Promise<SurpriseMod> {
     }
     if (accepted === null) continue;
     const stamp = { flowId: starter.id, setId: newSetId(), values: creatorValues(accepted.values) };
-    const changes = creatorChanges(planCreate(accepted.bundle, virtual, stamp, input.isKnownKind));
-    const next = toItems(changes.items, items.length);
-    const planned = planChangeItems(virtual, structuredClone(next));
+    const planned = planSet(
+      virtual,
+      accepted.bundle,
+      stamp,
+      input.isKnownKind,
+      'surprise',
+      items.length,
+    );
     if (planned.skipped.length > 0) continue;
     virtual = planned.state;
-    items.push(...next);
+    items.push(...planned.items);
     const firstName = Object.keys(recipe.names)[0];
     const name = firstName === undefined ? theme.word : String(accepted.values[firstName]);
     things.push({
@@ -611,27 +557,17 @@ export async function rollSurprise(input: SurpriseInput): Promise<SurpriseMod> {
   const found = lucky ? oreAndGem(things) : null;
   if (found !== null) {
     const percent = pick(random, [10, 20, 25, 33, 50]);
-    const taken = new Set(elementsOf(virtual).map((element) => element.id as string));
-    let id = `${input.namespace}:${theme.id}_luck` as ResourceLocation;
-    for (let number = 2; taken.has(id) && number <= 9; number += 1) {
-      id = `${input.namespace}:${theme.id}_luck_${number}` as ResourceLocation;
-    }
-    if (!taken.has(id)) {
-      const next = toItems(
-        [
-          {
-            op: 'create',
-            elementId: id,
-            kind: SURPRISE_RULES_KIND,
-            after: luckyRuleBook(found.ore, found.gem, percent),
-          },
-        ],
+    const id = freeId(virtual, `${input.namespace}:${theme.id}_luck`, 9);
+    if (id !== null) {
+      const planned = planStep(
+        virtual,
+        [ruleBookItem(id, [luckyRule(found.ore, found.gem, percent)])],
+        'surprise',
         items.length,
       );
-      const planned = planChangeItems(virtual, structuredClone(next));
       if (planned.skipped.length === 0) {
         virtual = planned.state;
-        items.push(...next);
+        items.push(...planned.items);
         rule = {
           id,
           sentence: `When a player breaks ${found.oreName}, ${percent} times in 100 an extra ${found.gemName} drops.`,

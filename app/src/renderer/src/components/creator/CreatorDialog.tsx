@@ -6,12 +6,15 @@
  * and previewed from memory; "Create" turns it into change items stamped with `meta.creator`
  * and applies them as one undo step ("Create <flow>"). Opened through "Edit in Creator" the
  * dialog starts on that set's flow with its stored values, plans the update by the kept-edits
- * rule and applies it as "Update <flow>".
+ * rule and applies it as "Update <flow>". Opened with `start` (the search's **Make this**,
+ * ADR 0124 D9) it starts on a new set of that flow with the given answers, each checked by the
+ * wizard's `validateParameter` (a bad one is dropped and the question keeps its default), and
+ * the preview follows them as it follows typed answers.
  *
  * Test ids: `creator-dialog`, `creator-group-<group>`, `creator-flow-<id>`, `param-<id>`,
  * `creator-namespace`, `creator-tab-<tab>`, `creator-element-<key>`, `creator-conflict-<key>`,
  * `creator-kept-<key>`, `creator-overwrite-<key>`, `creator-create`, `creator-cancel`,
- * `creator-back`, `creator-status`, `creator-error`, `creator-pick-for-me` ("Pick for me", ADR
+ * `creator-back`, `creator-status`, `creator-error`, `creator-start-note`, `creator-pick-for-me` ("Pick for me", ADR
  * 0086 D6: random answers that work for the flow). An `image` parameter uses
  * {@link CreatorImageField} (the host's file picker) when `pickImage` is given, otherwise the
  * wizard's file input.
@@ -58,12 +61,16 @@ import {
   CREATOR_DEBOUNCE_MS,
   CREATOR_GROUPS,
   type CreatorFlow,
+  type CreatorStart,
   type CreatorTab,
   creatorFlows,
   firstTab,
   parameterGroups,
+  rawValuesFromStart,
   rawValuesFromStored,
 } from './creator-model';
+
+export type { CreatorStart } from './creator-model';
 
 /** The Creator image field's `colourHint` prop, left out when the flow gives no colour. */
 function blocksHintProps(blocksHint: { wide: number; tall: number } | undefined): {
@@ -134,6 +141,11 @@ export interface CreatorDialogProps {
   namespaces: readonly string[];
   /** Reopens a set instead of starting with the flow picker. */
   edit?: CreatorEditRequest | null;
+  /**
+   * Opens a new set of a flow with answers given (the search's **Make this**); ignored with
+   * `edit`, or when the flow is not available on the target (the picker opens then).
+   */
+  start?: CreatorStart | null;
   /**
    * Offers only these flows (Very easy's Home tiles, ADR 0083 D2): one available flow opens
    * directly, several open the picker with just their cards.
@@ -260,8 +272,14 @@ export function CreatorDialog(props: CreatorDialogProps) {
     [flows, flowIds],
   );
   const offeredAvailable = offered.filter((entry) => entry.unavailable === null);
+  const start = editFlow === undefined ? (props.start ?? undefined) : undefined;
+  const givenFlow =
+    start === undefined
+      ? undefined
+      : flows.find((entry) => entry.starter.id === start.flowId && entry.unavailable === null);
   const startFlow =
     editFlow ??
+    givenFlow ??
     (flowIds !== undefined && offeredAvailable.length === 1 ? offeredAvailable[0] : undefined);
   const [flowId, setFlowId] = useState<string | null>(startFlow?.starter.id ?? null);
   const flow = flows.find((entry) => entry.starter.id === flowId) ?? null;
@@ -270,9 +288,15 @@ export function CreatorDialog(props: CreatorDialogProps) {
   const [raw, setRaw] = useState<RawValues>(() =>
     editFlow !== undefined && edit !== null && edit !== undefined
       ? rawValuesFromStored(editFlow.starter.parameters, edit.values)
-      : startFlow !== undefined
-        ? defaultRawValues(startFlow.starter.parameters)
-        : {},
+      : givenFlow !== undefined && start !== undefined
+        ? rawValuesFromStart(givenFlow.starter.parameters, start.values).raw
+        : startFlow !== undefined
+          ? defaultRawValues(startFlow.starter.parameters)
+          : {},
+  );
+  /** The given answers' note, shown while the given flow is open. */
+  const [startNote, setStartNote] = useState<string | null>(
+    givenFlow !== undefined && start?.note !== undefined ? start.note : null,
   );
   const namespaceOptions = edit?.namespace !== undefined ? [edit.namespace] : props.namespaces;
   const [namespace, setNamespace] = useState(namespaceOptions[0] ?? '');
@@ -382,6 +406,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
 
   const pick = (next: CreatorFlow): void => {
     setFlowId(next.starter.id);
+    setStartNote(null);
     setRaw(defaultRawValues(next.starter.parameters));
     setBuilt(null);
     setBuildError(null);
@@ -459,6 +484,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                 title="Back to the flows"
                 onClick={() => {
                   setFlowId(null);
+                  setStartNote(null);
                   setBuilt(null);
                 }}
               >
@@ -486,6 +512,14 @@ export function CreatorDialog(props: CreatorDialogProps) {
                 }}
               >
                 {flow?.blurb !== undefined && <p className="text-xs text-muted">{flow.blurb}</p>}
+                {startNote !== null && (
+                  <p
+                    data-testid="creator-start-note"
+                    className="m-0 rounded border border-border px-2 py-1 text-xs"
+                  >
+                    {startNote}
+                  </p>
+                )}
                 {!editing && starter !== null && (parameters ?? []).length > 0 && (
                   <Button
                     data-testid="creator-pick-for-me"

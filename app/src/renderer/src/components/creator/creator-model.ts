@@ -17,6 +17,7 @@ import type {
 } from '@msm/plugin-api';
 import { blockItemIdOf } from '@msm/plugin-blocks-items';
 import type { CreatorEntryStatus } from '../../changeset/creator-sets';
+import { checkAnswers, mainThing } from '../../changeset/make-flow';
 import { hasLiveView } from '../../liveviews/registry';
 import type { ArmourPiece } from '../../preview/geo/armour';
 import { defaultRawValue, type RawValue, type RawValues } from '../wizard/wizard-model';
@@ -123,6 +124,35 @@ export function rawValuesFromStored(
     ]),
   );
 }
+
+/** How the Creator opens on a new set with answers given (the search's **Make this**, B657). */
+export interface CreatorStart {
+  /** The flow to open. */
+  flowId: string;
+  /** Answers by question id, as `meta.creator.values` stores them. */
+  values: Readonly<Record<string, Json>>;
+  /** A line shown above the questions ("Filled in from your words: blue, sword."). */
+  note?: string;
+}
+
+/**
+ * The editing values of a new set opened with given answers: each answer that passes the
+ * wizard's `validateParameter` is kept, any other is dropped (listed in `dropped`) and the
+ * question keeps its default.
+ */
+export function rawValuesFromStart(
+  parameters: readonly StarterParameter[] | undefined,
+  values: Readonly<Record<string, unknown>>,
+): { raw: RawValues; dropped: string[] } {
+  const checked = checkAnswers(parameters, values);
+  const raw: Record<string, RawValue> = {};
+  for (const parameter of parameters ?? []) {
+    raw[parameter.id] = checked.raw[parameter.id] ?? defaultRawValue(parameter);
+  }
+  return { raw, dropped: checked.dropped };
+}
+
+export { mainThing };
 
 /** Parameters in groups of declaration order (parameters without a group under "Options"). */
 export function parameterGroups(
@@ -600,23 +630,6 @@ export function bundleHasCards(bundle: ContentBundle): boolean {
     effectCards(bundle).length > 0 ||
     throwableCards(bundle).length > 0
   );
-}
-
-/** Kinds that only support a flow's main thing (pack files, models, names, mod settings). */
-const SUPPORTING_KINDS: ReadonlySet<string> = new Set([
-  'minecraft:pack_mcmeta',
-  'msm:mod',
-  'minecraft:lang',
-  'minecraft:model',
-  'minecraft:item_definition',
-  'minecraft:block_definition',
-  'msm:geo_model',
-  'msm:animation',
-]);
-
-/** The flow's main thing: its first element that is not a supporting file, or `undefined`. */
-export function mainThing(bundle: ContentBundle): ContentBundle['elements'][number] | undefined {
-  return bundle.elements.find((entry) => !SUPPORTING_KINDS.has(entry.kind));
 }
 
 /** Main things the Card tab shows (an enchantment's card, a painting on a wall, an effect). */
