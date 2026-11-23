@@ -17,6 +17,7 @@ import type { Json, OutputLayer, ProjectStarter, TargetFacts } from '@msm/plugin
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Button } from './ui/Button';
+import { MoreOptions } from './ui/MoreOptions';
 import { StarterWizard, TargetSelect } from './wizard/StarterWizard';
 import {
   CHOOSE_STARTER_TITLE,
@@ -383,15 +384,20 @@ export interface NewModDialogProps {
   initialName?: string;
   /** Asks for another parent folder; resolves with it, or `null` when cancelled. */
   onChangeFolder?(): Promise<string | null>;
+  /**
+   * More options' **Use a folder of my own…** (ADR 0130 D3): a blank mod in an empty folder the
+   * user picks, named after the folder. Hidden when absent.
+   */
+  onChooseFolder?(): void;
   onCancel(): void;
   /** Creates the mod in `folder`; rejects or resolves with an error message to show. */
   onCreate(folder: string, name: string): Promise<string | null>;
 }
 
 /**
- * Very easy's "New" (ADR 0083 D6): asks only for a name and creates the mod in
+ * "New" (ADR 0083 D6, ADR 0130 D5): asks only for a name and creates the mod in
  * `<parent>/<name>`, with a "Change folder" link. The namespace comes from the name, the target
- * is the default one.
+ * is the default one. Its More options offers a folder of the user's own instead.
  */
 export function NewModDialog(props: NewModDialogProps) {
   const [name, setName] = useState(props.initialName ?? '');
@@ -471,6 +477,22 @@ export function NewModDialog(props: NewModDialogProps) {
               >
                 Change folder
               </button>
+            )}
+            {props.onChooseFolder !== undefined && (
+              <MoreOptions storageKey="new-mod">
+                <button
+                  type="button"
+                  data-testid="new-mod-choose-folder"
+                  className="self-start cursor-pointer text-accent text-xs underline-offset-2 hover:underline"
+                  onClick={props.onChooseFolder}
+                >
+                  Use a folder of my own…
+                </button>
+                <p className="text-muted text-xs">
+                  Pick an empty folder; the mod is named after it, and so are the names Minecraft
+                  uses inside.
+                </p>
+              </MoreOptions>
             )}
             {error !== null && (
               <p role="alert" className="text-error text-sm" data-testid="new-mod-error">

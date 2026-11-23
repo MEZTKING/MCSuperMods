@@ -15,7 +15,6 @@ import { MakeWithAiDialog } from './MakeWithAiDialog';
 import type { AiPictureShape } from './shapes';
 
 /** The button's words. */
-export const MAKE_WITH_AI = 'Make with AI';
 export const MAKE_IT_WITH_AI = 'Make it with AI';
 export const SET_UP_AI_PICTURES = 'Set up AI pictures in Settings';
 

@@ -22,6 +22,7 @@ import {
   thingSections,
 } from '../../components/thing-picker/ThingPicker';
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { type FormProblem, inputClass } from '../../forms';
 import { Tooltip, type TooltipLine } from '../../liveviews/frame/Tooltip';
 import { usePlain } from '../plain';
@@ -169,6 +170,13 @@ function AdventureList(props: {
           );
         })}
       </ul>
+      {props.entries.length > 0 && (
+        <InMore fallbackKey={`${props.testId}-ids`}>
+          <p className="font-mono text-muted text-xs" data-testid={`${props.testId}-ids`}>
+            {`${props.label}: ${props.entries.join(', ')}`}
+          </p>
+        </InMore>
+      )}
       {props.simple ? (
         <div className="flex flex-wrap items-center gap-2">
           <button

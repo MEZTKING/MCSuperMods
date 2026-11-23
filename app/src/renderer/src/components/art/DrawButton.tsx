@@ -26,7 +26,6 @@ export const LazyDrawPictureDialog = lazy(() => import('./DrawPictureDialog'));
 const DrawPictureDialog = LazyDrawPictureDialog;
 
 /** The button's words. */
-export const DRAW = 'Draw…';
 export const DRAW_IT_FOR_ME_BUTTON = 'Draw it for me';
 export const MAKE_IT_WITH_AI_INSTEAD = 'Make it with AI instead';
 

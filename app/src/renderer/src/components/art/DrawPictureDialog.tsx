@@ -44,8 +44,7 @@ import {
   THEME_SWATCHES,
 } from './draw-model';
 
-/** The dialog's titles. */
-export const DRAW_A_PICTURE = 'Draw a picture';
+/** The dialog's title. */
 export const DRAW_IT_FOR_ME = 'Draw it for me';
 
 /** Props of {@link DrawPictureDialog}. */

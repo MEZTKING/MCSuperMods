@@ -479,8 +479,10 @@ function NamespaceSection(props: {
     const main = groups.filter(([kind]) => !TECHNICAL_GROUPS.has(kind));
     const technical = groups.filter(([kind]) => TECHNICAL_GROUPS.has(kind));
     const moreCount = technical.reduce((sum, [, elements]) => sum + elements.length, 0);
-    // "More" starts folded; its key in the set means the user opened it.
-    const moreOpen = searching || props.collapsed.has(keyOf('more'));
+    // "More" starts folded; its key in the set means the user opened it. End-to-end runs that
+    // start every More options open start it open too (its key then folds it; ADR 0130).
+    const moreStartsOpen = typeof window !== 'undefined' && window.msmMoreOptionsOpen === true;
+    const moreOpen = searching || props.collapsed.has(keyOf('more')) !== moreStartsOpen;
     body = (
       <>
         {sets.map((set) => section(`set:${set.setId}`, set.label, set.elements))}

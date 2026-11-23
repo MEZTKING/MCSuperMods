@@ -4320,6 +4320,16 @@ export function App({
                   onChangeFolder={() =>
                     bridge.dialogs.pickDirectory({ title: 'Choose where your mods are saved' })
                   }
+                  {...(dialog.search === undefined &&
+                  dialog.afterwards === undefined &&
+                  dialog.surpriseIdea === undefined
+                    ? {
+                        onChooseFolder: () => {
+                          setDialog(null);
+                          void openWith('New project', () => session.newProject());
+                        },
+                      }
+                    : {})}
                   onCancel={() => {
                     setDialog(null);
                     dialog.search?.resolve(false);
