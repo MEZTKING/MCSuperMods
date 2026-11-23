@@ -10665,3 +10665,26 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 ### Next
 
 - B636 (jar structure files and IPC), then B637 (assembler from rules J1 to J20) and B638 (processors); B639 fills the fixture and the parity class and adds its `fabric.mod.json` line.
+
+## 2026-11-23 — orchestrator — B673 close of search everything
+
+**What**
+- Reviewed the merged search work (B650–B672 and the follow-ups "Ask the helper from search" and "Unavailable flows never hidden") against the plan's exit criteria and ADR 0124's decisions; every brief met its criteria. Reserves B674–B676 did not run (SQ1, SQ2 and SQ3).
+- [ADR 0124](adr/0124-search-everything.md) accepted with findings: each decision's outcome (D1–D17), the measured budgets and bars (layers built in 43 to 110 ms against 150 and 250, queries at the 95th centile 4 to 16 ms against 30 and 60, 10.0 to 10.3 MB against 12; 241 queries with 97.0 % first and 99.1 % in the top three on the sample mod, every bar met in all eight configurations; the named lazy chunks 0.14 MB; first paint +18.2 kB from the filter boxes), what moved, the findable rule, the open items, the spike's answers SQ1–SQ16 in short, the fact table SF1–SF26 with a "Since" column, limits SL1–SL17 with their outcome, and the vetoable defaults in its Status.
+- DESIGN: section 7 gains the `searchData` contribution row and a paragraph on plugin API 1.23.0's search data; section 8 gains the subsection Search (the engine, the list, answers and actions, the doors, the guide reader, the AI helper and privacy), the palette door in Command palette and `search_library` in AI helper; section 15 the `search/` package and its dependency line. The 19 H2 headings are unchanged.
+- ROADMAP: "Search everything" ticked (done, awaiting the user's look), its reserves, two user lines (the look and screen reader check; the golden rule question) and the follow-ups; the Post-1.0 Ideas line updated; a Milestone Log row.
+- HANDOFF: the findable rule in "Rules for every brief"; item 33 in "Waiting on the user" (the vetoable defaults, a look on Windows, and whether the findable rule joins the root `CLAUDE.md` golden rules); a Search line in "Where things stand" and "Open follow-ups"; "Next" item 5 closed; the header and "In progress" brought up to date.
+- `LIVE-VIEW-AUDIT.md`: the Search row as built (no kind count changed). `COVERAGE-AUDIT.md`: ADR 0127's four have no search words yet (a follow-up); search shows gaps, never hides them.
+- Root `CLAUDE.md` (search's line, ADR 0124 accepted, `packages/search/` in the directory map, a stray "Next:" before AI helper 2 removed, Next: Live views batch 4 from B635), `docs/CLAUDE.md` (search closed, one open plan, `search.md` and `ai-helper-check.md` in the guide list), `AGENTS.md` and `packages/search/CLAUDE.md` (status from the B652 stub to built). Line limits kept (root 70, `docs/CLAUDE.md` 44, `packages/search/CLAUDE.md` 21).
+- `docs/PLAN-search.md` deleted; its links in the reference spike notes, the golden report and ADRs 0124 and 0126 point at ADR 0124 instead. Past DEVLOG entries keep theirs.
+
+**Decisions**
+- The findable rule goes into HANDOFF "Rules for every brief" only; the root `CLAUDE.md` golden rule waits for the user's word, as B673's brief says.
+- The 18.2 kB the filter boxes added to the first paint (B668) is accepted and listed as a vetoable default; search's own share of the renderer total and `app.asar` stay unmeasured (no `dist:dir`), a follow-up.
+- The clean-worktree run was skipped at this close for want of disk, as at B618 and B633; the docs site was not built (no `node_modules` in the worktree).
+- Seven source and test header comments still name the deleted plan; this close changed docs only, so they are a follow-up for the next brief that touches them.
+
+**Next**
+- Live views batch 4, B635 onward (`docs/PLAN-live-views.md`).
+- A small search engine brief: an exact id on whole ids only, stop words kept in titles, "how does … work", `tnak` and `soin`, the `scripts` group's sort, then the `needs` lines removed; the pet fox's food and the misspelt name; "Type more words to see the rest". A words brief for ADR 0127's four.
+- Ask the user ADR 0124's vetoable defaults and the golden rule question (HANDOFF item 33).

@@ -4,7 +4,7 @@
 
 The user asked on 2026-11-22: "Make an elite search bar so that whatever a user types it brings up the closest context or accurate search for what the user wants and can make it." The standing rules apply: take the recommended options, **Everything visible live** ([ADR 0119](0119-live-worldgen-preview.md) D1), vanilla parity, document everything, British English, no emojis, clean room, never bundle Mojang assets.
 
-MSM has seven places where a user types to find something, and each has its own small matcher over one list (fact table SF1–SF8 in [`docs/PLAN-search.md`](../PLAN-search.md)): the command palette (a subsequence score over command titles), the Add element dialog (words as substrings of a template's title, description and category), the Examples gallery (substrings of title, kind, category and tags), the sidebar (id, kind and group), the ThingPicker (word starts of a name or id), and nothing at all for Creator flows, Home's tiles, the Showcase, Rules triggers and steps, settings, the guide and Things to fix. None forgives a misspelling, none knows that "armor" is "armour" or that "xp" is experience, none ranks across lists, and none can turn "a blue sword" into the Weapon flow with the colour and the type already answered. A beginner who knows what they want and not what MSM calls it has only the tiles to read, or the AI helper ([ADR 0041](0041-ai-helper.md)), which needs a key and the network.
+MSM has seven places where a user types to find something, and each has its own small matcher over one list (facts SF1–SF8 in the fact table below): the command palette (a subsequence score over command titles), the Add element dialog (words as substrings of a template's title, description and category), the Examples gallery (substrings of title, kind, category and tags), the sidebar (id, kind and group), the ThingPicker (word starts of a name or id), and nothing at all for Creator flows, Home's tiles, the Showcase, Rules triggers and steps, settings, the guide and Things to fix. None forgives a misspelling, none knows that "armor" is "armour" or that "xp" is experience, none ranks across lists, and none can turn "a blue sword" into the Weapon flow with the colour and the type already answered. A beginner who knows what they want and not what MSM calls it has only the tiles to read, or the AI helper ([ADR 0041](0041-ai-helper.md)), which needs a key and the network.
 
 What exists to build on: Creator flows are library starters with typed questions ([ADR 0040](0040-wizards-as-parameterised-starters.md), [ADR 0043](0043-creator-guided-flows.md): 62 flows, their questions typed as text, number, yes or no, colour, choice and set); Surprise me ([ADR 0086](0086-surprise-me-random-mod.md)) already answers those questions by program, adds a rule book beside a flow and applies everything as one undo step; the Creator previews a bundle from memory before anything is written (`preview/bundle-source.ts`); the Showcase draws stills and clips ([ADR 0118](0118-showcase-with-live-clips.md)); the user's jar already yields Minecraft's English names (extracted, unread, SF7); the Rules catalogue has a plain sentence for every trigger and step; the Wishlist ([ADR 0053](0053-missing-features-and-the-wishlist.md)) records what MSM could not do.
 
@@ -136,6 +136,172 @@ After Live views 2 closes (B618). The spike and the engine may start earlier, on
 - The renderer budget is tight (17.6 of 19 MB, stop line 18.5, shared with Live views 2 to 4): the guide stays out of the renderer, and the lazy loading of the 26.3 Java project generator ([ADR 0123](0123-gzipped-vendored-target-data.md) D4's follow-up) may be needed first.
 - Search will show content gaps plainly (a behaviour MSM cannot make); they go to the coverage audit and the plan that owns the area.
 
+## Findings at the close (B673, 2026-11-23)
+
+Reviewed against the merged code of B650–B672 and the two follow-ups "Ask the helper from search" and "Unavailable flows never hidden" (D6's amendment): `packages/search/` (`text/`, `index/`, `rank/`, `slots/`, `compose/`, `query.ts`), `packages/plugin-api/src/search.ts`, each built-in plugin's `src/search.ts` and `src/search/`, `app/src/renderer/src/search/` (sources, `plugin-data.ts`, `vanilla-names.ts`, `worker.ts`, `client.ts`, `host.ts`, `history.ts`, `local-match.ts`, `actions.ts`, `run-action.ts`, `ask-ai.ts`, `SearchPanel.tsx`, `ResultRow.tsx`, `ResultPreview.tsx`, `preview-bundle.ts`, `wording.ts`), `changeset/make-flow.ts`, `studios/rules/add-rule.ts`, `components/settings-catalogue.ts`, `components/GuideDialog.tsx`, `Markdown.tsx`, `app/src/main/guide.ts`, `main/platform/vanilla-names.ts`, the sandbox's `searchData` method, `packages/ai`'s `search_library`, `app/test/search/` (the fixed query set and its runner), `app/e2e/search-path.spec.ts` and `search-keyboard-path.spec.ts`, `docs/guide/search.md` and the evidence in [`docs/reference/spikes/b650/README.md`](../reference/spikes/b650/README.md) and [`docs/reference/search-golden-report.md`](../reference/search-golden-report.md). D1 to D17 hold, with the outcomes below. The close changed only docs and ran no suite: every number here is a brief's own, from its DEVLOG entry of 2026-11-22 or 2026-11-23. **The clean-worktree run of the whole repository was skipped at this close for want of disk**, as at the closes of B618 and B633; the full e2e run of B671 (103 tests, twice) is the last whole app run. Reserves B674 (a sound-alike key; SQ3 said no), B675 (a split index build; SQ1 met its budget) and B676 (no worker; SQ2 said go) did not run.
+
+### Each decision's outcome
+
+| Decision | Outcome |
+|---|---|
+| D1 Offline and repeatable | Met. No query, result or click leaves the computer: both e2e specs watch the renderer's and main's requests (`watchNetwork` in `app/e2e/search-helpers.ts`) and fail on any; the same words give the same rows in the same order on a fresh build of each target (`golden.test.ts`). |
+| D2 The package | Built as decided: `@msm/search` imports only `@msm/plugin-api`. One addition: a `./text` export (B668), so the filter boxes take the text half without the index and ranking. |
+| D3 The index | Built: fifteen sources (B650 added `tile`; Showcase cards are `showcases.ts`), three layers plus the guide layer, a Vite module worker with a main-thread host when no worker starts, project deltas 300 ms after an edit, nothing stored. Per target at B660: 62 flows, 12 other starters, 309 templates, 200 examples, 124 kinds, 51 commands, 66 triggers, 61 steps, 25 conditions, 17 numbers, 27 tiles, 15 picks, 13 cards, 81 extra doors (1,063 static entries before the settings and guide layers), vanilla 4,291 on 26.3 and 4,382 on 26.4. Changed in the build: stemming and the vocabulary are applied at query time, never stored in the index, so a vocabulary change never rebuilds a layer (B658). Budgets: see "Measured budgets and bars". |
+| D4 Matching | Built (B653): trigram typo candidates, the dictionary-aware stemmer with an exception list, the intent words of D4 plus their -ing forms, `whats`, `guide`, `explain`, `remove`, `crash`, `redo` and the pairs `what is`, `can i`, `not working` (the spike's `pink`, `my`, `turn`, `switch` and `save` were not taken). `no`, `not`, `without`, `on`, `off` and `all` are not stop words. A protected word that is a plain plural of a dictionary word is not protected, so `block` and `blocks` meet (B658). |
+| D5 Vocabulary as data | Built: the library's 198 word groups (154 vanilla ids), 67 colour lines and its behaviours, answers and doors (B654); the eleven content plugins' 183 word groups, `keywords` for every kind and template (433 lists), 8 doors and 91 behaviours (B655); B666's additions. Every vanilla id in the data is checked against both targets' registries by each plugin's `test/search.test.ts`. |
+| D6 Ranking | Built (B658) with these refinements: an unavailable entry is never a Best match and comes last in its section (stricter than "never first while an available one scores within a fifth"), and since D6's amendment up to five unavailable matches are listed after a section cut at 50 rows, so a flow a target cannot make is never hidden; duplicates fold by action descriptor (a tile, a card and the flow they open); the Custom sword starter cannot fold under the Weapon flow by data, so under the make lean a starter weighs 0.9 against a flow's 1.15, and a flow whose answers took the thing's noun 1.3; the confidence floor is B650's (a score of 3 and half the words read without a correction, one corrected word, or a whole id). B666 tuned seven numbers in `rank/weights.ts`, each with its reason beside it. |
+| D7 Answers | Built (B659) with the spike's amendment: answers read the corrected and vocabulary words, a number out of range is dropped and struck through, never clamped; the clash rules of SQ6 (from-questions only after "from" or "of", "like X" only after "like", numbered repeats in order, `sameAs`, `appliesWhen`, then declaration order); a melee damage number implies `custom_damage`. B666: a thing named by an idea or a typed id takes its listed sort, so "custom ore that drops xp" no longer names a mob "Custom Ore". A behaviour fits by `flows`, `answers`, `appliesTo` and the flow's sort; one clause, one rule or one companion flow, made as one undo step (B657's `makeFlow`, which Surprise me now shares). |
+| D8 Honest chips | Built (B663): **I understood:**, **Showing results for …**, **Not understood:** with the struck words; removing a chip asks again. |
+| D9 Actions and the live picture | Built (B664, B665): every action of the table through `SearchActionHost`, each write one undo step with a label; **Add this rule** through the new `studios/rules/add-rule.ts`; with no mod open the mod's name is asked first. The preview shows a plain tile at once and the picture 150 ms after the selection or answers last changed; building and planning a flow took a median 0.9 ms (slowest the Tank, 84 ms on 26.3), so every flow's first picture starts within 250 ms in tests; the drawn WebGL time per flow was left to the e2e and not reported per flow. "In Build mode" no longer applies (ADR 0125 removed the switch). |
+| D10 The doors | Built (B667): Home's **What do you want to make?**, the same bar on the empty editor area and the no-mod screen, the toolbar's **Search or make anything** in every mode, Ctrl/Cmd+K (Monaco keeps its own Ctrl+K chords), Edit > **Search…** showing `CmdOrCtrl+K` with `registerAccelerator: false`, and the palette command **Search everything…**. Changed: the palette door is `CommandPalette` itself ranked by the engine through a `rank` prop (commands scope), not the panel opened with `>`: the palette's test ids and empty order stay exactly as they were. One matcher (B668, `search/local-match.ts`) in the sidebar, Add element, Examples and the ThingPicker, the old exact matches kept first; the ThingPicker shows and matches Minecraft's own names when the jar is set up. |
+| D11 Accessibility and privacy | Built: the combobox, grouped listbox, `aria-activedescendant` and a polite status ("N results. Best match: …"), visible group headings hidden from the tree (SQ15), every key of D11 and the focus back where it was (both e2e specs); reduced motion plays no clip. The history is the last 20 searches and 50 chosen results, behind **Remember my searches** and **Clear my searches** in a new Settings section **Search** (B662). A real screen reader on Windows is the user's check. |
+| D12 The AI helper | Built (B669 and "Ask the helper from search"): the read-only tool `search_library` (the catalogue now 23 tools; ids only for vanilla, never a jar name; the prompt 103,775 of 104,000 characters, no raise); **Ask the AI helper** opens the helper with the words as an unsent draft and at most five lines of hints (library ids and understood answers, never the project or a jar name), or New project with the AI helper when no mod is open. Changed: without a key the one quiet line shows as soon as words are typed (the row is hidden without a key), not only when nothing is close. |
+| D13 Plugin search data | Amended at B651 to one lazy `searchData()` (plugin API 1.23.0). Third-party data (B670) crosses the sandbox as data, is checked whole by `validateSearchContributions` with `THIRD_PARTY_SEARCH_LIMITS` and is kept or left out whole (built-in data is checked per line); fields the API does not define, stop and intent words among them, are left out with a warning; Settings > Plugins says which; a door's sentence ends "From <plugin name>." and a third-party row shows the name. |
+| D14 The guide inside the app | Built (B656, B661): the guide's Markdown in `resources/guide/` by `extraResources` (never in `app.asar`), `guide:index` and `guide:page` in main (39 pages and 569 sections at B656, a 124 kB index built in about 45 ms; 40 pages with `search.md`), `GuideDialog` with contents, Back and **Open on the web**; `Markdown.tsx` learned tables, numbered and nested lists, block quotes and links between pages. |
+| D15 The findable rule | Kept: in `docs/HANDOFF.md` "Rules for every brief" from this close. Adding it to the root `CLAUDE.md` golden rules waits for the user's word (HANDOFF "Waiting on the user"). |
+| D16 The fixed query set | Met: 241 hand-written queries in eleven classes (B666's 240 and B672's "how does search work"), the bars met in all eight configurations; see below. Expectations are changed only with a `reason`; seven queries wait on engine findings (`needs`, run and reported, not counted). |
+| D17 Order | Ran beside the game modes plan's waves 2 to 6 and Live views 3; B557's flows landed before B666, so `skyblock` expects the Skyblock flow. The four gaps the spike found were closed during the plan by [ADR 0127](0127-vanilla-gaps-fire-enchanted-unbreakable-frost.md). |
+
+### Measured budgets and bars
+
+| Budget or bar (D3, D16, the plan's "Size") | Draft | Measured |
+|---|---|---|
+| Static layer built | 150 ms | B650 in an Electron worker 90 to 110 ms; B658 in Node 50 to 104 ms; B660 with the app's collectors 43 to 57 ms |
+| Vanilla layer built | 250 ms | B650 49 to 73 ms; B658 61 to 95 ms; B660 62 to 74 ms |
+| A 5,000-thing mod | within the budgets | built 40 to 45 ms (B650), 63 to 98 ms (B658); a patch of 10 things 8 to 15 ms; a delta of one thing in the app 25 to 29 ms |
+| Worker memory, 5,000 things | 12 MB | 9.4 MB (B650), 10.0 to 10.3 MB with the entries (B658) |
+| First results, 95th centile | 30 ms, 60 ms with vanilla | 4 to 9 ms static, 4 to 16 ms with vanilla, 9 to 16 ms with 5,000 things (B658); the worker round trip adds about 0.9 ms median and 4 to 5 ms at the 95th centile (B650, slim hits) |
+| Key press to painted results | 100 ms | Not measured as one number; the parts above sum to well under it |
+| Renderer output | 0.2 MB, lazy | The named chunks at B667: `SearchPanel` 14.1 kB, `run-action` 16.4 kB, `ResultPreview` 17.9 kB, `GuideDialog` 6.5 kB, `client` 4.4 kB, `sources` 17.5 kB, the main-thread `host` 64.2 kB (0.14 MB); the worker chunk and the plugins' lazy search data were not reported apart. The renderer total went from 18.5 MB (B657) to 19.2 MB (B668) of 21 (stop line 20.5) with Live views 3 landing in the same window, so search's own share is not isolated |
+| First paint | nothing but the bar and the client stub | +18.2 kB at B668 (the text half for the four filter boxes, 65 to 68 files), 4.8 MB of the 5.5 MB stop line: accepted at this close |
+| `app.asar` | 0.3 MB | The guide is outside it (B656: no `.md` in `app.asar`); 27.2 MB of 32 at B656, not measured since (no `dist:dir` for want of disk) |
+| First result right, overall | 85 % | Sample mod 225 of 232 (97.0 %), empty mod 202 of 209 (96.7 %), the same on both targets and with or without the made-up names file |
+| Top three, overall | 95 % | 230 (99.1 %) and 207 (99.0 %) |
+| Per class | 75 % first, 85 % top three | Every class met; how-to the closest (20 of 26, 76.9 % first); ids, commands and nonsense at 100 % |
+| Nonsense | no Best match | None in any configuration (18 queries) |
+| Flow titles with one wrong letter | top three | 65 of 67 per target (`tnak` and `soin` the known misses) |
+| B650's 82 draft queries | 87.8 % first (the spike's engine) | 78 of 82 (95.1 %) first and 79 top three on the sample mod; today's old matchers 17 and 18 |
+| The 302 misspellings | 277 right first | 278 (92.1 %), 4 wrong first (B653) |
+
+### What moved
+
+- **Interfaces:** `PluginContributions.searchData?(): MaybePromise<PluginSearchData>` in place of the eager arrays and fields (D13's amendment); `SearchWordGroup.misspellings`, `SearchBehaviour.flows`, `SearchQuestionHint { role, words, after, never, sameAs, appliesWhen, choiceWords }`; `SearchSource` gained `tile`; across the worker a hit is `SearchHitSlim`; `CreatorDialog` gained `start`; `SettingsDialog` `focusSetting`; `AiController.prefillMessage`; `AiStartDialog` `initialText` and `contextLabel`.
+- **The palette** kept its component and gained the engine's order through `rank`; the recent picker uses it without.
+- **Surprise me** builds through the shared `changeset/make-flow.ts`; its 200 seeds per target give the same mods.
+- **The Settings dialog** has a ninth section, **Search**, and a catalogue of 21 lines checked against its controls.
+- **The plan's "Very easy wording"** (the bar, headings, chips, buttons and lines) lives as built in `app/src/renderer/src/search/wording.ts`, tested per mode; two of its lines were not built ("Minecraft's own pig stays as it is" and "I could only use the first part").
+- **The guide** gained `search.md`, a data pack section in `getting-started.md`, a how-to under Recipes and a **Search words** section in `plugins.md`.
+
+### Rules that stay
+
+**Findable** (D15): every brief that adds a flow, starter, template, example, kind, Studio, Rules trigger or step, setting, command or guide page gives it search words in its plugin's `src/search.ts` (or the app's settings catalogue or command sentences) where its title does not carry them, and adds at least one query to `app/test/search/golden-queries.json`; review refuses otherwise, as with the live view rule. Also: the fixed query set is written by hand and never regenerated, an expectation changes only with a `reason`; no Minecraft word in `@msm/search` and no version literal outside `packages/targets`; the engine is imported at run time only by `search/host.ts` (and the text half by `local-match.ts`); nothing of a search leaves the computer.
+
+### Open items
+
+Kept in `docs/ROADMAP.md` "Search everything" and `docs/HANDOFF.md` "Open follow-ups":
+
+- **The seven `needs` queries left of B666's eight** ("what is a datapack" was met by B672): an exact id counted on whole ids only (`minecraft:stone`, `minecraft:plains`, `minecraft:speed`, `msm:entity`; `query.ts`); stop words kept for the exact-title check (`very easy mode`, `whats new`; `text/stop-words.ts`); "how does … work" read as the question (`how does try it work`; `text/intent.ts`). Also the two misspelling misses `tnak` (a swap in a four-letter word) and `soin` (the tie that goes to the more frequent `spin`; `text/typos.ts`), and the `scripts` Creator group without a sort (`sources/flows.ts`), so "a wand that teleports you" gets its rule.
+- **Answers:** a pet fox maps to fish food in the answer reader (the Pet flow's food read from the wrong word); the name answer can keep a typed misspelling ("Blue Swrod") where it is built from the words as typed rather than as corrected.
+- **The panel:** an opened section at the 50-row cap counts a rest that nothing can open; a line such as "Type more words to see the rest" should say so.
+- **Plugins:** `session.externalPlugins` returns the plugin objects rather than the facades, so `main.tsx` hands the facades to `App` itself (B667); a third-party vocabulary word that is a stop or intent word is matched as such, though the plugin cannot add one (B670's check leaves out only fields the API does not define).
+- **Words for ADR 0127:** search lines for **Set on fire** (as a behaviour, now that the Rules step exists, in place of the Enchantment flow beside a sword), **Never wears out**, **Starts with an enchantment** and the Frost boots example.
+- **Comments:** seven source and test files still name the deleted plan in their header comments (`packages/search/src/types.ts`, `packages/plugins/library/src/search.ts` and its test, `app/src/renderer/src/search/wording.ts` and its test, both e2e specs); this close changed docs only, so the next brief that touches them points them at this ADR.
+- **Not run at this close:** the clean-worktree run of the whole repository, `app.asar` (`dist:dir`), and a real screen reader on Windows.
+
+### The spike's answers (SQ1 to SQ16)
+
+The full answers are in [`docs/reference/spikes/b650/README.md`](../reference/spikes/b650/README.md).
+
+| # | Question | Answer |
+|---|---|---|
+| SQ1 | The corpus and build times | 1,661 static entries per target (1,644 after folding), 5,420 and 5,536 vanilla ids (4,291 and 4,382 entries); built in a worker in 139 to 177 ms all at once; 9.4 MB with 5,000 things. B675 not needed. |
+| SQ2 | Query time and the worker | 95th centile 2.4 to 7.3 ms in the worker; the round trip about 0.9 ms median. Worker: go; B676 not needed. |
+| SQ3 | Typo methods | Trigrams, deletion neighbourhoods and a BK-tree find the same candidates (277 of 302 right first); trigrams use 0.9 MB against 7.4. A sound-alike key rescues 7 to 8 and breaks 6 to 8: no; B674 not needed. |
+| SQ4 | The stemmer | Dictionary-aware with 18 exceptions: 1 harmless merge of 20 known bad ones. |
+| SQ5 | Baseline | 82 draft queries; today's matchers 17 first (20.7 %), the spike 72 (87.8 %) after one tuning pass. |
+| SQ6 | Answers from label words | Names 53 of 55, colours 50 of 82, choices 166 of 215, numbers 108 of 142, yes or no 84 of 88; 156 clashing words in 26 flows, settled by eight rules. |
+| SQ7 | Preview cost | Bundle, plan and overlay under 30 ms for every flow at the spike; the first picture left to B665. |
+| SQ8 | The jar's names | `en_us.json` 547 and 562 kB, the wanted keys 228 and 231 kB, read in 14 to 22 ms; no cache schema change. |
+| SQ9 | Ctrl/Cmd+K | Monaco stops it in the capture phase and keeps its chords; `shortcutFor` returns `search`; the menu item with `registerAccelerator: false`. The menu path on Windows is the user's check. |
+| SQ10 | The guide | 791 kB, 474 sections, a 105 kB index; staged like the runtime jars and packaged with `extraResources`; the Markdown renderer's gaps listed. D14: go. |
+| SQ11 | Size | Engine and worker 19.4 kB, 2,000 vocabulary lines 111 kB; the budgets hold only with lazy plugin search data (D13's amendment). |
+| SQ12 | Behaviours | 34 clauses: 4 flow answers, 6 the flow itself, 16 one rule, 5 a companion flow, 3 gaps (closed by ADR 0127). |
+| SQ13 | The sandbox | 200 lines are 23 kB, cloned in 0.8 ms and checked in 0.2 ms; another plugin's starter refused. |
+| SQ14 | Starting answers | `CreatorDialog` `start` (about eight lines); the build, plan and fold loop moved out of Surprise me for both callers. |
+| SQ15 | Accessibility tree | The roles read as intended in Playwright; the visible group headings hidden from the tree. A Narrator or NVDA check is the user's. |
+| SQ16 | Order effects | `skyblock` waited for B557 (met); the recipes and data pack how-tos for B672 (met); a later Set on fire step changes the fire behaviour (the step came with ADR 0127; the behaviour still points at the Enchantment flow). |
+
+## Fact table (SF1 to SF26)
+
+Moved here from the plan at its close. The facts were read at de72850 on 2026-11-22, when the plan was written; "Since" says what changed by the close.
+
+| # | Fact at de72850 | Source | Since |
+|---|---|---|---|
+| SF1 | The command palette: a Radix dialog with `fuzzyScore` over a command's title, then its id; Ctrl/Cmd+Shift+P; 51 built-in commands plus the plugins'; reused for quick picks; test ids `command-palette`, `command-palette-input`, `command-<id>` | `components/CommandPalette.tsx`, `commands/built-in-commands.ts`, `shortcuts.ts` | B667: typed words ranked by the engine (`rank`, commands scope), the fuzzy matches after; **Search everything…** last of the built-in commands; test ids unchanged |
+| SF2 | Ctrl/Cmd+K bound to nothing; Monaco uses it as a chord prefix | `shortcuts.ts`, `app/src/main/menu.ts` | B667: Ctrl/Cmd+K opens the search outside the editors; Edit > **Search…** |
+| SF3 | Add element: every filter word a substring of a template's title, description or category; 297 templates | `components/NewElementDialog.tsx` | B668: the one matcher, exact matches first; 309 templates |
+| SF4 | Examples: substrings of title, kind, category or a tag; 200 examples; tags the only keyword field in the API | `components/ExamplesDialog.tsx`, `packages/plugin-api/src/library.ts` | B668: the one matcher; B651: `keywords` by id in `searchData`; 215 examples |
+| SF5 | The sidebar: `matchesSearch` on id, kind or group | `components/ElementSidebar.tsx` | B668: the one matcher |
+| SF6 | The ThingPicker: word starts of a name or id; vanilla names made from ids | `components/thing-picker/thing-sources.ts` | B668: the one matcher and Minecraft's own names from the jar |
+| SF7 | `en_us.json` extracted and unread | `packages/interop/src/minecraft-install/extract.ts` | B656: read by `msm:v1:minecraft:names` |
+| SF8 | 26.3's registries: 190 registries, 33,217 ids; about 5,400 of the sorts search shows | `packages/targets/mc-26.3/vendor/mcmeta/registries.json` | Unchanged; 4,291 vanilla entries on 26.3 and 4,382 on 26.4 (B660) |
+| SF9 | 74 starters, 62 Creator flows; questions typed `string`, `number`, `boolean`, `colour`, `choice`, `set`, `image`, `audio` | `packages/plugins/library/src/starters/` | 82 starters, 70 flows (the game flows of B557 and later); question hints in `searchData` (B654) |
+| SF10 | `CreatorDialog` has no starting answers for a new set; the preview rebuilds 150 ms after an answer | `components/creator/CreatorDialog.tsx`, `preview/bundle-source.ts` | B657: `start: { flowId, values, note? }` |
+| SF11 | Surprise me answers flows by program and applies all as one undo step | `surprise/surprise.ts` | B657: through the shared `changeset/make-flow.ts` |
+| SF12 | Home: 27 tiles under eight headings; the empty editor area says "Select an element to edit it, or add one with Add element." | `App.tsx`, `components/EditorArea.tsx`, `components/home/tiles.ts` | B667: the bar on Home and on the empty editor area and no-mod screen; tiles fold into their flows in search (B660) |
+| SF13 | The Showcase: 13 cards, stills and one live clip | `showcase/` | B660: cards fold into their flows; B665: a card's still and Play in the preview |
+| SF14 | The Rules catalogue: a label and sentence per entry; no step sets a mob on fire; the Enchantment flow's "Set the target on fire" for swords | `packages/plugins/rules/src/catalogue/`, `starters/enchantment.ts` | ADR 0127: the step **Set on fire** (`set_on_fire`); 66 triggers, 62 steps, 25 conditions, 17 values |
+| SF15 | Things to fix: plain words for about 250 codes, two one-step fixes | `session/plain-problems.ts` | B660: found by search; **Fix it** for `paint-picture` (B667) |
+| SF16 | The guide: 38 pages, 474 headings, not in the app; `Markdown.tsx` without tables, numbered lists or links between pages | `docs/guide/`, `components/Markdown.tsx` | B656, B661: read in the app; 40 pages with `search.md` (B672) |
+| SF17 | Settings: eight sections, no search, no way to open at a line | `components/SettingsDialog.tsx` | B662: the section **Search**, `focusSetting`, `settings-catalogue.ts` (21 lines) |
+| SF18 | The AI helper: no search tool | `packages/ai/src/tools/` | B669: `search_library` (23 tools) |
+| SF19 | The Wishlist in `msm.wishlist.json` | `wishlist/wishlist.ts` | Offered by **Nothing close** (B663) |
+| SF20 | The terrain worker and its client of lanes | `terrain/worker.ts`, `terrain/client.ts` | The search worker and client follow the pattern (B660) |
+| SF21 | `app.asar` 26.2 of 32 MB, renderer 17.6 of 19 MB | root `CLAUDE.md` | `app.asar` 27.2 MB (B656); renderer budget 21 MB with first paint apart (ADR 0126 D4 amended): 19.2 MB and 4.8 MB at B668 |
+| SF22 | Plugin API 1.21.0 | `packages/plugin-api/src/version.ts` | 1.23.0 at B651 (search data); 1.26.0 at the close |
+| SF23 | No search or fuzzy matching dependency | `app/package.json` | Still none |
+| SF24 | Package layers in `tools/check-deps/layers.json` | `tools/check-deps/layers.json` | B652: `"@msm/search": ["@msm/plugin-api"]` |
+| SF25 | Third-party contributions cross `plugins/sandbox/protocol.ts` | `app/src/renderer/src/plugins/sandbox/` | B670: the `searchData` method (2 s deadline) |
+| SF26 | View preferences in local storage through `store/preferences.ts` | `store/preferences.ts` | B660, B662: the history and **Remember my searches** |
+
+## Limits (SL1 to SL17) and their outcome
+
+Moved here from the plan at its close; `docs/guide/search.md` says them in plain words.
+
+| # | Limit | What users see | Outcome at the close |
+|---|---|---|---|
+| SL1 | It matches words, it does not think. | The chips say what was understood; unknown words are struck through. | Stands. |
+| SL2 | English only, British and American. | Other languages find little. | Stands; an idea in ROADMAP. |
+| SL3 | One "that…" clause, at most one rule or one companion flow from it. | The rest of the words shown as not understood. | Stands; the line "I could only use the first part" was not built (the chips say it). |
+| SL4 | A rule made by search needs the Fabric mod jar. | The existing note on vanilla pack exports. | Stands. |
+| SL5 | Minecraft's own names and pictures need the Minecraft folder. | Names made from ids, the set-up line. | Stands; the ThingPicker follows it too (B668). |
+| SL6 | It cannot make what MSM cannot make. | A struck-through chip. | Stands; the line "Minecraft's own pig stays as it is" was not built. The spike's three gaps were closed by ADR 0127. |
+| SL7 | Answers come only from typed words. | Defaults for the rest, in the preview. | Stands; a number out of range is dropped and struck (D7's amendment). |
+| SL8 | Only the selected result is drawn live; some flows are slow. | A plain tile first, then the picture. | Stands: the plain tile shows for every result first (B665). |
+| SL9 | Things of later plans are found when they land. | The closest thing that exists. | Met for the Skyblock flow, sounds' Play and the Creator's Live tab; the findable rule carries it on. |
+| SL10 | Third-party words point only at the plugin's own things and carry its name. | "From <name>" on the row. | Stands; all or nothing (B670). |
+| SL11 | The history stays on this computer and can be switched off. | **Remember my searches**, **Clear my searches**. | Stands. |
+| SL12 | The guide in the app is text; web links open the browser. | As said. | Stands, with **Open on the web**. |
+| SL13 | Typos by word length; a misspelling that is itself a word is not corrected. | "Showing results for…" | Stands; `tnak` and `soin` are open engine items. |
+| SL14 | The mod is searched by names, ids, kinds and rule sentences, not inside functions and scripts. | Found by what a thing is called. | Stands; find in files is an idea. |
+| SL15 | On a very large mod the first search may be late. | A short wait. | Not seen: a 5,000-thing mod builds in under 0.1 s (B658). |
+| SL16 | Settings and commands have no live picture. | One sentence on what they do. | Stands; exempt in `docs/LIVE-VIEW-AUDIT.md`. |
+| SL17 | Inside the code editors Ctrl+K belongs to the editor. | The toolbar field, or Escape first. | Stands as decided by B667 from SQ9. |
+
 ## Status
 
-Proposed (2026-11-22). The working plan is [`docs/PLAN-search.md`](../PLAN-search.md) (B650–B673, reserves B674–B676; fact table SF1–SF26, spike questions SQ1–SQ16, limits SL1–SL17); nothing after its wave 0 starts before the spike B650 has reported. Decided by the orchestrator under the user's rule "take the recommended options" and open to the user's veto: our own engine and no AI by default (D1, D2); a worker, and no index on disk (D3); the typo limits (D4); vocabulary owned by the plugins (D5); the six sections and three Best matches (D6); answers only from typed words, and one behaviour clause making at most one rule or one companion flow (D7); **Make this** opening the Creator with **Add to my mod** as the second action (D9); the bar on every start surface and in the toolbar, Ctrl/Cmd+K, and the palette kept as a second door to the same engine (D10); a local, optional history and no telemetry at all (D11); the AI row last, prefilled and not sent by itself (D12); third-party search data limited to the plugin's own things (D13); the guide read inside the app (D14); the findable rule for every later brief (D15); the 85 % and 95 % bars (D16); the order (D17).
+Accepted with findings (B673, 2026-11-23; briefs B650–B672 and the follow-ups "Ask the helper from search" and "Unavailable flows never hidden"; reserves B674–B676 not run, as SQ1, SQ2 and SQ3 said). D6 amended after B671, D13 at B651, D7 by the spike. The plan `docs/PLAN-search.md` is deleted; its fact table SF1–SF26, limits SL1–SL17 and the spike's answers SQ1–SQ16 are above. Decided by the orchestrator under the user's rule "take the recommended options" and open to the user's veto, as vetoable defaults:
+
+- our own engine in a package, with no AI and no network by default (D1, D2), in a worker with a main-thread fallback and no index on disk (D3);
+- trigram typo matching with one wrong letter at four to seven letters, two from eight, none at three or fewer, and no sound-alike key (D4);
+- the vocabulary owned by the plugins as lazy data, and third-party data kept or left out whole (D5, D13);
+- up to three Best matches, then the six sections in the order of their best score; an unavailable result greyed, last and never a Best match, with up to five listed past a section's 50-row cap (D6);
+- answers only from typed words, a number out of range dropped rather than clamped, one "that…" clause making at most one rule or one companion flow (D7);
+- **Make this** opening the Creator with the answers, and **Add to my mod** as the second action (D9);
+- the bar on every start surface and in the toolbar, Ctrl/Cmd+K and Edit > Search…, and the palette kept as its own component ranked by the same engine (D10);
+- a local history of 20 searches and 50 chosen results, on by default behind **Remember my searches**, and no telemetry (D11);
+- **Ask the AI helper** only with a key, prefilled and never sent by itself, with the quiet line shown without a key once words are typed (D12);
+- the guide read inside the app from files beside it (D14);
+- the findable rule for every later brief in `docs/HANDOFF.md`, and in the root `CLAUDE.md` golden rules only if the user agrees (D15);
+- the bars: 85 % first and 95 % in the top three overall, 75 % and 85 % per class, 100 % for ids, commands and nonsense (D16);
+- the 18.2 kB the filter boxes added to the first paint (the plan said nothing but the bar and the client's stub).

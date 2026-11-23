@@ -1,10 +1,10 @@
 # packages/search — the app's search engine
 
-`@msm/search` is the engine of the one search (ADR 0124; plan `docs/PLAN-search.md`, spike evidence `docs/reference/spikes/b650/README.md`). It is language and ranking only: pure, deterministic, no Minecraft word in the code (the plugins own the words, D5, D13). It imports only `@msm/plugin-api` (layer line in `tools/check-deps/layers.json`) and runs in a Web Worker in the app, never on the UI thread by choice (D3).
+`@msm/search` is the engine of the one search (ADR 0124, accepted with findings at B673: its facts, limits, measured budgets and open items; spike evidence `docs/reference/spikes/b650/README.md`, the query set's report `docs/reference/search-golden-report.md`). It is language and ranking only: pure, deterministic, no Minecraft word in the code (the plugins own the words, D5, D13). It imports only `@msm/plugin-api` (layer line in `tools/check-deps/layers.json`) and runs in a Web Worker in the app, never on the UI thread by choice (D3).
 
 ## Status
 
-Scaffold (B652): `src/types.ts` holds the frozen interfaces (`SearchEntry`, `SearchRequest`, `SearchAnswer`, `SearchHit`, `SearchHitSlim`, `SearchIndex`) and `createSearchIndex` throws "not built yet". The plugin data types (`PluginSearchData` and the rest) live in `@msm/plugin-api`; never redefine them here.
+Built (B653, B658, B659; tuned by B666; D6's unavailable rows past the cap after B671). `src/types.ts` holds the interfaces (`SearchEntry`, `SearchRequest`, `SearchAnswer`, `SearchHit`, `SearchHitSlim`, `SearchIndex`); `createSearchIndex` (`src/query.ts`) returns the engine. `./text` exports the text half for the app's filter boxes. Only `app/src/renderer/src/search/host.ts` (and `local-match.ts`, the text half) imports it at run time. The plugin data types (`PluginSearchData` and the rest) live in `@msm/plugin-api`; never redefine them here. Open engine items (ADR 0124 findings): an exact id on whole ids only, stop words kept in titles, "how does … work", `tnak` and `soin`.
 
 ## Layout and owners
 
