@@ -514,6 +514,7 @@ export function AiPanel(props: {
               items={items}
               running={running}
               applying={applying}
+              primary={primary === 'tray'}
               onToggle={(itemId, accepted) => {
                 conversation.changeset.setAccepted(itemId, accepted);
                 controller.markConflicts();
