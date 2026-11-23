@@ -9,6 +9,9 @@
  */
 
 import type { Element, Json, Project } from '@msm/core';
+import type { VanillaNames } from '../../../../shared/platform';
+import { dictionaryOf, type LocalQuery, localQuery } from '../../search/local-match';
+import { nameOf, thingNameOf } from '../../search/vanilla-names';
 
 /** The sorts of thing a picker offers; the rule slot types that name an id. */
 export type ThingSort =
@@ -81,6 +84,11 @@ export interface ThingSection {
   readonly id: string;
   readonly label: string;
   readonly things: readonly Thing[];
+  /**
+   * The target a section of the game's things is for (the project's first), so the picker can
+   * show Minecraft's own names from the user's jar (`search/vanilla-names.ts`; B668).
+   */
+  readonly targetId?: string;
 }
 
 /** Read access to ids: the session's registry view (`SchemaContext.registries`). */
@@ -466,9 +474,67 @@ export function thingSections(input: ThingSourceInput): ThingSection[] {
     const entry = vanilla.get(key);
     if (entry === undefined || entry.things.length === 0) continue;
     entry.things.sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
-    sections.push({ id: key, label: entry.label, things: entry.things });
+    const targetId = project.targets[0];
+    sections.push({
+      id: key,
+      label: entry.label,
+      things: entry.things,
+      ...(targetId === undefined ? {} : { targetId }),
+    });
   }
   return sections;
+}
+
+/**
+ * Minecraft's own name of a vanilla thing from the user's jar, or `undefined` when the jar has
+ * none or the sort has no names there. Sounds keep their words: many share one subtitle ("Block
+ * broken"), so the tiles would no longer tell them apart.
+ */
+export function jarNameOf(
+  names: VanillaNames | null | undefined,
+  id: string,
+  sort: ThingSort,
+): string | undefined {
+  switch (sort) {
+    case 'item':
+      return thingNameOf(names, id);
+    case 'block':
+      return nameOf(names, 'blocks', id) ?? nameOf(names, 'items', id);
+    case 'mob':
+      return nameOf(names, 'entityTypes', id);
+    case 'effect':
+      return nameOf(names, 'effects', id);
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * The sections with the game's things named as Minecraft names them, when the jar is set up
+ * (limit SL5: without it, words made from the ids), sorted again by name. The project's own
+ * things keep their names. The same sections come back when nothing changes.
+ */
+export function withVanillaNames(
+  sections: readonly ThingSection[],
+  names: VanillaNames | null | undefined,
+): readonly ThingSection[] {
+  if (names === null || names === undefined) return sections;
+  let changed = false;
+  const out = sections.map((section) => {
+    let renamed = false;
+    const things = section.things.map((thing) => {
+      if (thing.source !== 'vanilla') return thing;
+      const name = jarNameOf(names, thing.id, thing.sort);
+      if (name === undefined || name === thing.name) return thing;
+      renamed = true;
+      return { ...thing, name };
+    });
+    if (!renamed) return section;
+    changed = true;
+    things.sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+    return { ...section, things };
+  });
+  return changed ? out : sections;
 }
 
 /** Lower-case words of a query, for matching. */
@@ -478,19 +544,39 @@ const words = (text: string): string[] =>
     .split(/[\s:_./]+/)
     .filter((word) => word.length > 0);
 
+/** What the picker's search reads of a thing: its name and its id. */
+const thingTexts = (thing: Thing): string[] => [thing.name, thing.id];
+
 /**
- * The sections with only the things matching `query` (every word of the query starts a word
- * of the name or the id); empty sections are left out. An empty query keeps everything.
+ * The sections with only the things matching `query`; empty sections are left out. An empty
+ * query keeps everything. In each section the things where every word of the query starts a
+ * word of the name or the id come first, in their order; then the ones only the search's text
+ * matching finds (spellings, stems, word groups, one or two wrong letters; B668). The words the
+ * list knows are those of every section, so a word of the list is never corrected.
  */
 export function filterThings(sections: readonly ThingSection[], query: string): ThingSection[] {
   const wanted = words(query);
   if (wanted.length === 0) return [...sections];
+  const exact = (thing: Thing): boolean => {
+    const have = [...words(thing.name), ...words(thing.id)];
+    return wanted.every((word) => have.some((part) => part.startsWith(word)));
+  };
+  let read: LocalQuery | null = null;
+  const fuzzy = (thing: Thing): boolean => {
+    read ??= localQuery(query, {
+      dictionary: dictionaryOf(sections.flatMap((section) => section.things.flatMap(thingTexts))),
+    });
+    return !read.empty && read.matches(thingTexts(thing));
+  };
   const out: ThingSection[] = [];
   for (const section of sections) {
-    const things = section.things.filter((thing) => {
-      const have = [...words(thing.name), ...words(thing.id)];
-      return wanted.every((word) => have.some((part) => part.startsWith(word)));
-    });
+    const first: Thing[] = [];
+    const rest: Thing[] = [];
+    for (const thing of section.things) {
+      if (exact(thing)) first.push(thing);
+      else if (fuzzy(thing)) rest.push(thing);
+    }
+    const things = [...first, ...rest];
     if (things.length > 0) out.push({ ...section, things });
   }
   return out;

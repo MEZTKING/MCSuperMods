@@ -13,6 +13,7 @@
 import type { ContentBundle, ExampleProject, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
 import { type ReactNode, useEffect, useId, useMemo, useState } from 'react';
+import { exactFirst, matchesLocally, useLocalWords } from '../search/local-match';
 import { categorySlug, fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
 
@@ -43,12 +44,40 @@ export interface ExamplesDialogProps {
   renderClip?(example: ExampleProject): ReactNode;
 }
 
-/** Whether an example matches a search text: title, kind, category or a tag contains it. */
-export function exampleMatches(example: ExampleProject, query: string): boolean {
+/** What the gallery's search reads of an example: its title, kind, category and tags. */
+function exampleTexts(example: ExampleProject): string[] {
+  return [example.title, example.kind, example.category, ...(example.tags ?? [])];
+}
+
+/** The old exact match: the title, kind, category or a tag contains the text. */
+function exampleMatchesExactly(example: ExampleProject, query: string): boolean {
   const needle = query.trim().toLowerCase();
   if (needle === '') return true;
-  return [example.title, example.kind, example.category, ...(example.tags ?? [])].some((field) =>
-    field.toLowerCase().includes(needle),
+  return exampleTexts(example).some((field) => field.toLowerCase().includes(needle));
+}
+
+/**
+ * Whether an example matches a search text: its title, kind, category or a tag contains it, or
+ * the search's text matching finds every word in them (spellings, stems, word groups, one or
+ * two wrong letters; B668).
+ */
+export function exampleMatches(example: ExampleProject, query: string): boolean {
+  return exampleMatchesExactly(example, query) || matchesLocally(query, exampleTexts(example));
+}
+
+/**
+ * The examples a search shows: the exact matches first, in their order, then the ones only the
+ * search's text matching finds (B668).
+ */
+export function filterExamples(
+  examples: readonly ExampleProject[],
+  query: string,
+): ExampleProject[] {
+  return exactFirst(
+    examples,
+    query,
+    (example) => exampleMatchesExactly(example, query),
+    exampleTexts,
   );
 }
 
@@ -135,8 +164,11 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
     () => [...new Set(props.examples.map((example) => example.kind))].sort(),
     [props.examples],
   );
-  const visible = props.examples.filter(
-    (example) => (kind === '' || example.kind === kind) && exampleMatches(example, query),
+  // Re-reads the search once the plugins' word groups are loaded.
+  useLocalWords();
+  const visible = filterExamples(
+    props.examples.filter((example) => kind === '' || example.kind === kind),
+    query,
   );
   const [chosenId, setChosenId] = useState<string | null>(null);
   // The selection follows the filters: a hidden example gives way to the first visible one.

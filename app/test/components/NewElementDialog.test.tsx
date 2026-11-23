@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   fallbackNamespace,
+  filterTemplates,
   NewElementDialog,
   type NewElementInput,
   templateGroups,
@@ -172,6 +173,94 @@ describe('NewElementDialog (groups and filter)', () => {
     expect(templateMatches(block, 'block_model')).toBe(true);
     expect(templateMatches(block, 'model recipe')).toBe(false);
     expect(templateMatches(block, '  ')).toBe(true);
+  });
+});
+
+describe('NewElementDialog filter (B668)', () => {
+  /** The matcher before B668, kept to check that nothing it matched is lost. */
+  const oldTemplateMatches = (template: ElementTemplate, filter: string): boolean => {
+    const haystack = [
+      template.title,
+      template.description,
+      template.category,
+      template.kind,
+      template.id,
+    ]
+      .join(' ')
+      .toLowerCase();
+    return filter
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word !== '')
+      .every((word) => haystack.includes(word));
+  };
+  const all = templatesFor(kinds.map((kind) => kind.id));
+  const fake = (id: string, title: string): ElementTemplate =>
+    ({
+      ...(all[0] as ElementTemplate),
+      id,
+      title,
+      description: `A ${title.toLowerCase()} to start from.`,
+      category: 'Gear',
+      kind: 'msm:item',
+    }) as ElementTemplate;
+  const gear = [fake('ruby_armour', 'Ruby armour'), fake('armor_rack', 'Armor rack')];
+
+  it('keeps every match of the old matcher, first and in order', () => {
+    const queries = [
+      '',
+      'model',
+      'MODEL cube',
+      'minecraft:model',
+      'block_model',
+      'language',
+      'lang',
+      'recipe',
+      'loot table',
+      'tag',
+      'sound',
+      'item',
+      'block',
+      'font',
+      'atlas',
+      'pack',
+      'e',
+      'zzz',
+    ];
+    for (const query of queries) {
+      const before = all.filter((template) => oldTemplateMatches(template, query));
+      for (const template of before) expect(templateMatches(template, query)).toBe(true);
+      expect(filterTemplates(all, query).slice(0, before.length)).toEqual(before);
+    }
+  });
+
+  it('finds a misspelling', () => {
+    const models = all.filter((template) => oldTemplateMatches(template, 'model'));
+    expect(models.length).toBeGreaterThan(0);
+    expect(all.filter((template) => oldTemplateMatches(template, 'modle'))).toEqual([]);
+    const found = filterTemplates(all, 'modle');
+    for (const template of models) expect(found).toContain(template);
+    expect(filterTemplates(all, 'qwxzy')).toEqual([]);
+  });
+
+  it('finds "armor" against "armour" and back', () => {
+    expect(filterTemplates(gear, 'armor').map((template) => template.id)).toEqual([
+      'armor_rack',
+      'ruby_armour',
+    ]);
+    expect(filterTemplates(gear, 'armour').map((template) => template.id)).toEqual([
+      'ruby_armour',
+      'armor_rack',
+    ]);
+    expect(templateMatches(gear[0] as ElementTemplate, 'ruby armor')).toBe(true);
+  });
+
+  it('shows a misspelt filter in the dialog', async () => {
+    renderDialog();
+    await userEvent.setup().type(screen.getByTestId('new-element-filter'), 'langauge');
+    const shown = screen.getAllByRole('radio').map((radio) => (radio as HTMLInputElement).value);
+    expect(shown).toContain('lang');
+    expect((screen.getByTestId(`template-${shown[0]}`) as HTMLInputElement).checked).toBe(true);
   });
 });
 

@@ -10551,3 +10551,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B673: `docs/CLAUDE.md` lists the guide pages; add `search.md` there at the close.
 - `App.tsx`'s `askAiWith` opens the helper with the words but not B669's hints block (`askAi` in `search/ask-ai.ts` with its context), and no key gives no quiet line in the panel (ADR 0124 D12 asks for one when nothing is close): wire `askAi` and pass its outcome's `line`.
 - `templates-and-examples.md`'s starters table still lacks the Make a world flows and a few later starters; a full recount of that page against the library is worth a small docs brief.
+## 2026-11-23 — executor — B668 one matcher everywhere
+
+**What**
+- `app/src/renderer/src/search/local-match.ts` (new): the short lists' matcher over `@msm/search`'s text half on the main thread: words folded (British and American), stemmed, a word that begins a list word, the plugins' word groups (`idea`, `same`, `slang`, `misspellings`; never `near`; single-word lines only) and one or two wrong letters by the engine's limits (none at three letters or fewer, one at four to seven, two above; a word the list knows is never corrected). `exactFirst` keeps the old matcher's results first, in their order, then the new ones; `matchesLocally` for one item; `useLocalWords` loads the built-in plugins' word groups once in the app (through `plugin-data.ts`'s shared gathering, after the first paint; tests hand them in with `setLocalVocabulary`).
+- `matchesSearch` (sidebar), `templateMatches` (New element), `exampleMatches` (Examples) and `filterThings` (ThingPicker) keep their old exact match as the first tier and add the matcher; new `searchElements`, `filterTemplates` and `filterExamples` order the lists exact first. Looks, places and test ids unchanged.
+- ThingPicker: vanilla sections carry the project's first target (`ThingSection.targetId`); the picker reads Minecraft's own names through `search/vanilla-names.ts` (`vanillaNamesFor`) and shows and matches them (`withVanillaNames`: items, blocks, mobs, effects; sounds keep their words because many share one subtitle). Without the jar, names made from ids as before (SL5).
+- `packages/search/package.json`: a `./text` export, so the app imports only the text half, not the index and ranking.
+- Tests: each surface's test file has a "keeps every match of the old matcher" test (the old function inlined over a query set, its matches first and in order), a misspelling case and "armor" against "armour"; the ThingPicker's also the word groups and the jar's names; `app/test/components/search/local-match.test.ts` (new) for the limits, stop words, known words and speed. App tests 406 files, 4,334 tests green; lint, typecheck and `pnpm build` green.
+- Size (built against the same tree without the change): first paint 4,986,897 to 5,005,547 bytes (+18.2 kB, 65 to 68 files; 4.8 MB of the 5.5 MB stop line), renderer 20,095,415 to 20,104,969 bytes (19.2 MB of 20.5). `app.asar` not measured (no `dist:dir`).
+
+**Decisions**
+- The Examples test's "A loot table." now matches (its words are in the category "Loot tables"); the description is still not searched (a word only there does not match).
+- The matcher lives in one new file under `search/` rather than in one of the surfaces, so the four share it; the `./text` export is the smallest change to `@msm/search`.
+- The word groups load only when the preload bridge is present, so component tests do not import every plugin.
+
+**Next**
+- B671/B672: the guide can say the sidebar, New element, Examples and the pickers forgive spellings and small typos.
+- Sound tiles could show subtitles as a second line if wanted (a look change, not in this brief).

@@ -1,8 +1,16 @@
 // @vitest-environment happy-dom
+
+import type { Element } from '@msm/core';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ElementSidebar } from '../../src/renderer/src/components/ElementSidebar';
+import {
+  ElementSidebar,
+  groupLabel,
+  groupOf,
+  matchesSearch,
+  searchElements,
+} from '../../src/renderer/src/components/ElementSidebar';
 import { element, sampleProject } from './fixtures';
 
 afterEach(cleanup);
@@ -308,5 +316,87 @@ describe('ElementSidebar navigation (ADR 0047)', () => {
     // The set holds both of its elements, the model included.
     const set = within(region).getByRole('region', { name: 'demo set:set-1' });
     expect(within(set).getAllByRole('listitem')).toHaveLength(2);
+  });
+});
+
+describe('ElementSidebar search (B668)', () => {
+  /** The matcher before B668, kept to check that nothing it matched is lost. */
+  const oldMatchesSearch = (entry: Element, query: string): boolean => {
+    const text = query.trim().toLowerCase();
+    if (text === '') return true;
+    return [entry.id, entry.kind, groupLabel(groupOf(entry.kind))].some((value) =>
+      value.toLowerCase().includes(text),
+    );
+  };
+  const elements = [
+    ...(sampleProject().namespaces[0]?.elements ?? []),
+    element('demo:ruby_sword', 'msm:item'),
+    element('demo:ruby_armour', 'msm:item'),
+    element('demo:armor_stand_pose', 'msm:item'),
+    element('demo:wand', 'msm:item'),
+    element('demo:drops', 'minecraft:loot_table'),
+  ];
+
+  it('keeps every match of the old matcher', () => {
+    const queries = [
+      '',
+      '  ',
+      'ruby',
+      'RUBY',
+      'ruby_b',
+      'demo:item',
+      'block/',
+      'minecraft:model',
+      'model',
+      'Models',
+      'loot',
+      'sword',
+      'wand',
+      'b',
+      'y_s',
+      'armour',
+      'armor',
+      'demo:ruby_block',
+    ];
+    for (const query of queries) {
+      for (const entry of elements) {
+        if (oldMatchesSearch(entry, query)) expect(matchesSearch(entry, query)).toBe(true);
+      }
+      const before = elements.filter((entry) => oldMatchesSearch(entry, query));
+      const after = searchElements(elements, query);
+      // The old matches come first, in their order.
+      expect(after.slice(0, before.length)).toEqual(before);
+    }
+  });
+
+  it('finds a misspelling', () => {
+    const sword = elements.find((entry) => entry.id === 'demo:ruby_sword') as Element;
+    expect(oldMatchesSearch(sword, 'swrod')).toBe(false);
+    expect(matchesSearch(sword, 'swrod')).toBe(true);
+    expect(matchesSearch(sword, 'rubby sword')).toBe(true);
+    expect(matchesSearch(sword, 'shield')).toBe(false);
+    expect(searchElements(elements, 'swrod').map((entry) => entry.id)).toEqual(['demo:ruby_sword']);
+  });
+
+  it('finds "armor" against "armour" and back', () => {
+    expect(searchElements(elements, 'armor').map((entry) => entry.id)).toEqual([
+      'demo:armor_stand_pose',
+      'demo:ruby_armour',
+    ]);
+    expect(searchElements(elements, 'armour').map((entry) => entry.id)).toEqual([
+      'demo:ruby_armour',
+      'demo:armor_stand_pose',
+    ]);
+  });
+
+  it('shows a misspelt search in the list', async () => {
+    const project = sampleProject();
+    project.namespaces[0]?.elements.push(element('demo:ruby_sword', 'msm:item'));
+    render(
+      <ElementSidebar project={project} selectedId={null} onSelect={vi.fn()} onRemove={vi.fn()} />,
+    );
+    await userEvent.setup().type(screen.getByTestId('sidebar-search'), 'swrod');
+    expect(screen.getByRole('button', { name: 'demo:ruby_sword' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'demo:item/ruby' })).toBeNull();
   });
 });

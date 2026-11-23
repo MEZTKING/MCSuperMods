@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Search, Trash2 } from 'lucide-react';
 import { ScrollArea } from 'radix-ui';
 import { useState } from 'react';
 import type { RecentProjectView } from '../../../shared/platform';
+import { exactFirst, matchesLocally, useLocalWords } from '../search/local-match';
 import type { UiMode } from '../store/preferences';
 import { useTextureDrop } from '../textures/texture-drop';
 import { type AssetActions, AssetList } from './AssetList';
@@ -141,13 +142,33 @@ export function groupLabel(group: string): string {
   return GROUP_LABELS[group] ?? group;
 }
 
-/** Whether `element` matches a sidebar search (id, kind or friendly group, case-insensitive). */
-export function matchesSearch(element: Element, query: string): boolean {
+/** What the sidebar's search reads of an element: its id, kind and friendly group. */
+function searchTexts(element: Element): string[] {
+  return [element.id, element.kind, groupLabel(groupOf(element.kind))];
+}
+
+/** The old exact match: the id, kind or friendly group contains the text (case-insensitive). */
+function matchesExactly(element: Element, query: string): boolean {
   const text = query.trim().toLowerCase();
   if (text === '') return true;
-  return [element.id, element.kind, groupLabel(groupOf(element.kind))].some((value) =>
-    value.toLowerCase().includes(text),
-  );
+  return searchTexts(element).some((value) => value.toLowerCase().includes(text));
+}
+
+/**
+ * Whether `element` matches a sidebar search: the id, kind or friendly group contains the text
+ * (case-insensitive), or the search's text matching finds every word in them (spellings, stems,
+ * word groups, one or two wrong letters; B668).
+ */
+export function matchesSearch(element: Element, query: string): boolean {
+  return matchesExactly(element, query) || matchesLocally(query, searchTexts(element));
+}
+
+/**
+ * The elements a sidebar search shows: the exact matches first, in their order, then the ones
+ * only the search's text matching finds (B668).
+ */
+export function searchElements(elements: readonly Element[], query: string): Element[] {
+  return exactFirst(elements, query, (element) => matchesExactly(element, query), searchTexts);
 }
 
 /** One Creator set in Easy mode: its key, label and elements. */
@@ -414,7 +435,9 @@ function NamespaceSection(props: {
   flowTitles: Readonly<Record<string, string>>;
 }) {
   const { namespace, mode } = props;
-  const visible = namespace.elements.filter((element) => matchesSearch(element, props.query));
+  // Re-reads the search once the plugins' word groups are loaded.
+  useLocalWords();
+  const visible = searchElements(namespace.elements, props.query);
   const searching = props.query.trim() !== '';
   const keyOf = (group: string) => `${namespace.name}/${group}`;
   const section = (

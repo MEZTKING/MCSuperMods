@@ -2,6 +2,7 @@ import type { Json, ResourceLocation } from '@msm/core';
 import type { MaybePromise, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
+import { exactFirst, matchesLocally, useLocalWords } from '../search/local-match';
 import { useUiStore } from '../store/ui-store';
 import { type ElementTemplate, templateContext, templateElementId } from '../studios/templates';
 import { Button } from './ui/Button';
@@ -117,25 +118,46 @@ export function fallbackNamespace(namespaces: readonly string[], last: string | 
   return namespaces.find((entry) => entry !== 'minecraft') ?? namespaces[0] ?? '';
 }
 
-/**
- * Whether a template matches the picker's filter text: its title, description, category,
- * kind or id contains every word of it (case-insensitive).
- */
-export function templateMatches(template: ElementTemplate, filter: string): boolean {
-  const haystack = [
-    template.title,
-    template.description,
-    template.category,
-    template.kind,
-    template.id,
-  ]
-    .join(' ')
-    .toLowerCase();
+/** What the template filter reads of a template. */
+function templateTexts(template: ElementTemplate): string[] {
+  return [template.title, template.description, template.category, template.kind, template.id];
+}
+
+/** The old exact match: the texts together contain every word of the filter (case-insensitive). */
+function templateMatchesExactly(template: ElementTemplate, filter: string): boolean {
+  const haystack = templateTexts(template).join(' ').toLowerCase();
   return filter
     .toLowerCase()
     .split(/\s+/)
     .filter((word) => word !== '')
     .every((word) => haystack.includes(word));
+}
+
+/**
+ * Whether a template matches the picker's filter text: its title, description, category,
+ * kind or id contains every word of it (case-insensitive), or the search's text matching finds
+ * every word in them (spellings, stems, word groups, one or two wrong letters; B668).
+ */
+export function templateMatches(template: ElementTemplate, filter: string): boolean {
+  return (
+    templateMatchesExactly(template, filter) || matchesLocally(filter, templateTexts(template))
+  );
+}
+
+/**
+ * The templates the filter shows: the exact matches first, in their order, then the ones only
+ * the search's text matching finds (B668).
+ */
+export function filterTemplates(
+  templates: readonly ElementTemplate[],
+  filter: string,
+): ElementTemplate[] {
+  return exactFirst(
+    templates,
+    filter,
+    (template) => templateMatchesExactly(template, filter),
+    templateTexts,
+  );
 }
 
 /** A category as a `data-testid` suffix: lower case, other characters as `-`. */
@@ -196,7 +218,9 @@ export function NewElementDialog(props: {
   const nameHintId = useId();
   const filterId = useId();
   const [filter, setFilter] = useState('');
-  const visible = props.templates.filter((entry) => templateMatches(entry, filter));
+  // Re-reads the filter once the plugins' word groups are loaded.
+  useLocalWords();
+  const visible = filterTemplates(props.templates, filter);
 
   const choose = (next: ElementTemplate): void => {
     if (next.defaultName !== undefined) setName(next.defaultName);
@@ -271,7 +295,7 @@ export function NewElementDialog(props: {
         onChange={(event) => {
           const next = event.target.value;
           setFilter(next);
-          const shown = props.templates.filter((entry) => templateMatches(entry, next));
+          const shown = filterTemplates(props.templates, next);
           const first = shown[0];
           if (first !== undefined && !shown.some((entry) => entry.id === templateId)) {
             choose(first);

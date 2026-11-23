@@ -17,7 +17,12 @@ import {
   thingSections,
   thingWords,
   vanillaPicturePaths,
+  withVanillaNames,
 } from '../../src/renderer/src/components/thing-picker/ThingPicker';
+import type { ThingSection } from '../../src/renderer/src/components/thing-picker/thing-sources';
+import { setLocalVocabulary } from '../../src/renderer/src/search/local-match';
+import { clearVanillaNames } from '../../src/renderer/src/search/vanilla-names';
+import type { VanillaNames } from '../../src/shared/platform';
 import { element } from './fixtures';
 
 afterEach(cleanup);
@@ -262,5 +267,169 @@ describe('ThingPicker', () => {
       fireEvent.click(screen.getByTestId('thing-more-items'));
     });
     expect(within(region).getAllByRole('button')).toHaveLength(TILES_PER_SECTION + 3);
+  });
+});
+
+describe('ThingPicker search (B668)', () => {
+  const armourRegistries = createRegistryIndex({
+    vanilla: {
+      item: ['stone', 'diamond_sword', 'apple', 'leather_horse_armor', 'iron_chestplate'],
+      block: ['stone'],
+    },
+    project: { item: ['demo:ruby', 'demo:ruby_armour'] },
+  });
+  const armourProject = (): Project => {
+    const made = project();
+    made.targets = ['mc-test'];
+    made.namespaces[0]?.elements.push(
+      element('demo:ruby_armour', 'msm:item', { display_name: 'Ruby Armour' }),
+    );
+    return made;
+  };
+  const sections = (): ThingSection[] =>
+    thingSections({
+      project: armourProject(),
+      registries: armourRegistries,
+      texturesFolder: 'textures',
+      sort: 'item',
+    });
+  const ids = (found: readonly ThingSection[]): string[] =>
+    found.flatMap((section) => section.things.map((thing) => thing.id));
+
+  /** The matcher before B668, kept to check that nothing it matched is lost. */
+  const oldWords = (text: string): string[] =>
+    text
+      .toLowerCase()
+      .split(/[\s:_./]+/)
+      .filter((word) => word.length > 0);
+  const oldFilter = (all: readonly ThingSection[], query: string): string[] => {
+    const wanted = oldWords(query);
+    return all.flatMap((section) =>
+      section.things
+        .filter(
+          (thing) =>
+            wanted.length === 0 ||
+            wanted.every((word) =>
+              [...oldWords(thing.name), ...oldWords(thing.id)].some((part) =>
+                part.startsWith(word),
+              ),
+            ),
+        )
+        .map((thing) => thing.id),
+    );
+  };
+
+  afterEach(() => {
+    setLocalVocabulary(null);
+    clearVanillaNames();
+    delete (globalThis as { msm?: unknown }).msm;
+  });
+
+  it('keeps every match of the old matcher, first in each section', () => {
+    const all = sections();
+    const queries = [
+      '',
+      'd',
+      'dia',
+      'diamond sword',
+      'minecraft:',
+      'ruby',
+      'ruby arm',
+      'apple',
+      'stone',
+      'horse',
+      'armor',
+      'armour',
+      'iron chest',
+      'zzz',
+    ];
+    for (const query of queries) {
+      const before = oldFilter(all, query);
+      const after = filterThings(all, query);
+      for (const id of before) expect(ids(after)).toContain(id);
+      for (const section of after) {
+        const old = section.things.filter((thing) => before.includes(thing.id));
+        expect(section.things.slice(0, old.length)).toEqual(old);
+      }
+    }
+  });
+
+  it('finds a misspelling', () => {
+    expect(oldFilter(sections(), 'diamnod')).toEqual([]);
+    expect(ids(filterThings(sections(), 'diamnod'))).toEqual(['minecraft:diamond_sword']);
+    expect(ids(filterThings(sections(), 'chestpalte'))).toEqual(['minecraft:iron_chestplate']);
+    expect(filterThings(sections(), 'qwxzy')).toEqual([]);
+  });
+
+  it('finds "armor" against "armour" and back', () => {
+    expect(ids(filterThings(sections(), 'armor'))).toEqual([
+      'demo:ruby_armour',
+      'minecraft:leather_horse_armor',
+    ]);
+    expect(ids(filterThings(sections(), 'armour'))).toEqual([
+      'demo:ruby_armour',
+      'minecraft:leather_horse_armor',
+    ]);
+  });
+
+  it("matches the plugins' word groups once they are handed in", () => {
+    expect(filterThings(sections(), 'blade')).toEqual([]);
+    setLocalVocabulary([{ words: [{ idea: 'sword', same: ['blade'], near: ['weapon'] }] }]);
+    expect(ids(filterThings(sections(), 'blade'))).toEqual(['minecraft:diamond_sword']);
+    // A weaker "near" word is not used.
+    expect(filterThings(sections(), 'weapon')).toEqual([]);
+  });
+
+  it("names the game's things as the jar does and matches on those names", () => {
+    const names = {
+      version: 'test',
+      blocks: { 'minecraft:stone': 'Smooth Rock' },
+      items: { 'minecraft:apple': 'Red Fruit' },
+      entityTypes: {},
+      biomes: {},
+      effects: {},
+      enchantments: {},
+      potions: {},
+      subtitles: {},
+    } as VanillaNames;
+    const named = withVanillaNames(sections(), names);
+    const vanilla = named.filter((section) => section.id !== 'own');
+    expect(vanilla.flatMap((section) => section.things.map((thing) => thing.name))).toContain(
+      'Smooth Rock',
+    );
+    expect(ids(filterThings(named, 'fruit'))).toEqual(['minecraft:apple']);
+    // Without the jar, the sections are as they were.
+    const plain = sections();
+    expect(withVanillaNames(plain, null)).toBe(plain);
+  });
+
+  it('shows the jar names in the picker when the jar is set up', async () => {
+    setLocalVocabulary([]);
+    const readNames = vi.fn(async () => ({
+      version: 'test',
+      blocks: {},
+      items: { 'minecraft:apple': 'Red Fruit' },
+      entityTypes: {},
+      biomes: {},
+      effects: {},
+      enchantments: {},
+      potions: {},
+      subtitles: {},
+    }));
+    (globalThis as { msm?: unknown }).msm = { minecraft: { readNames } };
+    render(
+      <ThingPicker
+        title="Pick an item"
+        sort="item"
+        sections={sections()}
+        onPick={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Red Fruit' })).toBeTruthy());
+    expect(readNames).toHaveBeenCalledWith('mc-test');
+    fireEvent.change(screen.getByTestId('thing-search'), { target: { value: 'frut' } });
+    expect(screen.getByRole('button', { name: 'Red Fruit' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Diamond sword' })).toBeNull();
   });
 });

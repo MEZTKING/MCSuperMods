@@ -9,6 +9,7 @@ import {
   copySummary,
   ExamplesDialog,
   exampleMatches,
+  filterExamples,
 } from '../../src/renderer/src/components/ExamplesDialog';
 import { fakeExample } from './library-fixtures';
 
@@ -76,7 +77,10 @@ describe('ExamplesDialog', () => {
     expect(exampleMatches(lootExample, 'loot_table')).toBe(true);
     expect(exampleMatches(lootExample, 'loot tables')).toBe(true);
     expect(exampleMatches(lootExample, 'drops')).toBe(true);
-    expect(exampleMatches(lootExample, 'A loot table.')).toBe(false);
+    // The description is not searched; since B668 its words still find the example through
+    // the category ("Loot tables": "table" is "tables" stemmed), but a word only there does not.
+    expect(exampleMatches(lootExample, 'A loot table.')).toBe(true);
+    expect(exampleMatches(lootExample, 'nothing yet')).toBe(false);
     expect(exampleMatches(fakeExample, 'ore')).toBe(true);
   });
 
@@ -154,6 +158,83 @@ describe('ExamplesDialog', () => {
     );
     await userEvent.setup().click(screen.getByTestId('examples-copy'));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('No project is open.'));
+  });
+});
+
+describe('ExamplesDialog search (B668)', () => {
+  /** The matcher before B668, kept to check that nothing it matched is lost. */
+  const oldExampleMatches = (example: ExampleProject, query: string): boolean => {
+    const needle = query.trim().toLowerCase();
+    if (needle === '') return true;
+    return [example.title, example.kind, example.category, ...(example.tags ?? [])].some((field) =>
+      field.toLowerCase().includes(needle),
+    );
+  };
+  const armour: ExampleProject = {
+    ...lootExample,
+    id: 'ruby_armour',
+    title: 'Ruby armour',
+    kind: 'msm:item',
+    category: 'Gear',
+    tags: ['armour', 'chestplate'],
+  };
+  const armorStand: ExampleProject = {
+    ...lootExample,
+    id: 'armor_stand_pose',
+    title: 'Armor stand pose',
+    kind: 'minecraft:entity',
+    category: 'Mobs',
+    tags: [],
+  };
+  const all = [...EXAMPLES, armour, armorStand];
+
+  it('keeps every match of the old matcher, first and in order', () => {
+    const queries = [
+      '',
+      'block',
+      'block DROPS',
+      'loot_table',
+      'loot tables',
+      'drops',
+      'ore',
+      'ruby',
+      'minecraft:',
+      'gear',
+      'armour',
+      'armor',
+      'chest',
+      'e',
+      'zzz',
+    ];
+    for (const query of queries) {
+      const before = all.filter((example) => oldExampleMatches(example, query));
+      for (const example of before) expect(exampleMatches(example, query)).toBe(true);
+      expect(filterExamples(all, query).slice(0, before.length)).toEqual(before);
+    }
+  });
+
+  it('finds a misspelling', () => {
+    expect(oldExampleMatches(lootExample, 'blcok drpos')).toBe(false);
+    expect(exampleMatches(lootExample, 'blcok drpos')).toBe(true);
+    expect(filterExamples(all, 'chestplat').map((example) => example.id)).toEqual(['ruby_armour']);
+    expect(filterExamples(all, 'qwxzy')).toEqual([]);
+  });
+
+  it('finds "armor" against "armour" and back', () => {
+    expect(filterExamples(all, 'armor').map((example) => example.id)).toEqual([
+      'armor_stand_pose',
+      'ruby_armour',
+    ]);
+    expect(filterExamples(all, 'armour').map((example) => example.id)).toEqual([
+      'ruby_armour',
+      'armor_stand_pose',
+    ]);
+  });
+
+  it('shows a misspelt search in the gallery', async () => {
+    renderGallery(['demo']);
+    await userEvent.setup().type(screen.getByTestId('examples-search'), 'blok drops');
+    expect(visibleIds()).toEqual(['loot_block']);
   });
 });
 

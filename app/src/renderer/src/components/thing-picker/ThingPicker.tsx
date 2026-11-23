@@ -45,7 +45,10 @@ import {
   useRef,
   useState,
 } from 'react';
+import type { VanillaNames } from '../../../../shared/platform';
 import { SoundPlayButton } from '../../audio/SoundPlayButton';
+import { useLocalWords } from '../../search/local-match';
+import { vanillaNamesFor } from '../../search/vanilla-names';
 import { pngDataUrl } from '../AssetList';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
@@ -56,6 +59,7 @@ import {
   type ThingPicture,
   type ThingSection,
   type ThingSort,
+  withVanillaNames,
 } from './thing-sources';
 
 export {
@@ -72,6 +76,7 @@ export {
   thingSections,
   thingWords,
   vanillaPicturePaths,
+  withVanillaNames,
 } from './thing-sources';
 
 /** Where the picker loads pictures from; either part may be missing (generic icons then). */
@@ -269,7 +274,27 @@ export function ThingPicker(props: ThingPickerProps) {
   const tiles = useRef(new Map<number, HTMLButtonElement>());
   const searchId = useId();
 
-  const shown = useMemo(() => filterThings(sections, query), [sections, query]);
+  // Minecraft's own names from the user's jar, when it is set up (B668; limit SL5).
+  const targetId = sections.find((section) => section.targetId !== undefined)?.targetId;
+  const [names, setNames] = useState<VanillaNames | null>(null);
+  useEffect(() => {
+    setNames(null);
+    if (targetId === undefined) return;
+    let live = true;
+    void vanillaNamesFor(targetId).then((read) => {
+      if (live) setNames(read);
+    });
+    return () => {
+      live = false;
+    };
+  }, [targetId]);
+  const named = useMemo(() => withVanillaNames(sections, names), [sections, names]);
+  // The plugins' word groups' revision: the search is read again once they are loaded.
+  const wordsRevision = useLocalWords();
+  const shown = useMemo(() => {
+    void wordsRevision;
+    return filterThings(named, query);
+  }, [named, query, wordsRevision]);
   const searching = query.trim().length > 0;
   const showNone = props.noneLabel !== undefined && !searching;
 
