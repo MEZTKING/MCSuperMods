@@ -778,8 +778,9 @@ export function createToolExecutor(
       // The vanilla command names and the argument type map (plugin API 1.17.0, about 1 kB).
       if (target.commands !== undefined) {
         // The command forms (plugin API 1.22.0, B550) are templates for the games lowering, not
-        // for the model: leave them out to keep the answer small, as the key code tables.
-        const { forms: _forms, ...commands } = target.commands;
+        // for the model: leave them out to keep the answer small, as the key code tables. Their
+        // fragments (plugin API 1.27.0, B723) are ready text for those templates, left out too.
+        const { forms: _forms, fragments: _fragments, ...commands } = target.commands;
         facts.commands = commands;
       }
       return { value: JSON.parse(JSON.stringify(facts)) as unknown };
