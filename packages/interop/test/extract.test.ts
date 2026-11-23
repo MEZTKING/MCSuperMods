@@ -115,7 +115,7 @@ describe('extractPreviewAssets', () => {
     expect(matches('assets/minecraft/textures/environment/sun.png')).toBe(false);
     expect(matches('assets/minecraft/textures/block/water_still.png.mcmeta')).toBe(true);
     expect(matches('assets/minecraft/textures/item/compass.png.mcmeta')).toBe(true);
-    expect(matches('assets/minecraft/textures/entity/x.png.mcmeta')).toBe(false);
+    expect(matches('assets/minecraft/textures/entity/x.png.mcmeta')).toBe(true); // schema 8 keeps every entity sidecar (ADR 0129 D4)
     expect(matches('assets/minecraft/textures/block/x.mcmeta')).toBe(false);
     expect(matches('assets/other/models/block/x.json')).toBe(false);
   });

@@ -463,7 +463,7 @@ describe('a town of streets, houses and furniture', () => {
       ),
     );
     expect(nested).toBe(true);
-  });
+  }, 30_000); // 300 town assemblies with every rule checked: heavy (5.7 s on a loaded CI runner).
 });
 
 describe('steps and reasons', () => {
