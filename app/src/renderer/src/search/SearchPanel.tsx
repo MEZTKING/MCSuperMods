@@ -42,6 +42,7 @@ import {
   readPrefix,
   rowText,
   SCOPE_PREFIXES,
+  SEARCH_MODE,
   type SearchActionKey,
   type SearchDoor,
   type SearchScope,
@@ -65,7 +66,8 @@ export interface SearchActionOptions {
 export interface SearchPanelProps {
   /** Asks the engine (the client's `query`); `null` when a newer query replaced it. */
   readonly query: (request: SearchRequest) => Promise<SearchAnswer | null>;
-  readonly mode: SearchMode;
+  /** The words' view; the app's one view by default (ADR 0130 D5). */
+  readonly mode?: SearchMode;
   /** Where it was opened (default the toolbar). */
   readonly door?: SearchDoor;
   readonly initialText?: string;
@@ -206,7 +208,7 @@ interface Answered {
 export function SearchPanel(props: SearchPanelProps) {
   const {
     query,
-    mode,
+    mode = SEARCH_MODE,
     door = 'toolbar',
     hasMod,
     onAction,

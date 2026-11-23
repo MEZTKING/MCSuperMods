@@ -1190,6 +1190,24 @@ export class ProjectSession {
   }
 
   /**
+   * The files `id` becomes when the project is exported (Where it goes, ADR 0130 D4): the paths
+   * of the files its kind lowers it to (after the project's expanders), sorted, each after its
+   * pack or jar. Writes nothing.
+   *
+   * @throws Error If no project is open or the schemas cannot be loaded.
+   */
+  async filesOf(id: ResourceLocation): Promise<string[]> {
+    const project = this.#requireStack().state;
+    const context = await this.schemas();
+    const expansion = await this.#expand(project, context.target);
+    const element = projectElements(expansion.project).find((entry) => entry.id === id);
+    const kind = element === undefined ? undefined : this.registry.get(element.kind);
+    if (element === undefined || kind === undefined) return [];
+    const files = await kind.lower(element, context.target);
+    return files.map((file) => `${file.layer}: ${file.path}`).sort();
+  }
+
+  /**
    * Rules of the open project for the Studios (ADR 0082 D7): which rules name a subject and
    * which events they generate on it. The generated events come from the last validation pass
    * (so they may trail an edit by the validation debounce); {@link rulesViewNow} waits for it.

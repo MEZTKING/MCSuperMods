@@ -40,8 +40,7 @@ import {
   skippedThings,
 } from '../../changeset/creator-sets';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
-import type { UiMode } from '../../store/preferences';
-import { type VeryEasyPick, veryEasyPickOf } from '../../studios/very-easy';
+import { type VeryEasyPick, veryEasyPickOf } from '../../studios/plain';
 import { newSeed, pickForMe } from '../../surprise/surprise';
 import { AiPicturesSwitch, useAiBatch } from '../ai-pictures/AiPicturesSwitch';
 import { fieldClass } from '../NewElementDialog';
@@ -84,13 +83,11 @@ function colourHintProps(colourHint: string | undefined): { colourHint?: string 
 }
 
 /** "Your mod already has Glow Stone, so it will not be made again. Choose another name." */
-export function skippedWarning(names: readonly string[], mode?: UiMode): string {
+export function skippedWarning(names: readonly string[]): string {
   const unique = [...new Set(names)];
   const list = unique.length <= 3 ? unique.join(', ') : `${unique.slice(0, 3).join(', ')} and more`;
   const it = unique.length === 1 ? 'it' : 'they';
-  return mode === 'very-easy'
-    ? `You already have ${list}, so ${it} will not be made again. Type a different name.`
-    : `Your mod already has ${list}, so ${it} will not be made again. Choose another name.`;
+  return `You already have ${list}, so ${it} will not be made again. Type a different name.`;
 }
 
 /** What the Creator needs of the project session. */
@@ -167,8 +164,6 @@ export interface CreatorDialogProps {
   pickImage?: PickImage;
   /** Opens the host's Ogg file picker for an `audio` field (ADR 0049); else the wizard's input. */
   pickAudio?: PickAudio;
-  /** The app's mode, for the wording of the skipped warning (Very easy talks plainly). */
-  mode?: UiMode;
   /** Test hook: overrides WebGL detection in the preview. */
   webgl?: boolean;
   /** Test hook: the rebuild delay (default 150 ms). */
@@ -603,12 +598,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                               className="m-0 flex items-start gap-1 rounded border border-warning px-2 py-1 text-xs text-warning"
                             >
                               <TriangleAlert size={12} aria-hidden className="mt-0.5 shrink-0" />
-                              <span>
-                                {skippedWarning(
-                                  skipped.map((thing) => thing.name),
-                                  props.mode,
-                                )}
-                              </span>
+                              <span>{skippedWarning(skipped.map((thing) => thing.name))}</span>
                             </p>
                           )}
                         </Fragment>

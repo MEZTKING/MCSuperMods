@@ -7,7 +7,7 @@
  * Edits are written back as the block entity's SNBT (`block_entities/<n>/nbt`) through the
  * structures plugin's `parseSnbt` and `printSnbt` (deepslate's NBT, already in that plugin; no
  * new dependency): the other keys of the block entity and of each item (its components) are
- * kept as they were. Each edit is one undo step. Very easy picks loot tables and items by name.
+ * kept as they were. Each edit is one undo step. Loot tables and items are picked by name (their ids in More options).
  *
  * The pure parts ({@link containerEntries}, {@link withLootTable}, {@link withLootSeed},
  * {@link withItems}) run in Node tests.

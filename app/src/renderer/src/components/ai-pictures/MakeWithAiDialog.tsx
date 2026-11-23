@@ -73,8 +73,6 @@ export interface MakeWithAiDialogProps {
   size: number;
   /** The largest edge allowed (smaller sizes only); absent: 16 and 32. */
   maxSize?: number;
-  /** Very easy mode's wording. */
-  veryEasy?: boolean;
   /**
    * What the picture is made for when it is not a square texture of 16 or 32 (`shapes.ts`):
    * fixes the style and the size, and lays the cleaned picture out.
@@ -326,9 +324,7 @@ export function MakeWithAiDialog(props: MakeWithAiDialogProps) {
           aria-describedby={undefined}
           className="fixed top-1/2 left-1/2 z-[70] flex max-h-[92vh] w-[min(94vw,820px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
-          <Dialog.Title className="text-base font-semibold">
-            {props.veryEasy === true ? 'Make it with AI' : 'Make with AI'}: {props.target}
-          </Dialog.Title>
+          <Dialog.Title className="text-base font-semibold">Make it with AI</Dialog.Title>
           <p className="text-xs text-muted">
             Only the words below{slot !== undefined ? " and MSM's own drawing of the shape" : ''}{' '}
             are sent to {service?.label ?? 'the image service'}, never your project files. Each

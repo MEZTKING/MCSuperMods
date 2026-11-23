@@ -14,6 +14,7 @@
 import type { Json } from '@msm/core';
 import type { ReactNode } from 'react';
 import { thingName } from '../../components/thing-picker/thing-sources';
+import { InMore } from '../../components/ui/MoreOptions';
 import { typingKey } from '../../forms/context';
 import { CHAT_COLOURS } from '../../liveviews/data/lines/text-component';
 import { LiveViewFrame } from '../../liveviews/frame/LiveViewFrame';
@@ -21,7 +22,6 @@ import { asObject, pathSetter } from '../blocks-items/blocks-items-model';
 import { CheckField, TextField } from '../blocks-items/parts';
 import { ChoiceField } from '../entities/MobKindSection';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
 import { Section } from '../worldgen/parts';
 import {
   criterionWords,
@@ -138,7 +138,6 @@ function ScoreLook(props: { data: Json }) {
 /** The Objective Studio. */
 export default function ObjectiveStudio(props: StudioProps) {
   const { element, onChange, target, project } = props;
-  const veryEasy = useVeryEasy();
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const scoreboard = target.scoreboard;
@@ -184,7 +183,7 @@ export default function ObjectiveStudio(props: StudioProps) {
           testId="objective-criterion"
           onChange={(value) => set(['criterion'], value ?? 'dummy')}
         />
-        {!veryEasy && (
+        <InMore>
           <TextField
             label="Or any criterion, as the game writes it"
             value={data.criterion}
@@ -192,7 +191,7 @@ export default function ObjectiveStudio(props: StudioProps) {
             placeholder="minecraft.mined:minecraft.stone"
             onCommit={(value) => set(['criterion'], value ?? 'dummy', typingKey('/criterion'))}
           />
-        )}
+        </InMore>
         <ChoiceField
           label="Where it shows"
           value={textOf(data.display) || 'sidebar'}

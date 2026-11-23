@@ -15,7 +15,7 @@
  * - "Cauldron and bottle" (ADR 0108 D2, D3, B538): "Has a cauldron" (with "Fills in levels",
  *   never on a lava-like liquid) and "Has a bottle" (its food, picture, name and "When drunk").
  *
- * Everything else stays behind "Advanced (all fields)".
+ * Everything else is in "Every setting".
  *
  * @packageDocumentation
  */
@@ -23,15 +23,15 @@
 import type { Json } from '@msm/core';
 import { FLUID_FLOW_DEFAULTS, fluidBucketId } from '@msm/plugin-blocks-items';
 import { Plus, X } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import { thingName } from '../../components/thing-picker/thing-sources';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import { asObject, pathSetter, pointerOf } from './blocks-items-model';
 import { FluidPictures, fluidSpreadWords } from './FluidPicture';
 import {
@@ -84,8 +84,6 @@ function Slider(props: {
 /** The Fluid Studio. */
 export default function FluidStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
-  const [advanced, setAdvanced] = useState(false);
-  const veryEasy = useVeryEasy();
   const behaviourId = useId();
   const colourId = useId();
   const data = asObject(element.data);
@@ -93,15 +91,6 @@ export default function FluidStudio(props: StudioProps) {
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section aria-label="Fluid Studio" data-testid="fluid-studio" className="flex flex-col gap-3">
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="fluid-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   const preview = fluidPreviewOf(element.data);
   const flow = asObject(data.flow);
@@ -164,10 +153,12 @@ export default function FluidStudio(props: StudioProps) {
         placeholder={`${name} Bucket`}
         onCommit={(value) => set(['bucket_display_name'], value, typingKey('/bucket_display_name'))}
       />
-      {bucketId !== '' && !veryEasy && (
-        <p className="text-muted text-xs" data-testid="fluid-also-makes">
-          Also makes: {bucketId}
-        </p>
+      {bucketId !== '' && (
+        <InMore>
+          <p className="text-muted text-xs" data-testid="fluid-also-makes">
+            Also makes: {bucketId}
+          </p>
+        </InMore>
       )}
       <div className="flex min-w-0 flex-col gap-0.5 text-xs">
         <label htmlFor={behaviourId} className="text-muted">
@@ -517,7 +508,6 @@ export default function FluidStudio(props: StudioProps) {
 
   return (
     <section aria-label="Fluid Studio" data-testid="fluid-studio" className="flex flex-col gap-4">
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="fluid-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {previewSection}
       {liquid}

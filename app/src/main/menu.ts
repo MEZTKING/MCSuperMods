@@ -228,12 +228,7 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
           accelerator: 'CmdOrCtrl+Shift+A',
           click: () => send('toggleAiHelper'),
         },
-        // ADR 0083 D1: the three modes; ADR 0047 D1's switch stays.
-        { label: 'Very Easy Mode', click: () => send('modeVeryEasy') },
-        { label: 'Easy Mode', click: () => send('modeEasy') },
-        { label: 'Advanced Mode', click: () => send('modeAdvanced') },
-        { label: 'Switch Easy / Advanced Mode', click: () => send('toggleMode') },
-        // ADR 0083 D2: Very easy's Home.
+        // ADR 0083 D2: Home (ADR 0130 D1: one mode, no mode entries).
         { label: 'Home', click: () => send('home') },
         { label: 'Try it', accelerator: 'F6', click: () => send('tryIt') },
         { type: 'separator' },

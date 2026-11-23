@@ -1,12 +1,10 @@
 /**
  * The AI review's cards (ADR 0125 D3, B688): one card per thing of the proposal
  * ({@link proposalThings}) with its picture, its name, what it is and **Keep**, which ticks every
- * file behind the thing. Its problems read as Very easy's Things to fix says them; a file that no
- * longer fits reads "Not added: …". Easy adds **Files behind this** (the files in words, no ids);
- * Very easy and Advanced show the cards alone (Advanced lists the files below, as before).
+ * file behind the thing. Its problems read as Things to fix says them; a file that no longer
+ * fits reads "Not added: …". The files themselves are in the review's More options (ADR 0130).
  *
- * Test ids: `ai-thing-<n>` (from 1) with `-keep`, `-picture`, `-problems`, `-conflict` and
- * `-files`.
+ * Test ids: `ai-thing-<n>` (from 1) with `-keep`, `-picture`, `-problems` and `-conflict`.
  *
  * @packageDocumentation
  */
@@ -14,10 +12,9 @@
 import { TriangleAlert } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { pngDataUrl } from '../../preview/bundle-source';
-import { listOf, type UiMode, wordsFor } from './ai-words';
+import { listOf, wordsFor } from './ai-words';
 import {
   CARD_WORDS,
-  fileWords,
   keptState,
   notAddedWords,
   type ProposalThing,
@@ -57,11 +54,10 @@ function unique(texts: readonly string[]): string[] {
 function ThingCard(props: {
   thing: ProposalThing;
   index: number;
-  mode: UiMode;
   onToggle(itemId: string, accepted: boolean): void;
 }) {
-  const { thing, mode } = props;
-  const words = wordsFor(mode).review;
+  const { thing } = props;
+  const words = wordsFor().review;
   const testId = `ai-thing-${props.index + 1}`;
   const state = keptState(thing);
   const problems = unique(
@@ -76,7 +72,7 @@ function ThingCard(props: {
   });
   const conflicts = unique(
     thing.items.flatMap((item) => {
-      const text = notAddedWords(item, mode);
+      const text = notAddedWords(item);
       return text === undefined ? [] : [text];
     }),
   );
@@ -148,20 +144,6 @@ function ThingCard(props: {
           ))}
         </ul>
       )}
-      {words.filesBehind !== null && (
-        <details className="text-xs" data-testid={`${testId}-files`}>
-          <summary className="cursor-pointer text-muted">
-            {words.filesBehind} ({thing.items.length})
-          </summary>
-          <ul className="m-0 mt-1 list-none pl-2">
-            {thing.items.map((item) => (
-              <li key={item.itemId} data-accepted={item.accepted ? 'true' : 'false'}>
-                {fileWords(item)}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
     </li>
   );
 }
@@ -169,20 +151,13 @@ function ThingCard(props: {
 /** The cards; see the module comment. */
 export function AiProposalCards(props: {
   things: readonly ProposalThing[];
-  mode: UiMode;
   onToggle(itemId: string, accepted: boolean): void;
 }) {
   if (props.things.length === 0) return null;
   return (
     <ul className="m-0 flex list-none flex-col gap-1.5 p-0" data-testid="ai-things">
       {props.things.map((thing, index) => (
-        <ThingCard
-          key={thing.key}
-          thing={thing}
-          index={index}
-          mode={props.mode}
-          onToggle={props.onToggle}
-        />
+        <ThingCard key={thing.key} thing={thing} index={index} onToggle={props.onToggle} />
       ))}
     </ul>
   );

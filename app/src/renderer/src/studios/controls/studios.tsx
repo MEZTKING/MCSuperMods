@@ -1,15 +1,15 @@
 /**
  * The controls Studios (B420, ADR 0091 D1), discovered by `studios/studio-registry.ts`: the Key
  * bind Studio for `msm:key_bind` and the HUD Studio for `msm:hud`, each loaded with
- * `React.lazy` as a chunk of its own (ADR 0091 D5). Their Very easy lists are here, as the
+ * `React.lazy` as a chunk of its own (ADR 0091 D5). Their lists of common sections are here, as the
  * Vehicle Studio's are in `../entities/studios.tsx`.
  *
  * @packageDocumentation
  */
 
 import { lazy, Suspense } from 'react';
+import { RULES_SECTION_ID } from '../plain';
 import type { StudioEntry, StudioProps } from '../types';
-import { RULES_SECTION_ID } from '../very-easy';
 
 /** The Key bind Studio, a chunk of its own. */
 const KeyBindStudio = lazy(() => import('./KeyBindStudio'));
@@ -52,18 +52,18 @@ const KEY_BIND_KIND = 'msm:key_bind';
 const HUD_KIND = 'msm:hud';
 
 /**
- * The Key bind Studio's sections in Very easy: the name, the key, when it works, and Rules once
+ * The Key bind Studio's main area: the name, the key, when it works, and Rules once
  * the rules catalogue has key triggers.
  */
-export const KEY_BIND_VERY_EASY_SECTIONS: readonly string[] = [
+export const KEY_BIND_COMMON_SECTIONS: readonly string[] = [
   RULES_SECTION_ID,
   'key-bind-name',
   'key-bind-key',
   'key-bind-when',
 ];
 
-/** The HUD Studio's sections in Very easy: the preview, the look, the value, the place, colours. */
-export const HUD_VERY_EASY_SECTIONS: readonly string[] = [
+/** The HUD Studio's main area: the preview, the look, the value, the place, colours. */
+export const HUD_COMMON_SECTIONS: readonly string[] = [
   'hud-preview',
   'hud-look',
   'hud-value',
@@ -77,12 +77,12 @@ export const studios: StudioEntry[] = [
     id: 'msm.controls.key-bind',
     kindId: KEY_BIND_KIND,
     component: LazyKeyBindStudio,
-    veryEasy: KEY_BIND_VERY_EASY_SECTIONS,
+    common: KEY_BIND_COMMON_SECTIONS,
   },
   {
     id: 'msm.controls.hud',
     kindId: HUD_KIND,
     component: LazyHudStudio,
-    veryEasy: HUD_VERY_EASY_SECTIONS,
+    common: HUD_COMMON_SECTIONS,
   },
 ];

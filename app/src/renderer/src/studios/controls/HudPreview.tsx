@@ -15,7 +15,6 @@ import type { TargetFacts } from '@msm/plugin-api';
 import { hudSpritePath } from '@msm/plugin-controls';
 import { type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
-import { useVeryEasy } from '../very-easy';
 import { Section } from '../worldgen/parts';
 import {
   HUD_DEFAULTS,
@@ -299,7 +298,6 @@ export function HudPreview(props: {
   const { project, elementId, data, target } = props;
   const [scale, setScale] = useState<number>(DEFAULT_PREVIEW_SCALE);
   const [inVehicle, setInVehicle] = useState(false);
-  const veryEasy = useVeryEasy();
   const [value, setValue] = useState<number | undefined>(undefined);
   const uid = useId().replaceAll(':', '');
   const max = maxNumberOf(data);
@@ -390,11 +388,7 @@ export function HudPreview(props: {
         className="w-full max-w-2xl rounded border border-border"
         style={{ aspectRatio: `${gw} / ${gh}` }}
         role="img"
-        aria-label={
-          veryEasy
-            ? 'The game screen with what you show on it'
-            : 'The game screen with your HUD elements'
-        }
+        aria-label="The game screen with what you show on it"
         data-testid="hud-preview-screen"
         data-gui={`${gw}x${gh}`}
       >

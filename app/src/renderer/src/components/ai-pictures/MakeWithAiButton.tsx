@@ -9,7 +9,6 @@
 import { Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import type { AiPictureStyle } from '../../../../shared/ai-pictures';
-import { usePreferences } from '../../store/preferences';
 import { Button } from '../ui/Button';
 import { aiPicturesReady, useAiPictures } from './ai-pictures-host';
 import { MakeWithAiDialog } from './MakeWithAiDialog';
@@ -35,8 +34,6 @@ export interface MakeWithAiButtonProps {
   shape?: AiPictureShape;
   /** The thing's main colour, when the field knows it. */
   colour?: readonly [number, number, number];
-  /** The button's words outside Very easy mode (default "Make with AI"). */
-  label?: string;
   /** A tooltip, for example why the button is disabled. */
   title?: string;
   /** Writes the picked picture (one undo step). */
@@ -47,7 +44,6 @@ export interface MakeWithAiButtonProps {
 
 export function MakeWithAiButton(props: MakeWithAiButtonProps) {
   const host = useAiPictures();
-  const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
   const [open, setOpen] = useState(false);
   if (host === null) return null;
   if (!aiPicturesReady(host.status)) {
@@ -73,7 +69,7 @@ export function MakeWithAiButton(props: MakeWithAiButtonProps) {
         onClick={() => setOpen(true)}
       >
         <Sparkles size={12} aria-hidden />
-        {veryEasy ? MAKE_IT_WITH_AI : (props.label ?? MAKE_WITH_AI)}
+        {MAKE_IT_WITH_AI}
       </Button>
       {open && (
         <MakeWithAiDialog
@@ -85,7 +81,6 @@ export function MakeWithAiButton(props: MakeWithAiButtonProps) {
           {...(props.maxSize === undefined ? {} : { maxSize: props.maxSize })}
           {...(props.shape === undefined ? {} : { shape: props.shape })}
           {...(props.colour === undefined ? {} : { colour: props.colour })}
-          veryEasy={veryEasy}
           onPick={props.onPick}
           onClose={() => setOpen(false)}
         />

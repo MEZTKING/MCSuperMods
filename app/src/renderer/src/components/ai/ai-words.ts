@@ -1,18 +1,16 @@
 /**
- * Every word of the AI helper's conversation, per view mode (ADR 0125 D13): the empty panel,
- * the message box, the state line, the plan, the review, the notices after adding and undoing,
- * the tool lines, the cost sentence, the failures and Explain. The modes differ only in how much
- * detail they show: Very easy and Easy say the same plain sentences (Easy adds the files behind a
- * thing), Advanced adds ids, kinds, numbers and Anthropic's own reasons.
+ * Every word of the AI helper's conversation (ADR 0125 D13, ADR 0130 D5: one set, the plainest of
+ * the three the modes had): the empty panel, the message box, the state line, the plan, the
+ * review, the notices after adding and undoing, the tool lines, the cost sentence, the failures
+ * and Explain. Ids, kinds and numbers show only where a More options panel shows them.
  *
- * Pure data and functions, no DOM; `ai-words.test.ts` reads every string of every mode and finds
- * none of {@link VERY_EASY_FORBIDDEN} and no id in a Very easy one.
+ * Pure data and functions, no DOM; `ai-words.test.ts` reads every string and finds none of
+ * {@link VERY_EASY_FORBIDDEN} and no id.
  *
  * @packageDocumentation
  */
 
 import {
-  type AiLimitReached,
   type AiMode,
   type AiModelId,
   type AiUsage,
@@ -23,12 +21,6 @@ import {
 import { wordsOfId } from '../../session/plain-problems';
 import type { AiAppliedStep, AiDisplayMessage, AiMadeThing } from '../../store/ai-store';
 import type { AiFailure, AiStatus, AiStatusAction } from './ai-status';
-
-/** The view modes the words are written for (the mode preference's values). */
-export type UiMode = 'very-easy' | 'easy' | 'advanced';
-
-/** Every view mode, Very easy first. */
-export const WORDS_MODES: readonly UiMode[] = Object.freeze(['very-easy', 'easy', 'advanced']);
 
 /**
  * The kinds that are things of their own, in the order a Creator set picks its main element,
@@ -59,8 +51,8 @@ export function isThingKind(kind: string): boolean {
 }
 
 /**
- * Words never shown in Very easy (ADR 0125 D13), matched without case anywhere in a string.
- * "Tool" alone stays allowed: a pickaxe is one.
+ * Words never shown in the plain view (ADR 0125 D13, ADR 0130 D2), matched without case anywhere
+ * in a string. "Tool" alone stays allowed: a pickaxe is one.
  */
 export const VERY_EASY_FORBIDDEN: readonly string[] = Object.freeze([
   'msm:',
@@ -77,10 +69,10 @@ export const VERY_EASY_FORBIDDEN: readonly string[] = Object.freeze([
   'placeholder',
 ]);
 
-/** An id (`name:path`) as Very easy must never show one. */
+/** An id (`name:path`) as the plain view must never show one. */
 export const ID_PATTERN = /\b[a-z0-9_.-]+:[a-z0-9_./-]+\b/;
 
-/** The words of `text` that Very easy forbids, and an id if it holds one. */
+/** The words of `text` that the plain view forbids, and an id if it holds one. */
 export function forbiddenIn(text: string): string[] {
   const lower = text.toLowerCase();
   const found: string[] = VERY_EASY_FORBIDDEN.filter((word) => lower.includes(word));
@@ -96,7 +88,7 @@ export interface AiExampleAsk {
   size: AiMode;
 }
 
-/** The four example asks (the same in every mode). */
+/** The four example asks. */
 export const EXAMPLE_ASKS: readonly AiExampleAsk[] = Object.freeze([
   { text: 'Make a ruby sword', size: 'chat' },
   { text: 'Make a block that glows in the dark', size: 'chat' },
@@ -110,9 +102,8 @@ export const EXAMPLE_ASKS: readonly AiExampleAsk[] = Object.freeze([
 /** The label of each action a state line or notice may offer. */
 export type AiActionLabels = Readonly<Record<AiStatusAction, string>>;
 
-/** The fixed words of one mode. */
+/** The fixed words. */
 export interface AiWords {
-  readonly mode: UiMode;
   readonly emptyTitle: string;
   readonly emptyBody: string;
   /** One more sentence of the empty panel, or `null`. */
@@ -144,14 +135,10 @@ export interface AiWords {
     readonly makeChanges: string;
     readonly throwAway: string;
     readonly keep: string;
-    /** The disclosure of a thing's files (Easy), or `null` where files are not shown that way. */
-    readonly filesBehind: string | null;
-    /** The disclosure of a file's diff (Advanced), or `null`. */
-    readonly beforeAfter: string | null;
     readonly pictures: string;
     readonly moreMayFollow: string;
   };
-  /** The Explain entry point's label (a Things to fix row in Very easy, the Problems tab else). */
+  /** The Explain entry point's label (a Things to fix row, the Problems tab). */
   readonly explain: string;
 }
 
@@ -168,8 +155,7 @@ const ACTIONS: AiActionLabels = Object.freeze({
   'put-back': 'Put back',
 });
 
-const PLAIN: AiWords = Object.freeze({
-  mode: 'easy',
+const WORDS: AiWords = Object.freeze({
   emptyTitle: 'What would you like to make?',
   emptyBody:
     'Say it in your own words. I show you what I would make first. Nothing is added to your mod until you say so.',
@@ -180,7 +166,7 @@ const PLAIN: AiWords = Object.freeze({
   send: 'Send',
   newChat: 'New chat',
   actions: ACTIONS,
-  showThinking: true,
+  showThinking: false,
   thinking: 'Thinking',
   plan: Object.freeze({
     heading: 'Here is my plan',
@@ -198,44 +184,15 @@ const PLAIN: AiWords = Object.freeze({
     makeChanges: 'Make these changes',
     throwAway: 'Throw away',
     keep: 'Keep',
-    filesBehind: 'Files behind this',
-    beforeAfter: null,
     pictures: 'Pictures',
     moreMayFollow: 'More may follow',
   }),
-  explain: 'Explain',
+  explain: 'Ask the helper',
 });
 
-const WORDS: Readonly<Record<UiMode, AiWords>> = Object.freeze({
-  'very-easy': Object.freeze({
-    ...PLAIN,
-    mode: 'very-easy',
-    showThinking: false,
-    review: Object.freeze({ ...PLAIN.review, filesBehind: null }),
-    explain: 'Ask the helper',
-  }),
-  easy: PLAIN,
-  advanced: Object.freeze({
-    ...PLAIN,
-    mode: 'advanced',
-    emptyExtra: 'Ask about a problem or an element.',
-    inputPlaceholder: 'Ask or describe what to make (Enter sends, Shift+Enter for a new line)',
-    actions: Object.freeze({ ...ACTIONS, 'show-me': 'Show', 'put-back': 'Redo' }),
-    review: Object.freeze({
-      ...PLAIN.review,
-      add: 'Apply',
-      makeChanges: 'Apply',
-      throwAway: 'Discard',
-      filesBehind: null,
-      beforeAfter: 'Before and after',
-      pictures: 'Textures',
-    }),
-  }),
-});
-
-/** The fixed words of `mode`. */
-export function wordsFor(mode: UiMode): AiWords {
-  return WORDS[mode];
+/** The fixed words. */
+export function wordsFor(): AiWords {
+  return WORDS;
 }
 
 // Small helpers --------------------------------------------------------------------------
@@ -331,32 +288,9 @@ export function failureAction(failure: AiFailure): AiStatusAction | null {
   return failureEntry(failure).action;
 }
 
-function limitDetail(limit: AiLimitReached): string {
-  return `${count(limit.toolTurns, 'tool turn')}, ${count(limit.outputTokens, 'output token')}`;
-}
-
-/**
- * The sentence of a run that ended other than normally: the same in Very easy and Easy, with
- * the numbers, the error class or Anthropic's reason in Advanced.
- */
-export function doneSentence(failure: AiFailure, mode: UiMode): string {
-  const { sentence } = failureEntry(failure);
-  if (mode !== 'advanced') return sentence;
-  switch (failure.reason) {
-    case 'limit':
-      return failure.limit === undefined
-        ? sentence
-        : `${sentence.replace(/\.$/, '')} (${limitDetail(failure.limit)}).`;
-    case 'refusal':
-      return failure.explanation === undefined || failure.explanation === ''
-        ? sentence
-        : `${sentence} Anthropic's reason: ${failure.explanation}`;
-    case 'error':
-      if (failure.errorClass !== undefined) return `${sentence} (${failure.errorClass})`;
-      return failure.message === undefined ? sentence : `${sentence} (${failure.message})`;
-    default:
-      return sentence;
-  }
+/** The sentence of a run that ended other than normally. */
+export function doneSentence(failure: AiFailure): string {
+  return failureEntry(failure).sentence;
 }
 
 // The state line -------------------------------------------------------------------------
@@ -382,25 +316,22 @@ function soFar(status: AiStatus): string {
   return '';
 }
 
-/** "2 things are ready. Nothing is in your mod yet." (Advanced: proposed changes, applied). */
-export function readySentence(things: number, changes: number, mode: UiMode): string {
-  if (mode === 'advanced') {
-    return `${count(changes, 'proposed change')} ${isAre(changes)} ready. Nothing is applied yet.`;
-  }
+/** "2 things are ready. Nothing is in your mod yet." */
+export function readySentence(things: number, changes: number): string {
   return things > 0
     ? `${count(things, 'thing')} ${isAre(things)} ready. Nothing is in your mod yet.`
     : `${count(changes, 'change')} ${isAre(changes)} ready. Nothing is in your mod yet.`;
 }
 
-/** The state line's words for `status` in `mode` (ADR 0125 D1). */
-export function statusWords(status: AiStatus, mode: UiMode): AiStatusWords {
-  const words = wordsFor(mode);
+/** The state line's words for `status` (ADR 0125 D1). */
+export function statusWords(status: AiStatus): AiStatusWords {
+  const words = wordsFor();
   const action =
     status.action === null ? null : { id: status.action, label: words.actions[status.action] };
   switch (status.state) {
     case 'idle': {
       if (status.applied !== undefined) {
-        return { text: appliedWords(status.applied, mode).text, action };
+        return { text: appliedWords(status.applied).text, action };
       }
       return {
         text: status.empty ? words.emptyTitle : 'Your turn: ask for anything.',
@@ -420,14 +351,12 @@ export function statusWords(status: AiStatus, mode: UiMode): AiStatusWords {
     case 'your-turn-step':
       return { text: 'Your turn: keep going or stop?', action };
     case 'ready':
-      return { text: readySentence(status.things, status.changes, mode), action };
+      return { text: readySentence(status.things, status.changes), action };
     case 'stopped':
     case 'failed':
       return {
         text:
-          status.failure === undefined
-            ? UNKNOWN_FAILURE.sentence
-            : doneSentence(status.failure, mode),
+          status.failure === undefined ? UNKNOWN_FAILURE.sentence : doneSentence(status.failure),
         action,
       };
   }
@@ -463,40 +392,30 @@ function skippedSentence(skipped: number): string {
 }
 
 /** The notice of an Apply as its step stands now (ADR 0125 D4). */
-export function appliedWords(step: AiAppliedStep, mode: UiMode): AiNoticeWords {
-  const labels = wordsFor(mode).actions;
+export function appliedWords(step: AiAppliedStep): AiNoticeWords {
+  const labels = wordsFor().actions;
   const act = (id: AiStatusAction): AiActionWords => ({ id, label: labels[id] });
   const present = step.things.some((thing) => thing.op !== 'removed');
   const live: AiActionWords[] = [
     ...(present ? [act('show-me')] : []),
     ...(step.onTop ? [act('undo')] : []),
   ];
-  const advanced = mode === 'advanced';
   switch (step.phase) {
     case 'added': {
-      const text = advanced
-        ? `Applied ${count(step.changes, 'change')}.${skippedSentence(step.skipped)}`
-        : `${step.things.length > 0 ? thingSentences(step.things) : `Made ${count(step.changes, 'change')} to your mod.`}${skippedSentence(step.skipped)}`;
+      const text = `${step.things.length > 0 ? thingSentences(step.things) : `Made ${count(step.changes, 'change')} to your mod.`}${skippedSentence(step.skipped)}`;
       return { text, actions: live };
     }
     case 'taken-out':
-      return {
-        text: advanced ? 'Undone.' : 'Taken out again.',
-        actions: step.onTop ? [act('put-back')] : [],
-      };
+      return { text: 'Taken out again.', actions: step.onTop ? [act('put-back')] : [] };
     case 'put-back': {
       const names = step.things.filter((thing) => thing.op !== 'removed').map((t) => t.name);
-      const text = advanced
-        ? `Redone: ${count(step.changes, 'change')} applied again.`
-        : names.length > 0
-          ? `Put back in your mod: ${listOf(names)}.`
-          : 'Put back.';
+      const text = names.length > 0 ? `Put back in your mod: ${listOf(names)}.` : 'Put back.';
       return { text, actions: live };
     }
   }
 }
 
-/** The text a notice carries for today's mode-blind panel: Advanced's words of the phase. */
+/** The text a notice carries in the store (the panel words it with {@link appliedWords}). */
 export function appliedStoredText(step: AiAppliedStep): string {
   switch (step.phase) {
     case 'added':
@@ -521,53 +440,43 @@ export function applyResultText(applied: number, skipped: number): string {
   return text;
 }
 
-/** The notice after Apply found nothing to apply, by mode. */
-export function nothingAppliedWords(skipped: number, mode: UiMode): string {
-  if (mode === 'advanced') return applyResultText(0, skipped);
+/** The notice after Apply found nothing to apply. */
+export function nothingAppliedWords(skipped: number): string {
   return skipped === 0
     ? 'Nothing was added.'
     : `Nothing was added: ${count(skipped, 'change')} no longer fitted your mod.`;
 }
 
 /** The notice after Throw away (Discard). */
-export function discardedWords(mode: UiMode): string {
-  return mode === 'advanced' ? DISCARDED_TEXT : 'Thrown away. Nothing was added to your mod.';
+export function discardedWords(): string {
+  return 'Thrown away. Nothing was added to your mod.';
 }
 
 /** Today's text after Discard. */
 export const DISCARDED_TEXT = 'Discarded the proposed changes.';
 
 /** The notice when Apply itself failed. */
-export function applyFailedWords(message: string, mode: UiMode): string {
-  return mode === 'advanced'
-    ? `Apply failed: ${message}`
-    : 'Adding to your mod did not work. Nothing was changed.';
+export function applyFailedWords(_message: string): string {
+  return 'Adding to your mod did not work. Nothing was changed.';
 }
 
 /** The notice after the model setting changed while a chat exists. */
-export function modelChangeWords(modelLabel: string, mode: UiMode): string {
-  return mode === 'advanced'
-    ? `Start a new conversation to use ${modelLabel}.`
-    : `Start a new chat to use ${modelLabel}.`;
+export function modelChangeWords(modelLabel: string): string {
+  return `Start a new chat to use ${modelLabel}.`;
 }
 
 /** The notice when another Claude model answered a declined message. */
-export function fallbackWords(from: string, to: string, mode: UiMode): string {
-  return mode === 'advanced'
-    ? `${from} declined this request; ${to} answered instead.`
-    : 'Another Claude model answered this one.';
+export function fallbackWords(): string {
+  return 'Another Claude model answered this one.';
 }
 
 /**
- * The words of any notice entry in `mode`: failures by their reason and error class, Apply by
- * its step, the rest by their stored text in Advanced and plain words otherwise.
+ * The words of any notice entry: failures by their reason and error class, Apply by its step,
+ * the rest by their stored text.
  */
-export function noticeWords(
-  notice: Extract<AiDisplayMessage, { role: 'notice' }>,
-  mode: UiMode,
-): AiNoticeWords {
-  if (notice.applied !== undefined) return appliedWords(notice.applied, mode);
-  const labels = wordsFor(mode).actions;
+export function noticeWords(notice: Extract<AiDisplayMessage, { role: 'notice' }>): AiNoticeWords {
+  if (notice.applied !== undefined) return appliedWords(notice.applied);
+  const labels = wordsFor().actions;
   switch (notice.kind) {
     case 'cancelled':
     case 'limit':
@@ -583,15 +492,12 @@ export function noticeWords(
       };
       const action = failureAction(failure);
       return {
-        text: doneSentence(failure, mode),
+        text: doneSentence(failure),
         actions: action === null ? [] : [{ id: action, label: labels[action] }],
       };
     }
     case 'fallback':
-      return {
-        text: mode === 'advanced' ? notice.text : fallbackWords('', '', mode),
-        actions: [],
-      };
+      return { text: fallbackWords(), actions: [] };
     default:
       return { text: notice.text, actions: [] };
   }
@@ -599,13 +505,9 @@ export function noticeWords(
 
 // The plan -------------------------------------------------------------------------------
 
-/** A plan line: "Ruby Pickaxe, a tool" (Advanced adds the kind and id). */
-export function planLineWords(
-  line: { name: string; what: string; kind: string; elementId: string },
-  mode: UiMode,
-): string {
-  const plain = `${line.name}, ${withArticle(line.what)}`;
-  return mode === 'advanced' ? `${plain} (${line.kind} ${line.elementId})` : plain;
+/** A plan line: "Ruby Pickaxe, a tool". */
+export function planLineWords(line: { name: string; what: string }): string {
+  return `${line.name}, ${withArticle(line.what)}`;
 }
 
 /** A decided plan once its run has ended, closed to one line. */
@@ -622,49 +524,35 @@ export function closedPlanWords(
 // Review headings ------------------------------------------------------------------------
 
 /** The review's heading (ADR 0125 wording table). */
-export function reviewHeading(
-  counts: { things: number; files: number; kept: number; total: number },
-  mode: UiMode,
-): string {
-  switch (mode) {
-    case 'very-easy':
-      return `Ready to add: ${count(counts.things, 'thing')}`;
-    case 'easy':
-      return `Ready to add: ${count(counts.things, 'thing')}, ${count(counts.files, 'file')} behind them`;
-    case 'advanced':
-      return `Proposed changes (${NUMBER.format(counts.kept)} of ${NUMBER.format(counts.total)} kept)`;
-  }
+export function reviewHeading(counts: { things: number }): string {
+  return `Ready to add: ${count(counts.things, 'thing')}`;
 }
 
 // Explain --------------------------------------------------------------------------------
 
-/** The chip of Explain: "About: Ruby Sword, a picture is missing" (Advanced: code and id). */
-export function explainChip(
-  problem: { code: string; elementId?: string },
-  thing: string,
-  plain: string,
-  mode: UiMode,
-): string {
-  if (mode === 'advanced') {
-    return `Problem ${problem.code}${problem.elementId === undefined ? '' : ` on ${problem.elementId}`}`;
-  }
+/** The chip of Explain: "About: Ruby Sword, a picture is missing". */
+export function explainChip(thing: string, plain: string): string {
   const short = plain.replace(/\.$/, '');
   return `About: ${thing}, ${short.charAt(0).toLowerCase()}${short.slice(1)}`;
 }
 
 // Cost -----------------------------------------------------------------------------------
 
-/**
- * The cost sentence: "This chat has cost about $0.11 so far." Advanced adds the tokens, the
- * requests and the model. `null` before anything was sent.
- */
-export function costSentence(usage: AiUsage, model: AiModelId, mode: UiMode): string | null {
+/** The cost sentence: "This chat has cost about $0.11 so far." `null` before anything was sent. */
+export function costSentence(usage: AiUsage, model: AiModelId): string | null {
   if (usage.requests === 0) return null;
-  const sentence = `This chat has cost ${formatCost(estimateCost(model, usage))} so far`;
-  if (mode !== 'advanced') return `${sentence}.`;
+  return `This chat has cost ${formatCost(estimateCost(model, usage))} so far.`;
+}
+
+/**
+ * The cost's details for a More options: the tokens in and out, the requests and the model.
+ * `null` before anything was sent.
+ */
+export function costDetails(usage: AiUsage, model: AiModelId): string | null {
+  if (usage.requests === 0) return null;
   const input = usage.inputTokens + usage.cacheReadInputTokens + usage.cacheCreationInputTokens;
   const label = modelInfo(model).label.replace(/^Claude /, '');
-  return `${sentence} (${NUMBER.format(input)} in / ${NUMBER.format(usage.outputTokens)} out, ${count(usage.requests, 'request')}, ${label}).`;
+  return `${NUMBER.format(input)} in / ${NUMBER.format(usage.outputTokens)} out, ${count(usage.requests, 'request')}, ${label}.`;
 }
 
 // Tool lines -----------------------------------------------------------------------------
@@ -705,81 +593,7 @@ export function proposedName(element: { id?: unknown; data?: unknown }): string 
   return typeof element.id === 'string' ? wordsOfId(element.id) : 'something';
 }
 
-/** The Advanced line of a tool entry (today's summary, with words for every tool). */
-function advancedToolLine(message: Pick<ToolMessage, 'name' | 'input' | 'result'>): string {
-  const { input } = message;
-  const code = (name: string) => {
-    const value = field(input, name);
-    return value === undefined ? '' : ` \`${value}\``;
-  };
-  switch (message.name) {
-    case 'project_summary':
-      return 'Read the project summary';
-    case 'list_kinds':
-      return 'Listed the element kinds';
-    case 'kind_schema':
-      return `Read the schema of${code('kind')}`;
-    case 'list_elements':
-      return 'Listed elements';
-    case 'read_element':
-      return `Read${code('id')}`;
-    case 'list_problems':
-      return 'Listed problems';
-    case 'search_library':
-      return `Searched the library for${code('query')}`;
-    case 'list_templates':
-      return 'Listed templates';
-    case 'template_data':
-      return `Read template${code('templateId')}`;
-    case 'list_starters':
-      return 'Listed starters';
-    case 'target_facts':
-      return "Read the target's facts";
-    case 'script_api_typings':
-      return 'Read the script API typings';
-    case 'pending_changes':
-      return 'Read the pending changes';
-    case 'create_elements': {
-      const elements = (input as { elements?: unknown[] } | null)?.elements;
-      return `Proposed ${count(Array.isArray(elements) ? elements.length : 0, 'element')}`;
-    }
-    case 'update_element':
-      return `Proposed a change to${code('id')}`;
-    case 'delete_element':
-      return `Proposed deleting${code('id')}`;
-    case 'rename_element':
-      return `Proposed renaming${code('from')} to${code('to')}`;
-    case 'create_texture': {
-      const namespace = field(input, 'namespace');
-      const path = field(input, 'path');
-      return namespace === undefined || path === undefined
-        ? 'Proposed a texture'
-        : `Proposed the texture \`${namespace}:${path}\``;
-    }
-    case 'add_starter':
-      return `Proposed the starter${code('starterId')}`;
-    case 'run_checks': {
-      const n = checkedCount(message.result);
-      return n === undefined ? 'Checking' : `Checked: ${count(n, 'problem')}`;
-    }
-    case 'propose_plan':
-      return `Proposed a plan${field(input, 'title') === undefined ? '' : `: ${field(input, 'title')}`}`;
-    case 'checkpoint': {
-      const summary = field(input, 'summary');
-      return summary === undefined ? 'Finished a step' : `Finished a step: ${summary}`;
-    }
-    case 'note_missing_feature': {
-      const title = field(input, 'title');
-      return title === undefined
-        ? 'Wrote down a wish in the Wishlist'
-        : `Wrote down a wish in the Wishlist: ${title}`;
-    }
-    default:
-      return `Used ${message.name}`;
-  }
-}
-
-/** The plain line of a tool entry, or `null` for the entries Very easy and Easy hide. */
+/** The plain line of a tool entry, or `null` for the entries the panel leaves out. */
 function plainToolLine(message: Pick<ToolMessage, 'name' | 'input' | 'result'>): string | null {
   const { input } = message;
   switch (message.name) {
@@ -815,13 +629,9 @@ function plainToolLine(message: Pick<ToolMessage, 'name' | 'input' | 'result'>):
 }
 
 /**
- * A tool entry's one line in `mode` (replaces `toolSummary`): every tool in Advanced, with code
- * spans in Markdown backticks; in Very easy and Easy only "Made Ruby Sword", "Checked: no
+ * A tool entry's one line (replaces `toolSummary`): only "Made Ruby Sword", "Checked: no
  * problems", "Wrote down a wish: …" and "Finished: …", and `null` for the rest.
  */
-export function toolLine(
-  message: Pick<ToolMessage, 'name' | 'input' | 'result'>,
-  mode: UiMode,
-): string | null {
-  return mode === 'advanced' ? advancedToolLine(message) : plainToolLine(message);
+export function toolLine(message: Pick<ToolMessage, 'name' | 'input' | 'result'>): string | null {
+  return plainToolLine(message);
 }

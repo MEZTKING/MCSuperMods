@@ -30,7 +30,7 @@
  * - Dripleaf: big or small, what a small one grows into (the project's big dripleaf), and a big
  *   one's tilt timing.
  * - Flower pot: the plants it takes, picked in the ThingPicker from the project's plants and the
- *   plants Minecraft's own pot takes (by name, never an id in Very easy), and how many potted
+ *   plants Minecraft's own pot takes (by name, the ids in More options), and how many potted
  *   blocks that makes. A potted plant also names its pot (Minecraft's or a project pot).
  *
  * @packageDocumentation
@@ -49,11 +49,11 @@ import {
   thingSections,
 } from '../../components/thing-picker/ThingPicker';
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { type FormProblem, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField } from '../structures/pickers';
-import { useVeryEasy } from '../very-easy';
 import { IdList, Section } from '../worldgen/parts';
 import {
   BLOCK_TYPE_LABELS,
@@ -147,7 +147,7 @@ export function PlantSection(props: PlantSectionProps) {
   return null;
 }
 
-/** The plant section test ids of the ADR 0103 types (B516), for the Very easy list. */
+/** The plant section test ids of the ADR 0103 types (B516), for the main area's list. */
 export const GROWING_PLANT_SECTION_IDS: readonly string[] = Object.freeze([
   'block-growing-plant',
   'block-column-plant',
@@ -156,7 +156,7 @@ export const GROWING_PLANT_SECTION_IDS: readonly string[] = Object.freeze([
   'block-flower-pot',
 ]);
 
-/** The plant section test ids of the new types (B452), for the Very easy list. */
+/** The plant section test ids of the new types (B452), for the main area's list. */
 export const NEW_PLANT_SECTION_IDS: readonly string[] = Object.freeze([
   'block-cake',
   'block-berry-bush',
@@ -488,7 +488,7 @@ function CropSection(props: PlantSectionProps) {
           />
           {typeof count === 'object' && count !== null && (
             <p className="text-muted text-xs">
-              A range is set; edit it under "Advanced (all fields)".
+              A range is set; edit it under "Every setting", at the bottom.
             </p>
           )}
           {at(['crop_drops', 'produce_count'])}
@@ -1120,7 +1120,7 @@ function WordsSelect(props: {
   );
 }
 
-/** The ids or tags a plant grows on (`soil`): an id list in Easy, words only in Very easy. */
+/** The ids or tags a plant grows on (`soil`): words, and the id list in More options. */
 function SoilField(props: {
   label: string;
   data: { [key: string]: Json };
@@ -1130,34 +1130,30 @@ function SoilField(props: {
   set: SetPath;
   testId: string;
 }) {
-  const veryEasy = useVeryEasy();
   const soil = Array.isArray(props.data.soil)
     ? props.data.soil.filter((entry): entry is string => typeof entry === 'string')
     : [];
   return (
     <div className="flex flex-col gap-0.5 text-xs" data-testid={props.testId}>
       <span className="text-muted">{props.label}</span>
-      {veryEasy ? (
-        <p className="text-muted" data-testid={`${props.testId}-words`}>
-          {soil.length === 0 ? props.fallback : `${soil.length} kinds of block you chose`}
+      <p className="text-muted" data-testid={`${props.testId}-words`}>
+        {soil.length === 0 ? props.fallback : `${soil.length} kinds of block you chose`}
+      </p>
+      <InMore fallbackKey={props.testId}>
+        <IdList
+          label={props.label}
+          ids={soil}
+          registry="block"
+          suggest={props.suggest}
+          pointer="/soil"
+          problems={props.problems}
+          onChange={(next) => props.set(['soil'], next.length === 0 ? undefined : next)}
+        />
+        <p className="text-muted">
+          Empty: {props.fallback}. Blocks or block tags (starting with #), up to 16; the plant
+          checks them itself, so Minecraft's own plants are not changed.
         </p>
-      ) : (
-        <>
-          <IdList
-            label={props.label}
-            ids={soil}
-            registry="block"
-            suggest={props.suggest}
-            pointer="/soil"
-            problems={props.problems}
-            onChange={(next) => props.set(['soil'], next.length === 0 ? undefined : next)}
-          />
-          <p className="text-muted">
-            Empty: {props.fallback}. Blocks or block tags (starting with #), up to 16; the plant
-            checks them itself, so Minecraft's own plants are not changed.
-          </p>
-        </>
-      )}
+      </InMore>
       <ProblemsAt problems={props.problems} pointer="/soil" />
     </div>
   );
@@ -1167,7 +1163,6 @@ function GrowingPlantSection(props: PlantSectionProps) {
   const { element, problems, set, suggest } = props;
   const data = asObject(element.data);
   const at = useAt(problems);
-  const veryEasy = useVeryEasy();
   const berries = asObject(data.berries);
   const hasBerries = typeof data.berries === 'object' && data.berries !== null;
   const own = blockItemIdOf(element.id, data);
@@ -1268,7 +1263,7 @@ function GrowingPlantSection(props: PlantSectionProps) {
       />
       {hasBerries && (
         <div className="flex flex-col gap-1" data-testid="growing-plant-berry-fields">
-          {!veryEasy && (
+          <InMore>
             <IdField
               label="Berry item"
               value={text(berries.item)}
@@ -1277,7 +1272,7 @@ function GrowingPlantSection(props: PlantSectionProps) {
               testId="growing-plant-berry-item"
               onCommit={(value) => set(['berries', 'item'], value)}
             />
-          )}
+          </InMore>
           <button
             type="button"
             className={`${buttonClass} self-start`}
@@ -1454,7 +1449,6 @@ function DripleafSection(props: PlantSectionProps) {
   const { project, element, problems, set, suggest } = props;
   const data = asObject(element.data);
   const at = useAt(problems);
-  const veryEasy = useVeryEasy();
   const size = data.size === 'small' ? 'small' : 'big';
   const tilt = Array.isArray(data.tilt_ticks) ? data.tilt_ticks : [];
   const tiltField = (index: 0 | 1 | 2, label: string) => (
@@ -1508,7 +1502,7 @@ function DripleafSection(props: PlantSectionProps) {
             testId="dripleaf-grows-into-own"
             onPick={(id) => set(['grows_into'], id)}
           />
-          {!veryEasy && (
+          <InMore>
             <IdField
               label="Grows into"
               value={text(data.grows_into)}
@@ -1517,7 +1511,7 @@ function DripleafSection(props: PlantSectionProps) {
               testId="dripleaf-grows-into"
               onCommit={(value) => set(['grows_into'], value === '' ? undefined : value)}
             />
-          )}
+          </InMore>
           <p className="text-muted text-xs">
             Two blocks high; bone meal turns it into the big dripleaf you pick, which must be one of
             this project's.
@@ -1532,7 +1526,6 @@ function DripleafSection(props: PlantSectionProps) {
 function FlowerPotSection(props: PlantSectionProps) {
   const { project, element, problems, set, suggest } = props;
   const at = useAt(problems);
-  const veryEasy = useVeryEasy();
   const host = useBlocksItemsStudioHost();
   const [open, setOpen] = useState(false);
   const plants = potPlantsOf(element.data);
@@ -1589,7 +1582,6 @@ function FlowerPotSection(props: PlantSectionProps) {
             data-testid={`flower-pot-plant-${index}`}
           >
             <span>{thingName(project, plant, 'block')}</span>
-            {!veryEasy && <span className="font-mono text-muted">{plant}</span>}
             <button
               type="button"
               className={iconButtonClass}
@@ -1602,6 +1594,13 @@ function FlowerPotSection(props: PlantSectionProps) {
           </li>
         ))}
       </ul>
+      {plants.length > 0 && (
+        <InMore>
+          <p className="font-mono text-muted text-xs" data-testid="flower-pot-plant-ids">
+            {plants.join(', ')}
+          </p>
+        </InMore>
+      )}
       <button
         type="button"
         className={`${buttonClass} self-start`}
@@ -1624,7 +1623,7 @@ function FlowerPotSection(props: PlantSectionProps) {
           }}
         />
       )}
-      {!veryEasy && (
+      <InMore>
         <IdField
           label="Add any other block by id"
           value=""
@@ -1635,7 +1634,7 @@ function FlowerPotSection(props: PlantSectionProps) {
             if (value.trim() !== '') write(withPotPlant(plants, value.trim()));
           }}
         />
-      )}
+      </InMore>
       <p className="text-muted text-xs" data-testid="flower-pot-count">
         {companions.length === 1
           ? 'It makes 1 potted plant block with the pot.'

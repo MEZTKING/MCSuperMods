@@ -6,14 +6,14 @@
  * Turret, Parts, Storage, Item, Camera, Exhaust, the Rules section (ADR 0082) and the events
  * editor with the vehicle's triggers. Bone pickers read the bones of the vehicle's geometry.
  *
- * Very easy (ADR 0083 D3) shows the preview, a short "Basics" form and Rules. Everything else stays
- * behind "Advanced (all fields)". Loaded lazily (its own chunk) by `../studios.tsx`.
+ * The main area (ADR 0130 D3) shows the preview, a short "Basics" form and Rules; every other
+ * section shows its title and a More options. Loaded lazily (its own chunk) by `../studios.tsx`.
  *
  * @packageDocumentation
  */
 
 import type { Json } from '@msm/core';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { eventNames, pathSetter } from '../../blocks-items/blocks-items-model';
 import { EventsEditor } from '../../blocks-items/EventsEditor';
 import { ProblemsAt } from '../../blocks-items/parts';
@@ -22,8 +22,6 @@ import { projectHudIds } from '../../controls/controls-model';
 import { RulesSlot } from '../../RulesSlot';
 import { projectHandlers } from '../../scripting/script-model';
 import type { StudioProps } from '../../types';
-import { useVeryEasyLayout } from '../../very-easy';
-import { AdvancedToggle } from '../../worldgen/parts';
 import { BasicsSection } from './BasicsSection';
 import { ModelSection } from './ModelSection';
 import { MovementSection } from './MovementSection';
@@ -49,26 +47,6 @@ const RulesSection = lazy(() => import('../../rules/RulesSection'));
 /** The Vehicle Studio. */
 export default function VehicleStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
-  const [advanced, setAdvanced] = useState(false);
-  const veryEasy = useVeryEasyLayout();
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Vehicle Studio"
-        data-testid="vehicle-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="vehicle-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
-
   const data: Json = element.data;
   const bones = vehicleBones(project, data);
   const missing = missingBones(bones, data);
@@ -91,11 +69,10 @@ export default function VehicleStudio(props: StudioProps) {
       data-testid="vehicle-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="vehicle-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       <VehiclePreview project={project} elementId={element.id} data={data} />
       <BasicsSection {...section} />
-      {missing.length > 0 && !veryEasy && (
+      {missing.length > 0 && (
         <p className="text-warning text-xs" data-testid="vehicle-missing-bones">
           The model has no bone {missing.map((entry) => `“${entry.bone}”`).join(', ')}: pick another
           under Turret, Parts or Weapons, or use another model.

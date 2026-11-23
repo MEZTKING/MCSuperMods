@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/Button';
 import { type AiStatus, type AiStatusAction, WORKING_STATES } from './ai-status';
-import { statusWords, type UiMode } from './ai-words';
+import { statusWords } from './ai-words';
 
 /**
  * The class a primary button adds: the one button that is the user's next step (ADR 0125 D1).
@@ -43,14 +43,13 @@ export function isWorking(status: AiStatus): boolean {
  */
 export function AiStatusLine(props: {
   status: AiStatus;
-  mode: UiMode;
   /** Whether the line's button is the panel's one primary button. */
   primary: boolean;
   /** Actions the panel cannot carry out here (their button is left out). */
   hidden?: ReadonlySet<AiStatusAction>;
   onAction(action: AiStatusAction): void;
 }) {
-  const words = statusWords(props.status, props.mode);
+  const words = statusWords(props.status);
   const action =
     words.action === null || props.hidden?.has(words.action.id) === true ? null : words.action;
   return (

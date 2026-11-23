@@ -16,6 +16,8 @@ if (container === null) throw new Error('Missing #root element');
 const msm = bridge();
 // Headless smoke runs skip Monaco (see `MsmBridge.isSmoke`).
 if (msm.isSmoke === true) window.msmNoMonaco = true;
+// End-to-end runs may start every More options open (ADR 0130).
+if (msm.moreOptionsOpen === true) window.msmMoreOptionsOpen = true;
 
 async function start(root: HTMLElement): Promise<void> {
   // Third-party plugins (ADR 0035) start in sandboxed workers before the session exists, so

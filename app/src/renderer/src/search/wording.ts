@@ -1,5 +1,6 @@
 /**
- * Every word of the search panel, per view mode (ADR 0124 D6, D8, D9, D11; the plan's
+ * Every word of the search panel (ADR 0124 D6, D8, D9, D11; ADR 0130 D5: the app shows one set,
+ * {@link SEARCH_MODE}'s, the plainest; the engine's other two stay for its own tests; the plan's
  * "Very easy wording", as built, per ADR 0124's findings): the field's label and placeholder per door, the examples under an empty
  * field, the section headings, the chips, the buttons of each result, the rows' source words, the
  * lines (nothing close, not on this version, the Minecraft folder, privacy) and the live region's
@@ -165,6 +166,12 @@ export const SEARCH_WORDS: Readonly<Record<SearchMode, SearchWords>> = Object.fr
   },
 });
 
+/**
+ * The one view the app's search speaks in (ADR 0130 D5): the plainest words, technical results
+ * under More; the prefixes `>`, `@`, `#` and `?` still choose a scope ({@link readPrefix}).
+ */
+export const SEARCH_MODE: SearchMode = 'very-easy';
+
 /** The words of a mode. */
 export function searchWords(mode: SearchMode): SearchWords {
   return SEARCH_WORDS[mode] ?? SEARCH_WORDS.easy;
@@ -196,14 +203,13 @@ export function scopesShown(mode: SearchMode): readonly SearchScope[] {
 }
 
 /**
- * The scope a typed prefix asks for, and the words after it (Advanced only; elsewhere the text is
- * read as it is).
+ * The scope a typed prefix asks for, and the words after it (in every view since ADR 0130 D4:
+ * `@` your things, `#` Minecraft's ids, `>` commands, `?` how to).
  */
 export function readPrefix(
   text: string,
-  mode: SearchMode,
+  _mode: SearchMode = SEARCH_MODE,
 ): { readonly scope?: SearchScope; readonly text: string } {
-  if (mode !== 'advanced') return { text };
   const trimmed = text.trimStart();
   const first = trimmed.charAt(0);
   for (const scope of SEARCH_SCOPES) {

@@ -3,7 +3,7 @@
  * feature it places (project or vanilla `worldgen/feature` ids), its ordered placement
  * modifiers (type from the schema's placement modifier dispatcher plus the registry's
  * settings-free types, settings as a schema sub-form per modifier) and "Used in" (project
- * biomes and decoration steps). Everything else behind "Advanced (all fields)".
+ * biomes and decoration steps). Everything else in "Every setting".
  */
 
 import type { Json } from '@msm/core';
@@ -15,7 +15,7 @@ import { discriminatorKeys } from '../../forms/StructEditor';
 import { defaultObject, resolveNode, stripMinecraft, structShape } from '../../forms/schema-utils';
 import type { StudioProps } from '../types';
 import { MapLine } from './MapLine';
-import { AdvancedToggle, Section, SubForm } from './parts';
+import { Section, SubForm } from './parts';
 import { asObject, fieldOf, humanise, listItem, moved, placedFeatureUses } from './worldgen-model';
 
 /** Settings-free modifiers have only their type; the sub-form hides it. */
@@ -26,26 +26,8 @@ const typeId = (key: string): string => (key.includes(':') ? key : `minecraft:${
 
 export function PlacedFeatureStudio(props: StudioProps) {
   const { project, element, node, target, problems, completions, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
   const [newType, setNewType] = useState('');
   const data = asObject(element.data);
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Placed Feature Studio"
-        data-testid="placed-feature-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="placed-feature-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const itemNode = listItem(fieldOf(node, 'placement', element.data)?.type);
   const item = itemNode === undefined ? undefined : resolveNode(itemNode);
@@ -76,11 +58,6 @@ export function PlacedFeatureStudio(props: StudioProps) {
       data-testid="placed-feature-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle
-        checked={advanced}
-        onChange={setAdvanced}
-        testId="placed-feature-advanced-toggle"
-      />
       <MapLine
         project={project}
         target={target}

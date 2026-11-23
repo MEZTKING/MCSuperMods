@@ -4,23 +4,22 @@
  * ("Game rule kind": on or off, or a whole number), the category it is listed under, the value a
  * new world starts with ("Default") and, for a whole number, the lowest and highest values
  * `/gamerule` accepts. The chat line that sets it (`/gamerule <ns>:<path> <value>`) is shown
- * outside Very easy. Switching the kind is one undo step that drops the other kind's fields.
+ * in More options. Switching the kind is one undo step that drops the other kind's fields.
  *
- * Everything else stays behind "Advanced (all fields)".
+ * Everything else is in "Every setting".
  *
  * @packageDocumentation
  */
 
 import type { Json } from '@msm/core';
-import { useState } from 'react';
+import { InMore } from '../../components/ui/MoreOptions';
 import { typingKey } from '../../forms/context';
 import { asObject, pathSetter, pointerOf } from '../blocks-items/blocks-items-model';
 import { ProblemsAt, TextField } from '../blocks-items/parts';
 import { ChoiceField } from '../entities/MobKindSection';
 import { NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 
 type JsonObject = { [key: string]: Json };
 
@@ -62,30 +61,11 @@ export function withGameRuleKind(data: Json | undefined, kind: string): JsonObje
 /** The Game rule Studio. */
 export default function GameRuleStudio(props: StudioProps) {
   const { element, problems, onChange, target } = props;
-  const [advanced, setAdvanced] = useState(false);
-  const veryEasy = useVeryEasy();
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Game rule Studio"
-        data-testid="game-rule-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="game-rule-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const kind = data.kind === 'integer' ? 'integer' : 'boolean';
   const kinds = target.gameRules?.kinds ?? ['boolean', 'integer'];
@@ -180,14 +160,14 @@ export default function GameRuleStudio(props: StudioProps) {
           : `${name} is a setting of each world, a whole number. An empty default is 0, kept between the lowest and highest.`}{' '}
         Players change it in the world's game rules, or your rules can.
       </p>
-      {!veryEasy && (
+      <InMore>
         <p className="text-muted text-xs" data-testid="game-rule-command">
           In chat:{' '}
           <code className="font-mono">
             /gamerule {element.id} {kind === 'boolean' ? 'true' : '5'}
           </code>
         </p>
-      )}
+      </InMore>
     </Section>
   );
 
@@ -197,11 +177,6 @@ export default function GameRuleStudio(props: StudioProps) {
       data-testid="game-rule-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle
-        checked={advanced}
-        onChange={setAdvanced}
-        testId="game-rule-advanced-toggle"
-      />
       <ProblemsAt problems={problems} pointer="" />
       {general}
     </section>

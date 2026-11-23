@@ -246,7 +246,7 @@ function WhoMenu(props: { pointer: string; scope: RuleScope; single: boolean }) 
   const value = getAt(book, props.pointer);
   const kind = typeof value === 'string' ? value : asObject(value)?.who;
   const context = sentenceContext((id) => env.name(id), props.scope.trigger);
-  const entries = offeredWho(props.scope, { veryEasy: env.mode.veryEasy, single: props.single });
+  const entries = offeredWho(props.scope, { single: props.single });
   return (
     <>
       {kind === 'players_nearby' && (
@@ -295,11 +295,10 @@ const capitalise = (text: string): string =>
 
 /** The place menu, with the distance of "where the player looks" and an offset's numbers. */
 function PlaceMenu(props: { pointer: string; scope: RuleScope; optional: boolean }) {
-  const env = useRulesEnv();
   const { book, change } = useBookEdit();
   const value = getAt(book, props.pointer);
   const kind = typeof value === 'string' ? value : asObject(value)?.place;
-  const entries = offeredPlaces(props.scope, { veryEasy: env.mode.veryEasy });
+  const entries = offeredPlaces(props.scope);
   const fromId = useId();
   return (
     <>
@@ -418,16 +417,12 @@ export function SentenceRow(props: {
   special?: Readonly<Record<string, ReactNode>>;
 }) {
   const env = useRulesEnv();
-  const { book } = useBookEdit();
   const problemsId = useId();
-  const owner = asObject(getAt(book, props.ownerPointer)) ?? {};
   const problems = rowProblems(env.problems, props.ownerPointer, props.slots);
   const parts = sentenceParts(props.template);
   const named = new Set(parts.flatMap((part) => (part.slot === undefined ? [] : [part.slot])));
   const bySlot = new Map(props.slots.map((slot) => [slot.name, slot]));
-  const extras = props.slots.filter(
-    (slot) => !named.has(slot.name) && (owner[slot.name] !== undefined || !env.mode.veryEasy),
-  );
+  const extras = props.slots.filter((slot) => !named.has(slot.name));
   const chip = (slot: SlotSpec) => (
     <SlotChip
       key={slot.name}

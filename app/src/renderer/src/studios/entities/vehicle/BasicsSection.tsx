@@ -1,8 +1,8 @@
 /**
- * The Vehicle Studio's short form for Very easy (B419, the plan's "Very easy wording"): "How
- * fast", "Needs fuel" with "What fuel?", "Has a cannon" (for a vehicle with a turret or a barrel),
- * "How many seats" and "Colour". No ids are shown except the fuel item's picker. Shown only in
- * Very easy, where it stands in for the full Studio.
+ * The Vehicle Studio's short form (B419, the plan's plain wording; ADR 0130 D3): "How fast",
+ * "Needs fuel" with "What fuel?", "Has a cannon" (for a vehicle with a turret or a barrel), "How
+ * many seats" and "Colour". No ids are shown except the fuel item's picker. It heads the
+ * Studio; the full sections follow, each with its More options.
  *
  * @packageDocumentation
  */
@@ -16,7 +16,6 @@ import { asObject } from '../../blocks-items/blocks-items-model';
 import { useBlocksItemsStudioHost } from '../../blocks-items/host';
 import { CheckField } from '../../blocks-items/parts';
 import { IdField } from '../../structures/pickers';
-import { useVeryEasyLayout } from '../../very-easy';
 import { Section } from '../../worldgen/parts';
 import { encodeTexture } from './ModelSection';
 import type { VehicleSectionProps } from './parts';
@@ -50,17 +49,15 @@ export function offersCannon(data: unknown, bones: readonly string[] | null): bo
   );
 }
 
-/** The "Basics" section of Very easy. */
+/** The "Basics" section. */
 export function BasicsSection(props: VehicleSectionProps) {
   const { data, set, replace, target, project, bones } = props;
   const host = useBlocksItemsStudioHost();
-  const veryEasy = useVeryEasyLayout();
   const speedId = useId();
   const seatsId = useId();
   const colourId = useId();
   const [colour, setColour] = useState('#3c6edc');
   const [status, setStatus] = useState<string | null>(null);
-  if (!veryEasy) return null;
   const cap = target.vehicles?.maxSpeed ?? FALLBACK_SPEED_CAP;
   const perSecond = Math.round(maxSpeedOf(data) * TICKS_PER_SECOND);
   const engine = asObject(asObject(data).engine);

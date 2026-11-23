@@ -11,18 +11,18 @@ import {
   limitsFor,
   useAiStore,
 } from '../../store/ai-store';
-import { usePreferences } from '../../store/preferences';
 import { useUiStore } from '../../store/ui-store';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { fieldClass } from '../NewElementDialog';
 import { Button, iconButtonClass } from '../ui/Button';
+import { MoreOptions } from '../ui/MoreOptions';
 import { AiChangesetReview, canApply } from './AiChangesetReview';
 import { AiKeyMissing } from './AiKeyMissing';
 import { AiLimitsPopover } from './AiLimitsPopover';
 import { AiPlanView } from './AiPlanView';
 import { AiStatusLine, PRIMARY_BUTTON_CLASS, useStatusClock } from './AiStatusLine';
 import { AiTranscript, rememberContextLabel } from './AiTranscript';
-import { AiUsageLine } from './AiUsageLine';
+import { AiUsageLine, usageDetail } from './AiUsageLine';
 import {
   type AiContextDraft,
   type AiController,
@@ -36,10 +36,10 @@ import {
   conversationStatus,
   WORKING_STATES,
 } from './ai-status';
-import { type AiActionWords, count, reviewHeading, type UiMode, wordsFor } from './ai-words';
+import { type AiActionWords, costDetails, count, reviewHeading, wordsFor } from './ai-words';
 
 /**
- * The panel's own words beside `ai-words.ts`, per mode (ADR 0125 D13): the parts of the panel
+ * The panel's own words beside `ai-words.ts` (ADR 0125 D13, ADR 0130 D5): the parts of the panel
  * that are not the conversation's (the message box's helpers, New chat's question, the tray's
  * toggle and Throw away's question). `ai-plain-words.test.tsx` sweeps them with the rest.
  */
@@ -76,26 +76,9 @@ const PLAIN_PANEL: AiPanelWords = Object.freeze({
   throwAwayQuestion: () => 'Throw all of it away? Nothing has been added to your mod.',
 });
 
-const PANEL_WORDS: Readonly<Record<UiMode, AiPanelWords>> = Object.freeze({
-  'very-easy': PLAIN_PANEL,
-  easy: PLAIN_PANEL,
-  advanced: Object.freeze({
-    ...PLAIN_PANEL,
-    inputLabel: 'Message to the AI helper',
-    pictureTip: 'Attach a screenshot or picture (or paste one into the message)',
-    newChatQuestion: (changes: number) =>
-      `Start a new conversation? The ${count(changes, 'proposed change')} ${changes === 1 ? 'is' : 'are'} discarded.`,
-    newChatConfirm: 'Start new conversation',
-    changesHeading: (changes: number) => `Proposed changes (${count(changes, 'change')})`,
-    throwAwayTitle: 'Discard proposed changes',
-    throwAwayQuestion: (changes: number) =>
-      `Discard all ${count(changes, 'proposed change')}? Nothing has been applied to the project.`,
-  }),
-});
-
-/** The panel's own words in `mode`. */
-export function panelWordsFor(mode: UiMode): AiPanelWords {
-  return PANEL_WORDS[mode];
+/** The panel's own words. */
+export function panelWordsFor(): AiPanelWords {
+  return PLAIN_PANEL;
 }
 
 /** Which part of the panel holds the one primary button (ADR 0125 D1). */
@@ -126,13 +109,12 @@ export const CONTEXT_CHIP_WORDS = Object.freeze({
 
 /**
  * The context waiting in the input area: its label, a remove button and the block that goes with
- * the message. In Advanced the block shows as before; in Very easy and Easy it is folded under
- * **See exactly what is sent** and is not in the page until opened.
+ * the message, folded under **See exactly what is sent** and not in the page until opened.
  */
-function ContextChip(props: { context: AiContextDraft; mode: UiMode; onRemove(): void }) {
-  const { context, mode } = props;
+function ContextChip(props: { context: AiContextDraft; onRemove(): void }) {
+  const { context } = props;
   const [open, setOpen] = useState(false);
-  const shown = mode === 'advanced' || open;
+  const shown = open;
   return (
     <div
       className="flex flex-col gap-1 rounded border border-border bg-bg p-1.5 text-xs"
@@ -153,17 +135,15 @@ function ContextChip(props: { context: AiContextDraft; mode: UiMode; onRemove():
           <X size={12} aria-hidden />
         </button>
       </span>
-      {mode !== 'advanced' && (
-        <button
-          type="button"
-          className="cursor-pointer self-start text-accent underline"
-          aria-expanded={open}
-          data-testid="ai-context-show"
-          onClick={() => setOpen((value) => !value)}
-        >
-          {open ? CONTEXT_CHIP_WORDS.hide : CONTEXT_CHIP_WORDS.show}
-        </button>
-      )}
+      <button
+        type="button"
+        className="cursor-pointer self-start text-accent underline"
+        aria-expanded={open}
+        data-testid="ai-context-show"
+        onClick={() => setOpen((value) => !value)}
+      >
+        {open ? CONTEXT_CHIP_WORDS.hide : CONTEXT_CHIP_WORDS.show}
+      </button>
       {shown && (
         <blockquote
           className="max-h-32 overflow-auto border-l-2 border-border pl-1.5 font-mono whitespace-pre-wrap text-muted"
@@ -210,8 +190,9 @@ function newestTop(scroller: HTMLElement): number {
  * proposed), the tray of waiting changes fixed between the conversation and the message box
  * (closed to its heading and two buttons, opened by **Look**), the state line saying what is
  * happening and whose turn it is, the cost line and the message box, which stays usable while a
- * plan or step waits (typing answers it). Without a key it shows the set-up card. The words
- * follow the view mode of the preferences store; there is no Chat or Build switch.
+ * plan or step waits (typing answers it), and its **More options** (the run limits and the cost
+ * in figures, ADR 0130 D3). Without a key it shows the set-up card. There is no Chat or Build
+ * switch.
  *
  * Show me, Undo and Put back are offered only when the host passes their handlers (B689).
  */
@@ -228,9 +209,8 @@ export function AiPanel(props: {
   onRedo?(): void;
 }) {
   const { controller } = props;
-  const mode = usePreferences((state) => state.mode);
-  const words = wordsFor(mode);
-  const panelWords = panelWordsFor(mode);
+  const words = wordsFor();
+  const panelWords = panelWordsFor();
   const root = useUiStore((state) => state.snapshot?.root ?? null) ?? controller.root;
   const project = useUiStore((state) => state.snapshot?.project ?? null);
   const conversation = useAiStore((state) =>
@@ -465,7 +445,6 @@ export function AiPanel(props: {
       <AiPlanView
         plan={plan}
         checkpoint={latest && !message.closed ? conversation.checkpoint : null}
-        mode={mode}
         conversation={conversation}
         project={project}
         closed={message.closed}
@@ -477,33 +456,13 @@ export function AiPanel(props: {
 
   const things = status.things;
   const trayHeading =
-    mode !== 'advanced' && things === 0
-      ? panelWords.changesHeading(items.length)
-      : reviewHeading(
-          {
-            things,
-            files: items.length,
-            kept: items.filter((item) => item.accepted).length,
-            total: items.length,
-          },
-          mode,
-        );
+    things === 0 ? panelWords.changesHeading(items.length) : reviewHeading({ things });
   const addLabel = changesExisting(items) ? words.review.makeChanges : words.review.add;
 
   return (
     <section className="flex min-h-0 flex-1 flex-col" aria-label="AI helper" data-testid="ai-panel">
       <div className="flex flex-wrap items-center gap-1.5 border-b border-border p-2">
         <span className="flex-1" />
-        {mode === 'advanced' && (
-          <AiLimitsPopover
-            limits={limits}
-            overridden={conversation.runLimits !== null}
-            disabled={running}
-            onChange={(next) => useAiStore.getState().setRunLimits(root, next)}
-            onReset={() => useAiStore.getState().setRunLimits(root, null)}
-            mode={mode}
-          />
-        )}
         <Button data-testid="ai-new-conversation" disabled={applying} onClick={newChat}>
           <MessageSquarePlus size={14} aria-hidden />
           {words.newChat}
@@ -552,7 +511,6 @@ export function AiPanel(props: {
         )}
         <AiTranscript
           messages={conversation.messages}
-          mode={mode}
           renderPlan={renderPlan}
           noticeActions={noticeActions}
           onNoticeAction={(notice, action) => act(action, notice.applied)}
@@ -623,7 +581,6 @@ export function AiPanel(props: {
       <div className="flex flex-col gap-1.5 border-t border-border p-2">
         <AiStatusLine
           status={status}
-          mode={mode}
           primary={primary === 'status'}
           hidden={hidden}
           onAction={(action) => act(action, status.applied)}
@@ -632,7 +589,6 @@ export function AiPanel(props: {
           <ContextChip
             key={draft.context.block}
             context={draft.context}
-            mode={mode}
             onRemove={() => controller.setDraft({ ...draft, context: null })}
           />
         )}
@@ -750,8 +706,24 @@ export function AiPanel(props: {
           usage={conversation.usage}
           model={usedModel}
           checkedOn={modelInfo(usedModel).pricing.checkedOn}
-          mode={mode}
         />
+        <MoreOptions storageKey="ai-panel" autoOpen={false}>
+          <div className="flex flex-col gap-1.5 text-xs" data-testid="ai-panel-more">
+            <AiLimitsPopover
+              limits={limits}
+              overridden={conversation.runLimits !== null}
+              disabled={running}
+              onChange={(next) => useAiStore.getState().setRunLimits(root, next)}
+              onReset={() => useAiStore.getState().setRunLimits(root, null)}
+            />
+            {conversation.usage.requests > 0 && (
+              <p className="text-muted" data-testid="ai-usage-detail">
+                {costDetails(conversation.usage, usedModel)}{' '}
+                {usageDetail(conversation.usage, modelInfo(usedModel).pricing.checkedOn)}
+              </p>
+            )}
+          </div>
+        </MoreOptions>
       </div>
       {confirmNew && (
         <ConfirmDialog

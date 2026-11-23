@@ -25,9 +25,9 @@ import { pngDataUrl } from '../../components/AssetList';
 import { SlotPictureAi, SlotPictureDraw } from '../../components/ai-pictures/StudioAiPictures';
 import { textureChange } from '../../components/ai-pictures/texture-write';
 import { buttonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import type { FormProblem } from '../../forms';
 import { IdField } from '../structures/pickers';
-import { useVeryEasy } from '../very-easy';
 import { Section } from '../worldgen/parts';
 import {
   blockTypeOfData,
@@ -144,8 +144,6 @@ export function TexturesSection(props: TexturesSectionProps) {
   const rows = slotModelRows(element);
   const hasOwnModels = Object.keys(models).length > 0;
   const showOwn = ownModels || hasOwnModels;
-  // Very easy shows the pictures only: the made models are named by id (ADR 0083 D3).
-  const veryEasy = useVeryEasy();
   /** Sets one texture; removes `textures` when the last one is cleared. */
   const setTexture = (key: string, value: string) => {
     const copy = signPictureCopy(element, key, value);
@@ -297,7 +295,7 @@ export function TexturesSection(props: TexturesSectionProps) {
         <ProblemsAt key={key} problems={problems} pointer={pointerOf(['textures', key])} />
       ))}
       <ProblemsAt problems={problems} pointer={pointerOf(['textures'])} />
-      {!veryEasy && (
+      <InMore>
         <div className="flex flex-col gap-1" data-testid="block-generated-models">
           <h4 className="font-medium text-xs">Models</h4>
           {rows.every((row) => row.model === undefined) ? (
@@ -325,38 +323,42 @@ export function TexturesSection(props: TexturesSectionProps) {
             </ul>
           )}
         </div>
-      )}
-      {!portal && !veryEasy && (
-        <label className="flex items-center gap-1 text-xs">
-          <input
-            type="checkbox"
-            data-testid="block-own-models-toggle"
-            checked={showOwn}
-            disabled={hasOwnModels}
-            onChange={(event) => setOwnModels(event.target.checked)}
-          />
-          Own models (instead of the made ones)
-        </label>
+      </InMore>
+      {!portal && (
+        <InMore>
+          <label className="flex items-center gap-1 text-xs">
+            <input
+              type="checkbox"
+              data-testid="block-own-models-toggle"
+              checked={showOwn}
+              disabled={hasOwnModels}
+              onChange={(event) => setOwnModels(event.target.checked)}
+            />
+            Own models (instead of the made ones)
+          </label>
+        </InMore>
       )}
       {portal && hasOwnModels && <ProblemsAt problems={problems} pointer={pointerOf(['models'])} />}
-      {!portal && showOwn && !veryEasy && (
-        <div className="flex flex-col gap-1" data-testid="block-own-models">
-          {shownModelSlots(type, element.data).map((slot) => (
-            <IdField
-              key={slot}
-              label={`${modelSlotLabel(slot, type)}${isRequiredSlot(type, slot) ? '' : ' (optional)'}`}
-              value={typeof models[slot] === 'string' ? String(models[slot]) : ''}
-              registry="model"
-              suggest={suggest}
-              testId={`block-own-model-${slot}`}
-              onCommit={(text) => setModel(slot, text)}
-            />
-          ))}
-          {Object.keys(models).map((slot) => (
-            <ProblemsAt key={slot} problems={problems} pointer={pointerOf(['models', slot])} />
-          ))}
-          <ProblemsAt problems={problems} pointer={pointerOf(['models'])} />
-        </div>
+      {!portal && showOwn && (
+        <InMore>
+          <div className="flex flex-col gap-1" data-testid="block-own-models">
+            {shownModelSlots(type, element.data).map((slot) => (
+              <IdField
+                key={slot}
+                label={`${modelSlotLabel(slot, type)}${isRequiredSlot(type, slot) ? '' : ' (optional)'}`}
+                value={typeof models[slot] === 'string' ? String(models[slot]) : ''}
+                registry="model"
+                suggest={suggest}
+                testId={`block-own-model-${slot}`}
+                onCommit={(text) => setModel(slot, text)}
+              />
+            ))}
+            {Object.keys(models).map((slot) => (
+              <ProblemsAt key={slot} problems={problems} pointer={pointerOf(['models', slot])} />
+            ))}
+            <ProblemsAt problems={problems} pointer={pointerOf(['models'])} />
+          </div>
+        </InMore>
       )}
     </Section>
   );

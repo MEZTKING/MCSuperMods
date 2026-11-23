@@ -11,11 +11,11 @@
  * mode section, Can break and Can place on (ADR 0117 Y16: `AdventureSection.tsx`), whose lines
  * join the same tooltip.
  * Choices come from the schema; everything
- * else stays behind "Advanced (all fields)".
+ * else is in "Every setting".
  */
 
 import type { JsonObject } from '@msm/plugin-api';
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { ModelPicturesAi } from '../../components/ai-pictures/StudioAiPictures';
 import { typingKey } from '../../forms/context';
 import { projectHudIds } from '../controls/controls-model';
@@ -23,7 +23,7 @@ import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import { AdventureSection, adventureTooltipLines } from './AdventureSection';
 import { BoatSection } from './BoatSection';
 import {
@@ -62,7 +62,6 @@ const THROWABLE_CONFLICTS: readonly (readonly [string, string])[] = [
 
 export function ItemStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
   const registries = useMemo(
     () => props.context.registries(project, element.kind),
     [props.context, project, element.kind],
@@ -79,15 +78,6 @@ export function ItemStudio(props: StudioProps) {
     const pointer = pointerOf(path);
     return problems.some((problem) => problem.path === pointer && problem.severity === 'error');
   };
-
-  if (advanced) {
-    return (
-      <section aria-label="Item Studio" data-testid="item-studio" className="flex flex-col gap-3">
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="item-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   const durable = components['msm:durability'] !== undefined;
   const itemName = typeof data.display_name === 'string' ? data.display_name : element.id;
@@ -460,7 +450,6 @@ export function ItemStudio(props: StudioProps) {
 
   return (
     <section aria-label="Item Studio" data-testid="item-studio" className="flex flex-col gap-4">
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="item-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {general}
       {foodSection}
@@ -544,8 +533,8 @@ export function ItemStudio(props: StudioProps) {
                     className="text-warning text-xs"
                     data-testid="trigger-while-worn-no-armour"
                   >
-                    Only armour can be worn: give the item an armour piece (msm:armor) under
-                    Advanced (all fields), or this trigger never fires.
+                    Only armour can be worn: give the item an armour piece under “Every setting”, at
+                    the bottom, or this trigger never fires.
                   </p>
                 ) : undefined,
             }}

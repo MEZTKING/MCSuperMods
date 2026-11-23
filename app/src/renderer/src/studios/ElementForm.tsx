@@ -14,6 +14,7 @@ import type { Element, Json, Problem, Project } from '@msm/core';
 import type { ElementKind } from '@msm/plugin-api';
 import type { SchemaNode } from '@msm/schemas';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MoreOptions } from '../components/ui/MoreOptions';
 import { type ChangeOptions, type FormProblem, SchemaForm, type SchemaFormHandle } from '../forms';
 import { literalChoices, resolveNode, structShape } from '../forms/schema-utils';
 import { createCompletionSource } from './completions';
@@ -25,13 +26,13 @@ import {
 } from './FunctionEditor';
 import { LangStudio } from './LangStudio';
 import { PackSettings } from './PackSettings';
+import { CommonSectionsContext } from './plain';
+import { type PlainThings, PlainThingsContext } from './plain-things';
 import { RECIPE_GRID_COALESCE, RecipeStudio, recipeLayout } from './RecipeStudio';
 import { DISCOVERED_STUDIOS, mergeStudios, studioFor } from './studio-registry';
 import { TagStudio } from './TagStudio';
 import type { StudioEntry, StudioProps } from './types';
 import type { SchemaContextState } from './use-schema-context';
-import { useVeryEasy, VeryEasySectionsContext } from './very-easy';
-import { type VeryEasyThings, VeryEasyThingsContext } from './very-easy-things';
 
 /** The kinds with their own Studio. */
 export const RECIPE_KIND = 'minecraft:recipe';
@@ -257,6 +258,15 @@ export const BUILT_IN_STUDIOS: readonly StudioEntry[] = Object.freeze([
   },
 ] satisfies StudioEntry[]);
 
+/** The Studios that show the kind's whole list of settings themselves (no "Every setting"). */
+const SHOWS_OWN_FORM: ReadonlySet<string> = new Set([
+  'msm.lang',
+  'msm.pack-settings',
+  'msm.function',
+  'msm.recipe',
+  'msm.tag',
+]);
+
 /** The built-in Studios, then the discovered area Studios. */
 const ALL_STUDIOS: readonly StudioEntry[] = mergeStudios(BUILT_IN_STUDIOS, DISCOVERED_STUDIOS);
 
@@ -284,12 +294,11 @@ export function ElementForm(props: ElementFormProps & { studios?: readonly Studi
   );
   const problems = useMemo(() => formProblems(props.problems), [props.problems]);
   const studio = kind === undefined ? undefined : studioFor(element, kind, studios);
-  // Very easy shows only the sections the Studio lists for it (ADR 0083 D3).
-  const veryEasy = useVeryEasy();
-  const veryEasyList = studio?.veryEasy;
-  const veryEasySections = useMemo(
-    () => (veryEasy && veryEasyList !== undefined ? new Set(veryEasyList) : null),
-    [veryEasy, veryEasyList],
+  // The sections of the main area; the others show their title and a More options (ADR 0130 D3).
+  const commonList = studio?.common;
+  const commonSections = useMemo(
+    () => (commonList !== undefined ? new Set(commonList) : null),
+    [commonList],
   );
   const onChange = props.onChange;
   const withGesture = useGestureCoalesce(studio?.coalesceKeys ?? NO_KEYS);
@@ -305,12 +314,12 @@ export function ElementForm(props: ElementFormProps & { studios?: readonly Studi
     (registry: string, prefix: string) => completions.suggest(registry, prefix),
     [completions],
   );
-  // The Very easy id fields pick things by name from these (ADR 0083 D3).
+  // The plain id fields pick things by name from these (ADR 0130 D2).
   const texturesFolder =
     schema.status === 'ready' ? schema.context.target.folders.resource.textures : 'textures';
-  const veryEasyThings = useMemo<VeryEasyThings | null>(
-    () => (veryEasy && registries !== null ? { project, registries, texturesFolder } : null),
-    [veryEasy, project, registries, texturesFolder],
+  const plainThings = useMemo<PlainThings | null>(
+    () => (registries !== null ? { project, registries, texturesFolder } : null),
+    [project, registries, texturesFolder],
   );
 
   const studioFocuses = studio?.handlesFocus === true;
@@ -363,9 +372,38 @@ export function ElementForm(props: ElementFormProps & { studios?: readonly Studi
 
   if (studio === undefined) return <div data-testid="schema-form">{form}</div>;
   const Studio = studio.component;
+  // Every setting of the kind in one list (ADR 0130 D3: before it, a Studio's "Advanced (all
+  // fields)"), for Studios that do not show the list themselves.
+  const everySetting = SHOWS_OWN_FORM.has(studio.id) ? null : (
+    <section
+      aria-label="Every setting"
+      data-testid="every-setting"
+      className="mt-2 flex flex-col gap-2 border-border border-t pt-2"
+    >
+      <h3 className="font-medium text-sm">Every setting</h3>
+      <p className="text-muted text-xs">
+        Everything this thing has in one list, the rare settings too.
+      </p>
+      <div className="pl-2">
+        <MoreOptions storageKey="every-setting" label="Show every setting" autoOpen={false}>
+          <div data-testid="schema-form">
+            <SchemaForm
+              node={node}
+              value={element.data}
+              onChange={change}
+              problems={problems}
+              hiddenPaths={kind.hiddenPaths ?? EMPTY_HIDDEN}
+              completions={completions}
+              rootLabel={element.id}
+            />
+          </div>
+        </MoreOptions>
+      </div>
+    </section>
+  );
   return (
-    <VeryEasySectionsContext.Provider value={veryEasySections}>
-      <VeryEasyThingsContext.Provider value={veryEasyThings}>
+    <CommonSectionsContext.Provider value={commonSections}>
+      <PlainThingsContext.Provider value={plainThings}>
         <Studio
           project={project}
           element={element}
@@ -385,7 +423,8 @@ export function ElementForm(props: ElementFormProps & { studios?: readonly Studi
           onFocused={onFocused}
           complete={props.complete}
         />
-      </VeryEasyThingsContext.Provider>
-    </VeryEasySectionsContext.Provider>
+        {everySetting}
+      </PlainThingsContext.Provider>
+    </CommonSectionsContext.Provider>
   );
 }

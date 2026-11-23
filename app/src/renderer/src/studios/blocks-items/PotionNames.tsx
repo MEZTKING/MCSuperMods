@@ -7,29 +7,26 @@
  */
 
 import type { Element } from '@msm/core';
-import { useVeryEasy } from '../very-easy';
+import { InMore } from '../../components/ui/MoreOptions';
 import { potionIds, potionItemNames } from './potion-model';
 
-/** The names and ids (`<testId>-names`, `<testId>-ids`); Very easy shows the names only. */
+/** The names and, in More options, the ids (`<testId>-names`, `<testId>-ids`). */
 export function PotionNames(props: { element: Element; testId?: string }) {
   const testId = props.testId ?? 'potion-preview';
   const names = potionItemNames(props.element);
   const ids = potionIds(props.element);
-  const veryEasy = useVeryEasy();
   return (
     <>
       <ul className="flex flex-col gap-0.5 text-xs" data-testid={`${testId}-names`}>
         {names.map(({ key, text }) => (
-          <li key={key} title={veryEasy ? undefined : key}>
-            {text}
-          </li>
+          <li key={key}>{text}</li>
         ))}
       </ul>
-      {!veryEasy && (
+      <InMore>
         <p className="text-muted text-xs" data-testid={`${testId}-ids`}>
           Potion ids: {ids.join(', ')}
         </p>
-      )}
+      </InMore>
     </>
   );
 }

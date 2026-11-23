@@ -150,7 +150,7 @@ export function StructureStudio(props: StudioProps) {
             checked={advanced}
             onChange={(event) => setAdvanced(event.target.checked)}
           />
-          Advanced (all fields)
+          Every setting
         </label>
       </div>
       {advanced ? (

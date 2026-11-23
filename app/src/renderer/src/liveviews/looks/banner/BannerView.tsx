@@ -9,7 +9,7 @@
  */
 
 import { useId, useMemo, useState } from 'react';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { resourceFoldersOf, wordsOfPath } from '../../frame/item-picture';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import { factsOf } from '../../frame/live-data';
@@ -57,7 +57,7 @@ const SHAPES = { banner: bannerShape(), shield: shieldShape() } as const;
 /** The view; see the module comment. */
 export default function BannerView(props: LiveViewProps) {
   const { project, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const data = useSettled(props.element.data);
   const assetId = stringOf(recordOf(data)?.asset_id);
   const facts = factsOf(project);

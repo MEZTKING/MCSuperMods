@@ -278,21 +278,22 @@ function listOf(entries: readonly ExportedId[]): string {
 }
 
 /**
- * The warning's words (ADR 0102 D5). Very easy names the thing by `thing` (its display name) and
- * shows no ids; the other modes list the ids that change and what they become.
+ * The warning's words (ADR 0102 D5). Plain (a thing's rename or delete) names the thing by
+ * `thing` (its display name) and shows no ids; Change id (in More options) lists the ids that
+ * change and what they become.
  *
  * @param action - Whether the user renames or deletes.
  * @param warning - From {@link renameWarning} or {@link deleteWarning}.
- * @param veryEasy - Plain words without ids.
- * @param thing - The thing's display name (Very easy).
+ * @param plain - Plain words without ids.
+ * @param thing - The thing's display name (plain).
  */
 export function exportedIdsWarningText(
   action: 'rename' | 'delete',
   warning: ExportedIdsWarning,
-  veryEasy: boolean,
+  plain: boolean,
   thing: string,
 ): string {
-  if (veryEasy) {
+  if (plain) {
     const change = action === 'rename' ? 'Renaming' : 'Deleting';
     return `You have already played with ${thing} or shared it. ${change} it here takes it out of worlds that already have it: its blocks disappear, and its items and creatures are gone. Keep it as it is, or ${action === 'rename' ? 'rename' : 'delete'} it only before anyone has a world with it.`;
   }

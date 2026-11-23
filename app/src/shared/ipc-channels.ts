@@ -197,7 +197,6 @@ export const MENU_COMMANDS = [
   'whatsNew',
   'firstMod',
   'modpacks',
-  'toggleMode',
   'newWithAi',
   'pictureToTexture',
   'wishlist',
@@ -215,10 +214,7 @@ export const MENU_COMMANDS = [
   'reloadGame',
   // ADR 0085 D13: View > "Try it" (F6), also in File after Play and Reload in Game.
   'tryIt',
-  // ADR 0083 D1, D2: View > the three modes and "Home".
-  'modeVeryEasy',
-  'modeEasy',
-  'modeAdvanced',
+  // ADR 0083 D2: View > "Home".
   'home',
 ] as const;
 

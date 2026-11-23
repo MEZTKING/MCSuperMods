@@ -1,6 +1,6 @@
 /**
  * The command palette's commands: every built-in command of the shell (the menu's commands
- * plus new element, rename, go to definition, find usages, the Raw JSON toggle and the AI
+ * plus new element, rename, go to definition, find usages, Edit as raw text and the AI
  * helper's entry points) and the
  * registered plugins' `commands` contributions. Pure: the host supplies a handler per
  * available command; a command without one is left out of the palette.
@@ -48,7 +48,6 @@ export const BUILT_IN_COMMAND_IDS = [
   'whatsNew',
   'firstMod',
   'modpacks',
-  'toggleMode',
   'newWithAi',
   'pictureToTexture',
   'changeMinecraftTexture',
@@ -66,9 +65,6 @@ export const BUILT_IN_COMMAND_IDS = [
   'showcase',
   'moreIdeas',
   'yourMods',
-  'veryEasyMode',
-  'easyMode',
-  'advancedMode',
   // ADR 0124 D10: last, so the palette's empty list keeps its order.
   'searchEverything',
 ] as const;
@@ -238,9 +234,9 @@ export const BUILT_IN_COMMANDS: Readonly<
     words: ['usages', 'references', 'where used', 'who uses', 'find'],
   },
   toggleRawJson: {
-    title: 'Toggle Raw JSON',
-    sentence: "Show or hide the selected thing's file as raw JSON.",
-    words: ['json', 'raw', 'source', 'code view', 'file'],
+    title: 'Edit as raw text',
+    sentence: "Open the selected thing's raw text, in Where it goes under More options.",
+    words: ['json', 'raw', 'raw json', 'source', 'code view', 'file', 'more options'],
   },
   settings: {
     title: 'Settings…',
@@ -271,11 +267,6 @@ export const BUILT_IN_COMMANDS: Readonly<
     title: 'Modpacks…',
     sentence: 'Make a modpack from your mod and others for a launcher.',
     words: ['modpack', 'pack', 'mrpack', 'curseforge', 'modrinth', 'prism'],
-  },
-  toggleMode: {
-    title: 'Switch Easy / Advanced mode',
-    sentence: 'Switch between Easy and Advanced mode.',
-    words: ['mode', 'easy', 'advanced', 'simple', 'expert', 'switch mode'],
   },
   newWithAi: {
     title: 'Build with the AI helper (new project or this one)…',
@@ -378,21 +369,6 @@ export const BUILT_IN_COMMANDS: Readonly<
     title: 'Your mods: open a mod you made',
     sentence: 'See the mods you made lately with their pictures, and open one.',
     words: ['your mods', 'my mods', 'all my mods', 'mod list', 'mods i made', 'recent'],
-  },
-  veryEasyMode: {
-    title: 'Very easy mode',
-    sentence: 'Switch to Very easy mode, with Home and the fewest choices.',
-    words: ['very easy', 'simple', 'beginner', 'kids', 'mode'],
-  },
-  easyMode: {
-    title: 'Easy mode',
-    sentence: 'Switch to Easy mode, with plain forms and fewer choices.',
-    words: ['easy', 'simple', 'mode'],
-  },
-  advancedMode: {
-    title: 'Advanced mode',
-    sentence: 'Switch to Advanced mode, with every field and the raw files.',
-    words: ['advanced', 'expert', 'pro', 'all options', 'mode'],
   },
   searchEverything: {
     title: 'Search everything…',

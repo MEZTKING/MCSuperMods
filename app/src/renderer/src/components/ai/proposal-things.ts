@@ -30,7 +30,7 @@ import type { ResourceFolders } from '../../preview/model-chain';
 import { MOD_METADATA_KIND, PACK_MCMETA_KIND } from '../../session/element-defaults';
 import { plainProblem, wordsOfId } from '../../session/plain-problems';
 import type { AiMadeThing } from '../../store/ai-store';
-import { isThingKind, proposedName, THING_KIND_WORDS, type UiMode } from './ai-words';
+import { isThingKind, proposedName, THING_KIND_WORDS } from './ai-words';
 
 /** One thing of a proposal, or the last group "Other files". */
 export interface ProposalThing {
@@ -465,10 +465,9 @@ export const CARD_WORDS = Object.freeze({
  * Why an item was not added, in words: the change note itself in Advanced; plain words naming no
  * id otherwise.
  */
-export function notAddedWords(item: ChangeItem, mode: UiMode): string | undefined {
+export function notAddedWords(item: ChangeItem): string | undefined {
   const conflict = item.conflict;
   if (conflict === undefined) return undefined;
-  if (mode === 'advanced') return `Not added: ${conflict}`;
   if (/no longer exists/.test(conflict)) return 'Not added: it is no longer in your mod.';
   if (/was changed after/.test(conflict)) {
     return 'Not added: it was changed in your mod after the helper made this.';

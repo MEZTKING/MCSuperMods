@@ -22,6 +22,7 @@ import { type KeyboardEvent, useId, useMemo, useState } from 'react';
 import { ThingPicker } from '../../components/thing-picker/ThingPicker';
 import { type ThingSort, thingSections } from '../../components/thing-picker/thing-sources';
 import { iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { ConditionList } from './ConditionList';
@@ -246,10 +247,12 @@ function RuleCardBody(props: { index: number; fixedSubject: RuleCardProps['fixed
           </button>
         </span>
       </header>
-      {env.mode.advanced && typeof rule.key === 'string' && (
-        <p className="text-xs text-muted" data-testid="rule-key">
-          Key: <code className="font-mono">{rule.key}</code>
-        </p>
+      {typeof rule.key === 'string' && (
+        <InMore fallbackKey="rule-key">
+          <p className="text-xs text-muted" data-testid="rule-key">
+            Key: <code className="font-mono">{rule.key}</code>
+          </p>
+        </InMore>
       )}
       <ProblemLines problems={cardProblems} testId="rule-problems" />
       <section aria-label="When" className="flex flex-col gap-1">
@@ -300,11 +303,10 @@ function WhenRow(props: {
   // weapons); the chosen trigger stays offered so the menu still shows what is picked.
   const triggers = TRIGGERS.filter(
     (entry) =>
-      (!env.mode.veryEasy || entry.veryEasy) &&
-      (fixed === undefined ||
-        (entry.subjectKinds.includes(fixed.kind) &&
-          (entry.id === props.triggerId || !lacksTriggerList(entry, fixedData))) ||
-        takesAnySubject(entry, fixed.kind)),
+      fixed === undefined ||
+      (entry.subjectKinds.includes(fixed.kind) &&
+        (entry.id === props.triggerId || !lacksTriggerList(entry, fixedData))) ||
+      takesAnySubject(entry, fixed.kind),
   );
   const triggerChip = (label: string) => (
     <ChipPopover

@@ -17,7 +17,7 @@ import { pngDataUrl } from '../../../preview/bundle-source';
 import type { ResourceFolders, VanillaAssetReader } from '../../../preview/model-chain';
 import { PotionNames } from '../../../studios/blocks-items/PotionNames';
 import { potionItemNames } from '../../../studios/blocks-items/potion-model';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { resourceFoldersOf, wordsOfPath } from '../../frame/item-picture';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import type { LiveViewProps } from '../../registry';
@@ -227,7 +227,7 @@ const THING_WORDS: Readonly<Record<PotionThing, string>> = {
 /** The bottles in the frame; see the module comment. */
 export function PotionLookFrame(props: PotionLookFrameProps) {
   const { project, element, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const folders = resourceFoldersOf(project);
   const things = potionThings(element.data);
   const drawn = useDrawnThings(things, folders, { vanillaAssets, readProject });

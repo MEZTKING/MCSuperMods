@@ -10,7 +10,7 @@
 
 import type { Json } from '@msm/plugin-api';
 import { useId, useMemo, useState } from 'react';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { resourceFoldersOf } from '../../frame/item-picture';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import type { LiveViewProps } from '../../registry';
@@ -131,7 +131,7 @@ function Bar(props: {
 /** The view; see the module comment. */
 export default function WaypointStyleView(props: LiveViewProps) {
   const { project, element, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const sliderId = useId();
   const style = waypointStyleOf(element.data);
   const { sprites, near, far } = style;

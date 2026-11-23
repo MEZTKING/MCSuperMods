@@ -45,7 +45,7 @@ export function ConditionList(props: ConditionListProps) {
   const owner = asObject(getAt(book, props.ownerPointer));
   const conditions = asArray(owner?.conditions);
   const match = owner?.match === 'any' ? 'any' : 'all';
-  const offered = offeredConditions(props.scope, { veryEasy: env.mode.veryEasy });
+  const offered = offeredConditions(props.scope);
   const matchProblems = env.problems.get(props.ownerPointer) ?? [];
 
   const add = (id: string): void => {

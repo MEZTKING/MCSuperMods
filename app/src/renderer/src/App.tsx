@@ -59,7 +59,7 @@ import { CommandPalette, type PaletteCommand } from './components/CommandPalette
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CreatorDialog, type CreatorEditRequest } from './components/creator/CreatorDialog';
 import { type CreatorStart, creatorFlows } from './components/creator/creator-model';
-import { EditorArea } from './components/EditorArea';
+import { EditorArea, type UsedByEntry } from './components/EditorArea';
 import { ElementSidebar, GROUP_LABELS, TECHNICAL_GROUPS } from './components/ElementSidebar';
 import { ExamplesDialog, mergedPhrase } from './components/ExamplesDialog';
 import {
@@ -161,7 +161,7 @@ import type { SearchClient } from './search/client';
 import type { ResultPreviewHost } from './search/ResultPreview';
 import type { SearchActionOptions } from './search/SearchPanel';
 import type { AppLists, SearchFeed, VanillaSort } from './search/sources';
-import { type SearchActionKey, type SearchDoor, searchWords } from './search/wording';
+import { SEARCH_MODE, type SearchActionKey, type SearchDoor, searchWords } from './search/wording';
 import { closeRequestHandlers } from './session/close-requests';
 import { namespaceFromFolderName } from './session/element-defaults';
 import {
@@ -203,7 +203,7 @@ import { ShowcaseGallery } from './showcase/ShowcaseGallery';
 import { showcaseModName, showcasesFor } from './showcase/showcases';
 import type { AiAppliedStep } from './store/ai-store';
 import { connectPlay, usePlayStore } from './store/play-store';
-import { type UiMode, usePreferences } from './store/preferences';
+import { usePreferences } from './store/preferences';
 import { useUiStore } from './store/ui-store';
 import {
   type BlocksItemsStudioHost,
@@ -227,13 +227,13 @@ import {
   userFacingExportProblems,
 } from './studios/export-state';
 import type { CompleteFunction } from './studios/FunctionEditor';
+import type { VeryEasyPick } from './studios/plain';
 import { type PlainProblemWords, PlainProblemWordsContext } from './studios/rules/problem-words';
 import { ScriptStudioHostContext } from './studios/scripting/host';
 import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templateContext, templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
-import type { VeryEasyPick } from './studios/very-easy';
 import { rollSurprise, type SurpriseMod, themeById, themeOfSeed } from './surprise/surprise';
 import { retexture, textureIdOf } from './textures/retexture';
 import { TextureDropContext, type TextureDropHandler } from './textures/texture-drop';
@@ -497,12 +497,8 @@ export type ShowMeTarget =
   | { type: 'my-things' }
   | { type: 'select'; id: ResourceLocation };
 
-/** Where Show me goes for `step`, by the project as it is now and the view mode. */
-export function showMeTarget(
-  step: AiAppliedStep,
-  project: Project | null,
-  mode: UiMode,
-): ShowMeTarget | null {
+/** Where Show me goes for `step`, by the project as it is now. */
+export function showMeTarget(step: AiAppliedStep, project: Project | null): ShowMeTarget | null {
   const present = step.things.flatMap((thing) => {
     if (thing.op === 'removed') return [];
     const element = findProjectElement(project, thing.id);
@@ -510,10 +506,8 @@ export function showMeTarget(
   });
   const first = present[0];
   if (first === undefined) return null;
-  if (present.length > 1) {
-    return mode === 'very-easy' ? { type: 'my-things' } : { type: 'select', id: first.id };
-  }
-  if (mode === 'very-easy' && first.meta.creator !== undefined) {
+  if (present.length > 1) return { type: 'my-things' };
+  if (first.meta.creator !== undefined) {
     return { type: 'creator', element: first };
   }
   return { type: 'open', id: first.id };
@@ -522,7 +516,7 @@ export function showMeTarget(
 /** What the helpers below need of the AI controller. */
 type AiAttach = Pick<AiController, 'askAboutElement' | 'draft' | 'setDraft'>;
 
-/** Gives the waiting context chip the label of the view mode (ADR 0125 D11). */
+/** Gives the waiting context chip its plain label (ADR 0125 D11). */
 function relabelAiContext(controller: AiAttach, label: string): void {
   const draft = controller.draft();
   if (draft.context === null) return;
@@ -534,11 +528,10 @@ export function attachElementToAi(
   controller: AiAttach,
   id: ResourceLocation,
   project: Project | null,
-  mode: UiMode,
 ): void {
   const element = findProjectElement(project, id);
   controller.askAboutElement(id);
-  if (element !== undefined) relabelAiContext(controller, elementChipLabel(element, mode));
+  if (element !== undefined) relabelAiContext(controller, elementChipLabel(element));
 }
 
 /** What Undo and Put back of the helper's step need of the session. */
@@ -885,8 +878,7 @@ export function App({
   const aiPicturesHost = useAiPicturesHost(bridge.aiPictures, () =>
     setDialog({ type: 'settings' }),
   );
-  // View preferences (ADR 0047): Easy or Advanced mode and the collapsed sidebar groups.
-  const uiMode = usePreferences((state) => state.mode);
+  // View preferences (ADR 0047): the collapsed sidebar groups.
   const collapsedGroups = usePreferences((state) => state.collapsed);
   const flowTitles = useMemo(
     () =>
@@ -897,25 +889,19 @@ export function App({
       ),
     [session],
   );
-  // Play (ADR 0084): the controls read the store; Very easy shows blocking problems in
-  // "Things to fix" instead of the Problems panel (ADR 0083 D5).
+  // Play (ADR 0084): the controls read the store; blocking problems show in "Things to fix"
+  // (ADR 0083 D5, ADR 0130 D5).
   useEffect(
     () =>
       connectPlay(session, bridge, {
         notify(message) {
-          const veryEasy = usePreferences.getState().mode === 'very-easy';
-          useUiStore
-            .getState()
-            .setMessage(
-              veryEasy
-                ? { ...message, text: message.text.replace('See Problems.', 'See Things to fix.') }
-                : message,
-            );
+          useUiStore.getState().setMessage({
+            ...message,
+            text: message.text.replace('See Problems.', 'See Things to fix.'),
+          });
         },
         showProblems(problems) {
-          const ui = useUiStore.getState();
-          ui.setExportProblems(problems);
-          if (usePreferences.getState().mode !== 'very-easy') ui.setRightDock('problems');
+          useUiStore.getState().setExportProblems(problems);
         },
       }),
     [session, bridge],
@@ -934,7 +920,6 @@ export function App({
     if (selectedId !== null) useTryItStore.getState().close();
   }, [selectedId]);
   const canReloadGame = usePlayStore((state) => state.status?.canReload === true);
-  const veryEasy = uiMode === 'very-easy';
   // The plain-language words for Rule cards and "Things to fix" (ADR 0083 D5).
   const plainWords = useMemo(() => plainProblemWords(project), [project]);
   const tileAvailability = useMemo(() => {
@@ -1683,9 +1668,6 @@ export function App({
       .then(async (notice) => {
         if (notice === null || !live) return;
         if (notice === 'welcome') {
-          // A brand-new install starts in Very easy mode unless a mode was already chosen
-          // (ADR 0083 D1; ADR 0047's Easy before).
-          if (!usePreferences.getState().modeChosen) usePreferences.getState().setMode('very-easy');
           setDialog((current) => current ?? { type: 'welcome' });
           return;
         }
@@ -1752,16 +1734,37 @@ export function App({
       else setMessage({ kind: 'error', text: 'Open a project with a namespace first.' });
     };
 
+  /** Change id (the Name section's More options, F2): the id rename, rewriting what uses it. */
+  const renameById = (id: ResourceLocation): void => {
+    const element = findProjectElement(session.snapshot.project, id);
+    if (element === undefined) return;
+    const registry = kindRegistry(element.kind, session.registry);
+    const references = session.references
+      .to(id)
+      .filter((reference) => reference.registry === '' || reference.registry === registry).length;
+    setDialog({ type: 'rename', id, references });
+  };
   const renameSelected = (): void => {
     if (selected === null) {
       setMessage({ kind: 'error', text: 'Select an element to rename.' });
       return;
     }
-    const registry = kindRegistry(selected.kind, session.registry);
-    const references = session.references
-      .to(selected.id)
-      .filter((reference) => reference.registry === '' || reference.registry === registry).length;
-    setDialog({ type: 'rename', id: selected.id, references });
+    renameById(selected.id);
+  };
+  /** What uses `id` (Where it goes, ADR 0130 D4): each other element once, by name. */
+  const usedByOf = (id: ResourceLocation): UsedByEntry[] => {
+    const seen = new Set<string>();
+    const out: UsedByEntry[] = [];
+    for (const reference of session.references.to(id)) {
+      if (reference.from === id || seen.has(reference.from)) continue;
+      seen.add(reference.from);
+      const element = findProjectElement(session.snapshot.project, reference.from);
+      out.push({
+        id: reference.from,
+        name: element === undefined ? reference.from : displayNameOf(element),
+      });
+    }
+    return out;
   };
 
   const findUsages = (): void => {
@@ -1854,9 +1857,9 @@ export function App({
    */
   const newProjectWithAi = (draft?: AskAiDraft): void => {
     const start = draft === undefined ? {} : { draft };
-    // Very easy asks only the mod's name, in the folder its New uses (ADR 0125 D5).
+    // Only the mod's name, in the folder New uses (ADR 0125 D5, ADR 0130 D5).
     const ask = bridge.project.defaultParent;
-    if (usePreferences.getState().mode !== 'very-easy' || ask === undefined) {
+    if (ask === undefined) {
       setDialog({ type: 'ai-start', ...start });
       return;
     }
@@ -1913,17 +1916,16 @@ export function App({
   /** Explain (Problems) and Ask the helper (Things to fix): the problem attached, nothing sent. */
   const explainWithAi = (problem: Problem): void => {
     if (aiController === null) return;
-    aiController.explainProblem(problem, usePreferences.getState().mode);
+    aiController.explainProblem(problem);
   };
   /** Ask AI on an element: the element attached, nothing sent. */
   const askAiAbout = (id: ResourceLocation): void => {
     if (aiController === null) return;
-    attachElementToAi(aiController, id, session.snapshot.project, usePreferences.getState().mode);
+    attachElementToAi(aiController, id, session.snapshot.project);
   };
   /** Show me after adding (ADR 0125 D4). */
   const showAiStep = (step: AiAppliedStep): void => {
-    const mode = usePreferences.getState().mode;
-    const where = showMeTarget(step, session.snapshot.project, mode);
+    const where = showMeTarget(step, session.snapshot.project);
     if (where === null) return;
     switch (where.type) {
       case 'creator':
@@ -1950,24 +1952,7 @@ export function App({
     }
   };
 
-  const chooseMode = (next: UiMode): void => {
-    usePreferences.getState().setMode(next);
-    if (next !== 'advanced') setActiveTab('form');
-    setMessage({
-      kind: 'info',
-      text:
-        next === 'very-easy'
-          ? 'Very easy mode: Home, Play and plain words. Everything else is in the menus.'
-          : next === 'easy'
-            ? 'Easy mode: your content first; technical files are under More, and Raw JSON is hidden.'
-            : 'Advanced mode: every element, kind ids and Raw JSON.',
-    });
-  };
-  /** Easy and Advanced swap (ADR 0047 D1); Very easy goes to Easy. */
-  const toggleMode = (): void =>
-    chooseMode(usePreferences.getState().mode === 'easy' ? 'advanced' : 'easy');
   const goHome = (): void => {
-    if (usePreferences.getState().mode !== 'very-easy') chooseMode('very-easy');
     useTryItStore.getState().close();
     select(null);
   };
@@ -2235,11 +2220,6 @@ export function App({
       openTile(shown);
       return;
     }
-    const startWith = [...shown.flowIds, ...shown.starterIds];
-    if (uiMode !== 'very-easy' && startWith.length > 0) {
-      setDialog({ type: 'new-project', startWith });
-      return;
-    }
     const ask = bridge.project.defaultParent;
     const fallback = (): void => {
       setDialog(null);
@@ -2332,14 +2312,10 @@ export function App({
         onSeeExample={onSeeExample}
       />
     );
-  /** The palette's "Showcase": Home's gallery in Very easy, else New project's strip. */
+  /** The palette's "Showcase": Home's gallery. */
   const showShowcase = (): void => {
-    if (usePreferences.getState().mode === 'very-easy') {
-      goHome();
-      usePreferences.getState().setShowcaseOpen(true);
-      return;
-    }
-    setDialog({ type: 'new-project' });
+    goHome();
+    usePreferences.getState().setShowcaseOpen(true);
   };
 
   // The gallery of everything (ADR 0129 D1, D5) ------------------------------------------
@@ -2519,14 +2495,14 @@ export function App({
     }, 50);
   };
   const showMoreIdeas = (): void => {
-    if (usePreferences.getState().mode === 'very-easy' && project === null) {
+    if (project === null) {
       showHomeSection('home-more-ideas');
       return;
     }
     setDialog({ type: 'surprise' });
   };
   const showYourMods = (): void => {
-    if (usePreferences.getState().mode === 'very-easy' && project === null) {
+    if (project === null) {
       showHomeSection('home-your-mods');
       return;
     }
@@ -2572,7 +2548,7 @@ export function App({
       setDialog({
         type: 'delete-exported',
         title: `Delete ${card.name}`,
-        message: exportedIdsWarningText('delete', warning, veryEasy, card.name),
+        message: exportedIdsWarningText('delete', warning, true, card.name),
         confirmLabel: DELETE_ANYWAY_LABEL,
         onConfirm: () => deleteThingNow(card),
       });
@@ -2651,10 +2627,7 @@ export function App({
   /** Every "Open Settings" of the AI helper. */
   const openAiSettings = (): void => openSettings('ai');
   const handlers: Record<MenuCommand, Action> = {
-    new: () => {
-      if (uiMode === 'very-easy') newMod();
-      else void openWith('New project', () => session.newProject());
-    },
+    new: newMod,
     newProjectFromStarter: () => setDialog({ type: 'new-project' }),
     examples: () => setDialog({ type: 'examples' }),
     open: () => void openWith('Open project', () => session.openProject()),
@@ -2698,7 +2671,6 @@ export function App({
     checkForUpdates,
     whatsNew,
     firstMod: () => setDialog({ type: 'welcome' }),
-    toggleMode,
     newWithAi: buildWithAi,
     wishlist: () => {
       if (project === null) {
@@ -2749,9 +2721,6 @@ export function App({
       select(null);
       useTryItStore.getState().openView();
     },
-    modeVeryEasy: () => chooseMode('very-easy'),
-    modeEasy: () => chooseMode('easy'),
-    modeAdvanced: () => chooseMode('advanced'),
     home: goHome,
   };
 
@@ -2798,7 +2767,6 @@ export function App({
     whatsNew,
     firstMod: handlers.firstMod,
     modpacks: handlers.modpacks,
-    toggleMode,
     newWithAi: aiController === null ? null : buildWithAi,
     pictureToTexture: canAddElement ? handlers.pictureToTexture : null,
     changeMinecraftTexture:
@@ -2819,9 +2787,6 @@ export function App({
     showcase: showShowcase,
     moreIdeas: target === null ? null : showMoreIdeas,
     yourMods: showYourMods,
-    veryEasyMode: uiMode === 'very-easy' ? null : handlers.modeVeryEasy,
-    easyMode: uiMode === 'easy' ? null : handlers.modeEasy,
-    advancedMode: uiMode === 'advanced' ? null : handlers.modeAdvanced,
     searchEverything: handlers.search,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
@@ -2929,7 +2894,7 @@ export function App({
       feed.setLean('command');
       const answer = await client.query({
         text,
-        mode: usePreferences.getState().mode,
+        mode: SEARCH_MODE,
         scope: 'commands',
         limit: 50,
       });
@@ -2973,7 +2938,7 @@ export function App({
         })();
       };
       const ask = bridge.project.defaultParent;
-      if (usePreferences.getState().mode !== 'very-easy' || ask === undefined) {
+      if (ask === undefined) {
         direct();
         return;
       }
@@ -3000,7 +2965,7 @@ export function App({
   /** The host side of the search's actions (ADR 0124 D9; B664). */
   const searchHost: SearchActionHost = {
     session,
-    mode: uiMode,
+    mode: SEARCH_MODE,
     plugins: () => searchPlugins,
     vanillaSort,
     rememberChoice: (entryId) => usePreferences.getState().rememberSearchChoice(entryId),
@@ -3069,16 +3034,12 @@ export function App({
         return;
       }
       useTryItStore.getState().close();
-      if (usePreferences.getState().mode === 'very-easy') {
-        select(null);
-        requestAnimationFrame(() =>
-          document
-            .querySelector<HTMLElement>('[data-testid="my-things"]')
-            ?.scrollIntoView({ block: 'start' }),
-        );
-        return;
-      }
-      select(first.id);
+      select(null);
+      requestAnimationFrame(() =>
+        document
+          .querySelector<HTMLElement>('[data-testid="my-things"]')
+          ?.scrollIntoView({ block: 'start' }),
+      );
     },
     openElement: (id) => {
       useTryItStore.getState().close();
@@ -3206,7 +3167,7 @@ export function App({
   /** A third-party plugin's name for its search results (B670); built-in plugins have none. */
   const searchPluginName = (id: string): string | undefined =>
     session.externalPlugins.find((plugin) => plugin.id === id)?.name;
-  const searchText = searchWords(uiMode);
+  const searchText = searchWords(SEARCH_MODE);
   /** The large bar of the start surfaces (Home, the empty editor area). */
   const startSearchBar = (testId: string) => (
     <SearchDoorField
@@ -3415,7 +3376,7 @@ export function App({
       target === null
         ? null
         : {
-            mode: uiMode,
+            mode: SEARCH_MODE,
             target,
             library: session.library,
             isKnownKind: (kind) => session.registry.get(kind) !== undefined,
@@ -3439,7 +3400,6 @@ export function App({
             vanillaTools: target.items?.vanillaTools,
           },
     [
-      uiMode,
       target,
       session,
       project,
@@ -3657,71 +3617,79 @@ export function App({
       }
       {...(aiController === null ? {} : { onAskAi: askAiAbout })}
       onEditInCreator={editInCreator}
-      {...(project === null ? {} : { onOpenCreator: handlers.creator })}
-      {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
-      hideRawJson={uiMode !== 'advanced'}
-      hideIds={veryEasy}
       {...(preview === undefined ? {} : { preview })}
       previewShown={centrePreview}
       onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
-      search={veryEasy ? undefined : startSearchBar('editor-search-field')}
-      {...(!veryEasy && project !== null
-        ? { gallery: homeGallery(homeClipsVisible && ideaLive === null) }
-        : {})}
-      {...(veryEasy || project === null
-        ? {
-            home: (
-              <Home
-                project={project}
-                tiles={homeTiles}
-                onTile={openTile}
-                cards={homeCards}
-                texturesFolder={target?.folders.resource.textures ?? 'textures'}
-                pictures={thingPictures}
-                onOpenThing={(card) => navigateTo(card.main.id, null)}
-                onEditInCreator={(card) => editInCreator(card.main)}
-                onRenameThing={renameThing}
-                onDuplicateThing={duplicateThing}
-                onDeleteThing={deleteThing}
-                onNewProject={handlers.new}
-                onSurprise={handlers.surpriseMe}
-                onOpenProject={handlers.open}
-                recentProjects={recentProjects}
-                onOpenRecent={openRecent}
-                onRemoveRecent={removeRecent}
-                onShowRecentInFolder={(root) => {
-                  bridge.shell
-                    .showItemInFolder(root)
-                    .catch((error: unknown) =>
-                      setMessage({ kind: 'error', text: `Show in folder: ${messageOf(error)}` }),
-                    );
-                }}
-                {...(bridge.project.recentSummary === undefined
-                  ? {}
-                  : {
-                      recentSummary: (root: string) =>
-                        bridge.project.recentSummary?.(root) ??
-                        Promise.reject(new Error('No summary.')),
-                    })}
-                search={startSearchBar('home-search-field')}
-                showcase={homeGallery(homeClipsVisible && ideaLive === null, homeClipsVisible)}
-                {...(heroExample === null || target === null
-                  ? {}
-                  : {
-                      heroPicture: (
-                        <HeroPicture
-                          example={heroExample.example}
-                          target={target}
-                          label={heroExample.label}
-                        />
-                      ),
-                    })}
-                showcaseOpen={showcaseOpen}
-                onShowcaseOpenChange={(open) => usePreferences.getState().setShowcaseOpen(open)}
-              />
-            ),
-          }
-        : {})}
+      onRename={(element) => {
+        if (element.kind === RULES_KIND) {
+          setDialog({
+            type: 'rename',
+            id: element.id,
+            references: session.references.to(element.id).length,
+          });
+          return;
+        }
+        setDialog({ type: 'rename-thing', id: element.id, name: displayNameOf(element) });
+      }}
+      onChangeId={(id) => {
+        select(id);
+        renameById(id);
+      }}
+      usedBy={usedByOf}
+      filesOf={(id) => session.filesOf(id)}
+      onOpenElement={(id) => navigateTo(id, null)}
+      {...{
+        home: (
+          <Home
+            project={project}
+            tiles={homeTiles}
+            onTile={openTile}
+            cards={homeCards}
+            texturesFolder={target?.folders.resource.textures ?? 'textures'}
+            pictures={thingPictures}
+            onOpenThing={(card) => navigateTo(card.main.id, null)}
+            onEditInCreator={(card) => editInCreator(card.main)}
+            onRenameThing={renameThing}
+            onDuplicateThing={duplicateThing}
+            onDeleteThing={deleteThing}
+            onNewProject={handlers.new}
+            onSurprise={handlers.surpriseMe}
+            onOpenProject={handlers.open}
+            recentProjects={recentProjects}
+            onOpenRecent={openRecent}
+            onRemoveRecent={removeRecent}
+            onShowRecentInFolder={(root) => {
+              bridge.shell
+                .showItemInFolder(root)
+                .catch((error: unknown) =>
+                  setMessage({ kind: 'error', text: `Show in folder: ${messageOf(error)}` }),
+                );
+            }}
+            {...(bridge.project.recentSummary === undefined
+              ? {}
+              : {
+                  recentSummary: (root: string) =>
+                    bridge.project.recentSummary?.(root) ??
+                    Promise.reject(new Error('No summary.')),
+                })}
+            search={startSearchBar('home-search-field')}
+            showcase={homeGallery(homeClipsVisible && ideaLive === null, homeClipsVisible)}
+            {...(heroExample === null || target === null
+              ? {}
+              : {
+                  heroPicture: (
+                    <HeroPicture
+                      example={heroExample.example}
+                      target={target}
+                      label={heroExample.label}
+                    />
+                  ),
+                })}
+            showcaseOpen={showcaseOpen}
+            onShowcaseOpenChange={(open) => usePreferences.getState().setShowcaseOpen(open)}
+          />
+        ),
+      }}
     />
   );
 
@@ -3761,9 +3729,6 @@ export function App({
                     onNewFromStarter={handlers.newProjectFromStarter}
                     onExamples={handlers.examples}
                     {...(aiController === null ? {} : { onNewWithAi: buildWithAi })}
-                    mode={uiMode}
-                    onToggleMode={toggleMode}
-                    onSetMode={chooseMode}
                     onHome={goHome}
                     onShare={shareMyMod}
                     onTryIt={handlers.tryIt}
@@ -3781,7 +3746,6 @@ export function App({
                     onSave={handlers.save}
                     onUndo={() => session.undo()}
                     onRedo={() => session.redo()}
-                    onAddNamespace={() => setDialog({ type: 'namespace' })}
                     onAddElement={() => setDialog({ type: 'element' })}
                     onImportAssets={handlers.importAssets}
                     onExportZip={exportResourceZip}
@@ -3805,7 +3769,7 @@ export function App({
                     installTargets={installTargets}
                     onChooseInstallTarget={(id) => void chooseInstallTarget(id)}
                   />
-                  {veryEasy && sharedJar !== null && (
+                  {sharedJar !== null && (
                     <div
                       role="status"
                       data-testid="share-done"
@@ -3838,14 +3802,8 @@ export function App({
                     </div>
                   )}
                 </div>
-                <main
-                  className={
-                    veryEasy
-                      ? 'grid min-h-0 grid-cols-[minmax(0,1fr)_minmax(260px,360px)]'
-                      : 'grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]'
-                  }
-                >
-                  {!veryEasy && (
+                <main className="grid min-h-0 grid-cols-[minmax(200px,280px)_minmax(0,1fr)_minmax(260px,360px)]">
+                  {
                     <ElementSidebar
                       project={project}
                       selectedId={selectedId}
@@ -3888,15 +3846,13 @@ export function App({
                       recentProjects={recentProjects}
                       onOpenRecent={openRecent}
                       onRemoveRecent={removeRecent}
-                      mode={uiMode}
                       collapsed={collapsedGroups}
                       onToggleGroup={(key) => usePreferences.getState().toggleCollapsed(key)}
                       flowTitles={flowTitles}
                     />
-                  )}
+                  }
                   {editorArea}
                   <RightDock
-                    hideProblems={veryEasy}
                     problems={snapshot.problems}
                     exportProblems={exportProblems}
                     tab={rightDock}
@@ -3924,7 +3880,7 @@ export function App({
                   />
                 </main>
                 <div>
-                  {veryEasy && project !== null && (
+                  {project !== null && (
                     <ThingsToFix
                       project={project}
                       problems={[...snapshot.problems, ...exportProblems]}
@@ -3936,10 +3892,7 @@ export function App({
                       {...(aiController === null ? {} : { onAsk: explainWithAi })}
                     />
                   )}
-                  <StatusBar
-                    snapshot={snapshot}
-                    target={project === null || veryEasy ? null : target}
-                  />
+                  <StatusBar snapshot={snapshot} target={project === null ? null : target} />
                 </div>
               </div>
               <StatusToast />
@@ -4077,7 +4030,6 @@ export function App({
                   {...(dialog.flowIds === undefined ? {} : { flowIds: dialog.flowIds })}
                   {...(dialog.picks === undefined ? {} : { picks: dialog.picks })}
                   folders={target.folders.resource}
-                  mode={uiMode}
                   readProjectAsset={readProjectAsset}
                   vanilla={vanilla}
                   pickImage={(title) =>
@@ -4106,9 +4058,7 @@ export function App({
                     const already =
                       result.skippedNames.length === 0
                         ? ''
-                        : uiMode === 'very-easy'
-                          ? ` Not made again, because you already have ${names}. Use a different name to make a new one.`
-                          : ` Skipped, because the project already has ${names}. Use a different name to make a new one.`;
+                        : ` Not made again, because you already have ${names}. Use a different name to make a new one.`;
                     setMessage({
                       kind: result.skippedNames.length === 0 ? 'info' : 'error',
                       text: `${result.label}: ${result.changed} element(s) and file(s) changed. Undo reverts them in one step.${skipped}${already}${result.aiNote === undefined ? '' : ` ${result.aiNote}`}`,
@@ -4312,8 +4262,6 @@ export function App({
                   onCreator={handlers.creator}
                   {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
                   onClose={() => setDialog(null)}
-                  mode={uiMode}
-                  onMode={(mode) => usePreferences.getState().setMode(mode)}
                 />
               )}
               {dialog?.type === 'whats-new' && (
@@ -4417,7 +4365,7 @@ export function App({
                       .flatMap((namespace) => namespace.elements)
                       .find((entry) => entry.id === dialog.id);
                     const name = element === undefined ? dialog.id : displayNameOf(element);
-                    return exportedIdsWarningText('rename', warning, veryEasy, name);
+                    return exportedIdsWarningText('rename', warning, false, name);
                   }}
                   onCancel={() => setDialog(null)}
                   onSubmit={(newId) => {
@@ -4614,7 +4562,6 @@ export function App({
                       >
                         <SearchPanel
                           query={querySearch}
-                          mode={uiMode}
                           door={searchDoor.door}
                           initialText={searchDoor.text}
                           hasMod={project !== null}

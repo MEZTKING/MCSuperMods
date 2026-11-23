@@ -14,7 +14,7 @@
  *   `trade_sets` set, the five trade sets named.
  * - "Work": the work sound, the items villagers pick up and the extra blocks they work at.
  *
- * Everything else stays behind "Advanced (all fields)".
+ * Everything else is in "Every setting".
  *
  * @packageDocumentation
  */
@@ -36,7 +36,7 @@ import { ProblemsAt, TextField } from '../blocks-items/parts';
 import { TextureThumbnail } from '../blocks-items/TexturesSection';
 import { IdField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
+import { IdList, Section } from '../worldgen/parts';
 import {
   missingPictureCopies,
   type ProfessionPictureCopy,
@@ -62,7 +62,6 @@ export default function ProfessionStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
   const host = useBlocksItemsStudioHost();
   const readProject = useHostProjectReader(host);
-  const [advanced, setAdvanced] = useState(false);
   const [level, setLevel] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const data = asObject(element.data);
@@ -70,23 +69,6 @@ export default function ProfessionStudio(props: StudioProps) {
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Profession Studio"
-        data-testid="profession-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="profession-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const apply = host?.applyChanges;
   const read = host?.modelPreview?.readProjectAsset;
@@ -320,11 +302,6 @@ export default function ProfessionStudio(props: StudioProps) {
       data-testid="profession-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle
-        checked={advanced}
-        onChange={setAdvanced}
-        testId="profession-advanced-toggle"
-      />
       <ProblemsAt problems={problems} pointer="" />
       {job}
       {pictures}

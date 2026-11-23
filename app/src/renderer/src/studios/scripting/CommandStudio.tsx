@@ -14,15 +14,16 @@
  * - "Message back": the feedback text the player sees when it worked.
  * - The Rules section, only when the rules catalogue offers a trigger for commands.
  *
- * Everything else stays behind "Advanced (all fields)".
+ * Everything else is in "Every setting".
  *
  * @packageDocumentation
  */
 
 import type { Json } from '@msm/core';
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { lazy, Suspense, useId, useState } from 'react';
+import { lazy, Suspense, useId } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { asObject, pathSetter, pointerOf } from '../blocks-items/blocks-items-model';
@@ -32,8 +33,7 @@ import { RulesSlot } from '../RulesSlot';
 import { firstTriggerFor } from '../rules/turn-into-rules';
 import { IdField, NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import {
   aliasesOf,
   aliasUsages,
@@ -112,30 +112,11 @@ const PERMISSION_OPTIONS = PERMISSION_LABELS.map((label, level) => ({
 /** The Command Studio. */
 export default function CommandStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
-  const veryEasy = useVeryEasy();
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Command Studio"
-        data-testid="command-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="command-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const args = argumentsOf(element.data);
   const aliases = aliasesOf(element.data);
@@ -397,10 +378,13 @@ export default function CommandStudio(props: StudioProps) {
             }}
           />
           <p className="text-muted text-xs">
-            {veryEasy
-              ? 'It does the steps of this event (Easy shows them); rules below can do more.'
-              : 'Its steps are in the events below. The player who typed it is "self".'}
+            It does the steps of this event (they are in Events, below); rules can do more.
           </p>
+          <InMore>
+            <p className="text-muted text-xs">
+              Its steps are in the events below. The player who typed it is "self".
+            </p>
+          </InMore>
         </>
       )}
       {runs === 'function' && (
@@ -450,7 +434,6 @@ export default function CommandStudio(props: StudioProps) {
       data-testid="command-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="command-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {preview}
       {nameSection}

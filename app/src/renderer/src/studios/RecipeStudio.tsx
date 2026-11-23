@@ -161,7 +161,7 @@ export function RecipeStudio({
             checked={advanced}
             onChange={(event) => setAdvanced(event.target.checked)}
           />
-          Advanced (all fields)
+          Every setting
         </label>
       )}
       {body}

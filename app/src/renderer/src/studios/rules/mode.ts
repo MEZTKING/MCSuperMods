@@ -1,29 +1,26 @@
 /**
- * The view mode as the Rule book reads it (ADR 0047, ADR 0083 D1, D3). `'very-easy'` is B376 and
- * B378's third mode; until the preferences store has it, the mode reads as Easy or Advanced and
- * Very easy is off. This adapter is the one place the Studio reads the mode, so the third mode
- * needs no change here.
+ * The view as the Rule book reads it (ADR 0130 D2, D3; before it the modes of ADR 0047 and ADR
+ * 0083). The pickers offer every step, condition, value, place and who; ids (a rule's key, an id
+ * after a name, a thing's id on hover) show only inside a More options. This adapter is the one
+ * place the Studio reads the view.
  *
  * @packageDocumentation
  */
 
-import { usePreferences } from '../../store/preferences';
+import { usePlain } from '../../components/ui/MoreOptions';
 
-/** What the Rule book changes by mode. */
+/** What the Rule book changes by view. */
 export interface RulesMode {
-  /** Very easy hides advanced-only steps and places (run a command, offsets) and every id. */
-  readonly veryEasy: boolean;
-  /** Advanced shows rule keys, ids on hover and "What this becomes". */
+  /** Inside a More options: rule keys, ids after names and on hover, "What this becomes". */
   readonly advanced: boolean;
 }
 
-/** The flags of a stored mode name; an unknown name reads as Easy. */
-export function rulesModeOf(mode: string | undefined): RulesMode {
-  return { veryEasy: mode === 'very-easy', advanced: mode === 'advanced' };
+/** The flags of a view: plain (the main area) or inside a More options. */
+export function rulesModeOf(plain: boolean): RulesMode {
+  return { advanced: !plain };
 }
 
-/** The current mode's flags, from the preferences store. */
+/** The current view's flags. */
 export function useRulesMode(): RulesMode {
-  const mode = usePreferences((state) => state.mode as string);
-  return rulesModeOf(mode);
+  return rulesModeOf(usePlain());
 }

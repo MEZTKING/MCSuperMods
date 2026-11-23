@@ -27,9 +27,9 @@ import {
   useState,
 } from 'react';
 import { Button } from '../../../components/ui/Button';
+import { usePlain } from '../../../components/ui/MoreOptions';
 import { createVanillaJsonCache } from '../../../preview/model-chain';
 import { hasWebGL } from '../../../preview/webgl';
-import { usePreferences } from '../../../store/preferences';
 import { assetReader } from '../../existing/bundle-host';
 import { resourceFoldersOf } from '../../frame/item-picture';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
@@ -129,7 +129,8 @@ function Assembly(
   },
 ) {
   const { project, structure, vanilla, preferences, onPreferences } = props;
-  const advanced = usePreferences((state) => state.mode) === 'advanced';
+  // Inside a More options the ids show (ADR 0130 D3); plain elsewhere.
+  const advanced = !usePlain();
   const [lane] = useState(newLane);
   const [limit, setLimit] = useState(DEFAULT_PIECE_LIMIT);
   const [run, setRun] = useState<Run>(EMPTY_RUN);

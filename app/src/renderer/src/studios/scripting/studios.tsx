@@ -9,12 +9,8 @@
 
 import { COMMAND_KIND } from '@msm/plugin-scripting';
 import { lazy, Suspense } from 'react';
+import { COMMAND_COMMON_SECTIONS, GAME_RULE_COMMON_SECTIONS, STAT_COMMON_SECTIONS } from '../plain';
 import type { StudioEntry, StudioProps } from '../types';
-import {
-  COMMAND_VERY_EASY_SECTIONS,
-  GAME_RULE_VERY_EASY_SECTIONS,
-  STAT_VERY_EASY_SECTIONS,
-} from '../very-easy';
 import { ScriptStudio } from './ScriptStudio';
 import { SCRIPT_KIND, scriptLinesOf } from './script-model';
 
@@ -89,19 +85,19 @@ export const studios: StudioEntry[] = [
     id: 'msm.scripting.command',
     kindId: COMMAND_KIND,
     component: LazyCommandStudio,
-    veryEasy: COMMAND_VERY_EASY_SECTIONS,
+    common: COMMAND_COMMON_SECTIONS,
   },
   // The Game rule and Statistic Studios (ADR 0111 D5, D6, ADR 0112 D1; B538).
   {
     id: 'msm.scripting.game-rule',
     kindId: 'msm:game_rule',
     component: LazyGameRuleStudio,
-    veryEasy: GAME_RULE_VERY_EASY_SECTIONS,
+    common: GAME_RULE_COMMON_SECTIONS,
   },
   {
     id: 'msm.scripting.stat',
     kindId: 'msm:stat',
     component: LazyStatStudio,
-    veryEasy: STAT_VERY_EASY_SECTIONS,
+    common: STAT_COMMON_SECTIONS,
   },
 ];

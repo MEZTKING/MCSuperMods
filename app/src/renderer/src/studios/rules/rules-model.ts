@@ -416,22 +416,22 @@ export function innerScope(scope: RuleScope, stepId: string): RuleScope {
 const allows = (scope: RuleScope, needs: Actor | undefined): boolean =>
   needs === undefined || scope.actors.has(needs);
 
-/** What the pickers offer in Very easy mode or not. */
+/** What the pickers offer: everything, or (`veryEasy`) only the entries a beginner needs. */
 export interface OfferOptions {
-  /** Very easy hides entries with `veryEasy: false` (run a command, offsets). */
-  readonly veryEasy: boolean;
+  /** Leaves out entries with `veryEasy: false` (run a command, offsets); default `false`. */
+  readonly veryEasy?: boolean;
 }
 
 /** The steps the Do picker offers in `scope` for a list at `listPointer`. */
 export function offeredSteps(
   scope: RuleScope,
   listPointer: string,
-  options: OfferOptions,
+  options: OfferOptions = {},
 ): StepEntry[] {
   const nest = canNestHere(listPointer);
   return STEPS.filter(
     (entry) =>
-      (!options.veryEasy || entry.veryEasy) &&
+      (options.veryEasy !== true || entry.veryEasy) &&
       (nest || !entry.logic) &&
       allows(scope, entry.needsActor) &&
       (entry.id !== 'stop_normal_action' ||
@@ -441,9 +441,9 @@ export function offeredSteps(
 }
 
 /** The conditions offered in `scope`. */
-export function offeredConditions(scope: RuleScope, options: OfferOptions): ConditionEntry[] {
+export function offeredConditions(scope: RuleScope, options: OfferOptions = {}): ConditionEntry[] {
   return CONDITIONS.filter(
-    (entry) => (!options.veryEasy || entry.veryEasy) && allows(scope, entry.needsActor),
+    (entry) => (options.veryEasy !== true || entry.veryEasy) && allows(scope, entry.needsActor),
   );
 }
 
@@ -453,11 +453,11 @@ export function offeredConditions(scope: RuleScope, options: OfferOptions): Cond
  */
 export function offeredValues(
   scope: RuleScope,
-  options: OfferOptions & { plainOnly?: boolean; text?: boolean },
+  options: OfferOptions & { plainOnly?: boolean; text?: boolean } = {},
 ): ValueEntry[] {
   return VALUES.filter(
     (entry) =>
-      (!options.veryEasy || entry.veryEasy) &&
+      (options.veryEasy !== true || entry.veryEasy) &&
       allows(scope, entry.needsActor) &&
       // A reading for some triggers only ("What the player typed", ADR 0111 D1).
       (entry.triggers === undefined ||
@@ -468,10 +468,10 @@ export function offeredValues(
 }
 
 /** The places offered in `scope`. */
-export function offeredPlaces(scope: RuleScope, options: OfferOptions): PlaceEntry[] {
+export function offeredPlaces(scope: RuleScope, options: OfferOptions = {}): PlaceEntry[] {
   return PLACES.filter(
     (entry) =>
-      (!options.veryEasy || entry.veryEasy) &&
+      (options.veryEasy !== true || entry.veryEasy) &&
       allows(scope, entry.needsActor) &&
       (!entry.needsHere || scope.here),
   );
@@ -480,11 +480,11 @@ export function offeredPlaces(scope: RuleScope, options: OfferOptions): PlaceEnt
 /** The "who" offered in `scope`; `single` leaves out the many (the `mob_is` condition). */
 export function offeredWho(
   scope: RuleScope,
-  options: OfferOptions & { single?: boolean },
+  options: OfferOptions & { single?: boolean } = {},
 ): WhoEntry[] {
   return WHO.filter(
     (entry) =>
-      (!options.veryEasy || entry.veryEasy) &&
+      (options.veryEasy !== true || entry.veryEasy) &&
       allows(scope, entry.needsActor) &&
       (!entry.needsHere || scope.here) &&
       (options.single !== true || !entry.many),

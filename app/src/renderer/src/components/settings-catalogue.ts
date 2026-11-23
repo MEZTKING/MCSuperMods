@@ -3,17 +3,12 @@
  * dialog, with its label exactly as the dialog shows it, one plain sentence, the section it sits
  * in and the extra words people type for it. Each line of the dialog carries
  * `data-setting="<id>"`; `settings-catalogue.test.tsx` checks every line here against the
- * dialog's real controls and every control against a line, in each mode where it shows.
+ * dialog's real controls and every control against a line (a line inside a More options is
+ * checked with it open, ADR 0130 D3).
  * `SettingsDialog`'s `focusSetting` opens the dialog at a line by its id.
  *
  * @packageDocumentation
  */
-
-/**
- * A mode of the app (`UiMode` in `store/preferences.ts`, repeated here: the search's Node project
- * compiles this file without the store).
- */
-export type SettingsMode = 'very-easy' | 'easy' | 'advanced';
 
 export interface SettingsCatalogueEntry {
   /** The line's id (`data-setting` in the dialog; `focusSetting` takes it). */
@@ -26,8 +21,8 @@ export interface SettingsCatalogueEntry {
   readonly section: string;
   /** Extra words people type for it (American spellings and short forms included). */
   readonly words?: readonly string[];
-  /** The modes the line shows in; every mode when omitted. */
-  readonly modes?: readonly SettingsMode[];
+  /** The line sits inside a More options of its section (ADR 0130 D3). */
+  readonly more?: boolean;
 }
 
 export const SETTINGS_CATALOGUE: readonly SettingsCatalogueEntry[] = [
@@ -159,8 +154,8 @@ export const SETTINGS_CATALOGUE: readonly SettingsCatalogueEntry[] = [
     sentence:
       'Set how many steps and how much writing a run of the AI helper may take before it pauses.',
     section: 'AI helper',
-    words: ['limits', 'steps', 'tokens', 'budget', 'cost', 'pause', 'pacing'],
-    modes: ['advanced'],
+    words: ['limits', 'steps', 'tokens', 'budget', 'cost', 'pause', 'pacing', 'more options'],
+    more: true,
   },
   {
     id: 'ai-pictures-service',

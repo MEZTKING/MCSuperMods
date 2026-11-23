@@ -11,7 +11,6 @@ import {
   type AiPlanState,
   useAiStore,
 } from '../../store/ai-store';
-import { usePreferences } from '../../store/preferences';
 import { useUiStore } from '../../store/ui-store';
 import { GROUP_LABELS } from '../ElementSidebar';
 import { fieldClass } from '../NewElementDialog';
@@ -22,15 +21,13 @@ import {
   planLineWords,
   proposedName,
   THING_KIND_WORDS,
-  type UiMode,
   wordsFor,
 } from './ai-words';
 
 /**
  * The plan's own words that `ai-words.ts` does not hold yet (ADR 0125 D13): the line under a
  * plan that has been answered while its run goes on, the ticks' labels and the fallback for what
- * a line makes. Plain in every mode; `ai-plan.test.tsx` sweeps them for Very easy's forbidden
- * words.
+ * a line makes. Plain words; `ai-plan.test.tsx` sweeps them for the forbidden words.
  */
 export const PLAN_VIEW_WORDS = Object.freeze({
   decided: Object.freeze({
@@ -65,7 +62,7 @@ export interface AiPlanLine {
   name: string;
   /** What it is, in words ("tool"). */
   what: string;
-  /** The line in the mode's words ("Ruby Pickaxe, a tool"; Advanced adds kind and id). */
+  /** The line in words ("Ruby Pickaxe, a tool"). */
   text: string;
   /** The model's sentence about the line. */
   summary: string;
@@ -105,7 +102,7 @@ export function planWhat(kind: string, data: unknown): string {
 }
 
 /**
- * The plan's lines in `mode`'s words (ADR 0125 wording table): each named by the proposed
+ * The plan's lines in words (ADR 0125 wording table): each named by the proposed
  * element (its language entry or own name), else the project's element, else words of its id,
  * with what it is and whether it is ticked.
  */
@@ -113,7 +110,6 @@ export function planLines(
   plan: AiPlanState,
   conversation: AiConversation | undefined,
   project: Project | null,
-  mode: UiMode,
   items: AiPlanState['plan']['items'] = plan.plan.items,
 ): AiPlanLine[] {
   const changes = conversation?.changesetItems ?? [];
@@ -152,19 +148,19 @@ export function planLines(
       kind: item.kind,
       name,
       what,
-      text: planLineWords({ name, what, kind: item.kind, elementId: item.elementId }, mode),
+      text: planLineWords({ name, what }),
       summary: item.summary,
       ticked: ticked.has(item.itemId),
     };
   });
 }
 
-/** A picture the plan needs, in words: its purpose, else words of its path (Advanced: the id). */
-export function planPictureWords(
-  asset: { namespace: string; path: string; purpose: string },
-  mode: UiMode,
-): string {
-  if (mode === 'advanced') return `${asset.namespace}:${asset.path}`;
+/** A picture the plan needs, in words: its purpose, else words of its path. */
+export function planPictureWords(asset: {
+  namespace: string;
+  path: string;
+  purpose: string;
+}): string {
   if (asset.purpose.trim() !== '') return asset.purpose.trim();
   const last = asset.path.split('/').pop() ?? asset.path;
   return wordsOfId(`${asset.namespace}:${last}`);
@@ -172,37 +168,34 @@ export function planPictureWords(
 
 /**
  * The plan `propose_plan` showed (ADR 0041 D6, ADR 0125 D1, D2): "Here is my plan", its title,
- * one line per thing ("Ruby Pickaxe, a tool"; Advanced adds kind and id) with **Leave this out**
+ * one line per thing ("Ruby Pickaxe, a tool") with **Leave this out**
  * while it waits, the pictures and notes, and **Make all of it** (the one primary button),
  * **One at a time** and **Change the plan** (which opens "What should be different?"). Lines
  * tick only when the thing is really proposed or in the project (`tickedLines`). A step that
  * waits shows **Keep going** and **Stop**. Once its run has ended a decided plan closes to one
  * line (`closed`).
  *
- * `mode`, `conversation` and `project` default to the stores (the preference, the open
- * project's conversation and project).
+ * `conversation` and `project` default to the stores (the open project's conversation and
+ * project).
  */
 export function AiPlanView(props: {
   plan: AiPlanState;
   checkpoint: AiCheckpointState | null;
   onDecide(decision: PlanDecision): void;
   onCheckpoint(decision: 'continue' | 'stop'): void;
-  mode?: UiMode;
   conversation?: AiConversation;
   project?: Project | null;
   /** The transcript entry's `closed`: a decided plan whose run has ended. */
   closed?: boolean;
 }) {
   const { plan } = props;
-  const preferred = usePreferences((state) => state.mode);
   const snapshot = useUiStore((state) => state.snapshot);
   const stored = useAiStore((state) =>
     snapshot === null || snapshot.root === null ? undefined : state.conversations[snapshot.root],
   );
-  const mode = props.mode ?? preferred;
   const conversation = props.conversation ?? stored;
   const project = props.project === undefined ? (snapshot?.project ?? null) : props.project;
-  const words = wordsFor(mode).plan;
+  const words = wordsFor().plan;
   const pending = plan.status === 'pending';
   const [items, setItems] = useState(plan.plan.items);
   const [changing, setChanging] = useState(false);
@@ -212,8 +205,8 @@ export function AiPlanView(props: {
   useEffect(() => setItems(plan.plan.items), [plan.plan.items]);
   const shownItems = pending ? items : (plan.decision?.items ?? plan.plan.items);
   const lines = useMemo(
-    () => planLines(plan, conversation, project, mode, shownItems),
-    [plan, conversation, project, mode, shownItems],
+    () => planLines(plan, conversation, project, shownItems),
+    [plan, conversation, project, shownItems],
   );
   const decide = (decision: PlanDecision['decision']) =>
     props.onDecide({ decision, items, comments: comments.trim() });
@@ -244,7 +237,6 @@ export function AiPlanView(props: {
       aria-label={words.heading}
       data-testid="ai-plan"
       data-status={plan.status}
-      data-mode={mode}
     >
       <h3 className="font-semibold">{words.heading}</h3>
       <p className="font-medium" data-testid="ai-plan-title">
@@ -298,7 +290,7 @@ export function AiPlanView(props: {
       </ul>
       {assets.length > 0 && (
         <p className="text-xs text-muted" data-testid="ai-plan-pictures">
-          {words.pictures}: {assets.map((asset) => planPictureWords(asset, mode)).join(', ')}
+          {words.pictures}: {assets.map((asset) => planPictureWords(asset)).join(', ')}
         </p>
       )}
       {plan.plan.notes !== undefined && plan.plan.notes !== '' && (
@@ -351,7 +343,7 @@ export function AiPlanView(props: {
                   disabled={comments.trim() === ''}
                   onClick={() => decide('revise')}
                 >
-                  {wordsFor(mode).send}
+                  {wordsFor().send}
                 </Button>
               </div>
             </div>

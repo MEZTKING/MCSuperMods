@@ -9,8 +9,8 @@ import {
 } from '@msm/ai';
 import { forwardRef, useEffect, useId, useState } from 'react';
 import type { AiPlatform } from '../../../../shared/platform';
-import { usePreferences } from '../../store/preferences';
 import { fieldClass } from '../NewElementDialog';
+import { MoreOptions } from '../ui/MoreOptions';
 import { AiKeySetup } from './AiKeySetup';
 import { LimitField } from './AiLimitsPopover';
 import { modelChangeNotice } from './ai-controller';
@@ -129,8 +129,6 @@ export const AiSettingsSection = forwardRef<
   }
 >(function AiSettingsSection(props, ref) {
   const { ai, load, onChanged } = props;
-  const mode = usePreferences((state) => state.mode);
-  const advanced = mode === 'advanced';
   const [settings, setSettings] = useState<AiSettings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const modelId = useId();
@@ -229,7 +227,7 @@ export const AiSettingsSection = forwardRef<
         >
           {AI_MODELS.map((entry) => (
             <option key={entry.id} value={entry.id}>
-              {advanced ? modelOptionAdvanced(entry.id) : modelOption(entry.id)}
+              {modelOption(entry.id)}
             </option>
           ))}
         </select>
@@ -259,7 +257,7 @@ export const AiSettingsSection = forwardRef<
       {!model.supportsFallbacks && (
         <p className="text-xs text-muted">{noFallback(current.model)}</p>
       )}
-      {advanced && (
+      <MoreOptions storageKey="settings-ai">
         <div
           className="flex flex-col gap-2"
           data-testid="settings-ai-limits"
@@ -278,8 +276,11 @@ export const AiSettingsSection = forwardRef<
               onChange={(next) => void change(next)}
             />
           ))}
+          <p className="text-xs text-muted" data-testid="settings-ai-model-details">
+            {modelOptionAdvanced(current.model)}
+          </p>
         </div>
-      )}
+      </MoreOptions>
       {error !== null && (
         <p className="text-sm text-error" role="alert" data-testid="settings-ai-result">
           {error}

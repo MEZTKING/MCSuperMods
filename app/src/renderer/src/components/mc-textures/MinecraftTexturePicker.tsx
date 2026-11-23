@@ -11,10 +11,10 @@
 
 import { Dialog } from 'radix-ui';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { usePreferences } from '../../store/preferences';
 import { pngDataUrl } from '../AssetList';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
+import { usePlain } from '../ui/MoreOptions';
 import {
   filterTextures,
   MC_TEXTURE_FOLDERS,
@@ -118,7 +118,8 @@ function Thumbnail({ host, texture }: { host: MinecraftTexturesHost; texture: Mc
 
 export function MinecraftTexturePicker(props: MinecraftTexturePickerProps) {
   const { host } = props;
-  const advanced = usePreferences((state) => state.mode) === 'advanced';
+  // Plain (ADR 0130 D2): the texture's name; its id inside a More options only.
+  const advanced = !usePlain();
   const [textures, setTextures] = useState<McTexture[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [folder, setFolder] = useState<McTextureFolder | 'all'>(props.folder ?? 'all');

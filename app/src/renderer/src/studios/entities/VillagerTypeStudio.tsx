@@ -15,7 +15,7 @@
  *   look itself on a turning villager stand-in, with a job's clothes and badge if one is picked
  *   (ADR 0121 D4, B627; loaded when first shown), following each edit at once.
  *
- * Everything else stays behind "Advanced (all fields)".
+ * Everything else is in "Every setting".
  *
  * @packageDocumentation
  */
@@ -44,7 +44,7 @@ import {
 } from '../picture-copies';
 import { IdField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
+import { IdList, Section } from '../worldgen/parts';
 import { ChoiceField } from './MobKindSection';
 
 type JsonObject = { [key: string]: Json };
@@ -144,30 +144,12 @@ export default function VillagerTypeStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
   const host = useBlocksItemsStudioHost();
   const readProject = useHostProjectReader(host);
-  const [advanced, setAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Villager look Studio"
-        data-testid="villager-type-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="villager-type-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const textures = asObject(data.textures);
   const picture = (slot: 'villager' | 'zombie_villager') =>
@@ -344,11 +326,6 @@ export default function VillagerTypeStudio(props: StudioProps) {
       data-testid="villager-type-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle
-        checked={advanced}
-        onChange={setAdvanced}
-        testId="villager-type-advanced-toggle"
-      />
       <ProblemsAt problems={problems} pointer="" />
       {biomes}
       {pictures}

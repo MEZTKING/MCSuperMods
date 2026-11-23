@@ -132,7 +132,7 @@ export function TemplatePoolStudio(props: StudioProps) {
           checked={advanced}
           onChange={(event) => setAdvanced(event.target.checked)}
         />
-        Advanced (all fields)
+        Every setting
       </label>
       {advanced ? (
         <div data-testid="schema-form">{props.form}</div>

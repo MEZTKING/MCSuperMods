@@ -7,39 +7,17 @@
  * @packageDocumentation
  */
 
-import { UI_MODES, type UiMode } from '../store/preferences';
 import { Modal } from './NewElementDialog';
 import { Button } from './ui/Button';
 
 /** The guide page on the documentation site, opened in the system browser. */
 export const FIRST_MOD_GUIDE_URL = 'https://meztking.github.io/MCSuperMods/first-mod';
 
-/** The steps, as on the guide page (labels match the UI). */
+/**
+ * The steps, as on the guide page (labels match the UI; ADR 0130 D1: one way for everyone,
+ * before it Very easy's steps).
+ */
 export const WELCOME_STEPS: readonly { title: string; text: string }[] = [
-  {
-    title: 'Tell MCSuperMods where Minecraft is',
-    text: 'In Settings, pick your game under Game locations and choose Extract vanilla assets, so the preview can draw the game’s textures.',
-  },
-  {
-    title: 'Make a project',
-    text: 'Choose New and create an empty folder, for example ruby_mod. One project is one mod.',
-  },
-  {
-    title: 'Create a gear set',
-    text: 'Choose Create…, then Gear set. Type Ruby, pick a colour, watch the preview, and choose Create.',
-  },
-  {
-    title: 'Play with it',
-    text: 'Save, then Export > Test in Minecraft…. With Prism Launcher, MCSuperMods sets up a Fabric game and starts it.',
-  },
-  {
-    title: 'Share it',
-    text: 'Export > Fabric mod (.jar)… makes the file players put in their mods folder, next to Fabric API.',
-  },
-];
-
-/** The steps in Very easy mode (ADR 0083): Home, Play and Share my mod, no menus. */
-export const WELCOME_STEPS_VERY_EASY: readonly { title: string; text: string }[] = [
   {
     title: 'Start a new mod',
     text: 'On Home, choose Start a new mod and type a name, for example Ruby mod.',
@@ -62,6 +40,10 @@ export const WELCOME_STEPS_VERY_EASY: readonly { title: string; text: string }[]
   },
 ];
 
+/** Where the rarer settings are (ADR 0130 D3). */
+export const WELCOME_MORE_OPTIONS =
+  'Every part of a thing has More options at its bottom: the rarer settings, the names Minecraft uses inside and the raw text are there when you need them.';
+
 export interface WelcomeDialogProps {
   /** Whether a project is open (then "Create something" opens the Creator). */
   hasProject: boolean;
@@ -72,10 +54,6 @@ export interface WelcomeDialogProps {
   /** Starts a project the AI helper builds from a description (ADR 0047 D3). */
   onBuildWithAi?(): void;
   onClose(): void;
-  /** The current mode; with {@link WelcomeDialogProps.onMode} the Welcome offers the three. */
-  mode?: UiMode;
-  /** Chooses a mode (ADR 0083 D1: the Welcome's first step). */
-  onMode?(mode: UiMode): void;
 }
 
 export function WelcomeDialog({
@@ -85,10 +63,7 @@ export function WelcomeDialog({
   onCreator,
   onBuildWithAi,
   onClose,
-  mode,
-  onMode,
 }: WelcomeDialogProps) {
-  const steps = mode === 'very-easy' ? WELCOME_STEPS_VERY_EASY : WELCOME_STEPS;
   return (
     <Modal
       title="Welcome to MCSuperMods"
@@ -103,35 +78,17 @@ export function WelcomeDialog({
         Make your first mod in about fifteen minutes, without code: a new material with tools and
         armour, tested in Minecraft.
       </p>
-      {mode !== undefined && onMode !== undefined && (
-        <fieldset className="flex flex-col gap-1" data-testid="welcome-modes">
-          <legend className="font-semibold text-sm">How do you want to work?</legend>
-          <div className="grid grid-cols-3 gap-2">
-            {UI_MODES.map((entry) => (
-              <button
-                key={entry.mode}
-                type="button"
-                aria-pressed={mode === entry.mode}
-                data-testid={`welcome-mode-${entry.mode}`}
-                className={`flex cursor-pointer flex-col gap-0.5 rounded border p-2 text-left ${mode === entry.mode ? 'border-accent' : 'border-border'}`}
-                onClick={() => onMode(entry.mode)}
-              >
-                <span className="font-medium text-sm">{entry.label}</span>
-                <span className="text-muted text-xs">{entry.sentence}</span>
-              </button>
-            ))}
-          </div>
-          <p className="text-muted text-xs">You can change this any time at the top right.</p>
-        </fieldset>
-      )}
       <ol className="flex list-decimal flex-col gap-2 pl-5 text-sm" data-testid="welcome-steps">
-        {steps.map((step) => (
+        {WELCOME_STEPS.map((step) => (
           <li key={step.title}>
             <span className="font-semibold">{step.title}.</span>{' '}
             <span className="text-muted">{step.text}</span>
           </li>
         ))}
       </ol>
+      <p className="text-muted text-sm" data-testid="welcome-more-options">
+        {WELCOME_MORE_OPTIONS}
+      </p>
       <div className="flex flex-wrap gap-2">
         <Button data-testid="welcome-settings" onClick={onSettings}>
           Open Settings
@@ -142,7 +99,7 @@ export function WelcomeDialog({
           </Button>
         ) : (
           <Button data-testid="welcome-new-project" onClick={onNewProject}>
-            New project…
+            Start a new mod…
           </Button>
         )}
         {onBuildWithAi !== undefined && (

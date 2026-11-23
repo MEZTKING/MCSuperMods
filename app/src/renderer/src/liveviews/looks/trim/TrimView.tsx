@@ -14,7 +14,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { ArmourPreviewView } from '../../../preview/ArmourPreviewView';
 import { type ArmourTrimLayers, armourPreviewOfEquipment } from '../../../preview/armour-preview';
 import { hasWebGL } from '../../../preview/webgl';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { assetReader } from '../../existing/bundle-host';
 import { resourceFoldersOf, wordsOfPath } from '../../frame/item-picture';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
@@ -201,7 +201,7 @@ const LAYER_WORDS: Readonly<Record<TrimLayer, string>> = {
 /** The view; see the module comment. */
 export default function TrimView(props: LiveViewProps) {
   const { project, element, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const data = useSettled(element.data as Json);
   const isPattern = element.kind === TRIM_PATTERN_KIND;
   const textures = resourceFoldersOf(project)?.textures ?? 'textures';

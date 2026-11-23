@@ -12,14 +12,14 @@
 
 import { CREATIVE_TAB_KIND, FLUID_KIND } from '@msm/plugin-blocks-items';
 import { lazy, Suspense } from 'react';
-import type { StudioEntry, StudioProps } from '../types';
 import {
-  BLOCK_VERY_EASY_SECTIONS,
-  EFFECT_VERY_EASY_SECTIONS,
-  FLUID_VERY_EASY_SECTIONS,
-  ITEM_VERY_EASY_SECTIONS,
-  POTION_VERY_EASY_SECTIONS,
-} from '../very-easy';
+  BLOCK_COMMON_SECTIONS,
+  EFFECT_COMMON_SECTIONS,
+  FLUID_COMMON_SECTIONS,
+  ITEM_COMMON_SECTIONS,
+  POTION_COMMON_SECTIONS,
+} from '../plain';
+import type { StudioEntry, StudioProps } from '../types';
 import { ExtraDropsStudio, VanillaBlockRulesStudio, WorldAdditionStudio } from './AdditionStudios';
 import {
   BIOME_ADDITION_KIND,
@@ -92,25 +92,25 @@ export const studios: StudioEntry[] = [
     id: 'msm.blocks-items.block',
     kindId: BLOCK_KIND,
     component: BlockStudio,
-    veryEasy: BLOCK_VERY_EASY_SECTIONS,
+    common: BLOCK_COMMON_SECTIONS,
   },
   {
     id: 'msm.blocks-items.item',
     kindId: ITEM_KIND,
     component: ItemStudio,
-    veryEasy: ITEM_VERY_EASY_SECTIONS,
+    common: ITEM_COMMON_SECTIONS,
   },
   {
     id: 'msm.blocks-items.effect',
     kindId: EFFECT_KIND,
     component: EffectStudio,
-    veryEasy: EFFECT_VERY_EASY_SECTIONS,
+    common: EFFECT_COMMON_SECTIONS,
   },
   {
     id: 'msm.blocks-items.potion',
     kindId: POTION_KIND,
     component: PotionStudio,
-    veryEasy: POTION_VERY_EASY_SECTIONS,
+    common: POTION_COMMON_SECTIONS,
   },
   {
     id: 'msm.blocks-items.biome-addition',
@@ -136,7 +136,7 @@ export const studios: StudioEntry[] = [
     id: 'msm.blocks-items.fluid',
     kindId: FLUID_KIND,
     component: LazyFluidStudio,
-    // Its Very easy list (ADR 0112 D1, B538).
-    veryEasy: FLUID_VERY_EASY_SECTIONS,
+    // Its list of common sections (ADR 0112 D1, B538).
+    common: FLUID_COMMON_SECTIONS,
   },
 ];

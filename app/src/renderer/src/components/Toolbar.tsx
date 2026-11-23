@@ -5,10 +5,8 @@ import {
   CircleHelp,
   FilePlus,
   FolderOpen,
-  FolderPlus,
   Footprints,
   Gamepad2,
-  Gauge,
   House,
   ImageUp,
   PackageOpen,
@@ -26,7 +24,6 @@ import {
 import { DropdownMenu, Toolbar as RadixToolbar } from 'radix-ui';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { RecentProjectView } from '../../../shared/platform';
-import { UI_MODES, type UiMode } from '../store/preferences';
 import {
   describeInstallTarget,
   type InstallTargetOption,
@@ -72,37 +69,28 @@ export interface ToolbarProps {
   onExamples?(): void;
   /** Starts a new project built by the AI helper (ADR 0047 D3); hidden without it. */
   onNewWithAi?(): void;
-  /** The view mode; with {@link ToolbarProps.onToggleMode} the toolbar shows a switch. */
-  mode?: UiMode;
-  /** Switches between Easy and Advanced mode (ADR 0047 D1; from Very easy to Easy). */
-  onToggleMode?(): void;
-  /**
-   * Chooses one of the three modes (ADR 0083 D1); the toolbar then shows the row "Very easy ·
-   * Easy · Advanced".
-   */
-  onSetMode?(mode: UiMode): void;
-  /** Shows Home (Very easy, ADR 0083 D2). */
+  /** Shows Home (ADR 0083 D2). */
   onHome?(): void;
-  /** "Share my mod": the Fabric mod jar with its defaults (Very easy, ADR 0083 D4). */
+  /** "Share my mod": the Fabric mod jar with its defaults (ADR 0083 D4). */
   onShare?(): void;
   /** Why "Share my mod" is disabled, or `null`. */
   shareDisabledReason?: string | null;
-  /** Help > Your first mod (Very easy's Help menu). */
+  /** Help > Your first mod (the Help menu). */
   onFirstMod?(): void;
-  /** Help > What's new (Very easy's Help menu). */
+  /** Help > What's new (the Help menu). */
   onWhatsNew?(): void;
   /** Shows the Play controls (ADR 0084 D1); default true. */
   showPlay?: boolean;
   /**
-   * Opens Try it, the test area in the app (ADR 0085 D13); the button sits before Play in every
-   * mode. Hidden when absent.
+   * Opens Try it, the test area in the app (ADR 0085 D13); the button sits before Play. Hidden
+   * when absent.
    */
   onTryIt?(): void;
   /** Whether Try it is the open view (the button then shows as pressed). */
   tryItOpen?: boolean;
   /**
    * Opens the search (ADR 0124 D10) with the letters typed on the field, if any; the toolbar
-   * then shows its compact field (`toolbar-search`) in every mode. Hidden when absent.
+   * then shows its compact field (`toolbar-search`). Hidden when absent.
    */
   onSearch?(text: string): void;
   /** The search field's words ("Search or make anything"). */
@@ -121,7 +109,6 @@ export interface ToolbarProps {
   onSave(): void;
   onUndo(): void;
   onRedo(): void;
-  onAddNamespace(): void;
   onAddElement(): void;
   onImportAssets?(): void;
   /** Exports the resource pack as a zip. */
@@ -609,37 +596,7 @@ function ToolbarSearch(props: ToolbarProps) {
   );
 }
 
-/** The mode switch's row, "Very easy · Easy · Advanced" (ADR 0083 D1). */
-function ModeRow(props: { mode: UiMode; onSetMode(mode: UiMode): void }) {
-  return (
-    <RadixToolbar.ToggleGroup
-      type="single"
-      aria-label="Mode"
-      value={props.mode}
-      data-testid="toolbar-mode-row"
-      className="inline-flex overflow-hidden rounded border border-border"
-      onValueChange={(value) => {
-        const next = UI_MODES.find((entry) => entry.mode === value);
-        if (next !== undefined) props.onSetMode(next.mode);
-      }}
-    >
-      {UI_MODES.map((entry) => (
-        // A title, not a Tip: the tooltip trigger would replace the item's `data-state`.
-        <RadixToolbar.ToggleItem
-          key={entry.mode}
-          value={entry.mode}
-          title={`${entry.label} mode: ${entry.sentence}`}
-          data-testid={`toolbar-mode-${entry.mode}`}
-          className="cursor-pointer px-2 py-1 text-sm text-muted hover:text-text data-[state=on]:bg-bg data-[state=on]:font-medium data-[state=on]:text-accent"
-        >
-          {entry.label}
-        </RadixToolbar.ToggleItem>
-      ))}
-    </RadixToolbar.ToggleGroup>
-  );
-}
-
-/** The Try it button (ADR 0085 D13): before Play in every mode. */
+/** The Try it button (ADR 0085 D13): before Play. */
 function TryItButton(props: ToolbarProps) {
   if (props.onTryIt === undefined) return null;
   return (
@@ -668,123 +625,12 @@ function TryItButton(props: ToolbarProps) {
 }
 
 /**
- * Very easy's toolbar (ADR 0083 D4): Home, Undo, Redo, Play and Reload, Share my mod, the AI
- * helper, Help and the mode switch. Everything else stays in the native menu.
- */
-function VeryEasyToolbar(props: ToolbarProps) {
-  const iconSize = 18;
-  const shareReason = props.shareDisabledReason ?? null;
-  const busy = props.exporting === true;
-  return (
-    <RadixToolbar.Root
-      aria-label="Project"
-      data-testid="toolbar-very-easy"
-      className="flex flex-wrap items-center gap-1.5 border-b border-border bg-panel p-2"
-    >
-      <ToolButton
-        label="Home"
-        tip="Your things and what you can make"
-        testId="toolbar-home"
-        icon={<House size={iconSize} aria-hidden />}
-        onClick={props.onHome}
-      />
-      {separator}
-      <ToolButton
-        label="Undo"
-        tip={props.undoLabel === undefined ? 'Nothing to undo' : `Undo ${props.undoLabel}`}
-        testId="toolbar-undo"
-        iconOnly
-        icon={<Undo2 size={iconSize} aria-hidden />}
-        disabled={!props.canUndo}
-        onClick={props.onUndo}
-      />
-      <ToolButton
-        label="Redo"
-        tip={props.redoLabel === undefined ? 'Nothing to redo' : `Redo ${props.redoLabel}`}
-        testId="toolbar-redo"
-        iconOnly
-        icon={<Redo2 size={iconSize} aria-hidden />}
-        disabled={!props.canRedo}
-        onClick={props.onRedo}
-      />
-      {separator}
-      <TryItButton {...props} />
-      {props.showPlay !== false && <PlayControls />}
-      <ToolButton
-        label="Share my mod"
-        tip={
-          shareReason ??
-          (busy
-            ? 'Your mod is being made.'
-            : 'Save your mod as one file to give to friends. They put it in their mods folder.')
-        }
-        testId="toolbar-share"
-        icon={<Share2 size={iconSize} aria-hidden />}
-        disabled={!props.hasProject || shareReason !== null || busy}
-        onClick={props.onShare}
-      />
-      {separator}
-      {props.onAiHelper !== undefined && (
-        <ToolButton
-          label="AI helper"
-          tip="Ask the AI helper or have it build things for you"
-          testId="toolbar-ai-helper"
-          icon={<Sparkles size={iconSize} aria-hidden />}
-          onClick={props.onAiHelper}
-        />
-      )}
-      <ToolMenu
-        label="Help"
-        tip="Help and what is new"
-        testId="toolbar-help"
-        icon={<CircleHelp size={iconSize} aria-hidden />}
-        entries={[
-          {
-            label: 'Your first mod…',
-            testId: 'toolbar-help-first-mod',
-            reason: null,
-            onSelect: props.onFirstMod,
-          },
-          {
-            label: 'Examples…',
-            testId: 'toolbar-help-examples',
-            reason: null,
-            onSelect: props.onExamples,
-          },
-          {
-            label: 'What’s new…',
-            testId: 'toolbar-help-whats-new',
-            reason: null,
-            onSelect: props.onWhatsNew,
-          },
-          {
-            label: 'Settings…',
-            testId: 'toolbar-help-settings',
-            reason: null,
-            onSelect: props.onSettings,
-          },
-        ]}
-      />
-      <ToolbarSearch {...props} />
-      <span className="ml-auto" />
-      {props.mode !== undefined && props.onSetMode !== undefined && (
-        <ModeRow mode={props.mode} onSetMode={props.onSetMode} />
-      )}
-    </RadixToolbar.Root>
-  );
-}
-
-/**
- * The main toolbar (a Radix toolbar: arrow keys move between buttons). Very easy mode has its
- * own, shorter toolbar (ADR 0083 D4).
+ * The toolbar (a Radix toolbar: arrow keys move between buttons; ADR 0130 D1: one for everyone):
+ * Home, New, Open, Save, Undo and Redo, Create and Add, the exports and Install, Share my mod,
+ * Try it and Play, the search, the AI helper, Help and Settings. Everything else is in the native
+ * menus and the command palette.
  */
 export function Toolbar(props: ToolbarProps) {
-  if (props.mode === 'very-easy') return <VeryEasyToolbar {...props} />;
-  return <FullToolbar {...props} />;
-}
-
-/** The Easy and Advanced toolbar. */
-function FullToolbar(props: ToolbarProps) {
   const iconSize = 16;
   const exportReason = props.exportDisabledReason ?? null;
   const installReason = props.installDisabledReason ?? null;
@@ -803,8 +649,16 @@ function FullToolbar(props: ToolbarProps) {
       className="flex flex-wrap items-center gap-1.5 border-b border-border bg-panel p-2"
     >
       <ToolButton
+        label="Home"
+        tip="Your things and what you can make"
+        testId="toolbar-home"
+        iconOnly
+        icon={<House size={iconSize} aria-hidden />}
+        onClick={props.onHome}
+      />
+      <ToolButton
         label="New"
-        tip={`Create a new project (${modKey}+Shift+N)`}
+        tip={`Start a new mod (${modKey}+Shift+N)`}
         testId="toolbar-new-project"
         icon={<FilePlus size={iconSize} aria-hidden />}
         onClick={props.onNew}
@@ -817,13 +671,13 @@ function FullToolbar(props: ToolbarProps) {
         icon={<ChevronDown size={iconSize} aria-hidden />}
         entries={[
           {
-            label: 'Blank project…',
+            label: 'New mod…',
             testId: 'toolbar-new-blank',
             reason: null,
             onSelect: props.onNew,
           },
           {
-            label: 'New from starter…',
+            label: 'Start from a ready-made mod…',
             testId: 'toolbar-new-from-starter',
             reason: null,
             onSelect: props.onNewFromStarter,
@@ -838,7 +692,7 @@ function FullToolbar(props: ToolbarProps) {
             ? []
             : [
                 {
-                  label: 'New project with the AI helper…',
+                  label: 'New mod with the AI helper…',
                   testId: 'toolbar-new-with-ai',
                   reason: null,
                   onSelect: props.onNewWithAi,
@@ -848,7 +702,7 @@ function FullToolbar(props: ToolbarProps) {
       />
       <ToolButton
         label="Open"
-        tip={`Open a project folder (${modKey}+O)`}
+        tip={`Open a mod (${modKey}+O)`}
         testId="toolbar-open-project"
         icon={<FolderOpen size={iconSize} aria-hidden />}
         onClick={props.onOpen}
@@ -863,7 +717,7 @@ function FullToolbar(props: ToolbarProps) {
       />
       <ToolButton
         label="Save"
-        tip={props.saveDisabledReason ?? `Save the project (${modKey}+S)`}
+        tip={props.saveDisabledReason ?? `Save your mod (${modKey}+S)`}
         testId="toolbar-save"
         icon={<Save size={iconSize} aria-hidden />}
         disabled={props.saveDisabledReason !== null}
@@ -903,7 +757,7 @@ function FullToolbar(props: ToolbarProps) {
           tip={
             props.hasProject
               ? 'Make tools, armour, blocks, food and more with a live preview'
-              : 'Open a project to use the Creator.'
+              : 'Open a mod to use the Creator.'
           }
           testId="toolbar-creator"
           icon={<WandSparkles size={iconSize} aria-hidden />}
@@ -912,18 +766,11 @@ function FullToolbar(props: ToolbarProps) {
         />
       )}
       <ToolButton
-        label="Add namespace"
-        tip={props.hasProject ? 'Add a namespace to the project' : 'No project is open.'}
-        testId="toolbar-add-namespace"
-        iconOnly
-        icon={<FolderPlus size={iconSize} aria-hidden />}
-        disabled={!props.hasProject}
-        onClick={props.onAddNamespace}
-      />
-      <ToolButton
-        label="Add element"
+        label="Add"
         tip={
-          props.canAddElement ? `Add an element (${modKey}+N)` : 'Open a project with a namespace.'
+          props.canAddElement
+            ? `Add anything from the full list (${modKey}+N)`
+            : 'Open a mod first.'
         }
         testId="toolbar-add-element"
         icon={<Plus size={iconSize} aria-hidden />}
@@ -931,12 +778,8 @@ function FullToolbar(props: ToolbarProps) {
         onClick={props.onAddElement}
       />
       <ToolButton
-        label="Import assets"
-        tip={
-          props.canAddElement
-            ? 'Import textures (PNG) or sounds (Ogg) into a namespace'
-            : 'Open a project with a namespace.'
-        }
+        label="Bring in pictures or sounds"
+        tip={props.canAddElement ? 'Bring in pictures (PNG) or sounds (Ogg)' : 'Open a mod first.'}
         testId="toolbar-import-assets"
         iconOnly
         icon={<ImageUp size={iconSize} aria-hidden />}
@@ -1055,6 +898,21 @@ function FullToolbar(props: ToolbarProps) {
           },
         ]}
       />
+      {props.onShare !== undefined && (
+        <ToolButton
+          label="Share my mod"
+          tip={
+            props.shareDisabledReason ??
+            (busy
+              ? 'Your mod is being made.'
+              : 'Save your mod as one file to give to friends. They put it in their mods folder.')
+          }
+          testId="toolbar-share"
+          icon={<Share2 size={iconSize} aria-hidden />}
+          disabled={!props.hasProject || (props.shareDisabledReason ?? null) !== null || busy}
+          onClick={props.onShare}
+        />
+      )}
       {(props.onTryIt !== undefined || props.showPlay !== false) && separator}
       <TryItButton {...props} />
       {props.showPlay !== false && <PlayControls />}
@@ -1070,26 +928,36 @@ function FullToolbar(props: ToolbarProps) {
           onClick={props.onAiHelper}
         />
       )}
-      {props.onToggleMode !== undefined && (
-        <ToolButton
-          label={props.mode === 'easy' ? 'Easy mode' : 'Advanced mode'}
-          tip={
-            props.mode === 'easy'
-              ? 'Easy mode: your content first, technical files folded away. Click for Advanced mode.'
-              : 'Advanced mode: every element and Raw JSON. Click for Easy mode.'
-          }
-          testId="toolbar-mode"
-          iconOnly={props.onSetMode !== undefined}
-          icon={<Gauge size={iconSize} aria-hidden />}
-          onClick={props.onToggleMode}
-        />
-      )}
-      {props.mode !== undefined && props.onSetMode !== undefined && (
-        <ModeRow mode={props.mode} onSetMode={props.onSetMode} />
-      )}
+      <ToolMenu
+        label=""
+        ariaLabel="Help"
+        tip="Help and what is new"
+        testId="toolbar-help"
+        icon={<CircleHelp size={iconSize} aria-hidden />}
+        entries={[
+          {
+            label: 'Your first mod…',
+            testId: 'toolbar-help-first-mod',
+            reason: null,
+            onSelect: props.onFirstMod,
+          },
+          {
+            label: 'Examples…',
+            testId: 'toolbar-help-examples',
+            reason: null,
+            onSelect: props.onExamples,
+          },
+          {
+            label: 'What’s new…',
+            testId: 'toolbar-help-whats-new',
+            reason: null,
+            onSelect: props.onWhatsNew,
+          },
+        ]}
+      />
       <ToolButton
         label="Settings"
-        tip="Game locations, vanilla assets, updates and the AI helper"
+        tip="Your Minecraft, updates and the AI helper"
         testId="toolbar-settings"
         iconOnly
         icon={<Settings size={iconSize} aria-hidden />}

@@ -41,8 +41,8 @@ export interface StudioProps {
    */
   onChange(pointer: string, value: Json | undefined, options?: ChangeOptions): void;
   /**
-   * The full schema form for the element, for an "Advanced" section (the Recipe Studio
-   * pattern). It is bound to {@link formRef}.
+   * The full schema form for the element, for a Studio that shows it itself (the Recipe
+   * Studio's "Every setting"). It is bound to {@link formRef}.
    */
   form: ReactNode;
   /** The handle `ElementForm` focuses problems through; bind it when not rendering `form`. */
@@ -78,8 +78,9 @@ export interface StudioEntry {
    */
   handlesFocus?: boolean;
   /**
-   * The section test ids this Studio shows in Very easy mode (ADR 0083 D3), in no particular
-   * order; every other `Section` is hidden there. Without it, Very easy shows Easy's layout.
+   * The section test ids of this Studio's main area (ADR 0130 D3; before it Very easy's list,
+   * ADR 0083 D3), in no particular order; every other `Section` shows its title, its why and a
+   * More options holding the rest. Without it, every section is in the main area.
    */
-  veryEasy?: readonly string[];
+  common?: readonly string[];
 }

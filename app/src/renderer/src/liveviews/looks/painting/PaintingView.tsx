@@ -10,7 +10,7 @@
 import type { Json } from '@msm/plugin-api';
 import { useMemo } from 'react';
 import { pngDataUrl } from '../../../preview/bundle-source';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { resourceFoldersOf } from '../../frame/item-picture';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import type { LiveViewProps } from '../../registry';
@@ -67,7 +67,7 @@ function PlayerFigure(props: { x: number; floor: number; size: number }) {
 /** The view; see the module comment. */
 export default function PaintingView(props: LiveViewProps) {
   const { project, element, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const data = useSettled(element.data as Json);
   const record = recordOf(data);
   const width = paintingBlocks(record?.width);

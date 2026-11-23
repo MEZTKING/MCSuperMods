@@ -1,11 +1,11 @@
 /**
  * The **Draw…** button of picture fields (ADR 0092 D10 (b)), beside **Make with AI**: it opens
  * the Draw dialog, which draws the picture on this machine (no key, no internet), so it is
- * shown in every mode and without an AI host. In Very easy mode it reads "Draw it for me".
+ * shown without an AI host too. It reads "Draw it for me" (ADR 0130 D5).
  * The dialog and the drawing code load lazily on the first click, so the renderer's main chunk
  * does not carry them (ADR 0092 D17).
  *
- * Given `ai` (what Make with AI would make here), Very easy's **Draw it for me** dialog offers
+ * Given `ai` (what Make with AI would make here), the **Draw it for me** dialog offers
  * **Make it with AI instead** when the chosen image service has a key (ADR 0093, 2026-11-22);
  * without a key nothing changes, so drawing stays the free route.
  *
@@ -15,7 +15,6 @@
 import { Palette } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
 import type { AiPictureStyle } from '../../../../shared/ai-pictures';
-import { usePreferences } from '../../store/preferences';
 import { aiPicturesReady, useAiPictures } from '../ai-pictures/ai-pictures-host';
 import { MakeWithAiDialog } from '../ai-pictures/MakeWithAiDialog';
 import type { AiPictureShape } from '../ai-pictures/shapes';
@@ -82,22 +81,19 @@ export interface DrawButtonProps {
   target: string;
   /** Writes the picked picture (one undo step); rejects with a message when it cannot. */
   onPick(picture: DrawnPicture): Promise<void> | void;
-  /** The button's words outside Very easy mode (default "Draw…"). */
-  label?: string;
   disabled?: boolean;
   /** A tooltip, for example why the button is disabled. */
   title?: string;
   className?: string;
-  /** Very easy's offer of Make with AI in the Draw dialog, when a key is set. */
+  /** The offer of Make with AI in the Draw dialog, when a key is set. */
   ai?: DrawAiOffer;
 }
 
 export function DrawButton(props: DrawButtonProps) {
-  const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
   const [open, setOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const host = useAiPictures();
-  const offer = veryEasy && props.ai !== undefined && host !== null && aiPicturesReady(host.status);
+  const offer = props.ai !== undefined && host !== null && aiPicturesReady(host.status);
   return (
     <>
       <Button
@@ -108,14 +104,13 @@ export function DrawButton(props: DrawButtonProps) {
         onClick={() => setOpen(true)}
       >
         <Palette size={12} aria-hidden />
-        {veryEasy ? DRAW_IT_FOR_ME_BUTTON : (props.label ?? DRAW)}
+        {DRAW_IT_FOR_ME_BUTTON}
       </Button>
       {open && (
         <Suspense fallback={null}>
           <DrawPictureDialog
             field={props.field}
             target={props.target}
-            veryEasy={veryEasy}
             onPick={props.onPick}
             onClose={() => setOpen(false)}
             {...(offer
@@ -143,7 +138,6 @@ export function DrawButton(props: DrawButtonProps) {
           {...(props.ai.maxSize === undefined ? {} : { maxSize: props.ai.maxSize })}
           {...(props.ai.shape === undefined ? {} : { shape: props.ai.shape })}
           {...(props.ai.colour === undefined ? {} : { colour: props.ai.colour })}
-          veryEasy
           onPick={props.ai.onPick}
           onClose={() => setAiOpen(false)}
         />

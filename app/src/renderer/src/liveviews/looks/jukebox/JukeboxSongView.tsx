@@ -15,7 +15,7 @@ import { useMemo, useState } from 'react';
 import { useSoundSources } from '../../../audio/provider';
 import type { PickedSound } from '../../../audio/resolve';
 import { SoundPlayButton } from '../../../audio/SoundPlayButton';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { useLang, useSettled } from '../../data/lines/lang';
 import { plainTextOf } from '../../data/lines/text-component';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
@@ -108,7 +108,7 @@ function FileLine(props: { file: FileLength; stated: number | null; veryEasy: bo
 
 export default function JukeboxSongView(props: LiveViewProps) {
   const { element, onSetup } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const sources = useSoundSources();
   const sounds = props.sounds === undefined ? sources.sounds : props.sounds;
   const readProject = useMemo(

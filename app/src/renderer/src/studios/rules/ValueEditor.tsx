@@ -112,10 +112,7 @@ export function NumberEditor(props: {
   const kind = typeof reading?.value === 'string' ? reading.value : null;
   const selectId = useId();
   const offered = props.readings
-    ? offeredValues(props.scope, {
-        veryEasy: env.mode.veryEasy,
-        ...(props.plainOnly === true ? { plainOnly: true } : {}),
-      })
+    ? offeredValues(props.scope, props.plainOnly === true ? { plainOnly: true } : {})
     : [];
   const literal = (): number =>
     typeof value === 'number'
@@ -489,7 +486,6 @@ export function TextEditor(props: {
   scope: RuleScope;
 }) {
   const { book, change } = useBookEdit();
-  const env = useRulesEnv();
   const inputId = useId();
   const value = getAt(book, props.pointer);
   if (isPlainText(props.slot.name)) {
@@ -521,7 +517,7 @@ export function TextEditor(props: {
     : typeof value === 'string'
       ? [value]
       : [];
-  const readings = offeredValues(props.scope, { veryEasy: env.mode.veryEasy, text: true });
+  const readings = offeredValues(props.scope, { text: true });
   const firstReading = readings.find((entry) => entry.id !== 'math') ?? readings[0];
   return (
     <div className="flex flex-col gap-1.5" data-testid="rules-text-editor">

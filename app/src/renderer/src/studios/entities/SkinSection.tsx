@@ -5,17 +5,16 @@
  * through the shared Draw dialog. **Use this skin** writes over the project texture the mob
  * names, or makes `textures/entity/<path>.png` and names it, in one undo step (ADR 0045). The
  * button is greyed out, with the reason beside it, when the mob has no model, the model is not
- * in the project, it maps its faces one by one (per-face UV) or it has no boxes. Very easy
- * mode reads "Draw its skin". Drawing needs no key and no internet; the writes go through the
+ * in the project, it maps its faces one by one (per-face UV) or it has no boxes. It reads
+ * "Draw its skin" (ADR 0130 D5). Drawing needs no key and no internet; the writes go through the
  * Studio host's `applyChanges`, so without a host nothing is shown.
  *
- * **Make a skin with AI** sits beside it (ADR 0093 D6 as amended on 2026-11-22): the chosen
+ * **Make it with AI** sits beside it (ADR 0093 D6 as amended on 2026-11-22): the chosen
  * image service (Retro Diffusion by default) draws a tileable coat from a description
  * (`rd_plus__mc_texture`, a 16 by 16 tile), which is cleaned up and laid on the same boxes at the
  * model's texture size, each side shaded, and written the same way in one undo step. It is
- * greyed out for the same reasons, reads "Set up AI pictures in Settings" without a key, and in
- * Very easy mode "Make it with AI"; Very easy's **Draw its skin** dialog also offers **Make it
- * with AI instead** when a key is set.
+ * greyed out for the same reasons and reads "Set up AI pictures in Settings" without a key; the
+ * **Draw its skin** dialog also offers **Make it with AI instead** when a key is set.
  *
  * **Start from a Minecraft texture** (ADR 0129 D4) puts a mob picture of the user's own Minecraft
  * in the same place, in one undo step, to paint over (its layout fits Minecraft's own models).
@@ -42,15 +41,12 @@ import type { DrawField } from '../../components/art/draw-model';
 import { metaChange } from '../../components/mc-textures/picture-change';
 import { StartFromMinecraftButton } from '../../components/mc-textures/StartFromMinecraftButton';
 import { Button } from '../../components/ui/Button';
-import { usePreferences } from '../../store/preferences';
 import { findElement } from '../blocks-items/blocks-items-model';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
 import { GEO_MODEL_KIND } from './entities-model';
 
 /** The words of the button, the dialog and the reasons it is greyed out. */
-export const DRAW_A_SKIN = 'Draw a skin';
 export const DRAW_ITS_SKIN = 'Draw its skin';
-export const MAKE_A_SKIN_WITH_AI = 'Make a skin with AI';
 export const USE_THIS_SKIN = 'Use this skin';
 export const NO_MODEL = 'Choose a model first.';
 export const MODEL_NOT_IN_PROJECT = 'The model is not part of this project.';
@@ -199,14 +195,13 @@ export interface SkinSectionProps {
 /** The Mob Studio's **Draw a skin** button and its reason when greyed out. */
 export function SkinSection(props: SkinSectionProps) {
   const host = useBlocksItemsStudioHost();
-  const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
   const [open, setOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const ai = useAiPictures();
   if (host?.applyChanges === undefined) return null;
   const apply = host.applyChanges;
   const plan = skinPlan(props.project, props.element);
-  const label = veryEasy ? DRAW_ITS_SKIN : DRAW_A_SKIN;
+  const label = DRAW_ITS_SKIN;
   const { asset } = skinTexture(props.element);
   const shape = skinAiShape(plan);
   const prompt = defaultPrompt(props.element.id, 'skin');
@@ -214,7 +209,7 @@ export function SkinSection(props: SkinSectionProps) {
     const change = skinChange(props.project, props.element, bytes);
     await apply(change.items, `Make with AI ${asset.path}`, change.writes);
   };
-  const offerAi = veryEasy && ai !== null && aiPicturesReady(ai.status) && shape !== undefined;
+  const offerAi = ai !== null && aiPicturesReady(ai.status) && shape !== undefined;
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       <Button
@@ -229,7 +224,6 @@ export function SkinSection(props: SkinSectionProps) {
       <MakeWithAiButton
         testId="entity-ai-skin"
         target={`${asset.namespace}:${asset.path}`}
-        label={MAKE_A_SKIN_WITH_AI}
         defaultPrompt={prompt}
         defaultStyle="skin"
         size={16}
@@ -270,7 +264,6 @@ export function SkinSection(props: SkinSectionProps) {
           <LazyDrawPictureDialog
             field={plan.field}
             target={`${asset.namespace}:${asset.path}`}
-            veryEasy={veryEasy}
             title={label}
             useLabel={USE_THIS_SKIN}
             onPick={async (picture) => {
@@ -303,7 +296,6 @@ export function SkinSection(props: SkinSectionProps) {
           defaultStyle="skin"
           size={16}
           shape={shape}
-          veryEasy={veryEasy}
           onPick={writeAi}
           onClose={() => setAiOpen(false)}
         />

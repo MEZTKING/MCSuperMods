@@ -1,7 +1,6 @@
 import { type AiModelId, type AiUsage, estimateCost, formatCost } from '@msm/ai';
-import { usePreferences } from '../../store/preferences';
 import { shortModelLabel } from './ai-controller';
-import { costSentence, type UiMode } from './ai-words';
+import { costSentence } from './ai-words';
 
 const NUMBER = new Intl.NumberFormat('en-GB');
 
@@ -16,7 +15,7 @@ export function usageText(usage: AiUsage, model: AiModelId): string {
   return `${NUMBER.format(input)} in / ${NUMBER.format(usage.outputTokens)} out, ${requests}, ${formatCost(estimateCost(model, usage))}, ${shortModelLabel(model)}`;
 }
 
-/** Advanced's tooltip: the token breakdown and the date the prices were read. */
+/** The token breakdown and the date the prices were read (the panel's More options). */
 export function usageDetail(usage: AiUsage, checkedOn: string): string {
   return (
     `Input ${NUMBER.format(usage.inputTokens)}, cache read ${NUMBER.format(usage.cacheReadInputTokens)}, ` +
@@ -27,25 +26,14 @@ export function usageDetail(usage: AiUsage, checkedOn: string): string {
 
 /**
  * The conversation's cost as one sentence (ADR 0125 D8): "This chat has cost about $0.11 so
- * far." Advanced adds the tokens, requests and model, and the breakdown in its tooltip. Nothing
- * is shown before the first request. `mode` defaults to the preference.
+ * far." The breakdown is in the panel's More options. Nothing is shown before the first
+ * request.
  */
-export function AiUsageLine(props: {
-  usage: AiUsage;
-  model: AiModelId;
-  checkedOn: string;
-  mode?: UiMode;
-}) {
-  const preferred = usePreferences((state) => state.mode);
-  const mode = props.mode ?? preferred;
-  const sentence = costSentence(props.usage, props.model, mode);
+export function AiUsageLine(props: { usage: AiUsage; model: AiModelId; checkedOn: string }) {
+  const sentence = costSentence(props.usage, props.model);
   if (sentence === null) return null;
   return (
-    <p
-      className="text-xs text-muted"
-      data-testid="ai-usage"
-      title={mode === 'advanced' ? usageDetail(props.usage, props.checkedOn) : undefined}
-    >
+    <p className="text-xs text-muted" data-testid="ai-usage">
       {sentence}
     </p>
   );

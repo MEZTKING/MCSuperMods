@@ -2,8 +2,8 @@
  * The volatile project facts sent with each AI helper run and returned by `project_summary`
  * (ADR 0041 D3): target, namespaces, element counts per kind, whether an `msm:mod` element
  * exists and the pending changeset's summary. Counts describe the project as it is; the
- * pending changes are summarised separately. When the caller knows them, also the view the user
- * sees, the mod's name and the thing that is open (ADR 0125 D6).
+ * pending changes are summarised separately. When the caller knows them, also the mod's name and
+ * the thing that is open (ADR 0125 D6).
  *
  * @packageDocumentation
  */
@@ -16,8 +16,6 @@ import type { ProjectSession } from '../session/project-session';
 
 /** What the app knows beside the project (ADR 0125 D6). */
 export interface ProjectContextExtras {
-  /** The view mode the user sees (the mode preference). */
-  view?: AiProjectContext['view'];
   /** The selected element, if any: the thing "this" or "it" in a message means. */
   openId?: ResourceLocation | null;
 }
@@ -64,7 +62,6 @@ export function projectContextOf(
     kindCounts,
     hasModElement,
     pendingSummary: changeset.summary().text,
-    ...(extras.view === undefined ? {} : { view: extras.view }),
     ...(modName === undefined ? {} : { modName }),
     ...(open === undefined
       ? {}

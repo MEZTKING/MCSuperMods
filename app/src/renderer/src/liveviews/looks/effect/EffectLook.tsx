@@ -15,7 +15,7 @@ import { type ReactNode, useMemo } from 'react';
 import type { VanillaAssetReader } from '../../../preview/model-chain';
 import { EffectPreviewCard, useIconThumbnail } from '../../../studios/blocks-items/EffectPreview';
 import { effectDisplayName, effectIconPath } from '../../../studios/blocks-items/effect-model';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { BundleHost } from '../../existing/bundle-host';
 import { resourceFoldersOf, wordsOfPath } from '../../frame/item-picture';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
@@ -187,7 +187,7 @@ export interface EffectLookFrameProps {
 /** The frames and the swirl in the view's frame; see the module comment. */
 export function EffectLookFrame(props: EffectLookFrameProps) {
   const { project, element, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const textures = resourceFoldersOf(project)?.textures ?? 'textures';
   const source = { vanillaAssets, readProject };
   const gui = `assets/minecraft/${textures}/gui/sprites`;

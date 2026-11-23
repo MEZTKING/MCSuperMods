@@ -14,7 +14,7 @@
  *   "See-through", "Show from far away".
  * - Preview: `ParticlePreview`, a 2D canvas driven by `particle-sim.ts`.
  *
- * Every change is one undoable edit; everything else stays behind "Advanced (all fields)".
+ * Every change is one undoable edit; everything else is in "Every setting".
  *
  * @packageDocumentation
  */
@@ -31,14 +31,14 @@ import type { DrawnPicture } from '../../components/art/draw-model';
 import { pictureChange } from '../../components/mc-textures/picture-change';
 import { StartFromMinecraftButton } from '../../components/mc-textures/StartFromMinecraftButton';
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { IdInput, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
+import { plainIdWords, usePlainWords } from '../plain-things';
 import { NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
-import { plainIdWords, usePlainWords } from '../very-easy-things';
 import { ColourField } from '../worldgen/ColourField';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import { asObject, moved, pathSetter, pointerOf } from './blocks-items-model';
 import { LabelledChoice } from './EventsEditor';
 import { useBlocksItemsStudioHost } from './host';
@@ -78,9 +78,7 @@ function messageOf(error: unknown): string {
 export default function ParticleStudio(props: StudioProps) {
   const { project, element, problems, onChange, target } = props;
   const host = useBlocksItemsStudioHost();
-  const [advanced, setAdvanced] = useState(false);
-  // Very easy names the frames' pictures, never their ids (ADR 0083 D3).
-  const veryEasy = useVeryEasy();
+  // The frames' pictures by name; their ids in the section's More options (ADR 0130 D2, D3).
   const words = usePlainWords();
   const [layout, setLayout] = useState<FrameLayout>('horizontal');
   const [splitCount, setSplitCount] = useState<number | undefined>(undefined);
@@ -103,23 +101,6 @@ export default function ParticleStudio(props: StudioProps) {
       onCommit={(value) => set([key], value, typingKey(`/${key}`))}
     />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Particle Studio"
-        data-testid="particle-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="particle-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const setFrames = (next: readonly string[]) => set(['textures'], [...next]);
   const paint = (sprite: string) => {
@@ -181,11 +162,10 @@ export default function ParticleStudio(props: StudioProps) {
               data-testid={`particle-frame-${index}`}
             >
               <span className="w-14 text-muted">Frame {index + 1}</span>
-              {veryEasy ? (
-                <span className="w-56" data-testid={`particle-frame-${index}-sprite`}>
-                  {plainIdWords(project, sprite)}
-                </span>
-              ) : (
+              <span className="w-56" data-testid={`particle-frame-${index}-sprite-plain`}>
+                {plainIdWords(project, sprite)}
+              </span>
+              <InMore>
                 <IdInput
                   value={sprite}
                   label={`Frame ${index + 1}`}
@@ -201,7 +181,7 @@ export default function ParticleStudio(props: StudioProps) {
                     setFrames(frames.map((entry, at) => (at === index ? text.trim() : entry)))
                   }
                 />
-              )}
+              </InMore>
               {isVanillaSprite(sprite) ? (
                 <span className="text-muted">vanilla picture</span>
               ) : (
@@ -336,7 +316,6 @@ export default function ParticleStudio(props: StudioProps) {
         </button>
         <DrawButton
           testId="particle-draw-frames"
-          label="Draw frames…"
           target={element.id}
           field={{
             kinds: ['particle'],
@@ -353,18 +332,17 @@ export default function ParticleStudio(props: StudioProps) {
           onPick={drawFrames}
         />
       </div>
-      {veryEasy ? (
-        <p className="text-muted text-xs">
-          Each frame is a picture of 8 by 8 or 16 by 16; paint it, draw the frames or make them with
-          AI.
-        </p>
-      ) : (
+      <p className="text-muted text-xs">
+        Each frame is a picture of 8 by 8 or 16 by 16; paint it, draw the frames or make them with
+        AI.
+      </p>
+      <InMore>
         <p className="text-muted text-xs">
           A project picture <code>mymod:spark_0</code> is the file{' '}
           <code>textures/particle/spark_0.png</code> (8 by 8 or 16 by 16); vanilla pictures such as{' '}
           <code>minecraft:generic_0</code> or <code>minecraft:glow</code> come from the game.
         </p>
-      )}
+      </InMore>
       <div
         className="flex flex-wrap items-end gap-2 rounded border border-border p-2"
         data-testid="particle-split"
@@ -596,13 +574,16 @@ export default function ParticleStudio(props: StudioProps) {
       data-testid="particle-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="particle-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       <p className="text-muted text-xs">
-        {veryEasy
-          ? 'Use it in a "Spawn particle" step of your rules, as a block’s particles, for an effect or a portal. It needs your mod on the client and the server.'
-          : `Use it with /particle ${element.id}, in a "Spawn particle" action, as a block's ambient particles, for an effect or a portal. It needs the mod jar on the client and the server.`}
+        Use it in a "Spawn particle" step of your rules, as a block’s particles, for an effect or a
+        portal. It needs your mod on the client and the server.
       </p>
+      <InMore fallbackKey="particle-command">
+        <p className="text-muted text-xs" data-testid="particle-command">
+          In chat: <code className="font-mono">/particle {element.id}</code>
+        </p>
+      </InMore>
       {pictures}
       {lifeAndSize}
       {movement}

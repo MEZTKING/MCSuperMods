@@ -1,9 +1,8 @@
 /**
  * Pickers shared by the games Studios and the Structure Studio's "Chests and containers"
  * (B555): a block position, a percentage, a thing (an item, block, mob, effect, function or
- * dimension: an id field with suggestions in Easy, a named button opening the ThingPicker in
- * Very easy) and a named id (a structure, loot table, advancement, dialog or world type: an id
- * field in Easy, a list of names in Very easy). Very easy never shows an id (ADR 0117 D3).
+ * dimension: a named button opening the ThingPicker in the main area) and a named id (a structure, loot table, advancement, dialog or world type: a
+ * list of names). The main area never shows an id (ADR 0117 D3); the ids are in More options.
  *
  * @packageDocumentation
  */
@@ -21,10 +20,11 @@ import {
   thingSections,
 } from '../../components/thing-picker/ThingPicker';
 import { buttonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { inputClass } from '../../forms';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
+import { usePlain } from '../plain';
 import { IdField, NumberField } from '../structures/pickers';
-import { useVeryEasy } from '../very-easy';
 import { chanceOfPercent, elementsOf, idWords, type Pos, percentOf, posOf } from './games-model';
 
 /** A block position as three whole numbers, committed together. */
@@ -97,8 +97,8 @@ function usePickerSources(suggest: (registry: string, prefix: string) => string[
 }
 
 /**
- * One thing: an id field with suggestions in Easy, a button with its name opening the
- * ThingPicker in Very easy. An empty value reads `emptyLabel`.
+ * One thing: a button with its name opening the ThingPicker, its id field with suggestions in
+ * the section's More options (ADR 0130). An empty value reads `emptyLabel`.
  */
 export function ThingField(props: {
   project: Project;
@@ -111,7 +111,7 @@ export function ThingField(props: {
   suggest(registry: string, prefix: string): string[];
   onChange(value: string | undefined): void;
 }) {
-  const veryEasy = useVeryEasy();
+  const plain = usePlain();
   const [open, setOpen] = useState(false);
   const { registries, pictures } = usePickerSources(props.suggest);
   const texturesFolder = props.target.folders.resource.textures;
@@ -122,18 +122,17 @@ export function ThingField(props: {
         : [],
     [open, props.project, registries, props.sort, texturesFolder],
   );
-  if (!veryEasy) {
-    return (
-      <IdField
-        label={props.label}
-        value={props.value}
-        registry={THING_REGISTRIES[props.sort]}
-        suggest={props.suggest}
-        testId={props.testId}
-        onCommit={(text) => props.onChange(text === '' ? undefined : text)}
-      />
-    );
-  }
+  const idField = (
+    <IdField
+      label={props.label}
+      value={props.value}
+      registry={THING_REGISTRIES[props.sort]}
+      suggest={props.suggest}
+      testId={props.testId}
+      onCommit={(text) => props.onChange(text === '' ? undefined : text)}
+    />
+  );
+  if (!plain) return idField;
   const words =
     props.value === ''
       ? (props.emptyLabel ?? 'Pick…')
@@ -144,11 +143,12 @@ export function ThingField(props: {
       <button
         type="button"
         className={`${buttonClass} self-start`}
-        data-testid={props.testId}
+        data-testid={`${props.testId}-plain`}
         onClick={() => setOpen(true)}
       >
         {words}
       </button>
+      <InMore fallbackKey={props.testId}>{idField}</InMore>
       {open && (
         <ThingPicker
           title={`Pick: ${props.label.toLowerCase()}`}
@@ -216,9 +216,9 @@ export function namedChoices(input: {
 }
 
 /**
- * A named id (a structure, loot table, advancement, dialog or world type): an id field with
- * suggestions in Easy; in Very easy a list of names (the project's own first, then the game's
- * that `vanilla` keeps), never the ids.
+ * A named id (a structure, loot table, advancement, dialog or world type): a list of names (the
+ * project's own first, then the game's that `vanilla` keeps), with the id field and its
+ * suggestions in the section's More options (ADR 0130).
  */
 export function NamedIdField(props: {
   project: Project;
@@ -232,20 +232,19 @@ export function NamedIdField(props: {
   vanilla?(id: string): boolean;
   onChange(value: string | undefined): void;
 }) {
-  const veryEasy = useVeryEasy();
+  const plain = usePlain();
   const id = useId();
-  if (!veryEasy) {
-    return (
-      <IdField
-        label={props.label}
-        value={props.value}
-        registry={props.registry}
-        suggest={props.suggest}
-        testId={props.testId}
-        onCommit={(text) => props.onChange(text === '' ? undefined : text)}
-      />
-    );
-  }
+  const idField = (
+    <IdField
+      label={props.label}
+      value={props.value}
+      registry={props.registry}
+      suggest={props.suggest}
+      testId={props.testId}
+      onCommit={(text) => props.onChange(text === '' ? undefined : text)}
+    />
+  );
+  if (!plain) return idField;
   const choices = namedChoices({
     project: props.project,
     kinds: props.kinds,
@@ -262,7 +261,7 @@ export function NamedIdField(props: {
       <select
         id={id}
         className={inputClass}
-        data-testid={props.testId}
+        data-testid={`${props.testId}-plain`}
         value={props.value}
         onChange={(event) =>
           props.onChange(event.target.value === '' ? undefined : event.target.value)
@@ -275,6 +274,7 @@ export function NamedIdField(props: {
           </option>
         ))}
       </select>
+      <InMore fallbackKey={props.testId}>{idField}</InMore>
     </div>
   );
 }

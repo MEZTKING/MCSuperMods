@@ -10,7 +10,7 @@
  *   by hand or by a wind charge, pressed by arrows, what presses a plate), every one left empty
  *   being the vanilla set type's it stands on.
  *
- * Easy picks a sound by id with suggestions; Very easy picks it by name in the ThingPicker, so no
+ * A sound is picked by name in the ThingPicker (its id with suggestions in More options), so no
  * id is shown. Every change is one undo step. Each sound has a Play button (ADR 0121 D2, B622),
  * at the block's own volume and pitch; an empty one plays nothing.
  *
@@ -30,10 +30,11 @@ import {
   thingSections,
 } from '../../components/thing-picker/ThingPicker';
 import { buttonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { type FormProblem, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
+import { usePlain } from '../plain';
 import { IdField, NumberField } from '../structures/pickers';
-import { useVeryEasy } from '../very-easy';
 import { Section } from '../worldgen/parts';
 import { blockTypeOfData } from './block-type-model';
 import { asObject, pointerOf } from './blocks-items-model';
@@ -80,7 +81,7 @@ export interface SoundsSectionProps {
   registries?: ThingRegistries | undefined;
 }
 
-/** One sound: an id field in Easy, a named chip opening the ThingPicker in Very easy. */
+/** One sound: a named chip opening the ThingPicker, its id in More options (ADR 0130). */
 function SoundField(props: {
   project: Project;
   label: string;
@@ -95,7 +96,7 @@ function SoundField(props: {
   sound?: { volume?: number; pitch?: number } | undefined;
   onChange(value: string | undefined): void;
 }) {
-  const veryEasy = useVeryEasy();
+  const plain = usePlain();
   const [open, setOpen] = useState(false);
   const sections = useMemo(
     () =>
@@ -109,19 +110,18 @@ function SoundField(props: {
         : [],
     [open, props.project, props.registries, props.texturesFolder],
   );
-  if (!veryEasy) {
-    return (
-      <IdField
-        label={`${props.label} (empty: ${props.emptyLabel})`}
-        value={props.value}
-        registry="sound_event"
-        suggest={props.suggest}
-        testId={props.testId}
-        sound={props.sound}
-        onCommit={(text) => props.onChange(text.trim() === '' ? undefined : text.trim())}
-      />
-    );
-  }
+  const idField = (
+    <IdField
+      label={`${props.label} (empty: ${props.emptyLabel})`}
+      value={props.value}
+      registry="sound_event"
+      suggest={props.suggest}
+      testId={props.testId}
+      sound={props.sound}
+      onCommit={(text) => props.onChange(text.trim() === '' ? undefined : text.trim())}
+    />
+  );
+  if (!plain) return idField;
   const words =
     props.value === '' ? props.emptyLabel : thingName(props.project, props.value, 'sound');
   return (
@@ -131,7 +131,7 @@ function SoundField(props: {
         <button
           type="button"
           className={buttonClass}
-          data-testid={props.testId}
+          data-testid={`${props.testId}-plain`}
           onClick={() => setOpen(true)}
         >
           {words}
@@ -155,6 +155,7 @@ function SoundField(props: {
           }}
         />
       )}
+      <InMore fallbackKey={props.testId}>{idField}</InMore>
     </div>
   );
 }

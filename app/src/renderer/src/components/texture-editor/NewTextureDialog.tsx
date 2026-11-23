@@ -14,7 +14,6 @@
 
 import { Suspense, useId, useState } from 'react';
 import { isSquareStyle } from '../../../../shared/ai-pictures';
-import { usePreferences } from '../../store/preferences';
 import { aiPicturesReady, useAiPictures } from '../ai-pictures/ai-pictures-host';
 import { MakeWithAiDialog } from '../ai-pictures/MakeWithAiDialog';
 import { defaultPrompt } from '../ai-pictures/prompt';
@@ -141,7 +140,6 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
   const minecraft = useMinecraftTextures();
   const ai = useAiPictures();
   const aiReady = ai !== null && aiPicturesReady(ai.status);
-  const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
   const nameId = useId();
   const kindIdField = useId();
   const kind = NEW_TEXTURE_KINDS.find((entry) => entry.id === kindId) ?? NEW_TEXTURE_KINDS[0];
@@ -288,7 +286,6 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
           <LazyDrawPictureDialog
             field={drawFieldForTexture(path, kind.width, kind.height)}
             target={`${props.namespace}:${path}`}
-            veryEasy={veryEasy}
             onPick={(picture) => {
               const bytes = picture.pngs[0];
               if (bytes !== undefined) props.onPaint({ kind, name, path, bytes });
@@ -318,7 +315,6 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
           defaultStyle={shape.style}
           size={shape.width}
           {...(isSquareStyle(shape.style) ? {} : { shape })}
-          veryEasy={veryEasy}
           onPick={(bytes) => props.onPaint({ kind, name, path, bytes })}
           onClose={() => setMaking(false)}
         />

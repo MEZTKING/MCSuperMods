@@ -6,8 +6,14 @@
 import type { Json } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import {
+  InMore,
+  MoreOptions,
+  type MoreSlot,
+  MoreSlotContext,
+} from '../../components/ui/MoreOptions';
 import {
   type ChangeOptions,
   type CompletionSource,
@@ -18,29 +24,101 @@ import {
   isWithin,
   SchemaForm,
 } from '../../forms';
-import { useSectionShown, useVeryEasy, useVeryEasyLayout } from '../very-easy';
-import { VeryEasyIdList } from '../very-easy-things';
+import { useCommonSection, usePlain } from '../plain';
+import { PlainIdList } from '../plain-things';
+import { sectionWhy } from '../section-why';
 import { moved } from './worldgen-model';
 
 /**
- * A titled section of a Studio. In Very easy mode a Studio with a section list shows only the
- * sections on it (ADR 0083 D3, `studios/very-easy.ts`).
+ * A titled section of a Studio (ADR 0130 D2, D3): its title, a one-line why in the subject's
+ * terms (`why`, else `sectionWhy` by test id), its common settings, and at the bottom a
+ * **More options** with the section's `more` and every part its fields send there with
+ * `InMore` (an id field's raw id, a rarer field). A section the Studio does not list among its
+ * common ones (`StudioEntry.common`) shows its title and why, and everything else in its More
+ * options.
  */
 export function Section({
   title,
   children,
   testId,
+  why,
+  more,
 }: {
   title: string;
   children: ReactNode;
   testId?: string;
+  /** The one-line why; `sectionWhy` has one for most test ids. */
+  why?: string;
+  /** What only the section's More options shows. */
+  more?: ReactNode;
 }) {
-  const shown = useSectionShown(testId);
-  if (!shown) return null;
+  const common = useCommonSection(testId);
+  const plain = usePlain();
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [waiting, setWaiting] = useState(0);
+  const register = useCallback(() => {
+    setWaiting((count) => count + 1);
+    return () => setWaiting((count) => count - 1);
+  }, []);
+  const moreSlot = useMemo<MoreSlot>(() => ({ slot, register }), [slot, register]);
+  const reason = why ?? (testId === undefined ? undefined : sectionWhy(testId));
+  const key = testId ?? title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const heading = (
+    <>
+      <h3 className="font-medium text-sm">{title}</h3>
+      {reason !== undefined && (
+        <p
+          className="text-muted text-xs"
+          data-testid={testId === undefined ? undefined : `${testId}-why`}
+        >
+          {reason}
+        </p>
+      )}
+    </>
+  );
+  // Inside a More options already (or a section that is all More options): everything in place.
+  if (!plain) {
+    return (
+      <section aria-label={title} data-testid={testId} className="flex flex-col gap-2">
+        {heading}
+        <MoreSlotContext.Provider value={null}>
+          <div className="flex flex-col gap-2 pl-2">
+            {children}
+            {more}
+          </div>
+        </MoreSlotContext.Provider>
+      </section>
+    );
+  }
+  if (!common) {
+    return (
+      <section aria-label={title} data-testid={testId} className="flex flex-col gap-2">
+        {heading}
+        <div className="flex flex-col gap-2 pl-2">
+          <MoreOptions storageKey={key}>
+            <MoreSlotContext.Provider value={null}>
+              {children}
+              {more}
+            </MoreSlotContext.Provider>
+          </MoreOptions>
+        </div>
+      </section>
+    );
+  }
   return (
     <section aria-label={title} data-testid={testId} className="flex flex-col gap-2">
-      <h3 className="font-medium text-sm">{title}</h3>
-      <div className="flex flex-col gap-2 pl-2">{children}</div>
+      {heading}
+      <div className="flex flex-col gap-2 pl-2">
+        <MoreSlotContext.Provider value={moreSlot}>{children}</MoreSlotContext.Provider>
+        {(more !== undefined || waiting > 0) && (
+          <MoreOptions storageKey={key}>
+            <MoreSlotContext.Provider value={null}>
+              {more}
+              <div ref={setSlot} className="flex flex-col gap-2" />
+            </MoreSlotContext.Provider>
+          </MoreOptions>
+        )}
+      </div>
     </section>
   );
 }
@@ -99,23 +177,32 @@ export interface IdListProps {
   problems: readonly FormProblem[];
 }
 
-/** An ordered list of registry ids: edit, move, remove, add. */
-export function IdList({
-  label,
-  ids,
-  registry,
-  suggest,
-  onChange,
-  pointer,
-  problems,
-}: IdListProps) {
+/**
+ * An ordered list of registry ids. Plain (ADR 0130 D2): the things by name, added through the
+ * ThingPicker, with the ids to edit, move, remove and add in the section's More options.
+ */
+export function IdList(props: IdListProps) {
+  const plain = usePlain();
+  if (!plain) return <RawIdList {...props} />;
+  return (
+    <>
+      <PlainIdList
+        label={props.label}
+        ids={props.ids}
+        registry={props.registry}
+        onChange={props.onChange}
+      />
+      <InMore fallbackKey={`ids-${props.pointer}`}>
+        <RawIdList {...props} />
+      </InMore>
+    </>
+  );
+}
+
+/** The ids of an {@link IdList}: edit, move, remove, add. */
+function RawIdList({ label, ids, registry, suggest, onChange, pointer, problems }: IdListProps) {
   const [draft, setDraft] = useState('');
-  const veryEasy = useVeryEasy();
   const suggestions = (text: string) => idSuggestions(suggest, registry, text);
-  // Very easy shows no ids (ADR 0083 D3): the things by name, added through the ThingPicker.
-  if (veryEasy) {
-    return <VeryEasyIdList label={label} ids={ids} registry={registry} onChange={onChange} />;
-  }
   const add = () => {
     const id = draft.trim();
     if (id === '') return;
@@ -202,31 +289,5 @@ export function IdList({
         </Button>
       </div>
     </div>
-  );
-}
-
-/** The "Advanced (all fields)" switch of a Studio. */
-export function AdvancedToggle({
-  checked,
-  onChange,
-  testId,
-}: {
-  checked: boolean;
-  onChange(next: boolean): void;
-  testId: string;
-}) {
-  // Very easy shows the beginner's sections only, so there are no extra fields to turn on.
-  const veryEasy = useVeryEasyLayout();
-  if (veryEasy) return null;
-  return (
-    <label className="flex items-center gap-1 self-end text-sm">
-      <input
-        type="checkbox"
-        data-testid={testId}
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-      />
-      Advanced (all fields)
-    </label>
   );
 }

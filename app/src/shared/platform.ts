@@ -1612,4 +1612,9 @@ export interface MsmBridge extends PlatformAdapter {
    * `window.msmNoMonaco` so headless smoke runs skip Monaco. Optional so test doubles may omit it.
    */
   readonly isSmoke?: boolean;
+  /**
+   * `true` when an end-to-end run asks every More options to start open
+   * (`MSM_E2E_MORE_OPTIONS=open`, ADR 0130); people always start with them closed.
+   */
+  readonly moreOptionsOpen?: boolean;
 }

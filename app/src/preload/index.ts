@@ -498,6 +498,7 @@ const bridge: MsmBridge = {
   },
   // The sandboxed preload sees the environment the main process was started with.
   isSmoke: process.env.MSM_SMOKE === '1',
+  moreOptionsOpen: process.env.MSM_E2E_MORE_OPTIONS === 'open',
 };
 
 contextBridge.exposeInMainWorld('msm', bridge);

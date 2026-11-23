@@ -26,13 +26,14 @@
  *   and the shared events editor, with `play_animation` over the chosen animation set.
  *
  * Choices (categories, placements, heightmaps, rules) come from the schema. Everything else
- * stays behind "Advanced (all fields)".
+ * is in "Every setting".
  */
 
 import type { Json } from '@msm/core';
 import { ArrowDown, ArrowUp, ExternalLink, Plus, X } from 'lucide-react';
 import { lazy, Suspense, useId, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { type FormProblem, inputClass, isWithin, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
 import {
@@ -54,8 +55,7 @@ import { projectHandlers } from '../scripting/script-model';
 import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
-import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
+import { IdList, Section } from '../worldgen/parts';
 import { BossBarSection } from './BossBarSection';
 import { BreedingSection } from './BreedingSection';
 import { BucketSection } from './BucketSection';
@@ -283,8 +283,6 @@ function GoalRow(props: {
 
 export function EntityStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange, target } = props;
-  const [advanced, setAdvanced] = useState(false);
-  const veryEasy = useVeryEasy();
   const [newGoalType, setNewGoalType] = useState<string>(GOALS[0]?.type ?? 'wander');
   // The objects last switched off in this session, per element, so switching them on again
   // restores their fields.
@@ -310,19 +308,6 @@ export function EntityStudio(props: StudioProps) {
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Entity Studio"
-        data-testid="entity-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="entity-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   const size = asObject(data.size);
   const identity = (
@@ -461,12 +446,16 @@ export function EntityStudio(props: StudioProps) {
         />
       </div>
       <p className="text-muted text-xs">
-        {veryEasy
-          ? 'Models come from File, Import Blockbench Model; the skin is one of your pictures.'
-          : 'Models and animation sets come from File, Import Blockbench Model, or New element. Textures are the project’s PNGs under textures/.'}{' '}
-        Animation names come from the chosen animation set. Sit plays while sitting, fly and swim
-        while moving in the air or water, shoot on each ranged shot.
+        Models come from File, Import Blockbench Model; the skin is one of your pictures. Animation
+        names come from the chosen animation set. Sit plays while sitting, fly and swim while moving
+        in the air or water, shoot on each ranged shot.
       </p>
+      <InMore>
+        <p className="text-muted text-xs">
+          Models and animation sets come from File, Import Blockbench Model, or Add. Textures are
+          the project’s PNGs under textures/.
+        </p>
+      </InMore>
       <div className="flex flex-wrap items-end gap-2">
         <ChoiceField
           label="Renderer"
@@ -789,11 +778,13 @@ export function EntityStudio(props: StudioProps) {
               problems={problems}
               onChange={(next) => set(['spawn', 'biomes'], next)}
             />
-            <p className="text-muted">
-              {veryEasy
-                ? 'The mob spawns in all of these biomes.'
-                : 'Biome ids such as minecraft:plains, or biome tags starting with # such as #minecraft:is_overworld; the entity spawns in all of them.'}
-            </p>
+            <p className="text-muted">The mob spawns in all of these biomes.</p>
+            <InMore>
+              <p className="text-muted text-xs">
+                Biome ids such as minecraft:plains, or biome tags starting with # such as
+                #minecraft:is_overworld; the entity spawns in all of them.
+              </p>
+            </InMore>
           </div>
           <div className="flex flex-wrap items-end gap-2">
             <NumberField
@@ -898,10 +889,12 @@ export function EntityStudio(props: StudioProps) {
         <p className="text-muted text-xs">The entity registers no spawn egg.</p>
       )}
       <p className="text-muted text-xs">
-        {veryEasy
-          ? 'The egg is listed in the Spawn Eggs tab unless another tab is chosen. Without a picture it has no look of its own; without a name it is called "<name> Spawn Egg".'
-          : `The egg is the item ${element.id}_spawn_egg, listed in the Spawn Eggs tab unless another tab is chosen. Without a texture it has no item model; without a name it is called "<display name> Spawn Egg".`}
+        The egg is listed in the Spawn Eggs tab unless another tab is chosen. Without a picture it
+        has no look of its own; without a name it is called "&lt;name&gt; Spawn Egg".
       </p>
+      <InMore>
+        <p className="text-muted text-xs">The egg is the item {element.id}_spawn_egg.</p>
+      </InMore>
       {at(['spawn_egg'])}
       {['creative_tab', 'texture', 'display_name'].map((key) => (
         <ProblemsAt key={key} problems={problems} pointer={pointerOf(['spawn_egg', key])} />
@@ -961,7 +954,6 @@ export function EntityStudio(props: StudioProps) {
 
   return (
     <section aria-label="Entity Studio" data-testid="entity-studio" className="flex flex-col gap-4">
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="entity-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {at(['components'])}
       {at([...MODEL_PATH])}

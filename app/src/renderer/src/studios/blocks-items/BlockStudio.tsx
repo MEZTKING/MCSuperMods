@@ -33,7 +33,7 @@
  *   inside).
  *
  * Choices (sound types, tools, tiers, rarities) come from the schema. Everything else stays
- * behind "Advanced (all fields)".
+ * in "Every setting".
  */
 
 import type { Json } from '@msm/core';
@@ -47,7 +47,7 @@ import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import { takesAmbientParticles } from './ambient-particles-model';
 import { BlockTypePreview } from './BlockTypePreview';
 import { BlockTypeSection } from './BlockTypeSection';
@@ -172,7 +172,6 @@ const DROPS_LABELS: Readonly<Record<Drops, string>> = {
 
 export function BlockStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
   // The block item object last unticked in this session, per element, so ticking "Has a block
   // item" again restores its stack size, rarity and creative tab.
   const [lastItem, setLastItem] = useState<{ id: string; item: Json } | null>(null);
@@ -199,15 +198,6 @@ export function BlockStudio(props: StudioProps) {
   const at = (path: readonly string[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section aria-label="Block Studio" data-testid="block-studio" className="flex flex-col gap-3">
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="block-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   const typeSection = (
     <BlockTypeSection
@@ -872,7 +862,6 @@ export function BlockStudio(props: StudioProps) {
 
   return (
     <section aria-label="Block Studio" data-testid="block-studio" className="flex flex-col gap-4">
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="block-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {typeSection}
       <PlantSection

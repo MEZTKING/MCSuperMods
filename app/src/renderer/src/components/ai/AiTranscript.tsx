@@ -4,86 +4,37 @@ import type { AiDisplayMessage } from '../../store/ai-store';
 import { Markdown } from '../Markdown';
 import { Button } from '../ui/Button';
 import type { AiStatusAction } from './ai-status';
-import {
-  type AiActionWords,
-  forbiddenIn,
-  noticeWords,
-  toolLine,
-  type UiMode,
-  wordsFor,
-} from './ai-words';
+import { type AiActionWords, forbiddenIn, noticeWords, toolLine, wordsFor } from './ai-words';
 
 type ToolMessage = Extract<AiDisplayMessage, { role: 'tool' }>;
-
-function pretty(value: unknown): string {
-  if (typeof value === 'string') {
-    try {
-      return JSON.stringify(JSON.parse(value), null, 2);
-    } catch {
-      return value;
-    }
-  }
-  return JSON.stringify(value, null, 2) ?? '';
-}
 
 /** The words of a tool entry's state after its line. */
 function toolStatus(status: ToolMessage['status']): string {
   return status === 'running' ? ' …' : status === 'error' ? ' (failed)' : '';
 }
 
-/**
- * A tool entry: in Advanced the line with its details (input and result), in Very easy and Easy
- * the plain line only, with nothing to open.
- */
-function ToolEntry({ message, mode }: { message: ToolMessage; mode: UiMode }) {
-  const line = toolLine(message, mode);
+/** A tool entry: its plain line only (ADR 0130 D5), with nothing to open. */
+function ToolEntry({ message }: { message: ToolMessage }) {
+  const line = toolLine(message);
   if (line === null) return null;
-  if (mode !== 'advanced') {
-    return (
-      <p className="flex items-center gap-1 text-xs text-muted" data-status={message.status}>
-        <Wrench size={12} aria-hidden />
-        <span>
-          {line}
-          {toolStatus(message.status)}
-        </span>
-      </p>
-    );
-  }
   return (
-    <details className="text-xs" data-status={message.status}>
-      <summary className="flex cursor-pointer items-center gap-1 text-muted">
-        <Wrench size={12} aria-hidden />
-        <span className="[&_p]:inline">
-          <Markdown source={`${line}${toolStatus(message.status)}`} />
-        </span>
-      </summary>
-      <div className="mt-1 flex flex-col gap-1 pl-4">
-        <span className="font-semibold">Input</span>
-        <pre className="max-h-48 overflow-auto rounded bg-black/10 p-1.5 font-mono whitespace-pre-wrap">
-          {pretty(message.input)}
-        </pre>
-        {message.result !== undefined && (
-          <>
-            <span className="font-semibold">Result</span>
-            <pre className="max-h-48 overflow-auto rounded bg-black/10 p-1.5 font-mono whitespace-pre-wrap">
-              {pretty(message.result)}
-            </pre>
-          </>
-        )}
-      </div>
-    </details>
+    <p className="flex items-center gap-1 text-xs text-muted" data-status={message.status}>
+      <Wrench size={12} aria-hidden />
+      <span>
+        {line}
+        {toolStatus(message.status)}
+      </span>
+    </p>
   );
 }
 
-/** The words of a context block sent with a message, outside Advanced (ADR 0125 D11). */
+/** The words of a context block sent with a message (ADR 0125 D11). */
 export const SENT_CONTEXT_WORDS = Object.freeze({
   /** The label of a block whose chip label is not known or is not plain. */
   unknown: 'Something from your mod went with this message.',
   /** Opens the block as it was sent. */
   show: 'See exactly what was sent',
   hide: 'Hide what was sent',
-  /** Advanced's summary, as before. */
-  advanced: 'Context sent with this message',
 });
 
 /** The chip labels of the context blocks the panel has sent, by block (the most kept). */
@@ -106,7 +57,7 @@ export function rememberContextLabel(block: string, label: string): void {
 
 /**
  * The plain label of a sent context block: the chip's label it was sent with when that holds no
- * id and none of Very easy's forbidden words, else {@link SENT_CONTEXT_WORDS}' `unknown`.
+ * id and none of the forbidden words, else {@link SENT_CONTEXT_WORDS}' `unknown`.
  */
 export function sentContextLabel(block: string): string {
   const label = sentLabels.get(block);
@@ -116,20 +67,11 @@ export function sentContextLabel(block: string): string {
 }
 
 /**
- * A context block sent with a user message: in Advanced the block behind "Context sent with this
- * message" as before; in Very easy and Easy the chip's plain label, and the exact block only
+ * A context block sent with a user message: the chip's plain label, and the exact block only
  * after **See exactly what was sent** (not in the page until then, so no id shows unasked).
  */
-function SentContext({ block, mode, testId }: { block: string; mode: UiMode; testId: string }) {
+function SentContext({ block, testId }: { block: string; testId: string }) {
   const [open, setOpen] = useState(false);
-  if (mode === 'advanced') {
-    return (
-      <details className="text-xs text-muted" data-testid={testId}>
-        <summary className="cursor-pointer">{SENT_CONTEXT_WORDS.advanced}</summary>
-        <pre className="mt-1 max-h-40 overflow-auto font-mono whitespace-pre-wrap">{block}</pre>
-      </details>
-    );
-  }
   return (
     <div className="flex flex-col gap-1 text-xs text-muted" data-testid={testId}>
       <span className="flex flex-wrap items-center gap-1.5">
@@ -167,14 +109,13 @@ function isFailure(kind: NoticeMessage['kind']): boolean {
 /**
  * The transcript (ADR 0125 D1, D13): user messages (with their context blocks), the helper's
  * answers through the safe Markdown renderer (re-parsed as it streams) with a closed "Thinking"
- * line where the mode shows it, tool lines by mode (Very easy and Easy hide most), plans where
- * they were proposed (drawn by `renderPlan`), and notices in the mode's words with their
+ * line where shown, plain tool lines (most are left out), plans where they were proposed (drawn
+ * by `renderPlan`), and notices in plain words with their
  * buttons. The list is an `aria-live` region; every entry carries `data-entry` so the panel can
  * keep the newest one in view.
  */
 export function AiTranscript(props: {
   messages: readonly AiDisplayMessage[];
-  mode: UiMode;
   /** Draws a plan entry (B686's plan, or its closed line). */
   renderPlan(message: PlanMessage): ReactNode;
   /**
@@ -184,8 +125,7 @@ export function AiTranscript(props: {
   noticeActions?(message: NoticeMessage, actions: readonly AiActionWords[]): AiActionWords[];
   onNoticeAction?(message: NoticeMessage, action: AiStatusAction): void;
 }) {
-  const { mode } = props;
-  const words = wordsFor(mode);
+  const words = wordsFor();
   return (
     <ol
       className="m-0 flex list-none flex-col gap-2 p-0"
@@ -208,12 +148,7 @@ export function AiTranscript(props: {
                 <User size={14} aria-label="You" className="mt-0.5 shrink-0" />
                 <div className="flex min-w-0 flex-col gap-1">
                   {message.contextBlocks.map((block, index) => (
-                    <SentContext
-                      key={index}
-                      block={block}
-                      mode={mode}
-                      testId={`${testId}-context-${index}`}
-                    />
+                    <SentContext key={index} block={block} testId={`${testId}-context-${index}`} />
                   ))}
                   {message.images !== undefined && (
                     <div className="flex flex-wrap gap-1" data-testid={`${testId}-pictures`}>
@@ -259,10 +194,10 @@ export function AiTranscript(props: {
             );
           }
           case 'tool': {
-            if (toolLine(message, mode) === null) return null;
+            if (toolLine(message) === null) return null;
             return (
               <li key={message.seq} data-testid={testId} data-role="tool" data-entry="">
-                <ToolEntry message={message} mode={mode} />
+                <ToolEntry message={message} />
               </li>
             );
           }
@@ -279,7 +214,7 @@ export function AiTranscript(props: {
               </li>
             );
           case 'notice': {
-            const said = noticeWords(message, mode);
+            const said = noticeWords(message);
             const actions = props.noticeActions?.(message, said.actions) ?? [];
             return (
               <li

@@ -9,13 +9,12 @@
  *   `target.worldgen.featureSteps`.
  * - Spawns: the target's natural mob spawns attribute, one list per mob category (categories
  *   from the schema's map key type), plus its spawn costs as a schema sub-form.
- * - Carvers as a schema sub-form; everything else behind "Advanced (all fields)".
+ * - Carvers as a schema sub-form; everything else in "Every setting".
  */
 
 import type { Json } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
 import { Plus, X } from 'lucide-react';
-import { useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { IdInput, idSuggestions, inputClass, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
@@ -24,7 +23,7 @@ import { defaultValue, flattenUnion, resolveNode, structShape } from '../../form
 import type { StudioProps } from '../types';
 import { ColourField } from './ColourField';
 import { MapLine } from './MapLine';
-import { AdvancedToggle, IdList, Section, SubForm } from './parts';
+import { IdList, Section, SubForm } from './parts';
 import {
   asObject,
   choicesOf,
@@ -137,7 +136,6 @@ function ChoiceSelect({
 
 export function BiomeStudio(props: StudioProps) {
   const { element, node, target, problems, completions, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
   const data = asObject(element.data);
 
   const pointerOf = (path: readonly string[]) =>
@@ -167,15 +165,6 @@ export function BiomeStudio(props: StudioProps) {
     const pointer = pointerOf(path);
     return problems.filter((problem) => problem.path === pointer);
   };
-
-  if (advanced) {
-    return (
-      <section aria-label="Biome Studio" data-testid="biome-studio" className="flex flex-col gap-3">
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="biome-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   // Climate.
   const climate = (
@@ -522,7 +511,6 @@ export function BiomeStudio(props: StudioProps) {
 
   return (
     <section aria-label="Biome Studio" data-testid="biome-studio" className="flex flex-col gap-4">
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="biome-advanced-toggle" />
       <MapLine
         project={props.project}
         target={target}

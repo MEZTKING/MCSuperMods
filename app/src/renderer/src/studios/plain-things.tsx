@@ -1,11 +1,11 @@
 /**
- * Very easy shows no ids (ADR 0083 D3, ADR 0125 D13): the plain words of an id and the field
- * that stands in for an id field there. `ElementForm` provides {@link VeryEasyThingsContext}
+ * Plain shows no ids (ADR 0083 D3, ADR 0125 D13, ADR 0130 D2): the plain words of an id and the field
+ * that stands in for an id field there. `ElementForm` provides {@link PlainThingsContext}
  * (the project and its registries) around every Studio; the shared `IdField` and `SelectField`
- * (`structures/pickers.tsx`) read it in Very easy, so a field holding an item, block, mob, sound,
+ * (`structures/pickers.tsx`) read it in the plain view, so a field holding an item, block, mob, sound,
  * particle, effect or dimension becomes a named chip that opens the ThingPicker, and any other id
- * (a model, a picture, a loot table, a biome) is shown as words only. Easy and Advanced keep
- * their id fields.
+ * (a model, a picture, a loot table, a biome) is shown as words only; the id field itself is in
+ * the section's More options.
  *
  * @packageDocumentation
  */
@@ -26,18 +26,18 @@ import {
 import { buttonClass, iconButtonClass } from '../components/ui/Button';
 import { inputClass } from '../forms';
 import { useBlocksItemsStudioHost } from './blocks-items/host';
-import { useVeryEasy } from './very-easy';
+import { usePlain } from './plain';
 
-/** What a Very easy id field reads beyond its own props. */
-export interface VeryEasyThings {
+/** What a plain id field reads beyond its own props. */
+export interface PlainThings {
   readonly project: Project;
   readonly registries: ThingRegistries;
   /** The target's texture folder under `assets/<namespace>/`. */
   readonly texturesFolder: string;
 }
 
-/** The project and its registries for the Very easy id fields; `null` outside `ElementForm`. */
-export const VeryEasyThingsContext = createContext<VeryEasyThings | null>(null);
+/** The project and its registries for the plain id fields; `null` outside `ElementForm`. */
+export const PlainThingsContext = createContext<PlainThings | null>(null);
 
 /** The ThingPicker sort of each registry a beginner can pick from by name and picture. */
 const REGISTRY_SORTS: Readonly<Record<string, ThingSort>> = Object.freeze({
@@ -51,7 +51,7 @@ const REGISTRY_SORTS: Readonly<Record<string, ThingSort>> = Object.freeze({
 });
 
 /**
- * Registries small enough to pick from a list of names in Very easy (a biome, a creative tab, a
+ * Registries small enough to pick from a list of names (a biome, a creative tab, a
  * potion, a damage type, an attribute, a trade set).
  */
 const LISTED_REGISTRIES: ReadonlySet<string> = new Set([
@@ -63,8 +63,8 @@ const LISTED_REGISTRIES: ReadonlySet<string> = new Set([
   'trade_set',
 ]);
 
-/** The ids of `registry` to pick by name in Very easy, or `[]` when it is not such a list. */
-function listedIds(things: VeryEasyThings | null, registry: string): readonly string[] {
+/** The ids of `registry` to pick by name, or `[]` when it is not such a list. */
+function listedIds(things: PlainThings | null, registry: string): readonly string[] {
   const name = registry.replace(/^minecraft:/, '');
   return things === null || !LISTED_REGISTRIES.has(name) ? [] : things.registries.ids(name);
 }
@@ -74,7 +74,7 @@ export function registrySort(registry: string): ThingSort | undefined {
   return REGISTRY_SORTS[registry.replace(/^minecraft:/, '')];
 }
 
-/** An id as Very easy must never show one (`name:path`, a tag's `#` included). */
+/** An id as the plain view must never show one (`name:path`, a tag's `#` included). */
 const ID_IN_TEXT = /#?\b[a-z0-9_.-]+:[a-z0-9_./-]*[a-z0-9_]/g;
 
 /**
@@ -113,7 +113,7 @@ const TECHNICAL =
   /\b[a-z0-9]+(?:_[a-z0-9]+)+\b|\b[a-z]+\.[a-z_]+\b|\b[a-z_]+\/[a-z_]|[{}$`]|\.png\b/;
 
 /**
- * A copied example's Notes as Very easy says them (ADR 0083 D3): each id in words, and only the
+ * A copied example's Notes as the plain view says them (ADR 0083 D3): each id in words, and only the
  * sentences that read as plain words after that (a sentence naming a field, a file or a code
  * word is left out); `null` when no sentence is left.
  */
@@ -154,16 +154,16 @@ export function plainWorldLabel(project: Project | null | undefined, label: stri
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** `text` as Very easy shows it: with its ids in words there, unchanged elsewhere. */
+/** `text` as the plain view shows it: its ids in words; unchanged inside More options. */
 export function usePlainWords(): (text: string) => string {
-  const veryEasy = useVeryEasy();
-  return veryEasy ? plainWordsIn : keep;
+  const plain = usePlain();
+  return plain ? plainWordsIn : keep;
 }
 
 const keep = (text: string): string => text;
 
 /**
- * An Easy label split for Very easy: "Planted on (a block or #tag; empty: #minecraft:dirt)"
+ * A label with ids split for the plain view: "Planted on (a block or #tag; empty: #minecraft:dirt)"
  * reads "Planted on", and what an empty field means ("Dirt (a group)") becomes its empty words.
  */
 export function plainLabel(label: string): { label: string; empty?: string } {
@@ -178,11 +178,11 @@ export function plainLabel(label: string): { label: string; empty?: string } {
 }
 
 /**
- * The Very easy stand-in for an id field: a chip with the thing's name that opens the
+ * The plain stand-in for an id field: a chip with the thing's name that opens the
  * ThingPicker when the registry has a sort, else the words alone. An empty value reads
  * `emptyLabel` ("None" when absent).
  */
-export function VeryEasyIdField(props: {
+export function PlainIdField(props: {
   label: string;
   value: string;
   registry: string;
@@ -191,7 +191,7 @@ export function VeryEasyIdField(props: {
   emptyLabel?: string | undefined;
   className?: string | undefined;
 }) {
-  const things = useContext(VeryEasyThingsContext);
+  const things = useContext(PlainThingsContext);
   const host = useBlocksItemsStudioHost();
   const [open, setOpen] = useState(false);
   const sort = registrySort(props.registry);
@@ -280,16 +280,16 @@ export function VeryEasyIdField(props: {
 }
 
 /**
- * The Very easy stand-in for a list of ids: each thing by name with Remove, and "Add" through
+ * The plain stand-in for a list of ids: each thing by name with Remove, and "Add" through
  * the ThingPicker when the registry has a sort (a list of biomes or tags is only shown).
  */
-export function VeryEasyIdList(props: {
+export function PlainIdList(props: {
   label: string;
   ids: readonly string[];
   registry: string;
   onChange(next: string[]): void;
 }) {
-  const things = useContext(VeryEasyThingsContext);
+  const things = useContext(PlainThingsContext);
   const host = useBlocksItemsStudioHost();
   const [open, setOpen] = useState(false);
   const sort = registrySort(props.registry);

@@ -3,8 +3,8 @@
  * **Can break** and **Can place on**, the vanilla components `minecraft:can_break` and
  * `minecraft:can_place_on` in the item's `msm:components`. A block is added with the
  * ThingPicker (block sort: the project's own blocks and Minecraft's, by name and picture), a
- * group of blocks (a block tag) from a list by name. Every mode shows names; Advanced adds the
- * id after each. Each change is one undo step. Its live view is the item's tooltip, drawn below
+ * group of blocks (a block tag) from a list by name. The main area shows names; inside More options
+ * the id follows each. Each change is one undo step. Its live view is the item's tooltip, drawn below
  * the lists with the lines the game adds ("Can break:", "Can be placed on:" and a line per block).
  *
  * @packageDocumentation
@@ -24,8 +24,8 @@ import {
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
 import { type FormProblem, inputClass } from '../../forms';
 import { Tooltip, type TooltipLine } from '../../liveviews/frame/Tooltip';
-import { usePreferences } from '../../store/preferences';
-import { plainIdWords } from '../very-easy-things';
+import { usePlain } from '../plain';
+import { plainIdWords } from '../plain-things';
 import { Section } from '../worldgen/parts';
 import {
   ADVENTURE_TOOLTIP_HEADERS,
@@ -115,8 +115,8 @@ function AdventureList(props: {
   texturesFolder: string;
   onChange(entries: readonly string[]): void;
 }) {
-  const mode = usePreferences((state) => state.mode);
-  const advanced = mode === 'advanced';
+  // Inside More options (Every setting) the ids show after the names (ADR 0130 D3).
+  const advanced = !usePlain();
   const [open, setOpen] = useState(false);
   const sections = useMemo(
     () =>
@@ -202,8 +202,8 @@ function AdventureList(props: {
         </div>
       ) : (
         <p role="status" className="text-warning text-xs" data-testid={`${props.testId}-kept`}>
-          This list holds more than blocks and groups of blocks, so it is kept as it is here.
-          {mode === 'very-easy' ? '' : ' Change it under Advanced (all fields).'}
+          This list holds more than blocks and groups of blocks, so it is kept as it is here. Change
+          it under “Every setting”, at the bottom.
         </p>
       )}
       {open && (

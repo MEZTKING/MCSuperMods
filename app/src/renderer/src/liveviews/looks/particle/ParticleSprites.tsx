@@ -11,7 +11,7 @@ import type { Json } from '@msm/plugin-api';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { inputClass } from '../../../forms';
 import { particleFrames, spriteAsset } from '../../../studios/blocks-items/particle-model';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import { factsOf } from '../../frame/live-data';
 import type { LiveViewProps } from '../../registry';
@@ -66,7 +66,7 @@ function SpriteBox(props: { picture: PictureState | undefined; size: number; lab
 /** The view; see the module comment. */
 export default function ParticleSprites(props: LiveViewProps) {
   const { project, element, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const lifeId = useId();
   const sprites = particleFrames(element.data as Json);
   const facts = factsOf(project);

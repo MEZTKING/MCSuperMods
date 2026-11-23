@@ -16,7 +16,7 @@ import type { Element, Json, Project } from '@msm/plugin-api';
 import { useState } from 'react';
 import { thingName, thingWords } from '../../../components/thing-picker/thing-sources';
 import type { VanillaAssetReader } from '../../../preview/model-chain';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import {
   type ItemPictureSource,
   resourceFoldersOf,
@@ -126,7 +126,7 @@ export interface CreativeTabPageProps {
 /** The page in its frame; see the module comment. */
 export function CreativeTabPage(props: CreativeTabPageProps) {
   const { project, element, vanillaAssets, readProject } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const [pageAsked, setPage] = useState(0);
   const folders = resourceFoldersOf(project);
   const textures = folders?.textures ?? 'textures';

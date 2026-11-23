@@ -17,7 +17,7 @@ import {
   splitSoundId,
 } from '../../../audio/resolve';
 import { SoundPlayButton } from '../../../audio/SoundPlayButton';
-import { useVeryEasy } from '../../../studios/very-easy';
+import { usePlain } from '../../../studios/plain';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import type { LiveViewProps } from '../../registry';
 
@@ -104,7 +104,7 @@ function EntryRow(props: {
 
 export default function SoundsView(props: LiveViewProps) {
   const { project, element, sounds } = props;
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const namespace = splitSoundId(element.id).namespace;
   const readProject = props.readProject;
   const readProjectAsset = useMemo<ReadProjectSound | undefined>(

@@ -10,10 +10,10 @@
 import type { Element, Json, Project } from '@msm/plugin-api';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { thingName } from '../../components/thing-picker/thing-sources';
+import { usePlain } from '../../components/ui/MoreOptions';
 import { pngDataUrl } from '../../preview/bundle-source';
 import { normaliseId, type ResourceFolders } from '../../preview/model-chain';
 import { hasWebGL } from '../../preview/webgl';
-import { usePreferences } from '../../store/preferences';
 import { resourceFoldersOf } from '../frame/item-picture';
 import { LiveViewFrame } from '../frame/LiveViewFrame';
 import type { LiveViewProps } from '../registry';
@@ -106,7 +106,8 @@ export default function PieceView(props: LiveViewProps) {
   const model = modelId === undefined ? undefined : findModel(project, modelId);
   const webgl = hasWebGL();
   // The texture's id is named only in Advanced: Very easy and Easy show no ids (ADR 0125).
-  const advanced = usePreferences((state) => state.mode) === 'advanced';
+  // Inside a More options the ids show (ADR 0130 D3); plain elsewhere.
+  const advanced = !usePlain();
   return (
     <LiveViewFrame
       title={isBlock ? 'Block' : 'Item'}

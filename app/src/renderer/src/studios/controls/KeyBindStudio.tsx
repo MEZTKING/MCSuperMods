@@ -7,7 +7,7 @@
  * Clashes with vanilla controls, the runtime's vehicle keys and other key binds are the
  * validators' warnings at `/default_key`, shown live under the key.
  *
- * Very easy (ADR 0083 D3) shows the name, the key and when it works. The Rules section (ADR
+ * The main area (ADR 0130 D3) shows the name, the key and when it works. The Rules section (ADR
  * 0082) shows the key's rules ("When the player presses, holds or releases the key", B424), as
  * it does whenever the rules catalogue has a trigger for key binds. Loaded lazily by
  * `./studios.tsx`.
@@ -28,7 +28,7 @@ import { firstTriggerFor } from '../rules/turn-into-rules';
 import { projectHandlers } from '../scripting/script-model';
 import { NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import {
   isVehicleCondition,
   KEY_WHEN_CHOICES,
@@ -57,7 +57,8 @@ export function KeyCapture(props: {
   if (facts === undefined) {
     return (
       <p className="text-muted text-xs" data-testid="key-bind-no-facts">
-        This game version has no key table, so type the key name under “Advanced (all fields)”.
+        This game version has no key table, so type the key name under “Every setting”, at the
+        bottom.
       </p>
     );
   }
@@ -131,24 +132,6 @@ export function KeyCapture(props: {
 /** The Key bind Studio. */
 export default function KeyBindStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
-  const [advanced, setAdvanced] = useState(false);
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Key bind Studio"
-        data-testid="key-bind-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="key-bind-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const data: Json = element.data;
   const object = asObject(data);
@@ -172,7 +155,6 @@ export default function KeyBindStudio(props: StudioProps) {
       data-testid="key-bind-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="key-bind-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       <Section title="Name and group" testId="key-bind-name">
         <p className="text-muted text-xs">

@@ -2,21 +2,21 @@
  * The games Studios (ADR 0117 D1; B555), discovered by `studios/studio-registry.ts`: the World
  * Setup, One Block, Team, Objective, Timer and Area Studios for the games kinds of
  * `@msm/plugin-games`, each loaded with `React.lazy` (a chunk of its own, so the main chunk does
- * not grow) and each with its Very easy section list (`studios/very-easy.ts`).
+ * not grow) and each with its list of common sections (`studios/plain.ts`).
  *
  * @packageDocumentation
  */
 
 import { type ComponentType, type LazyExoticComponent, lazy, Suspense } from 'react';
-import type { StudioEntry, StudioProps } from '../types';
 import {
-  AREA_VERY_EASY_SECTIONS,
-  OBJECTIVE_VERY_EASY_SECTIONS,
-  ONE_BLOCK_VERY_EASY_SECTIONS,
-  TEAM_VERY_EASY_SECTIONS,
-  TIMER_VERY_EASY_SECTIONS,
-  WORLD_SETUP_VERY_EASY_SECTIONS,
-} from '../very-easy';
+  AREA_COMMON_SECTIONS,
+  OBJECTIVE_COMMON_SECTIONS,
+  ONE_BLOCK_COMMON_SECTIONS,
+  TEAM_COMMON_SECTIONS,
+  TIMER_COMMON_SECTIONS,
+  WORLD_SETUP_COMMON_SECTIONS,
+} from '../plain';
+import type { StudioEntry, StudioProps } from '../types';
 
 /** A lazy Studio behind its loading line (`<testId>-studio-loading`). */
 function lazyStudio(
@@ -51,7 +51,7 @@ export const studios: StudioEntry[] = [
       'World Setup Studio',
       'world-setup',
     ),
-    veryEasy: WORLD_SETUP_VERY_EASY_SECTIONS,
+    common: WORLD_SETUP_COMMON_SECTIONS,
   },
   {
     id: 'msm.games.one-block',
@@ -61,7 +61,7 @@ export const studios: StudioEntry[] = [
       'One Block Studio',
       'one-block',
     ),
-    veryEasy: ONE_BLOCK_VERY_EASY_SECTIONS,
+    common: ONE_BLOCK_COMMON_SECTIONS,
   },
   {
     id: 'msm.games.team',
@@ -71,7 +71,7 @@ export const studios: StudioEntry[] = [
       'Team Studio',
       'team',
     ),
-    veryEasy: TEAM_VERY_EASY_SECTIONS,
+    common: TEAM_COMMON_SECTIONS,
   },
   {
     id: 'msm.games.objective',
@@ -81,7 +81,7 @@ export const studios: StudioEntry[] = [
       'Objective Studio',
       'objective',
     ),
-    veryEasy: OBJECTIVE_VERY_EASY_SECTIONS,
+    common: OBJECTIVE_COMMON_SECTIONS,
   },
   {
     id: 'msm.games.timer',
@@ -91,7 +91,7 @@ export const studios: StudioEntry[] = [
       'Timer Studio',
       'timer',
     ),
-    veryEasy: TIMER_VERY_EASY_SECTIONS,
+    common: TIMER_COMMON_SECTIONS,
   },
   {
     id: 'msm.games.area',
@@ -101,6 +101,6 @@ export const studios: StudioEntry[] = [
       'Area Studio',
       'area',
     ),
-    veryEasy: AREA_VERY_EASY_SECTIONS,
+    common: AREA_COMMON_SECTIONS,
   },
 ];

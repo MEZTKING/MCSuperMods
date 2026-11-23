@@ -4,7 +4,7 @@ import { ScrollArea } from 'radix-ui';
 import { useState } from 'react';
 import type { RecentProjectView } from '../../../shared/platform';
 import { exactFirst, matchesLocally, useLocalWords } from '../search/local-match';
-import type { UiMode } from '../store/preferences';
+import { displayNameOf } from '../session/plain-problems';
 import { useTextureDrop } from '../textures/texture-drop';
 import { type AssetActions, AssetList } from './AssetList';
 import { buttonClass, iconButtonClass } from './ui/Button';
@@ -23,20 +23,15 @@ export interface ElementSidebarProps {
   onOpenRecent?(root: string): void;
   /** Removes a recent project from the list by its root. */
   onRemoveRecent?(root: string): void;
-  /**
-   * Easy groups by Creator set and folds technical groups; Advanced shows kind ids (ADR 0047).
-   * Very easy hides the sidebar (ADR 0083 D4); given here, it lists as Easy does.
-   */
-  mode?: UiMode;
   /** Collapsed group keys (`<namespace>/<group>`). */
   collapsed?: ReadonlySet<string>;
   /** Collapses or expands a group. */
   onToggleGroup?(key: string): void;
-  /** Creator flow titles by flow id, for naming sets in Easy mode. */
+  /** Creator flow titles by flow id, for naming sets. */
   flowTitles?: Readonly<Record<string, string>>;
 }
 
-/** Friendly sidebar headings per kind (ADR 0047 D2); other kinds show their id. */
+/** Friendly sidebar headings per kind (ADR 0047 D2); other kinds show words of their id. */
 export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:item': 'Items',
   'msm:block': 'Blocks',
@@ -125,7 +120,7 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:area': 'Areas',
 };
 
-/** Groups Easy mode folds under "More": the files behind content (ADR 0047 D1). */
+/** Groups the sidebar folds under "More": the files behind content (ADR 0047 D1). */
 export const TECHNICAL_GROUPS: ReadonlySet<string> = new Set([
   'msm:mod',
   'minecraft:model',
@@ -137,9 +132,22 @@ export const TECHNICAL_GROUPS: ReadonlySet<string> = new Set([
   'minecraft:font',
 ]);
 
-/** The heading of a group: its friendly label, or the group key itself. */
+/**
+ * The heading of a group: its friendly label, or words of its kind id ("Loot tables"; ADR 0130
+ * D4: the list shows names and groups, never ids).
+ */
 export function groupLabel(group: string): string {
-  return GROUP_LABELS[group] ?? group;
+  const own = GROUP_LABELS[group];
+  if (own !== undefined) return own;
+  if (!group.includes(':')) return group;
+  const last =
+    group
+      .slice(group.lastIndexOf(':') + 1)
+      .split('/')
+      .pop() ?? group;
+  const words = last.replace(/_/g, ' ').trim();
+  const plural = words.endsWith('s') ? words : `${words}s`;
+  return plural.charAt(0).toUpperCase() + plural.slice(1);
 }
 
 /** What the sidebar's search reads of an element: its id, kind and friendly group. */
@@ -171,7 +179,7 @@ export function searchElements(elements: readonly Element[], query: string): Ele
   return exactFirst(elements, query, (element) => matchesExactly(element, query), searchTexts);
 }
 
-/** One Creator set in Easy mode: its key, label and elements. */
+/** One Creator set: its key, label and elements. */
 export interface CreatorSetGroup {
   setId: string;
   label: string;
@@ -309,11 +317,6 @@ export function groupByKind(namespace: Namespace): [kind: string, elements: Elem
     ]);
 }
 
-function pathOf(id: ResourceLocation): string {
-  const colon = id.indexOf(':');
-  return colon === -1 ? id : id.slice(colon + 1);
-}
-
 const headingClass = 'mt-3 mb-1 text-xs font-semibold uppercase tracking-wide text-muted';
 const emptyClass = 'px-1 py-0.5 text-muted';
 
@@ -335,9 +338,9 @@ function ElementRow(props: {
     >
       <button
         type="button"
-        aria-label={element.id}
+        aria-label={displayNameOf(element)}
         aria-current={props.selected ? 'true' : undefined}
-        title={element.id}
+        title={displayNameOf(element)}
         data-testid={`element-row-${element.id}`}
         className={
           'w-0 min-w-0 flex-1 truncate rounded border px-2 py-0.5 text-left cursor-pointer ' +
@@ -350,13 +353,13 @@ function ElementRow(props: {
         {props.tagRegistry !== undefined && (
           <span className="mr-1 text-muted text-xs">{props.tagRegistry}</span>
         )}
-        {pathOf(element.id)}
+        {displayNameOf(element)}
       </button>
       <button
         type="button"
         className={iconButtonClass}
-        aria-label={`Remove ${element.id}`}
-        title={`Remove ${element.id}`}
+        aria-label={`Remove ${displayNameOf(element)}`}
+        title={`Remove ${displayNameOf(element)}`}
         onClick={() => props.onRemove(element.id)}
       >
         <Trash2 size={14} aria-hidden />
@@ -428,13 +431,14 @@ function NamespaceSection(props: {
   onSelect(id: ResourceLocation): void;
   onRemove(id: ResourceLocation): void;
   assetActions: AssetActions;
-  mode: UiMode;
   query: string;
+  /** Whether the project has more than one namespace (then each is headed by its name). */
+  headed: boolean;
   collapsed: ReadonlySet<string>;
   onToggleGroup(key: string): void;
   flowTitles: Readonly<Record<string, string>>;
 }) {
-  const { namespace, mode } = props;
+  const { namespace } = props;
   // Re-reads the search once the plugins' word groups are loaded.
   useLocalWords();
   const visible = searchElements(namespace.elements, props.query);
@@ -466,17 +470,7 @@ function NamespaceSection(props: {
 
   let body: React.ReactNode;
   if (visible.length === 0) {
-    body = <p className={emptyClass}>{searching ? 'Nothing matches.' : 'No elements.'}</p>;
-  } else if (mode === 'advanced') {
-    body = groupByKind({ ...namespace, elements: visible }).map(([kind, elements]) =>
-      section(
-        kind,
-        groupLabel(kind),
-        elements,
-        GROUP_LABELS[kind] === undefined ? undefined : kind,
-        (element) => rowRegistry(kind, element.kind),
-      ),
-    );
+    body = <p className={emptyClass}>{searching ? 'Nothing matches.' : 'Nothing here yet.'}</p>;
   } else {
     const sets = creatorSets(visible, props.flowTitles);
     const inSets = new Set(sets.flatMap((set) => set.elements.map((element) => element.id)));
@@ -521,9 +515,9 @@ function NamespaceSection(props: {
 
   return (
     <section aria-label={`Namespace ${namespace.name}`} className="mb-3">
-      <h2 className="mt-2 mb-1 font-semibold">{namespace.name}</h2>
+      {props.headed && <h2 className="mt-2 mb-1 font-semibold">{namespace.name}</h2>}
       {body}
-      {(mode === 'advanced' || !searching) && (
+      {!searching && (
         <AssetList
           namespace={namespace.name}
           assets={namespace.assets}
@@ -609,7 +603,6 @@ export function ElementSidebar({
   recentProjects = [],
   onOpenRecent,
   onRemoveRecent,
-  mode = 'advanced',
   collapsed = NO_COLLAPSED,
   onToggleGroup = () => undefined,
   flowTitles = {},
@@ -653,7 +646,7 @@ export function ElementSidebar({
                 onSelect={onSelect}
                 onRemove={onRemove}
                 assetActions={assetActions}
-                mode={mode}
+                headed={project.namespaces.length > 1}
                 query={query}
                 collapsed={collapsed}
                 onToggleGroup={onToggleGroup}

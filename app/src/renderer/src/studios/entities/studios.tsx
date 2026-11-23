@@ -12,13 +12,13 @@
 import { PROFESSION_KIND } from '@msm/plugin-entities';
 import { lazy, Suspense } from 'react';
 import { ENTITY_KIND } from '../blocks-items/blocks-items-model';
-import type { StudioEntry, StudioProps } from '../types';
 import {
-  MOB_VERY_EASY_SECTIONS,
-  PROFESSION_VERY_EASY_SECTIONS,
+  MOB_COMMON_SECTIONS,
+  PROFESSION_COMMON_SECTIONS,
   RULES_SECTION_ID,
-  VILLAGER_TYPE_VERY_EASY_SECTIONS,
-} from '../very-easy';
+  VILLAGER_TYPE_COMMON_SECTIONS,
+} from '../plain';
+import type { StudioEntry, StudioProps } from '../types';
 import { EntityStudio } from './EntityStudio';
 
 /** The Vehicle Studio (B419, ADR 0091 D1), a chunk of its own. */
@@ -78,8 +78,8 @@ function LazyVillagerTypeStudio(props: StudioProps) {
 /** The vehicle kind (`@msm/plugin-entities`). */
 const VEHICLE_KIND = 'msm:vehicle';
 
-/** The Vehicle Studio's sections in Very easy: the preview, the short form and Rules. */
-export const VEHICLE_VERY_EASY_SECTIONS: readonly string[] = [
+/** The Vehicle Studio's main area: the preview, the short form and Rules. */
+export const VEHICLE_COMMON_SECTIONS: readonly string[] = [
   RULES_SECTION_ID,
   'vehicle-preview',
   'vehicle-basics',
@@ -90,26 +90,26 @@ export const studios: StudioEntry[] = [
     id: 'msm.entities.entity',
     kindId: ENTITY_KIND,
     component: EntityStudio,
-    veryEasy: MOB_VERY_EASY_SECTIONS,
+    common: MOB_COMMON_SECTIONS,
   },
   {
     id: 'msm.entities.vehicle',
     kindId: VEHICLE_KIND,
     component: LazyVehicleStudio,
-    veryEasy: VEHICLE_VERY_EASY_SECTIONS,
+    common: VEHICLE_COMMON_SECTIONS,
   },
-  // The Profession Studio (ADR 0098 D2, ADR 0101 D1; its Very easy list, ADR 0112 D1).
+  // The Profession Studio (ADR 0098 D2, ADR 0101 D1; its list of common sections, ADR 0112 D1).
   {
     id: 'msm.entities.profession',
     kindId: PROFESSION_KIND,
     component: LazyProfessionStudio,
-    veryEasy: PROFESSION_VERY_EASY_SECTIONS,
+    common: PROFESSION_COMMON_SECTIONS,
   },
   // The Villager look Studio (ADR 0107 D5, ADR 0112 D1; B538).
   {
     id: 'msm.entities.villager-type',
     kindId: 'msm:villager_type',
     component: LazyVillagerTypeStudio,
-    veryEasy: VILLAGER_TYPE_VERY_EASY_SECTIONS,
+    common: VILLAGER_TYPE_COMMON_SECTIONS,
   },
 ];

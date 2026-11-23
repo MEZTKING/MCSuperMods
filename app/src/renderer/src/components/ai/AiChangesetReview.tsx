@@ -3,23 +3,23 @@ import { targetById } from '@msm/targets';
 import { TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { CHANGE_OPS, type ChangeItem, type ChangeOp } from '../../changeset/changeset';
-import { usePreferences } from '../../store/preferences';
 import { useUiStore } from '../../store/ui-store';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Button } from '../ui/Button';
+import { MoreOptions } from '../ui/MoreOptions';
 import { AiProposalCards } from './AiProposalCards';
 import { AiSeeIt } from './AiSeeIt';
-import { reviewHeading, type UiMode, wordsFor } from './ai-words';
+import { reviewHeading, wordsFor } from './ai-words';
 import { lineDiff } from './line-diff';
 import { CARD_WORDS, changesSomething, proposalThings, reviewCounts } from './proposal-things';
 
-/** The group headings of Advanced's file list, by operation. */
+/** The group headings of the review's file list (its More options), by operation. */
 export const CHANGE_OP_LABELS: Readonly<Record<ChangeOp, string>> = {
   create: 'New elements',
   update: 'Changed elements',
   delete: 'Deleted elements',
   rename: 'Renamed elements',
-  asset: wordsFor('advanced').review.pictures,
+  asset: 'Textures',
 };
 
 function json(value: unknown): string {
@@ -126,7 +126,7 @@ function ChangeRow(props: { item: ChangeItem; onToggle(accepted: boolean): void 
       )}
       <details className="pl-5 text-xs" data-testid={`${testId}-diff`}>
         <summary className="cursor-pointer text-muted">
-          {item.op === 'asset' ? 'Preview' : wordsFor('advanced').review.beforeAfter}
+          {item.op === 'asset' ? 'Preview' : 'Before and after'}
         </summary>
         {item.op === 'asset' && item.asset !== undefined ? (
           <img
@@ -146,21 +146,18 @@ function ChangeRow(props: { item: ChangeItem; onToggle(accepted: boolean): void 
  * The pending changeset (ADR 0041 D5, ADR 0125 D3): what the helper would make, seen before
  * anything is added. The heading says how many things are ready; the **See it** pane (B615,
  * {@link AiSeeIt}) comes first, drawing the open project as it would be with the kept changes;
- * then one card per thing ({@link AiProposalCards}) with its picture, name and **Keep**. Very easy
- * shows nothing else; Easy folds each thing's files under **Files behind this**; Advanced adds
- * today's file list (by operation, each with its kind and id, the diff, the raw problems and
- * conflict notes).
+ * then one card per thing ({@link AiProposalCards}) with its picture, name and **Keep**. Its
+ * **More options** (ADR 0130 D3) holds the file list (by operation, each with its kind and id,
+ * the diff, the raw problems and conflict notes).
  *
  * **Add to my mod** (**Make these changes** when something already in the mod is changed or
- * taken out; **Apply** in Advanced) is enabled when a kept item has no conflict and the helper
- * has finished; **Throw away** (**Discard**) asks first.
+ * taken out) is enabled when a kept item has no conflict and the helper has finished; **Throw
+ * away** asks first.
  */
 export function AiChangesetReview(props: {
   items: readonly ChangeItem[];
   /** The project the changes apply to; default: the open project. */
   project?: Project | null;
-  /** The view mode; default: the preference. */
-  mode?: UiMode;
   running: boolean;
   applying: boolean;
   /**
@@ -174,9 +171,7 @@ export function AiChangesetReview(props: {
 }) {
   const [confirming, setConfirming] = useState(false);
   const { items } = props;
-  const preferred = usePreferences((state) => state.mode);
-  const mode = props.mode ?? preferred;
-  const words = wordsFor(mode).review;
+  const words = wordsFor().review;
   const open = useUiStore((state) => state.snapshot?.project ?? null);
   const project = props.project === undefined ? open : props.project;
   const targetId = project?.targets[0];
@@ -187,25 +182,21 @@ export function AiChangesetReview(props: {
     [items, folders],
   );
   const counts = reviewCounts(things, items);
-  const advanced = mode === 'advanced';
   const doIt = changesSomething(items) ? words.makeChanges : words.add;
   const thingCount = things.filter((thing) => !thing.other).length;
   return (
     <section
       className="flex flex-col gap-2 rounded border border-border p-2 text-sm"
-      aria-label={advanced ? 'Proposed changes' : 'Ready to add'}
+      aria-label="Ready to add"
       data-testid="ai-changeset"
-      data-mode={mode}
     >
       <h3 className="font-semibold" data-testid="ai-review-heading">
-        {reviewHeading(counts, mode)}
+        {reviewHeading(counts)}
       </h3>
-      {project !== null && (
-        <AiSeeIt project={project} items={items} running={props.running} mode={mode} />
-      )}
-      <AiProposalCards things={things} mode={mode} onToggle={props.onToggle} />
-      {advanced &&
-        CHANGE_OPS.map((op) => {
+      {project !== null && <AiSeeIt project={project} items={items} running={props.running} />}
+      <AiProposalCards things={things} onToggle={props.onToggle} />
+      <MoreOptions storageKey="ai-review-files">
+        {CHANGE_OPS.map((op) => {
           const group = items.filter((item) => item.op === op);
           if (group.length === 0) return null;
           return (
@@ -225,6 +216,7 @@ export function AiChangesetReview(props: {
             </div>
           );
         })}
+      </MoreOptions>
       <div className="flex gap-1.5">
         <Button
           data-testid="ai-apply"
@@ -244,12 +236,8 @@ export function AiChangesetReview(props: {
       </div>
       {confirming && (
         <ConfirmDialog
-          title={advanced ? 'Discard proposed changes' : CARD_WORDS.discardTitle}
-          message={
-            advanced
-              ? `Discard all ${items.length} proposed change${items.length === 1 ? '' : 's'}? Nothing has been applied to the project.`
-              : CARD_WORDS.discardMessage(thingCount)
-          }
+          title={CARD_WORDS.discardTitle}
+          message={CARD_WORDS.discardMessage(thingCount)}
           confirmLabel={words.throwAway}
           onCancel={() => setConfirming(false)}
           onConfirm={() => {

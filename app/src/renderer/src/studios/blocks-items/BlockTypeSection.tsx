@@ -17,7 +17,7 @@
  * B516 (ADR 0103, ADR 0105 D2, ADR 0112 D1): the growing plants and the flower pot join the
  * "Plants" group; the set type picker also edits an own set type's `base` (its own sounds and
  * rules are in the Sounds section); the companions of the new types are said in words, and in
- * Very easy without their ids.
+ * the main area without their ids.
  *
  * @packageDocumentation
  */
@@ -27,10 +27,10 @@ import type { Target } from '@msm/plugin-api';
 import { WOOD_SOUND_TYPES, WOODEN_SET_TYPES } from '@msm/plugin-blocks-items';
 import type { SchemaNode } from '@msm/schemas';
 import { useId } from 'react';
+import { InMore } from '../../components/ui/MoreOptions';
 import { type FormProblem, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField } from '../structures/pickers';
-import { useVeryEasy } from '../very-easy';
 import { Section } from '../worldgen/parts';
 import {
   appearanceTexture,
@@ -202,7 +202,6 @@ export function BlockTypeSection(props: BlockTypeSectionProps) {
     label: group.label,
     choices: group.types,
   }));
-  const veryEasy = useVeryEasy();
   // An own set type (ADR 0105 D2) stands on its `base`, which this picker shows and changes.
   const setType = setTypeBase(object.set_type);
   const ownSetType = isOwnSetType(object.set_type);
@@ -413,17 +412,14 @@ export function BlockTypeSection(props: BlockTypeSectionProps) {
         <div className="flex flex-col gap-0.5 text-xs" data-testid="block-companion">
           {companions.map((companion) => (
             <p key={companion.id} data-testid="block-companion-row">
-              <span className="text-muted">Also makes:</span>{' '}
-              {veryEasy ? (
-                <span>{companion.words}</span>
-              ) : (
-                <>
-                  <span className="font-mono">{companion.id}</span>{' '}
-                  <span className="text-muted">({companion.words})</span>
-                </>
-              )}
+              <span className="text-muted">Also makes:</span> <span>{companion.words}</span>
             </p>
           ))}
+          <InMore>
+            <p className="font-mono text-muted" data-testid="block-companion-ids">
+              {companions.map((companion) => companion.id).join(', ')}
+            </p>
+          </InMore>
           <p className="text-muted">
             {type === 'flower_pot'
               ? 'They are part of this pot: none has an item of its own, and breaking one drops the pot and the plant.'

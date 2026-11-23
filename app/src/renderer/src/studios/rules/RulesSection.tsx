@@ -262,7 +262,7 @@ export function RulesSection(props: RulesSectionProps) {
     const choice = bookForSubject(project, element.id);
     const saved = drafts.get(choice.id) ?? choice.data;
     const book = saved ?? structuredClone(NEW_BOOK_DATA);
-    const trigger = firstTriggerFor(element.kind, element.data, { veryEasy: mode.veryEasy });
+    const trigger = firstTriggerFor(element.kind, element.data, { veryEasy: true });
     const rule = newRule(book, {
       ...(trigger === undefined ? {} : { trigger: trigger.id }),
       subject: element.id,

@@ -6,7 +6,6 @@
  */
 
 import type { Json } from '@msm/core';
-import { useState } from 'react';
 import { childPointer, parsePointer, valueAt } from '../../forms/pointer';
 import type { StudioProps } from '../types';
 import {
@@ -19,12 +18,10 @@ import {
   TimeSection,
 } from './dimension-type-sections';
 import { MapLine } from './MapLine';
-import { AdvancedToggle } from './parts';
 import { asObject, writeAt } from './worldgen-model';
 
 export default function DimensionTypeStudio(props: StudioProps) {
   const { element, node, target, problems, completions, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
 
   const pointerOf = (path: readonly string[]) =>
     path.reduce<string>((pointer, key) => childPointer(pointer, key), '');
@@ -44,23 +41,6 @@ export default function DimensionTypeStudio(props: StudioProps) {
     const edit = writeAt(element.data, path, value);
     onChange(edit.pointer, edit.value, options);
   };
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Dimension Type Studio"
-        data-testid="dimension-type-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="dimension-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const sections: DimensionSectionProps = {
     data: asObject(element.data),
@@ -84,11 +64,6 @@ export default function DimensionTypeStudio(props: StudioProps) {
       data-testid="dimension-type-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle
-        checked={advanced}
-        onChange={setAdvanced}
-        testId="dimension-advanced-toggle"
-      />
       <p className="text-muted text-xs">
         A dimension type holds a dimension's sky, light, time and rules. A dimension uses it through
         its type; open or reload a world to see a change.

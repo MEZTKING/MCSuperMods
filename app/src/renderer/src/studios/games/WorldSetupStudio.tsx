@@ -5,7 +5,7 @@
  * - **The world**: "Empty sky", "Floating islands", "Flat" (its layers), "As normal" or "My own
  *   world type"; the sky biome; the Nether and the End as normal or empty.
  * - **Start island**: the structure the game starts on, where its corner goes, "Where players
- *   start" on it (picked on its footprint seen from above) and, outside Very easy, "Place it
+ *   start" on it (picked on its footprint seen from above) and, in More options, "Place it
  *   while the world generates" with its warning (the game turns the piece at random about x 0,
  *   z 0 and ignores the corner's x and z; nothing is placed with "Generate structures" off).
  * - **Players**: "Start as" (the game mode), the difficulty, how far from the start they appear.
@@ -27,6 +27,7 @@ import { lowerWorldSetup } from '@msm/plugin-games';
 import { Plus, X } from 'lucide-react';
 import { lazy, Suspense, useCallback, useId, useMemo, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { bundlePreviewProject } from '../../preview/bundle-source';
@@ -36,7 +37,6 @@ import { CheckField, TextField } from '../blocks-items/parts';
 import { ChoiceField } from '../entities/MobKindSection';
 import { NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
 import { Section } from '../worldgen/parts';
 import {
   ADVANCEMENT_KIND,
@@ -216,7 +216,6 @@ function StartPicture(props: { project: Project; data: Json; onSpawn(pos: Pos): 
 
 function StartSection(props: { studio: StudioProps; set: SetPath }) {
   const { studio, set } = props;
-  const veryEasy = useVeryEasy();
   const data = asObject(studio.element.data);
   const start = data.start === undefined ? null : objectOf(data.start);
   const type = textOf(objectOf(data.world).type);
@@ -262,7 +261,7 @@ function StartSection(props: { studio: StudioProps; set: SetPath }) {
             data={studio.element.data}
             onSpawn={(pos) => set(['start', 'spawn'], pos)}
           />
-          {!veryEasy && (
+          <InMore>
             <CheckField
               label="Place it while the world generates"
               checked={start.when === 'world_generation'}
@@ -271,7 +270,7 @@ function StartSection(props: { studio: StudioProps; set: SetPath }) {
                 set(['start', 'when'], checked ? 'world_generation' : undefined)
               }
             />
-          )}
+          </InMore>
           {start.when === 'world_generation' && (
             <p className="text-warning text-xs" data-testid="world-setup-start-warning">
               {WORLD_GENERATION_WARNING}
@@ -571,7 +570,6 @@ const KIT_LABELS: Readonly<Record<string, string>> = Object.freeze({
 
 function NewPlayerSection(props: { studio: StudioProps; set: SetPath }) {
   const { studio, set } = props;
-  const veryEasy = useVeryEasy();
   const newPlayer = objectOf(asObject(studio.element.data).new_player);
   const kit = kitChoice(newPlayer);
   const items = listOf(newPlayer.items);
@@ -631,7 +629,7 @@ function NewPlayerSection(props: { studio: StudioProps; set: SetPath }) {
                     testId={`world-setup-kit-${index}-count`}
                     onCommit={(value) => change({ count: Math.min(99, Math.max(1, value ?? 1)) })}
                   />
-                  {!veryEasy && (
+                  <InMore>
                     <TextField
                       label="Slot (empty: the first free one)"
                       value={item.slot}
@@ -639,7 +637,7 @@ function NewPlayerSection(props: { studio: StudioProps; set: SetPath }) {
                       placeholder="hotbar.0"
                       onCommit={(value) => change({ slot: value })}
                     />
-                  )}
+                  </InMore>
                   <button
                     type="button"
                     aria-label={`Remove item ${index + 1}`}

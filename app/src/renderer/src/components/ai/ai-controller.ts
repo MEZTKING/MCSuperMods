@@ -62,7 +62,6 @@ import {
   typedStepDecision,
   useAiStore,
 } from '../../store/ai-store';
-import { usePreferences } from '../../store/preferences';
 import { useUiStore } from '../../store/ui-store';
 import type { AiPicture } from './ai-pictures';
 import { appliedStepOf, followSteps, type StackView } from './ai-status';
@@ -72,7 +71,6 @@ import {
   applyResultText,
   DISCARDED_TEXT,
   modelChangeWords,
-  type UiMode,
 } from './ai-words';
 
 /** A context block waiting in the input area, shown as a chip with its text quoted. */
@@ -147,7 +145,7 @@ export function shortModelLabel(model: AiModelId): string {
 
 /** The notice after a model change while a conversation exists (today's words). */
 export function modelChangeNotice(model: AiModelId): string {
-  return modelChangeWords(shortModelLabel(model), 'advanced');
+  return modelChangeWords(shortModelLabel(model));
 }
 
 /** The notice after Apply (today's words; the words per mode are `appliedWords`). */
@@ -323,11 +321,10 @@ export class AiController {
   /**
    * Explain (the Problems tab) and Ask the helper (Things to fix): opens the panel with the
    * problem as a context block (its code, message, element id and path, and the element's kind
-   * and data) and a default question, and sends nothing. The chip is labelled for the view mode
-   * (`problemChipLabel`: plain words in Very easy and Easy, the code and id in Advanced; ADR 0125
-   * D11); `mode` defaults to the preference.
+   * and data) and a default question, and sends nothing. The chip is labelled in plain words
+   * (`problemChipLabel`; ADR 0125 D11).
    */
-  explainProblem(problem: Problem, mode: UiMode = usePreferences.getState().mode): void {
+  explainProblem(problem: Problem): void {
     const project = this.#session.snapshot.project;
     const element =
       problem.elementId === undefined || project === null
@@ -335,7 +332,7 @@ export class AiController {
         : findElement(project, problem.elementId);
     this.#prefill(
       {
-        label: problemChipLabel(problem, project, mode),
+        label: problemChipLabel(problem, project),
         block: problemContextBlock(problem, element),
       },
       EXPLAIN_PROBLEM_TEXT,
@@ -465,7 +462,6 @@ export class AiController {
     this.#runs.set(runId, { root, abort: new AbortController(), execute });
     const projectBlock = projectContextBlock(
       projectContextOf(this.#session, started.changeset, {
-        view: usePreferences.getState().mode,
         openId: useUiStore.getState().selectedId,
       }),
     );
@@ -626,9 +622,7 @@ export class AiController {
     } catch (error) {
       useAiStore
         .getState()
-        .update(root, (current) =>
-          addNotice(current, 'error', applyFailedWords(messageOf(error), 'advanced')),
-        );
+        .update(root, (current) => addNotice(current, 'error', applyFailedWords(messageOf(error))));
       return null;
     } finally {
       useAiPanelStore.setState({ applying: false });

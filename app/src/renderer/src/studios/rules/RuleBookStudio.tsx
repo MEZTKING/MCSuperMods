@@ -12,6 +12,7 @@ import { Plus, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ThingPictures } from '../../components/thing-picker/ThingPicker';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { MoreOptions } from '../../components/ui/MoreOptions';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
@@ -197,8 +198,10 @@ export function RuleBookStudio(props: StudioProps) {
           <Plus size={14} aria-hidden /> Add a rule
         </Button>
         <Counters book={book} onChange={change} />
-        {mode.advanced && <WhatThisBecomes project={project} bookId={element.id} target={target} />}
-        {mode.advanced && <CopyAsScript {...props} />}
+        <MoreOptions storageKey="rule-book-more">
+          <WhatThisBecomes project={project} bookId={element.id} target={target} />
+          <CopyAsScript {...props} />
+        </MoreOptions>
       </div>
     </RulesEnvContext.Provider>
   );

@@ -337,14 +337,11 @@ export function doneNotice(
 ): string | undefined {
   if (reason === 'end_turn') return undefined;
   if (reason === 'limit' && message !== undefined) return message;
-  return doneSentence(
-    {
-      reason,
-      ...(errorClass === undefined ? {} : { errorClass }),
-      ...(stopDetails === undefined ? {} : { explanation: stopDetails.explanation }),
-    },
-    'easy',
-  );
+  return doneSentence({
+    reason,
+    ...(errorClass === undefined ? {} : { errorClass }),
+    ...(stopDetails === undefined ? {} : { explanation: stopDetails.explanation }),
+  });
 }
 
 /** The newest plan of the transcript (waiting, decided or ended), or `null` before the first. */

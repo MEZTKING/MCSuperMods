@@ -14,15 +14,16 @@
  * - "Make a potion" (ADR 0063 D9): adds an `msm:potion` of this effect in one undo step and
  *   opens it; the potions that already use the effect are listed.
  *
- * Choices come from the schema; everything else stays behind "Advanced (all fields)".
+ * Choices come from the schema; everything else is in "Every setting".
  *
  * @packageDocumentation
  */
 
 import type { Json } from '@msm/core';
 import { FlaskConical, Paintbrush, Plus, X } from 'lucide-react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
@@ -31,9 +32,8 @@ import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
 import { ColourField } from '../worldgen/ColourField';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import {
   asObject,
   choicesAt,
@@ -87,9 +87,6 @@ const TRIGGERS = [
 export function EffectStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
   const host = useBlocksItemsStudioHost();
-  const [advanced, setAdvanced] = useState(false);
-  // Very easy names the icon by its picture, not its id (ADR 0083 D3).
-  const veryEasy = useVeryEasy();
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const events = eventNames(element.data);
@@ -109,19 +106,6 @@ export function EffectStudio(props: StudioProps) {
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Effect Studio"
-        data-testid="effect-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="effect-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   const colourHex = typeof data.color === 'number' ? data.color : undefined;
   const swatch =
@@ -186,11 +170,11 @@ export function EffectStudio(props: StudioProps) {
     <Section title="Icon" testId="effect-icon">
       <div className="flex items-center gap-2">
         <IconImage url={thumbnail} colour={swatch} testId="effect-icon-image" />
-        {!veryEasy && (
+        <InMore>
           <code className="font-mono text-xs">
             {icon.namespace}:{icon.path}
           </code>
-        )}
+        </InMore>
         <Button
           className="text-xs"
           data-testid="effect-paint-icon"
@@ -209,9 +193,7 @@ export function EffectStudio(props: StudioProps) {
       </div>
       {!iconPresent && (
         <p role="status" className="text-warning text-xs" data-testid="effect-icon-missing">
-          {veryEasy
-            ? `No icon yet: the game shows a blank square. Paint one (${EFFECT_ICON_SIZE} × ${EFFECT_ICON_SIZE}) with "Paint icon".`
-            : `No icon yet: the game shows a blank square. Paint ${icon.path} (${EFFECT_ICON_SIZE} × ${EFFECT_ICON_SIZE}) with "Paint icon", or with "New texture…" and the kind "Effect icon" in the sidebar.`}
+          {`No icon yet: the game shows a blank square. Paint one (${EFFECT_ICON_SIZE} × ${EFFECT_ICON_SIZE}) with "Paint icon".`}
         </p>
       )}
     </Section>
@@ -437,7 +419,6 @@ export function EffectStudio(props: StudioProps) {
 
   return (
     <section aria-label="Effect Studio" data-testid="effect-studio" className="flex flex-col gap-4">
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="effect-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {preview}
       {general}

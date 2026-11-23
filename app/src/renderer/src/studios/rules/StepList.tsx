@@ -3,7 +3,7 @@
  * moved with buttons or Alt+Up and Alt+Down, duplicated or removed; "If", "Repeat" and "For each
  * player" have cards of their own holding their steps. The Do menu offers only what the trigger
  * has (its actors and whether it can be stopped), no logic below the nesting cap, and nothing past
- * the 50-step cap; Very easy leaves out the advanced-only steps.
+ * the 50-step cap.
  *
  * @packageDocumentation
  */
@@ -63,7 +63,7 @@ export function StepList(props: StepListProps) {
   const listPointer = `${props.ownerPointer}/${props.field}`;
   const steps = asArray(getAt(book, listPointer));
   const room = canAddStep(book, props.ruleIndex);
-  const offered = offeredSteps(props.scope, listPointer, { veryEasy: env.mode.veryEasy });
+  const offered = offeredSteps(props.scope, listPointer);
   const add = (id: string): void => {
     change(appendItem(book, listPointer, newStep(id)));
     env.requestFocus(`${listPointer}/${steps.length}`);

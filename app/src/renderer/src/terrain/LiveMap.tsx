@@ -23,8 +23,8 @@ import type { Element, Project, Target } from '@msm/plugin-api';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { inputClass } from '../forms';
 import { builtInPlugins } from '../plugins/built-in';
-import { useVeryEasy } from '../studios/very-easy';
-import { plainWorldLabel } from '../studios/very-easy-things';
+import { usePlain } from '../studios/plain';
+import { plainWorldLabel } from '../studios/plain-things';
 import type { WorldgenKindLike, WorldgenSession } from './files';
 import { hostsFor, type TerrainHost, withNamespace } from './hosts';
 import { useTerrainSnapshot } from './views';
@@ -152,7 +152,7 @@ export interface LiveMapProps {
 export default function LiveMap(props: LiveMapProps) {
   const { project, target, owner, onHost } = props;
   // Very easy names the worlds, never their ids (ADR 0083 D3).
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   // The owner's session is made once; later projects go through `set` below.
   const [own] = useState(() =>
     props.terrain === undefined ? memoryTerrain(owner, project, target) : null,

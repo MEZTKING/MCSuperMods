@@ -11,15 +11,11 @@ import type { SchemaNode } from '@msm/schemas';
 import { type ReactNode, useContext, useId, useState } from 'react';
 import { SoundPlayButton } from '../../audio/SoundPlayButton';
 import { isSoundEventRegistry } from '../../audio/sound-pickers';
+import { InMore } from '../../components/ui/MoreOptions';
 import { IdInput, idSuggestions, inputClass, resolveNode, type SuggestIds } from '../../forms';
 import { literalChoices, pickableKeys, structShape } from '../../forms/schema-utils';
-import { useVeryEasy } from '../very-easy';
-import {
-  plainIdWords,
-  plainWordsIn,
-  VeryEasyIdField,
-  VeryEasyThingsContext,
-} from '../very-easy-things';
+import { usePlain } from '../plain';
+import { PlainIdField, PlainThingsContext, plainIdWords, plainWordsIn } from '../plain-things';
 import type { PoolStatus } from './connections';
 
 const labelClass = 'flex min-w-0 flex-col gap-0.5 text-xs';
@@ -53,7 +49,7 @@ export function IdField(props: {
   sound?: { volume?: number; pitch?: number } | undefined;
 }) {
   const { suggest, registry } = props;
-  const veryEasy = useVeryEasy();
+  const plain = usePlain();
   // A sound has its Play button beside it (ADR 0121 D2, B622).
   // The wrapper stays while the field is empty, so clearing it never remounts the input.
   const soundField = isSoundEventRegistry(registry);
@@ -65,25 +61,33 @@ export function IdField(props: {
         {...(props.sound === undefined ? {} : props.sound)}
       />
     ) : null;
-  // Very easy shows no ids (ADR 0083 D3): the thing's name, picked by name where it can be.
-  if (veryEasy) {
+  // Plain (ADR 0130 D2): the thing's name, picked by name where it can be; the id itself is in
+  // the section's More options.
+  if (plain) {
     const field = (
-      <VeryEasyIdField
+      <PlainIdField
         label={props.label}
         value={props.value}
         registry={registry}
-        testId={props.testId}
+        testId={props.testId === undefined ? undefined : `${props.testId}-plain`}
         className={props.className}
         onCommit={(text) => props.onCommit(text.trim())}
       />
     );
-    return !soundField ? (
-      field
-    ) : (
-      <span className="flex min-w-0 items-end gap-1">
-        {field}
-        {play}
-      </span>
+    return (
+      <>
+        {!soundField ? (
+          field
+        ) : (
+          <span className="flex min-w-0 items-end gap-1">
+            {field}
+            {play}
+          </span>
+        )}
+        <InMore fallbackKey={`id-${props.testId ?? props.label}`}>
+          <IdField {...props} />
+        </InMore>
+      </>
     );
   }
   const input = (
@@ -174,14 +178,14 @@ export function SelectField(props: {
   testId?: string;
 }) {
   const id = useId();
-  // Very easy names a choice that is an id by its words (ADR 0083 D3).
-  const veryEasy = useVeryEasy();
-  const things = useContext(VeryEasyThingsContext);
+  // Plain names a choice that is an id by its words (ADR 0130 D2).
+  const plain = usePlain();
+  const things = useContext(PlainThingsContext);
   const words = (option: string) =>
-    veryEasy && option.includes(':') ? plainIdWords(things?.project, option) : option;
-  const label = veryEasy ? plainWordsIn(props.label) : props.label;
+    plain && option.includes(':') ? plainIdWords(things?.project, option) : option;
+  const label = plain ? plainWordsIn(props.label) : props.label;
   const emptyLabel =
-    veryEasy && props.emptyLabel !== undefined ? plainWordsIn(props.emptyLabel) : props.emptyLabel;
+    plain && props.emptyLabel !== undefined ? plainWordsIn(props.emptyLabel) : props.emptyLabel;
   const current = props.value ?? '';
   const options = [...props.choices];
   if (current !== '' && !options.includes(current)) options.unshift(current);

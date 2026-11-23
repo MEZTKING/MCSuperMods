@@ -2,10 +2,8 @@ import { type AiRunLimits, TASK_BUDGET_MIN } from '@msm/ai';
 import { Gauge } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useId, useState } from 'react';
-import { usePreferences } from '../../store/preferences';
 import { fieldClass } from '../NewElementDialog';
 import { Button, buttonClass } from '../ui/Button';
-import type { UiMode } from './ai-words';
 
 /**
  * The popover's words (Advanced only, ADR 0125 D10): the defaults live in Settings, and a run
@@ -92,9 +90,8 @@ export function LimitField(props: {
 
 /**
  * "Run limits": the next run's tool turn and output token limits and the task budget switch
- * (ADR 0041 D7). The defaults come from Settings; a change applies to the next run only. Shown
- * only in Advanced (ADR 0125 D10): elsewhere it renders nothing. `mode` defaults to the
- * preference.
+ * (ADR 0041 D7). The defaults come from Settings; a change applies to the next run only. It is
+ * in the panel's More options (ADR 0125 D10, ADR 0130 D3).
  */
 export function AiLimitsPopover(props: {
   /** The limits the next run uses. */
@@ -105,14 +102,11 @@ export function AiLimitsPopover(props: {
   onChange(limits: AiRunLimits): void;
   /** Back to the mode's defaults. */
   onReset(): void;
-  mode?: UiMode;
 }) {
   const turnsId = useId();
   const tokensId = useId();
   const budgetId = useId();
-  const preferred = usePreferences((state) => state.mode);
   const { limits } = props;
-  if ((props.mode ?? preferred) !== 'advanced') return null;
   return (
     <Popover.Root>
       <Popover.Trigger

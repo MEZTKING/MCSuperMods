@@ -5,7 +5,7 @@
  *   their generation step, and the natural spawns (entity, category, weight, group sizes).
  * - "Extra drops" (`msm:loot_addition`): the loot tables, with a picker narrowed to mobs,
  *   blocks or chests, and one simple row per pool (item, count, chance, player kill only) that
- *   writes the whole pool; a pool that uses more stays with "Advanced (all fields)" (the
+ *   writes the whole pool; a pool that uses more stays with "Every setting" (the
  *   target's pool form) and Raw JSON. Its section "With and without" (B609, ADR 0120) is the
  *   live view the preview panel shows too: the table rolled without and with the project's
  *   additions, side by side, the added drops marked.
@@ -22,7 +22,7 @@
  *   an axe strips, a shovel flattens, a hoe tills, honeycomb waxes, that age like copper and that
  *   burn, one row per block; a row for a block Minecraft already pairs says which pair it
  *   replaces (`TargetFacts.blocks.vanillaPairs`). Blocks are picked by id in Easy and by name in
- *   the ThingPicker in Very easy. Its section "Try it here" (B614, ADR 0120) is the live view the
+ *   the ThingPicker, the id in More options. Its section "Try it here" (B614, ADR 0120) is the live view the
  *   preview panel shows too: each rule's block before and after with its tool and sound, and the
  *   blocks and tools Try it's picker offers to try them on the blocks as props.
  *
@@ -41,13 +41,14 @@ import {
   thingSections,
 } from '../../components/thing-picker/ThingPicker';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { isWithin, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { useUiStore } from '../../store/ui-store';
+import { usePlain } from '../plain';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
-import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
+import { IdList, Section } from '../worldgen/parts';
 import {
   idsAt,
   listAt,
@@ -310,24 +311,7 @@ function RowButtons(props: {
 /** "World addition": features and spawns added to vanilla or other biomes (ADR 0060 D2). */
 export function WorldAdditionStudio(props: StudioProps) {
   const { element, node, problems, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
   const [copyNote, setCopyNote] = useState<string | null>(null);
-  if (advanced) {
-    return (
-      <section
-        aria-label="World addition"
-        data-testid="world-addition-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="world-addition-advanced"
-        />
-        {props.form}
-      </section>
-    );
-  }
   const data = element.data;
   const set = pathSetter(data, onChange);
   const biomes = idsAt(data, 'biomes');
@@ -535,7 +519,6 @@ export function WorldAdditionStudio(props: StudioProps) {
       data-testid="world-addition-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="world-addition-advanced" />
       <p className="text-muted text-xs">
         Adds features and spawns to existing biomes when the game starts. It needs the Fabric mod
         export; vanilla packs do not carry it.
@@ -611,20 +594,7 @@ function DropRow(props: {
 /** "Extra drops": pools added to built-in loot tables (ADR 0060 D3). */
 export function ExtraDropsStudio(props: StudioProps) {
   const { element, node, problems, suggest, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
   const [group, setGroup] = useState<string>('entities');
-  if (advanced) {
-    return (
-      <section
-        aria-label="Extra drops"
-        data-testid="extra-drops-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="extra-drops-advanced" />
-        {props.form}
-      </section>
-    );
-  }
   const data = element.data;
   const set = pathSetter(data, onChange);
   const tables = idsAt(data, 'tables');
@@ -683,7 +653,7 @@ export function ExtraDropsStudio(props: StudioProps) {
                 {drop === undefined ? (
                   <p className="text-muted text-xs" data-testid={`extra-drops-${index}-custom`}>
                     {name} uses more than an item, a count, a chance and a player kill: edit it
-                    under "Advanced (all fields)" or in Raw JSON.
+                    under "Every setting" or "Edit as raw text", at the bottom.
                   </p>
                 ) : (
                   <DropRow index={index} drop={drop} suggest={suggest} write={writeAt(index)} />
@@ -721,7 +691,8 @@ export function ExtraDropsStudio(props: StudioProps) {
         </Button>
       ) : (
         <p className="text-muted text-xs" data-testid="extra-drops-no-simple">
-          This target's loot pools have another shape: add drops under "Advanced (all fields)".
+          This target's loot pools have another shape: add drops under "Every setting", at the
+          bottom.
         </p>
       )}
       <p className="text-muted text-xs">
@@ -738,7 +709,6 @@ export function ExtraDropsStudio(props: StudioProps) {
       data-testid="extra-drops-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="extra-drops-advanced" />
       <p className="text-muted text-xs">
         Adds drops to existing loot tables of mobs, blocks and chests. It needs the Fabric mod
         export; vanilla packs do not carry it.
@@ -756,7 +726,7 @@ export function ExtraDropsStudio(props: StudioProps) {
   );
 }
 
-/** A block or item: an id field in Easy, a named chip opening the ThingPicker in Very easy. */
+/** A block or item: a named chip opening the ThingPicker, its id in More options (ADR 0130). */
 function ThingIdField(props: {
   label: string;
   value: string;
@@ -771,7 +741,7 @@ function ThingIdField(props: {
   emptyLabel?: string;
   onCommit(value: string): void;
 }) {
-  const veryEasy = useVeryEasy();
+  const plain = usePlain();
   const [open, setOpen] = useState(false);
   const sections = useMemo(
     () =>
@@ -785,19 +755,18 @@ function ThingIdField(props: {
         : [],
     [open, props.project, props.registries, props.sort, props.texturesFolder],
   );
-  if (!veryEasy) {
-    return (
-      <IdField
-        label={props.label}
-        value={props.value}
-        registry={props.sort}
-        suggest={props.suggest}
-        className="min-w-56"
-        testId={props.testId}
-        onCommit={(text) => props.onCommit(text.trim())}
-      />
-    );
-  }
+  const idField = (
+    <IdField
+      label={props.label}
+      value={props.value}
+      registry={props.sort}
+      suggest={props.suggest}
+      className="min-w-56"
+      testId={props.testId}
+      onCommit={(text) => props.onCommit(text.trim())}
+    />
+  );
+  if (!plain) return idField;
   const words =
     props.value === ''
       ? (props.emptyLabel ?? `Pick ${props.sort === 'item' ? 'an item' : 'a block'}`)
@@ -807,11 +776,12 @@ function ThingIdField(props: {
       <span className="text-muted">{props.label}</span>
       <Button
         className="self-start text-xs"
-        data-testid={props.testId}
+        data-testid={`${props.testId}-plain`}
         onClick={() => setOpen(true)}
       >
         {words}
       </Button>
+      <InMore fallbackKey={props.testId}>{idField}</InMore>
       {open && (
         <ThingPicker
           title={`Pick ${props.sort === 'item' ? 'an item' : 'a block'}: ${props.label.toLowerCase()}`}
@@ -837,7 +807,6 @@ function ThingIdField(props: {
  */
 export function VanillaBlockRulesStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
-  const [advanced, setAdvanced] = useState(false);
   const host = useBlocksItemsStudioHost();
   const registries = useMemo(
     () => props.context.registries(project, element.kind),
@@ -853,22 +822,6 @@ export function VanillaBlockRulesStudio(props: StudioProps) {
       revision: host.revision,
     };
   }, [host]);
-  if (advanced) {
-    return (
-      <section
-        aria-label="Vanilla block rules"
-        data-testid="vanilla-block-rules-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="vanilla-block-rules-advanced"
-        />
-        {props.form}
-      </section>
-    );
-  }
   const data = element.data;
   const set = pathSetter(data, onChange);
   const facts = target.blocks?.vanillaPairs;
@@ -1009,11 +962,6 @@ export function VanillaBlockRulesStudio(props: StudioProps) {
       data-testid="vanilla-block-rules-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle
-        checked={advanced}
-        onChange={setAdvanced}
-        testId="vanilla-block-rules-advanced"
-      />
       <p className="text-muted text-xs">
         Rules for Minecraft's own blocks: what a tool turns them into, how they age and how they
         burn. They need the Fabric mod export; vanilla packs do not carry them.

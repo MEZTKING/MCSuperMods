@@ -1,9 +1,12 @@
 /**
- * View preferences (ADR 0047, ADR 0083 D1, ADR 0118 D1, D8, ADR 0124 D11): the Very easy, Easy or
- * Advanced mode, the collapsed sidebar groups, the showcase's setting and fold, and the search's
- * **Remember my searches** with its local history (`search/history.ts`, its own storage key). Kept in the renderer's local storage: they change no file, and a
- * fresh profile (test runs) starts in Advanced mode, today's interface; a brand-new install is
- * moved to Very easy by the Welcome (`App.tsx`). Storage failures are ignored.
+ * View preferences (ADR 0047, ADR 0118 D1, D8, ADR 0124 D11, ADR 0130 D1): the collapsed sidebar
+ * groups, the live preview beside the form, the showcase's setting and fold, and the search's
+ * **Remember my searches** with its local history (`search/history.ts`, its own storage key).
+ * Kept in the renderer's local storage: they change no file. Storage failures are ignored.
+ *
+ * There is one mode since ADR 0130: a mode stored by an older version (`very-easy`, `easy` or
+ * `advanced`) is read once and dropped at the next write. The state of each More options is
+ * kept by `components/ui/MoreOptions.tsx`.
  *
  * @packageDocumentation
  */
@@ -18,40 +21,11 @@ import {
   writeHistory,
 } from '../search/history';
 
-/**
- * Very easy shows Home, Play and plain words only (ADR 0083); Easy hides technical content and
- * Raw JSON; Advanced shows everything.
- */
-export type UiMode = 'very-easy' | 'easy' | 'advanced';
-
-/** The modes in the order the mode switch shows them, with their labels and one sentence. */
-export const UI_MODES: readonly { mode: UiMode; label: string; sentence: string }[] = [
-  {
-    mode: 'very-easy',
-    label: 'Very easy',
-    sentence: 'Big picture tiles, Play and plain words. No code and no files to look at.',
-  },
-  {
-    mode: 'easy',
-    label: 'Easy',
-    sentence: 'Your things first, the files behind them folded away, the forms only.',
-  },
-  {
-    mode: 'advanced',
-    label: 'Advanced',
-    sentence: 'Every file, kind ids and Raw JSON.',
-  },
-];
-
-/** Whether a stored value is a mode name. */
-export function isUiMode(value: unknown): value is UiMode {
-  return value === 'very-easy' || value === 'easy' || value === 'advanced';
-}
-
 const STORAGE_KEY = 'msm.preferences.v1';
 
 interface StoredPreferences {
-  mode?: UiMode;
+  /** An older version's mode (ADR 0130 D1): read once, never written again. */
+  mode?: unknown;
   collapsed?: string[];
   centrePreview?: boolean;
   showcaseClips?: boolean;
@@ -61,9 +35,6 @@ interface StoredPreferences {
 
 /** The preferences store's shape. */
 export interface PreferencesState {
-  mode: UiMode;
-  /** Whether a mode was ever chosen (or stored); a new install may then default to Very easy. */
-  modeChosen: boolean;
   /** Sidebar group keys (`<namespace>/<group>`) the user collapsed. */
   collapsed: ReadonlySet<string>;
   /** Whether the editor shows the live preview beside the form (ADR 0047 D4). */
@@ -81,8 +52,7 @@ export interface PreferencesState {
   /**
    * The base seed of Home's **More ideas** (ADR 0128 D1): idea card *n* is made from a seed
    * derived from it and *n*, so the list is the same each time; **Shuffle** picks a new one.
-   * One per install, made on the first run and kept under its own storage key (so keeping it
-   * never marks a mode as chosen).
+   * One per install, made on the first run and kept under its own storage key.
    */
   ideasSeed: number;
   /**
@@ -104,7 +74,6 @@ export interface PreferencesState {
   /** **Shuffle**: a new base seed for More ideas. */
   shuffleIdeas(): void;
   toggleCentrePreview(): void;
-  setMode(mode: UiMode): void;
   toggleCollapsed(key: string): void;
 }
 
@@ -122,14 +91,13 @@ function readStored(): StoredPreferences {
 function writeStored(
   state: Pick<
     PreferencesState,
-    'mode' | 'collapsed' | 'centrePreview' | 'showcaseClips' | 'showcaseOpen' | 'rememberSearches'
+    'collapsed' | 'centrePreview' | 'showcaseClips' | 'showcaseOpen' | 'rememberSearches'
   >,
 ): void {
   try {
     globalThis.localStorage?.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        mode: state.mode,
         collapsed: [...state.collapsed].sort(),
         centrePreview: state.centrePreview,
         showcaseClips: state.showcaseClips,
@@ -143,6 +111,15 @@ function writeStored(
 }
 
 const stored = readStored();
+// One mode (ADR 0130 D1): an older version's stored mode is dropped once read.
+if (stored.mode !== undefined) {
+  try {
+    const { mode: _dropped, ...rest } = stored;
+    globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(rest));
+  } catch {
+    // Storage is unavailable: it is dropped at the next write.
+  }
+}
 
 const IDEAS_KEY = 'msm.ideas.v1';
 /** The largest base seed of More ideas (as Surprise me's seeds). */
@@ -180,8 +157,6 @@ function readIdeasSeed(): number {
 }
 
 export const usePreferences = create<PreferencesState>((set, get) => ({
-  mode: isUiMode(stored.mode) ? stored.mode : 'advanced',
-  modeChosen: isUiMode(stored.mode),
   collapsed: new Set(
     Array.isArray(stored.collapsed)
       ? stored.collapsed.filter((key) => typeof key === 'string')
@@ -233,10 +208,6 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
   },
   toggleCentrePreview() {
     set({ centrePreview: !get().centrePreview });
-    writeStored(get());
-  },
-  setMode(mode) {
-    set({ mode, modeChosen: true });
     writeStored(get());
   },
   toggleCollapsed(key) {

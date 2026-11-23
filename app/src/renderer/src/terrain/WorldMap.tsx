@@ -41,8 +41,8 @@ import {
 } from 'react';
 import type { TryItWorldsPlatform } from '../../../shared/platform';
 import { Button } from '../components/ui/Button';
-import { useVeryEasy } from '../studios/very-easy';
-import { plainWordsIn, plainWorldLabel } from '../studios/very-easy-things';
+import { usePlain } from '../studios/plain';
+import { plainWordsIn, plainWorldLabel } from '../studios/plain-things';
 import CompareView, { compareClientFor } from './CompareView';
 import {
   COARSE_FACTOR,
@@ -561,7 +561,7 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
   const { project, element, onSetup, vanillaReady } = props;
   const terrain = props.terrain;
   // Very easy names the worlds, never their ids (ADR 0083 D3).
-  const veryEasy = useVeryEasy();
+  const veryEasy = usePlain();
   const hostLabel = (entry: TerrainHost) =>
     veryEasy ? plainWorldLabel(project, entry.label) : entry.label;
   const client = terrain.client;

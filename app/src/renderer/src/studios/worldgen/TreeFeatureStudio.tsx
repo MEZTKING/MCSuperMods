@@ -17,7 +17,7 @@ import { IdInput, idSuggestions, inputClass, ProblemList } from '../../forms';
 import { defaultObject, resolveNode, stripMinecraft, structShape } from '../../forms/schema-utils';
 import type { StudioProps } from '../types';
 import { MapLine } from './MapLine';
-import { AdvancedToggle, Section, SubForm } from './parts';
+import { Section, SubForm } from './parts';
 import {
   blockProvider,
   lacksLeavesState,
@@ -331,20 +331,6 @@ function DecoratorsPart({ choices, props }: { choices: readonly string[]; props:
 
 export function TreeFeatureStudio(props: StudioProps) {
   const { project, context } = props;
-  const [advanced, setAdvanced] = useState(false);
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Tree Feature Studio"
-        data-testid="tree-feature-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="tree-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   const vanilla = context.vanillaRegistries;
   const trunkPlacers = registryTypes(vanilla, TREE_REGISTRIES.trunkPlacer);
@@ -361,7 +347,6 @@ export function TreeFeatureStudio(props: StudioProps) {
       data-testid="tree-feature-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="tree-advanced-toggle" />
       <MapLine
         project={project}
         target={props.target}

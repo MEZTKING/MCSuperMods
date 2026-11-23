@@ -20,14 +20,14 @@
 
 import type { Json } from '@msm/core';
 import { ArrowRight, Plus, X } from 'lucide-react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
+import { InMore } from '../../components/ui/MoreOptions';
 import { typingKey } from '../../forms/context';
 import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
 import { IdField, NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { useVeryEasy } from '../very-easy';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import {
   asObject,
   pathSetter,
@@ -111,8 +111,6 @@ function DurationField(props: {
 
 export function PotionStudio(props: StudioProps) {
   const { project, element, problems, onChange } = props;
-  const [advanced, setAdvanced] = useState(false);
-  const veryEasy = useVeryEasy();
   const host = useBlocksItemsStudioHost();
   const readProject = useHostProjectReader(host);
   const data = asObject(element.data);
@@ -121,19 +119,6 @@ export function PotionStudio(props: StudioProps) {
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Potion Studio"
-        data-testid="potion-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="potion-advanced-toggle" />
-        {props.form}
-      </section>
-    );
-  }
 
   const effects = Array.isArray(data.effects) ? data.effects : [];
   const brewing = data.brewing === undefined ? undefined : asObject(data.brewing);
@@ -169,8 +154,8 @@ export function PotionStudio(props: StudioProps) {
         onCommit={(value) => set(['display_name'], value, typingKey('/display_name'))}
       />
       {at(['display_name'])}
-      {/* The name key is a translation key: Very easy shows the display name only. */}
-      {!veryEasy && (
+      {/* The name key is a translation key, in More options (ADR 0130 D3). */}
+      <InMore>
         <TextField
           label="Name key (optional; the game shows the display name)"
           value={data.name}
@@ -178,7 +163,7 @@ export function PotionStudio(props: StudioProps) {
           placeholder={names[0]?.key.replace(/^item\.minecraft\.potion\.effect\./, '') ?? ''}
           onCommit={(value) => set(['name'], value, typingKey('/name'))}
         />
-      )}
+      </InMore>
       {at(['name'])}
     </Section>
   );
@@ -432,7 +417,6 @@ export function PotionStudio(props: StudioProps) {
 
   return (
     <section aria-label="Potion Studio" data-testid="potion-studio" className="flex flex-col gap-4">
-      <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="potion-advanced-toggle" />
       <ProblemsAt problems={problems} pointer="" />
       {preview}
       {general}

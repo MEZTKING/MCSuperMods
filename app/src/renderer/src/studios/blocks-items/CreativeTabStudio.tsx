@@ -15,7 +15,7 @@
  *   `creative_tab` through the host as one undo step; "Add everything without a tab" adds every
  *   such thing in one step too.
  *
- * Everything else stays behind "Advanced (all fields)".
+ * Everything else is in "Every setting".
  *
  * @packageDocumentation
  */
@@ -29,7 +29,7 @@ import { typingKey } from '../../forms/context';
 import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
 import { IdField } from '../structures/pickers';
 import type { StudioProps } from '../types';
-import { AdvancedToggle, Section } from '../worldgen/parts';
+import { Section } from '../worldgen/parts';
 import { asObject, pathSetter, pointerOf, withProjectIds } from './blocks-items-model';
 import {
   handOrderOf,
@@ -69,7 +69,6 @@ export default function CreativeTabStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange } = props;
   const host = useBlocksItemsStudioHost();
   const readProject = useHostProjectReader(host);
-  const [advanced, setAdvanced] = useState(false);
   const [picked, setPicked] = useState('');
   const [error, setError] = useState<string | null>(null);
   const orderId = useId();
@@ -79,23 +78,6 @@ export default function CreativeTabStudio(props: StudioProps) {
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
-
-  if (advanced) {
-    return (
-      <section
-        aria-label="Creative Tab Studio"
-        data-testid="creative-tab-studio"
-        className="flex flex-col gap-3"
-      >
-        <AdvancedToggle
-          checked={advanced}
-          onChange={setAdvanced}
-          testId="creative-tab-advanced-toggle"
-        />
-        {props.form}
-      </section>
-    );
-  }
 
   const order = tabOrderOf(element.data);
   const handOrder = handOrderOf(element.data);
@@ -378,11 +360,6 @@ export default function CreativeTabStudio(props: StudioProps) {
       data-testid="creative-tab-studio"
       className="flex flex-col gap-4"
     >
-      <AdvancedToggle
-        checked={advanced}
-        onChange={setAdvanced}
-        testId="creative-tab-advanced-toggle"
-      />
       <ProblemsAt problems={problems} pointer="" />
       {preview}
       {general}
