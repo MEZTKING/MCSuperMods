@@ -19494,6 +19494,1630 @@
       ],
       "kind": "struct"
     },
+    "::msm::games::<anonymous 0>": {
+      "fields": [
+        {
+          "key": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "game_rule"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "boolean"
+              },
+              {
+                "kind": "int"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Area": {
+      "fields": [
+        {
+          "desc": "The area's name, as players see it.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The dimension.",
+          "key": "dimension",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dimension"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "One corner.",
+          "key": "from",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "The opposite corner.",
+          "key": "to",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "How the area is reset.",
+          "key": "reset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::AreaReset"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::AreaReset": {
+      "fields": [
+        {
+          "desc": "The structures placed, in order.",
+          "key": "structures",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::AreaStructure"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::AreaStructure": {
+      "fields": [
+        {
+          "desc": "The structure template.",
+          "key": "structure",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "structure"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Where its corner goes.",
+          "key": "at",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::BlankNumberFormat": {
+      "fields": [],
+      "kind": "struct"
+    },
+    "::msm::games::BlockPos": {
+      "item": {
+        "kind": "int"
+      },
+      "kind": "list",
+      "lengthRange": {
+        "kind": 0,
+        "max": 3,
+        "min": 3
+      }
+    },
+    "::msm::games::CollisionRule": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Always",
+          "value": "always"
+        },
+        {
+          "identifier": "Never",
+          "value": "never"
+        },
+        {
+          "identifier": "PushOtherTeams",
+          "value": "pushOtherTeams"
+        },
+        {
+          "identifier": "PushOwnTeam",
+          "value": "pushOwnTeam"
+        }
+      ]
+    },
+    "::msm::games::Difficulty": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Peaceful",
+          "value": "peaceful"
+        },
+        {
+          "identifier": "Easy",
+          "value": "easy"
+        },
+        {
+          "identifier": "Normal",
+          "value": "normal"
+        },
+        {
+          "identifier": "Hard",
+          "value": "hard"
+        }
+      ]
+    },
+    "::msm::games::FixedNumberFormat": {
+      "fields": [
+        {
+          "desc": "The text shown in place of the number.",
+          "key": "text",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::FlatLayer": {
+      "fields": [
+        {
+          "desc": "The block of the layer.",
+          "key": "block",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many blocks thick, 0 to 4096.",
+          "key": "height",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 4096,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::GameMode": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Survival",
+          "value": "survival"
+        },
+        {
+          "identifier": "Creative",
+          "value": "creative"
+        },
+        {
+          "identifier": "Adventure",
+          "value": "adventure"
+        },
+        {
+          "identifier": "Spectator",
+          "value": "spectator"
+        }
+      ]
+    },
+    "::msm::games::GameWorld": {
+      "fields": [
+        {
+          "desc": "The world type.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::WorldType"
+          }
+        },
+        {
+          "desc": "The project world preset, for the type `preset`.",
+          "key": "preset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "worldgen/world_preset"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The layers, bottom first, for the type `flat`.",
+          "key": "layers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::FlatLayer"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64
+            }
+          }
+        },
+        {
+          "desc": "The biome of a `void`, `flat` or `sky_islands` world; absent means the plugin's own sky\nbiome, with plains-like mob spawns and no features.",
+          "key": "biome",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "worldgen/biome"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The Nether.",
+          "key": "nether",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::OtherDimension"
+          }
+        },
+        {
+          "desc": "The End.",
+          "key": "end",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::OtherDimension"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::KitEffect": {
+      "fields": [
+        {
+          "desc": "The effect.",
+          "key": "effect",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How long, 1 to 1,000,000 seconds.",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1000000,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The level minus one, 0 to 255; defaults to 0.",
+          "key": "amplifier",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 255,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to false.",
+          "key": "hide_particles",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::KitItem": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How many, 1 to 99.",
+          "key": "count",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 99,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The slot, as `/item replace` names it (such as `hotbar.0` or `armor.head`); absent means\nthe first free slot.",
+          "key": "slot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::NameTagVisibility": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Always",
+          "value": "always"
+        },
+        {
+          "identifier": "Never",
+          "value": "never"
+        },
+        {
+          "identifier": "HideForOtherTeams",
+          "value": "hideForOtherTeams"
+        },
+        {
+          "identifier": "HideForOwnTeam",
+          "value": "hideForOwnTeam"
+        }
+      ]
+    },
+    "::msm::games::NewPlayer": {
+      "fields": [
+        {
+          "desc": "The kit's items.",
+          "key": "items",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::KitItem"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 41
+            }
+          }
+        },
+        {
+          "desc": "A loot table rolled into the player's inventory, in place of `items`.",
+          "key": "loot_table",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "A message shown in the player's chat.",
+          "key": "message",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "A dialog shown to the player.",
+          "key": "dialog",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dialog"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Effects given to the player.",
+          "key": "effects",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::KitEffect"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::NumberFormat": {
+      "fields": [
+        {
+          "desc": "The format.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::NumberFormatType"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["type"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:games_number_format"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::NumberFormatType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "No number.",
+          "identifier": "Blank",
+          "value": "blank"
+        },
+        {
+          "desc": "A fixed text in place of the number.",
+          "identifier": "Fixed",
+          "value": "fixed"
+        },
+        {
+          "desc": "The number in a style.",
+          "identifier": "Styled",
+          "value": "styled"
+        }
+      ]
+    },
+    "::msm::games::Objective": {
+      "fields": [
+        {
+          "desc": "What counts: `dummy` (changed only by commands and Rules), a vanilla criterion such as\n`playerKillCount` or `minecraft.mined:minecraft.stone`, or a project statistic\n(`minecraft.custom:<namespace>.<path>`). Checked against the target's facts by the plugin\nvalidators.",
+          "key": "criterion",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The objective's display name.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Where it is shown.",
+          "key": "display",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ObjectiveDisplay"
+          }
+        },
+        {
+          "desc": "How its scores are drawn in the player list.",
+          "key": "render",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::ObjectiveRender"
+          }
+        },
+        {
+          "desc": "How its numbers are written; absent means plain numbers.",
+          "key": "number_format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::NumberFormat"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::ObjectiveDisplay": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "None",
+          "value": "none"
+        },
+        {
+          "identifier": "Sidebar",
+          "value": "sidebar"
+        },
+        {
+          "identifier": "List",
+          "value": "list"
+        },
+        {
+          "identifier": "BelowName",
+          "value": "below_name"
+        },
+        {
+          "identifier": "SidebarTeamBlack",
+          "value": "sidebar.team.black"
+        },
+        {
+          "identifier": "SidebarTeamDarkBlue",
+          "value": "sidebar.team.dark_blue"
+        },
+        {
+          "identifier": "SidebarTeamDarkGreen",
+          "value": "sidebar.team.dark_green"
+        },
+        {
+          "identifier": "SidebarTeamDarkAqua",
+          "value": "sidebar.team.dark_aqua"
+        },
+        {
+          "identifier": "SidebarTeamDarkRed",
+          "value": "sidebar.team.dark_red"
+        },
+        {
+          "identifier": "SidebarTeamDarkPurple",
+          "value": "sidebar.team.dark_purple"
+        },
+        {
+          "identifier": "SidebarTeamGold",
+          "value": "sidebar.team.gold"
+        },
+        {
+          "identifier": "SidebarTeamGray",
+          "value": "sidebar.team.gray"
+        },
+        {
+          "identifier": "SidebarTeamDarkGray",
+          "value": "sidebar.team.dark_gray"
+        },
+        {
+          "identifier": "SidebarTeamBlue",
+          "value": "sidebar.team.blue"
+        },
+        {
+          "identifier": "SidebarTeamGreen",
+          "value": "sidebar.team.green"
+        },
+        {
+          "identifier": "SidebarTeamAqua",
+          "value": "sidebar.team.aqua"
+        },
+        {
+          "identifier": "SidebarTeamRed",
+          "value": "sidebar.team.red"
+        },
+        {
+          "identifier": "SidebarTeamLightPurple",
+          "value": "sidebar.team.light_purple"
+        },
+        {
+          "identifier": "SidebarTeamYellow",
+          "value": "sidebar.team.yellow"
+        },
+        {
+          "identifier": "SidebarTeamWhite",
+          "value": "sidebar.team.white"
+        }
+      ]
+    },
+    "::msm::games::ObjectiveRender": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Integer",
+          "value": "integer"
+        },
+        {
+          "identifier": "Hearts",
+          "value": "hearts"
+        }
+      ]
+    },
+    "::msm::games::OneBlock": {
+      "fields": [
+        {
+          "desc": "The block's position.",
+          "key": "at",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "The dimension; defaults to `minecraft:overworld`.",
+          "key": "dimension",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dimension"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The phases, in order.",
+          "key": "phases",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::OneBlockPhase"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether the last phase is followed by the first again.",
+          "key": "loop",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether each phase's name is shown in chat when it starts.",
+          "key": "announce",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::OneBlockPhase": {
+      "fields": [
+        {
+          "desc": "The phase's name, shown when it starts if `announce` is on.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How many breaks the phase lasts, 1 to 100,000.",
+          "key": "breaks",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100000,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The blocks it turns into.",
+          "key": "blocks",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::WeightedBlock"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The mobs it may summon.",
+          "key": "mobs",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::games::WeightedMob"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32
+            }
+          }
+        },
+        {
+          "desc": "The chance, 0 to 1, that a break summons a mob of `mobs`.",
+          "key": "mob_chance",
+          "kind": "pair",
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The chance, 0 to 1, that the block turns into a chest of `chest_loot`.",
+          "key": "chest_chance",
+          "kind": "pair",
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The chest's loot table.",
+          "key": "chest_loot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::OtherDimension": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The game's own Nether or End.",
+          "identifier": "Vanilla",
+          "value": "vanilla"
+        },
+        {
+          "desc": "Empty: a flat dimension with no layers. A void End needs an End portal frame in the start\nstructure to be reached.",
+          "identifier": "Void",
+          "value": "void"
+        }
+      ]
+    },
+    "::msm::games::Start": {
+      "fields": [
+        {
+          "desc": "The structure template placed.",
+          "key": "structure",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "structure"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Where its corner goes; defaults to `[0, 64, 0]`.",
+          "key": "at",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "The world spawn, relative to `at`.",
+          "key": "spawn",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "Defaults to `first_join`.",
+          "key": "when",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::StartWhen"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::StartWhen": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "By the first player's first-join function (the default; works with \"Generate\nstructures\" off and in a world made before the pack).",
+          "identifier": "FirstJoin",
+          "value": "first_join"
+        },
+        {
+          "desc": "While the world generates, by a `dimension_origin` structure set (Advanced). The game\nrotates the piece at random about `at`, and nothing is placed with \"Generate structures\"\noff.",
+          "identifier": "WorldGeneration",
+          "value": "world_generation"
+        }
+      ]
+    },
+    "::msm::games::StyledNumberFormat": {
+      "fields": [
+        {
+          "desc": "The number's colour; absent means the slot's own.",
+          "key": "colour",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::TeamColour"
+          }
+        },
+        {
+          "desc": "Defaults to false.",
+          "key": "bold",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Defaults to false.",
+          "key": "italic",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::Team": {
+      "fields": [
+        {
+          "desc": "The team's display name.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The colour of its players' names.",
+          "key": "colour",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::TeamColour"
+          }
+        },
+        {
+          "desc": "Whether its players can hurt each other.",
+          "key": "friendly_fire",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether its players see invisible team mates.",
+          "key": "see_invisible_friends",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whose name tags its players see.",
+          "key": "name_tags",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::NameTagVisibility"
+          }
+        },
+        {
+          "desc": "Whom its players push.",
+          "key": "collision",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::CollisionRule"
+          }
+        },
+        {
+          "desc": "Text before its players' names.",
+          "key": "prefix",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Text after its players' names.",
+          "key": "suffix",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::TeamColour": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Black",
+          "value": "black"
+        },
+        {
+          "identifier": "DarkBlue",
+          "value": "dark_blue"
+        },
+        {
+          "identifier": "DarkGreen",
+          "value": "dark_green"
+        },
+        {
+          "identifier": "DarkAqua",
+          "value": "dark_aqua"
+        },
+        {
+          "identifier": "DarkRed",
+          "value": "dark_red"
+        },
+        {
+          "identifier": "DarkPurple",
+          "value": "dark_purple"
+        },
+        {
+          "identifier": "Gold",
+          "value": "gold"
+        },
+        {
+          "identifier": "Gray",
+          "value": "gray"
+        },
+        {
+          "identifier": "DarkGray",
+          "value": "dark_gray"
+        },
+        {
+          "identifier": "Blue",
+          "value": "blue"
+        },
+        {
+          "identifier": "Green",
+          "value": "green"
+        },
+        {
+          "identifier": "Aqua",
+          "value": "aqua"
+        },
+        {
+          "identifier": "Red",
+          "value": "red"
+        },
+        {
+          "identifier": "LightPurple",
+          "value": "light_purple"
+        },
+        {
+          "identifier": "Yellow",
+          "value": "yellow"
+        },
+        {
+          "identifier": "White",
+          "value": "white"
+        },
+        {
+          "identifier": "Reset",
+          "value": "reset"
+        }
+      ]
+    },
+    "::msm::games::Timer": {
+      "fields": [
+        {
+          "desc": "The text shown with the time on its boss bar or action bar; absent means the time alone.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How long, 1 to 86,400 seconds (one day).",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 86400,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Which way it counts.",
+          "key": "count",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::TimerCount"
+          }
+        },
+        {
+          "desc": "Where it is shown.",
+          "key": "show",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::TimerShow"
+          }
+        },
+        {
+          "desc": "The boss bar's colour.",
+          "key": "colour",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BossBarColour"
+          }
+        },
+        {
+          "desc": "A function run when the time is up.",
+          "key": "on_end",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "function"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Whether it starts again when the time is up.",
+          "key": "repeat",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "When it starts.",
+          "key": "starts",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::TimerStarts"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::TimerCount": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Down",
+          "value": "down"
+        },
+        {
+          "identifier": "Up",
+          "value": "up"
+        }
+      ]
+    },
+    "::msm::games::TimerShow": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "BossBar",
+          "value": "boss_bar"
+        },
+        {
+          "identifier": "ActionBar",
+          "value": "action_bar"
+        },
+        {
+          "identifier": "None",
+          "value": "none"
+        }
+      ]
+    },
+    "::msm::games::TimerStarts": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "By a Rules step or a function.",
+          "identifier": "Manual",
+          "value": "manual"
+        },
+        {
+          "desc": "When the world first starts.",
+          "identifier": "WorldStart",
+          "value": "world_start"
+        }
+      ]
+    },
+    "::msm::games::WeightedBlock": {
+      "fields": [
+        {
+          "desc": "The block.",
+          "key": "block",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Its weight, 1 or more.",
+          "key": "weight",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::WeightedMob": {
+      "fields": [
+        {
+          "desc": "The mob.",
+          "key": "mob",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Its weight, 1 or more.",
+          "key": "weight",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::WorldSetup": {
+      "fields": [
+        {
+          "desc": "The world the game is played in.",
+          "key": "world",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::GameWorld"
+          }
+        },
+        {
+          "desc": "The structure the game starts on.",
+          "key": "start",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::Start"
+          }
+        },
+        {
+          "desc": "The `respawn_radius` game rule around the world spawn; defaults to 0.",
+          "key": "spawn_radius",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The game mode of every player.",
+          "key": "game_mode",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::GameMode"
+          }
+        },
+        {
+          "desc": "The world's difficulty.",
+          "key": "difficulty",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::Difficulty"
+          }
+        },
+        {
+          "desc": "Game rules set once when the world first starts: a vanilla rule or a project\n`msm:game_rule`, with an on or off value or a whole number.",
+          "key": "game_rules",
+          "kind": "pair",
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "attributes": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "game_rule"
+                        }
+                      }
+                    }
+                  ],
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "union",
+                  "members": [
+                    {
+                      "kind": "boolean"
+                    },
+                    {
+                      "kind": "int"
+                    }
+                  ]
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "desc": "What a new player gets.",
+          "key": "new_player",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::NewPlayer"
+          }
+        },
+        {
+          "desc": "The root advancement of the game's goals, named in the welcome.",
+          "key": "goals",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "advancement"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::games::WorldType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The game's own world: no world type is made, only the setup runs.",
+          "identifier": "Vanilla",
+          "value": "vanilla"
+        },
+        {
+          "desc": "Empty sky: a flat world with no layers and a sky biome of the project.",
+          "identifier": "Void",
+          "value": "void"
+        },
+        {
+          "desc": "A flat world of the given layers.",
+          "identifier": "Flat",
+          "value": "flat"
+        },
+        {
+          "desc": "Floating islands over the void.",
+          "identifier": "SkyIslands",
+          "value": "sky_islands"
+        },
+        {
+          "desc": "A world preset of the project, named in `preset`.",
+          "identifier": "Preset",
+          "value": "preset"
+        }
+      ]
+    },
     "::msm::geometry::Bone": {
       "fields": [
         {
@@ -25099,6 +26723,10 @@
         }
       ]
     },
+    "::msm::vanilla_overlay::DimensionOriginPlacement": {
+      "fields": [],
+      "kind": "struct"
+    },
     "::msm::vehicle::VehicleAmmo": {
       "fields": [
         {
@@ -26750,6 +28378,12 @@
     }
   },
   "mcdoc/dispatcher": {
+    "minecraft:structure_placement": {
+      "dimension_origin": {
+        "kind": "reference",
+        "path": "::msm::vanilla_overlay::DimensionOriginPlacement"
+      }
+    },
     "msm:action": {
       "apply_effect": {
         "kind": "reference",
@@ -27278,6 +28912,20 @@
         "path": "::msm::definition::IntegerGameRule"
       }
     },
+    "msm:games_number_format": {
+      "blank": {
+        "kind": "reference",
+        "path": "::msm::games::BlankNumberFormat"
+      },
+      "fixed": {
+        "kind": "reference",
+        "path": "::msm::games::FixedNumberFormat"
+      },
+      "styled": {
+        "kind": "reference",
+        "path": "::msm::games::StyledNumberFormat"
+      }
+    },
     "msm:hud_value": {
       "data": {
         "kind": "reference",
@@ -27793,5 +29441,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:482bdc434b2d5a7060fb6d6de164bee3368042157170d843f909341eff1b0a0e"
+  "ref": "msm-mcdoc:sha256:eb8b4e4dd880e5dbcf57f6f64f140deee523110bc337054e80ccd08afbaf736f"
 }

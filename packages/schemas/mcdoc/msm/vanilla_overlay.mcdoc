@@ -1,0 +1,15 @@
+// Vanilla overlay (B549, ADR 0114 D2): members of vanilla dispatchers that the vendored
+// vanilla-mcdoc lacks, measured in the game. Each one is a `dispatch minecraft:<registry>[<key>]`
+// to a type of this module; `tools/build-msm-mcdoc` allows MSM members in a `minecraft:`
+// dispatcher only here, and `createSchemaIndex` adds them under the vanilla dispatcher only where
+// the target's export has no member of that key (vanilla wins on a clash, so a later
+// vanilla-mcdoc that models the case replaces the overlay by itself). Every member is
+// version-independent: it was measured on every supported target.
+
+/// The `dimension_origin` structure placement (B547, Y1, on 26.3 and 26.4-snapshot-7): the
+/// structure set places one start in chunk 0 0 of every dimension whose generator uses the set
+/// (a flat generator must list the set in `structure_overrides` or leave that key out). It has
+/// no fields; the game ignores `salt`, `frequency`, `locate_offset` and any other key. With an
+/// absolute `start_height` the piece's bottom is one block below it, the piece is rotated at
+/// random about the origin, and nothing is placed with "Generate structures" off.
+dispatch minecraft:structure_placement[dimension_origin] to struct DimensionOriginPlacement {}

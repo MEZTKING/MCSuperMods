@@ -68,9 +68,33 @@ export function sourceRef(files: readonly { name: string; text: string }[]): str
 export const VANILLA_DISPATCHER_PREFIX = 'minecraft:';
 
 /**
+ * The module of the vanilla overlay (`vanilla_overlay.mcdoc`, B549): the only types an MSM
+ * member of a `minecraft:` dispatcher may reference. `createSchemaIndex` adds such a member only
+ * where the target's own export has no member of that key.
+ */
+export const VANILLA_OVERLAY_PREFIX = `${MSM_PATH_PREFIX}::vanilla_overlay::`;
+
+/** Whether a `minecraft:` dispatcher entry has members, each a reference into the overlay. */
+function isOverlayEntry(members: Record<string, unknown>): boolean {
+  const values = Object.values(members);
+  return (
+    values.length > 0 &&
+    values.every(
+      (member) =>
+        isRecord(member) &&
+        member.kind === 'reference' &&
+        typeof member.path === 'string' &&
+        member.path.startsWith(VANILLA_OVERLAY_PREFIX),
+    )
+  );
+}
+
+/**
  * Problems that mcdoc-cli does not report: a type path or dispatcher outside `::msm` /
- * `msm:`, a reference to a path the export lacks, a dispatcher spread over an unknown
- * registry (a `minecraft:` registry counts as known: it is vanilla's). Empty means valid.
+ * `msm:` (a `minecraft:` dispatcher entry whose members all reference the vanilla overlay's
+ * types is allowed), a reference to a path the export lacks, a dispatcher spread over an
+ * unknown registry (a `minecraft:` registry counts as known: it is vanilla's). Empty means
+ * valid.
  */
 export function checkSymbols(symbols: MsmSymbols): string[] {
   const problems: string[] = [];
@@ -81,7 +105,10 @@ export function checkSymbols(symbols: MsmSymbols): string[] {
     if (!path.startsWith(`${MSM_PATH_PREFIX}::`)) problems.push(`${path}: not under ::msm`);
   }
   for (const registry of registries) {
-    if (!registry.startsWith('msm:')) problems.push(`dispatcher ${registry}: not under msm:`);
+    if (registry.startsWith('msm:')) continue;
+    const members = symbols['mcdoc/dispatcher'][registry] ?? {};
+    if (registry.startsWith(VANILLA_DISPATCHER_PREFIX) && isOverlayEntry(members)) continue;
+    problems.push(`dispatcher ${registry}: not under msm:`);
   }
   const visit = (value: unknown, where: string): void => {
     if (Array.isArray(value)) {

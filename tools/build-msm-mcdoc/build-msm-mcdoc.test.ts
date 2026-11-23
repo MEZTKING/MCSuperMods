@@ -40,10 +40,12 @@ describe('build-msm-mcdoc', () => {
       'controls.mcdoc',
       'definition.mcdoc',
       'element.mcdoc',
+      'games.mcdoc',
       'geometry.mcdoc',
       'mod.mcdoc',
       'recipe.mcdoc',
       'rules.mcdoc',
+      'vanilla_overlay.mcdoc',
       'vehicle.mcdoc',
     ]);
     const fresh = await exportMsmMcdoc();
@@ -84,6 +86,29 @@ describe('build-msm-mcdoc', () => {
     const symbols = await exportMsmMcdoc(dir);
     expect(Object.keys(symbols['mcdoc/dispatcher'])).toEqual([]);
     expect(JSON.stringify(symbols.mcdoc)).toContain('"registry":"minecraft:data_component"');
+  }, 60_000);
+
+  it('exports a vanilla overlay member and refuses any other MSM member of a vanilla dispatcher (B549)', async () => {
+    const overlay = await exportMsmMcdoc(
+      await sourceFolder({
+        'vanilla_overlay.mcdoc':
+          'dispatch minecraft:structure_placement[dimension_origin] to struct DimensionOriginPlacement {}\n',
+      }),
+    );
+    expect(overlay['mcdoc/dispatcher']).toEqual({
+      'minecraft:structure_placement': {
+        dimension_origin: {
+          kind: 'reference',
+          path: '::msm::vanilla_overlay::DimensionOriginPlacement',
+        },
+      },
+    });
+    const dir = await sourceFolder({
+      'a.mcdoc': 'dispatch minecraft:structure_placement[elsewhere] to struct Elsewhere {}\n',
+    });
+    await expect(exportMsmMcdoc(dir)).rejects.toThrow(
+      /dispatcher minecraft:structure_placement: not under msm:/,
+    );
   }, 60_000);
 
   it('withoutUsedVanillaDispatchers keeps msm entries and vanilla entries with members', () => {

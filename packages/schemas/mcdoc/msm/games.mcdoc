@@ -1,0 +1,455 @@
+// MSM game kits, the element data of the games plugin's six kinds (ADR 0113 D2 to D7, frozen by
+// B549): `msm:world_setup`, `msm:one_block`, `msm:team`, `msm:objective`, `msm:timer` and
+// `msm:area`. They are editor-only: `@msm/plugin-games` lowers them to plain data pack files
+// (functions, function tags, advancements, predicates, structure sets, world presets,
+// dimensions, biomes and lang), so the runtime never reads this format and the conformance
+// corpus has no games files. Positions are block positions `[x, y, z]`. Names that the game
+// shows (teams, objectives, areas, phases, timers) are plain text. Checks the schema cannot make
+// (one world setup per project, at most four one-block positions, area boxes ordered, structures
+// that exist and fit, criteria and game rule names from the target's facts) are the plugin
+// validators'.
+
+use super::definition::BossBarColour
+
+// ---------------------------------------------------------------------------------------------
+// Shared
+// ---------------------------------------------------------------------------------------------
+
+/// A block position `[x, y, z]`.
+type BlockPos = [int] @ 3
+
+/// A game mode (vanilla's four).
+enum(string) GameMode {
+	Survival = "survival",
+	Creative = "creative",
+	Adventure = "adventure",
+	Spectator = "spectator",
+}
+
+/// A difficulty.
+enum(string) Difficulty {
+	Peaceful = "peaceful",
+	Easy = "easy",
+	Normal = "normal",
+	Hard = "hard",
+}
+
+/// A text colour of a team (vanilla's sixteen chat colours, plus `reset` for none).
+enum(string) TeamColour {
+	Black = "black",
+	DarkBlue = "dark_blue",
+	DarkGreen = "dark_green",
+	DarkAqua = "dark_aqua",
+	DarkRed = "dark_red",
+	DarkPurple = "dark_purple",
+	Gold = "gold",
+	Gray = "gray",
+	DarkGray = "dark_gray",
+	Blue = "blue",
+	Green = "green",
+	Aqua = "aqua",
+	Red = "red",
+	LightPurple = "light_purple",
+	Yellow = "yellow",
+	White = "white",
+	Reset = "reset",
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:world_setup (ADR 0113 D2, ADR 0114 D1, D2)
+// ---------------------------------------------------------------------------------------------
+
+/// What kind of world the game is played in (ADR 0114 D1).
+enum(string) WorldType {
+	/// The game's own world: no world type is made, only the setup runs.
+	Vanilla = "vanilla",
+	/// Empty sky: a flat world with no layers and a sky biome of the project.
+	Void = "void",
+	/// A flat world of the given layers.
+	Flat = "flat",
+	/// Floating islands over the void.
+	SkyIslands = "sky_islands",
+	/// A world preset of the project, named in `preset`.
+	Preset = "preset",
+}
+
+/// What the Nether or the End is in the game's world type.
+enum(string) OtherDimension {
+	/// The game's own Nether or End.
+	Vanilla = "vanilla",
+	/// Empty: a flat dimension with no layers. A void End needs an End portal frame in the start
+	/// structure to be reached.
+	Void = "void",
+}
+
+/// One layer of a flat world, bottom first (vanilla's flat layer).
+struct FlatLayer {
+	/// The block of the layer.
+	block: #[id="block"] string,
+	/// How many blocks thick, 0 to 4096.
+	height: int @ 0..4096,
+}
+
+/// The world the game is played in (ADR 0114 D1).
+struct GameWorld {
+	/// The world type.
+	type: WorldType,
+	/// The project world preset, for the type `preset`.
+	preset?: #[id="worldgen/world_preset"] string,
+	/// The layers, bottom first, for the type `flat`.
+	layers?: [FlatLayer] @ ..64,
+	/// The biome of a `void`, `flat` or `sky_islands` world; absent means the plugin's own sky
+	/// biome, with plains-like mob spawns and no features.
+	biome?: #[id="worldgen/biome"] string,
+	/// The Nether.
+	nether: OtherDimension,
+	/// The End.
+	end: OtherDimension,
+}
+
+/// When the start structure is placed (ADR 0114 D2).
+enum(string) StartWhen {
+	/// By the first player's first-join function (the default; works with "Generate
+	/// structures" off and in a world made before the pack).
+	FirstJoin = "first_join",
+	/// While the world generates, by a `dimension_origin` structure set (Advanced). The game
+	/// rotates the piece at random about `at`, and nothing is placed with "Generate structures"
+	/// off.
+	WorldGeneration = "world_generation",
+}
+
+/// The structure the game starts on, such as a Skyblock island (ADR 0114 D2).
+struct Start {
+	/// The structure template placed.
+	structure: #[id="structure"] string,
+	/// Where its corner goes; defaults to `[0, 64, 0]`.
+	at?: BlockPos,
+	/// The world spawn, relative to `at`.
+	spawn: BlockPos,
+	/// Defaults to `first_join`.
+	when?: StartWhen,
+}
+
+/// One item of a new player's kit.
+struct KitItem {
+	/// The item.
+	item: #[id="item"] string,
+	/// How many, 1 to 99.
+	count: int @ 1..99,
+	/// The slot, as `/item replace` names it (such as `hotbar.0` or `armor.head`); absent means
+	/// the first free slot.
+	slot?: string,
+}
+
+/// An effect given to a new player.
+struct KitEffect {
+	/// The effect.
+	effect: #[id="mob_effect"] string,
+	/// How long, 1 to 1,000,000 seconds.
+	seconds: int @ 1..1000000,
+	/// The level minus one, 0 to 255; defaults to 0.
+	amplifier?: int @ 0..255,
+	/// Defaults to false.
+	hide_particles?: boolean,
+}
+
+/// What a new player gets, once per player (ADR 0113 D2). The kit is `items` or a `loot_table`,
+/// not both (checked by the plugin validators).
+struct NewPlayer {
+	/// The kit's items.
+	items?: [KitItem] @ ..41,
+	/// A loot table rolled into the player's inventory, in place of `items`.
+	loot_table?: #[id="loot_table"] string,
+	/// A message shown in the player's chat.
+	message?: string,
+	/// A dialog shown to the player.
+	dialog?: #[id="dialog"] string,
+	/// Effects given to the player.
+	effects?: [KitEffect] @ ..16,
+}
+
+/// How the game's world starts (ADR 0113 D2): at most one per project. The "once" parts run
+/// once for the world (game mode, difficulty, game rules, the start structure) and once for
+/// each player (`new_player`).
+struct WorldSetup {
+	/// The world the game is played in.
+	world: GameWorld,
+	/// The structure the game starts on.
+	start?: Start,
+	/// The `respawn_radius` game rule around the world spawn; defaults to 0.
+	spawn_radius?: int @ 0..,
+	/// The game mode of every player.
+	game_mode: GameMode,
+	/// The world's difficulty.
+	difficulty: Difficulty,
+	/// Game rules set once when the world first starts: a vanilla rule or a project
+	/// `msm:game_rule`, with an on or off value or a whole number.
+	game_rules: struct {
+		[#[id="game_rule"] string]: (boolean | int),
+	},
+	/// What a new player gets.
+	new_player?: NewPlayer,
+	/// The root advancement of the game's goals, named in the welcome.
+	goals?: #[id="advancement"] string,
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:one_block (ADR 0113 D3)
+// ---------------------------------------------------------------------------------------------
+
+/// A block a phase can turn into, picked by weight.
+struct WeightedBlock {
+	/// The block.
+	block: #[id="block"] string,
+	/// Its weight, 1 or more.
+	weight: int @ 1..,
+}
+
+/// A mob a phase can summon above the block, picked by weight.
+struct WeightedMob {
+	/// The mob.
+	mob: #[id="entity_type"] string,
+	/// Its weight, 1 or more.
+	weight: int @ 1..,
+}
+
+/// One phase of a one block: what the block turns into for a number of breaks.
+struct OneBlockPhase {
+	/// The phase's name, shown when it starts if `announce` is on.
+	name: string @ 1..64,
+	/// How many breaks the phase lasts, 1 to 100,000.
+	breaks: int @ 1..100000,
+	/// The blocks it turns into.
+	blocks: [WeightedBlock] @ 1..64,
+	/// The mobs it may summon.
+	mobs?: [WeightedMob] @ ..32,
+	/// The chance, 0 to 1, that a break summons a mob of `mobs`.
+	mob_chance: double @ 0..1,
+	/// The chance, 0 to 1, that the block turns into a chest of `chest_loot`.
+	chest_chance: double @ 0..1,
+	/// The chest's loot table.
+	chest_loot?: #[id="loot_table"] string,
+}
+
+/// A block that turns into the next block each time it is broken, in phases (ADR 0113 D3). At
+/// most four per world (limit M6, checked by the plugin validators).
+struct OneBlock {
+	/// The block's position.
+	at: BlockPos,
+	/// The dimension; defaults to `minecraft:overworld`.
+	dimension?: #[id="dimension"] string,
+	/// The phases, in order.
+	phases: [OneBlockPhase] @ 1..64,
+	/// Whether the last phase is followed by the first again.
+	loop: boolean,
+	/// Whether each phase's name is shown in chat when it starts.
+	announce: boolean,
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:team (ADR 0113 D4)
+// ---------------------------------------------------------------------------------------------
+
+/// Whose name tags the team's players see (vanilla's team option values).
+enum(string) NameTagVisibility {
+	Always = "always",
+	Never = "never",
+	HideForOtherTeams = "hideForOtherTeams",
+	HideForOwnTeam = "hideForOwnTeam",
+}
+
+/// Whom the team's players push (vanilla's team option values).
+enum(string) CollisionRule {
+	Always = "always",
+	Never = "never",
+	PushOtherTeams = "pushOtherTeams",
+	PushOwnTeam = "pushOwnTeam",
+}
+
+/// A team (ADR 0113 D4), made when the world loads if missing; its options are set on every
+/// load. MSM never removes a team (limit M7).
+struct Team {
+	/// The team's display name.
+	name: string @ 1..,
+	/// The colour of its players' names.
+	colour: TeamColour,
+	/// Whether its players can hurt each other.
+	friendly_fire: boolean,
+	/// Whether its players see invisible team mates.
+	see_invisible_friends: boolean,
+	/// Whose name tags its players see.
+	name_tags: NameTagVisibility,
+	/// Whom its players push.
+	collision: CollisionRule,
+	/// Text before its players' names.
+	prefix?: string,
+	/// Text after its players' names.
+	suffix?: string,
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:objective (ADR 0113 D5)
+// ---------------------------------------------------------------------------------------------
+
+/// Where an objective is shown: nowhere, a display slot, or the sidebar of one team colour.
+enum(string) ObjectiveDisplay {
+	None = "none",
+	Sidebar = "sidebar",
+	List = "list",
+	BelowName = "below_name",
+	SidebarTeamBlack = "sidebar.team.black",
+	SidebarTeamDarkBlue = "sidebar.team.dark_blue",
+	SidebarTeamDarkGreen = "sidebar.team.dark_green",
+	SidebarTeamDarkAqua = "sidebar.team.dark_aqua",
+	SidebarTeamDarkRed = "sidebar.team.dark_red",
+	SidebarTeamDarkPurple = "sidebar.team.dark_purple",
+	SidebarTeamGold = "sidebar.team.gold",
+	SidebarTeamGray = "sidebar.team.gray",
+	SidebarTeamDarkGray = "sidebar.team.dark_gray",
+	SidebarTeamBlue = "sidebar.team.blue",
+	SidebarTeamGreen = "sidebar.team.green",
+	SidebarTeamAqua = "sidebar.team.aqua",
+	SidebarTeamRed = "sidebar.team.red",
+	SidebarTeamLightPurple = "sidebar.team.light_purple",
+	SidebarTeamYellow = "sidebar.team.yellow",
+	SidebarTeamWhite = "sidebar.team.white",
+}
+
+/// How an objective's scores are drawn in the player list.
+enum(string) ObjectiveRender {
+	Integer = "integer",
+	Hearts = "hearts",
+}
+
+/// How a score's number is written.
+enum(string) NumberFormatType {
+	/// No number.
+	Blank = "blank",
+	/// A fixed text in place of the number.
+	Fixed = "fixed",
+	/// The number in a style.
+	Styled = "styled",
+}
+
+/// Fields of a `blank` number format.
+dispatch msm:games_number_format[blank] to struct BlankNumberFormat {}
+
+/// Fields of a `fixed` number format.
+dispatch msm:games_number_format[fixed] to struct FixedNumberFormat {
+	/// The text shown in place of the number.
+	text: string,
+}
+
+/// Fields of a `styled` number format.
+dispatch msm:games_number_format[styled] to struct StyledNumberFormat {
+	/// The number's colour; absent means the slot's own.
+	colour?: TeamColour,
+	/// Defaults to false.
+	bold?: boolean,
+	/// Defaults to false.
+	italic?: boolean,
+}
+
+/// How an objective's numbers are written.
+struct NumberFormat {
+	/// The format.
+	type: NumberFormatType,
+	...msm:games_number_format[[type]],
+}
+
+/// A scoreboard objective (ADR 0113 D5), made when the world loads if missing. MSM never
+/// removes an objective (limit M7).
+struct Objective {
+	/// What counts: `dummy` (changed only by commands and Rules), a vanilla criterion such as
+	/// `playerKillCount` or `minecraft.mined:minecraft.stone`, or a project statistic
+	/// (`minecraft.custom:<namespace>.<path>`). Checked against the target's facts by the plugin
+	/// validators.
+	criterion: string @ 1..,
+	/// The objective's display name.
+	name: string @ 1..,
+	/// Where it is shown.
+	display: ObjectiveDisplay,
+	/// How its scores are drawn in the player list.
+	render: ObjectiveRender,
+	/// How its numbers are written; absent means plain numbers.
+	number_format?: NumberFormat,
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:timer (ADR 0113 D6)
+// ---------------------------------------------------------------------------------------------
+
+/// Which way a timer counts.
+enum(string) TimerCount {
+	Down = "down",
+	Up = "up",
+}
+
+/// Where a timer is shown.
+enum(string) TimerShow {
+	BossBar = "boss_bar",
+	ActionBar = "action_bar",
+	None = "none",
+}
+
+/// When a timer starts.
+enum(string) TimerStarts {
+	/// By a Rules step or a function.
+	Manual = "manual",
+	/// When the world first starts.
+	WorldStart = "world_start",
+}
+
+/// A timer in whole seconds (ADR 0113 D6, limit M9), shared by every player.
+struct Timer {
+	/// The text shown with the time on its boss bar or action bar; absent means the time alone.
+	name?: string,
+	/// How long, 1 to 86,400 seconds (one day).
+	seconds: int @ 1..86400,
+	/// Which way it counts.
+	count: TimerCount,
+	/// Where it is shown.
+	show: TimerShow,
+	/// The boss bar's colour.
+	colour: BossBarColour,
+	/// A function run when the time is up.
+	on_end?: #[id="function"] string,
+	/// Whether it starts again when the time is up.
+	repeat: boolean,
+	/// When it starts.
+	starts: TimerStarts,
+}
+
+// ---------------------------------------------------------------------------------------------
+// msm:area (ADR 0113 D7)
+// ---------------------------------------------------------------------------------------------
+
+/// A structure placed when an area is reset.
+struct AreaStructure {
+	/// The structure template.
+	structure: #[id="structure"] string,
+	/// Where its corner goes.
+	at: BlockPos,
+}
+
+/// What resetting an area does: the entities in the box are removed, then the structures are
+/// placed in order.
+struct AreaReset {
+	/// The structures placed, in order.
+	structures: [AreaStructure] @ 1..64,
+}
+
+/// A box of blocks that knows when a player walks in or out (ADR 0113 D7). Areas are boxes only
+/// (limit M8); `from` and `to` are its two corners, both inside.
+struct Area {
+	/// The area's name, as players see it.
+	name: string @ 1..,
+	/// The dimension.
+	dimension: #[id="dimension"] string,
+	/// One corner.
+	from: BlockPos,
+	/// The opposite corner.
+	to: BlockPos,
+	/// How the area is reset.
+	reset?: AreaReset,
+}

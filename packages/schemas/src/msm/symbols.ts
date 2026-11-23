@@ -61,6 +61,11 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
  *   the rules plugin compiles it at lowering time into events and a script, so no runtime
  *   definition exists and the conformance corpus has no rule book files.
+ * - `worldSetup`, `oneBlock`, `team`, `objective`, `timer`, `area`: element data of the games
+ *   plugin's six kinds `msm:world_setup`, `msm:one_block`, `msm:team`, `msm:objective`,
+ *   `msm:timer` and `msm:area` (ADR 0113 D2 to D7, `games.mcdoc`). Editor-only: the games plugin
+ *   lowers them to plain data pack files, so no runtime definition exists and the conformance
+ *   corpus has no games files.
  * - `machineRecipe`: a machine recipe file `data/<ns>/recipe/<path>.json` whose `type` is a
  *   machine block's id (ADR 0075 D2, D8); vanilla's recipe dispatch does not know such types.
  */
@@ -108,6 +113,12 @@ export const MSM_SCHEMA_REFS = {
   gameRuleDefinition: 'msm:game_rule_definition',
   stat: 'msm:stat',
   statDefinition: 'msm:stat_definition',
+  worldSetup: 'msm:world_setup',
+  oneBlock: 'msm:one_block',
+  team: 'msm:team',
+  objective: 'msm:objective',
+  timer: 'msm:timer',
+  area: 'msm:area',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -155,6 +166,12 @@ export const MSM_TYPE_PATHS = {
   gameRuleDefinition: '::msm::definition::GameRule',
   stat: '::msm::element::Stat',
   statDefinition: '::msm::definition::Stat',
+  worldSetup: '::msm::games::WorldSetup',
+  oneBlock: '::msm::games::OneBlock',
+  team: '::msm::games::Team',
+  objective: '::msm::games::Objective',
+  timer: '::msm::games::Timer',
+  area: '::msm::games::Area',
   action: '::msm::action::Action',
 } as const;
 
@@ -203,6 +220,12 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.gameRuleDefinition]: MSM_TYPE_PATHS.gameRuleDefinition,
   [MSM_SCHEMA_REFS.stat]: MSM_TYPE_PATHS.stat,
   [MSM_SCHEMA_REFS.statDefinition]: MSM_TYPE_PATHS.statDefinition,
+  [MSM_SCHEMA_REFS.worldSetup]: MSM_TYPE_PATHS.worldSetup,
+  [MSM_SCHEMA_REFS.oneBlock]: MSM_TYPE_PATHS.oneBlock,
+  [MSM_SCHEMA_REFS.team]: MSM_TYPE_PATHS.team,
+  [MSM_SCHEMA_REFS.objective]: MSM_TYPE_PATHS.objective,
+  [MSM_SCHEMA_REFS.timer]: MSM_TYPE_PATHS.timer,
+  [MSM_SCHEMA_REFS.area]: MSM_TYPE_PATHS.area,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;
@@ -219,6 +242,10 @@ export function msmMcdocSymbols(): VanillaMcdocSymbols {
 /**
  * `vanilla` with the MSM types and dispatchers added. MSM type paths live under `::msm` and
  * dispatchers under `msm:`, so nothing vanilla is replaced; on a clash the vanilla entry wins.
+ * The vanilla overlay (`vanilla_overlay.mcdoc`, B549) is the one exception to the `msm:` rule:
+ * its members of `minecraft:` dispatchers (such as `minecraft:structure_placement`'s
+ * `dimension_origin`, which the vendored vanilla-mcdoc lacks) join the vanilla dispatcher, and a
+ * member the vanilla export has itself still wins.
  */
 export function mergeMsmSymbols(vanilla: VanillaMcdocSymbols): VanillaMcdocSymbols {
   const msm = msmMcdocSymbols();

@@ -51,6 +51,7 @@ describe('ProjectSession: projects', () => {
       'msm.scripting',
       'msm.rules',
       'msm.controls',
+      'msm.games',
     ]);
     expect(project?.plugins).not.toContain('msm.library');
     expect(project?.namespaces.map((namespace) => namespace.name)).toEqual(['demo']);

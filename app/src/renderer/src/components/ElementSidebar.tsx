@@ -115,6 +115,13 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:rules': 'Rule books',
   'msm:key_bind': 'Key binds',
   'msm:hud': 'On-screen elements',
+  // The games kinds (ADR 0113, B549).
+  'msm:world_setup': 'How my world starts',
+  'msm:one_block': 'One blocks',
+  'msm:team': 'Teams',
+  'msm:objective': 'Scores',
+  'msm:timer': 'Timers',
+  'msm:area': 'Areas',
 };
 
 /** Groups Easy mode folds under "More": the files behind content (ADR 0047 D1). */
