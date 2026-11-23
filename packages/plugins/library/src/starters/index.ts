@@ -55,6 +55,11 @@ import { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
 import { GAME_RULE_PARAMETERS, gameRuleBundle } from './game-rule';
+import { bedWarsStarter } from './games/bed-wars';
+import { lifestealStarter } from './games/lifesteal';
+import { manhuntStarter } from './games/manhunt';
+import type { GameTypeStarterSpec } from './games/spec';
+import { spleefStarter } from './games/spleef';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { GLIDER_PARAMETERS, gliderBundle } from './glider';
 import { GOALS_PARAMETERS, goalsBundle } from './goals';
@@ -306,6 +311,37 @@ function starter(
   if (options.creator !== undefined) entry.creator = { ...options.creator };
   if (options.supports !== undefined) entry.supports = options.supports;
   return Object.freeze(entry);
+}
+
+/**
+ * The game types of the Game and map Studio (ADR 0132 D2, D8; plan `docs/PLAN-game-studio.md`),
+ * in the catalogue's order: one file each under `games/`, which says whether it is listed yet
+ * (B721's stubs are not; B733 fills and lists batch 1's four). Later types add a line here.
+ */
+const GAME_TYPE_STARTERS: readonly GameTypeStarterSpec[] = [
+  lifestealStarter,
+  manhuntStarter,
+  bedWarsStarter,
+  spleefStarter,
+];
+
+/** A game type's starter, with the fields its file adds (`extra`). */
+function gameTypeStarter(spec: GameTypeStarterSpec): ProjectStarter {
+  const options: Parameters<typeof starter>[6] = {};
+  if (spec.supports !== undefined) options.supports = spec.supports;
+  if (spec.parameters !== undefined) options.parameters = spec.parameters;
+  if (spec.creator !== undefined) options.creator = spec.creator;
+  if (spec.probeValues !== undefined) options.probeValues = spec.probeValues;
+  const made = starter(
+    spec.id,
+    spec.title,
+    spec.description,
+    'content',
+    [...spec.layers],
+    spec.build,
+    options,
+  );
+  return spec.extra === undefined ? made : Object.freeze({ ...made, ...spec.extra });
 }
 
 const BOTH: OutputLayer[] = ['resourcepack', 'datapack'];
@@ -1316,6 +1352,8 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       probeValues: [{ counts: true }],
     },
   ),
+  // The game types of the Game and map Studio (ADR 0132), each once its file lists it.
+  ...GAME_TYPE_STARTERS.filter((spec) => spec.listed).map(gameTypeStarter),
   // The game flows (ADR 0117 D2, D3; B557), group `games`, in Home's order.
   starter(
     'skyblock',

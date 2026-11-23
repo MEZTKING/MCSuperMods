@@ -3,6 +3,10 @@
  * `msm:one_block`, `msm:team`, `msm:objective`, `msm:timer` and `msm:area`, each with its schema
  * in `@msm/schemas`' `games.mcdoc` (B549). The kinds are editor-only: they lower to plain data
  * pack files (B551 and B552 fill the lowering; until then each kind lowers to nothing).
+ *
+ * The Game and map Studio's kinds `msm:game` and `msm:kit` (ADR 0132 D1, D3; B721) are defined
+ * in `game.ts` and `kit.ts`, each with its own flag: they join the lists below only once their
+ * file says they are listed (B722), so this index never changes for them.
  */
 import type { ElementKind, Json } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
@@ -12,9 +16,14 @@ import { lowerOneBlock } from '../lowering/one-block';
 import { lowerTeam } from '../lowering/team';
 import { lowerTimer } from '../lowering/timer';
 import { lowerWorldSetup } from '../lowering/world-setup';
+import { GAME_KIND_LISTED, gameKind } from './game';
+import { KIT_KIND_LISTED, kitKind } from './kit';
 
-/** The kind ids this plugin contributes, in order. */
-export const GAMES_KIND_IDS = [
+export { GAME_KIND_LISTED, gameKind } from './game';
+export { KIT_KIND_LISTED, kitKind } from './kit';
+
+/** The six kinds of the game pieces (ADR 0113), in order. */
+const PIECE_KIND_IDS = [
   'msm:world_setup',
   'msm:one_block',
   'msm:team',
@@ -23,8 +32,18 @@ export const GAMES_KIND_IDS = [
   'msm:area',
 ] as const;
 
-/** A kind id of this plugin. */
-export type GamesKindId = (typeof GAMES_KIND_IDS)[number];
+/** A kind id of this plugin: a piece's, or the Game and map Studio's `msm:game` or `msm:kit`. */
+export type GamesKindId = (typeof PIECE_KIND_IDS)[number] | 'msm:game' | 'msm:kit';
+
+/**
+ * The kind ids this plugin contributes, in order: the six pieces, then `msm:game` and `msm:kit`
+ * once their files list them (B722).
+ */
+export const GAMES_KIND_IDS: readonly GamesKindId[] = Object.freeze([
+  ...PIECE_KIND_IDS,
+  ...(GAME_KIND_LISTED ? (['msm:game'] as const) : []),
+  ...(KIT_KIND_LISTED ? (['msm:kit'] as const) : []),
+]);
 
 /** Lowering until B551 and B552: no files yet. */
 const lowerNothing = (): [] => [];
@@ -140,4 +159,6 @@ export const gamesKinds: readonly ElementKind[] = Object.freeze([
   objectiveKind,
   timerKind,
   areaKind,
+  ...(GAME_KIND_LISTED ? [gameKind] : []),
+  ...(KIT_KIND_LISTED ? [kitKind] : []),
 ]);

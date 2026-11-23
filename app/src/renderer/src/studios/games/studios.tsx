@@ -2,11 +2,15 @@
  * The games Studios (ADR 0117 D1; B555), discovered by `studios/studio-registry.ts`: the World
  * Setup, One Block, Team, Objective, Timer and Area Studios for the games kinds of
  * `@msm/plugin-games`, each loaded with `React.lazy` (a chunk of its own, so the main chunk does
- * not grow) and each with its list of common sections (`studios/plain.ts`).
+ * not grow) and each with its list of common sections (`studios/plain.ts`). The Game and Kit
+ * Studios of the Game and map Studio (ADR 0132; B721 stubs, B732 fills them) are listed once the
+ * plugin lists their kinds (`GAME_KIND_LISTED`, `KIT_KIND_LISTED`, B722); their common sections
+ * are in `game-sections/common.ts`.
  *
  * @packageDocumentation
  */
 
+import { GAME_KIND_LISTED, KIT_KIND_LISTED } from '@msm/plugin-games';
 import { type ComponentType, type LazyExoticComponent, lazy, Suspense } from 'react';
 import {
   AREA_COMMON_SECTIONS,
@@ -17,6 +21,7 @@ import {
   WORLD_SETUP_COMMON_SECTIONS,
 } from '../plain';
 import type { StudioEntry, StudioProps } from '../types';
+import { GAME_COMMON_SECTIONS, KIT_COMMON_SECTIONS } from './game-sections/common';
 
 /** A lazy Studio behind its loading line (`<testId>-studio-loading`). */
 function lazyStudio(
@@ -41,7 +46,31 @@ function lazyStudio(
   return LazyStudio;
 }
 
-/** The games area's Studio entries, one per kind. */
+/** The Game Studio for `msm:game` (ADR 0132 D1). */
+const gameStudio: StudioEntry = {
+  id: 'msm.games.game',
+  kindId: 'msm:game',
+  component: lazyStudio(
+    lazy(() => import('./GameStudio')),
+    'Game Studio',
+    'game',
+  ),
+  common: GAME_COMMON_SECTIONS,
+};
+
+/** The Kit Studio for `msm:kit` (ADR 0132 D3). */
+const kitStudio: StudioEntry = {
+  id: 'msm.games.kit',
+  kindId: 'msm:kit',
+  component: lazyStudio(
+    lazy(() => import('./KitStudio')),
+    'Kit Studio',
+    'kit',
+  ),
+  common: KIT_COMMON_SECTIONS,
+};
+
+/** The games area's Studio entries, one per listed kind. */
 export const studios: StudioEntry[] = [
   {
     id: 'msm.games.world-setup',
@@ -103,4 +132,6 @@ export const studios: StudioEntry[] = [
     ),
     common: AREA_COMMON_SECTIONS,
   },
+  ...(GAME_KIND_LISTED ? [gameStudio] : []),
+  ...(KIT_KIND_LISTED ? [kitStudio] : []),
 ];

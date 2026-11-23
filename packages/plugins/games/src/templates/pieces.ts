@@ -4,6 +4,7 @@
  * jar.
  */
 import type { ElementTemplate, Json } from '@msm/plugin-api';
+import { gameTemplates } from './game';
 
 const CATEGORY = 'Games';
 
@@ -188,4 +189,6 @@ export const piecesTemplates: readonly ElementTemplate[] = Object.freeze([
       to: [31, 79, 31],
     }),
   },
+  // The Game and map Studio's game and kit (ADR 0132), listed once their kinds are (B722).
+  ...gameTemplates,
 ]);

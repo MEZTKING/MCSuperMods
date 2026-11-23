@@ -296,6 +296,19 @@ jobs:
           test -f "$RUNNER_TEMP/sample-game-modes/msm_sample_game_modes_pack.jar"
           cat "$RUNNER_TEMP/sample-game-modes/fabric-facts.json"
           cat "$RUNNER_TEMP/sample-game-modes/packs.json"
+      # Community games (ADR 0132; B721 placed these steps, B736 makes the fixture): Lifesteal,
+      # Manhunt, Bed Wars-style and Spleef from their starters, as a content jar, a vanilla data
+      # pack with packs.json and that pack as a mod of its own. Every community games step runs
+      # only once the fixture's golden test exists.
+      - name: Export the sample community games with the real runtime
+        if: hashFiles('packages/exporters/test/sample-community-games.golden.test.ts') != ''
+        run: |
+          MSM_SAMPLE_COMMUNITY_GAMES_OUT="$RUNNER_TEMP/sample-community-games" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-community-games.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-community-games/msm_sample_community_games.jar"
+          test -f "$RUNNER_TEMP/sample-community-games/msm_sample_community_games_pack.jar"
+          cat "$RUNNER_TEMP/sample-community-games/fabric-facts.json"
+          cat "$RUNNER_TEMP/sample-community-games/packs.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -477,6 +490,16 @@ jobs:
           --expect-line '[msm_runtime] registered 1 command(s)'
           --work "$RUNNER_TEMP/fabric-server"
           --cache ~/.cache/msm-fabric-server
+      # The sample community games (ADR 0132, B736): data pack files only, so the content jar
+      # loads with no runtime error.
+      - name: Headless Fabric server check (sample community games)
+        if: hashFiles('packages/exporters/test/sample-community-games.golden.test.ts') != ''
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-community-games/msm_sample_community_games.jar"
+          --facts "$RUNNER_TEMP/sample-community-games/fabric-facts.json"
+          --work "$RUNNER_TEMP/fabric-server"
+          --cache ~/.cache/msm-fabric-server
       # The sample mobs and commands (B541): the bed and the planks (2 blocks), their items, the
       # boat, the twelve spawn eggs and the fish bucket (16 items), the twelve mobs, the script, and
       # the lines of batch 2: two fluids with two cauldrons and one bottle, the villager type, the
@@ -582,6 +605,15 @@ jobs:
           node tools/run-fabric-server/vanilla-packs.ts
           --packs "$RUNNER_TEMP/sample-game-modes/packs.json"
           --work "$RUNNER_TEMP/vanilla-packs-game-modes"
+          --cache ~/.cache/msm-fabric-server
+      # The sample community games' vanilla data pack (ADR 0132, B736) on a vanilla server: all
+      # four types play without mods, so every function loads.
+      - name: Headless vanilla server check (sample community games data pack)
+        if: hashFiles('packages/exporters/test/sample-community-games.golden.test.ts') != ''
+        run: >-
+          node tools/run-fabric-server/vanilla-packs.ts
+          --packs "$RUNNER_TEMP/sample-community-games/packs.json"
+          --work "$RUNNER_TEMP/vanilla-packs-community-games"
           --cache ~/.cache/msm-fabric-server
       - name: Build the parity GameTests
         working-directory: engine-mod
@@ -1179,6 +1211,29 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-game-modes-pack.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Community games (ADR 0132, B736): SampleCommunityGamesParityTest on the content jar of
+      # every version and on the vanilla data pack as a mod of its own (--no-runtime), with the
+      # stand-in players of the B720 spike. No ejected run: games are data pack files.
+      - name: Parity GameTests (sample community games, content jar)
+        if: hashFiles('packages/exporters/test/sample-community-games.golden.test.ts') != ''
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-community-games/msm_sample_community_games.jar"
+          --facts "$RUNNER_TEMP/sample-community-games/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_community_games_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-community-games-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample community games, vanilla data pack)
+        if: hashFiles('packages/exporters/test/sample-community-games.golden.test.ts') != ''
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-community-games/msm_sample_community_games_pack.jar"
+          --facts "$RUNNER_TEMP/sample-community-games/fabric-facts.json" --no-runtime
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_community_games_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-community-games-pack.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -1314,6 +1369,14 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-community-games-mc${{ matrix.mc }}
+          path: |
+            ${{ runner.temp }}/sample-community-games/msm_sample_community_games.jar
+            ${{ runner.temp }}/sample-community-games/msm_sample_community_games.zip
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -1358,6 +1421,8 @@ jobs:
             ${{ runner.temp }}/vanilla-packs/server/crash-reports
             ${{ runner.temp }}/vanilla-packs-game-modes/*.log
             ${{ runner.temp }}/vanilla-packs-game-modes/server/crash-reports
+            ${{ runner.temp }}/vanilla-packs-community-games/*.log
+            ${{ runner.temp }}/vanilla-packs-community-games/server/crash-reports
             ${{ runner.temp }}/fabric-server-mob/run-fabric-server.log
             ${{ runner.temp }}/fabric-server-mob/crash-reports
             ${{ runner.temp }}/fabric-server-parity/run-fabric-server.log

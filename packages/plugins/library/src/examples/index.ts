@@ -26,6 +26,7 @@ import {
   behaviourExamples as blocksItemsBehaviourExamples,
   blocksItemsExamples,
 } from './blocks-items';
+import { communityGameExamples } from './community-games';
 import { containerExamples } from './containers';
 import { dataKindExamples } from './data-kinds';
 import { dataPackExamples } from './data-pack';
@@ -55,6 +56,7 @@ import { villagerBehaviourExamples, villagerFluidKindExamples } from './villager
 import { worldgenExamples } from './worldgen';
 import { worldExamples } from './worlds';
 
+export { communityGameExamples } from './community-games';
 export { categoryTag, defineExample, type ExampleInput } from './define';
 export {
   FLOW_EXAMPLE_IDS,
@@ -261,6 +263,7 @@ export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...vehicleBehaviourExamples,
   ...worldExamples,
   ...gameExamples,
+  ...communityGameExamples,
   ...flowExamples,
   ...popularExamples,
   ...starterExamples,

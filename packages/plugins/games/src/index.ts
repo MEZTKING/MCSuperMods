@@ -11,9 +11,13 @@ import { worldSetupValidators } from './validators-world-setup';
 
 export {
   areaKind,
+  GAME_KIND_LISTED,
   GAMES_KIND_IDS,
   type GamesKindId,
+  gameKind,
   gamesKinds,
+  KIT_KIND_LISTED,
+  kitKind,
   objectiveKind,
   oneBlockKind,
   teamKind,
@@ -22,6 +26,16 @@ export {
 } from './kinds/index';
 export { GAMES_CHECKER_CATEGORIES, gamesGeneratedIds } from './lowering/generated-ids';
 export {
+  type GameLoweringContext,
+  lowerGame,
+  lowerKit,
+  lowerMechanic,
+  MECHANIC_LOWERINGS,
+  MECHANIC_TYPES,
+  type MechanicLowering,
+  type MechanicType,
+} from './lowering/index';
+export {
   lowerWorldSetup,
   worldSetupGeneratedIds,
   worldSetupLoadFunction,
@@ -29,6 +43,13 @@ export {
 export { piecesTemplates } from './templates/pieces';
 export { worldSetupTemplates } from './templates/world-setup';
 export { gamesValidators } from './validators';
+export { gameValidator } from './validators-game';
+export { kitValidator } from './validators-kit';
+export {
+  MECHANIC_CHECKS,
+  type MechanicCheck,
+  type MechanicCheckContext,
+} from './validators-mechanics/index';
 export {
   MAX_ONE_BLOCKS,
   MAX_TIMER_SECONDS,
