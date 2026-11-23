@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "#": "minecraft:amethyst_shard",
+      "N": "minecraft:iron_nugget"
+    },
+    "pattern": [
+      "N",
+      "#",
+      "N"
+    ],
+    "result": {
+      "id": "msm_examples:amethyst_chain"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:amethyst_chain_from_amethyst_shard",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "amethyst shard between two iron nuggets makes a chain.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

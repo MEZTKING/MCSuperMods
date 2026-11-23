@@ -1,0 +1,22 @@
+{
+  "data": {
+    "layers": {
+      "wings": [
+        {
+          "texture": "msm_examples:leaf_glider"
+        }
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:leaf_glider_wings",
+  "kind": "minecraft:equipment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the glider looks when worn; the glider's minecraft:equippable names it in asset_id. The wings layer names the texture msm_examples:leaf_glider, the drawn picture textures/entity/equipment/wings/leaf_glider.png in the elytra layout (64 by 32; the game mirrors it for the other wing). Paint over it to make it yours.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

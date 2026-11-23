@@ -1,0 +1,16 @@
+{
+  "data": {
+    "asset_id": "msm_examples:fish_tale_pottery_pattern"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:fish_tale",
+  "kind": "minecraft:decorated_pot_pattern",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The decorated pot pattern. asset_id names its picture, textures/entity/decorated_pot/fish_tale_pottery_pattern.png in this namespace: a fish raised on fired clay, 16 by 16, drawn by MSM. Paint over it to make it yours.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

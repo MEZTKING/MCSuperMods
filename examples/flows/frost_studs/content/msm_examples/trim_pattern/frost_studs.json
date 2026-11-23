@@ -1,0 +1,20 @@
+{
+  "data": {
+    "asset_id": "msm_examples:frost_studs",
+    "decal": false,
+    "description": {
+      "translate": "trim_pattern.msm_examples.frost_studs"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_studs",
+  "kind": "minecraft:trim_pattern",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The trim pattern. asset_id names its two layers in this namespace: textures/trims/entity/humanoid/frost_studs.png for the helmet, chestplate and boots and textures/trims/entity/humanoid_leggings/frost_studs.png for the leggings, studs drawn by MSM in eight greys. The .png.mcmeta beside each names its palette key, textures/palettes/frost_studs_trim_key.png (the same eight greys, lightest first), so the game swaps each grey for the trim material's colour at the same place. description is the tooltip line; decal false draws the trim over the armour's own colours.",
+    "tags": [
+      "example",
+      "armour-trims"
+    ]
+  }
+}

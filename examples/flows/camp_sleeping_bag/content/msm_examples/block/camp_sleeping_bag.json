@@ -1,0 +1,35 @@
+{
+  "data": {
+    "colour": "green",
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      }
+    },
+    "display_name": "Camp Sleeping Bag",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks",
+      "max_stack_size": 1
+    },
+    "loot": "self",
+    "rule": "straw_bed",
+    "sound_type": "wood",
+    "textures": {
+      "bed": "msm_examples:block/camp_sleeping_bag"
+    },
+    "type": "bed"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:camp_sleeping_bag",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Camp Sleeping Bag: two blocks long, placed with the foot towards you. It follows the straw bed rule of the game, as the vanilla straw bed does; it explodes in the Nether and the End. Breaking either half drops one. The picture is on every face, and the item shows the bed itself. Villagers do not use it.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

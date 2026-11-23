@@ -1,0 +1,52 @@
+{
+  "data": {
+    "format": 1,
+    "pools": [
+      {
+        "condition": {
+          "terms": [
+            {
+              "type": "minecraft:killed_by_player"
+            },
+            {
+              "chance": 0.2,
+              "type": "minecraft:random_chance"
+            }
+          ],
+          "type": "minecraft:all_of"
+        },
+        "entries": [
+          {
+            "modifier": [
+              {
+                "count": {
+                  "max": 2,
+                  "min": 1,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              }
+            ],
+            "name": "minecraft:bone_block",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "tables": [
+      "minecraft:entities/skeleton"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:skeleton_drops_bone_block",
+  "kind": "msm:loot_addition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An extra drop: the skeleton drops 1 to 2 minecraft:bone_block, 20 times in 100, only when a player kills it. tables names the vanilla loot tables to add to and pools the pools added to each; the vanilla pools stay. condition holds the checks the pool needs before it rolls; minecraft:all_of needs every one of its terms. The drop comes back after /reload, but a world data pack that replaces the whole table wins. Extra drops need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "additions"
+    ]
+  }
+}

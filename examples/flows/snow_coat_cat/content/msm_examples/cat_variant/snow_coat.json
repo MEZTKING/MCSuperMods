@@ -1,0 +1,26 @@
+{
+  "data": {
+    "asset_id": "msm_examples:entity/cat/snow_coat",
+    "baby_asset_id": "msm_examples:entity/cat/snow_coat_baby",
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "minecraft:snowy_taiga",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:snow_coat",
+  "kind": "minecraft:cat_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new cat skin with a texture for a grown cat (64 by 32 pixels) and one for a baby (32 by 32), under textures/entity/cat/. Its spawn condition ties it to snowy taiga (minecraft:snowy_taiga) with priority 1, so it joins the vanilla skins of that biome; the game picks among the matching skins of the highest priority. Cats spawn in villages and swamp huts. Paint over the drawn textures, keeping their size, to make the skin. Try /summon minecraft:cat ~ ~ ~ {variant:\"msm_examples:snow_coat\"}.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

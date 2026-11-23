@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "#": "minecraft:stick",
+      "X": "minecraft:diamond"
+    },
+    "pattern": [
+      "XXX",
+      "XXX",
+      " # "
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:storm_mace"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:storm_mace_from_diamond",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shaped mace recipe with diamond as the material and the vanilla parts (sticks, string, a tripwire hook or planks). Element ids are unique across kinds, so the recipe has a name of its own.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

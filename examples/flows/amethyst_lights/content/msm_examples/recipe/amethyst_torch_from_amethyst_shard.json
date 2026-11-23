@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "#": "minecraft:stick",
+      "X": "minecraft:amethyst_shard"
+    },
+    "pattern": [
+      "X",
+      "#"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_examples:amethyst_torch"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:amethyst_torch_from_amethyst_shard",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "amethyst shard over a stick makes four torches, as coal makes vanilla's.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

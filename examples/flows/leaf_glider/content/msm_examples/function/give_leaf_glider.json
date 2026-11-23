@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "# Run with /function msm_examples:give_leaf_glider",
+      "give @s minecraft:phantom_membrane[minecraft:glider={},minecraft:equippable={slot:\"chest\",asset_id:\"msm_examples:leaf_glider_wings\",equip_sound:\"minecraft:item.armor.equip_elytra\",damage_on_hurt:false},minecraft:max_stack_size=1,minecraft:max_damage=300,minecraft:repairable={items:\"minecraft:leather\"},minecraft:item_model=\"msm_examples:leaf_glider\",minecraft:item_name={translate:\"item.msm_examples.leaf_glider\"}]"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:give_leaf_glider",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Gives the glider, the same as the recipe makes.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

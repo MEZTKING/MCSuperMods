@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:goat_horn",
+      "minecraft:copper_ingot"
+    ],
+    "result": {
+      "components": {
+        "minecraft:instrument": "msm_examples:mountain_echo"
+      },
+      "id": "minecraft:goat_horn"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mountain_echo_goat_horn",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Any goat horn and a copper ingot anywhere in the crafting grid make a goat horn that plays the mountain echo: the result carries the minecraft:instrument component.",
+    "tags": [
+      "example",
+      "goat-horns"
+    ]
+  }
+}

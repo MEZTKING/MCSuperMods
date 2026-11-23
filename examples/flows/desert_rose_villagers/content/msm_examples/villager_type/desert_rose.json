@@ -1,0 +1,23 @@
+{
+  "data": {
+    "biomes": [
+      "#minecraft:is_badlands"
+    ],
+    "format": 1,
+    "textures": {
+      "villager": "msm_examples:entity/villager/type/desert_rose",
+      "zombie_villager": "msm_examples:entity/zombie_villager/type/desert_rose"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:desert_rose",
+  "kind": "msm:villager_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A villager look (villager type): villagers born or spawned in badlands (biomes) wear it, drawn over the villager's own skin and under its job's apron. The pictures in textures already sit where the game reads them (textures/entity/villager/type/desert_rose.png and the zombie villager's textures/entity/zombie_villager/type/desert_rose.png), drawn by MSM in your colours; zombie villagers of those biomes wear it too. A look brings no trades of its own. Villager looks need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "data": {
+    "asset_id": "msm_examples:ocean_ring",
+    "translation_key": "block.msm_examples.banner.ocean_ring"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ocean_ring",
+  "kind": "minecraft:banner_pattern",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The banner pattern. asset_id names its two pictures in this namespace: textures/entity/banner/ocean_ring.png for banners and textures/entity/shield/ocean_ring.png for shields, pale masks the game dyes in the colour chosen in the loom (a ring drawn by MSM; paint over them to change the shape). translation_key is the start of its name: the game adds the dye colour, so block.msm_examples.banner.ocean_ring.red reads \"Red Ocean Ring\".",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

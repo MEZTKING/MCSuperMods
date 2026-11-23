@@ -1,0 +1,20 @@
+{
+  "data": {
+    "addition": "#minecraft:trim_materials",
+    "base": "#minecraft:trimmable_armor",
+    "pattern": "msm_examples:frost_studs",
+    "template": "minecraft:prismarine_shard",
+    "type": "minecraft:smithing_trim"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_studs_armor_trim",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Applies the trim at a smithing table: the template in the first slot, any trimmable armour piece in the second and any trim material (iron, gold, an emerald and so on) in the third. The template slot takes a prismarine shard: a recipe names an item type, not its components, so a plain prismarine shard works too.",
+    "tags": [
+      "example",
+      "armour-trims"
+    ]
+  }
+}

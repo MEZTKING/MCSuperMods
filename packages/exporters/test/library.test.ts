@@ -21,7 +21,8 @@
  * (the entity behaviour examples), `examples/scripts/` (the script behaviour examples),
  * `examples/rules/` (the Rules examples, ADR 0082 D11), `examples/popular/<name>/` (each
  * "Popular ideas" example as a project of its own), `examples/worlds/<name>/` (each world example
- * of the Make a world flows, ADR 0119 D11, as a project of its own) and `examples/starters/<starter id>/`
+ * of the Make a world flows, ADR 0119 D11, as a project of its own), `examples/flows/<name>/` (each
+ * flow example, ADR 0129 D2, as a project of its own) and `examples/starters/<starter id>/`
  * (each content starter). It is a golden: set
  * `UPDATE_GOLDENS=1` to rewrite it from the current library.
  */
@@ -78,6 +79,8 @@ import libraryPlugin, {
   EXTRA_DROP_TABLES,
   encodePng,
   entityBehaviourExamples,
+  FLOW_EXAMPLE_PREFIX,
+  flowExamples,
   gameExamples,
   kindExamples,
   libraryExamples,
@@ -2121,6 +2124,13 @@ const MIRROR: readonly MirrorProject[] = [
         buildEntry(example, 'msm_examples', example.title),
       ]),
   })),
+  ...flowExamples.map((example) => ({
+    folder: `flows/${example.id.slice(FLOW_EXAMPLE_PREFIX.length)}`,
+    build: () =>
+      buildProject(example.title, 'msm_examples', [
+        buildEntry(example, 'msm_examples', example.title),
+      ]),
+  })),
   ...MIRRORED_STARTERS.map((id) => ({
     folder: `starters/${id}`,
     build: () => {
@@ -2271,7 +2281,7 @@ describe('library bundles', () => {
     expect(kindExamples.map((example: ExampleProject) => example.kind).sort()).toEqual(kinds);
   });
 
-  it('has scripts in the Scripted ore and Scripted behaviour starters, the script examples and the interim vehicles', () => {
+  it('has scripts in the Scripted ore and Scripted behaviour starters, the script examples, the Storm staff and the interim vehicles', () => {
     expect(libraryScripts().map(([label]) => label)).toEqual([
       'scripted_ore demo:ore_glow',
       'scripted_ore demo:ruby_block_guard',
@@ -2288,9 +2298,13 @@ describe('library bundles', () => {
       'example_msm_full_set_bonus demo:full_set_bonus',
       'example_msm_teleport_staff demo:teleport_staff',
       'example_msm_boss_fight_bar demo:boss_fight',
+      'example_flow_storm_staff demo:storm_staff_behaviour',
       'example_popular_go_kart demo:go_kart_controls',
       'example_popular_mini_tank demo:mini_tank_cannon',
       'example_popular_biplane demo:patchwork_biplane_fuel',
+      'starter_scripted_ore demo:ore_glow',
+      'starter_scripted_ore demo:ruby_block_guard',
+      'starter_scripted_ore demo:welcome',
     ]);
   });
 

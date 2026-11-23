@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "# Run with /function msm_examples:give_ocean_ring_banner_pattern",
+      "give @s minecraft:paper[minecraft:provides_banner_patterns=\"#msm_examples:pattern_item/ocean_ring\",minecraft:item_model=\"msm_examples:ocean_ring_banner_pattern\",minecraft:item_name={translate:\"item.msm_examples.ocean_ring_banner_pattern\"},minecraft:max_stack_size=1,minecraft:rarity=\"uncommon\"]"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:give_ocean_ring_banner_pattern",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Gives the pattern item, the same as the recipe makes. Put it in the pattern slot of a loom with a banner and a dye.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

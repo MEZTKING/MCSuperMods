@@ -1,0 +1,36 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "drink",
+        "converts_to": "minecraft:glass_bottle",
+        "effects": [
+          {
+            "effect": "minecraft:slow_falling",
+            "seconds": 45
+          },
+          {
+            "effect": "minecraft:jump_boost",
+            "seconds": 45
+          }
+        ],
+        "seconds": 1.6
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_examples:item/sky_tonic"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_tonic",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A drink: msm:consumable with the drink animation takes 1.6 seconds and gives Slow falling I for 45 seconds and Jump boost I for 45 seconds, then leaves a glass bottle (converts_to). It restores no hunger.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

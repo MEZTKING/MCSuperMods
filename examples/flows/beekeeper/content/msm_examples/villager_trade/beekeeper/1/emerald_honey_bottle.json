@@ -1,0 +1,26 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:honey_bottle"
+    },
+    "max_uses": 12,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 3,
+      "id": "minecraft:emerald"
+    },
+    "xp": 5
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:beekeeper/1/emerald_honey_bottle",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A first-level trade: the villager sells one minecraft:honey_bottle for 3 emeralds. Demand and the player's reputation change the price, by reputation_discount per point.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

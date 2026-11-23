@@ -12,6 +12,8 @@ import type { ExampleProject, ProjectStarter } from '@msm/plugin-api';
 import {
   behaviourExamples,
   entityBehaviourExamples,
+  FLOW_EXAMPLE_PREFIX,
+  flowExamples,
   gameExamples,
   kindExamples,
   libraryStarters,
@@ -140,6 +142,9 @@ export function exampleInfo(
     category = entry?.category ?? '';
   } else if (section === 'games') {
     entry = gameExamples.find((example) => example.id === `example_game_${name}`);
+    category = entry?.category ?? '';
+  } else if (section === 'flows') {
+    entry = flowExamples.find((example) => example.id === `${FLOW_EXAMPLE_PREFIX}${name}`);
     category = entry?.category ?? '';
   } else if (section === 'starters') {
     entry = libraryStarters.find((starter) => starter.id === name);

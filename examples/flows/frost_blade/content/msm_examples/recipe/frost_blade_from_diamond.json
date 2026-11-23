@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "I": "minecraft:diamond",
+      "S": "minecraft:stick"
+    },
+    "pattern": [
+      "I",
+      "I",
+      "S"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:frost_blade"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_blade_from_diamond",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two diamonds above a stick craft a frost blade, like the vanilla swords. Element ids are unique across kinds, so the recipe cannot share the sword's id frost_blade and has a name of its own.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

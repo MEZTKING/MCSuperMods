@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:apple",
+      "minecraft:sugar"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:golden_pear"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:golden_pear_from_apple",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Apple and sugar anywhere in the crafting grid make a golden pear. Element ids are unique across kinds, so the recipe has a name of its own.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

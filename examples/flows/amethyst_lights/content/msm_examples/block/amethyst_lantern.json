@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "requires_tool": false,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Amethyst Lantern",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "lantern",
+    "textures": {
+      "item": "msm_examples:item/amethyst_lantern",
+      "texture": "msm_examples:block/amethyst_lantern"
+    },
+    "type": "lantern"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:amethyst_lantern",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The amethyst lantern: it stands on a block or, placed under one, hangs from it, and gives light 15. It holds water as vanilla's lantern does.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

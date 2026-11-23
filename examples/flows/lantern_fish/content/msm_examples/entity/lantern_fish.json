@@ -1,0 +1,73 @@
+{
+  "data": {
+    "category": "water_ambient",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "distance": 8,
+            "from": [
+              "minecraft:player"
+            ],
+            "speed": 1.6,
+            "sprint_speed": 1.4,
+            "type": "flee"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/lantern_fish_animations",
+        "idle": "idle",
+        "model": "msm_examples:entity/lantern_fish",
+        "renderer": "auto",
+        "swim": "swim",
+        "texture": "msm_examples:entity/lantern_fish",
+        "walk": "walk"
+      },
+      "msm:bucketable": {},
+      "msm:health": {
+        "max": 3
+      },
+      "msm:movement": {
+        "breathes_air": false,
+        "dry_out_ticks": 300,
+        "mode": "swim",
+        "speed": 1
+      }
+    },
+    "display_name": "Lantern Fish",
+    "format": 1,
+    "size": {
+      "height": 0.5,
+      "width": 0.5
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_ocean"
+      ],
+      "max_group": 6,
+      "min_group": 3,
+      "placement": "in_water",
+      "rule": "water_animal",
+      "weight": 10
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/lantern_fish_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:lantern_fish",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A water mob, a fish: mode swim with water_ambient, swimming in schools of three to six, flopping on land and losing health 300 ticks (15 seconds) after leaving the water. Swimmers move at a movement speed near 1, as fish and dolphins do. It darts away from players within 8 blocks (flee). msm:bucketable lets a player catch it with a water bucket, as a cod: the bucket item lantern_fish_bucket keeps its name and health and lets it out again with the water. The bucket is drawn as vanilla's water bucket until you give it a picture of its own (bucket_texture). It spawns in every ocean, in the water (placement in_water, rule water_animal: between 13 blocks below sea level and sea level). msm:animated_model names the model, animation set and texture with renderer auto: GeckoLib draws it where the target has GeckoLib, the runtime's own renderer elsewhere. Export the Fabric mod jar to try it in game.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "instrument.msm_examples.mountain_echo": "Mountain Echo"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name of the call, shown on the goat horn.",
+    "tags": [
+      "example",
+      "goat-horns"
+    ]
+  }
+}

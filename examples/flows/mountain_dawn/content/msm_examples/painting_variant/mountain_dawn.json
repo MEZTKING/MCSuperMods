@@ -1,0 +1,26 @@
+{
+  "data": {
+    "asset_id": "msm_examples:mountain_dawn",
+    "author": {
+      "color": "gray",
+      "translate": "painting.msm_examples.mountain_dawn.author"
+    },
+    "height": 2,
+    "title": {
+      "color": "yellow",
+      "translate": "painting.msm_examples.mountain_dawn.title"
+    },
+    "width": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mountain_dawn",
+  "kind": "minecraft:painting_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A painting 2 by 2 blocks. asset_id names its picture, textures/painting/mountain_dawn.png in this namespace: a placeholder landscape of 32 by 32 pixels (16 per block): paint over it or replace the file. It is in the vanilla tag #minecraft:placeable, so a placed painting item can pick it.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

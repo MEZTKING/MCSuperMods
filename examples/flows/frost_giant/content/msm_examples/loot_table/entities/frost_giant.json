@@ -1,0 +1,38 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": [
+              {
+                "count": {
+                  "max": 5,
+                  "min": 1,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              }
+            ],
+            "name": "minecraft:diamond",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_examples:entities/frost_giant",
+    "type": "minecraft:entity"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:entities/frost_giant",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the frost giant drops: one to 5 diamonds.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

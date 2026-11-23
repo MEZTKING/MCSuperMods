@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "# Run with /function msm_examples:give_fish_tale_pottery_sherd",
+      "give @s minecraft:brick[minecraft:provides_pottery_pattern=\"msm_examples:fish_tale\",minecraft:item_model=\"msm_examples:fish_tale_pottery_sherd\",minecraft:item_name={translate:\"item.msm_examples.fish_tale_pottery_sherd\"}]"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:give_fish_tale_pottery_sherd",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Gives the sherd, the same as the recipe makes.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

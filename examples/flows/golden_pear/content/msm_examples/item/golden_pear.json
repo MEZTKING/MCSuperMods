@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:food": {
+        "nutrition": 6,
+        "saturation": 1
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_examples:item/golden_pear"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:golden_pear",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new food. msm:food restores 6 hunger (half drumsticks) with a saturation of 1. Its English name comes from the language file below.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "step": "show_message",
+            "text": [
+              "Good evening, and sleep well!"
+            ]
+          },
+          {
+            "amount": 1,
+            "stat": "msm_examples:night_greeting_count",
+            "step": "add_to_stat"
+          }
+        ],
+        "key": "greet_night_greeting",
+        "name": "Greet players",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "game_rule",
+              "game_rule": "msm_examples:night_greeting",
+              "value": true
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "trigger": "player_joined"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:night_greeting_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "When a player joins and the game rule msm_examples:night_greeting is on, it says \"Good evening, and sleep well!\" to them and adds 1 to their statistic msm_examples:night_greeting_count. Switch the rule off with /gamerule msm_examples:night_greeting false and the greeting stops. Rules that read a game rule run through a script, so they need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

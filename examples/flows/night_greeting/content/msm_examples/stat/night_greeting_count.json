@@ -1,0 +1,18 @@
+{
+  "data": {
+    "display_name": "Night Greeting Greetings",
+    "format": 1,
+    "formatter": "default"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:night_greeting_count",
+  "kind": "msm:stat",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A statistic: a number counted for each player and shown in the Statistics screen, here how many times they were greeted. A scoreboard objective follows it with the criterion minecraft.custom:msm_examples.night_greeting_count.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

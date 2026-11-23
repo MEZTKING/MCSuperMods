@@ -1,0 +1,16 @@
+{
+  "data": {
+    "item.msm_examples.golden_pear": "Golden Pear"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name of the food: item.msm_examples.golden_pear is its translation key.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

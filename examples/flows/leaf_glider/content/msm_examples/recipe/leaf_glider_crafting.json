@@ -1,0 +1,47 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "M": "minecraft:leather",
+      "S": "minecraft:stick"
+    },
+    "pattern": [
+      "MSM",
+      "M M",
+      "M M"
+    ],
+    "result": {
+      "components": {
+        "minecraft:equippable": {
+          "asset_id": "msm_examples:leaf_glider_wings",
+          "damage_on_hurt": false,
+          "equip_sound": "minecraft:item.armor.equip_elytra",
+          "slot": "chest"
+        },
+        "minecraft:glider": {},
+        "minecraft:item_model": "msm_examples:leaf_glider",
+        "minecraft:item_name": {
+          "translate": "item.msm_examples.leaf_glider"
+        },
+        "minecraft:max_damage": 300,
+        "minecraft:max_stack_size": 1,
+        "minecraft:repairable": {
+          "items": "minecraft:leather"
+        }
+      },
+      "id": "minecraft:phantom_membrane"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:leaf_glider_crafting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six leather round a stick make the glider. A vanilla pack cannot add an item, so it is a phantom membrane carrying vanilla components: minecraft:glider and minecraft:equippable (the chest slot, the equipment asset msm_examples:leaf_glider_wings and the elytra's sound) let it glide as an elytra does, minecraft:max_damage gives 300 seconds of gliding, minecraft:repairable lets leather repair it in an anvil, and minecraft:item_model and minecraft:item_name give its look and name. Wear it, jump from somewhere high and press jump in the air to glide; firework rockets speed it up.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

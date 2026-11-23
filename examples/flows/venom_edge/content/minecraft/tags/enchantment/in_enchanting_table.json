@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:venom_edge"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:in_enchanting_table",
+  "kind": "minecraft:tag/enchantment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds Venom Edge to the vanilla enchantment tag #minecraft:in_enchanting_table, so the enchanting table offers it. Vanilla enchantments stay in the tag.",
+    "tags": [
+      "example",
+      "enchantments"
+    ]
+  }
+}

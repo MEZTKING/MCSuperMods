@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:mountain_dawn"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:placeable",
+  "kind": "minecraft:tag/painting_variant",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds Mountain Dawn to the vanilla painting variant tag #minecraft:placeable: a painting item placed on a wall picks a random variant from it that fits the space. Vanilla paintings stay in the tag.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

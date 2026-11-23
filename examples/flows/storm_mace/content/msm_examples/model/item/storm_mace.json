@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:item/handheld_mace",
+    "textures": {
+      "layer0": "msm_examples:item/storm_mace"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:item/storm_mace",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item model drawn from textures/item/storm_mace.png; its parent minecraft:item/handheld_mace sets how it is held. Paint over the drawn picture to restyle it.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

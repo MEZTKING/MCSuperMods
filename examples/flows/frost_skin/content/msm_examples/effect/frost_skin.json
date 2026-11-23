@@ -1,0 +1,45 @@
+{
+  "data": {
+    "attribute_modifiers": [
+      {
+        "amount": 0.2,
+        "attribute": "minecraft:movement_speed",
+        "operation": "add_multiplied_total"
+      }
+    ],
+    "category": "beneficial",
+    "color": 10543359,
+    "components": {
+      "msm:on_tick": {
+        "event": "msm_examples:frost_skin_tick",
+        "faster_per_level": true,
+        "interval_ticks": 40
+      }
+    },
+    "display_name": "Frost Skin",
+    "events": {
+      "msm_examples:frost_skin_tick": {
+        "actions": [
+          {
+            "count": 6,
+            "particle": "minecraft:snowflake",
+            "spread": 0.4,
+            "type": "spawn_particle"
+          }
+        ]
+      }
+    },
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_skin",
+  "kind": "msm:effect",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A custom status effect, a good one (category beneficial) shown in the colour #a0e0ff. msm:on_tick fires msm_examples:frost_skin_tick every 2 seconds (interval_ticks 40), more often at higher levels (faster_per_level: level II twice as often); it shows snowflakes around the holder. Stat changes (attribute_modifiers): movement speed +20 per cent per level; they are removed when the effect ends. Its icon is textures/mob_effect/frost_skin.png; paint over the drawn picture to restyle it. Custom effects need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "effects"
+    ]
+  }
+}

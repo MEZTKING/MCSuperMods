@@ -1,0 +1,16 @@
+{
+  "data": {
+    "item.msm_examples.storm_staff": "Storm Staff"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name of the item: item.msm_examples.storm_staff is its translation key.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

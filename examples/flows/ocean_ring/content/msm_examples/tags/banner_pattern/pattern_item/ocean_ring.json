@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:ocean_ring"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pattern_item/ocean_ring",
+  "kind": "minecraft:tag/banner_pattern",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The patterns the pattern item offers in the loom; vanilla items use tags of the same form, such as #minecraft:pattern_item/flow. This one holds only Ocean Ring.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:cocoa_beans",
+      "minecraft:cocoa_beans",
+      "minecraft:sugar",
+      "minecraft:egg",
+      "minecraft:wheat"
+    ],
+    "result": {
+      "id": "msm_examples:chocolate_pie"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:chocolate_pie_from_cocoa_beans",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two cocoa beans, sugar, an egg and wheat make the pie.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

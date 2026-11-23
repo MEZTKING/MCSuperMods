@@ -1,0 +1,23 @@
+{
+  "data": {
+    "display_name": "Beekeeper",
+    "format": 1,
+    "job_site": "msm_examples:beekeeper_workbench",
+    "textures": {
+      "villager": "msm_examples:entity/villager/profession/beekeeper",
+      "zombie_villager": "msm_examples:entity/zombie_villager/profession/beekeeper"
+    },
+    "work_sound": "minecraft:entity.villager.work_farmer"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:beekeeper",
+  "kind": "msm:villager_profession",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new job for vanilla villagers: a villager without a job that finds a beekeeper workbench (job_site) takes the job, wears its apron (the pictures in textures, at the places the game reads them) and trades. Its five levels are the trade sets msm_examples:beekeeper/level_1 to msm_examples:beekeeper/level_5, created for you; each draws two trades from the villager trade tag of the same name, so add trades to those tags. work_sound is the farmer's, played while the villager works at its block. Breaking the workbench makes the villager lose the job, as with any workstation. Jobs need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

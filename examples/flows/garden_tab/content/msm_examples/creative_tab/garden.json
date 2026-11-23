@@ -1,0 +1,18 @@
+{
+  "data": {
+    "display_name": "Garden",
+    "format": 1,
+    "icon": "minecraft:emerald"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:garden",
+  "kind": "msm:creative_tab",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The Garden tab of the creative inventory (on its second page, after vanilla's tabs), showing minecraft:emerald. Items, block items and spawn eggs join it by naming msm_examples:garden as their creative tab, in the order the project lists them.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

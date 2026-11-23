@@ -1,0 +1,19 @@
+{
+  "data": {
+    "model": {
+      "model": "msm_examples:item/ocean_ring_banner_pattern",
+      "type": "minecraft:model"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ocean_ring_banner_pattern",
+  "kind": "minecraft:item_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the pattern item looks like: its minecraft:item_model component names msm_examples:ocean_ring_banner_pattern, this definition, which shows the flat model below.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

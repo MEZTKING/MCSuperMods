@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:glow_berries",
+      "minecraft:glass_bottle"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:sky_tonic"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sky_tonic_from_glow_berries",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Glow berries and a glass bottle anywhere in the crafting grid make a sky tonic.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "model": {
+      "model": "msm_examples:item/fish_tale_pottery_sherd",
+      "type": "minecraft:model"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:fish_tale_pottery_sherd",
+  "kind": "minecraft:item_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the sherd looks like: its minecraft:item_model component names msm_examples:fish_tale_pottery_sherd, this definition, which shows the flat model below.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

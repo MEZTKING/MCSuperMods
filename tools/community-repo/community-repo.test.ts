@@ -25,13 +25,15 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 describe('exampleInfo', () => {
-  it('describes a popular example, a world example and a starter from the library', () => {
+  it('describes a popular example, a world example, a flow example and a starter from the library', () => {
     const popular = exampleInfo('popular/glowshard', header);
     expect(popular.title).toMatch(/^Glowshard/);
     expect(popular.category).toBe('Popular ideas');
     expect(popular.targetId).toBe(ownTarget);
     expect(popular.members).toEqual([]);
     expect(exampleInfo('worlds/frost_peaks', header).title).toBe('Frost Peaks');
+    const flow = exampleInfo('flows/frost_wolf', header);
+    expect([flow.title, flow.category]).toEqual(['Frost wolf', 'Entities']);
     const starter = exampleInfo('starters/simple-block', header);
     expect([starter.title, starter.category]).toEqual(['Simple block', 'Starters']);
   });

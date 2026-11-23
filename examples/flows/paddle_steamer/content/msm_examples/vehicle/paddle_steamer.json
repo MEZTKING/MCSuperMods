@@ -1,0 +1,85 @@
+{
+  "data": {
+    "camera": {
+      "distance": 5
+    },
+    "display_name": "Paddle Steamer",
+    "engine": {
+      "horn": "minecraft:item.goat_horn.sound.0",
+      "sound": "minecraft:entity.boat.paddle_water"
+    },
+    "format": 1,
+    "health": {
+      "max": 30,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "#minecraft:planks"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_examples:item/paddle_steamer",
+      "places_on": "water"
+    },
+    "model": {
+      "geometry": "msm_examples:entity/paddle_steamer",
+      "texture": "msm_examples:entity/paddle_steamer"
+    },
+    "movement": {
+      "max_speed": 0.4,
+      "mode": "water",
+      "turn_rate": 4
+    },
+    "parts": {
+      "propellers": [
+        "propeller"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          -0.3,
+          0.3,
+          -0.5
+        ]
+      },
+      {
+        "offset": [
+          0.3,
+          0.3,
+          -0.5
+        ]
+      },
+      {
+        "offset": [
+          -0.3,
+          0.3,
+          0.3
+        ]
+      },
+      {
+        "offset": [
+          0.3,
+          0.3,
+          0.3
+        ]
+      }
+    ],
+    "size": [
+      1.6,
+      0.7
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:paddle_steamer",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A boat: movement.mode water keeps it on the water surface at up to 0.4 blocks a tick; on land it barely moves. item.places_on water places it on water only. It has four seats; the first drives. It needs no fuel. It splashes like a paddle while it moves, and engine.horn is the sound the Vehicle: horn key (H) plays. Any planks repair it (health.repair, the tag #minecraft:planks); the propeller named in parts spins. Its model is msm_examples:entity/paddle_steamer, an MSM-made boxed geo model, with the texture textures/entity/paddle_steamer.png; the item shows through the item model msm_examples:item/paddle_steamer. Place it from its item, get in with use, drive with the movement keys and pick it up again by hitting it while sneaking. Vehicles need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "vehicles"
+    ]
+  }
+}

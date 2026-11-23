@@ -1,0 +1,32 @@
+{
+  "data": {
+    "block.msm_examples.banner.ocean_ring.black": "Black Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.blue": "Blue Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.brown": "Brown Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.cyan": "Cyan Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.gray": "Gray Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.green": "Green Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.light_blue": "Light Blue Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.light_gray": "Light Gray Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.lime": "Lime Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.magenta": "Magenta Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.orange": "Orange Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.pink": "Pink Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.purple": "Purple Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.red": "Red Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.white": "White Ocean Ring",
+    "block.msm_examples.banner.ocean_ring.yellow": "Yellow Ocean Ring",
+    "item.msm_examples.ocean_ring_banner_pattern": "Ocean Ring Banner Pattern"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English names: the pattern item, and the pattern in each of the 16 dye colours (the loom and the banner's tooltip show them).",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

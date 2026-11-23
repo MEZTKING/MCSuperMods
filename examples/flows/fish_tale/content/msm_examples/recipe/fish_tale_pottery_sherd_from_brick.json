@@ -1,0 +1,31 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:brick",
+      "minecraft:lapis_lazuli"
+    ],
+    "result": {
+      "components": {
+        "minecraft:item_model": "msm_examples:fish_tale_pottery_sherd",
+        "minecraft:item_name": {
+          "translate": "item.msm_examples.fish_tale_pottery_sherd"
+        },
+        "minecraft:provides_pottery_pattern": "msm_examples:fish_tale"
+      },
+      "id": "minecraft:brick"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:fish_tale_pottery_sherd_from_brick",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A brick and a lapis lazuli make the sherd. A vanilla pack cannot add an item, so it is a brick carrying vanilla components: minecraft:provides_pottery_pattern names msm_examples:fish_tale, so a decorated pot crafted with it shows the picture on that side; minecraft:item_model and minecraft:item_name give its look and name. Bricks are already pot ingredients, so four bricks or sherds in a diamond make a decorated pot.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

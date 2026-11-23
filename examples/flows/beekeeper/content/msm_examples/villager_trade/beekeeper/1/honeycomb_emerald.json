@@ -1,0 +1,26 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:emerald"
+    },
+    "max_uses": 16,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 8,
+      "id": "minecraft:honeycomb"
+    },
+    "xp": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:beekeeper/1/honeycomb_emerald",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A first-level trade: the villager buys 8 minecraft:honeycomb for an emerald. wants is what the player hands over, gives what the player gets.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

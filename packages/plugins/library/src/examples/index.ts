@@ -3,16 +3,23 @@
  * items behaviour examples (with the container and machine examples, ADR 0076 D4, the portal
  * example, ADR 0078 D4, and the firefly jar, ADR 0081 D5), the entity behaviour examples, the
  * script behaviour examples, the rules behaviour examples (ADR 0082 D11), the world examples
- * (ADR 0119 D11), the game examples (ADR 0117 D2), the "Popular ideas"
- * examples, then the four content starters as complete projects.
+ * (ADR 0119 D11), the game examples (ADR 0117 D2), the flow examples (ADR 0129 D2), the
+ * "Popular ideas" examples, then the starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { KINDS } from '../content/bundle';
 import {
+  combinedBundle,
+  customBiomeBundle,
   customOreBundle,
+  dataPackBundle,
   functionStarterBundle,
+  jigsawStructureBundle,
   musicDiscBundle,
   recipePackBundle,
+  resourcePackBundle,
+  scriptedOreBundle,
+  worldgenPackBundle,
 } from '../starters/index';
 import { vanillaBlockRulesKindExample } from './block-types';
 import {
@@ -24,6 +31,7 @@ import { dataKindExamples } from './data-kinds';
 import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
 import { entityKindExamples, entityBehaviourExamples as mobBehaviourExamples } from './entities';
+import { flowExamples } from './flows';
 import { gameExamples, gameKindExamples } from './games';
 import { particleExamples, particleKindExamples } from './particles';
 import { popularExamples } from './popular';
@@ -48,6 +56,12 @@ import { worldgenExamples } from './worldgen';
 import { worldExamples } from './worlds';
 
 export { categoryTag, defineExample, type ExampleInput } from './define';
+export {
+  FLOW_EXAMPLE_IDS,
+  FLOW_EXAMPLE_PREFIX,
+  flowExamples,
+  STARTERS_WITHOUT_EXAMPLE,
+} from './flows';
 export { GAMES_CATEGORY, gameExamples, gameKindExamples } from './games';
 export { POPULAR_CATEGORY, popularExamples, popularFolder } from './popular';
 export { rulesBehaviourExamples, rulesKindExamples } from './rules';
@@ -123,7 +137,10 @@ export const behaviourExamples: readonly ExampleProject[] = Object.freeze([
 /** The category of the starter projects in the gallery. */
 export const STARTERS_CATEGORY = 'Starters';
 
-/** The content starters as gallery entries; ids are `starter_<starter id>`. */
+/**
+ * The starters as gallery entries, ids `starter_<starter id>`: the first four content starters,
+ * then the pack starters and the rest of the starters that are not Creator flows (ADR 0129 D2).
+ */
 export const starterExamples: readonly ExampleProject[] = Object.freeze([
   defineExample({
     id: 'starter_custom_ore',
@@ -162,6 +179,76 @@ export const starterExamples: readonly ExampleProject[] = Object.freeze([
     tags: ['starter', 'functions', 'tick'],
     build: functionStarterBundle,
   }),
+  defineExample({
+    id: 'starter_resource_pack',
+    title: 'Resource pack project',
+    description:
+      'The Resource pack starter: the vanilla stick gets a new model, picture and English name.',
+    kind: KINDS.model,
+    category: STARTERS_CATEGORY,
+    tags: ['starter', 'resource pack'],
+    build: resourcePackBundle,
+  }),
+  defineExample({
+    id: 'starter_data_pack',
+    title: 'Data pack project',
+    description:
+      'The Data pack starter: a load message, a function to run and one crafting recipe.',
+    kind: KINDS.function,
+    category: STARTERS_CATEGORY,
+    tags: ['starter', 'data pack'],
+    build: dataPackBundle,
+  }),
+  defineExample({
+    id: 'starter_combined',
+    title: 'Resource and data pack project',
+    description:
+      'The Resource and data pack starter: the painted stick plus the load message, function and recipe.',
+    kind: KINDS.recipe,
+    category: STARTERS_CATEGORY,
+    tags: ['starter', 'resource pack', 'data pack'],
+    build: combinedBundle,
+  }),
+  defineExample({
+    id: 'starter_custom_biome',
+    title: 'Custom biome project',
+    description:
+      'The Custom biome starter: Amber Woods, a biome with its own tree and copper ore, and a World Type that has it.',
+    kind: KINDS.biome,
+    category: STARTERS_CATEGORY,
+    tags: ['starter', 'biome', 'world generation'],
+    build: customBiomeBundle,
+  }),
+  defineExample({
+    id: 'starter_jigsaw_structure',
+    title: 'Jigsaw structure project',
+    description:
+      'The Jigsaw structure starter: a hamlet of a centre hut, streets and lamp posts joined by jigsaw blocks, placed in forests.',
+    kind: KINDS.structure,
+    category: STARTERS_CATEGORY,
+    tags: ['starter', 'structure', 'jigsaw'],
+    build: jigsawStructureBundle,
+  }),
+  defineExample({
+    id: 'starter_worldgen_pack',
+    title: 'Biome and structure project',
+    description:
+      'The Custom biome with a jigsaw structure starter: Amber Woods and its World Type, with jigsaw hamlets that generate in it and in forests.',
+    kind: KINDS.biome,
+    category: STARTERS_CATEGORY,
+    tags: ['starter', 'biome', 'structure', 'world generation'],
+    build: worldgenPackBundle,
+  }),
+  defineExample({
+    id: 'starter_scripted_ore',
+    title: 'Scripted ore project',
+    description:
+      'The Scripted ore starter: the ruby ore with scripts that give a bonus ruby, heal you on a block of ruby and greet joining players.',
+    kind: KINDS.script,
+    category: STARTERS_CATEGORY,
+    tags: ['starter', 'ore', 'scripts', 'mod'],
+    build: scriptedOreBundle,
+  }),
 ]);
 
 /** Every gallery entry, in gallery order. */
@@ -174,6 +261,7 @@ export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...vehicleBehaviourExamples,
   ...worldExamples,
   ...gameExamples,
+  ...flowExamples,
   ...popularExamples,
   ...starterExamples,
 ]);

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:librarian/2/emerald_spyglass"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:librarian/level_2",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds msm_examples:librarian/2/emerald_spyglass to the vanilla trade tag minecraft:librarian/level_2, from which librarians at apprentice level draw their trades. The export merges it into vanilla's tag (replace stays false), so the vanilla trades stay. Each villager draws only a few trades from the tag, so the new one is a candidate, not a certainty: some villagers offer it and others do not. A guaranteed trade needs a trade set of the same name, which replaces vanilla's.",
+    "tags": [
+      "example",
+      "villager-trades"
+    ]
+  }
+}

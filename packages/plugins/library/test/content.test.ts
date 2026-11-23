@@ -748,11 +748,23 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 124 per-kind examples, one per built-in kind, 57 behaviour examples, 5 worlds, 8 games, 17 popular ideas and 4 starter projects', () => {
+  it('has 124 per-kind examples, one per built-in kind, 57 behaviour examples, 5 worlds, 8 games, 43 flow examples, 17 popular ideas and 11 starter projects', () => {
     expect(kindExamples).toHaveLength(124);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
-      ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
+      [
+        'custom_ore',
+        'recipe_pack',
+        'music_disc',
+        'function_starter',
+        'resource_pack',
+        'data_pack',
+        'combined',
+        'custom_biome',
+        'jigsaw_structure',
+        'worldgen_pack',
+        'scripted_ore',
+      ].map((id) => `starter_${id}`),
     );
     expect(starterExamples.every((example) => example.category === STARTERS_CATEGORY)).toBe(true);
     expect(behaviourExamples.map((example) => example.id)).toEqual([
@@ -866,7 +878,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(215);
+    expect(libraryExamples).toHaveLength(265);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -1161,7 +1173,7 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops, the fluid lakes, the five worlds, the game flows and their examples and four popular ideas', () => {
+  it('covers the worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops, the fluid lakes, the five worlds, the game flows and their examples, four popular ideas, the Frost realm and the worldgen starter projects', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
       'wood-set',
@@ -1209,11 +1221,16 @@ describe('structure and worldgen content', () => {
       'example_game_blossom_isles',
       'example_game_star_block',
       'example_game_four_kingdoms',
+      'example_flow_frost_realm',
       'example_popular_glowshard',
       'example_popular_sunken_crypt',
       'example_popular_amber_realm',
       'example_popular_orchard_tree',
       'starter_custom_ore',
+      'starter_custom_biome',
+      'starter_jigsaw_structure',
+      'starter_worldgen_pack',
+      'starter_scripted_ore',
     ]);
   });
 

@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "G": "minecraft:glass_pane",
+      "I": "minecraft:iron_ingot",
+      "M": "minecraft:minecart"
+    },
+    "pattern": [
+      " G ",
+      "IMI",
+      "I I"
+    ],
+    "result": {
+      "id": "msm_examples:ember_kart"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_kart_crafting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A glass pane over four iron ingots around a minecart make one ember kart. The vehicle's item has the vehicle's own id.",
+    "tags": [
+      "example",
+      "vehicles"
+    ]
+  }
+}

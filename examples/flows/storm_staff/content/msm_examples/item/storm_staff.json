@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:on_use": {
+        "cooldown_ticks": 60,
+        "event": "msm_examples:storm_staff_used"
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "events": {
+      "msm_examples:storm_staff_used": {
+        "actions": [
+          {
+            "handler": "msm_examples:storm_staff_power",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/storm_staff"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:storm_staff",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new item. msm:on_use fires the event msm_examples:storm_staff_used when a player uses it, at most once every 60 ticks. The event's only action is run_script, which calls the handler msm_examples:storm_staff_power that the script msm_examples:storm_staff_behaviour defines: it strikes lightning where the player looks.",
+    "tags": [
+      "example",
+      "scripts"
+    ]
+  }
+}

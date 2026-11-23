@@ -1,0 +1,26 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:spyglass"
+    },
+    "max_uses": 12,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 6,
+      "id": "minecraft:emerald"
+    },
+    "xp": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:librarian/2/emerald_spyglass",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A trade: the villager sells 1 minecraft:spyglass for 6 emeralds. wants is the price, which demand and the player's reputation change (reputation_discount says by how much); gives is what the player gets. max_uses is how often it can be used before the villager restocks, and xp the villager experience it earns. On its own a trade does nothing: the tag minecraft:librarian/level_2 offers it.",
+    "tags": [
+      "example",
+      "villager-trades"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "item.msm_examples.frost_blade": "Frost Blade"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name of the sword: the key item.msm_examples.frost_blade is the translation key of the item msm_examples:frost_blade. Another language file (for example de_de) can give it a name in that language. Setting display_name on the item writes the same key for you.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "group": "sleeping_bag",
+    "key": {
+      "L": "minecraft:leather",
+      "W": "minecraft:green_wool"
+    },
+    "pattern": [
+      "WWW",
+      "LLL"
+    ],
+    "result": {
+      "id": "msm_examples:camp_sleeping_bag"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:camp_sleeping_bag_from_green_wool",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Three green wool over three leather make the sleeping bag.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

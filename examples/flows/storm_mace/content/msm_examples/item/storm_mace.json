@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:durability": {
+        "max": 800
+      },
+      "msm:tool": {
+        "tier": "diamond",
+        "type": "mace"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/storm_mace"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:storm_mace",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A mace of the diamond tier with vanilla's mace smash attack, which hits harder the further its holder falls. msm:tool takes the diamond material's damage bonus and enchantability. msm:durability gives it 800 uses.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

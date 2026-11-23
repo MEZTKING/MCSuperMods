@@ -1,0 +1,38 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "C": "minecraft:prismarine",
+      "D": "minecraft:diamond",
+      "T": "minecraft:prismarine_shard"
+    },
+    "pattern": [
+      "DTD",
+      "DCD",
+      "DDD"
+    ],
+    "result": {
+      "components": {
+        "minecraft:item_model": "msm_examples:frost_studs_armor_trim_smithing_template",
+        "minecraft:item_name": {
+          "translate": "item.msm_examples.frost_studs_armor_trim_smithing_template"
+        },
+        "minecraft:rarity": "uncommon"
+      },
+      "count": 2,
+      "id": "minecraft:prismarine_shard"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_studs_armor_trim_smithing_template_copy",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Copies the template as vanilla templates are copied: seven diamonds, the template and a prismarine make two.",
+    "tags": [
+      "example",
+      "armour-trims"
+    ]
+  }
+}
