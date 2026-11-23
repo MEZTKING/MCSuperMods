@@ -32,7 +32,7 @@ With no mod open, **Your mods** sits under the three buttons, above **See what y
 
 ## More ideas
 
-Under **See what you can make**, **More ideas** goes on for ever: each card is a mod Surprise me would make, with its name, a line on what is in it, the names of its things and a picture of them. Scroll and more keep coming. **Make this** asks **What is your mod called?** (filled in with the card's name) and makes exactly that mod, as **Surprise me** would. **Shuffle** shows other ideas; without it the list is the same each time you come back. Hover a card to see a short clip of its blocks and mobs; the setting **Play showcase clips** and reduced motion work as they do for the cards above. The search finds both sections ("more ideas", "all my mods").
+Under **See what you can make**, **More ideas** goes on for ever: each card is a mod that starts from one thing (a pet, a kart, a portal, a world...) and is named after it, with its name, a line on what is in it, the names of its things and a picture of them. Scroll and more keep coming. **Make this** asks **What is your mod called?** (filled in with the card's name) and makes exactly that mod, as **Surprise me** would. **Shuffle** shows other ideas; without it the list is the same each time you come back. Hover a card to see a short clip of its blocks and mobs; the setting **Play showcase clips** and reduced motion work as they do for the cards above. The search finds both sections ("more ideas", "all my mods").
 
 ## See what you can make
 
