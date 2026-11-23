@@ -11143,3 +11143,11 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - The main session amends section 2 and 3 of the plan and ADR 0134 from the README's last section; PaperMC has no 26.4 snapshot build, so mc-26.4 gets no Paper facts; question 1 to the user should name `piston-data.mojang.com` too, which Paper reaches itself on its first start.
 - Guide limit: a world made from a Paper plugin's World Type must never start without the plugin (its biome becomes plains for good).
+
+## 2026-11-23 — executor — B780 answers folded into PLAN-paper and ADR 0134
+
+**What.** Folded the B780 spike's answers P1 to P18 into `docs/PLAN-paper.md` (sections 2, 3, 7 and 8 and the B782 brief) and `docs/adr/0134-paper-server-plugins.md` (D1, D2, D6, D8, D9 and a findings line), and added the `b780/` index line to `docs/reference/spikes/README.md`. Docs only.
+
+**Decisions.** D2 go, with the bootstrap-only and unique-label rules. D4: the 11 argument types with no native Paper form are parsed as plain string arguments and resolved at run time, with a Things to fix note (the recommended option, not a refusal). D5: explicit permission check on the signal command. D6: real Paper server with Node stand-in players, packet ids at run time, MockBukkit for event logic only. D7: pinned builds, cache keyed by SHA-256, User-Agent with a contact URL. D9: licences recorded. mc-26.4 gets no Paper facts. Question 1 to the user now names `piston-data.mojang.com`. Guide limits added: never start a World Type world without its plugin; released versions only; shared labels; plain arguments. The ADR stays Proposed.
+
+**Next.** The user answers questions 1 and 2; B781 and B782 can start (B782 with the facts now in the plan); B793 Rules on Paper begins with the cheaper step of compiling command-only rules into bridge functions.
