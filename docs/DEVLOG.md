@@ -9584,3 +9584,16 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B661: open a page with `platform.guide.page(name)`; resolve `name.md#x` and `#x` links against `anchor` or `alias` of the index (or the same two slug functions, `guideAnchor` and `githubAnchor` in `app/src/main/guide.ts`, mirrored in the renderer).
 - B662: nothing from this brief.
 - Main session: the channel list in `app/CLAUDE.md` (`minecraft:names`, `guide:index|page`, `resources/guide/`).
+## 2026-11-23 — executor — First-paint budget in check-size
+
+**What**
+- `tools/check-size` now measures the renderer's first-paint set (`index.html` plus every file its `src` and `href` attributes name; `firstPaintSet` in `index.ts`), reports it and budgets it at 6 MB; the renderer total budget moves from 19 to 21 MB. Unit tests over a made-up renderer tree (entry, modulepreload, CSS counted; a lazy chunk not).
+- ADR 0126 D4 amended (vetoable default), one line in ADR 0123, DESIGN §14, `app/CLAUDE.md`, root `CLAUDE.md`, HANDOFF and the check-size README updated. Stop lines: first paint 5.5 MB, total 20.5 MB; asar budget and stop line unchanged.
+- Measured after `pnpm build` and `dist:dir`: first paint 4,750,839 B (4.53 MB, 48 files); renderer total 19,375,524 B (18.48 MB); `app.asar` 28,496,544 B (27.2 MB).
+
+**Decisions**
+- Stop lines live in the docs only, as before; the tool enforces the budgets.
+- A renderer with no readable `index.html` fails the check, so a broken first-paint measurement cannot pass as small.
+
+**Next**
+- App briefs have about 2.0 MB under the 20.5 MB total stop line and 1.0 MB under the 5.5 MB first-paint one.

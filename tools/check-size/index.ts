@@ -10,8 +10,11 @@
  * 1. `app.asar` in the unpacked build is at most 32 MB (ADR 0037: room for two targets'
  *    vendored data; ADR 0079: that data is compacted at build, and ADR 0123: gzipped, so the
  *    budget is kept).
- * 2. The renderer output (`app/out/renderer`) is at most 19 MB in total (ADR 0031 D6: the
- *    lazy Monaco TypeScript worker is about 7 MB on its own; ADR 0091 D5 and ADR 0123 D4).
+ * 2. The renderer output (`app/out/renderer`) is at most 21 MB in total (ADR 0031 D6: the
+ *    lazy Monaco TypeScript worker is about 7 MB on its own; ADR 0091 D5, ADR 0123 D4 and
+ *    ADR 0126 D4's amendment: lazy chunks cost disk only, which the asar budget covers), and
+ *    its first-paint set (`index.html` plus every file it names: the entry script, its
+ *    `modulepreload` chunks and CSS) is at most 6 MB, which is what start-up feels.
  * 3. No `*.json` file in the renderer output is larger than 100 kB (vendored data belongs in
  *    main, not in the renderer bundle).
  * 4. The Monaco TypeScript worker is a chunk of its own (a file whose name contains
@@ -40,7 +43,9 @@ const KB = 1024;
 /** Size thresholds in bytes. */
 export const BUDGETS = {
   asarBytes: 32 * MB,
-  rendererBytes: 19 * MB,
+  rendererBytes: 21 * MB,
+  /** The first-paint set of the renderer (ADR 0126 D4, amended). */
+  firstPaintBytes: 6 * MB,
   rendererJsonBytes: 100 * KB,
 } as const;
 
@@ -56,6 +61,8 @@ export interface FileSize {
 export interface Measurements {
   asarBytes: number | null;
   rendererFiles: FileSize[] | null;
+  /** The renderer's first-paint set: `index.html` and the files it names. `null` without a renderer. */
+  firstPaintFiles: FileSize[] | null;
   /** Files of the main-process build output (`app/out/main`). Reported, never budgeted. */
   mainFiles: FileSize[] | null;
   /** Files under `app/out/main/vendor` (the vendored target data, ADR 0079). */
@@ -101,6 +108,26 @@ export function summarise(files: readonly FileSize[], top = 8): Summary {
     .sort((a, b) => b.bytes - a.bytes || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
     .slice(0, top);
   return { totalBytes, largest };
+}
+
+/**
+ * The first-paint set of the renderer: `index.html` and every file its `src` and `href`
+ * attributes name (the entry script, `modulepreload` chunks, CSS, icons) that is in `files`.
+ * Lazy chunks, which only dynamic imports name, are not in it. Links with a scheme (`https:`,
+ * `data:`) and fragments are skipped.
+ */
+export function firstPaintSet(html: string, files: readonly FileSize[]): FileSize[] {
+  const byPath = new Map(files.map((file) => [file.path, file]));
+  const set = new Map<string, FileSize>();
+  const index = byPath.get('index.html');
+  if (index !== undefined) set.set(index.path, index);
+  for (const match of html.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/g)) {
+    const raw = (match[1] as string).split(/[?#]/)[0] as string;
+    if (raw === '' || /^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.startsWith('//')) continue;
+    const file = byPath.get(raw.replace(/^(?:\.?\/)+/, ''));
+    if (file !== undefined) set.set(file.path, file);
+  }
+  return [...set.values()].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
 /** Formats a byte count as `12.3 MB`, `45.6 kB` or `789 B` (binary units). */
@@ -178,6 +205,18 @@ export function checkBudgets(measured: Measurements, budgets: Budgets = BUDGETS)
     violations.push('app/out/renderer not found: run `pnpm build` first.');
   } else {
     const total = summarise(measured.rendererFiles, 0).totalBytes;
+    if (measured.firstPaintFiles === null || measured.firstPaintFiles.length === 0) {
+      violations.push(
+        'app/out/renderer/index.html not found or names no files: the first-paint set cannot be measured.',
+      );
+    } else {
+      const first = summarise(measured.firstPaintFiles, 0).totalBytes;
+      if (first > budgets.firstPaintBytes) {
+        violations.push(
+          `Renderer first paint is ${formatBytes(first)}, over the ${formatBytes(budgets.firstPaintBytes)} budget.`,
+        );
+      }
+    }
     if (total > budgets.rendererBytes) {
       violations.push(
         `Renderer output is ${formatBytes(total)}, over the ${formatBytes(budgets.rendererBytes)} budget.`,
@@ -246,9 +285,18 @@ export function measure(root: string): Measurements {
     unpackedBytes = summarise(listFiles(unpacked), 0).totalBytes;
   }
   const vendorFiles = existsSync(vendorDir) ? listFiles(vendorDir) : null;
+  const rendererFiles = existsSync(rendererDir) ? listFiles(rendererDir) : null;
+  const indexHtml = join(rendererDir, 'index.html');
   return {
     asarBytes,
-    rendererFiles: existsSync(rendererDir) ? listFiles(rendererDir) : null,
+    rendererFiles,
+    firstPaintFiles:
+      rendererFiles === null
+        ? null
+        : firstPaintSet(
+            existsSync(indexHtml) ? readFileSync(indexHtml, 'utf8') : '',
+            rendererFiles,
+          ),
     mainFiles: existsSync(mainDir) ? listFiles(mainDir) : null,
     vendorFiles,
     plainVendorJson: vendorFiles === null ? [] : plainJsonFiles(vendorFiles),
@@ -268,6 +316,11 @@ export function report(measured: Measurements, budgets: Budgets = BUDGETS): stri
     );
     for (const file of summary.largest) {
       lines.push(`  ${formatBytes(file.bytes).padStart(9)}  ${file.path}`);
+    }
+    if (measured.firstPaintFiles !== null) {
+      lines.push(
+        `Renderer first paint: ${formatBytes(summarise(measured.firstPaintFiles, 0).totalBytes)} in ${measured.firstPaintFiles.length} files (budget ${formatBytes(budgets.firstPaintBytes)}; index.html and the files it names)`,
+      );
     }
     const workers = typescriptWorkerChunks(measured.rendererFiles);
     lines.push(
