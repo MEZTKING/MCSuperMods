@@ -54,6 +54,16 @@ describe('shortcutFor', () => {
     expect(shortcutFor(key('N', { ctrlKey: true, shiftKey: true }))).toBeNull();
   });
 
+  it('maps Ctrl/Cmd+K to search everything (ADR 0124 D10, SQ9)', () => {
+    expect(shortcutFor(key('k', { ctrlKey: true }))).toBe('search');
+    expect(shortcutFor(key('K', { metaKey: true }))).toBe('search');
+    expect(shortcutFor(key('k', { ctrlKey: true, shiftKey: true }))).toBeNull();
+    expect(shortcutFor(key('k', { ctrlKey: true, altKey: true }))).toBeNull();
+    expect(shortcutFor(key('k'))).toBeNull();
+    // Monaco stops Ctrl+K for its chords before the window listener sees it.
+    expect(shortcutFor(key('k', { ctrlKey: true, defaultPrevented: true }))).toBeNull();
+  });
+
   it('maps Ctrl/Cmd+Shift+A to the AI helper but leaves Ctrl/Cmd+A alone', () => {
     expect(shortcutFor(key('A', { ctrlKey: true, shiftKey: true }))).toBe('toggleAiHelper');
     expect(shortcutFor(key('a', { metaKey: true, shiftKey: true }))).toBe('toggleAiHelper');

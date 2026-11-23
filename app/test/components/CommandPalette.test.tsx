@@ -7,6 +7,7 @@ import {
   filterCommands,
   fuzzyScore,
   type PaletteCommand,
+  rankedCommands,
 } from '../../src/renderer/src/components/CommandPalette';
 
 afterEach(cleanup);
@@ -104,5 +105,63 @@ describe('CommandPalette', () => {
     await userEvent.setup().type(screen.getByTestId('command-palette-input'), 'zzz');
     expect(screen.queryAllByRole('option')).toEqual([]);
     expect(screen.getByText('No matching commands.')).toBeTruthy();
+  });
+});
+
+describe('the palette door of the search (ADR 0124 D10, B667)', () => {
+  it('puts the engine order first, then the fuzzy matches, and only offered commands', () => {
+    const list = commands();
+    const fuzzy = filterCommands(list, 'ex');
+    expect(
+      rankedCommands(list, fuzzy, ['settings', 'notOffered', 'exportDataPack', 'settings']).map(
+        (command) => command.id,
+      ),
+    ).toEqual(['settings', 'exportDataPack', 'exportResourcePack']);
+    expect(rankedCommands(list, fuzzy, []).map((command) => command.id)).toEqual(
+      fuzzy.map((command) => command.id),
+    );
+  });
+
+  it('keeps the order of an empty query and asks the engine for typed words', async () => {
+    const list = commands();
+    const asked: string[] = [];
+    const rank = vi.fn(async (query: string) => {
+      asked.push(query);
+      // "texture pack" matches no title letter by letter; the engine finds it by its words.
+      return query === 'texture pack' ? ['exportResourcePack', 'unavailable'] : null;
+    });
+    render(<CommandPalette open commands={list} onClose={vi.fn()} rank={rank} />);
+    expect(listed()).toEqual([
+      'command-save',
+      'command-exportDataPack',
+      'command-exportResourcePack',
+      'command-settings',
+    ]);
+    expect(rank).not.toHaveBeenCalled();
+    const user = userEvent.setup();
+    await user.type(screen.getByTestId('command-palette-input'), 'texture pack');
+    await screen.findByTestId('command-exportResourcePack');
+    expect(listed()).toEqual(['command-exportResourcePack']);
+    expect(asked.at(-1)).toBe('texture pack');
+    await user.keyboard('{Enter}');
+    expect(list[2]?.run).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops an engine answer for older words and keeps the fuzzy matches on a failure', async () => {
+    const list = commands();
+    let release: (ids: readonly string[]) => void = () => {};
+    const rank = vi.fn((query: string) =>
+      query === 's'
+        ? new Promise<readonly string[]>((resolve) => {
+            release = resolve;
+          })
+        : Promise.reject(new Error('no engine')),
+    );
+    render(<CommandPalette open commands={list} onClose={vi.fn()} rank={rank} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByTestId('command-palette-input'), 'se');
+    release(['exportDataPack']);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(listed()).toEqual(filterCommands(list, 'se').map((command) => `command-${command.id}`));
   });
 });

@@ -435,3 +435,29 @@ describe('Toolbar Try it (ADR 0085 D13)', () => {
     expect(screen.queryByTestId('toolbar-try-it')).toBeNull();
   });
 });
+
+describe('the search field (ADR 0124 D10, B667)', () => {
+  it('shows the compact field in every mode, opening on a click, Down or a typed letter', async () => {
+    for (const mode of ['very-easy', 'easy', 'advanced'] as const) {
+      const onSearch = vi.fn();
+      const view = renderToolbar(
+        props({ mode, onSearch, searchPlaceholder: 'Search or make anything' }),
+      );
+      const field = screen.getByTestId('toolbar-search');
+      expect(field.getAttribute('aria-label')).toBe('Search or make anything');
+      expect(field.getAttribute('aria-haspopup')).toBe('dialog');
+      expect(field.getAttribute('aria-keyshortcuts')).toMatch(/^(Control|Meta)\+K$/);
+      await userEvent.setup().click(field);
+      fireEvent.keyDown(field, { key: 'ArrowDown' });
+      fireEvent.keyDown(field, { key: 'r' });
+      fireEvent.keyDown(field, { key: 'c', ctrlKey: true });
+      expect(onSearch.mock.calls).toEqual([[''], [''], ['r']]);
+      view.unmount();
+    }
+  });
+
+  it('shows no field without onSearch', () => {
+    renderToolbar(props({ mode: 'easy' }));
+    expect(screen.queryByTestId('toolbar-search')).toBeNull();
+  });
+});

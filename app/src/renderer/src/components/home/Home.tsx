@@ -9,6 +9,9 @@
  * mod has no things, folded to a **Show what you can make** link after that (the fold is the
  * host's preference). Test ids: `home-showcase`, `home-showcase-show`, `home-showcase-hide`.
  *
+ * The search's large bar (ADR 0124 D10; B667), built by the host, heads Home with and without a
+ * mod (`home-search`).
+ *
  * @packageDocumentation
  */
 
@@ -50,6 +53,8 @@ export interface HomeProps {
   showcaseOpen?: boolean;
   /** Opens or folds the showcase of a mod that has things. */
   onShowcaseOpenChange?(open: boolean): void;
+  /** The search's large bar ("What do you want to make?"); absent shows none. */
+  search?: ReactNode;
 }
 
 /** The link that opens the folded showcase (ADR 0118 D1). */
@@ -103,6 +108,11 @@ export function Home(props: HomeProps) {
         data-testid="home"
         className="flex min-h-0 flex-col items-center gap-4 overflow-auto p-6"
       >
+        {props.search !== undefined && props.search !== null && (
+          <div className="flex w-full justify-center" data-testid="home-search">
+            {props.search}
+          </div>
+        )}
         <h1 className="font-semibold text-lg">Make your own Minecraft mod</h1>
         <p className="max-w-prose text-center text-muted text-sm">
           A mod is a set of new things for Minecraft: blocks, items, mobs and what they do. Start a
@@ -165,6 +175,11 @@ export function Home(props: HomeProps) {
       data-testid="home"
       className="flex min-h-0 flex-col gap-5 overflow-auto p-4"
     >
+      {props.search !== undefined && props.search !== null && (
+        <div className="flex w-full justify-center" data-testid="home-search">
+          {props.search}
+        </div>
+      )}
       <MakeTiles tiles={props.tiles} onTile={props.onTile} />
       <ModShowcase {...props} />
       <MyThings

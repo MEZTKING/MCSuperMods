@@ -19,8 +19,9 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { App, focusedLocation } from '../../src/renderer/src/App';
+import { App, focusedLocation, templatesFirst } from '../../src/renderer/src/App';
 import { useAiPanelStore } from '../../src/renderer/src/components/ai/ai-controller';
+import { fuzzyScore } from '../../src/renderer/src/components/CommandPalette';
 import {
   FABRIC_JAR_GECKOLIB_NOTE,
   GECKOLIB_DOWNLOAD_MESSAGE,
@@ -2044,5 +2045,141 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
     const clip = await screen.findByTestId('example-detail-clip');
     expect(within(clip).getByTestId('showcase-card-crop')).toBeTruthy();
     expect(within(clip).getByTestId('showcase-make-crop')).toBeTruthy();
+  });
+});
+
+describe('App search doors (ADR 0124 D10, B667)', () => {
+  const ctrlK = () =>
+    act(() => {
+      fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    });
+
+  it('opens from Ctrl/Cmd+K, Edit > Search… and the toolbar field, and gives focus back', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    const settings = screen.getByTestId('toolbar-settings');
+    settings.focus();
+    await ctrlK();
+    const dialog = await screen.findByTestId('search-dialog');
+    expect(dialog.getAttribute('data-door')).toBe('toolbar');
+    const field = await screen.findByTestId('search-field');
+    await waitFor(() => expect(document.activeElement).toBe(field));
+    // A second Ctrl+K while it is open does nothing.
+    await ctrlK();
+    expect(screen.getAllByTestId('search-dialog')).toHaveLength(1);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('search-dialog')).toBeNull());
+    expect(document.activeElement).toBe(settings);
+
+    await harness.menu('search');
+    expect(await screen.findByTestId('search-panel')).toBeTruthy();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('search-dialog')).toBeNull());
+
+    const toolbarField = screen.getByTestId('toolbar-search');
+    expect(toolbarField.getAttribute('aria-label')).toBe('Search or make anything');
+    await user.click(toolbarField);
+    expect((await screen.findByTestId('search-dialog')).getAttribute('data-door')).toBe('toolbar');
+  });
+
+  it('has the large bar on the empty editor area, and a letter typed on a door is kept', async () => {
+    usePreferences.setState({ mode: 'easy', modeChosen: true });
+    await renderApp();
+    const bar = await screen.findByTestId('editor-search-field');
+    expect(bar.getAttribute('aria-label')).toBe('What do you want to make?');
+    act(() => {
+      bar.focus();
+      fireEvent.keyDown(bar, { key: 'b' });
+    });
+    const dialog = await screen.findByTestId('search-dialog');
+    expect(dialog.getAttribute('data-door')).toBe('start');
+    const field = (await screen.findByTestId('search-field')) as HTMLInputElement;
+    expect(field.value).toBe('b');
+  });
+
+  it("has the large bar on Very easy's Home with and without a mod", async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp({ noProject: true, defaultParent: '/docs/MCSuperMods' });
+    const home = await screen.findByTestId('home');
+    expect(within(home).getByTestId('home-search-field')).toBeTruthy();
+    expect(screen.queryByTestId('editor-search-field')).toBeNull();
+    await act(async () => {
+      await harness.session.newProject();
+    });
+    const withMod = await screen.findByTestId('home');
+    await userEvent.setup().click(within(withMod).getByTestId('home-search-field'));
+    expect((await screen.findByTestId('search-dialog')).getAttribute('data-door')).toBe('start');
+  });
+
+  it('finds a setting through the engine and opens Settings at its line', async () => {
+    await renderApp();
+    const user = userEvent.setup();
+    await ctrlK();
+    const field = await screen.findByTestId('search-field');
+    await user.type(field, 'remember my searches');
+    const row = await screen.findByTestId(
+      'search-row-setting:remember-searches',
+      {},
+      { timeout: 20_000 },
+    );
+    await user.click(row);
+    await waitFor(() => expect(screen.queryByTestId('search-dialog')).toBeNull());
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-setting="remember-searches"]')?.getAttribute('data-marked'),
+      ).toBe('true'),
+    );
+  }, 40_000);
+
+  it('Make this with no mod asks the mod name, then opens the Creator with the answers', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp({ noProject: true, defaultParent: '/docs/MCSuperMods' });
+    const user = userEvent.setup();
+    await user.click(await screen.findByTestId('home-search-field'));
+    await user.type(await screen.findByTestId('search-field'), 'blue sword');
+    await user.click(await screen.findByTestId('search-row-flow:weapon', {}, { timeout: 20_000 }));
+    const name = (await screen.findByTestId('new-mod-name')) as HTMLInputElement;
+    expect(name.value).toMatch(/Mod$/);
+    await user.click(screen.getByTestId('new-mod-dialog-submit'));
+    await waitFor(() => expect(harness.session.snapshot.project).not.toBeNull());
+    const creator = await screen.findByTestId('creator-dialog');
+    expect(within(creator).getByTestId('creator-start-note')).toBeTruthy();
+  }, 40_000);
+
+  it('ranks the palette by the engine (the palette door) and offers Search everything', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await harness.menu('commandPalette');
+    const palette = await screen.findByTestId('command-palette');
+    const ids = within(palette)
+      .getAllByRole('option')
+      .map((option) => option.getAttribute('data-testid'));
+    // The empty query keeps the palette's order; Search everything comes last of the built-ins.
+    expect(ids[0]).toBe('command-newProject');
+    expect(ids).toContain('command-searchEverything');
+    // No title holds these letters in order: the engine finds the packs by their words.
+    expect(fuzzyScore('texture pack', 'Export resource pack…')).toBeNull();
+    await user.type(within(palette).getByTestId('command-palette-input'), 'texture pack');
+    expect(
+      await within(palette).findByTestId('command-exportResourcePack', {}, { timeout: 20_000 }),
+    ).toBeTruthy();
+    await user.clear(within(palette).getByTestId('command-palette-input'));
+    await user.type(within(palette).getByTestId('command-palette-input'), 'search everything');
+    await user.click(await within(palette).findByTestId('command-searchEverything'));
+    expect(await screen.findByTestId('search-dialog')).toBeTruthy();
+  }, 40_000);
+});
+
+describe('templatesFirst (the search: Make a new one)', () => {
+  const list = [
+    { id: 'a', kind: 'msm:block' },
+    { id: 'b', kind: 'msm:item' },
+    { id: 'c', kind: 'msm:item' },
+  ];
+  it('puts the template, else the kind, first and leaves the list as it is without either', () => {
+    expect(templatesFirst(list).map((entry) => entry.id)).toEqual(['a', 'b', 'c']);
+    expect(templatesFirst(list, 'msm:item').map((entry) => entry.id)).toEqual(['b', 'c', 'a']);
+    expect(templatesFirst(list, 'msm:item', 'c').map((entry) => entry.id)).toEqual(['c', 'a', 'b']);
+    expect(templatesFirst(list, 'unknown').map((entry) => entry.id)).toEqual(['a', 'b', 'c']);
   });
 });

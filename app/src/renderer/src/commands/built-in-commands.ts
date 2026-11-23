@@ -66,6 +66,8 @@ export const BUILT_IN_COMMAND_IDS = [
   'veryEasyMode',
   'easyMode',
   'advancedMode',
+  // ADR 0124 D10: last, so the palette's empty list keeps its order.
+  'searchEverything',
 ] as const;
 
 /** A built-in command id. */
@@ -360,6 +362,12 @@ export const BUILT_IN_COMMANDS: Readonly<
     title: 'Advanced mode',
     sentence: 'Switch to Advanced mode, with every field and the raw files.',
     words: ['advanced', 'expert', 'pro', 'all options', 'mode'],
+  },
+  searchEverything: {
+    title: 'Search everything…',
+    shortcut: 'Mod+K',
+    sentence: 'Find anything you can make, your things, Minecraft ids, settings and the guide.',
+    words: ['search', 'find', 'look up', 'search bar', 'what can i make'],
   },
 };
 

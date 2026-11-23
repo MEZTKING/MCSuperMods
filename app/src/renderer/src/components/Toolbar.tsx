@@ -15,6 +15,7 @@ import {
   Plus,
   Redo2,
   Save,
+  Search,
   Settings,
   Share2,
   Sparkles,
@@ -23,7 +24,7 @@ import {
   WandSparkles,
 } from 'lucide-react';
 import { DropdownMenu, Toolbar as RadixToolbar } from 'radix-ui';
-import type { ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { RecentProjectView } from '../../../shared/platform';
 import { UI_MODES, type UiMode } from '../store/preferences';
 import {
@@ -99,6 +100,13 @@ export interface ToolbarProps {
   onTryIt?(): void;
   /** Whether Try it is the open view (the button then shows as pressed). */
   tryItOpen?: boolean;
+  /**
+   * Opens the search (ADR 0124 D10) with the letters typed on the field, if any; the toolbar
+   * then shows its compact field (`toolbar-search`) in every mode. Hidden when absent.
+   */
+  onSearch?(text: string): void;
+  /** The search field's words ("Search or make anything"). */
+  searchPlaceholder?: string;
   onOpen(): void;
   /** Recent projects for the "Open" split arrow, newest first. */
   recentProjects?: readonly RecentProjectView[];
@@ -521,6 +529,86 @@ function ToolButton(props: {
 
 const separator = <RadixToolbar.Separator className="mx-1 h-5 w-px bg-border" />;
 
+/** Props of {@link SearchDoorField}. */
+export interface SearchDoorFieldProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'onKeyDown'> {
+  /** The words shown in the field, also its accessible name. */
+  readonly placeholder: string;
+  /** `large` on the start surfaces, `compact` in the toolbar. */
+  readonly size: 'large' | 'compact';
+  /** The key shown at the end (`Ctrl+K`). */
+  readonly shortcut?: string | undefined;
+  /** Opens the search with the letters typed so far (`''` for a click). */
+  onOpen(text: string): void;
+}
+
+/**
+ * A door of the search (ADR 0124 D10): looks like a field and opens the search panel, on a click,
+ * Enter, Space or Down, or with the first letter typed on it (so no letter is dropped). Large on
+ * Home and the empty editor area, compact in the toolbar.
+ */
+export function SearchDoorField({
+  placeholder,
+  size,
+  shortcut,
+  onOpen,
+  className,
+  ...rest
+}: SearchDoorFieldProps) {
+  const large = size === 'large';
+  return (
+    <button
+      type="button"
+      aria-haspopup="dialog"
+      aria-label={placeholder}
+      {...(shortcut === undefined
+        ? {}
+        : { 'aria-keyshortcuts': shortcut.replace('Ctrl', 'Control').replace('Cmd', 'Meta') })}
+      {...rest}
+      className={`flex min-w-0 cursor-text items-center gap-2 rounded-md border border-border bg-bg text-left text-muted hover:border-accent focus-visible:border-accent ${large ? 'w-full max-w-2xl px-3 py-2.5 text-base' : 'w-56 max-w-full px-2 py-1 text-sm'} ${className ?? ''}`}
+      onClick={() => onOpen('')}
+      onKeyDown={(event) => {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          onOpen('');
+          return;
+        }
+        // A printable letter opens the search with it, so typing straight away works.
+        if (event.key.length === 1 && event.key !== ' ') {
+          event.preventDefault();
+          onOpen(event.key);
+        }
+      }}
+    >
+      <Search size={large ? 20 : 14} aria-hidden className="shrink-0" />
+      <span className="min-w-0 flex-1 truncate">{placeholder}</span>
+      {shortcut !== undefined && (
+        <kbd aria-hidden className="shrink-0 rounded border border-border px-1 text-xs">
+          {shortcut}
+        </kbd>
+      )}
+    </button>
+  );
+}
+
+/** The toolbar's compact search field (ADR 0124 D10), when the host offers the search. */
+function ToolbarSearch(props: ToolbarProps) {
+  if (props.onSearch === undefined) return null;
+  const onSearch = props.onSearch;
+  return (
+    <RadixToolbar.Button asChild>
+      <SearchDoorField
+        data-testid="toolbar-search"
+        size="compact"
+        placeholder={props.searchPlaceholder ?? 'Search or make anything'}
+        shortcut={`${modKey}+K`}
+        onOpen={onSearch}
+      />
+    </RadixToolbar.Button>
+  );
+}
+
 /** The mode switch's row, "Very easy · Easy · Advanced" (ADR 0083 D1). */
 function ModeRow(props: { mode: UiMode; onSetMode(mode: UiMode): void }) {
   return (
@@ -677,6 +765,7 @@ function VeryEasyToolbar(props: ToolbarProps) {
           },
         ]}
       />
+      <ToolbarSearch {...props} />
       <span className="ml-auto" />
       {props.mode !== undefined && props.onSetMode !== undefined && (
         <ModeRow mode={props.mode} onSetMode={props.onSetMode} />
@@ -970,6 +1059,7 @@ function FullToolbar(props: ToolbarProps) {
       <TryItButton {...props} />
       {props.showPlay !== false && <PlayControls />}
       {separator}
+      <ToolbarSearch {...props} />
       {props.onAiHelper !== undefined && (
         <ToolButton
           label="AI helper"

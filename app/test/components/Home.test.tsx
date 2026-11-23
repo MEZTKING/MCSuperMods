@@ -679,3 +679,19 @@ describe('Studio sections in Very easy', () => {
     expect(screen.getByTestId('rules-slot').getAttribute('data-first')).toBeNull();
   });
 });
+
+describe('the search bar (ADR 0124 D10, B667)', () => {
+  it('heads Home with and without a mod when given', () => {
+    const bar = <button type="button">What do you want to make?</button>;
+    const view = render(<Home {...homeProps({ project: null, search: bar })} />);
+    expect(screen.getByTestId('home-search').textContent).toBe('What do you want to make?');
+    view.unmount();
+    render(<Home {...homeProps({ search: bar })} />);
+    expect(screen.getByTestId('home-search').textContent).toBe('What do you want to make?');
+  });
+
+  it('shows no bar without one', () => {
+    render(<Home {...homeProps()} />);
+    expect(screen.queryByTestId('home-search')).toBeNull();
+  });
+});

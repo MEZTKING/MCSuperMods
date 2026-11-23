@@ -204,6 +204,14 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
           accelerator: 'CmdOrCtrl+Shift+P',
           click: () => send('commandPalette'),
         },
+        {
+          // ADR 0124 D10, SQ9: the renderer handles Ctrl/Cmd+K (Monaco keeps its chords), so the
+          // menu only shows the key.
+          label: 'Search…',
+          accelerator: 'CmdOrCtrl+K',
+          registerAccelerator: false,
+          click: () => send('search'),
+        },
         { type: 'separator' },
         { role: 'cut' },
         { role: 'copy' },

@@ -14,6 +14,7 @@ export type ShortcutCommand =
   | 'newElement'
   | 'renameElement'
   | 'commandPalette'
+  | 'search'
   | 'toggleAiHelper'
   | 'play'
   | 'reloadGame'
@@ -36,7 +37,8 @@ export interface ShortcutKeyEvent {
  * Maps a key press to a command: Ctrl/Cmd+S save, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z and
  * Ctrl+Y redo, Ctrl/Cmd+N new element, Ctrl/Cmd+Shift+P command palette, Ctrl/Cmd+Shift+A
  * the AI helper, F2 rename element, F5 Play and Ctrl/Cmd+R Reload in game (ADR 0084 D1, D6),
- * F6 Try it (ADR 0085 D13).
+ * F6 Try it (ADR 0085 D13), Ctrl/Cmd+K search everything (ADR 0124 D10, SQ9: Monaco keeps its
+ * own Ctrl+K chords, since it stops the key before this listener sees it).
  * Ctrl/Cmd+Shift+R is left to the window reload. Events another handler already consumed (Monaco's own undo, for example) are
  * ignored.
  */
@@ -51,6 +53,7 @@ export function shortcutFor(event: ShortcutKeyEvent): ShortcutCommand | null {
   const key = event.key.toLowerCase();
   if (key === 'p' && event.shiftKey) return 'commandPalette';
   if (key === 'a' && event.shiftKey) return 'toggleAiHelper';
+  if (key === 'k' && !event.shiftKey) return 'search';
   if (key === 's' && !event.shiftKey) return 'save';
   if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
   if (key === 'y' && event.ctrlKey && !event.shiftKey) return 'redo';

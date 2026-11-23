@@ -8,9 +8,11 @@ import {
   type ResourceLocation,
 } from '@msm/core';
 import { structureSaveFileName } from '@msm/interop';
-import type { ExampleProject, Target } from '@msm/plugin-api';
+import type { ExampleProject, Plugin, Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
-import { Toast, Tooltip } from 'radix-ui';
+import type { SearchHit } from '@msm/search';
+import { targetFacts } from '@msm/targets';
+import { Dialog, Toast, Tooltip } from 'radix-ui';
 import {
   lazy,
   type ReactNode,
@@ -37,6 +39,8 @@ import { SoundPlayerProvider, type SoundSources, SoundSourcesProvider } from './
 import { createVanillaSoundReader } from './audio/vanilla-sounds';
 import { namespaceOfId } from './changeset/creator-sets';
 import {
+  BUILT_IN_COMMAND_IDS,
+  BUILT_IN_COMMANDS,
   type BuiltInCommandId,
   type CommandHandlers,
   definitionOf,
@@ -50,12 +54,13 @@ import { AiController, useAiPanelStore } from './components/ai/ai-controller';
 import type { AiPicture } from './components/ai/ai-pictures';
 import { AiPicturesContext } from './components/ai-pictures/ai-pictures-host';
 import { useAiPicturesHost } from './components/ai-pictures/use-ai-pictures-host';
+import { type Choice, ChoiceDialog } from './components/ChoiceDialog';
 import { CommandPalette, type PaletteCommand } from './components/CommandPalette';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CreatorDialog, type CreatorEditRequest } from './components/creator/CreatorDialog';
-import { creatorFlows } from './components/creator/creator-model';
+import { type CreatorStart, creatorFlows } from './components/creator/creator-model';
 import { EditorArea } from './components/EditorArea';
-import { ElementSidebar } from './components/ElementSidebar';
+import { ElementSidebar, GROUP_LABELS, TECHNICAL_GROUPS } from './components/ElementSidebar';
 import { ExamplesDialog, mergedPhrase } from './components/ExamplesDialog';
 import {
   defaultOptionValues,
@@ -109,10 +114,11 @@ import { RightDock } from './components/RightDock';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
+import { SETTINGS_CATALOGUE } from './components/settings-catalogue';
 import { SurpriseDialog, type SurprisePrepare } from './components/surprise/SurpriseDialog';
 import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
 import { ThingsToFix } from './components/ThingsToFix';
-import { modKey, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
+import { modKey, SearchDoorField, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
 import { NewTextureDialog } from './components/texture-editor/NewTextureDialog';
 import { PictureToTextureDialog } from './components/texture-editor/PictureToTextureDialog';
 import { TextureEditorDialog } from './components/texture-editor/TextureEditorDialog';
@@ -126,6 +132,12 @@ import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { builtInPlugins } from './plugins/built-in';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
+import type { SearchActionHost, SearchStartMod } from './search/actions';
+import type { SearchClient } from './search/client';
+import type { ResultPreviewHost } from './search/ResultPreview';
+import type { SearchActionOptions } from './search/SearchPanel';
+import type { AppLists, SearchFeed, VanillaSort } from './search/sources';
+import { type SearchActionKey, type SearchDoor, searchWords } from './search/wording';
 import { closeRequestHandlers } from './session/close-requests';
 import { namespaceFromFolderName } from './session/element-defaults';
 import {
@@ -153,6 +165,7 @@ import {
 import {
   APPLY_CHANGESET_LABEL,
   type ExportResult,
+  type NewProjectOptions,
   type OpenOutcome,
   type PackDelivery,
   type PackKind,
@@ -229,6 +242,64 @@ const TryItView = lazy(() => import('./tryit/TryItView'));
 /** "Export as a map…" (ADR 0116 D2), a lazy chunk loaded when it opens. */
 const ExportMapDialog = lazy(() => import('./components/ExportMapDialog'));
 
+/** The search's actions (`run-action.ts`), loaded with the panel (ADR 0124 D9; B664). */
+let searchActions: typeof import('./search/run-action') | null = null;
+/** The search panel (ADR 0124 D6, D10; B663), a lazy chunk with the actions. */
+const SearchPanel = lazy(async () => {
+  const [panel, actions] = await Promise.all([
+    import('./search/SearchPanel'),
+    import('./search/run-action'),
+  ]);
+  searchActions = actions;
+  return panel;
+});
+/** The selected result's live picture (ADR 0124 D9; B665). */
+const ResultPreview = lazy(() => import('./search/ResultPreview'));
+/** The user guide read inside the app (ADR 0124 D14; B661). */
+const GuideDialog = lazy(() => import('./components/GuideDialog'));
+
+/** The app's own lists the search reads (ADR 0124 D3; B660, B662). */
+const SEARCH_LISTS: AppLists = {
+  commands: BUILT_IN_COMMAND_IDS.map((id) => {
+    const { title, sentence, words } = BUILT_IN_COMMANDS[id];
+    return { id, title, sentence, words };
+  }),
+  settings: SETTINGS_CATALOGUE,
+  kinds: {
+    label: (kind) => GROUP_LABELS[kind],
+    technical: (kind) => TECHNICAL_GROUPS.has(kind),
+  },
+};
+
+/** The sorts of the vanilla layer, in the order a bare id is looked up (**Make something with it**). */
+const VANILLA_SORTS: readonly VanillaSort[] = [
+  'thing',
+  'mob',
+  'biome',
+  'effect',
+  'enchantment',
+  'potion',
+  'particle',
+  'sound',
+];
+
+/** The search's engine side once loaded: the client and the feed that keeps its layers. */
+interface SearchRuntime {
+  readonly client: SearchClient;
+  readonly feed: SearchFeed;
+}
+
+/** The command ids of an engine answer, best first (the palette door, ADR 0124 D10). */
+function commandIdsOf(answer: {
+  readonly best: readonly SearchHit[];
+  readonly sections: readonly { readonly hits: readonly SearchHit[] }[];
+}): string[] {
+  const hits = [...answer.best, ...answer.sections.flatMap((section) => section.hits)];
+  return hits.flatMap((hit) =>
+    hit.entry.id.startsWith('command:') ? [hit.entry.id.slice('command:'.length)] : [],
+  );
+}
+
 /** The menu command bound to the same accelerator as each keyboard shortcut. */
 const menuEquivalent = {
   save: 'save',
@@ -236,11 +307,29 @@ const menuEquivalent = {
   redo: 'redo',
   renameElement: 'renameElement',
   commandPalette: 'commandPalette',
+  search: 'search',
   toggleAiHelper: 'toggleAiHelper',
   play: 'play',
   reloadGame: 'reloadGame',
   tryIt: 'tryIt',
 } as const satisfies Record<string, MenuCommand>;
+
+/**
+ * The templates with the asked one (else those of the asked kind) first, so the New element
+ * dialog opens on it (the search's **Make a new one**, ADR 0124 D9); unchanged without either.
+ */
+export function templatesFirst<T extends { readonly id: string; readonly kind: string }>(
+  templates: readonly T[],
+  kind?: string,
+  template?: string,
+): readonly T[] {
+  if (kind === undefined && template === undefined) return templates;
+  const wanted = (entry: T): boolean =>
+    template !== undefined ? entry.id === template : entry.kind === kind;
+  const first = templates.filter(wanted);
+  if (first.length === 0) return templates;
+  return [...first, ...templates.filter((entry) => !wanted(entry))];
+}
 
 /** Whether an export report was blocked because the GeckoLib jar could not be had. */
 function hasGeckolibMissing(problems: readonly { code: string }[]): boolean {
@@ -253,7 +342,12 @@ type ImportMode = 'structure' | 'blockbench';
 /** The dialog currently open, if any. */
 type DialogState =
   | { type: 'namespace' }
-  | { type: 'element' }
+  | {
+      type: 'element';
+      /** The kind or template to offer first (the search's **Make a new one**). */
+      kind?: string;
+      template?: string;
+    }
   | {
       type: 'new-project';
       /** Flow starters to choose at once (a showcase card's **Make this**, ADR 0118 D10). */
@@ -265,6 +359,8 @@ type DialogState =
       edit?: CreatorEditRequest;
       flowIds?: readonly string[];
       picks?: readonly VeryEasyPick[];
+      /** A new set of a flow with answers (the search's **Make this**, ADR 0124 D9). */
+      start?: CreatorStart;
     }
   | {
       type: 'new-mod';
@@ -273,13 +369,18 @@ type DialogState =
       name?: string;
       /** What to open once the mod is made (a showcase card's **Make this**, ADR 0118 D10). */
       afterwards?: ShownTile;
+      /** The search's new mod (ADR 0124 D9): what it is made from, and the answer. */
+      search?: {
+        options(folder: string): NewProjectOptions;
+        resolve(made: boolean): void;
+      };
     }
   | { type: 'surprise' }
   | { type: 'make-choice'; title: string; choices: readonly MakeChoice[] }
   | { type: 'rename-thing'; id: ResourceLocation; name: string }
   | { type: 'import'; namespace?: string }
   | { type: 'import-files'; mode: ImportMode }
-  | { type: 'settings'; focus?: 'ai' }
+  | { type: 'settings'; focus?: 'ai'; focusSetting?: string }
   | { type: 'remove-asset'; namespace: string; path: string }
   | {
       /** A delete that removes exported ids (ADR 0102 D5): confirm first. */
@@ -319,7 +420,16 @@ type DialogState =
       pictures?: { name: string; data: Uint8Array }[];
     }
   | { type: 'wishlist' }
-  | { type: 'no-minecraft'; message: string };
+  | { type: 'no-minecraft'; message: string }
+  | {
+      /** A question of the search's actions (ADR 0124 D9): one of a few named choices. */
+      type: 'choice';
+      title: string;
+      lead?: string;
+      choices: readonly Choice[];
+      resolve(id: string | null): void;
+    }
+  | { type: 'guide'; page: string; anchor?: string };
 
 /**
  * Where the caret is: the `data-pointer` of the focused form field, or `/lines/<n>` and the
@@ -506,7 +616,16 @@ function ShellProviders(props: {
   );
 }
 
-export function App({ session, bridge }: { session: ProjectSession; bridge: MsmBridge }) {
+export function App({
+  session,
+  bridge,
+  externalPlugins,
+}: {
+  session: ProjectSession;
+  bridge: MsmBridge;
+  /** The third-party plugins' facades (registered after the built-ins), for the search's data. */
+  externalPlugins?: readonly Plugin[];
+}) {
   const snapshot = useUiStore((state) => state.snapshot) ?? session.snapshot;
   const selectedId = useUiStore((state) => state.selectedId);
   const selectedPointer = useUiStore((state) => state.selectedPointer);
@@ -1575,6 +1694,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   // Commands and shortcuts ----------------------------------------------------------------
 
   const [paletteOpen, setPaletteOpen] = useState(false);
+  /** The open search panel (ADR 0124 D10): its door and the letters typed on the door. */
+  const [searchDoor, setSearchDoor] = useState<{ door: SearchDoor; text: string } | null>(null);
+  /** Where focus was when the search opened; it goes back there on close (D11). */
+  const searchReturn = useRef<HTMLElement | null>(null);
   /** The caret's location when the palette opened (for "Go to definition"). */
   const paletteFocus = useRef<FocusedLocation | null>(null);
 
@@ -1843,15 +1966,21 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
   };
   /** The choices of a tile with starters (ADR 0086 D8): its flows, then its starters. */
-  const tileChoices = (shown: ShownTile): MakeChoice[] => {
+  const tileChoices = (shown: ShownTile): MakeChoice[] =>
+    makeChoicesOf(shown.flowIds, shown.starterIds);
+  /** The chooser's cards of some flows, then some starters. */
+  const makeChoicesOf = (
+    flowIds: readonly string[],
+    starterIds: readonly string[],
+  ): MakeChoice[] => {
     const starters = session.library.starters;
-    const flows = shown.flowIds.flatMap((id): MakeChoice[] => {
+    const flows = flowIds.flatMap((id): MakeChoice[] => {
       const starter = starters.find((entry) => entry.id === id);
       return starter === undefined
         ? []
         : [{ type: 'flow', id, title: starter.title, sentence: starter.creator?.blurb ?? '' }];
     });
-    const others = shown.starterIds.flatMap((id): MakeChoice[] => {
+    const others = starterIds.flatMap((id): MakeChoice[] => {
       const starter = starters.find((entry) => entry.id === id);
       return starter === undefined
         ? []
@@ -2080,8 +2209,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
    * **See the example** (ADR 0118 D10): a new mod made from it when none is open, else a copy in
    * the open mod, showing its Rule book when it has one (the Rules card).
    */
-  const seeShowcaseExample = (clip: ShowcaseClip): void => {
-    const example = session.library.examples.find((entry) => entry.id === clip.exampleId);
+  const seeShowcaseExample = (clip: ShowcaseClip): void => seeExample(clip.exampleId);
+  /** **See the example** of a card or a search result, by the example's id. */
+  const seeExample = (exampleId: string): void => {
+    const example = session.library.examples.find((entry) => entry.id === exampleId);
     if (example === undefined) return;
     setDialog(null);
     if (project === null) {
@@ -2239,9 +2370,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     });
   };
 
-  /** Opens Settings; `'ai'` lands on the AI helper's section with its key field (ADR 0125 D5). */
-  const openSettings = (focus?: 'ai'): void => {
-    setDialog(focus === undefined ? { type: 'settings' } : { type: 'settings', focus });
+  /**
+   * Opens Settings; `'ai'` lands on the AI helper's section with its key field (ADR 0125 D5), and
+   * `focusSetting` on one line of the settings catalogue (the search, ADR 0124 D9; B662).
+   */
+  const openSettings = (focus?: 'ai', focusSetting?: string): void => {
+    setDialog({
+      type: 'settings',
+      ...(focus === undefined ? {} : { focus }),
+      ...(focusSetting === undefined ? {} : { focusSetting }),
+    });
     // Launchers may have gained instances since the last read; look again.
     void refreshMinecraftStatus();
     refreshLaunchers().catch(() => useUiStore.getState().setLauncherSettings(null));
@@ -2292,6 +2430,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     settings: () => openSettings(),
     renameElement: renameSelected,
     commandPalette: openPalette,
+    search: () => openSearch('toolbar'),
     checkForUpdates,
     whatsNew,
     firstMod: () => setDialog({ type: 'welcome' }),
@@ -2415,6 +2554,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     veryEasyMode: uiMode === 'very-easy' ? null : handlers.modeVeryEasy,
     easyMode: uiMode === 'easy' ? null : handlers.modeEasy,
     advancedMode: uiMode === 'advanced' ? null : handlers.modeAdvanced,
+    searchEverything: handlers.search,
   } satisfies Record<BuiltInCommandId, Action | null>;
 
   const palette = [
@@ -2432,6 +2572,370 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         run: entry.onSelect,
       })),
   ];
+
+  // Search (ADR 0124 D3, D9, D10; B667) ----------------------------------------------------
+
+  /** The plugins the search reads: the built-ins, then the third-party facades. */
+  const searchPlugins = useMemo(
+    () => [...builtInPlugins, ...(externalPlugins ?? [])],
+    [externalPlugins],
+  );
+  const searchRuntime = useRef<Promise<SearchRuntime> | null>(null);
+  const searchClient = useRef<SearchClient | null>(null);
+  /** The client and the feed, loaded and started once (lazy chunks; ADR 0124 D3). */
+  const ensureSearch = useCallback((): Promise<SearchRuntime> => {
+    const held = searchRuntime.current;
+    if (held !== null) return held;
+    const made = Promise.all([import('./search/client'), import('./search/sources')]).then(
+      ([clientModule, sourcesModule]) => {
+        const client = new clientModule.SearchClient();
+        const feed = new sourcesModule.SearchFeed({
+          client,
+          plugins: () => searchPlugins,
+          lists: SEARCH_LISTS,
+          defaultTargetId: session.defaultTargetId ?? '',
+          targetFacts,
+          session,
+          history: () => usePreferences.getState().searchHistory,
+        });
+        if (searchRuntime.current === made) {
+          searchClient.current = client;
+          void feed.start();
+        }
+        return { client, feed };
+      },
+    );
+    searchRuntime.current = made;
+    return made;
+  }, [session, searchPlugins]);
+  // The client starts after the first paint, so typing never waits on the static layer.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const frame = requestAnimationFrame(() => {
+      timer = setTimeout(() => void ensureSearch(), 0);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      if (timer !== undefined) clearTimeout(timer);
+      const held = searchRuntime.current;
+      searchRuntime.current = null;
+      searchClient.current = null;
+      void held?.then(({ client, feed }) => {
+        feed.dispose();
+        client.dispose();
+      });
+    };
+  }, [ensureSearch]);
+  // A chosen result or search changes the context's history counts.
+  useEffect(
+    () =>
+      usePreferences.subscribe((state, previous) => {
+        if (state.searchHistory !== previous.searchHistory) {
+          void searchRuntime.current?.then(({ feed }) => feed.refreshContext());
+        }
+      }),
+    [],
+  );
+  /** Opens the search panel from a door, with the letters typed on it. */
+  const openSearch = (door: SearchDoor, text = ''): void => {
+    if (searchDoor !== null) return;
+    const active = document.activeElement;
+    searchReturn.current = active instanceof HTMLElement ? active : null;
+    setSearchDoor({ door, text });
+    void ensureSearch().then(({ feed }) => {
+      // Home and the empty editor lean to making; the toolbar to nothing in particular.
+      feed.setLean(door === 'start' ? 'make' : undefined);
+      void feed.prepare();
+    });
+  };
+  const closeSearch = useCallback(() => setSearchDoor(null), []);
+  const querySearch = useCallback(
+    async (request: Parameters<SearchClient['query']>[0]) =>
+      (await ensureSearch()).client.query(request),
+    [ensureSearch],
+  );
+  /** The palette door: the engine's order of the commands for typed words (ADR 0124 D10). */
+  const rankCommands = useCallback(
+    async (text: string): Promise<readonly string[] | null> => {
+      const { client, feed } = await ensureSearch();
+      feed.setLean('command');
+      const answer = await client.query({
+        text,
+        mode: usePreferences.getState().mode,
+        scope: 'commands',
+        limit: 50,
+      });
+      return answer === null ? null : commandIdsOf(answer);
+    },
+    [ensureSearch],
+  );
+  /** A question of the search's actions as a chooser; `null` when cancelled. */
+  const askChoice = (title: string, choices: readonly Choice[], lead?: string) =>
+    new Promise<string | null>((resolve) =>
+      setDialog({
+        type: 'choice',
+        title,
+        choices,
+        ...(lead === undefined ? {} : { lead }),
+        resolve,
+      }),
+    );
+  /**
+   * No mod is open: a new one for the search's action (ADR 0124 D9), from a starter or example
+   * when given. Very easy asks only the name, in the folder its New uses; Easy and Advanced pick
+   * the folder as New project does.
+   */
+  const startSearchMod = (request: SearchStartMod): Promise<boolean> =>
+    new Promise<boolean>((resolve) => {
+      const from = request.from;
+      const options = (folder?: string): NewProjectOptions => ({
+        ...(folder === undefined ? {} : { folder }),
+        ...(from === undefined
+          ? {}
+          : {
+              bundle: from.source,
+              ...(from.values === undefined ? {} : { values: { ...from.values } }),
+            }),
+      });
+      const direct = (): void => {
+        void (async () => {
+          const outcome = await session.newProject(options());
+          await openWith('New mod', async () => outcome);
+          resolve(outcome.ok);
+        })();
+      };
+      const ask = bridge.project.defaultParent;
+      if (usePreferences.getState().mode !== 'very-easy' || ask === undefined) {
+        direct();
+        return;
+      }
+      ask().then(
+        (parent) =>
+          parent === ''
+            ? direct()
+            : setDialog({
+                type: 'new-mod',
+                parent,
+                name: request.name,
+                search: { options: (folder) => options(folder), resolve },
+              }),
+        direct,
+      );
+    });
+  /** **Ask the AI helper** with the words (ADR 0124 D12): opened, prefilled, not sent. */
+  const askAiWith = (text?: string): void => {
+    if (aiController === null) {
+      setMessage({ kind: 'error', text: 'The AI helper is not available.' });
+      return;
+    }
+    if (session.snapshot.project === null) {
+      buildWithAi();
+      return;
+    }
+    aiController.open();
+    if (text !== undefined && text !== '') aiController.setDraft({ ...aiController.draft(), text });
+  };
+  /** The sort of a vanilla id by the target's registries, as the search's vanilla layer has it. */
+  const vanillaSort = (id: string): VanillaSort | undefined => {
+    const client = searchClient.current;
+    if (client === null) return undefined;
+    const path = id.startsWith('minecraft:') ? id.slice('minecraft:'.length) : id;
+    return VANILLA_SORTS.find((sort) => client.entry(`vanilla:${sort}:${path}`) !== undefined);
+  };
+  /** The host side of the search's actions (ADR 0124 D9; B664). */
+  const searchHost: SearchActionHost = {
+    session,
+    mode: uiMode,
+    plugins: () => searchPlugins,
+    vanillaSort,
+    rememberChoice: (entryId) => usePreferences.getState().rememberSearchChoice(entryId),
+    notify: (notice) => setMessage(notice),
+    startMod: startSearchMod,
+    openCreator: (start) => {
+      if (session.snapshot.project === null) {
+        setMessage({ kind: 'error', text: 'Start or open a mod first.' });
+        return;
+      }
+      setDialog({
+        type: 'creator',
+        start: {
+          flowId: start.flowId,
+          values: start.values,
+          ...(start.note === undefined ? {} : { note: start.note }),
+        },
+      });
+    },
+    chooseFlows: ({ flows, starters = [], tile }) => {
+      if (session.snapshot.project === null) {
+        setMessage({ kind: 'error', text: 'Start or open a mod first.' });
+        return;
+      }
+      if (starters.length === 0) {
+        setDialog({ type: 'creator', flowIds: flows });
+        return;
+      }
+      const title =
+        homeTiles.find((shown) => shown.tile.id === tile)?.tile.label ??
+        'What do you want to make?';
+      setDialog({ type: 'make-choice', title, choices: makeChoicesOf(flows, starters) });
+    },
+    chooseMake: async ({ thing, choices }) => {
+      const picked = await askChoice(
+        `Make something with ${thing}`,
+        choices.map((choice, index) => ({
+          id: String(index),
+          title: choice.title,
+          sentence: choice.questionLabel,
+        })),
+      );
+      return picked === null ? null : (choices[Number(picked)] ?? null);
+    },
+    chooseSubject: async ({ choices }) => {
+      const picked = await askChoice(
+        'What is the rule about?',
+        choices.map((choice) => ({ id: choice.id, title: choice.name })),
+      );
+      return picked === null ? null : (picked as ResourceLocation);
+    },
+    newElement: ({ kind, template }) => {
+      if ((session.snapshot.project?.namespaces.length ?? 0) === 0) {
+        setMessage({ kind: 'error', text: 'Open a project with a namespace first.' });
+        return;
+      }
+      setDialog({ type: 'element', kind, ...(template === undefined ? {} : { template }) });
+    },
+    showMine: (kind) => {
+      const first = session.snapshot.project?.namespaces
+        .flatMap((entry) => entry.elements)
+        .filter((element) => element.kind === kind)
+        .sort((a, b) => a.id.localeCompare(b.id))[0];
+      if (first === undefined) {
+        setMessage({ kind: 'info', text: 'Your mod has none of these yet.' });
+        return;
+      }
+      useTryItStore.getState().close();
+      if (usePreferences.getState().mode === 'very-easy') {
+        select(null);
+        requestAnimationFrame(() =>
+          document
+            .querySelector<HTMLElement>('[data-testid="my-things"]')
+            ?.scrollIntoView({ block: 'start' }),
+        );
+        return;
+      }
+      select(first.id);
+    },
+    openElement: (id) => {
+      useTryItStore.getState().close();
+      navigateTo(id, null);
+    },
+    renameElement: (id) => {
+      const element = findProjectElement(session.snapshot.project, id);
+      const registry = element === undefined ? '' : kindRegistry(element.kind, session.registry);
+      const references = session.references
+        .to(id)
+        .filter((reference) => reference.registry === '' || reference.registry === registry).length;
+      setDialog({ type: 'rename', id, references });
+    },
+    findUsages: (id) => setDialog({ type: 'usages', id, usages: session.references.to(id) }),
+    editInCreator: (id) => {
+      const element = findProjectElement(session.snapshot.project, id);
+      if (element !== undefined) editInCreator(element);
+    },
+    openAsset: (namespace, path) => {
+      if (!path.endsWith('.png')) {
+        reveal(`assets/${namespace}/${path}`);
+        return;
+      }
+      session.readAsset(namespace, path).then(
+        (bytes) => setDialog({ type: 'paint', namespace, path, bytes }),
+        (error: unknown) =>
+          setMessage({ kind: 'error', text: `Cannot open ${path}: ${messageOf(error)}` }),
+      );
+    },
+    openRule: (book, index) => {
+      useTryItStore.getState().close();
+      navigateTo(book, `/rules/${index}`, null);
+    },
+    seeExample,
+    openSettings: (setting) => openSettings(undefined, setting),
+    runCommand: (command) => {
+      const found = palette.find((entry) => entry.id === command);
+      if (found === undefined) {
+        setMessage({ kind: 'error', text: 'That cannot be done right now.' });
+        return;
+      }
+      found.run();
+    },
+    openGuide: (page, anchor) => {
+      if (bridge.guide === undefined) {
+        setMessage({ kind: 'error', text: 'The guide is not available here.' });
+        return;
+      }
+      setDialog({ type: 'guide', page, anchor });
+    },
+    showProblem: (problem) => {
+      if (problem.elementId === undefined) return;
+      useTryItStore.getState().close();
+      navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null);
+    },
+    paintMissing: (problem) => fixProblem(problem, 'paint-picture'),
+    surprise: () => setDialog({ type: 'surprise' }),
+    openRuleBook,
+    paint: () => {
+      if (ownNamespace === undefined) {
+        setMessage({ kind: 'error', text: 'Start or open a mod first.' });
+        return;
+      }
+      setDialog({ type: 'new-texture', namespace: ownNamespace });
+    },
+    askAi: askAiWith,
+    copyText: (text) => {
+      const clipboard = typeof navigator === 'undefined' ? undefined : navigator.clipboard;
+      if (clipboard === undefined) {
+        setMessage({ kind: 'error', text: 'Copy is not available here.' });
+        return;
+      }
+      clipboard.writeText(text).then(
+        () => setMessage({ kind: 'info', text: `Copied ${text}.` }),
+        (error: unknown) => setMessage({ kind: 'error', text: `Copy: ${messageOf(error)}` }),
+      );
+    },
+  };
+  const searchHostRef = useRef(searchHost);
+  searchHostRef.current = searchHost;
+  /** A result's button (ADR 0124 D9): the panel closes, then the action runs. */
+  const onSearchAction = useCallback(
+    (hit: SearchHit, which: SearchActionKey, options?: SearchActionOptions) => {
+      const actions = searchActions;
+      if (actions === null) return;
+      setSearchDoor(null);
+      void actions.runSearchAction(searchHostRef.current, hit, which, options);
+    },
+    [],
+  );
+  const onSearchWish = useCallback((text: string) => {
+    void searchActions?.addSearchWish(searchHostRef.current, text);
+  }, []);
+  const canFixSearch = useCallback(
+    (hit: SearchHit) => searchActions?.canFixSearchHit(session, hit) ?? false,
+    [session],
+  );
+  const onSearchAskAi = useCallback((text: string) => {
+    setSearchDoor(null);
+    searchHostRef.current.askAi(text);
+  }, []);
+  const searchText = searchWords(uiMode);
+  /** The large bar of the start surfaces (Home, the empty editor area). */
+  const startSearchBar = (testId: string) => (
+    <SearchDoorField
+      data-testid={testId}
+      size="large"
+      placeholder={searchText.placeholder.start}
+      shortcut={`${modKey}+K`}
+      onOpen={(text) => openSearch('start', text)}
+    />
+  );
 
   const dispatch = (command: MenuCommand, source: CommandSource): void => {
     if (deduper.shouldRun(command, source)) handlers[command]();
@@ -2507,7 +3011,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       const command = shortcutFor(event);
-      if (command === null || dialog !== null || paletteOpen || recentPickerOpen) return;
+      if (
+        command === null ||
+        dialog !== null ||
+        paletteOpen ||
+        recentPickerOpen ||
+        searchDoor !== null
+      ) {
+        return;
+      }
       // Text fields keep their native undo/redo.
       if ((command === 'undo' || command === 'redo') && isEditableTarget(document.activeElement)) {
         return;
@@ -2573,6 +3085,69 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       onSetup: () => setDialog({ type: 'settings' }),
     }),
     [project, vanillaSounds, readProjectAsset],
+  );
+
+  /** The pictures of things: the mod's textures and the user's jar (Home, the search preview). */
+  const thingPictures = useMemo(
+    () => ({
+      project: thumbnail,
+      vanilla: vanilla === null ? undefined : (path: string) => vanilla.readAsset(path),
+      revision: assetRevision,
+    }),
+    [thumbnail, vanilla, assetRevision],
+  );
+  /** What the search's live preview reads (ADR 0124 D9; B665). */
+  const guidePlatform = bridge.guide;
+  const resultPreviewHost = useMemo<ResultPreviewHost | null>(
+    () =>
+      target === null
+        ? null
+        : {
+            mode: uiMode,
+            target,
+            library: session.library,
+            isKnownKind: (kind) => session.registry.get(kind) !== undefined,
+            previewKindOf: (kind) => session.registry.get(kind)?.previewKind,
+            kindDefault: (kind) => session.kindDefault(kind),
+            project,
+            folders: target.folders.resource,
+            readProjectAsset,
+            vanilla,
+            pictures: thingPictures,
+            showcase: { deps: showcaseDeps, playClips: showcaseClips },
+            ...(guidePlatform === undefined
+              ? {}
+              : {
+                  readGuidePage: (page: string) =>
+                    guidePlatform.page(page).then((loaded) => loaded.markdown),
+                }),
+            onSetup: () => setDialog({ type: 'settings' }),
+            terrainSession: session,
+            projectRoot: snapshot.root,
+            vanillaTools: target.items?.vanillaTools,
+          },
+    [
+      uiMode,
+      target,
+      session,
+      project,
+      readProjectAsset,
+      vanilla,
+      thingPictures,
+      showcaseDeps,
+      showcaseClips,
+      guidePlatform,
+      snapshot.root,
+    ],
+  );
+  const searchPreview = useCallback(
+    (hit: SearchHit) =>
+      resultPreviewHost === null ? null : (
+        <Suspense fallback={null}>
+          <ResultPreview hit={hit} host={resultPreviewHost} />
+        </Suspense>
+      ),
+    [resultPreviewHost],
   );
 
   const templates = useMemo(
@@ -2775,6 +3350,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       {...(preview === undefined ? {} : { preview })}
       previewShown={centrePreview}
       onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
+      search={veryEasy ? undefined : startSearchBar('editor-search-field')}
       {...(veryEasy
         ? {
             home: (
@@ -2784,11 +3360,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onTile={openTile}
                 cards={homeCards}
                 texturesFolder={target?.folders.resource.textures ?? 'textures'}
-                pictures={{
-                  project: thumbnail,
-                  vanilla: vanilla === null ? undefined : (path: string) => vanilla.readAsset(path),
-                  revision: assetRevision,
-                }}
+                pictures={thingPictures}
                 onOpenThing={(card) => navigateTo(card.main.id, null)}
                 onEditInCreator={(card) => editInCreator(card.main)}
                 onRenameThing={renameThing}
@@ -2799,9 +3371,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onOpenProject={handlers.open}
                 recentProjects={recentProjects}
                 onOpenRecent={openRecent}
+                search={startSearchBar('home-search-field')}
                 showcase={showcaseGallery(
                   showcaseList,
-                  dialog === null && !tryItOpen && !paletteOpen,
+                  dialog === null && !tryItOpen && !paletteOpen && searchDoor === null,
                   makeShowcase,
                   seeShowcaseExample,
                 )}
@@ -2886,6 +3459,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                   onInstall={installResource}
                   onInstallData={installData}
                   onSettings={handlers.settings}
+                  onSearch={(text) => openSearch('toolbar', text)}
+                  searchPlaceholder={searchText.placeholder.toolbar}
                   {...(aiController === null ? {} : { onAiHelper: toggleAiHelper })}
                   installTarget={installTarget}
                   installTargets={installTargets}
@@ -3040,7 +3615,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             {dialog?.type === 'element' && project !== null && target !== null && (
               <NewElementDialog
                 namespaces={namespaces}
-                templates={templates}
+                templates={templatesFirst(templates, dialog.kind, dialog.template)}
                 kindDefault={(kind) => session.kindDefault(kind)}
                 target={target}
                 onCancel={() => setDialog(null)}
@@ -3155,6 +3730,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 project={project}
                 namespaces={namespaces.filter((name) => name !== 'minecraft')}
                 edit={dialog.edit ?? null}
+                {...(dialog.start === undefined ? {} : { start: dialog.start })}
                 {...(dialog.flowIds === undefined ? {} : { flowIds: dialog.flowIds })}
                 {...(dialog.picks === undefined ? {} : { picks: dialog.picks })}
                 folders={target.folders.resource}
@@ -3420,14 +3996,21 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onChangeFolder={() =>
                   bridge.dialogs.pickDirectory({ title: 'Choose where your mods are saved' })
                 }
-                onCancel={() => setDialog(null)}
+                onCancel={() => {
+                  setDialog(null);
+                  dialog.search?.resolve(false);
+                }}
                 onCreate={async (folder) => {
-                  const outcome = await session.newProject({ folder });
+                  const search = dialog.search;
+                  const outcome = await session.newProject(
+                    search === undefined ? { folder } : search.options(folder),
+                  );
                   if (outcome.ok) {
                     const afterwards = dialog.afterwards;
                     setDialog(null);
                     await openWith('New mod', async () => outcome);
                     if (afterwards !== undefined) setPendingTile(afterwards);
+                    search?.resolve(true);
                     return null;
                   }
                   if ('cancelled' in outcome) return null;
@@ -3611,7 +4194,82 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               open={paletteOpen}
               commands={palette}
               onClose={() => setPaletteOpen(false)}
+              rank={rankCommands}
             />
+            {searchDoor !== null && (
+              <Dialog.Root
+                open
+                onOpenChange={(open) => {
+                  if (!open) closeSearch();
+                }}
+              >
+                <Dialog.Portal>
+                  <Dialog.Overlay className="fixed inset-0 z-40 bg-black/30" />
+                  <Dialog.Content
+                    aria-describedby={undefined}
+                    data-testid="search-dialog"
+                    data-door={searchDoor.door}
+                    className="fixed top-[6vh] left-1/2 z-50 flex max-h-[88vh] w-[min(96vw,1040px)] -translate-x-1/2 flex-col overflow-auto rounded-md border border-border bg-panel p-3 text-text shadow-lg"
+                    onCloseAutoFocus={(event) => {
+                      // Focus goes back where it was when the search opened (ADR 0124 D11).
+                      event.preventDefault();
+                      const back = searchReturn.current;
+                      searchReturn.current = null;
+                      if (back?.isConnected === true) back.focus();
+                    }}
+                  >
+                    <Dialog.Title className="sr-only">{searchText.fieldLabel}</Dialog.Title>
+                    <Suspense
+                      fallback={
+                        <p className="text-muted text-sm" data-testid="search-loading">
+                          {searchText.searching}
+                        </p>
+                      }
+                    >
+                      <SearchPanel
+                        query={querySearch}
+                        mode={uiMode}
+                        door={searchDoor.door}
+                        initialText={searchDoor.text}
+                        hasMod={project !== null}
+                        onAction={onSearchAction}
+                        preview={searchPreview}
+                        onClose={closeSearch}
+                        onWishlist={onSearchWish}
+                        {...(aiController !== null && aiKeySet ? { onAskAi: onSearchAskAi } : {})}
+                        minecraftNames={cacheReady}
+                        canFix={canFixSearch}
+                      />
+                    </Suspense>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
+            )}
+            {dialog?.type === 'choice' && (
+              <ChoiceDialog
+                title={dialog.title}
+                {...(dialog.lead === undefined ? {} : { lead: dialog.lead })}
+                choices={dialog.choices}
+                onPick={(choice) => {
+                  setDialog(null);
+                  dialog.resolve(choice.id);
+                }}
+                onClose={() => {
+                  setDialog(null);
+                  dialog.resolve(null);
+                }}
+              />
+            )}
+            {dialog?.type === 'guide' && guidePlatform !== undefined && (
+              <Suspense fallback={null}>
+                <GuideDialog
+                  guide={guidePlatform}
+                  page={dialog.page}
+                  anchor={dialog.anchor}
+                  onClose={() => setDialog(null)}
+                />
+              </Suspense>
+            )}
             <CommandPalette
               open={recentPickerOpen}
               commands={recentPicks}
@@ -3624,6 +4282,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             {dialog?.type === 'settings' && (
               <SettingsDialog
                 focus={dialog.focus}
+                focusSetting={dialog.focusSetting}
                 mcVersion={mcVersion ?? 'unknown'}
                 status={minecraft.status}
                 progress={minecraft.progress}

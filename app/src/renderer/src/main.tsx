@@ -44,7 +44,7 @@ async function start(root: HTMLElement): Promise<void> {
 
   createRoot(root).render(
     <StrictMode>
-      <App session={session} bridge={msm} />
+      <App session={session} bridge={msm} externalPlugins={external.plugins} />
     </StrictMode>,
   );
 }

@@ -62,6 +62,23 @@ type MenuEntry = {
   click?: () => void;
 };
 
+describe('Search (ADR 0124 D10)', () => {
+  it('offers Edit > "Search…" showing CmdOrCtrl+K that the renderer handles (SQ9)', () => {
+    installMenu();
+    const template = templates.at(-1) as (MenuEntry & { registerAccelerator?: boolean })[];
+    const edit = (template.find((entry) => entry.label === 'Edit')?.submenu ?? []) as (MenuEntry & {
+      registerAccelerator?: boolean;
+    })[];
+    const labels = edit.map((entry) => entry.label);
+    const search = edit.find((entry) => entry.label === 'Search…');
+    expect(labels.indexOf('Search…')).toBe(labels.indexOf('Command Palette') + 1);
+    expect(search?.accelerator).toBe('CmdOrCtrl+K');
+    expect(search?.registerAccelerator).toBe(false);
+    search?.click?.();
+    expect(sent.at(-1)).toBe('search');
+  });
+});
+
 describe('Play and the modes (ADR 0083, ADR 0084)', () => {
   it('offers File > "Play" on F5 and "Reload in Game" on CmdOrCtrl+R', () => {
     installMenu();

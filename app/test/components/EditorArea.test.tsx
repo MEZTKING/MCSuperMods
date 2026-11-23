@@ -86,3 +86,21 @@ describe('EditorArea Try it (ADR 0085 D13)', () => {
     expect(screen.getByText('Home')).toBeTruthy();
   });
 });
+
+describe('the search bar (ADR 0124 D10, B667)', () => {
+  it('heads the empty editor area when given, and not an open element', () => {
+    const view = render(
+      <EditorArea element={null} onApply={vi.fn()} search={<button type="button">Find</button>} />,
+    );
+    expect(screen.getByTestId('editor-search').textContent).toBe('Find');
+    view.unmount();
+    render(
+      <EditorArea
+        element={element('A note.')}
+        onApply={vi.fn()}
+        search={<button type="button">Find</button>}
+      />,
+    );
+    expect(screen.queryByTestId('editor-search')).toBeNull();
+  });
+});

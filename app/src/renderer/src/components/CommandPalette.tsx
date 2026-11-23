@@ -2,11 +2,17 @@
  * The command palette: a Radix dialog with a fuzzy-filtered command list. Arrow keys move
  * the selection, Enter runs the selected command and closes, Escape closes.
  *
+ * The palette door of the search (ADR 0124 D10): with `rank`, typed words are also asked of the
+ * search engine with the commands scope, and its order leads (then the fuzzy matches it did not
+ * name), so "texture pack" finds Export resource pack; an empty query keeps the given order, and
+ * only the given commands are ever shown (an unavailable one stays out). The same component
+ * serves the quick picks without `rank`.
+ *
  * @packageDocumentation
  */
 
 import { Dialog } from 'radix-ui';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 
 /** One command the palette offers. */
 export interface PaletteCommand {
@@ -43,6 +49,30 @@ export function fuzzyScore(query: string, text: string): number | null {
   return score - haystack.length / 100;
 }
 
+/**
+ * The palette's list for an engine answer: the engine's command ids that are offered, in its
+ * order, then the fuzzy matches it did not name.
+ */
+export function rankedCommands<T extends { id: string }>(
+  commands: readonly T[],
+  fuzzy: readonly T[],
+  ranked: readonly string[],
+): T[] {
+  const byId = new Map(commands.map((command) => [command.id, command]));
+  const out: T[] = [];
+  const seen = new Set<string>();
+  for (const id of ranked) {
+    const command = byId.get(id);
+    if (command === undefined || seen.has(id)) continue;
+    seen.add(id);
+    out.push(command);
+  }
+  for (const command of fuzzy) {
+    if (!seen.has(command.id)) out.push(command);
+  }
+  return out;
+}
+
 /** Commands matching `query`, best first (ties keep their order). */
 export function filterCommands<T extends { title: string; id: string }>(
   commands: readonly T[],
@@ -71,6 +101,11 @@ export interface CommandPaletteProps {
   testId?: string;
   /** Shown when nothing matches (default "No matching commands."). */
   emptyText?: string;
+  /**
+   * The search engine's command ids for typed words, best first (`null` when replaced): the
+   * palette door (ADR 0124 D10). Absent: fuzzy matching only (the quick picks).
+   */
+  rank?: (query: string) => Promise<readonly string[] | null>;
 }
 
 export function CommandPalette({
@@ -81,19 +116,43 @@ export function CommandPalette({
   placeholder = 'Type a command',
   testId = 'command-palette',
   emptyText = 'No matching commands.',
+  rank,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
+  const [ranked, setRanked] = useState<{ query: string; ids: readonly string[] } | null>(null);
   const listId = useId();
-  const matches = filterCommands(commands, query);
+  const fuzzy = useMemo(() => filterCommands(commands, query), [commands, query]);
+  const matches =
+    ranked !== null && ranked.query === query && query.trim() !== ''
+      ? rankedCommands(commands, fuzzy, ranked.ids)
+      : fuzzy;
   const selected = matches[Math.min(active, matches.length - 1)];
 
   useEffect(() => {
     if (!open) {
       setQuery('');
       setActive(0);
+      setRanked(null);
     }
   }, [open]);
+
+  // The engine's order for the words; an answer for older words is dropped.
+  useEffect(() => {
+    if (!open || rank === undefined || query.trim() === '') return undefined;
+    let live = true;
+    rank(query).then(
+      (ids) => {
+        if (live && ids !== null) setRanked({ query, ids });
+      },
+      () => {
+        // The fuzzy matches stay.
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [open, rank, query]);
 
   const run = (command: PaletteCommand | undefined) => {
     if (command === undefined) return;

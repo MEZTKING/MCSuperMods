@@ -188,6 +188,8 @@ export const MENU_COMMANDS = [
   'settings',
   'renameElement',
   'commandPalette',
+  // ADR 0124 D10: Edit > "Search…" (Ctrl/Cmd+K, handled in the renderer).
+  'search',
   'checkForUpdates',
   'whatsNew',
   'firstMod',

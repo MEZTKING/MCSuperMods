@@ -53,6 +53,11 @@ export interface EditorAreaProps {
    * or Home, as Home does.
    */
   tryIt?: ReactNode;
+  /**
+   * The search's large bar (ADR 0124 D10): heads the empty editor area, with or without a mod
+   * (Easy and Advanced; Very easy has it on Home).
+   */
+  search?: ReactNode;
 }
 
 /**
@@ -77,6 +82,7 @@ export function EditorArea({
   home,
   hideIds = false,
   tryIt,
+  search,
 }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = hideRawJson ? 'form' : (tab ?? ownTab);
@@ -90,6 +96,11 @@ export function EditorArea({
         aria-label="Editor"
         className="flex min-h-0 flex-col items-center justify-center gap-1 p-4"
       >
+        {search !== undefined && search !== null && (
+          <div className="mb-3 flex w-full justify-center" data-testid="editor-search">
+            {search}
+          </div>
+        )}
         <p className="text-muted">Select an element to edit it, or add one with Add element.</p>
         {onBuildWithAi !== undefined && (
           <button
