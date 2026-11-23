@@ -111,6 +111,19 @@ export function modelFieldSubject(element: Element, project: Project): PreviewSu
 export function PreviewPanel(props: PreviewPanelProps) {
   const { project, element, previewKind, folders, vanilla, onSetup } = props;
   const [webglLost, setWebglLost] = useState(false);
+  // The live views read the project's own files by path (`assets/<ns>/...`), as the Creator and
+  // the AI review give them, so a project's pictures and fonts draw in the panel too.
+  const readProject = useMemo(
+    () =>
+      async (path: string): Promise<Uint8Array | null> => {
+        const match = /^assets\/([^/]+)\/(.+)$/.exec(path);
+        if (match === null) return null;
+        return await props
+          .readProjectAsset(match[1] as string, match[2] as string)
+          .catch(() => null);
+      },
+    [props.readProjectAsset],
+  );
   // The entity preview's variant and baby choice, kept per element (B297).
   const [entityOptions, setEntityOptions] = useState<{ id: string; options: GeoSceneOptions }>({
     id: '',
@@ -242,6 +255,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
             vanillaAssets={vanilla}
             mcVersion={props.terrainSession?.target.mcVersion ?? null}
             projectRoot={props.projectRoot ?? null}
+            readProject={readProject}
             onSetup={onSetup}
           />
         </Suspense>
