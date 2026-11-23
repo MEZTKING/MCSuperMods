@@ -10760,3 +10760,25 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - "how do rules work": a heading-depth signal for guide entries, or the Rules plugin's `trigger` as a near word, decided by the orchestrator.
 - `docs/HANDOFF.md`'s search line to match ADR 0124's open items.
 - The Enchantment flow's sort: its Creator group `magic` gives it `item`, so an item's rule behaviour (now "sets mobs on fire") also fits the Fire enchantment door; a per-flow `undefined` for the enchantment would keep rules off it.
+
+## 2026-11-23 — executor — B638 structure processors
+
+### What
+
+- `packages/terrain/src/structures/processors.ts` (`processTemplate(input, options?)`) and `processors/` (`cells.ts`, `report.ts`, `tests.ts`, `kinds.ts`, `tables.ts`): the 11 processor types of both targets, written clean room from the spike B634's before-and-after worlds. Exact: `nop`, `block_ignore`, `block_rot` (with `rottable_blocks`), `rule`, `capped` (an int provider limit), `gravity` (about right on uneven ground, by its own check), `protected_blocks`, `jigsaw_replacement`, `blackstone_replace` (the spike's table); the rule tests `always_true`, `block_match`, `blockstate_match`, `tag_match`, both random matches, `all_of`, `any_of`, `not`, `height_match`; the location test; `append_loot` and `append_static`; the legacy element's air. About right: `block_age`, `linear_pos`, `axis_aligned_linear_pos`, `lava_submerged_block`. Named only (4L4, the template unchanged for them): `clear`, `passthrough`, `corner_constraint`. Every run returns the blocks after it (a left-out block is not in `after`: the world's block stays), the palette and one row per processor with its fidelity, its count of changed blocks and a sentence where it is not exact; a list writing a state as `{ Name }` comes back refused with a sentence.
+- Tests: `test/structures/processors.test.ts` plays the spike's three result files (both targets): 16 exact fixtures give the spike's outcome for every input block of a rebuilt sample template; `rule_rand`, `rule_rstate`, `rot50`, `rot50_tag` the spike's shares within four standard errors over 200 seeds; the ages only outcomes the worlds showed with stone kept about half the time; lava, capped, gravity, protection, block entities, refusals, seeds and turns. `processors-schema-walk.test.ts` fails on a processor type, rule test, position test or block entity modifier of either target (registries and vendored mcdoc, filtered by the version's `since` and `until`) neither handled nor named, and on a pool element field neither read nor named; it also checks each target names its rule test registry once and the mcdoc agrees.
+
+### Decisions
+
+- Every jigsaw placement turns jigsaw blocks into their final state first (the spike's `jigsaw_replacement` list equalled no list; the jigsaw cell followed the list's later processors), shown as its own row; `jigsawPlacement: false` leaves them for a plain template. The legacy element's air is left out next, then the list in order.
+- Version facts stay outside the engine: the rule test registry's name does not matter to the JSON (the same ids), so only the ids are read; `corner_constraint` is named unless `ProcessInput.facts.readsCornerConstraint` is false. No change to `packages/targets` or the plugin API.
+- What `api.ts` does not carry comes in a second argument (`ProcessOptions`: block tag files, the pool element's type and corner constraint, jigsaw placement), and the result type `ProcessorListResult` extends `ProcessedTemplate` with `refused`; `api.ts` and `structures/index.ts` are unchanged.
+- `ProcessorWorld.surfaceAt` is read as the first free y above the ground (the game's heightmap: on the spike's floor a gravity template's y 0 landed there).
+- A rule with no modifier keeps the block's data; `clear` and `passthrough` keep it too and make the rule about right with their sentence.
+- `blockstate_match` and `block_ignore` compare the properties the data names (the game fills the rest from defaults, which the engine does not know); with full states, as templates hold, this is exact.
+- In one world of the spike the height fixture changed nothing (placed off its height); the test skips a result row with no stone changed.
+
+### Next
+
+- B641's view can import `processTemplate`, `ProcessOptions` and the type tables from `structures/processors.ts`; exporting them from `structures/index.ts` is one line outside this brief.
+- B639's measured expectations can replace the rebuilt sample once they exist; `clear`, `passthrough`, `corner_constraint`, gravity and the position tests on uneven land, and `lava_submerged_block` over water are still unmeasured.
