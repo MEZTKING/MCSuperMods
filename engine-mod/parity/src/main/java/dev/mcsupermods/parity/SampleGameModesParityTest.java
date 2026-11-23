@@ -82,8 +82,8 @@ import net.minecraft.world.scores.Scoreboard;
  *       leaving, a block and a mob in it removed by the reset.</li>
  *   <li>{@link #aKillScoresOnTheSidebar}: a player defeating another scores a point on the sidebar objective.</li>
  *   <li>{@link #theLuckyBlockRuleFiresInTheJarOnly}: each break of the lucky block does exactly one of its outcomes; the
- *       hut is found by its floor beside the block's place, since the rule runs as the block breaks and the break then
- *       takes the hut's corner block away (an in-game check in the fixture's README).</li>
+ *       hut is found by its corner floor block where the lucky block stood (the Rules compiler places blocks a tick
+ *       after a break, so the break no longer takes that corner away) and the floor beside it.</li>
  * </ul>
  */
 public class SampleGameModesParityTest {
@@ -558,7 +558,8 @@ public class SampleGameModesParityTest {
         int[] outcomes = new int[5];
         List<String> nothing = new ArrayList<>();
         int[] breaks = {0};
-        boolean[] broken = {false};
+        // 0: break the block; 1: wait a tick (the rule's blocks come a tick after the break); 2: look.
+        int[] stage = {0};
         steps(helper, List.of(
                 untilJoined(helper, ears),
                 once(() -> {
@@ -567,7 +568,7 @@ public class SampleGameModesParityTest {
                     ears.player.teleportTo(stand.x, stand.y, stand.z);
                 }),
                 () -> {
-                    if (!broken[0]) {
+                    if (stage[0] == 0) {
                         // Clear what the last break left, then put the block back and break it.
                         ears.player.removeAllEffects();
                         helper.getLevel().getEntitiesOfClass(ItemEntity.class, box).forEach(e -> e.discard());
@@ -578,10 +579,14 @@ public class SampleGameModesParityTest {
                         helper.setBlock(rel, lucky);
                         ears.packets();
                         helper.assertTrue(ears.player.gameMode.destroyBlock(abs), "breaking the lucky block failed");
-                        broken[0] = true;
+                        stage[0] = 1;
                         return false;
                     }
-                    // A tick later: what happened.
+                    if (stage[0] == 1) {
+                        stage[0] = 2;
+                        return false;
+                    }
+                    // Two ticks later: what happened.
                     int found = 0;
                     if (!helper.getLevel().getEntitiesOfClass(ItemEntity.class, box, e -> PRIZES.contains(e.getItem().getItem())).isEmpty()) {
                         outcomes[0]++;
@@ -595,9 +600,10 @@ public class SampleGameModesParityTest {
                         outcomes[2]++;
                         found++;
                     }
-                    // The hut's corner is where the block was; the script runs as the block breaks, so the break then
-                    // takes that one block (the hut's own corner) away: look at the floor beside it.
-                    if (helper.getBlockState(rel.east()).is(Blocks.COBBLESTONE) && helper.getBlockState(rel.south()).is(Blocks.COBBLESTONE)) {
+                    // The hut's corner is where the block was: the rule places it a tick after the break (B559), so
+                    // the corner floor block itself is there, with the floor beside it.
+                    if (helper.getBlockState(rel).is(Blocks.COBBLESTONE) && helper.getBlockState(rel.east()).is(Blocks.COBBLESTONE)
+                            && helper.getBlockState(rel.south()).is(Blocks.COBBLESTONE)) {
                         outcomes[3]++;
                         found++;
                     }
@@ -611,7 +617,7 @@ public class SampleGameModesParityTest {
                                         .map(e -> BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getPath()).toList()
                                 + ", block " + name(helper.getBlockState(rel)) + ", effects " + ears.player.getActiveEffects());
                     }
-                    broken[0] = false;
+                    stage[0] = 0;
                     return ++breaks[0] == 30;
                 },
                 once(() -> {

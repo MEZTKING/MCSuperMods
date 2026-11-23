@@ -68,6 +68,8 @@ Numbers can be fixed or **readings**: a random number, a counter, the player's h
 
 **Stop the normal action** cancels what the game would have done, and works only on "A player chats", "A player uses any block", "A player breaks any block", "A player uses any item", "Any mob is hurt" and "A player uses any mob".
 
+**Blocks placed when a block breaks.** On "A player breaks the block" and "A player breaks any block" the rules run just before the game takes the block away. So that the break does not take away what a rule builds there, the steps that change blocks (Place a block, Remove a block, Place a structure, Reset an area, and an explosion that breaks blocks or lights fire) run a twentieth of a second later, once the block is gone; everything else, Stop the normal action included, runs at once.
+
 ## Vehicles, keys and the screen
 
 Rules for keys sit on a key of your own ([Keys and the screen](keys-and-hud.md)) and rules for vehicles on a vehicle of yours ([Vehicles](vehicles.md)). In the Studio of a key or vehicle, the Rules section appears once a rule has something to say there.

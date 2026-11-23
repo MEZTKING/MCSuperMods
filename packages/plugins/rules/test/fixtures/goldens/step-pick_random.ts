@@ -45,7 +45,9 @@ msm.events.on("block.break", (e) => {
     } else if (pick1 === 1) { // rule:sample
       withPos(here, (at) => { for (let index = 0; index < 1; index += 1) world.spawnEntity("minecraft:zombie", at); }); // rule:sample
     } else if (pick1 === 2) { // rule:sample
-      withPos(here, (at) => world.explode(at, 2, { fire: false, breaksBlocks: true })); // rule:sample
+      msm.schedule(1, () => { // rule:sample
+        withPos(here, (at) => world.explode(at, 2, { fire: false, breaksBlocks: true })); // rule:sample
+      }); // rule:sample
     } // rule:sample
   }); // rule:sample
 });

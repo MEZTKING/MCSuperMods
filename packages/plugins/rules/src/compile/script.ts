@@ -52,6 +52,7 @@ import {
   timerHolder,
   timersObjective,
 } from './games';
+import { changesBlocks } from './plain';
 
 /** A string literal that is safe in TypeScript and ES5 (line separators escaped). */
 export function literal(text: string): string {
@@ -578,6 +579,11 @@ interface Env {
   readonly actors: ReadonlySet<string>;
   readonly here: boolean;
   readonly playerInLoop: boolean;
+  /**
+   * Whether the trigger's block is still in place and is removed right after the handler (a
+   * player's break; false after a wait): steps that change blocks then run a tick later (B559).
+   */
+  readonly beforeRemoval: boolean;
 }
 
 /** What Rules reads of a project timer (ADR 0113 D6). */
@@ -954,6 +960,7 @@ export class ScriptBuilder {
       actors: new Set(trigger.actors),
       here: trigger.hasPlace,
       playerInLoop: false,
+      beforeRemoval: trigger.beforeRemoval === true,
     };
     const out: string[] = [];
     for (const { rule, key, sentence } of rules) {
@@ -1381,10 +1388,12 @@ class RuleWriter {
       const id = str(step, 'step');
       if (id === 'wait') {
         const ticks = Math.max(1, Math.round(Math.min(3600, num(step, 'seconds') ?? 1) * 20));
+        // After a wait the trigger's block is gone: steps that change blocks run at once.
+        const later: Env = { ...env, beforeRemoval: false };
         out.push(
           `msm.schedule(${ticks}, () => {`,
           ...indent(this.aliveCheck(env)),
-          ...indent(this.sequence(rest, env, after)),
+          ...indent(this.sequence(rest, later, after)),
           '});',
         );
         return out;
@@ -1422,6 +1431,7 @@ class RuleWriter {
           actors: new Set([...env.actors, 'player']),
           here: env.here,
           playerInLoop: true,
+          beforeRemoval: env.beforeRemoval,
         };
         out.push(
           `const ${list} = ${this.playerList(step)};`,
@@ -1467,8 +1477,19 @@ class RuleWriter {
     return checks.length === 0 ? [] : [`if (${checks.join(' || ')}) return;`];
   }
 
-  /** The code of a step without waits inside. */
+  /**
+   * The code of a step without waits inside. On a trigger that runs before its block is removed
+   * (a player's break), a step that changes blocks runs a tick later, once the block is gone, so
+   * the break does not take away what it placed at the block's place (B559).
+   */
   private plainStep(step: JsonObject, env: Env): string[] {
+    const lines = this.stepNow(step, env);
+    if (!env.beforeRemoval || !changesBlocks(step) || lines.length === 0) return lines;
+    return ['msm.schedule(1, () => {', ...indent(lines), '});'];
+  }
+
+  /** The code of a step without waits inside, run at once. */
+  private stepNow(step: JsonObject, env: Env): string[] {
     const id = str(step, 'step') ?? '';
     const who = (fallback: string) => this.who(step.who, fallback, NEEDS_PLAYER.has(id));
     const at = (body: string) =>
@@ -1795,6 +1816,7 @@ class RuleWriter {
           actors: new Set([...env.actors, 'player']),
           here: env.here,
           playerInLoop: true,
+          beforeRemoval: env.beforeRemoval,
         };
         return [
           `${this.playerList(step)}.forEach((player) => {`,

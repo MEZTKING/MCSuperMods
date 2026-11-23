@@ -40,7 +40,7 @@ The games pieces lower to plain data pack files (ADR 0113 D9): the functions `ms
 | `the_round_timer_ends_and_runs_its_end` | started by its function, the boss bar shown at 300, the holder set to 2 seconds, ended: the bar hidden, the title "Round over", the arena rebuilt by `round_end`, one point for the player from the rule book | the same, with no point |
 | `the_arena_is_entered_and_reset` | the reset builds the arena; a player walking in is tagged and put on red by the rule book, walking out untagged; a dirt block and a pig left in it are removed by the next reset, the player is not | the same, with no team |
 | `a_kill_scores_on_the_sidebar` | a player defeating another gets one point on **Defeats** | the same |
-| `the_lucky_block_rule_fires_in_the_jar_only` | 30 breaks by a player, each with exactly one outcome (prizes, a zombie, an explosion packet, the hut's floor, Speed), the prizes at least once | the lucky block's item is not registered and the bridge's functions are absent |
+| `the_lucky_block_rule_fires_in_the_jar_only` | 30 breaks by a player, each with exactly one outcome (prizes, a zombie, an explosion packet, the hut's floor with its corner where the block stood, Speed), the prizes at least once | the lucky block's item is not registered and the bridge's functions are absent |
 
 ## In-game check (Windows, Minecraft Java 26.3 and 26.4)
 
@@ -81,7 +81,7 @@ Get the jar from the latest CI run (Actions, CI, the run, Artifacts, `msm-sample
 
 | Check | Expected |
 |---|---|
-| `/give @s msm_sample_game_modes:lucky_block`, place it and break it, several times | Each break does one thing: prizes (iron, gold, a diamond, a golden apple, an ender pearl or cookies), a zombie, a small explosion that breaks no blocks, Speed for 30 seconds, or a cobblestone hut with a crafting table and a torch. **Look closely at the hut:** its corner where the lucky block stood is missing one floor block. The parity test found this (B559): the rule places the hut while the block breaks, and the break then removes the block at that place. Report whether you see the gap |
+| `/give @s msm_sample_game_modes:lucky_block`, place it and break it, several times | Each break does one thing: prizes (iron, gold, a diamond, a golden apple, an ender pearl or cookies), a zombie, a small explosion that breaks no blocks, Speed for 30 seconds, or a cobblestone hut with a crafting table and a torch. **Look closely at the hut:** its whole floor is there, the corner where the lucky block stood included (the parity test found that corner missing; since the fix the rule places the hut a tick after the break). Report any gap |
 | Eight gold ingots round a chest | Craft one lucky block |
 | The vanilla data pack zip (from the artefact or the app's vanilla data pack export) in a new world's `datapacks/` folder, no mods | The world loads; Part 1 and Part 2 work the same, without "Underground at last!", without joining red on entering the arena and without the point at the round's end; no lucky block. `logs/latest.log` names three functions `msm_sample_game_modes:msm_rules/signal/...` that failed to load: expected, they call the mod jar's command (ADR 0115 D5) |
 | The vanilla pack as a World Type | Create New World only lists **Sky Survival** when the pack is added on the Create New World screen's data pack list before the world is made (limit M2) |

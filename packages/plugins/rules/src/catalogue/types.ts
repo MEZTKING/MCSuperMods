@@ -242,6 +242,13 @@ export interface TriggerEntry extends CatalogueEntry {
   /** Whether the player of the trigger has left (no alive check after a wait). */
   readonly playerGone?: boolean;
   /**
+   * Whether the trigger runs while its block is still in place and the game removes the block
+   * right after (a player's break, `playerWillDestroy` and `PlayerBlockBreakEvents.BEFORE`):
+   * steps that change blocks (`StepEntry.changesBlocks`) then run a tick later, once the block
+   * is gone, so the break does not undo them (B559).
+   */
+  readonly beforeRemoval?: boolean;
+  /**
    * A trigger fired by a games kind's function through the function bridge (ADR 0115 D5): what
    * happened to the subject (`enter`, `leave`, `end` or `break`). The rule listens to the
    * Script API `command` event of the project's signal command.
@@ -274,6 +281,12 @@ export interface StepEntry extends CatalogueEntry {
    * every trigger. Elsewhere the compiler reports `rules.not-for-trigger`.
    */
   readonly triggers?: readonly string[];
+  /**
+   * Whether the step changes blocks in the world (`place_block`, `remove_block`,
+   * `place_structure`, `reset_area`, and `explode` unless it breaks no blocks): on a trigger
+   * that runs before its block is removed (`TriggerEntry.beforeRemoval`) it runs a tick later.
+   */
+  readonly changesBlocks?: boolean;
 }
 
 /** A condition (ADR 0082 D5). */

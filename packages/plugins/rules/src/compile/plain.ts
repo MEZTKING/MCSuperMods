@@ -19,6 +19,10 @@
  * | `show_hud`, `hide_hud` | `show_hud`, `hide_hud` | `who` is the player and the trigger has one (the action's viewer is the event's player) |
  * | `set_hud` | `set_hud` | as `show_hud`; `text` only plain strings, else `value` a number |
  * | `open_dialog` | `open_dialog` | as `heal` (a target that is no player sees nothing, as in the script) |
+ *
+ * On a trigger that runs before its block is removed (`block_broken`, B559), a step that changes
+ * blocks ({@link changesBlocks}) is never plain: the event's action would run before the break,
+ * which then removes the block at that place. The script runs it a tick later instead.
  */
 import type { Json, JsonObject } from '@msm/plugin-api';
 import { asArray, asObject, bool, conditionList, num, stepList, str } from '../book';
@@ -58,11 +62,23 @@ function targetOf(step: JsonObject, trigger: TriggerEntry, fallback: string): st
   return undefined;
 }
 
+/**
+ * Whether a step changes blocks in the world (`StepEntry.changesBlocks`); an explosion that
+ * breaks no blocks and lights no fire does not.
+ */
+export function changesBlocks(step: JsonObject): boolean {
+  const id = str(step, 'step') ?? '';
+  if (stepById(id)?.changesBlocks !== true) return false;
+  if (id === 'explode') return bool(step, 'break_blocks') !== false || bool(step, 'fire') === true;
+  return true;
+}
+
 /** The format action of one step, or undefined when the step is not plain on `trigger`. */
 export function plainAction(step: JsonObject, trigger: TriggerEntry): JsonObject | undefined {
   const id = str(step, 'step') ?? '';
   const entry = stepById(id);
   if (entry?.action === undefined) return undefined;
+  if (trigger.beforeRemoval === true && changesBlocks(step)) return undefined;
   switch (id) {
     case 'give_item': {
       const who = step.who ?? 'player';

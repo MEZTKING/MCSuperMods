@@ -23,6 +23,7 @@ interface Spec {
   defaultWho?: string;
   veryEasy?: boolean;
   triggers?: readonly string[];
+  changesBlocks?: boolean;
 }
 
 const step = (spec: Spec): StepEntry =>
@@ -38,6 +39,7 @@ const step = (spec: Spec): StepEntry =>
     ...(spec.needsActor === undefined ? {} : { needsActor: spec.needsActor }),
     ...(spec.defaultWho === undefined ? {} : { defaultWho: spec.defaultWho }),
     ...(spec.triggers === undefined ? {} : { triggers: Object.freeze([...spec.triggers]) }),
+    ...(spec.changesBlocks === true ? { changesBlocks: true } : {}),
   });
 
 const COUNT: SlotSpec = { name: 'count', type: 'number', optional: true, min: 1, whole: true };
@@ -315,6 +317,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     group: 'world',
     slots: [{ name: 'block', type: 'block' }, WHERE],
     action: 'set_block_state',
+    changesBlocks: true,
   }),
   step({
     id: 'remove_block',
@@ -333,6 +336,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
         ],
       },
     ],
+    changesBlocks: true,
   }),
   step({
     id: 'spawn_mob',
@@ -376,6 +380,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
       },
     ],
     action: 'explode',
+    changesBlocks: true,
   }),
   step({
     id: 'set_weather',
@@ -468,6 +473,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
         ],
       },
     ],
+    changesBlocks: true,
   }),
   step({
     id: 'reset_area',
@@ -475,6 +481,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     sentence: 'reset {area}',
     group: 'world',
     slots: [{ name: 'area', type: 'area' }],
+    changesBlocks: true,
   }),
   step({
     id: 'set_world_spawn',

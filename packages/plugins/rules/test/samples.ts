@@ -766,4 +766,35 @@ export const SAMPLES: readonly Sample[] = Object.freeze([
       rule(when('player_joined'), [{ dialog: 'minecraft:server_links', step: 'open_dialog' }]),
     ],
   },
+  // B559: on a player's break the block is removed after the rules run, so steps that change
+  // blocks run a tick later (a plain `place_block` too); an explosion that breaks nothing, a
+  // drop and the stop run at once, and after a wait the block is gone already.
+  {
+    name: 'block_broken-changes-blocks',
+    rules: [
+      rule(when('block_broken'), [
+        { block: 'minecraft:gold_block', step: 'place_block' },
+        {
+          do: [
+            { step: 'place_structure', structure: 'demo:island' },
+            { break_blocks: false, power: 1, step: 'explode' },
+          ],
+          step: 'pick_random',
+          weights: [1, 1],
+        },
+        { count: 1, item: 'minecraft:emerald', step: 'drop_item' },
+        { seconds: 1, step: 'wait' },
+        { step: 'remove_block', where: 'above_here' },
+      ]),
+      {
+        do: [
+          { step: 'stop_normal_action' },
+          { area: 'demo:arena', step: 'reset_area' },
+          { power: 2, step: 'explode' },
+        ],
+        key: 'any',
+        when: { subject: 'minecraft:stone', trigger: 'any_block_broken' },
+      },
+    ],
+  },
 ]);

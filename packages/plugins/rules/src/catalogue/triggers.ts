@@ -122,6 +122,7 @@ interface Spec {
   cancellable?: boolean;
   mobDead?: boolean;
   playerGone?: boolean;
+  beforeRemoval?: boolean;
   signal?: TriggerEntry['signal'];
 }
 
@@ -147,6 +148,7 @@ const trigger = (spec: Spec): TriggerEntry =>
     cancellable: spec.cancellable ?? false,
     ...(spec.mobDead === true ? { mobDead: true } : {}),
     ...(spec.playerGone === true ? { playerGone: true } : {}),
+    ...(spec.beforeRemoval === true ? { beforeRemoval: true } : {}),
     ...(spec.signal === undefined ? {} : { signal: spec.signal }),
   });
 
@@ -239,6 +241,8 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     definition: { component: 'msm:on_break' },
     actors: ['player'],
     actionTargets: { player: 'self' },
+    // `playerWillDestroy`: the block is removed after the event (B559).
+    beforeRemoval: true,
   }),
   block({
     id: 'block_placed',
@@ -850,6 +854,8 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     actors: ['player'],
     hereIsBlock: true,
     cancellable: true,
+    // `PlayerBlockBreakEvents.BEFORE`: the block is removed after the event (B559).
+    beforeRemoval: true,
   }),
   // Placing by a player (ADR 0096 D3); dispensers, endermen and commands are not seen.
   trigger({
