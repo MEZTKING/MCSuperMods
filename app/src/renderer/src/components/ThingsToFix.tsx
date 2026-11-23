@@ -3,8 +3,9 @@
  * per error in plain words (`session/plain-problems.ts`), naming the thing by its display name,
  * with "Show me" (opens the thing at the field) and "Fix it" where one step fixes it; codes the
  * table lacks read "Something in <thing> needs fixing" with "Show details" for the original
- * message. Warnings and info are folded under "Tips". Presentational: the host opens things and
- * runs the fixes.
+ * message. Warnings and info are folded under "Tips". With the AI helper, each row also offers
+ * "Ask the helper" (ADR 0125 D11), which opens the helper with the problem attached and sends
+ * nothing. Presentational: the host opens things, runs the fixes and asks the helper.
  *
  * @packageDocumentation
  */
@@ -28,7 +29,12 @@ export interface ThingsToFixProps {
   onShow(problem: Problem): void;
   /** Runs a one-step fix; without it no "Fix it" buttons are shown. */
   onFix?(problem: Problem, fix: PlainFix): void;
+  /** Opens the AI helper with the problem attached (sends nothing); without it no "Ask the helper". */
+  onAsk?(problem: Problem): void;
 }
+
+/** The label of the row's button that asks the AI helper about the problem. */
+export const ASK_THE_HELPER = 'Ask the helper';
 
 /** The problems without repeats (same code, thing, place and message), errors first. */
 export function uniqueProblems(problems: readonly Problem[]): Problem[] {
@@ -54,6 +60,7 @@ function Row(props: {
   testId: string;
   onShow(problem: Problem): void;
   onFix?: ((problem: Problem, fix: PlainFix) => void) | undefined;
+  onAsk?: ((problem: Problem) => void) | undefined;
 }) {
   const { problem, testId } = props;
   const [details, setDetails] = useState(false);
@@ -97,6 +104,16 @@ function Row(props: {
             {details ? 'Hide details' : 'Show details'}
           </button>
         )}
+        {props.onAsk !== undefined && (
+          <button
+            type="button"
+            className={linkClass}
+            data-testid={`${testId}-ask`}
+            onClick={() => props.onAsk?.(problem)}
+          >
+            {ASK_THE_HELPER}
+          </button>
+        )}
       </div>
       {details && (
         <p className="pl-2 text-muted text-xs" data-testid={`${testId}-message`}>
@@ -136,6 +153,7 @@ export function ThingsToFix(props: ThingsToFixProps) {
               testId={`things-to-fix-${index}`}
               onShow={props.onShow}
               onFix={props.onFix}
+              onAsk={props.onAsk}
             />
           ))}
         </ul>
@@ -155,6 +173,7 @@ export function ThingsToFix(props: ThingsToFixProps) {
                 testId={`things-to-fix-tip-${index}`}
                 onShow={props.onShow}
                 onFix={props.onFix}
+                onAsk={props.onAsk}
               />
             ))}
           </ul>

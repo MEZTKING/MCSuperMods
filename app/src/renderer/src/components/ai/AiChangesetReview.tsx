@@ -163,6 +163,11 @@ export function AiChangesetReview(props: {
   mode?: UiMode;
   running: boolean;
   applying: boolean;
+  /**
+   * Whether Add (Apply) is the panel's one primary button (`data-primary`); default: while no
+   * run is open, which is when the open tray's changes are ready (`primaryOf` of `AiPanel.tsx`).
+   */
+  primary?: boolean;
   onToggle(itemId: string, accepted: boolean): void;
   onApply(): void;
   onDiscard(): void;
@@ -221,6 +226,7 @@ export function AiChangesetReview(props: {
       <div className="flex gap-1.5">
         <Button
           data-testid="ai-apply"
+          data-primary={(props.primary ?? !props.running) ? 'true' : 'false'}
           disabled={!canApply(items) || props.running || props.applying}
           onClick={props.onApply}
         >

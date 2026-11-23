@@ -17,7 +17,7 @@ import {
   modNameError,
   NewModDialog,
 } from '../../src/renderer/src/components/NewProjectDialog';
-import { ThingsToFix } from '../../src/renderer/src/components/ThingsToFix';
+import { ASK_THE_HELPER, ThingsToFix } from '../../src/renderer/src/components/ThingsToFix';
 import { Toolbar, type ToolbarProps } from '../../src/renderer/src/components/Toolbar';
 import { WelcomeDialog } from '../../src/renderer/src/components/WelcomeDialog';
 import { isUiMode, UI_MODES, usePreferences } from '../../src/renderer/src/store/preferences';
@@ -438,6 +438,24 @@ describe('Things to fix', () => {
     const tips = screen.getByTestId('things-to-fix-tips');
     expect(tips.textContent).toContain('Tips (1)');
     expect((tips as HTMLDetailsElement).open).toBe(false);
+  });
+
+  it('offers Ask the helper on every row, errors and tips, only with the helper (B689)', async () => {
+    const onAsk = vi.fn();
+    const first = render(
+      <ThingsToFix project={SAMPLE} problems={problems} onShow={vi.fn()} onAsk={onAsk} />,
+    );
+    const user = userEvent.setup();
+    for (const index of [0, 1, 2]) {
+      expect(screen.getByTestId(`things-to-fix-${index}-ask`).textContent).toBe(ASK_THE_HELPER);
+    }
+    expect(screen.getByTestId('things-to-fix-tip-0-ask').textContent).toBe('Ask the helper');
+    await user.click(screen.getByTestId('things-to-fix-1-ask'));
+    expect(onAsk).toHaveBeenCalledExactlyOnceWith(problems[1]);
+    first.unmount();
+    render(<ThingsToFix project={SAMPLE} problems={problems} onShow={vi.fn()} />);
+    expect(screen.queryByTestId('things-to-fix-0-ask')).toBeNull();
+    expect(screen.queryByText('Ask the helper')).toBeNull();
   });
 
   it('says when nothing needs fixing', () => {

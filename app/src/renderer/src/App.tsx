@@ -2,6 +2,7 @@ import {
   createEmptyProject,
   type Json,
   type Problem,
+  type Project,
   type Element as ProjectElement,
   type Reference,
   type ResourceLocation,
@@ -29,6 +30,7 @@ import type {
   RecentProjectView,
   WorldInfo,
 } from '../../shared/platform';
+import { elementChipLabel, problemChipLabel } from './ai/context-blocks';
 import { namespaceOfId } from './changeset/creator-sets';
 import {
   type BuiltInCommandId,
@@ -133,18 +135,20 @@ import {
 import { flushPendingEdits } from './session/pending-edits';
 import {
   displayNameOf,
+  findProjectElement,
   missingPictureOf,
   type PlainFix,
   plainProblemWords,
   removeAtPointer,
   stepPointerOf,
 } from './session/plain-problems';
-import type {
-  ExportResult,
-  OpenOutcome,
-  PackDelivery,
-  PackKind,
-  ProjectSession,
+import {
+  APPLY_CHANGESET_LABEL,
+  type ExportResult,
+  type OpenOutcome,
+  type PackDelivery,
+  type PackKind,
+  type ProjectSession,
 } from './session/project-session';
 import { createRenderLowering } from './session/render-lowering';
 import { kindRegistry } from './session/schema-context';
@@ -152,6 +156,7 @@ import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcu
 import type { ShowcaseClip } from './showcase/clip';
 import { ShowcaseGallery } from './showcase/ShowcaseGallery';
 import { showcaseModName, showcasesFor } from './showcase/showcases';
+import type { AiAppliedStep } from './store/ai-store';
 import { connectPlay, usePlayStore } from './store/play-store';
 import { type UiMode, usePreferences } from './store/preferences';
 import { useUiStore } from './store/ui-store';
@@ -325,6 +330,98 @@ export function focusedLocation(active: Element | null): FocusedLocation | null 
   const holder = active?.closest('[data-pointer]');
   const pointer = holder?.getAttribute('data-pointer');
   return pointer === null || pointer === undefined ? null : { pointer };
+}
+
+/**
+ * Where **Show me** after adding goes (ADR 0125 D4): one thing opens it (its Studio, or in Very
+ * easy the Creator set it belongs to); several open Home's My things in Very easy and select the
+ * first in the sidebar otherwise. Things taken out or no longer in the project are left out;
+ * `null` when none is left.
+ */
+export type ShowMeTarget =
+  | { type: 'creator'; element: ProjectElement }
+  | { type: 'open'; id: ResourceLocation }
+  | { type: 'my-things' }
+  | { type: 'select'; id: ResourceLocation };
+
+/** Where Show me goes for `step`, by the project as it is now and the view mode. */
+export function showMeTarget(
+  step: AiAppliedStep,
+  project: Project | null,
+  mode: UiMode,
+): ShowMeTarget | null {
+  const present = step.things.flatMap((thing) => {
+    if (thing.op === 'removed') return [];
+    const element = findProjectElement(project, thing.id);
+    return element === undefined ? [] : [element];
+  });
+  const first = present[0];
+  if (first === undefined) return null;
+  if (present.length > 1) {
+    return mode === 'very-easy' ? { type: 'my-things' } : { type: 'select', id: first.id };
+  }
+  if (mode === 'very-easy' && first.meta.creator !== undefined) {
+    return { type: 'creator', element: first };
+  }
+  return { type: 'open', id: first.id };
+}
+
+/** What the helpers below need of the AI controller. */
+type AiAttach = Pick<AiController, 'explainProblem' | 'askAboutElement' | 'draft' | 'setDraft'>;
+
+/** Gives the waiting context chip the label of the view mode (ADR 0125 D11). */
+function relabelAiContext(controller: AiAttach, label: string): void {
+  const draft = controller.draft();
+  if (draft.context === null) return;
+  controller.setDraft({ ...draft, context: { ...draft.context, label } });
+}
+
+/**
+ * Explain (the Problems tab) and Ask the helper (Things to fix): opens the helper with the
+ * problem attached, labelled for the view mode, and sends nothing (ADR 0125 D11).
+ */
+export function attachProblemToAi(
+  controller: AiAttach,
+  problem: Problem,
+  project: Project | null,
+  mode: UiMode,
+): void {
+  controller.explainProblem(problem);
+  relabelAiContext(controller, problemChipLabel(problem, project, mode));
+}
+
+/** Ask AI on an element: opens the helper with the element attached, and sends nothing. */
+export function attachElementToAi(
+  controller: AiAttach,
+  id: ResourceLocation,
+  project: Project | null,
+  mode: UiMode,
+): void {
+  const element = findProjectElement(project, id);
+  controller.askAboutElement(id);
+  if (element !== undefined) relabelAiContext(controller, elementChipLabel(element, mode));
+}
+
+/** What Undo and Put back of the helper's step need of the session. */
+type AiStack = Pick<ProjectSession, 'undo' | 'redo'> & {
+  readonly snapshot: {
+    readonly undoLabel: string | undefined;
+    readonly redoLabel: string | undefined;
+  };
+};
+
+/** The helper's Undo: only while its Apply is the top of the stack (ADR 0125 D4). */
+export function undoAiStep(session: AiStack): boolean {
+  if (session.snapshot.undoLabel !== APPLY_CHANGESET_LABEL) return false;
+  session.undo();
+  return true;
+}
+
+/** The helper's Put back: only while its Apply is the top of the redo stack. */
+export function redoAiStep(session: AiStack): boolean {
+  if (session.snapshot.redoLabel !== APPLY_CHANGESET_LABEL) return false;
+  session.redo();
+  return true;
 }
 
 const NO_WORLDS: readonly WorldInfo[] = [];
@@ -1544,7 +1641,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     });
   };
 
-  /** Build mode of the AI helper: for the open project, or a new one (ADR 0047 D3). */
+  /**
+   * The AI helper for the open project (the panel on its empty state or its conversation), or
+   * with no mod open New project with the AI helper (ADR 0047 D3, ADR 0125 D2). There is no mode
+   * to set: the run's size comes from what the user sends.
+   */
   const buildWithAi = (): void => {
     if (aiController === null) {
       setMessage({ kind: 'error', text: 'The AI helper is not available.' });
@@ -1552,7 +1653,6 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
     if (project !== null) {
       aiController.open();
-      aiController.setMode('build');
       return;
     }
     // Very easy asks only the mod's name, in the folder its New uses (ADR 0125 D5).
@@ -1587,10 +1687,64 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     }
     if (session.snapshot.project === null) return null;
     aiController.open();
-    aiController.setMode('build');
-    void aiController.send(description, [], pictures);
+    // A whole new mod runs as a build (ADR 0125 D2).
+    void aiController.send(description, [], pictures, { size: 'build' });
     return null;
   };
+  /** The helper's tab: opened or closed with a mod open, New project with the AI helper without. */
+  const toggleAiHelper = (): void => {
+    if (aiController === null) {
+      setMessage({ kind: 'error', text: 'The AI helper is not available.' });
+      return;
+    }
+    if (project === null) buildWithAi();
+    else aiController.toggle();
+  };
+  /** Explain (Problems) and Ask the helper (Things to fix): the problem attached, nothing sent. */
+  const explainWithAi = (problem: Problem): void => {
+    if (aiController === null) return;
+    attachProblemToAi(
+      aiController,
+      problem,
+      session.snapshot.project,
+      usePreferences.getState().mode,
+    );
+  };
+  /** Ask AI on an element: the element attached, nothing sent. */
+  const askAiAbout = (id: ResourceLocation): void => {
+    if (aiController === null) return;
+    attachElementToAi(aiController, id, session.snapshot.project, usePreferences.getState().mode);
+  };
+  /** Show me after adding (ADR 0125 D4). */
+  const showAiStep = (step: AiAppliedStep): void => {
+    const mode = usePreferences.getState().mode;
+    const where = showMeTarget(step, session.snapshot.project, mode);
+    if (where === null) return;
+    switch (where.type) {
+      case 'creator':
+        editInCreator(where.element);
+        return;
+      case 'open':
+        useTryItStore.getState().close();
+        navigateTo(where.id, null);
+        return;
+      case 'select':
+        useTryItStore.getState().close();
+        select(where.id);
+        return;
+      case 'my-things':
+        useTryItStore.getState().close();
+        select(null);
+        // Home draws My things once nothing is selected.
+        requestAnimationFrame(() =>
+          document
+            .querySelector<HTMLElement>('[data-testid="my-things"]')
+            ?.scrollIntoView({ block: 'start' }),
+        );
+        return;
+    }
+  };
+
   const chooseMode = (next: UiMode): void => {
     usePreferences.getState().setMode(next);
     if (next !== 'advanced') setActiveTab('form');
@@ -2133,11 +2287,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       }
       setDialog({ type: 'upgrade-target' });
     },
-    toggleAiHelper: () => {
-      if (aiController === null)
-        setMessage({ kind: 'error', text: 'The AI helper is not available.' });
-      else aiController.toggle();
-    },
+    toggleAiHelper,
     creator: () => {
       if (project === null) {
         setMessage({ kind: 'error', text: 'Open a project to use the Creator.' });
@@ -2212,15 +2362,12 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     newWithAi: aiController === null ? null : buildWithAi,
     pictureToTexture: canAddElement ? handlers.pictureToTexture : null,
     wishlist: project === null ? null : handlers.wishlist,
-    aiHelper: aiController === null ? null : () => aiController.open(),
+    aiHelper: aiController === null ? null : buildWithAi,
     aiExplainProblem:
       aiController === null || !aiKeySet || selectedProblem === null
         ? null
-        : () => aiController.explainProblem(selectedProblem),
-    aiAskElement:
-      aiController === null || selected === null
-        ? null
-        : () => aiController.askAboutElement(selected.id),
+        : () => explainWithAi(selectedProblem),
+    aiAskElement: aiController === null || selected === null ? null : () => askAiAbout(selected.id),
     creator: project === null ? null : handlers.creator,
     surpriseMe: handlers.surpriseMe,
     play: project === null || !playConnected ? null : playNow,
@@ -2563,9 +2710,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       onApply={(id: ResourceLocation, data: Json) =>
         run('Apply', () => session.setElementData(id, data))
       }
-      {...(aiController === null
-        ? {}
-        : { onAskAi: (id: ResourceLocation) => aiController.askAboutElement(id) })}
+      {...(aiController === null ? {} : { onAskAi: askAiAbout })}
       onEditInCreator={editInCreator}
       {...(project === null ? {} : { onOpenCreator: handlers.creator })}
       {...(aiController === null ? {} : { onBuildWithAi: buildWithAi })}
@@ -2681,7 +2826,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                   onInstall={installResource}
                   onInstallData={installData}
                   onSettings={handlers.settings}
-                  {...(aiController === null ? {} : { onAiHelper: () => aiController.toggle() })}
+                  {...(aiController === null ? {} : { onAiHelper: toggleAiHelper })}
                   installTarget={installTarget}
                   installTargets={installTargets}
                   onChooseInstallTarget={(id) => void chooseInstallTarget(id)}
@@ -2791,9 +2936,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                     ? {}
                     : {
                         assistant: (
-                          <AiPanel controller={aiController} onOpenSettings={openAiSettings} />
+                          <AiPanel
+                            controller={aiController}
+                            onOpenSettings={openAiSettings}
+                            onShowMe={showAiStep}
+                            onUndo={() => undoAiStep(session)}
+                            onRedo={() => redoAiStep(session)}
+                          />
                         ),
-                        onExplain: (problem: Problem) => aiController.explainProblem(problem),
+                        onExplain: explainWithAi,
                       })}
                 />
               </main>
@@ -2807,6 +2958,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                       navigateTo(problem.elementId, problem.path ?? null, problem.range ?? null);
                     }}
                     onFix={fixProblem}
+                    {...(aiController === null ? {} : { onAsk: explainWithAi })}
                   />
                 )}
                 <StatusBar
