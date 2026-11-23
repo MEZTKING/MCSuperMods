@@ -10,7 +10,11 @@
  * rule book ("sometimes an extra gem drops from the ore"). The planning (sets, the rule book,
  * clashes, folding) is the search's own **Add to my mod** module, `changeset/make-flow.ts`.
  *
- * Pure and seeded: the same seed, theme, project and target give the same mod. No DOM.
+ * With a lead (ADR 0129 D3, Home's **More ideas**) the mod starts from that flow instead of a
+ * material ({@link LEAD_RECIPES}), adds one or two extras from other slots and is named after
+ * the lead thing ("Frost Wolf"); without one, **Surprise me** keeps its material first.
+ *
+ * Pure and seeded: the same seed, theme, lead, project and target give the same mod. No DOM.
  *
  * @packageDocumentation
  */
@@ -34,6 +38,7 @@ import {
   RULES_KIND,
   ruleBookItem,
 } from '../changeset/make-flow';
+import { LEAD_GROUP_SLOT, LEAD_RECIPES, type LeadRecipe } from './leads';
 import {
   FLOW_RECIPES,
   type FlowRecipe,
@@ -44,6 +49,7 @@ import {
 } from './themes';
 
 export { bundleClashes, foldItems } from '../changeset/make-flow';
+export { LEAD_GROUPS, LEAD_RECIPES, type LeadGroup, type LeadRecipe } from './leads';
 export { FLOW_RECIPES, SURPRISE_THEMES, type SurpriseTheme } from './themes';
 
 /** The rule book kind (`@msm/plugin-rules`); the generator does not import the plugin. */
@@ -251,6 +257,11 @@ export interface SurpriseInput {
   rules: boolean;
   /** A new Creator set id per thing (default: `surprise-<seed>-<elements in project>-<n>`). */
   newSetId?(): string;
+  /**
+   * An idea's lead flow (ADR 0129 D3): the mod starts from it and is named after it. Absent (or
+   * not usable here) for **Surprise me**, whose mod starts from a material.
+   */
+  lead?: string | null;
 }
 
 /** One thing of a surprise: one Creator flow with its answers. */
@@ -291,6 +302,8 @@ export interface SurpriseMod {
   items: ChangeItem[];
   /** The undo label. */
   label: string;
+  /** The lead flow it was rolled from (an idea, ADR 0129 D3); absent for Surprise me. */
+  lead?: string;
 }
 
 type JsonObject = { [key: string]: Json };
@@ -372,6 +385,58 @@ function usableRecipes(input: SurpriseInput): FlowRecipe[] {
   });
 }
 
+/** The lead flows an idea can start from on this target. */
+export function usableLeads(
+  input: Pick<SurpriseInput, 'starters' | 'target' | 'isKnownKind'>,
+): LeadRecipe[] {
+  return LEAD_RECIPES.filter((recipe) => {
+    const starter = input.starters.find((entry) => entry.id === recipe.flowId);
+    return (
+      starter?.creator !== undefined &&
+      (starter.supports === undefined || starter.supports(input.target)) &&
+      starter.requiresKinds.every((kind) => input.isKnownKind(kind))
+    );
+  });
+}
+
+/**
+ * The flows of an idea: the lead, then one or two extras from other slots (never the lead's
+ * own slot, never a material).
+ */
+function chooseIdeaRecipes(
+  random: Random,
+  lead: LeadRecipe,
+  usable: readonly FlowRecipe[],
+): (FlowRecipe | LeadRecipe)[] {
+  const own = lead.slot ?? LEAD_GROUP_SLOT[lead.group];
+  const inSlot = (slot: SurpriseSlot) =>
+    usable.filter((recipe) => recipe.slot === slot && recipe.flowId !== lead.flowId);
+  const chosen: (FlowRecipe | LeadRecipe)[] = [lead];
+  const extras = 1 + Math.floor(random() * 2);
+  let slots = (Object.keys(SLOT_WEIGHTS) as Exclude<SurpriseSlot, 'material'>[]).filter(
+    (slot) => slot !== own && inSlot(slot).length > 0,
+  );
+  while (chosen.length < extras + 1 && slots.length > 0) {
+    const slot = pickWeighted(random, slots, (entry) => SLOT_WEIGHTS[entry]);
+    slots = slots.filter((entry) => entry !== slot);
+    chosen.push(pickWeighted(random, inSlot(slot), (r) => r.weight ?? 1));
+  }
+  return chosen;
+}
+
+/** Whether `name` fits the string question `id` of `starter` (its pattern and length). */
+function fitsQuestion(starter: ProjectStarter, id: string, name: string): boolean {
+  const parameter = starter.parameters?.find((entry) => entry.id === id);
+  if (parameter?.type !== 'string') return true;
+  if (parameter.maxLength !== undefined && name.length > parameter.maxLength) return false;
+  if (parameter.pattern === undefined) return true;
+  try {
+    return new RegExp(`^(?:${parameter.pattern})$`).test(name);
+  } catch {
+    return true;
+  }
+}
+
 /** The slots and flows of a surprise: one material, then two to four extras. */
 function chooseRecipes(random: Random, usable: readonly FlowRecipe[]): FlowRecipe[] {
   const inSlot = (slot: SurpriseSlot) => usable.filter((recipe) => recipe.slot === slot);
@@ -392,7 +457,7 @@ function chooseRecipes(random: Random, usable: readonly FlowRecipe[]): FlowRecip
 
 /** The names to try for a recipe: each candidate in turn, then numbered ones. */
 function nameAttempts(
-  recipe: FlowRecipe,
+  recipe: FlowRecipe | LeadRecipe,
   word: string,
   values: Readonly<Record<string, Json>>,
   random: Random,
@@ -495,7 +560,15 @@ export async function rollSurprise(input: SurpriseInput): Promise<SurpriseMod> {
       setCount += 1;
       return `surprise-${input.seed}-${size}-${setCount.toString(36)}`;
     });
-  const recipes = chooseRecipes(random, usableRecipes(input));
+  const leadRecipe =
+    input.lead === undefined || input.lead === null
+      ? undefined
+      : usableLeads(input).find((recipe) => recipe.flowId === input.lead);
+  const recipes =
+    leadRecipe === undefined
+      ? chooseRecipes(random, usableRecipes(input))
+      : chooseIdeaRecipes(random, leadRecipe, usableRecipes(input));
+  let leadThing: SurpriseThing | null = null;
   let virtual = input.project;
   const things: SurpriseThing[] = [];
   const items: ChangeItem[] = [];
@@ -508,6 +581,12 @@ export async function rollSurprise(input: SurpriseInput): Promise<SurpriseMod> {
     });
     let accepted: { values: Record<string, Json>; bundle: ContentBundle } | null = null;
     for (const names of nameAttempts(recipe, theme.word, answers, random)) {
+      if (
+        leadRecipe !== undefined &&
+        !Object.entries(names).every(([id, name]) => fitsQuestion(starter, id, name))
+      ) {
+        continue;
+      }
       const values = { ...answers, ...names };
       let bundle: ContentBundle;
       try {
@@ -540,16 +619,21 @@ export async function rollSurprise(input: SurpriseInput): Promise<SurpriseMod> {
     items.push(...planned.items);
     const firstName = Object.keys(recipe.names)[0];
     const name = firstName === undefined ? theme.word : String(accepted.values[firstName]);
-    things.push({
+    const makes = namesOf(accepted.bundle);
+    const isLead = recipe === leadRecipe;
+    const thing: SurpriseThing = {
       flowId: starter.id,
       title: starter.title,
       what: recipe.what,
       name,
       values: accepted.values,
       bundle: accepted.bundle,
-      makes: namesOf(accepted.bundle),
+      // A lead that makes no named block or item (a world, a game) is listed by its own name.
+      makes: isLead && makes.length === 0 ? [name] : makes,
       pictures: picturesOf(accepted.bundle),
-    });
+    };
+    if (isLead) leadThing = thing;
+    things.push(thing);
   }
 
   let rule: SurpriseRule | null = null;
@@ -576,7 +660,11 @@ export async function rollSurprise(input: SurpriseInput): Promise<SurpriseMod> {
     }
   }
 
-  const modName = `${theme.word} Mod`;
+  const lead = leadThing as SurpriseThing | null;
+  const modName =
+    leadRecipe === undefined || lead === null
+      ? `${theme.word} Mod`
+      : (leadRecipe.modName?.(lead.name) ?? lead.name);
   return {
     seed: input.seed,
     theme,
@@ -584,6 +672,7 @@ export async function rollSurprise(input: SurpriseInput): Promise<SurpriseMod> {
     things,
     rule,
     items: foldItems(items),
-    label: `Surprise me: ${modName}`,
+    label: leadRecipe === undefined ? `Surprise me: ${modName}` : `Make this: ${modName}`,
+    ...(leadRecipe === undefined ? {} : { lead: leadRecipe.flowId }),
   };
 }

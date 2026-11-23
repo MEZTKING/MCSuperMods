@@ -5,9 +5,11 @@
  * - A windowed list: card *n* sits at its row and column; only the rows near the view
  *   (`ideasWindow`) are mounted, so however far the user scrolls the page holds a few dozen
  *   cards. The list grows as the view nears its end, and never shrinks.
+ * - Card *n* is the plan `ideaPlan` gives (its seed, lead flow and theme; ADR 0129 D3), so
+ *   neighbouring cards never share a lead or a theme.
  * - A mounted card rolls its idea in turn with the others (`queueIdea`, newest first) and draws
- *   its picture at the screen's whole pixel scale (`ideaPicture`); a card that goes away before
- *   its turn costs nothing.
+ *   its picture at the screen's exact device pixels (`ideaPicture`, redrawn when the window
+ *   moves to a screen of another scale); a card that goes away before its turn costs nothing.
  * - At most one card plays a clip, by the Showcase's rule (`chooseLiveClip`, used as it is):
  *   the card under the pointer or with keyboard focus, or the one whose play button was
  *   pressed; never by itself only for being in view. Reduced motion and the setting **Play
@@ -53,10 +55,17 @@ import {
   IDEA_ROW,
   type IdeasView,
   ideaColumns,
-  ideaSeed,
   ideasWindow,
 } from './idea-seeds';
-import { type Idea, type IdeaInput, ideaClipId, ideaPicture, queueIdea } from './ideas';
+import {
+  type Idea,
+  type IdeaInput,
+  type IdeaSpec,
+  ideaClipId,
+  ideaPicture,
+  ideaPlan,
+  queueIdea,
+} from './ideas';
 
 const LazyClipView = lazy(() => import('../showcase/ClipView'));
 
@@ -132,16 +141,31 @@ export interface IdeaListProps {
   readonly webgl?: boolean;
   readonly clipView?: ComponentType<ClipViewProps>;
   readonly codec?: StillCodec;
-  /** Device pixels per CSS pixel for the drawn pictures (default the window's, 1 or 2). */
+  /** Device pixels per CSS pixel for the drawn pictures (default the window's, as it changes). */
   readonly scale?: number;
 }
 
 const NONE: ReadonlySet<string> = new Set();
 
+/** The window's device pixels per CSS pixel, followed as the window moves between screens. */
+function useDeviceRatio(): number {
+  const read = (): number =>
+    typeof window === 'undefined' ? 1 : Number(window.devicePixelRatio) || 1;
+  const [ratio, setRatio] = useState(read);
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const query = window.matchMedia(`(resolution: ${ratio}dppx)`);
+    const changed = (): void => setRatio(read());
+    query.addEventListener?.('change', changed);
+    return () => query.removeEventListener?.('change', changed);
+  }, [ratio]);
+  return ratio;
+}
+
 /** Props of one mounted card. */
 interface SlotProps {
   readonly index: number;
-  readonly seed: number;
+  readonly spec: IdeaSpec;
   readonly input: IdeaInput;
   readonly scale: number;
   readonly codec: StillCodec | undefined;
@@ -160,7 +184,7 @@ interface SlotProps {
 
 /** One mounted card: rolls its idea in turn and draws its picture. */
 function IdeaSlot(props: SlotProps) {
-  const { index, seed, input, scale, codec, onReady } = props;
+  const { index, spec, input, scale, codec, onReady } = props;
   const [idea, setIdea] = useState<Idea | null>(null);
   const [picture, setPicture] = useState<string | null>(null);
   useEffect(() => {
@@ -169,7 +193,7 @@ function IdeaSlot(props: SlotProps) {
     let live = true;
     const cancel = queueIdea(
       input,
-      seed,
+      spec,
       (made) => {
         if (!live) return;
         setIdea(made);
@@ -192,7 +216,7 @@ function IdeaSlot(props: SlotProps) {
       cancel();
       onReady(index, null);
     };
-  }, [index, seed, input, scale, codec, onReady]);
+  }, [index, spec, input, scale, codec, onReady]);
   const live = idea === null ? undefined : props.renderLive?.(idea, picture);
   return (
     <IdeaCard
@@ -222,11 +246,9 @@ export function IdeaList(props: IdeaListProps) {
     () => props.liveEnvironment ?? browserLiveEnvironment(),
     [props.liveEnvironment],
   );
-  const scale =
-    props.scale ??
-    (typeof window === 'undefined'
-      ? 1
-      : Math.min(2, Math.max(1, Math.round(window.devicePixelRatio || 1))));
+  const windowRatio = useDeviceRatio();
+  const scale = props.scale ?? windowRatio;
+  const plan = useMemo(() => ideaPlan(input), [input]);
 
   const host = useRef<HTMLDivElement | null>(null);
   const [view, setView] = useState<IdeasView | null>(null);
@@ -312,7 +334,7 @@ export function IdeaList(props: IdeaListProps) {
   const liveKey = chooseLiveClip(state);
   const once = !playsByItself(state);
   const liveIdea = liveKey === null ? undefined : ready.get(Number(liveKey));
-  const liveClipId = liveIdea === undefined ? null : ideaClipId(liveIdea.seed);
+  const liveClipId = liveIdea === undefined ? null : ideaClipId(liveIdea);
   const { onLiveChange } = props;
   useEffect(() => {
     onLiveChange?.(liveClipId);
@@ -404,12 +426,13 @@ export function IdeaList(props: IdeaListProps) {
     for (let row = window_.first; row <= window_.last; row += 1) {
       for (let column = 0; column < columns; column += 1) {
         const index = row * columns + column;
-        const seed = ideaSeed(baseSeed, index);
+        const spec = plan(baseSeed, index);
+        if (spec === null) continue;
         slots.push(
           <IdeaSlot
-            key={`${baseSeed}:${index}`}
+            key={`${baseSeed}:${index}:${spec.lead}:${spec.themeId}`}
             index={index}
-            seed={seed}
+            spec={spec}
             input={input}
             scale={scale}
             codec={props.codec}

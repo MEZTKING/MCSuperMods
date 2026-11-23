@@ -10887,3 +10887,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - `creator-path`: take the `blank` listing only after the save's write has finished (or make `save` resolve after its rename).
 - `launchers-path`: the Install menu sometimes does not open on the first click under load; worth a root-cause job like this one.
+
+## 2026-11-23 — executor — Varied More ideas
+
+**What**
+- ADR 0129 D3. Home's More ideas cards were nearly all "a set of tools and armour, with its ore, ..." under one of ten theme words, because each card was Surprise me's material-first mod. Each card now has a plan (`app/src/renderer/src/ideas/idea-plan.ts`): its seed (unchanged `ideaSeed`), a lead group, a lead flow and a theme. Groups and themes are dealt like decks from the base seed (every run of 20 cards holds each group once, every run of 10 each theme once), mended where runs meet so any 5 cards in a row differ in group and any 4 in theme; pure, no walk over earlier cards.
+- `app/src/renderer/src/surprise/leads.ts`: 63 lead flows in 20 groups (mob, vehicle, building, pet, portal, plant, gear, machine, world, food, tree, magic, storage, game, particle, music, art, village, rules, material), each with its name nouns ("Frost Wolf", "Ember Kart", "Moss Ruins") and a phrase. `rollSurprise` takes an optional `lead`: the mod starts from that flow, adds one or two of Surprise me's extras from other slots, is named after the lead thing and labelled "Make this: ..."; without a lead Surprise me is unchanged (material first, "<Theme> Mod"). A lead that makes no named block or item (a world, a game) is listed by its own name in Makes; candidate names are checked against the question's pattern and length.
+- Card line: the lead first, the rest after "with" ("A car to drive, with a food and sparkles."). Make this (App's New-mod dialog and the fallback) rolls the card's seed, theme and lead again, so it makes exactly the card's mod.
+- Pictures: the smoothed-looking picture was an 8 by 8 particle sprite with soft-alpha edges scaled 8 times beside 16 by 16 pictures scaled 4 times (each picture was fitted to its cell on its own), so its texels were twice its neighbours' and read as blurred. `oneTexelSize` centres smaller pictures on transparent squares of the largest size, so a card's pictures share one whole-number texel scale. Also the picture was drawn for the device ratio rounded to 1 or 2 and rescaled by the browser at 1.25, 1.5 and 1.75; it is now drawn at the exact device pixels (`ideaPictureSize`, ratio 1 to 3, followed when the window moves screens). Measured under xvfb at DSF 1, 1.25, 1.5 and 2, the old build showed no browser filtering (nearest, uneven texels), so the uneven texel size was the visible cause.
+- Tests: `app/test/components/home/ideas-varied.test.ts` (new: over the first 200 cards of three bases 20 groups at 5 % each on both targets, no neighbours sharing lead flow, theme or name, purity, every lead flow builds on both targets, Make this on a mob-led and a vehicle-led card, exact device sizes with one texel size across 16, 8 and 18 pixel pictures, pixelated card picture, Surprise me still material first); `ideas.test.ts`, `more-ideas.test.tsx` and `e2e/home-ideas-path.spec.ts` follow the new names and plans (the e2e also checks the first two names differ and the picture's natural width equals its device width, and with `HOME_SHOTS` saves `home-more-ideas.png`). Surprise me's tests unchanged and green.
+
+**Decisions**
+- Equal shares per group (a deck) rather than weights: no group can dominate, and material is one group of 20.
+- Neighbours are cards next to each other in reading order; with 4 columns the group window of 5 also keeps cards above and below apart.
+- The lead table is separate from `FLOW_RECIPES`, so Surprise me and Pick for me keep their behaviour.
+
+**Next**
+- `docs/guide/very-easy.md` "More ideas" still says each card is "a mod Surprise me would make"; it should say each card starts from one thing (a mob, a vehicle, a world...) named after it.
+- `pnpm --filter @msm/app dist:dir` was not run (disk at 11 GB with other workers building); the renderer stays 19.5 of 21 MB and first paint 4.8 of 6 MB.

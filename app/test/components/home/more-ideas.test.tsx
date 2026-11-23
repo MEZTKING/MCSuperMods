@@ -139,7 +139,9 @@ describe('More ideas', () => {
     expect(onMake).toHaveBeenCalledTimes(1);
     expect(onMake.mock.calls[0]?.[0].seed).toBe(ideaSeed(1234, 1));
     const card = screen.getByTestId('idea-card-1');
-    expect(screen.getByTestId('idea-name-1').textContent).toMatch(/ Mod$/);
+    // Named after its lead thing ("Frost Wolf"), not "<Theme> Mod" (ADR 0129 D3).
+    expect(screen.getByTestId('idea-name-1').textContent).toMatch(/^[A-Z][a-z]+ [A-Z]/);
+    expect(screen.getByTestId('idea-name-1').textContent).not.toMatch(/ Mod$/);
     // Very easy shows no ids.
     expect(card.textContent).not.toMatch(/[a-z0-9_]+:[a-z0-9_/]+/);
     await waitFor(() => expect(screen.getByTestId('idea-still-1')).toBeTruthy());

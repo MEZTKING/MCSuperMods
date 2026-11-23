@@ -131,7 +131,7 @@ import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WishlistDialog } from './components/WishlistDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
-import type { Idea, IdeaInput } from './ideas/ideas';
+import type { Idea, IdeaInput, IdeaSpec } from './ideas/ideas';
 import { builtInPlugins } from './plugins/built-in';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
 import type { SearchActionHost, SearchStartMod } from './search/actions';
@@ -372,8 +372,8 @@ type DialogState =
       name?: string;
       /** What to open once the mod is made (a showcase card's **Make this**, ADR 0118 D10). */
       afterwards?: ShownTile;
-      /** The Surprise me seed to make in the new mod (an idea card's **Make this**, ADR 0128 D1). */
-      surpriseSeed?: number;
+      /** The idea card to make in the new mod (its **Make this**, ADR 0128 D1, ADR 0129 D3). */
+      surpriseIdea?: IdeaSpec;
       /** The search's new mod (ADR 0124 D9): what it is made from, and the answer. */
       search?: {
         options(folder: string): NewProjectOptions;
@@ -2030,9 +2030,12 @@ export function App({
         setMessage({ kind: 'error', text: `Add ${starter.title}: ${messageOf(error)}` }),
     );
   };
-  /** Rolls "Surprise me" for the open mod, or for a new mod named after the theme (ADR 0086). */
+  /**
+   * Rolls "Surprise me" for the open mod, or for a new mod named after the theme (ADR 0086);
+   * with `lead`, an idea card's mod, led by that flow (ADR 0129 D3).
+   */
   const rollSurpriseFor = useCallback(
-    (seed: number, themeId: string | null): Promise<SurpriseMod> => {
+    (seed: number, themeId: string | null, lead?: string): Promise<SurpriseMod> => {
       const isKnownKind = (kind: string) => session.registry.get(kind) !== undefined;
       const common = {
         seed,
@@ -2042,6 +2045,7 @@ export function App({
         isKnownKind,
         rules: session.registry.get(RULES_KIND) !== undefined,
         newSetId: () => crypto.randomUUID(),
+        ...(lead === undefined ? {} : { lead }),
       };
       const current = session.snapshot.project;
       if (current !== null) {
@@ -2086,7 +2090,7 @@ export function App({
       }
       const opened = outcome;
       await openWith('New mod', async () => opened);
-      made = await rollSurpriseFor(mod.seed, mod.theme.id);
+      made = await rollSurpriseFor(mod.seed, mod.theme.id, mod.lead);
     }
     // "Use AI pictures" (ADR 0093 D7): the textures are made just before the one undo step.
     const prepared = prepare === undefined ? null : await prepare(made.items);
@@ -2313,22 +2317,22 @@ export function App({
   );
   // The idea card playing a clip, so the Showcase stops: one clip on Home (ADR 0128 D2).
   const [ideaLive, setIdeaLive] = useState<string | null>(null);
-  /** Makes the Surprise me mod of `seed` in the open mod (just made for an idea card). */
-  const makeIdeaIn = async (seed: number): Promise<void> => {
+  /** Makes the mod of an idea card in the open mod (just made for it). */
+  const makeIdeaIn = async (spec: IdeaSpec): Promise<void> => {
     try {
-      await makeSurprise(await rollSurpriseFor(seed, null));
+      await makeSurprise(await rollSurpriseFor(spec.seed, spec.themeId, spec.lead));
     } catch (error) {
       setMessage({ kind: 'error', text: `Make this: ${messageOf(error)}` });
     }
   };
   /**
    * An idea card's **Make this** (ADR 0128 D1): the name-only New prefilled with the idea's name,
-   * then the mod of exactly that seed in it, as Surprise me makes it.
+   * then the mod of exactly that card (its seed, lead and theme) in it.
    */
   const makeIdea = (idea: Idea): void => {
     const fallback = (): void => {
       setDialog(null);
-      void rollSurpriseFor(idea.seed, null)
+      void rollSurpriseFor(idea.seed, idea.themeId, idea.lead)
         .then((made) => makeSurprise(made))
         .catch((error: unknown) =>
           setMessage({ kind: 'error', text: `Make this: ${messageOf(error)}` }),
@@ -2343,7 +2347,17 @@ export function App({
       (parent) =>
         parent === ''
           ? fallback()
-          : setDialog({ type: 'new-mod', parent, name: idea.name, surpriseSeed: idea.seed }),
+          : setDialog({
+              type: 'new-mod',
+              parent,
+              name: idea.name,
+              surpriseIdea: {
+                seed: idea.seed,
+                lead: idea.lead,
+                group: idea.group,
+                themeId: idea.themeId,
+              },
+            }),
       fallback,
     );
   };
@@ -4165,11 +4179,11 @@ export function App({
                   );
                   if (outcome.ok) {
                     const afterwards = dialog.afterwards;
-                    const surpriseSeed = dialog.surpriseSeed;
+                    const surpriseIdea = dialog.surpriseIdea;
                     setDialog(null);
                     await openWith('New mod', async () => outcome);
                     if (afterwards !== undefined) setPendingTile(afterwards);
-                    if (surpriseSeed !== undefined) void makeIdeaIn(surpriseSeed);
+                    if (surpriseIdea !== undefined) void makeIdeaIn(surpriseIdea);
                     search?.resolve(true);
                     return null;
                   }

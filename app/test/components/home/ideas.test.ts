@@ -1,9 +1,10 @@
 /**
- * Home's More ideas (ADR 0128 D1, D2): the seeds of the cards, the window of the endless grid,
- * and the idea of a seed rolled through Surprise me with the built-in library: the same seed
- * gives the same card, its words carry no ids, the same seed rolled for a new mod (Make this)
- * gives the same things, the joined bundle lists an element once, and a clip plays the idea's
- * own blocks (`validateClip` against its lowered files).
+ * Home's More ideas (ADR 0128 D1, D2; ADR 0129 D3): the seeds of the cards, the window of the
+ * endless grid, and the idea of a card plan rolled through Surprise me's generator with the
+ * built-in library: the same plan gives the same card, its words carry no ids, the same plan
+ * rolled for a new mod (Make this) gives the same things, the joined bundle lists an element
+ * once, and a clip plays the idea's own blocks (`validateClip` against its lowered files).
+ * The variety of the cards and the pictures' whole device pixels are in `ideas-varied.test.ts`.
  */
 
 import { createEmptyProject } from '@msm/core';
@@ -19,7 +20,9 @@ import {
 } from '../../../src/renderer/src/ideas/idea-seeds';
 import {
   clearIdeas,
+  type IdeaSpec,
   ideaPicture,
+  ideaPlan,
   joinBundles,
   listInWords,
   makeIdea,
@@ -43,6 +46,9 @@ const input = {
 };
 
 afterEach(() => clearIdeas());
+
+const plan = ideaPlan(input);
+const spec = (base: number, index: number): IdeaSpec => plan(base, index) as IdeaSpec;
 
 describe('the seeds of the cards', () => {
   it('give the same seed for the same base and card, within Surprise me’s range', () => {
@@ -94,14 +100,14 @@ describe('the window of the grid', () => {
 });
 
 describe('an idea', () => {
-  it('is the same card for the same seed, in words with no ids', async () => {
-    for (const seed of [11, 4242, 987_654]) {
-      const first = await makeIdea(input, seed);
-      const again = await makeIdea(input, seed);
+  it('is the same card for the same plan, in words with no ids', async () => {
+    for (const card of [spec(11, 0), spec(4242, 3), spec(987_654, 17)]) {
+      const first = await makeIdea(input, card);
+      const again = await makeIdea(input, card);
       expect(again.name).toBe(first.name);
       expect(again.line).toBe(first.line);
       expect(again.makes).toEqual(first.makes);
-      expect(first.name).toMatch(/ Mod$/);
+      expect(first.name).not.toMatch(/ Mod$/);
       expect(first.line.length).toBeGreaterThan(5);
       for (const text of [first.name, first.line, ...first.makes]) {
         expect(text).not.toMatch(/[a-z0-9_]+:[a-z0-9_/]+/);
@@ -110,23 +116,30 @@ describe('an idea', () => {
   }, 120_000);
 
   it('is rolled once and kept', async () => {
-    const one = rollIdea(input, 77);
-    expect(rollIdea(input, 77)).toBe(one);
+    const one = rollIdea(input, spec(77, 0));
+    expect(rollIdea(input, spec(77, 0))).toBe(one);
     await one;
   }, 60_000);
 
-  it('makes the same things when its seed is rolled for a new mod (Make this)', async () => {
-    const seed = 31_337;
-    const idea = await makeIdea(input, seed);
+  it('makes the same things when its plan is rolled for a new mod (Make this)', async () => {
+    const card = spec(31_337, 2);
+    const idea = await makeIdea(input, card);
     const project = createEmptyProject('Fresh Mod');
     project.namespaces.push({ name: 'fresh_mod', elements: [], assets: [] });
-    const mod = await rollSurprise({ ...input, seed, namespace: 'fresh_mod', project });
+    const mod = await rollSurprise({
+      ...input,
+      seed: card.seed,
+      themeId: card.themeId,
+      lead: card.lead,
+      namespace: 'fresh_mod',
+      project,
+    });
     expect(mod.modName).toBe(idea.name);
     expect(mod.things.flatMap((thing) => thing.makes)).toEqual(idea.makes);
   }, 60_000);
 
-  it('draws its picture at a whole pixel scale', async () => {
-    const idea = await makeIdea(input, 5);
+  it('draws its picture at the screen’s exact device pixels', async () => {
+    const idea = await makeIdea(input, spec(5, 0));
     const sizes: [number, number][] = [];
     const codec = {
       decode: async () => ({ width: 16, height: 16, data: new Uint8ClampedArray(16 * 16 * 4) }),
@@ -136,9 +149,11 @@ describe('an idea', () => {
       },
     };
     expect(await ideaPicture(idea, 1, codec)).toMatch(/^data:image\/png;base64,/);
-    await ideaPicture(idea, 1.6, codec);
+    await ideaPicture(idea, 1.5, codec);
+    await ideaPicture(idea, 2, codec);
     expect(sizes).toEqual([
       [256, 144],
+      [384, 216],
       [512, 288],
     ]);
   }, 60_000);
@@ -146,7 +161,7 @@ describe('an idea', () => {
   it('has a clip of its own blocks or spawn egg that validates against its files', async () => {
     let checked = 0;
     for (let index = 0; index < 12 && checked < 3; index += 1) {
-      const idea = await makeIdea(input, ideaSeed(99, index));
+      const idea = await makeIdea(input, spec(99, index));
       if (idea.clip === null) continue;
       const files = await exampleFiles(idea.example, target, {
         registry: theRegistry(),

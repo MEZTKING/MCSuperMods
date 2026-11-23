@@ -2,7 +2,8 @@
  * Home's endless ideas and Your mods (ADR 0128 D1, D2, D4, D5; the user's look at 1.5.6's Home).
  *
  * 1. A brand-new install (`MSM_E2E_NEW_INSTALL`), Very easy's Home with no mod: under the
- *    Showcase, **More ideas** loads its cards as it comes into view; scrolling far down keeps
+ *    Showcase, **More ideas** loads its cards as it comes into view, each named after its lead
+ *    thing ("Frost Wolf", ADR 0129 D3) and its neighbour named otherwise; scrolling far down keeps
  *    bringing new cards (card numbers past 300) while the cards behind are unmounted, so the
  *    page's element count stays bounded. **Make this** on the 30th card asks for the mod's name
  *    (the card's), makes the mod and fills it with the idea's things (My things).
@@ -28,6 +29,8 @@ import { expect, type Locator, type Page, test } from 'playwright/test';
 import { type LaunchedApp, launchApp } from './fixtures';
 
 const SHOTS = process.env.HOME_SHOTS;
+/** An idea's name: its theme word and its lead thing ("Frost Wolf"), never "<Theme> Mod". */
+const IDEA_NAME = /^[A-Z][a-z]+ [A-Z](?!od$)[A-Za-z ]*$/;
 const ARGS = SHOTS === undefined ? [] : ['--force-device-scale-factor=2'];
 
 let base: string | undefined;
@@ -156,8 +159,41 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   await expect(showcase).toBeVisible();
   await ideas.scrollIntoViewIfNeeded();
   await expect(home.getByTestId('idea-card-0')).toBeVisible({ timeout: 30_000 });
-  await expect(home.getByTestId('idea-name-0')).toHaveText(/ Mod$/, { timeout: 30_000 });
+  await expect(home.getByTestId('idea-name-0')).toHaveText(IDEA_NAME, { timeout: 30_000 });
   await expect(home.getByTestId('idea-still-0')).toBeVisible({ timeout: 30_000 });
+  await expect(home.getByTestId('idea-name-1')).toHaveText(IDEA_NAME, { timeout: 30_000 });
+  const firstNames = [
+    await home.getByTestId('idea-name-0').textContent(),
+    await home.getByTestId('idea-name-1').textContent(),
+  ];
+  expect(firstNames[0]).not.toBe(firstNames[1]);
+  // Every card picture is shown pixel for pixel: pixelated, drawn at the window's device pixels.
+  const still = await home.getByTestId('idea-still-0').evaluate((element) => {
+    const page = globalThis as unknown as {
+      devicePixelRatio: number;
+      getComputedStyle(element: unknown): { imageRendering: string };
+    };
+    const image = element as unknown as {
+      naturalWidth: number;
+      getBoundingClientRect(): { width: number };
+    };
+    return {
+      rendering: page.getComputedStyle(image).imageRendering,
+      natural: image.naturalWidth,
+      shown: Math.round(image.getBoundingClientRect().width * page.devicePixelRatio),
+    };
+  });
+  expect(still.rendering).toBe('pixelated');
+  expect(still.natural).toBe(still.shown);
+  if (SHOTS !== undefined) {
+    await home.getByTestId('more-ideas').evaluate((element) => element.scrollIntoView());
+    await window.mouse.move(2, 2);
+    for (let index = 0; index < 10; index += 1) {
+      await expect(home.getByTestId(`idea-still-${index}`)).toBeVisible({ timeout: 30_000 });
+    }
+    await window.waitForTimeout(800);
+    await window.screenshot({ path: join(SHOTS, 'home-more-ideas.png') });
+  }
 
   // The 30th card: scroll until it is mounted, then Make this. -------------------------------
   const thirtieth = home.getByTestId('idea-card-29');
@@ -168,7 +204,7 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   const make = home.getByTestId('idea-make-29');
   await expect(make).toHaveAttribute('aria-disabled', 'false', { timeout: 60_000 });
   const name = (await home.getByTestId('idea-name-29').textContent()) ?? '';
-  expect(name).toMatch(/ Mod$/);
+  expect(name).toMatch(IDEA_NAME);
   const nearCards = await cardCount(window);
   const nearElements = await elementCount(window);
 
@@ -190,7 +226,7 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   expect(farElements).toBeLessThanOrEqual(nearElements * 1.3 + 200);
   await expect(home.getByTestId('ideas-status')).toContainText('more ideas below');
   const farName = home.locator('[data-testid^="idea-name-"]').first();
-  await expect(farName).toHaveText(/ Mod$/, { timeout: 30_000 });
+  await expect(farName).toHaveText(IDEA_NAME, { timeout: 30_000 });
   if (SHOTS !== undefined) {
     await scrollHome(home, -150);
     await window.waitForTimeout(1500);
