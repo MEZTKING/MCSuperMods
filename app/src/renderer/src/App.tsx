@@ -845,7 +845,7 @@ export function App({
   );
   const canAddElement = namespaces.length > 0;
   // Saving is never blocked by problems (ADR 0012); errors block export only.
-  const saveDisabledReason = project === null ? 'No project is open.' : null;
+  const saveDisabledReason = project === null ? 'No mod is open.' : null;
 
   let target: Target | null = null;
   try {
@@ -3742,6 +3742,12 @@ export function App({
                     undoLabel={snapshot.undoLabel}
                     redoLabel={snapshot.redoLabel}
                     saveDisabledReason={saveDisabledReason}
+                    unsaved={snapshot.dirty}
+                    {...(bridge.maps === undefined ? {} : { onExportMap: handlers.exportMap })}
+                    {...(bridge.modpacks === undefined ? {} : { onModpacks: handlers.modpacks })}
+                    {...(bridge.guide === undefined
+                      ? {}
+                      : { onGuide: () => setDialog({ type: 'guide', page: 'README' }) })}
                     canAddElement={canAddElement}
                     exportDisabledReason={exportReason}
                     installDisabledReason={installReason}
