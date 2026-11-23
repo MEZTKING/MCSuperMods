@@ -6,12 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.5.
+Nothing yet since 1.5.6.
 
-## [1.5.5] - 2026-11-23
+## [1.5.6] - 2026-11-23
+
+Everything since 1.5.4. (1.5.5 was never released: its Windows build stopped on a test that checked the wrong mob, now fixed.)
 
 ### Added
 
+- **Lists forgive spelling.** The element list, New element, Examples and the pickers now find "armor" for "armour", plurals and small typos, after the exact matches; with the Minecraft folder set up, the pickers show and find Minecraft's own names.
 - **Play in more places.** A damage type's live view plays the hurt sound it gives a player, and a sound picked in a rule has a small Play button beside it.
 - **Search everything.** A bar headed "What do you want to make?" on Home and in the empty editor, a "Search or make anything" field on the toolbar, and Edit > Search… (Ctrl+K, Cmd+K on a Mac) find flows, starters, examples, your own things, Minecraft's things, settings, commands and guide pages, even misspelt or in American spelling. A result can be made at once (**Make this**), added to your mod, opened or shown in the guide; the palette (Ctrl+Shift+P) is ranked by the same search.
 - **The AI helper searches the library first.** It finds the starter or flow that fits your words, with the answers your words gave, before it builds; **Ask the AI helper** in search opens it with your words ready to send.
