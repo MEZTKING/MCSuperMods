@@ -328,3 +328,8 @@ Notes on the order:
 - B700 alone, then wave 1: B701, B702, B703, B641, B712; I1 and a release.
 - Ask the user: Save by itself or a Save button; a Make something button in the row.
 ```
+
+## 9. Notes from wave 1 (main session)
+
+- B641's processor view shows the preview's "No blockstate for minecraft:…" list in plain view when the Minecraft folder is not set up (a leak of ids under the 3D view, seen in its screenshot): fold it into a plain line ("N blocks need your Minecraft folder to draw") with the ids under More options. Owner: B643 (it owns the structures views' e2e and can touch `liveviews/structures/processors/`), or the preview's shared message if it comes from `preview/structure.ts` (then B713).
+- Engine follow-ups from B641 (B712's folder `packages/terrain/src/structures/processors/`): default properties in block state tests (block defaults from `packages/targets`), `isFullBlock` for air and the sea lantern; remove the matching `KNOWN` entries in `structures-parity.test.ts`.
