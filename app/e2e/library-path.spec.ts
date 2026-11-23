@@ -15,7 +15,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, openMoreOptions, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  openDockTab,
+  openMoreOptions,
+  openToolbarMenu,
+  outputDir,
+  toolbarMenu,
+} from './fixtures';
 
 /** The first project's folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'ruby_e2e';
@@ -80,7 +89,7 @@ function isDataPack(files: Record<string, Uint8Array>): boolean {
 
 /** Opens the export chevron menu and clicks the item `testId`. */
 async function exportVia(window: Page, testId: string): Promise<void> {
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId(testId);
   await expect(item).toBeVisible();
   await expect(item).not.toHaveAttribute('data-disabled', /.*/);
@@ -120,7 +129,7 @@ async function errorRows(window: Page): Promise<Locator> {
 /** Asserts that no error problem is listed and the status bar agrees. */
 async function expectNoErrors(window: Page): Promise<void> {
   await expect(await errorRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** The status toast's text. */
@@ -155,8 +164,7 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-menu').click();
-  await window.getByTestId('toolbar-new-from-starter').click();
+  await toolbarMenu(window, 'toolbar-new-from-starter');
   const newProject = window.getByTestId('new-project-dialog');
   await expect(newProject).toBeVisible();
   const picker = newProject.getByTestId('starter-picker');
@@ -209,7 +217,12 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   await expect(window.getByTestId('element-notes-full')).toContainText('pickaxe');
 
   await expectNoErrors(window);
-  await expect(window.getByTestId('toolbar-export-zip')).toBeEnabled();
+  await openToolbarMenu(window, 'toolbar-export-menu');
+  await expect(window.getByTestId('export-resource-zip')).not.toHaveAttribute(
+    'data-disabled',
+    /.*/,
+  );
+  await window.keyboard.press('Escape');
 
   // Export both packs and check the files. --------------------------------------------------
   const firstExport = await exportBoth(window, folders.outDir);
@@ -349,8 +362,7 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   await expect(exampleRow).toBeVisible();
 
   // The gallery is also on the toolbar's New menu; the search is fresh each time.
-  await window.getByTestId('toolbar-new-menu').click();
-  await window.getByTestId('toolbar-examples').click();
+  await toolbarMenu(window, 'toolbar-examples');
   gallery = window.getByTestId('examples-dialog');
   await expect(gallery).toBeVisible();
   await expect(gallery.getByTestId('examples-search')).toHaveValue('');
@@ -361,7 +373,7 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   await expect(gallery).toBeHidden();
 
   // New element: the filter narrows the grouped templates. ---------------------------------
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   const groups = dialog.locator('[data-testid^="template-group-"]');
@@ -419,8 +431,7 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   const w2 = second.window;
   await w2.waitForLoadState('domcontentloaded');
 
-  await w2.getByTestId('toolbar-new-menu').click();
-  await w2.getByTestId('toolbar-examples').click();
+  await toolbarMenu(w2, 'toolbar-examples');
   gallery = w2.getByTestId('examples-dialog');
   await expect(gallery).toBeVisible();
   // No project is open: copying is unavailable and says why.

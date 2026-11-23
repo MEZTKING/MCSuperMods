@@ -10,7 +10,7 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, toolbarMenu } from './fixtures';
 import { readPng, rgbaPng } from './png';
 
 const MOD_ID = 'msm_sample_mod';
@@ -43,7 +43,7 @@ test('picture to texture: a legacy skin and a pasted screenshot', async () => {
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${MOD_ID}:ruby_ore`)).toBeVisible();
 
   // The legacy skin. -------------------------------------------------------------------------

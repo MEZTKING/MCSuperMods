@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import type { Problem } from '@msm/core';
-import { cleanup, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Tooltip } from 'radix-ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Toolbar, type ToolbarProps } from '../../src/renderer/src/components/Toolbar';
@@ -18,6 +17,7 @@ import {
   userFacingExportProblems,
 } from '../../src/renderer/src/studios/export-state';
 import type { MinecraftStatus } from '../../src/shared/platform';
+import { chooseInToolbarMenu, entryDisabled, openToolbarMenu } from './toolbar-menu';
 
 afterEach(cleanup);
 
@@ -207,16 +207,9 @@ describe('per-pack export gating', () => {
   });
 });
 
-async function openMenu(testId: string) {
-  const user = userEvent.setup();
-  await user.click(byTestId(testId));
-  return user;
-}
-
 const item = (id: string) => screen.getByTestId(id);
-const isDisabled = (id: string) => item(id).hasAttribute('data-disabled');
 
-describe('Toolbar export buttons', () => {
+describe('Toolbar export entries (in More, ADR 0131 D1)', () => {
   it('are disabled while errors exist, with the reason in the menus', async () => {
     const reason = exportDisabledReason(true, [error]);
     renderToolbar(
@@ -227,11 +220,10 @@ describe('Toolbar export buttons', () => {
         dataInstallDisabledReason: reason,
       }),
     );
-    expect(byTestId('toolbar-export-zip').disabled).toBe(true);
     expect(byTestId('toolbar-save').disabled).toBe(false);
-    await openMenu('toolbar-export-menu');
+    await openToolbarMenu('toolbar-export-menu');
     for (const id of ['export-resource-zip', 'export-data-zip', 'export-combined']) {
-      expect(isDisabled(id)).toBe(true);
+      expect(entryDisabled(id)).toBe(true);
       expect(screen.getByTestId(`${id}-reason`).textContent).toBe(reason);
     }
   });
@@ -239,10 +231,9 @@ describe('Toolbar export buttons', () => {
   it('report clicks when enabled', async () => {
     const p = props();
     renderToolbar(p);
-    const user = userEvent.setup();
-    await user.click(byTestId('toolbar-export-zip'));
-    await user.click(byTestId('toolbar-import-assets'));
-    await user.click(byTestId('toolbar-settings'));
+    await chooseInToolbarMenu('toolbar-export-menu', 'export-resource-zip');
+    await chooseInToolbarMenu('toolbar-import-assets');
+    await chooseInToolbarMenu('toolbar-settings');
     expect(p.onExportZip).toHaveBeenCalledOnce();
     expect(p.onImportAssets).toHaveBeenCalledOnce();
     expect(p.onSettings).toHaveBeenCalledOnce();
@@ -256,8 +247,7 @@ describe('Toolbar export buttons', () => {
       ['export-data-zip', p.onExportDataZip],
       ['export-combined', p.onExportCombined],
     ] as const) {
-      const user = await openMenu('toolbar-export-menu');
-      await user.click(item(id));
+      await chooseInToolbarMenu('toolbar-export-menu', id);
       expect(handler).toHaveBeenCalledOnce();
     }
   });
@@ -265,11 +255,9 @@ describe('Toolbar export buttons', () => {
   it('runs both Install menu entries', async () => {
     const p = props();
     renderToolbar(p);
-    let user = await openMenu('toolbar-install-menu');
-    await user.click(item('install-resource'));
+    await chooseInToolbarMenu('toolbar-install-menu', 'install-resource');
     expect(p.onInstall).toHaveBeenCalledOnce();
-    user = await openMenu('toolbar-install-menu');
-    await user.click(item('install-data'));
+    await chooseInToolbarMenu('toolbar-install-menu', 'install-data');
     expect(p.onInstallData).toHaveBeenCalledOnce();
   });
 
@@ -280,24 +268,29 @@ describe('Toolbar export buttons', () => {
         dataInstallDisabledReason: NO_DATA_PACK_CONTENT,
       }),
     );
-    await openMenu('toolbar-export-menu');
-    expect(isDisabled('export-resource-zip')).toBe(false);
-    expect(isDisabled('export-data-zip')).toBe(true);
+    await openToolbarMenu('toolbar-export-menu');
+    expect(entryDisabled('export-resource-zip')).toBe(false);
+    expect(entryDisabled('export-data-zip')).toBe(true);
     expect(screen.getByTestId('export-data-zip-reason').textContent).toBe(NO_DATA_PACK_CONTENT);
   });
 
-  it('exports the data pack from the main button for data-only projects', async () => {
+  it('lists the data pack first for data-only mods', async () => {
     const p = props({ primaryExport: 'data' });
     renderToolbar(p);
-    await userEvent.setup().click(byTestId('toolbar-export-zip'));
+    await openToolbarMenu('toolbar-export-menu');
+    const ids = screen.getAllByRole('menuitem').map((entry) => entry.getAttribute('data-testid'));
+    expect(ids.indexOf('export-data-zip')).toBeLessThan(ids.indexOf('export-resource-zip'));
+    fireEvent.click(item('export-data-zip'));
     expect(p.onExportDataZip).toHaveBeenCalledOnce();
     expect(p.onExportZip).not.toHaveBeenCalled();
   });
 
-  it('disables export and install while an export runs', () => {
+  it('disables export and install while an export runs, saying why', async () => {
     renderToolbar(props({ exporting: true }));
-    expect(byTestId('toolbar-export-zip').disabled).toBe(true);
-    expect(byTestId('toolbar-export-menu').disabled).toBe(true);
-    expect(byTestId('toolbar-install-menu').disabled).toBe(true);
+    await openToolbarMenu();
+    for (const id of ['toolbar-export-menu', 'toolbar-install-menu', 'export-test-in-minecraft']) {
+      expect(entryDisabled(id), id).toBe(true);
+      expect(item(`${id}-reason`).textContent).toBe('An export is running.');
+    }
   });
 });

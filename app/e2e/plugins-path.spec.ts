@@ -25,9 +25,12 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
   openDockTab,
+  openToolbarMenu,
   outputDir,
   samplePluginDist,
+  toolbarMenu,
 } from './fixtures';
 
 const PLUGIN_ID = 'sample.greetings';
@@ -68,7 +71,7 @@ function sampleManifest(): Record<string, unknown> {
 
 /** Opens Settings and returns its Plugins section. */
 async function openPluginSettings(window: Page): Promise<Locator> {
-  await window.getByTestId('toolbar-settings').click();
+  await toolbarMenu(window, 'toolbar-settings');
   const settings = window.getByTestId('settings-dialog');
   await expect(settings).toBeVisible();
   const section = settings.getByTestId('settings-plugins');
@@ -92,7 +95,7 @@ async function problemRows(window: Page, severity: 'error' | 'warning'): Promise
 
 /** Opens the export chevron menu and returns the item `testId` (the menu stays open). */
 async function exportItem(window: Page, testId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId(testId);
   await expect(item).toBeVisible();
   return item;
@@ -105,7 +108,7 @@ async function addElement(
   templateId: string,
   name: string,
 ): Promise<void> {
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   const template = dialog
@@ -161,7 +164,7 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
   await expect(message).toHaveValue(MESSAGE);
 
   await expect(await problemRows(window, 'error')).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   // The data pack carries the greeting function and the load tag entry.
   const dataItem = await exportItem(window, 'export-data-zip');
@@ -171,9 +174,11 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
   await expect.poll(zips, { timeout: 20_000 }).toHaveLength(1);
   const files = unzipSync(new Uint8Array(readFileSync(join(folders.outDir, zips()[0] ?? ''))));
   // New projects use the default (newest release) target; the status bar shows it.
-  await expect(window.getByTestId('project-target')).toHaveText(defaultTargetId);
   const projectTarget = targetById(defaultTargetId)?.target;
   if (projectTarget === undefined) throw new Error('No default target.');
+  await expect(window.getByTestId('project-target')).toHaveText(
+    `For Minecraft ${projectTarget.mcVersion}`,
+  );
   const functionFolder = projectTarget.folders.data.function;
   const tagsFolder = projectTarget.folders.data.tags;
   const fn = files[`data/${namespace}/${functionFolder}/greet_hello.mcfunction`];
@@ -188,14 +193,10 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
   ) as { values?: string[] };
   expect(loadTag.values).toEqual([`${namespace}:greet_hello`]);
 
-  // The plugin's exporter is under More exports; its option is asked in a dialog, and the
-  // file is written by the plugin's worker into the picked folder (MSM_E2E_OUT_DIR).
-  await window.getByTestId('toolbar-export-menu').click();
-  // Keyboard, as in worldgen-path: moving the pointer into the submenu can close it.
-  const more = window.getByTestId('export-more');
-  await expect(more).toBeVisible();
-  await more.focus();
-  await window.keyboard.press('ArrowRight');
+  // The plugin's exporter is in More > Export after the structure exports; its option is asked
+  // in a dialog, and the file is written by the plugin's worker into the picked folder
+  // (MSM_E2E_OUT_DIR).
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const pluginExport = window.getByTestId('export-plugin-sample-greeting-list');
   await expect(pluginExport).toHaveText('Greeting list into a folder…');
   await pluginExport.focus();
@@ -259,7 +260,7 @@ test('plugins: a manifest asking for an incompatible API range is refused', asyn
   // Nothing of the plugin is registered: New element has no Greetings group.
   await newProjectInFolder(window);
   await expect(window.getByTestId('element-row-refused_e2e:pack')).toBeVisible();
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByTestId('template-sample-greeting')).toHaveCount(0);

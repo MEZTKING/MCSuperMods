@@ -23,7 +23,7 @@ test('modpacks: create one, add the open project and build it', async () => {
   await window.waitForLoadState('domcontentloaded');
 
   await newProjectInFolder(window);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   await window.keyboard.press('ControlOrMeta+Shift+P');
   const palette = window.getByTestId('command-palette');

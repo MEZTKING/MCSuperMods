@@ -54,8 +54,11 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
   openDockTab,
+  openToolbarMenu,
   outputDir,
+  toolbarMenu,
 } from './fixtures';
 
 /** The project folder name; a blank project's namespace (and mod id) is derived from it. */
@@ -126,12 +129,12 @@ async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
 /** Asserts that the Problems panel lists nothing at all and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the export chevron menu and returns the item `testId` (not clicked). */
 async function exportItem(window: Page, testId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId(testId);
   await expect(item).toBeVisible();
   return item;
@@ -153,7 +156,7 @@ async function addFromTemplate(
   templateId: string,
   name: string,
 ): Promise<void> {
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill(filter);
@@ -386,7 +389,7 @@ test('blocks and items: templates, Block Studio, unknown event, Fabric jar, reso
   launches.push(second);
   const w2 = second.window;
   await w2.waitForLoadState('domcontentloaded');
-  await w2.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(w2, 'toolbar-open-project');
   await expect(w2.getByTestId(`element-row-${ITEM_ID}`)).toBeVisible();
   await w2.getByTestId(`element-row-${BLOCK_ID}`).click();
   const reopened = w2.getByTestId('block-studio');
@@ -518,7 +521,7 @@ test('blocks and items: a sounds element, its key picked from the completion lis
 
   // The sounds element: one per namespace, its name is fixed to "sounds". ---------------------
   const soundKey = `${NAMESPACE}:block.example.chime`;
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill('sounds');

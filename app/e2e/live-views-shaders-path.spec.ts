@@ -22,7 +22,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, type LaunchOptions, launchApp } from './fixtures';
+import { type LaunchedApp, type LaunchOptions, launchApp, toolbarMenu } from './fixtures';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 const NO_WEBGL_ARGS = ['--disable-gpu', '--disable-software-rasterizer'] as const;
@@ -158,7 +158,7 @@ async function launchProject(options: LaunchOptions): Promise<LaunchedApp> {
   const launched = await launchApp({ ...options, reuse: folders });
   launches.push(launched);
   await launched.window.waitForLoadState('domcontentloaded');
-  await launched.window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(launched.window, 'toolbar-open-project');
   await expect(launched.window.getByTestId(`element-row-${NS}:sepia`)).toBeVisible();
   return launched;
 }

@@ -28,8 +28,11 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
   openDockTab,
+  openToolbarMenu,
   outputDir,
+  toolbarMenu,
 } from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
@@ -91,7 +94,7 @@ function zipsIn(dir: string): string[] {
 
 /** Opens the export chevron menu and returns the item `testId`. */
 async function exportMenuItem(window: Page, testId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId(testId);
   await expect(item).toBeVisible();
   return item;
@@ -184,7 +187,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // A function from the template, then its source typed in.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   let dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('template-function').check();
@@ -207,7 +210,6 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   await expect(
     errors.filter({ hasText: FUNCTION_ID }).filter({ hasText: /line 2(:\d+)?\b/ }),
   ).toHaveCount(errorCount);
-  await expect(window.getByTestId('toolbar-export-zip')).toBeDisabled();
   const dataItem = await exportMenuItem(window, 'export-data-zip');
   await expect(dataItem).toHaveAttribute('data-disabled', /.*/);
   await expect(window.getByTestId('export-data-zip-reason')).toContainText(/Fix \d+ error/);
@@ -217,7 +219,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   // Fix it: no errors left.
   await typeSource(window, GOOD_LINES);
   await expect(errors).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   // Completion: a new line starting `gi` offers `give` from Spyglass through main (the
   // suggest controller has been registered since B140; before that no list ever showed).
@@ -235,7 +237,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   await expect(errors).toHaveCount(0);
 
   // The load tag: the template adds the `minecraft` namespace.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('template-function_load').check();
@@ -256,7 +258,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   );
 
   // A shaped recipe, filled through the crafting grid and the result field.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('template-recipe_shaped').check();
@@ -368,7 +370,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   for (const { files } of resourcePacks) expect(Object.keys(files)).toContain('pack.mcmeta');
 
   // Install the data pack into the fake world. ---------------------------------------------
-  await window.getByTestId('toolbar-install-menu').click();
+  await openToolbarMenu(window, 'toolbar-install-menu');
   const install = window.getByTestId('install-data');
   await expect(install).toBeVisible();
   await expect(window.getByTestId('install-data-reason')).toHaveCount(0);
@@ -399,7 +401,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   await expect(window.getByTestId('status-toast-text')).toContainText(
     `The world was backed up first as ${backupName} (Settings, World backups).`,
   );
-  await window.getByTestId('toolbar-settings').click();
+  await toolbarMenu(window, 'toolbar-settings');
   const settings = window.getByTestId('settings-dialog');
   const backupsSection = settings.getByTestId('settings-world-backups');
   await expect(backupsSection.getByTestId('settings-backups-folder')).toHaveText(backupsDir);
@@ -430,7 +432,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   const second = await launchApp({ reuse: folders });
   launches.push(second);
   await second.window.waitForLoadState('domcontentloaded');
-  await second.window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(second.window, 'toolbar-open-project');
   for (const id of [RENAMED_ID, LOAD_TAG_ID, RECIPE_ID]) {
     await expect(second.window.getByTestId(`element-row-${id}`)).toBeVisible();
   }

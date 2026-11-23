@@ -61,6 +61,7 @@ import type {
 } from '../../src/shared/platform';
 import { fakeAi } from './ai-fixtures';
 import { fakeLibraryPlugin } from './library-fixtures';
+import { chooseInToolbarMenu, openToolbarMenu } from './toolbar-menu';
 
 /** Reports line 1 of any source containing `bogus` as a parse error. */
 const stubChecker: McfunctionChecker = {
@@ -969,7 +970,9 @@ describe('App project target (ADR 0037 D4)', () => {
     const harness = await renderApp({
       plugins: builtInPlugins.filter((plugin) => plugin.id !== 'msm.library'),
     });
-    expect(screen.getByTestId('project-target').textContent).toBe(defaultTargetId);
+    expect(screen.getByTestId('project-target').textContent).toBe(
+      `For Minecraft ${targetById(defaultTargetId)?.target.mcVersion}`,
+    );
     await harness.menu('newProjectFromStarter');
     const dialog = await screen.findByTestId('new-project-dialog');
     const user = userEvent.setup();
@@ -980,7 +983,9 @@ describe('App project target (ADR 0037 D4)', () => {
     await toast(/^New project: /);
     expect(harness.session.snapshot.project?.targets).toEqual([snapshotTarget.id]);
     await waitFor(() =>
-      expect(screen.getByTestId('project-target').textContent).toBe(`${snapshotTarget.id}snapshot`),
+      expect(screen.getByTestId('project-target').textContent).toBe(
+        `For Minecraft ${snapshotTarget.mcVersion}snapshot`,
+      ),
     );
     expect(screen.getByTestId('project-target-snapshot')).toBeTruthy();
   });
@@ -1006,7 +1011,9 @@ describe('App project target (ADR 0037 D4)', () => {
       { timeout: 10_000 },
     );
     expect(harness.session.snapshot.project?.targets).toEqual([snapshotTarget.id]);
-    expect(screen.getByTestId('project-target').textContent).toBe(`${snapshotTarget.id}snapshot`);
+    expect(screen.getByTestId('project-target').textContent).toBe(
+      `For Minecraft ${snapshotTarget.mcVersion}snapshot`,
+    );
 
     // Test in Minecraft and the runtime jar follow the project's target.
     harness.runtimeJar = new Uint8Array([1, 2, 3]);
@@ -1020,7 +1027,9 @@ describe('App project target (ADR 0037 D4)', () => {
       harness.session.undo();
     });
     expect(harness.session.snapshot.project?.targets).toEqual([defaultTargetId]);
-    expect(screen.getByTestId('project-target').textContent).toBe(defaultTargetId);
+    expect(screen.getByTestId('project-target').textContent).toBe(
+      `For Minecraft ${targetById(defaultTargetId)?.target.mcVersion}`,
+    );
   });
 
   it('offers "Upgrade project target…" in the palette', async () => {
@@ -1195,8 +1204,7 @@ describe('App Java project export', () => {
     const harness = await renderApp();
     const calls = stubJavaExport(harness, { ok: true, problems: [], files: [], cancelled: true });
     const user = userEvent.setup();
-    await user.click(screen.getByTestId('toolbar-export-menu'));
-    await user.click(await screen.findByTestId('export-java-project'));
+    await chooseInToolbarMenu('toolbar-export-menu', 'export-java-project');
     await user.click(await screen.findByTestId('java-project-dialog-submit'));
     await waitFor(() => expect(calls).toHaveLength(1));
     expect(useUiStore.getState().message).toBeNull();
@@ -1434,7 +1442,7 @@ describe('App go to definition', () => {
 
 describe('App install targets', () => {
   const openInstallMenu = async () => {
-    await userEvent.setup().click(screen.getByTestId('toolbar-install-menu'));
+    await openToolbarMenu('toolbar-install-menu');
     return screen.findByTestId('install-target');
   };
 
@@ -1442,7 +1450,9 @@ describe('App install targets', () => {
     const harness = await renderApp();
     await waitFor(() => expect(useUiStore.getState().minecraft.locations).not.toBeNull());
     expect((await openInstallMenu()).textContent).toBe('Install to: Official launcher');
-    await userEvent.setup().click(screen.getByTestId('install-target-change'));
+    // By keyboard: a pointer leaving a sub trigger closes its submenu in happy-dom.
+    screen.getByTestId('install-target-change').focus();
+    await userEvent.setup().keyboard('{ArrowRight}');
     const item = await screen.findByTestId('install-target-prism:My-Instance');
     const reads = harness.statusReads;
     // happy-dom has no layout; click the item without a pointer move (see Toolbar.test).
@@ -1770,8 +1780,9 @@ describe('App Creator (ADR 0043 D3)', () => {
     await user.click(screen.getByTestId('creator-cancel'));
     await waitFor(() => expect(screen.queryByTestId('creator-dialog')).toBeNull());
 
-    expect(screen.getByTestId('toolbar-creator').textContent).toBe('Create…');
-    await user.click(screen.getByTestId('toolbar-creator'));
+    await openToolbarMenu();
+    expect(screen.getByTestId('toolbar-creator').textContent).toBe('Make something…');
+    fireEvent.click(screen.getByTestId('toolbar-creator'));
     expect(await screen.findByTestId('creator-dialog')).toBeTruthy();
     await user.click(screen.getByTestId('creator-cancel'));
 
@@ -1787,7 +1798,7 @@ describe('App Creator (ADR 0043 D3)', () => {
   it('creates a set, selects its first element and reopens it with "Edit in Creator"', async () => {
     const harness = await renderApp();
     const user = userEvent.setup();
-    await user.click(screen.getByTestId('toolbar-creator'));
+    await chooseInToolbarMenu('toolbar-creator');
     await user.click(await screen.findByTestId('creator-flow-food'));
     await screen.findByTestId('creator-tab-elements');
     await waitFor(() =>
@@ -1823,7 +1834,7 @@ describe('App in one mode (ADR 0083, ADR 0130)', () => {
     const harness = await renderApp();
     const user = userEvent.setup();
     expect(screen.getByTestId('toolbar-home')).toBeTruthy();
-    expect(screen.getByRole('navigation', { name: 'Elements' })).toBeTruthy();
+    expect(screen.getByRole('navigation', { name: 'Things in this mod' })).toBeTruthy();
     expect(screen.getByTestId('things-to-fix')).toBeTruthy();
     expect(screen.getByTestId('my-things-empty')).toBeTruthy();
 
@@ -2070,7 +2081,7 @@ describe('App search doors (ADR 0124 D10, B667)', () => {
   it('opens from Ctrl/Cmd+K, Edit > Search… and the toolbar field, and gives focus back', async () => {
     const harness = await renderApp();
     const user = userEvent.setup();
-    const settings = screen.getByTestId('toolbar-settings');
+    const settings = screen.getByTestId('toolbar-save');
     settings.focus();
     await ctrlK();
     const dialog = await screen.findByTestId('search-dialog');

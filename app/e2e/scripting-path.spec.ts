@@ -27,8 +27,11 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
   openDockTab,
+  openToolbarMenu,
   outputDir,
+  toolbarMenu,
 } from './fixtures';
 
 /** The project folder name; a blank project's namespace (and mod id) is derived from it. */
@@ -112,12 +115,12 @@ async function problemRows(window: Page, severity?: 'error' | 'warning'): Promis
 /** Asserts that the Problems panel lists nothing at all and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the export chevron menu and returns the item `testId` (not clicked). */
 async function exportItem(window: Page, testId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId(testId);
   await expect(item).toBeVisible();
   return item;
@@ -185,7 +188,7 @@ test('scripting: template, Monaco TypeScript, problems, Fabric jar with ES5 scri
   await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill('block interaction');
@@ -336,7 +339,7 @@ test('scripting: template, Monaco TypeScript, problems, Fabric jar with ES5 scri
   launches.push(second);
   const w2 = second.window;
   await w2.waitForLoadState('domcontentloaded');
-  await w2.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(w2, 'toolbar-open-project');
   const reopenedRow = w2.getByTestId(`element-row-${SCRIPT_ID}`);
   await expect(reopenedRow).toBeVisible();
   await reopenedRow.click();
@@ -364,7 +367,7 @@ test('scripting: Script API 1.1, player.inventory completes and the script expor
 
   // The "Full set bonus" template: player.tick with an interval and entity equipment. -------
   const scriptId = `${NAMESPACE}:bonus`;
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill('full set');

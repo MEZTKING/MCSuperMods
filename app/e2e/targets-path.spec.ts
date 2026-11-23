@@ -16,7 +16,7 @@ import type { TargetFacts } from '@msm/plugin-api';
 import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, openToolbarMenu, outputDir, toolbarMenu } from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'amber_e2e';
@@ -50,7 +50,7 @@ async function exportResourcePack(
   outDir: string,
 ): Promise<{ name: string; files: Record<string, Uint8Array> }> {
   for (const name of zipsIn(outDir)) rmSync(join(outDir, name));
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId('export-resource-zip');
   await expect(item).toBeVisible();
   await expect(item).not.toHaveAttribute('data-disabled', /.*/);
@@ -87,8 +87,7 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
   await window.waitForLoadState('domcontentloaded');
 
   // The Custom ore wizard: a new gem name, then Next through the steps. --------------------
-  await window.getByTestId('toolbar-new-menu').click();
-  await window.getByTestId('toolbar-new-from-starter').click();
+  await toolbarMenu(window, 'toolbar-new-from-starter');
   const dialog = window.getByTestId('new-project-dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByTestId('starter-custom_ore-wizard')).toHaveText('Wizard');
@@ -112,7 +111,7 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
 
   // The status bar shows the release target without a snapshot badge. ---------------------
   const status = window.getByTestId('project-target');
-  await expect(status).toHaveText(release.id);
+  await expect(status).toHaveText(`For Minecraft ${release.mcVersion}`);
   await expect(window.getByTestId('project-target-snapshot')).toHaveCount(0);
 
   const before = await exportResourcePack(window, folders.outDir);
@@ -147,7 +146,7 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
   );
 
   // The status bar follows, with the snapshot badge. --------------------------------------
-  await expect(status).toContainText(snapshot.id);
+  await expect(status).toContainText(`For Minecraft ${snapshot.mcVersion}`);
   await expect(window.getByTestId('project-target-snapshot')).toHaveText('snapshot');
 
   // The resource pack is named and formatted for the snapshot target. ---------------------
@@ -164,7 +163,7 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
 
   // Undo moves the project back to the release target. ------------------------------------
   await window.getByTestId('toolbar-undo').click();
-  await expect(status).toHaveText(release.id);
+  await expect(status).toHaveText(`For Minecraft ${release.mcVersion}`);
   await expect(window.getByTestId('project-target-snapshot')).toHaveCount(0);
   const undone = await exportResourcePack(window, folders.outDir);
   expect(undone.name.endsWith(`-${release.id}.zip`)).toBe(true);

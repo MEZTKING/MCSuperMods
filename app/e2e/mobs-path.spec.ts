@@ -35,7 +35,9 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openCreator,
   openDockTab,
+  openExport,
   outputDir,
   toast,
 } from './fixtures';
@@ -130,17 +132,17 @@ async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
 /** No problem of any severity, and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 async function expectNoErrors(window: Page): Promise<void> {
   await expect(await problemRows(window, 'error')).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the Creator from the toolbar and picks `flowId` from the group "Mobs". */
 async function openFlow(window: Page, flowId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('creator-group-mobs').getByTestId(`creator-flow-${flowId}`).click();
@@ -414,8 +416,7 @@ test('mobs: Mount exports: optional saddle entry, jar with nested GeckoLib on 26
   await save(window);
 
   // The vanilla data pack: the saddle tag lists the mount as optional (ADR 0066).
-  await window.getByTestId('toolbar-export-menu').click();
-  await window.getByTestId('export-data-zip').click();
+  await openExport(window, 'export-data-zip');
   const data = await newZip(folders.outDir, '.zip');
   const saddle = zipJson<{ values: unknown[] }>(
     data.files,
@@ -466,7 +467,9 @@ test('mobs: Mount exports: optional saddle entry, jar with nested GeckoLib on 26
   await upgrade.getByTestId('upgrade-target-dialog-submit').click();
   await expect(upgrade).toBeHidden();
   await expect(toast(window)).toContainText(`Project target changed to ${snapshot.id}.`);
-  await expect(window.getByTestId('project-target')).toContainText(snapshot.id);
+  await expect(window.getByTestId('project-target')).toContainText(
+    `For Minecraft ${snapshot.mcVersion}`,
+  );
   await expectNoErrors(window);
 
   // The Entity Studio says the built-in renderer draws the mob there.

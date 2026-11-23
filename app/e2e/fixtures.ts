@@ -11,7 +11,13 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } fro
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { _electron, type ElectronApplication, type Locator, type Page } from 'playwright/test';
+import {
+  _electron,
+  type ElectronApplication,
+  expect,
+  type Locator,
+  type Page,
+} from 'playwright/test';
 
 /** The `app/` folder. */
 /**
@@ -177,12 +183,64 @@ export async function openDockTab(window: Page, name: string): Promise<void> {
 }
 
 /**
- * A blank project in the e2e project folder (named after it): **New**, then the New mod
- * dialog's More options **Use a folder of my own…** (ADR 0130), which picks
+ * Opens the toolbar's **More** menu (ADR 0131 D1), unless it is open already, then each submenu
+ * in `submenus` (`toolbar-export-menu`, `toolbar-install-menu`, `toolbar-open-menu`, or the
+ * Install submenu's `install-target-change`) by keyboard: a pointer moving from a submenu's
+ * trigger into the submenu can cross other entries and close it again. Returns once the last
+ * submenu is open.
+ */
+export async function openToolbarMenu(window: Page, ...submenus: string[]): Promise<void> {
+  const more = window.getByTestId('toolbar-more');
+  if ((await more.getAttribute('aria-expanded')) !== 'true') {
+    await more.click();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+  }
+  for (const id of submenus) {
+    const trigger = window.getByTestId(id);
+    await trigger.focus();
+    await window.keyboard.press('ArrowRight');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  }
+}
+
+/**
+ * Chooses an entry of the toolbar's More menu: `ids` are the submenus on the way and, last, the
+ * entry, which is clicked (`toolbarMenu(window, 'toolbar-export-menu', 'export-data-zip')`).
+ */
+export async function toolbarMenu(window: Page, ...ids: [...string[], string]): Promise<void> {
+  const entry = ids[ids.length - 1] as string;
+  await openToolbarMenu(window, ...ids.slice(0, -1));
+  await window.getByTestId(entry).click();
+}
+
+/** Saves the mod with the toolbar's Save and waits for the status bar's "Saved". */
+export async function saveMod(window: Page): Promise<void> {
+  await window.getByTestId('toolbar-save').click();
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+}
+
+/** Opens the Creator: More > Make something… (ADR 0131 D1). */
+export async function openCreator(window: Page): Promise<void> {
+  await toolbarMenu(window, 'toolbar-creator');
+}
+
+/** Opens the Add dialog: More > Add from the full list… (ADR 0131 D1). */
+export async function openAddDialog(window: Page): Promise<void> {
+  await toolbarMenu(window, 'toolbar-add-element');
+}
+
+/** Runs an entry of More > Export (`export-data-zip`, `export-fabric-jar`, ...). */
+export async function openExport(window: Page, id: string): Promise<void> {
+  await toolbarMenu(window, 'toolbar-export-menu', id);
+}
+
+/**
+ * A blank project in the e2e project folder (named after it): More > **New mod…**, then the New
+ * mod dialog's More options **Use a folder of my own…** (ADR 0130), which picks
  * `MSM_E2E_PROJECT_DIR` without a dialog.
  */
 export async function newProjectInFolder(window: Page): Promise<void> {
-  await window.getByTestId('toolbar-new-project').click();
+  await toolbarMenu(window, 'toolbar-new-project');
   const dialog = window.getByTestId('new-mod-dialog');
   await dialog.waitFor({ state: 'visible' });
   const choose = dialog.getByTestId('new-mod-choose-folder');

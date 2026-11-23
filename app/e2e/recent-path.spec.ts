@@ -8,7 +8,13 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openToolbarMenu,
+  outputDir,
+} from './fixtures';
 
 /** Folder names double as project names and namespaces. */
 const PROJECT_A = 'recent_a';
@@ -49,7 +55,7 @@ test('recent projects: create A and B, relaunch, list B then A, open A', async (
 
   // First launch: nothing recent yet; create A. -------------------------------------------
   let { window } = await launchWith(dirA, shared);
-  await expect(window.getByText('No project is open. Use New or Open.')).toBeVisible();
+  await expect(window.getByText('No mod is open. Start one or open one from Home.')).toBeVisible();
   await expect(window.getByTestId('recent-projects')).toHaveCount(0);
   await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${PROJECT_A}:pack`)).toBeVisible();
@@ -77,7 +83,7 @@ test('recent projects: create A and B, relaunch, list B then A, open A', async (
   await expect(window.getByTestId('recent-row-1')).toContainText(dirA);
   await expect(window.getByTestId('recent-row-2')).toHaveCount(0);
 
-  await window.getByTestId('toolbar-open-menu').click();
+  await openToolbarMenu(window, 'toolbar-open-menu');
   await expect(window.getByTestId('recent-project-0')).toContainText(PROJECT_B);
   await expect(window.getByTestId('recent-project-1')).toContainText(PROJECT_A);
   await window.keyboard.press('Escape');
@@ -86,11 +92,11 @@ test('recent projects: create A and B, relaunch, list B then A, open A', async (
   await window.screenshot({ path: join(outputDir, 'recent-path-empty-state.png') });
   await window.getByTestId('recent-open-1').click();
   await expect(window.getByTestId(`element-row-${PROJECT_A}:pack`)).toBeVisible();
-  await expect(window.locator('footer').getByText(dirA)).toBeVisible();
+  await expect(window.getByTestId('status-mod-name')).toHaveText(PROJECT_A);
   await expect(window.getByTestId('recent-projects')).toHaveCount(0);
 
   // Opening A moved it to the top of the list.
-  await window.getByTestId('toolbar-open-menu').click();
+  await openToolbarMenu(window, 'toolbar-open-menu');
   await expect(window.getByTestId('recent-project-0')).toContainText(PROJECT_A);
   await expect(window.getByTestId('recent-project-1')).toContainText(PROJECT_B);
 });

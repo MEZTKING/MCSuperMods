@@ -3,7 +3,11 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import userEvent from '@testing-library/user-event';
 import { Tooltip } from 'radix-ui';
 import { afterEach, describe, expect, it } from 'vitest';
-import { PlayControls } from '../../src/renderer/src/components/play/PlayControls';
+import {
+  chipInRow,
+  PlayControls,
+  statusSentence,
+} from '../../src/renderer/src/components/play/PlayControls';
 import { PrismSetupPanel } from '../../src/renderer/src/components/play/PrismSetupPanel';
 import { RestartNeededDialog } from '../../src/renderer/src/components/play/RestartNeededDialog';
 import { connectPlay, usePlayStore } from '../../src/renderer/src/store/play-store';
@@ -62,14 +66,33 @@ describe('PlayControls', () => {
   ] as const;
 
   for (const [state, label, words] of chips) {
-    it(`shows the chip "${words}"`, async () => {
+    // ADR 0131 D3: the chip shows when it needs the user or a game runs; else the menu says it.
+    const inRow = state !== 'not-running';
+    it(`says "${words}" ${inRow ? 'on the chip' : 'in the Play menu, with no chip'}`, async () => {
       expect(label).toBe(words);
       await mount(fakeBridge(statusFor(state)));
-      const chip = screen.getByTestId('play-chip');
-      expect(chip.textContent).toBe(words);
-      expect(chip.getAttribute('data-state')).toBe(state);
+      expect(screen.getByTestId('play-controls').getAttribute('data-state')).toBe(state);
+      if (inRow) {
+        const chip = screen.getByTestId('play-chip');
+        expect(chip.textContent).toBe(words);
+        expect(chip.getAttribute('data-state')).toBe(state);
+      } else {
+        expect(screen.queryByTestId('play-chip')).toBeNull();
+        await userEvent.setup().click(screen.getByTestId('play-menu'));
+        expect(screen.getByTestId('play-status').textContent).toBe(words);
+      }
     });
   }
+
+  it('chooses the chip and the tip sentence (ADR 0131 D3)', () => {
+    expect(chipInRow('no-prism', false)).toBe(true);
+    expect(chipInRow('restart-needed', true)).toBe(true);
+    expect(chipInRow('test-world', true)).toBe(true);
+    expect(chipInRow('not-running', false)).toBe(false);
+    expect(chipInRow(null, false)).toBe(false);
+    expect(statusSentence('Game not running')).toBe('Game not running.');
+    expect(statusSentence('Checking the game…')).toBe('Checking the game…');
+  });
 
   it('shows the chip "Restart needed" and opens the reasons from it', async () => {
     expect(RESTART_NEEDED).toBe('Restart needed');
@@ -91,9 +114,10 @@ describe('PlayControls', () => {
         <PlayControls />
       </Tooltip.Provider>,
     );
-    const chip = screen.getByTestId('play-chip');
-    expect(chip.textContent).toBe('Checking the game…');
-    expect(chip.getAttribute('data-state')).toBe('checking');
+    expect(screen.queryByTestId('play-chip')).toBeNull();
+    expect(screen.getByTestId('play-controls').getAttribute('data-state')).toBe('checking');
+    await userEvent.setup().click(screen.getByTestId('play-menu'));
+    expect(screen.getByTestId('play-status').textContent).toBe('Checking the game…');
   });
 
   it('follows pushed statuses', async () => {
@@ -110,10 +134,9 @@ describe('PlayControls', () => {
     expect(await screen.findByTestId('play-prism-panel')).toBeTruthy();
   });
 
-  it('Play plays; Reload is off outside the test world', async () => {
+  it('Play plays; Reload shows only while it can be used', async () => {
     const { bridge } = await mount();
-    const reload = screen.getByTestId('play-reload') as HTMLButtonElement;
-    expect(reload.disabled).toBe(true);
+    expect(screen.queryByTestId('play-reload')).toBeNull();
     fireEvent.click(screen.getByTestId('play-button'));
     await waitFor(() => expect(bridge.play.play).toHaveBeenCalledTimes(1));
   });
@@ -136,10 +159,15 @@ describe('PlayControls', () => {
     act(() =>
       bridge.push(statusFor('not-running', { busy: 'play', progress: 'Installing the mod…' })),
     );
-    expect(screen.getByTestId('play-progress').textContent).toBe('Installing the mod…');
+    const progress = screen.getByTestId('play-progress');
+    expect(progress.textContent).toBe('Installing the mod…');
+    expect(progress.className).toContain('truncate');
+    expect(progress.className).toContain('whitespace-nowrap');
     expect((screen.getByTestId('play-button') as HTMLButtonElement).disabled).toBe(true);
     act(() => bridge.push(statusFor('starting')));
     expect(screen.getByTestId('play-progress').textContent).toBe('');
+    // Idle, the line stays for screen readers but takes no room in the row.
+    expect(screen.getByTestId('play-progress').className).toBe('sr-only');
   });
 
   it('shows the renderer progress while saving', async () => {
@@ -216,9 +244,11 @@ describe('PlayControls', () => {
     expect(screen.queryByTestId('play-seed')).toBeNull();
     act(() => bridge.push(statusFor('game-world', { testWorld: 'msm-game-demo' })));
     expect(screen.getByTestId('play-chip').textContent).toBe('In my game');
-    expect(screen.getByTestId('play-seed').textContent).toBe('Seed 1234567890123');
     expect((screen.getByTestId('play-reload') as HTMLButtonElement).disabled).toBe(false);
+    // The seed is a line of the Play menu (ADR 0131 D3), not of the row.
+    expect(screen.queryByTestId('play-seed')).toBeNull();
     await user.click(screen.getByTestId('play-menu'));
+    expect(screen.getByTestId('play-seed').textContent).toBe('Seed 1234567890123');
     expect(screen.getByTestId('play-menu-start-over-reason').textContent).toBe(
       'Close Minecraft first.',
     );

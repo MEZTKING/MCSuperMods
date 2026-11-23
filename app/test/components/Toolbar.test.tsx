@@ -1,15 +1,32 @@
 // @vitest-environment happy-dom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Toast, Tooltip } from 'radix-ui';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Dialog, Toast, Tooltip } from 'radix-ui';
+import { useState } from 'react';
+import { afterEach, describe, expect, it, type Mock, vi } from 'vitest';
 import {
   describeInstallTarget,
   type InstallTargetOption,
 } from '../../src/renderer/src/components/install-target';
-import { Toolbar, type ToolbarProps } from '../../src/renderer/src/components/Toolbar';
+import {
+  BUSY_REASON,
+  historyTip,
+  NO_MOD_REASON,
+  saveLook,
+  Toolbar,
+  type ToolbarProps,
+} from '../../src/renderer/src/components/Toolbar';
+import { connectPlay } from '../../src/renderer/src/store/play-store';
+import { fakeBridge, fakeSession } from './play-fixtures';
+import { chooseInToolbarMenu, entryDisabled, openToolbarMenu } from './toolbar-menu';
 
-afterEach(cleanup);
+let disconnect: (() => void) | null = null;
+
+afterEach(() => {
+  cleanup();
+  disconnect?.();
+  disconnect = null;
+});
 
 function props(overrides: Partial<ToolbarProps> = {}): ToolbarProps {
   return {
@@ -30,6 +47,51 @@ function props(overrides: Partial<ToolbarProps> = {}): ToolbarProps {
   };
 }
 
+/** Every handler the toolbar offers, each a mock. */
+function everything(overrides: Partial<ToolbarProps> = {}): ToolbarProps {
+  return props({
+    canUndo: true,
+    canRedo: true,
+    undoLabel: 'Add a thing',
+    redoLabel: 'Add a thing',
+    onNewFromStarter: vi.fn(),
+    onExamples: vi.fn(),
+    onNewWithAi: vi.fn(),
+    onHome: vi.fn(),
+    onShare: vi.fn(),
+    onFirstMod: vi.fn(),
+    onWhatsNew: vi.fn(),
+    onGuide: vi.fn(),
+    onTryIt: vi.fn(),
+    onSearch: vi.fn(),
+    recentProjects: [{ root: '/p/beta', name: 'Beta', openedAt: '2', exists: true }],
+    onOpenRecent: vi.fn(),
+    onRemoveRecent: vi.fn(),
+    onClearRecent: vi.fn(),
+    onRecentMenuOpen: vi.fn(),
+    onImportAssets: vi.fn(),
+    onExportZip: vi.fn(),
+    onExportDataZip: vi.fn(),
+    onExportCombined: vi.fn(),
+    onExportMap: vi.fn(),
+    onExportStructures: vi.fn(),
+    onExportSchematics: vi.fn(),
+    pluginExports: [
+      { id: 'greetings', label: 'Greetings into a folder…', reason: null, onSelect: vi.fn() },
+    ],
+    onExportFabricJar: vi.fn(),
+    onExportJavaProject: vi.fn(),
+    onTestInMinecraft: vi.fn(),
+    onInstall: vi.fn(),
+    onInstallData: vi.fn(),
+    onModpacks: vi.fn(),
+    onSettings: vi.fn(),
+    onAiHelper: vi.fn(),
+    onCreator: vi.fn(),
+    ...overrides,
+  });
+}
+
 function renderToolbar(p: ToolbarProps) {
   return render(
     <Tooltip.Provider>
@@ -42,19 +104,86 @@ function button(name: string): HTMLButtonElement {
   return screen.getByRole('button', { name }) as HTMLButtonElement;
 }
 
-describe('Toolbar', () => {
-  it('disables Save and Add without a project', () => {
-    renderToolbar(
-      props({ hasProject: false, canAddElement: false, saveDisabledReason: 'No project is open.' }),
+/** The test id of each direct child of the row (a wrapper's control, for wrapped ones). */
+function rowIds(): string[] {
+  const row = screen.getByRole('toolbar');
+  return Array.from(row.children)
+    .filter(
+      (child) => child.getAttribute('role') !== 'separator' && !child.hasAttribute('aria-hidden'),
+    )
+    .map(
+      (child) =>
+        child.getAttribute('data-testid') ??
+        child.querySelector('[data-testid]')?.getAttribute('data-testid') ??
+        '?',
     );
-    expect(button('Save').disabled).toBe(true);
-    expect(screen.queryByTestId('toolbar-add-namespace')).toBeNull();
-    expect(button('Add').disabled).toBe(true);
-    expect(button('New').disabled).toBe(false);
-    expect(button('Open').disabled).toBe(false);
+}
+
+describe('the row (ADR 0131 D1 to D4)', () => {
+  it('holds Home, Undo, Redo, Save, Try it, Share my mod, the search, AI helper, Help and More', () => {
+    renderToolbar(everything());
+    expect(rowIds()).toEqual([
+      'toolbar-home',
+      'toolbar-undo',
+      'toolbar-redo',
+      'toolbar-save',
+      'toolbar-try-it',
+      'toolbar-share',
+      'toolbar-search',
+      'toolbar-ai-helper',
+      'toolbar-help',
+      'toolbar-more',
+    ]);
   });
 
-  it('enables Save with a project and reports clicks', async () => {
+  it('puts the Play controls after Try it, and has at most 12 controls with them as one', async () => {
+    disconnect = connectPlay(fakeSession(), fakeBridge(), {
+      notify: () => {},
+      showProblems: () => {},
+    });
+    renderToolbar(everything());
+    await screen.findByTestId('play-controls');
+    const ids = rowIds();
+    expect(ids.indexOf('play-controls')).toBe(ids.indexOf('toolbar-try-it') + 1);
+    expect(ids.indexOf('toolbar-share')).toBe(ids.indexOf('play-controls') + 1);
+    expect(ids.length).toBeLessThanOrEqual(12);
+  });
+
+  it('never wraps: the row is nowrap, and Try it and Share my mod keep their words for 1200 px up', () => {
+    renderToolbar(everything());
+    const row = screen.getByRole('toolbar', { name: 'Mod' });
+    expect(row.className).toContain('flex-nowrap');
+    expect(row.className).not.toContain('flex-wrap ');
+    for (const [id, words] of [
+      ['toolbar-try-it', 'Try it'],
+      ['toolbar-share', 'Share my mod'],
+    ] as const) {
+      const control = screen.getByTestId(id);
+      expect(control.getAttribute('aria-label')).toBe(words);
+      const label = control.querySelector('span');
+      expect(label?.textContent).toBe(words);
+      expect(label?.className).toContain('min-[1200px]:inline');
+    }
+    // Below 1000 px the search field's words hide and it is an icon button with the same name.
+    const search = screen.getByTestId('toolbar-search');
+    expect(search.getAttribute('aria-label')).toBe('Search or make anything');
+    for (const part of search.querySelectorAll('span, kbd')) {
+      expect(part.className).toContain('min-[1000px]:inline');
+    }
+  });
+
+  it('shows the secondary buttons as icons named by their labels', () => {
+    renderToolbar(everything());
+    for (const name of ['Home', 'Undo', 'Redo', 'AI helper', 'Help']) {
+      const found = button(name);
+      expect(found.getAttribute('aria-label')).toBe(name);
+      expect(found.textContent).toBe('');
+    }
+    expect(button('Save').textContent).toBe('Save');
+    expect(screen.getByTestId('toolbar-more').textContent).toBe('More');
+  });
+
+  it('enables Save with a mod and reports clicks', async () => {
     const p = props({ canUndo: true, undoLabel: 'Add element' });
     renderToolbar(p);
     expect(button('Save').disabled).toBe(false);
@@ -66,28 +195,361 @@ describe('Toolbar', () => {
     expect(p.onUndo).toHaveBeenCalledOnce();
   });
 
-  it('keeps New blank and offers starters and examples on the split arrow', async () => {
-    const onNewFromStarter = vi.fn();
-    const onExamples = vi.fn();
-    const p = props({ onNewFromStarter, onExamples });
-    renderToolbar(p);
-    const user = userEvent.setup();
-    await user.click(screen.getByTestId('toolbar-new-project'));
-    expect(p.onNew).toHaveBeenCalledOnce();
-    const arrow = screen.getByTestId('toolbar-new-menu');
-    expect(arrow.getAttribute('aria-label')).toBe('More ways to start a project');
-    await user.click(arrow);
-    await user.click(screen.getByTestId('toolbar-new-from-starter'));
-    expect(onNewFromStarter).toHaveBeenCalledOnce();
-    await user.click(screen.getByTestId('toolbar-new-menu'));
-    await user.click(screen.getByTestId('toolbar-examples'));
-    expect(onExamples).toHaveBeenCalledOnce();
-    await user.click(screen.getByTestId('toolbar-new-menu'));
-    await user.click(screen.getByTestId('toolbar-new-blank'));
-    expect(p.onNew).toHaveBeenCalledTimes(2);
+  it('is a labelled toolbar', () => {
+    renderToolbar(props());
+    expect(screen.getByRole('toolbar', { name: 'Mod' })).toBeTruthy();
+  });
+});
+
+describe('Undo and Redo tips', () => {
+  it('say what they undo in plain words, never an id', () => {
+    expect(historyTip('undo', 'Edit demo:ruby_sword')).toMatch(
+      /^Undo Edit ruby sword \((Ctrl|Cmd)\+Z\)$/,
+    );
+    expect(historyTip('redo', 'Edit demo:ruby_sword')).toMatch(
+      /^Redo Edit ruby sword \((Ctrl|Cmd)\+Shift\+Z\)$/,
+    );
+    expect(historyTip('undo', undefined)).toBe('Nothing to undo');
+    expect(historyTip('redo', undefined)).toBe('Nothing to redo');
+  });
+});
+
+describe('Save and unsaved changes (ADR 0131 D2)', () => {
+  it('is accented while there are unsaved changes, quiet when everything is saved', () => {
+    expect(saveLook(props({ unsaved: true })).tip).toMatch(
+      /^Save your mod \((Ctrl|Cmd)\+S\)\. You have changes that are not saved\.$/,
+    );
+    expect(saveLook(props({ unsaved: true })).className).toContain('border-accent');
+    expect(saveLook(props({ unsaved: false }))).toEqual({
+      tip: 'Everything is saved.',
+      className: 'text-muted',
+    });
+    expect(saveLook(props()).tip).toMatch(/^Save your mod \((Ctrl|Cmd)\+S\)$/);
+    expect(saveLook(props()).className).toBe('');
+    expect(saveLook(props({ unsaved: true, saveDisabledReason: 'No mod is open.' })).tip).toBe(
+      'No mod is open.',
+    );
   });
 
-  it('lists recent projects on the Open split arrow, with missing ones disabled', async () => {
+  it('stays enabled both ways with a mod open', () => {
+    for (const unsaved of [true, false]) {
+      renderToolbar(props({ unsaved }));
+      const save = screen.getByTestId('toolbar-save') as HTMLButtonElement;
+      expect(save.disabled).toBe(false);
+      expect(save.classList.contains('border-accent')).toBe(unsaved);
+      cleanup();
+    }
+  });
+
+  it('is disabled without a mod', () => {
+    renderToolbar(
+      props({ hasProject: false, canAddElement: false, saveDisabledReason: 'No mod is open.' }),
+    );
+    expect(button('Save').disabled).toBe(true);
+  });
+});
+
+type Handler = keyof ToolbarProps;
+
+/**
+ * Every action the toolbar had before ADR 0131, by its old test id: where it is now (`row`, or
+ * the menu path to it) and the handler it runs.
+ */
+const MOVED: readonly (readonly [string, readonly string[] | 'row', string, Handler])[] = [
+  ['toolbar-home', 'row', 'toolbar-home', 'onHome'],
+  ['toolbar-new-project', [], 'toolbar-new-project', 'onNew'],
+  ['toolbar-new-blank', [], 'toolbar-new-project', 'onNew'],
+  ['toolbar-new-from-starter', [], 'toolbar-new-from-starter', 'onNewFromStarter'],
+  ['toolbar-examples', [], 'toolbar-examples', 'onExamples'],
+  ['toolbar-new-with-ai', [], 'toolbar-new-with-ai', 'onNewWithAi'],
+  ['toolbar-open-project', [], 'toolbar-open-project', 'onOpen'],
+  ['toolbar-open-menu', ['toolbar-open-menu'], 'recent-project-0', 'onOpenRecent'],
+  ['toolbar-save', 'row', 'toolbar-save', 'onSave'],
+  ['toolbar-undo', 'row', 'toolbar-undo', 'onUndo'],
+  ['toolbar-redo', 'row', 'toolbar-redo', 'onRedo'],
+  ['toolbar-creator', [], 'toolbar-creator', 'onCreator'],
+  ['toolbar-add-element', [], 'toolbar-add-element', 'onAddElement'],
+  ['toolbar-import-assets', [], 'toolbar-import-assets', 'onImportAssets'],
+  ['toolbar-export-zip', ['toolbar-export-menu'], 'export-resource-zip', 'onExportZip'],
+  ['export-resource-zip', ['toolbar-export-menu'], 'export-resource-zip', 'onExportZip'],
+  ['export-data-zip', ['toolbar-export-menu'], 'export-data-zip', 'onExportDataZip'],
+  ['export-combined', ['toolbar-export-menu'], 'export-combined', 'onExportCombined'],
+  ['export-fabric-jar', ['toolbar-export-menu'], 'export-fabric-jar', 'onExportFabricJar'],
+  ['export-java-project', ['toolbar-export-menu'], 'export-java-project', 'onExportJavaProject'],
+  ['export-structures', ['toolbar-export-menu'], 'export-structures', 'onExportStructures'],
+  ['export-schematics', ['toolbar-export-menu'], 'export-schematics', 'onExportSchematics'],
+  ['export-test-in-minecraft', [], 'export-test-in-minecraft', 'onTestInMinecraft'],
+  ['install-resource', ['toolbar-install-menu'], 'install-resource', 'onInstall'],
+  ['install-data', ['toolbar-install-menu'], 'install-data', 'onInstallData'],
+  ['toolbar-share', 'row', 'toolbar-share', 'onShare'],
+  ['toolbar-try-it', 'row', 'toolbar-try-it', 'onTryIt'],
+  ['toolbar-ai-helper', 'row', 'toolbar-ai-helper', 'onAiHelper'],
+  ['toolbar-help-first-mod', ['toolbar-help'], 'toolbar-help-first-mod', 'onFirstMod'],
+  ['toolbar-help-examples', ['toolbar-help'], 'toolbar-help-examples', 'onExamples'],
+  ['toolbar-help-whats-new', ['toolbar-help'], 'toolbar-help-whats-new', 'onWhatsNew'],
+  ['toolbar-settings', [], 'toolbar-settings', 'onSettings'],
+];
+
+describe('every former toolbar action is in the row or the More menu', () => {
+  it.each(MOVED)('%s', async (_old, where, id, handler) => {
+    const p = everything();
+    renderToolbar(p);
+    if (where === 'row') {
+      await userEvent.setup().click(screen.getByTestId(id));
+    } else if (where[0] === 'toolbar-help') {
+      await userEvent.setup().click(screen.getByTestId('toolbar-help'));
+      fireEvent.click(await screen.findByTestId(id));
+    } else {
+      await chooseInToolbarMenu(...where, id);
+    }
+    expect(p[handler] as Mock).toHaveBeenCalledOnce();
+  });
+
+  it('the search field opens the search', async () => {
+    const p = everything();
+    renderToolbar(p);
+    await userEvent.setup().click(screen.getByTestId('toolbar-search'));
+    expect(p.onSearch).toHaveBeenCalledWith('');
+  });
+
+  it('a plugin exporter is in the Export submenu after the structure exports', async () => {
+    const p = everything();
+    renderToolbar(p);
+    await openToolbarMenu('toolbar-export-menu');
+    const ids = screen.getAllByRole('menuitem').map((entry) => entry.getAttribute('data-testid'));
+    expect(ids.indexOf('export-plugin-greetings')).toBe(ids.indexOf('export-schematics') + 1);
+    fireEvent.click(screen.getByTestId('export-plugin-greetings'));
+    expect(p.pluginExports?.[0]?.onSelect).toHaveBeenCalledOnce();
+  });
+
+  it('the old split arrows and the Export .zip button are gone', () => {
+    renderToolbar(everything());
+    for (const id of [
+      'toolbar-export-zip',
+      'toolbar-new-menu',
+      'toolbar-new-blank',
+      'export-more',
+    ]) {
+      expect(screen.queryByTestId(id), id).toBeNull();
+    }
+  });
+
+  it('lists More in its order, with the entries that need nothing else enabled', async () => {
+    renderToolbar(everything());
+    await openToolbarMenu();
+    const ids = screen.getAllByRole('menuitem').map((entry) => entry.getAttribute('data-testid'));
+    expect(ids).toEqual([
+      'toolbar-new-project',
+      'toolbar-new-from-starter',
+      'toolbar-examples',
+      'toolbar-new-with-ai',
+      'toolbar-open-project',
+      'toolbar-open-menu',
+      'toolbar-creator',
+      'toolbar-add-element',
+      'toolbar-import-assets',
+      'toolbar-export-menu',
+      'toolbar-install-menu',
+      'export-test-in-minecraft',
+      'toolbar-modpacks',
+      'toolbar-settings',
+    ]);
+    expect(screen.getByTestId('toolbar-new-project').textContent).toMatch(
+      /^New mod…(Ctrl|Cmd)\+Shift\+N$/,
+    );
+    expect(screen.getByTestId('toolbar-open-project').textContent).toMatch(
+      /^Open a mod…(Ctrl|Cmd)\+O$/,
+    );
+    expect(screen.getByTestId('toolbar-add-element').textContent).toMatch(
+      /^Add from the full list…(Ctrl|Cmd)\+N$/,
+    );
+  });
+});
+
+describe('reasons on disabled entries', () => {
+  it('without a mod, the entries that need one say "Open a mod first."', async () => {
+    renderToolbar(
+      everything({
+        hasProject: false,
+        canAddElement: false,
+        saveDisabledReason: 'No mod is open.',
+        fabricJarExportDisabledReason: 'No project is open.',
+      }),
+    );
+    expect(NO_MOD_REASON).toBe('Open a mod first.');
+    await openToolbarMenu();
+    for (const id of [
+      'toolbar-creator',
+      'toolbar-add-element',
+      'toolbar-import-assets',
+      'toolbar-export-menu',
+      'toolbar-install-menu',
+      'export-test-in-minecraft',
+    ]) {
+      expect(entryDisabled(id), id).toBe(true);
+      expect(screen.getByTestId(`${id}-reason`).textContent, id).toBe(NO_MOD_REASON);
+    }
+    for (const id of ['toolbar-new-project', 'toolbar-open-project', 'toolbar-settings']) {
+      expect(entryDisabled(id), id).toBe(false);
+    }
+  });
+
+  it('while an export runs, the exports, installs and Test in Minecraft say so', async () => {
+    renderToolbar(everything({ exporting: true }));
+    expect(BUSY_REASON).toBe('An export is running.');
+    await openToolbarMenu();
+    for (const id of ['toolbar-export-menu', 'toolbar-install-menu', 'export-test-in-minecraft']) {
+      expect(screen.getByTestId(`${id}-reason`).textContent, id).toBe(BUSY_REASON);
+    }
+    expect((screen.getByTestId('toolbar-share') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('shows why the Fabric mod jar, the eject and Test in Minecraft are off', async () => {
+    const reason = 'Fix 2 errors first (see Problems).';
+    renderToolbar(everything({ fabricJarExportDisabledReason: reason }));
+    await openToolbarMenu();
+    expect(screen.getByTestId('export-test-in-minecraft-reason').textContent).toBe(reason);
+    expect(entryDisabled('export-test-in-minecraft')).toBe(true);
+    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
+    for (const id of ['export-fabric-jar', 'export-java-project']) {
+      expect(screen.getByTestId(`${id}-reason`).textContent).toBe(reason);
+      expect(screen.getByTestId(id).getAttribute('aria-disabled')).toBe('true');
+    }
+  });
+
+  it('shows why the structure exports and a plugin export are off', async () => {
+    const reason = 'Fix 1 error first (see Problems).';
+    renderToolbar(
+      everything({
+        structureExportDisabledReason: reason,
+        pluginExports: [
+          { id: 'blocked', label: 'Blocked into a folder…', reason, onSelect: vi.fn() },
+        ],
+      }),
+    );
+    await openToolbarMenu('toolbar-export-menu');
+    for (const id of ['export-structures', 'export-schematics', 'export-plugin-blocked']) {
+      expect(screen.getByTestId(`${id}-reason`).textContent, id).toBe(reason);
+      expect(entryDisabled(id), id).toBe(true);
+    }
+  });
+
+  it('says "mod", never "project", in its words', async () => {
+    renderToolbar(
+      everything({
+        hasProject: false,
+        canAddElement: false,
+        saveDisabledReason: 'No mod is open.',
+        recentProjects: [{ root: '/p/alpha', name: 'Alpha', openedAt: '1', exists: false }],
+      }),
+    );
+    const words = (): string[] =>
+      Array.from(document.querySelectorAll('*')).flatMap((node) => [
+        node.childNodes.length > 0
+          ? Array.from(node.childNodes)
+              .filter((child) => child.nodeType === 3)
+              .map((child) => child.textContent ?? '')
+              .join(' ')
+          : '',
+        node.getAttribute('aria-label') ?? '',
+        node.getAttribute('title') ?? '',
+      ]);
+    await openToolbarMenu('toolbar-open-menu');
+    expect(words().filter((text) => /project/i.test(text))).toEqual([]);
+  });
+});
+
+describe('the optional entries', () => {
+  it('render nothing while their props are absent', async () => {
+    renderToolbar(props({ onExportZip: vi.fn() }));
+    await openToolbarMenu('toolbar-export-menu');
+    for (const id of ['export-map', 'toolbar-modpacks', 'toolbar-new-with-ai', 'toolbar-creator']) {
+      expect(screen.queryByTestId(id), id).toBeNull();
+    }
+    cleanup();
+    renderToolbar(props());
+    await userEvent.setup().click(screen.getByTestId('toolbar-help'));
+    expect(screen.queryByTestId('toolbar-help-guide')).toBeNull();
+    expect(screen.queryByTestId('toolbar-try-it')).toBeNull();
+    expect(screen.queryByTestId('toolbar-search')).toBeNull();
+    expect(screen.queryByTestId('toolbar-ai-helper')).toBeNull();
+  });
+
+  it('Export as a map…, Modpacks… and Guide… run their handlers', async () => {
+    const p = everything();
+    renderToolbar(p);
+    await openToolbarMenu('toolbar-export-menu');
+    expect(screen.getByTestId('export-map').textContent).toBe('Export as a map…');
+    fireEvent.click(screen.getByTestId('export-map'));
+    expect(p.onExportMap).toHaveBeenCalledOnce();
+    await openToolbarMenu();
+    expect(screen.getByTestId('toolbar-modpacks').textContent).toBe('Modpacks…');
+    fireEvent.click(screen.getByTestId('toolbar-modpacks'));
+    expect(p.onModpacks).toHaveBeenCalledOnce();
+    await userEvent.setup().click(screen.getByTestId('toolbar-help'));
+    expect(screen.getByTestId('toolbar-help-guide').textContent).toBe('Guide…');
+    fireEvent.click(screen.getByTestId('toolbar-help-guide'));
+    expect(p.onGuide).toHaveBeenCalledOnce();
+  });
+});
+
+describe('the keyboard', () => {
+  it('arrow keys move along the row', async () => {
+    renderToolbar(everything());
+    const user = userEvent.setup();
+    screen.getByTestId('toolbar-home').focus();
+    await user.keyboard('{ArrowRight}');
+    expect(document.activeElement).toBe(screen.getByTestId('toolbar-undo'));
+    await user.keyboard('{End}');
+    expect(document.activeElement).toBe(screen.getByTestId('toolbar-more'));
+  });
+
+  it('reaches every More entry and the submenus by keyboard alone', async () => {
+    renderToolbar(everything());
+    const user = userEvent.setup();
+    screen.getByTestId('toolbar-more').focus();
+    await user.keyboard('{Enter}');
+    const seen: string[] = [];
+    await waitFor(() => expect(document.activeElement?.getAttribute('data-testid')).toBeTruthy());
+    for (let step = 0; step < 14; step += 1) {
+      seen.push(document.activeElement?.getAttribute('data-testid') ?? '?');
+      await user.keyboard('{ArrowDown}');
+    }
+    expect(new Set(seen)).toEqual(
+      new Set([
+        'toolbar-new-project',
+        'toolbar-new-from-starter',
+        'toolbar-examples',
+        'toolbar-new-with-ai',
+        'toolbar-open-project',
+        'toolbar-open-menu',
+        'toolbar-creator',
+        'toolbar-add-element',
+        'toolbar-import-assets',
+        'toolbar-export-menu',
+        'toolbar-install-menu',
+        'export-test-in-minecraft',
+        'toolbar-modpacks',
+        'toolbar-settings',
+      ]),
+    );
+    for (const [sub, first] of [
+      ['toolbar-open-menu', 'recent-project-0'],
+      ['toolbar-export-menu', 'export-resource-zip'],
+      ['toolbar-install-menu', 'install-resource'],
+    ] as const) {
+      screen.getByTestId(sub).focus();
+      await user.keyboard('{ArrowRight}');
+      const entry = await screen.findByTestId(first);
+      await waitFor(() => expect(document.activeElement).toBe(entry));
+      await user.keyboard('{ArrowLeft}');
+      await waitFor(() => expect(screen.queryByTestId(first)).toBeNull());
+    }
+  });
+});
+
+describe('Recent mods', () => {
+  it('lists recent mods, with missing ones disabled', async () => {
     const onOpenRecent = vi.fn();
     const onRemoveRecent = vi.fn();
     const onClearRecent = vi.fn();
@@ -104,10 +566,7 @@ describe('Toolbar', () => {
         onRecentMenuOpen,
       }),
     );
-    const user = userEvent.setup();
-    const arrow = screen.getByTestId('toolbar-open-menu');
-    expect(arrow.getAttribute('aria-label')).toBe('Recent projects');
-    await user.click(arrow);
+    await openToolbarMenu('toolbar-open-menu');
     expect(onRecentMenuOpen).toHaveBeenCalledOnce();
     const beta = screen.getByTestId('recent-project-0');
     expect(beta.textContent).toContain('Beta');
@@ -116,26 +575,22 @@ describe('Toolbar', () => {
     expect(alpha.textContent).toContain('Alpha (missing)');
     expect(alpha.hasAttribute('data-disabled')).toBe(true);
     expect(screen.queryByTestId('recent-project-remove-0')).toBeNull();
-    await user.click(screen.getByTestId('recent-project-remove-1'));
+    expect(screen.getByTestId('recent-project-remove-1').getAttribute('aria-label')).toBe(
+      'Remove Alpha from recent mods',
+    );
+    fireEvent.click(screen.getByTestId('recent-project-remove-1'));
     expect(onRemoveRecent).toHaveBeenCalledWith('/p/alpha');
-    await user.click(screen.getByTestId('toolbar-open-menu'));
-    await user.click(screen.getByTestId('recent-project-0'));
+    await chooseInToolbarMenu('toolbar-open-menu', 'recent-project-0');
     expect(onOpenRecent).toHaveBeenCalledWith('/p/beta');
-    await user.click(screen.getByTestId('toolbar-open-menu'));
-    await user.click(screen.getByTestId('recent-projects-clear'));
+    await chooseInToolbarMenu('toolbar-open-menu', 'recent-projects-clear');
     expect(onClearRecent).toHaveBeenCalledOnce();
   });
 
-  it('says so when there are no recent projects', async () => {
+  it('says so when there are no recent mods', async () => {
     renderToolbar(props({ recentProjects: [], onClearRecent: vi.fn() }));
-    await userEvent.setup().click(screen.getByTestId('toolbar-open-menu'));
-    expect(screen.getByTestId('recent-projects-empty').textContent).toBe('No recent projects');
+    await openToolbarMenu('toolbar-open-menu');
+    expect(screen.getByTestId('recent-projects-empty').textContent).toBe('No recent mods');
     expect(screen.getByTestId('recent-projects-clear').hasAttribute('data-disabled')).toBe(true);
-  });
-
-  it('is a labelled toolbar', () => {
-    renderToolbar(props());
-    expect(screen.getByRole('toolbar', { name: 'Project' })).toBeTruthy();
   });
 });
 
@@ -185,14 +640,15 @@ describe('Toolbar install target', () => {
       onInstallData: vi.fn(),
     });
     renderToolbar(p);
-    const user = userEvent.setup();
-    await user.click(screen.getByTestId('toolbar-install-menu'));
+    const user = await openToolbarMenu('toolbar-install-menu');
     const target = screen.getByTestId('install-target');
     expect(target.textContent).toBe('Install to: Official launcher');
     expect(target.getAttribute('aria-live')).toBe('polite');
     expect(screen.getByTestId('install-resource')).toBeTruthy();
     expect(screen.getByTestId('install-data')).toBeTruthy();
-    await user.click(screen.getByTestId('install-target-change'));
+    // By keyboard: a pointer leaving a sub trigger closes its submenu in happy-dom.
+    screen.getByTestId('install-target-change').focus();
+    await user.keyboard('{ArrowRight}');
     const item = await screen.findByTestId('install-target-prism:My-Instance');
     expect(item.getAttribute('aria-label')).toBe(
       'Install to Prism Launcher — My Instance (MC 9.9-msm-test), NeoForge 1.2.3',
@@ -200,8 +656,6 @@ describe('Toolbar install target', () => {
     expect(screen.getByTestId('install-target-official:default').getAttribute('aria-checked')).toBe(
       'true',
     );
-    // happy-dom has no layout, so moving the pointer off the sub trigger closes the submenu
-    // (Radix's pointer grace area is empty); click the item without a pointer move.
     fireEvent.click(item);
     expect(onChooseInstallTarget).toHaveBeenCalledExactlyOnceWith('prism:My-Instance');
   });
@@ -217,9 +671,11 @@ describe('Toolbar install target', () => {
       }),
     );
     const user = userEvent.setup();
-    screen.getByTestId('toolbar-install-menu').focus();
+    screen.getByTestId('toolbar-more').focus();
     await user.keyboard('{Enter}');
-    expect(screen.getByTestId('install-target').textContent).toBe(
+    screen.getByTestId('toolbar-install-menu').focus();
+    await user.keyboard('{ArrowRight}');
+    expect((await screen.findByTestId('install-target')).textContent).toBe(
       'No install target: choose one in Settings',
     );
     const change = screen.getByTestId('install-target-change');
@@ -233,187 +689,45 @@ describe('Toolbar install target', () => {
     expect(onChooseInstallTarget).toHaveBeenCalledExactlyOnceWith('prism:My-Instance');
   });
 
-  it('keeps the Install menu unchanged without a target', async () => {
+  it('keeps the Install submenu unchanged without a target', async () => {
     renderToolbar(props({ onInstall: vi.fn() }));
-    await userEvent.setup().click(screen.getByTestId('toolbar-install-menu'));
+    await openToolbarMenu('toolbar-install-menu');
     expect(screen.queryByTestId('install-target')).toBeNull();
     expect(screen.queryByTestId('install-target-change')).toBeNull();
     expect(screen.getByTestId('install-resource')).toBeTruthy();
   });
 });
 
-describe('Toolbar more exports', () => {
-  it('offers the structure exports in the Export menu submenu', async () => {
-    const onExportStructures = vi.fn();
-    const onExportSchematics = vi.fn();
-    renderToolbar(props({ onExportZip: vi.fn(), onExportStructures, onExportSchematics }));
-    const user = userEvent.setup();
-    await user.click(screen.getByTestId('toolbar-export-menu'));
-    await user.click(screen.getByTestId('export-more'));
-    const structures = await screen.findByTestId('export-structures');
-    expect(structures.textContent).toBe('Structures (.nbt) into a folder…');
-    expect(screen.getByTestId('export-schematics')).toBeTruthy();
-    fireEvent.click(structures);
-    expect(onExportStructures).toHaveBeenCalledOnce();
-  });
-
-  it('shows why the structure exports are disabled', async () => {
-    renderToolbar(
-      props({
-        onExportStructures: vi.fn(),
-        onExportSchematics: vi.fn(),
-        structureExportDisabledReason: 'Fix 1 error first (see Problems).',
-      }),
+describe('the Export submenu', () => {
+  it('lists the packs, the jar, the eject and then the structure exports, with no third level', async () => {
+    const p = everything();
+    renderToolbar(p);
+    await openToolbarMenu('toolbar-export-menu');
+    const ids = screen.getAllByRole('menuitem').map((entry) => entry.getAttribute('data-testid'));
+    const exports = ids.slice(ids.indexOf('export-resource-zip'));
+    expect(exports).toEqual([
+      'export-resource-zip',
+      'export-data-zip',
+      'export-combined',
+      'export-fabric-jar',
+      'export-java-project',
+      'export-map',
+      'export-structures',
+      'export-schematics',
+      'export-plugin-greetings',
+    ]);
+    expect(screen.getByTestId('export-structures').textContent).toBe(
+      'Structures (.nbt) into a folder…',
     );
-    const user = userEvent.setup();
-    await user.click(screen.getByTestId('toolbar-export-menu'));
-    await user.click(screen.getByTestId('export-more'));
-    const reason = await screen.findByTestId('export-schematics-reason');
-    expect(reason.textContent).toBe('Fix 1 error first (see Problems).');
-    expect(screen.getByTestId('export-schematics').getAttribute('aria-disabled')).toBe('true');
-  });
-
-  it('offers the other plugin exporters after the structure exports', async () => {
-    const onSelect = vi.fn();
-    renderToolbar(
-      props({
-        onExportStructures: vi.fn(),
-        pluginExports: [
-          { id: 'greetings', label: 'Greetings into a folder…', reason: null, onSelect },
-          {
-            id: 'blocked',
-            label: 'Blocked into a folder…',
-            reason: 'Fix 1 error first (see Problems).',
-            onSelect: vi.fn(),
-          },
-        ],
-      }),
+    expect(screen.getByTestId('export-fabric-jar').textContent).toBe('Fabric mod (.jar)…');
+    expect(screen.getByTestId('export-java-project').textContent).toBe(
+      'Fabric Java project (eject)…',
     );
-    const user = userEvent.setup();
-    await user.click(screen.getByTestId('toolbar-export-menu'));
-    await user.click(screen.getByTestId('export-more'));
-    const entry = await screen.findByTestId('export-plugin-greetings');
-    expect(entry.textContent).toBe('Greetings into a folder…');
-    expect(screen.getByTestId('export-plugin-blocked').getAttribute('aria-disabled')).toBe('true');
-    expect(screen.getByTestId('export-plugin-blocked-reason').textContent).toBe(
-      'Fix 1 error first (see Problems).',
-    );
-    fireEvent.click(entry);
-    expect(onSelect).toHaveBeenCalledOnce();
-  });
-});
-
-describe('Toolbar Fabric mod jar export', () => {
-  it('offers the Fabric mod jar in the Export menu', async () => {
-    const onExportFabricJar = vi.fn();
-    renderToolbar(props({ onExportZip: vi.fn(), onExportFabricJar }));
-    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
-    const entry = await screen.findByTestId('export-fabric-jar');
-    expect(entry.textContent).toBe('Fabric mod (.jar)…');
-    fireEvent.click(entry);
-    expect(onExportFabricJar).toHaveBeenCalledOnce();
-  });
-
-  it('shows why the Fabric mod jar export is disabled', async () => {
-    renderToolbar(
-      props({
-        onExportFabricJar: vi.fn(),
-        fabricJarExportDisabledReason: 'Fix 2 errors first (see Problems).',
-      }),
-    );
-    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
-    const reason = await screen.findByTestId('export-fabric-jar-reason');
-    expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
-    expect(screen.getByTestId('export-fabric-jar').getAttribute('aria-disabled')).toBe('true');
-  });
-
-  it('offers Test in Minecraft next to the Fabric mod jar', async () => {
-    const onTestInMinecraft = vi.fn();
-    renderToolbar(props({ onExportFabricJar: vi.fn(), onTestInMinecraft }));
-    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
-    const entry = await screen.findByTestId('export-test-in-minecraft');
-    expect(entry.textContent).toBe('Test in Minecraft…');
-    fireEvent.click(entry);
-    expect(onTestInMinecraft).toHaveBeenCalledOnce();
-  });
-
-  it('disables Test in Minecraft with the Fabric mod jar reason', async () => {
-    renderToolbar(
-      props({
-        onExportFabricJar: vi.fn(),
-        onTestInMinecraft: vi.fn(),
-        fabricJarExportDisabledReason: 'Fix 2 errors first (see Problems).',
-      }),
-    );
-    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
-    const reason = await screen.findByTestId('export-test-in-minecraft-reason');
-    expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
-    expect(screen.getByTestId('export-test-in-minecraft').getAttribute('aria-disabled')).toBe(
-      'true',
-    );
-  });
-});
-
-describe('Toolbar Java project export', () => {
-  it('offers the Fabric Java project (eject) after the Fabric mod jar', async () => {
-    const onExportJavaProject = vi.fn();
-    renderToolbar(props({ onExportFabricJar: vi.fn(), onExportJavaProject }));
-    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
-    const entry = await screen.findByTestId('export-java-project');
-    expect(entry.textContent).toBe('Fabric Java project (eject)…');
-    const items = screen.getAllByRole('menuitem').map((item) => item.getAttribute('data-testid'));
-    expect(items.indexOf('export-java-project')).toBe(items.indexOf('export-fabric-jar') + 1);
-    fireEvent.click(entry);
-    expect(onExportJavaProject).toHaveBeenCalledOnce();
-  });
-
-  it('disables the Java project export with the Fabric mod jar reason', async () => {
-    renderToolbar(
-      props({
-        onExportJavaProject: vi.fn(),
-        fabricJarExportDisabledReason: 'Fix 2 errors first (see Problems).',
-      }),
-    );
-    await userEvent.setup().click(screen.getByTestId('toolbar-export-menu'));
-    const reason = await screen.findByTestId('export-java-project-reason');
-    expect(reason.textContent).toBe('Fix 2 errors first (see Problems).');
-    expect(screen.getByTestId('export-java-project').getAttribute('aria-disabled')).toBe('true');
-  });
-
-  it('offers "Create…" only with an onCreator handler, enabled with a project', async () => {
-    renderToolbar(props());
-    expect(screen.queryByTestId('toolbar-creator')).toBeNull();
-    cleanup();
-    const onCreator = vi.fn();
-    renderToolbar(props({ onCreator }));
-    expect(button('Create…').disabled).toBe(false);
-    await userEvent.setup().click(screen.getByTestId('toolbar-creator'));
-    expect(onCreator).toHaveBeenCalledOnce();
-    cleanup();
-    renderToolbar(props({ onCreator, hasProject: false }));
-    expect(button('Create…').disabled).toBe(true);
-  });
-
-  it('shows the secondary buttons as icons named by their labels', () => {
-    renderToolbar(props({ onSettings: vi.fn(), onAiHelper: vi.fn(), onImportAssets: vi.fn() }));
-    for (const name of [
-      'Home',
-      'Undo',
-      'Redo',
-      'Bring in pictures or sounds',
-      'AI helper',
-      'Settings',
-    ]) {
-      const found = button(name);
-      expect(found.getAttribute('aria-label')).toBe(name);
-      expect(found.textContent).toBe('');
-    }
-    expect(button('Add').textContent).toBe('Add');
   });
 });
 
 describe('Toolbar Try it (ADR 0085 D13)', () => {
-  it('shows Try it, enabled only with a project', async () => {
+  it('shows Try it, enabled only with a mod', async () => {
     for (const open of [true, false]) {
       const onTryIt = vi.fn();
       renderToolbar(props({ onTryIt, tryItOpen: open }));
@@ -428,34 +742,21 @@ describe('Toolbar Try it (ADR 0085 D13)', () => {
       cleanup();
     }
   });
-
-  it('hides Try it without a handler', () => {
-    renderToolbar(props());
-    expect(screen.queryByTestId('toolbar-try-it')).toBeNull();
-  });
 });
 
 describe('the search field (ADR 0124 D10, B667)', () => {
-  it('shows the compact field, opening on a click, Down or a typed letter', async () => {
-    {
-      const onSearch = vi.fn();
-      const view = renderToolbar(props({ onSearch, searchPlaceholder: 'Search or make anything' }));
-      const field = screen.getByTestId('toolbar-search');
-      expect(field.getAttribute('aria-label')).toBe('Search or make anything');
-      expect(field.getAttribute('aria-haspopup')).toBe('dialog');
-      expect(field.getAttribute('aria-keyshortcuts')).toMatch(/^(Control|Meta)\+K$/);
-      await userEvent.setup().click(field);
-      fireEvent.keyDown(field, { key: 'ArrowDown' });
-      fireEvent.keyDown(field, { key: 'r' });
-      fireEvent.keyDown(field, { key: 'c', ctrlKey: true });
-      expect(onSearch.mock.calls).toEqual([[''], [''], ['r']]);
-      view.unmount();
-    }
-  });
-
-  it('shows no field without onSearch', () => {
-    renderToolbar(props());
-    expect(screen.queryByTestId('toolbar-search')).toBeNull();
+  it('shows the field, opening on a click, Down or a typed letter', async () => {
+    const onSearch = vi.fn();
+    renderToolbar(props({ onSearch, searchPlaceholder: 'Search or make anything' }));
+    const field = screen.getByTestId('toolbar-search');
+    expect(field.getAttribute('aria-label')).toBe('Search or make anything');
+    expect(field.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(field.getAttribute('aria-keyshortcuts')).toMatch(/^(Control|Meta)\+K$/);
+    await userEvent.setup().click(field);
+    fireEvent.keyDown(field, { key: 'ArrowDown' });
+    fireEvent.keyDown(field, { key: 'r' });
+    fireEvent.keyDown(field, { key: 'c', ctrlKey: true });
+    expect(onSearch.mock.calls).toEqual([[''], [''], ['r']]);
   });
 });
 
@@ -474,7 +775,7 @@ describe('a toast that appears while a toolbar menu is open (B701, the launchers
     );
   }
 
-  function renderWithToast(p: ToolbarProps, show: boolean) {
+  function withToast(p: ToolbarProps, show: boolean) {
     return (
       <Toast.Provider>
         <Tooltip.Provider>
@@ -487,18 +788,65 @@ describe('a toast that appears while a toolbar menu is open (B701, the launchers
 
   it('Escape still closes the menu, so the next press on its button opens it', async () => {
     const p = props({ installTarget: TARGETS[0] ?? null, onInstall: vi.fn() });
-    const view = render(renderWithToast(p, false));
-    const user = userEvent.setup();
-    const trigger = screen.getByTestId('toolbar-install-menu');
-    await user.click(trigger);
+    const view = render(withToast(p, false));
+    const user = await openToolbarMenu('toolbar-install-menu');
     expect(screen.getByTestId('install-target')).toBeTruthy();
     // The message of a target change lands after the menu opened: a newer dismissable layer.
-    view.rerender(renderWithToast(p, true));
+    view.rerender(withToast(p, true));
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByTestId('install-target')).toBeNull());
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    const more = screen.getByTestId('toolbar-more');
+    expect(more.getAttribute('aria-expanded')).toBe('false');
     // The next press opens the menu again (before the fix it toggled the open menu shut).
-    await user.click(trigger);
-    expect(screen.getByTestId('install-target')).toBeTruthy();
+    await user.click(more);
+    expect(screen.getByTestId('toolbar-install-menu')).toBeTruthy();
+  });
+});
+
+describe('a dialog opened from More by keyboard keeps the focus (B701)', () => {
+  function WithDialog() {
+    const [open, setOpen] = useState(false);
+    return (
+      <Tooltip.Provider>
+        <Toolbar {...props({ onSettings: () => setOpen(true) })} />
+        <Dialog.Root open={open} onOpenChange={setOpen}>
+          <Dialog.Portal>
+            <Dialog.Content data-testid="test-dialog" aria-describedby={undefined}>
+              <Dialog.Title>Settings</Dialog.Title>
+              <input data-testid="test-dialog-field" />
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      </Tooltip.Provider>
+    );
+  }
+
+  it('Escape then closes the dialog, not a tooltip of the More button', async () => {
+    render(<WithDialog />);
+    const user = userEvent.setup();
+    screen.getByTestId('toolbar-more').focus();
+    await user.keyboard('{Enter}');
+    screen.getByTestId('toolbar-settings').focus();
+    await user.keyboard('{Enter}');
+    const field = await screen.findByTestId('test-dialog-field');
+    // Radix hands focus back to the menu's button a moment after the menu closes.
+    await new Promise((settle) => setTimeout(settle, 50));
+    expect(document.activeElement).toBe(field);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('test-dialog')).toBeNull());
+  });
+
+  it('focus goes back to More when the entry opened nothing', async () => {
+    const onNew = vi.fn();
+    renderToolbar(props({ onNew }));
+    const user = userEvent.setup();
+    const more = screen.getByTestId('toolbar-more');
+    more.focus();
+    await user.keyboard('{Enter}');
+    screen.getByTestId('toolbar-new-project').focus();
+    await user.keyboard('{Enter}');
+    expect(onNew).toHaveBeenCalledOnce();
+    await waitFor(() => expect(document.activeElement).toBe(more));
   });
 });

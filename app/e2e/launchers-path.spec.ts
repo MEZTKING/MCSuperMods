@@ -18,7 +18,15 @@ import { defaultTargetId, targetById } from '@msm/targets';
 import { expect, type Page, test } from 'playwright/test';
 import { makeCurseForgeRoot, makeMmcRoot } from '../test/helpers/fake-launchers';
 import { buildSyntheticJar } from '../test/helpers/synthetic-jar';
-import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openAddDialog,
+  openToolbarMenu,
+  outputDir,
+  toolbarMenu,
+} from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'msm_launchers';
@@ -79,7 +87,7 @@ async function closeSettings(window: Page): Promise<void> {
 
 /** Opens the Install menu and waits for its target sentence. */
 async function openInstallMenu(window: Page): Promise<void> {
-  await window.getByTestId('toolbar-install-menu').click();
+  await openToolbarMenu(window, 'toolbar-install-menu');
   await expect(window.getByTestId('install-target')).toBeVisible();
 }
 
@@ -160,7 +168,7 @@ test('launchers: Prism and CurseForge instances, extract from Prism, install pac
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // Settings: every location with launcher, version and loader badges. ---------------------
-  await window.getByTestId('toolbar-settings').click();
+  await toolbarMenu(window, 'toolbar-settings');
   let settings = window.getByTestId('settings-dialog');
   await expect(settings).toBeVisible();
   await expect(settings.getByTestId('settings-locations')).toBeVisible();
@@ -226,7 +234,7 @@ test('launchers: Prism and CurseForge instances, extract from Prism, install pac
   await closeSettings(window);
 
   // A function, so the project has data pack content.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('template-function').check();
@@ -278,7 +286,7 @@ test('launchers: Prism and CurseForge instances, extract from Prism, install pac
   await installResourcePack(window, join(prism.gameDir(OLD_FOLDER), 'resourcepacks'));
 
   // Settings now shows the old instance as the target, with both others still listed.
-  await window.getByTestId('toolbar-settings').click();
+  await toolbarMenu(window, 'toolbar-settings');
   settings = window.getByTestId('settings-dialog');
   await expect(settings).toBeVisible();
   await expect(settings.getByTestId(`location-select-${OLD_ID}`)).toBeChecked();

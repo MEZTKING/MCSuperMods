@@ -33,9 +33,13 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
+  openCreator,
   openDockTab,
+  openExport,
   outputDir,
   toast,
+  toolbarMenu,
 } from './fixtures';
 import { readPng, rgbaPng } from './png';
 
@@ -125,17 +129,17 @@ async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
 /** No problem of any severity, and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 async function expectNoErrors(window: Page): Promise<void> {
   await expect(await problemRows(window, 'error')).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the Creator from the toolbar and picks `flowId` from the group "Magic". */
 async function openFlow(window: Page, flowId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('creator-group-magic').getByTestId(`creator-flow-${flowId}`).click();
@@ -160,7 +164,7 @@ async function applyCreator(window: Page, dialog: Locator, title: string): Promi
  */
 async function save(window: Page): Promise<void> {
   const footer = window.locator('footer');
-  await expect(footer.getByText('Unsaved changes', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Not saved yet', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
   await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
 }
@@ -267,7 +271,7 @@ async function addFromTemplate(
   templateId: string,
   name: string,
 ): Promise<void> {
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill(filter);
@@ -424,7 +428,7 @@ test('particles: Particle flow defaults, one edit per Particle Studio group, pre
   launches.push(second);
   const w2 = second.window;
   await w2.waitForLoadState('domcontentloaded');
-  await w2.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(w2, 'toolbar-open-project');
   await expect(w2.getByTestId(`element-row-${id(SPARK_BLOCK)}`)).toBeVisible();
   const reopened = await openParticle(w2, SPARK);
   await expect(reopened.getByTestId('particle-frame-0-sprite')).toHaveValue(SPARK_FRAMES[1] ?? '');
@@ -585,7 +589,7 @@ test('particles: split into frames and Undo, ambient particles and Undo, coloure
   });
 
   // A function that shows the project particle.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const create = window.getByTestId('new-element-dialog');
   await expect(create).toBeVisible();
   await create.getByTestId('template-function').check();
@@ -600,8 +604,7 @@ test('particles: split into frames and Undo, ambient particles and Undo, coloure
   console.log(`particles-path edits: ${((Date.now() - started) / 1000).toFixed(1)} s`);
 
   // The vanilla data pack: the function kept with a warning, the block loot tables left out.
-  await window.getByTestId('toolbar-export-menu').click();
-  await window.getByTestId('export-data-zip').click();
+  await openExport(window, 'export-data-zip');
   const data = await newZip(folders.outDir, '.zip');
   const dataNames = Object.keys(data.files);
   expect(dataNames).toEqual(
@@ -644,7 +647,9 @@ test('particles: split into frames and Undo, ambient particles and Undo, coloure
       await expect(toast(window)).toContainText(`Project target changed to ${target.id}.`);
       await expectNoErrors(window);
     }
-    await expect(window.getByTestId('project-target')).toContainText(target.id);
+    await expect(window.getByTestId('project-target')).toContainText(
+      `For Minecraft ${target.mcVersion}`,
+    );
     // The jar keeps its name on every target: move the earlier one out of the way.
     for (const name of known) rmSync(join(folders.outDir, name));
     const palette = await openPalette(window, 'fabric mod jar');

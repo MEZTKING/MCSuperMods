@@ -27,8 +27,11 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
   openDockTab,
+  openToolbarMenu,
   outputDir,
+  toolbarMenu,
 } from './fixtures';
 import { checkerPng } from './png';
 
@@ -117,12 +120,12 @@ async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
 /** Asserts that the Problems panel lists nothing at all and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the export chevron menu and returns the item `testId` (not clicked). */
 async function exportItem(window: Page, testId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId(testId);
   await expect(item).toBeVisible();
   return item;
@@ -172,7 +175,7 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   await importDialog.getByTestId('import-files-dialog-submit').click();
   await expect(importDialog).toBeHidden();
 
-  const models = window.getByRole('region', { name: `${NAMESPACE} Models and animations` });
+  const models = window.getByRole('region', { name: 'Models and animations' });
   await expect(models.getByTestId(`element-row-${MODEL_ID}`)).toBeVisible();
   await expect(models.getByTestId(`element-row-${MODEL_ID}`)).toContainText('model');
   await expect(models.getByTestId(`element-row-${ANIMATIONS_ID}`)).toBeVisible();
@@ -183,7 +186,7 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   await expectNoProblems(window);
 
   // An entity from the "Monster" template. -------------------------------------------------
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const newDialog = window.getByTestId('new-element-dialog');
   await expect(newDialog).toBeVisible();
   await newDialog.getByTestId('new-element-filter').fill('monster');
@@ -194,7 +197,7 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   await newDialog.getByTestId('new-element-name').fill(ENTITY_PATH);
   await newDialog.getByTestId('new-element-dialog-submit').click();
   await expect(newDialog).toBeHidden();
-  const entities = window.getByRole('region', { name: `${NAMESPACE} Entities` });
+  const entities = window.getByRole('region', { name: 'Mobs' });
   await expect(entities.getByTestId(`element-row-${ENTITY_ID}`)).toBeVisible();
 
   // Entity Studio: identity, stats, appearance. --------------------------------------------
@@ -414,7 +417,7 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   launches.push(second);
   const w2 = second.window;
   await w2.waitForLoadState('domcontentloaded');
-  await w2.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(w2, 'toolbar-open-project');
   await expect(w2.getByTestId(`element-row-${MODEL_ID}`)).toBeVisible();
   await expect(w2.getByTestId(`element-row-${ANIMATIONS_ID}`)).toBeVisible();
   await w2.getByTestId(`element-row-${ENTITY_ID}`).click();

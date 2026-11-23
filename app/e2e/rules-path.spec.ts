@@ -16,7 +16,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, newProjectInFolder, outputDir, toast } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openAddDialog,
+  outputDir,
+  toast,
+} from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'msm_rules_e2e';
@@ -33,7 +40,7 @@ async function addFromTemplate(
   templateId: string,
   name: string,
 ): Promise<void> {
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill(filter);
@@ -135,7 +142,7 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
   await expect(plain.getByRole('alert')).toHaveText(
     'Rules is missing something it needs. Fill it in.',
   );
-  await expect(window.locator('footer')).toContainText('1 error(s)');
+  await expect(window.getByTestId('status-things-to-fix')).toHaveText('1 thing to fix');
   await itemChip.click();
   await pickThing(window, 'diamond', 'minecraft:diamond');
   await expect(itemChip).toHaveAccessibleName('Item: Diamond');
@@ -144,7 +151,7 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
   await expect(plain.getByTestId('rule-sentence')).toHaveText(
     'When a player uses Chime Block, give the player 1 Diamond.',
   );
-  await expect(window.locator('footer')).toContainText('0 error(s)');
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   // A logic rule: when a player joins, repeat 2 times a chat message. --------------------------
   await studio.getByTestId('rule-add').click();
@@ -166,7 +173,7 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
   const turn = window.getByTestId(`turn-into-rules-${PAD_EVENT}`);
   await expect(turn).toBeVisible();
   await turn.click();
-  await expect(window.locator('footer')).toContainText(`Undo: Turn ${PAD_EVENT} into rules`);
+  await expect(window.locator('footer')).toContainText('Undo: Turn jump pad broken into rules');
   await expect(window.getByTestId('events-from-rules')).toBeVisible();
   await expect(turn).toHaveCount(0);
 
@@ -207,7 +214,7 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
   // Undo takes "Turn into rules" back: the event is hand-made again. ---------------------------
   await window.getByTestId('toolbar-undo').click();
   await expect(window.getByTestId(`turn-into-rules-${PAD_EVENT}`)).toBeVisible();
-  await expect(window.locator('footer')).toContainText(`Redo: Turn ${PAD_EVENT} into rules`);
+  await expect(window.locator('footer')).toContainText('Redo: Turn jump pad broken into rules');
 
   // Copy as my own script: a script of the project's own, the rules off; Undo takes it back. --
   const scriptId = `${NAMESPACE}:rules_script`;
@@ -217,10 +224,10 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
   await expect(studio.getByTestId('rules-copy-as-script-done')).toContainText(
     `Copied to the script ${scriptId}.`,
   );
-  await expect(window.locator('footer')).toContainText(`Undo: Copy ${BOOK_ID} as my own script`);
+  await expect(window.locator('footer')).toContainText('Undo: Copy rules as my own script');
   await expect(window.getByTestId(`element-row-${scriptId}`)).toBeVisible();
   await expect(studio.getByTestId('rule-enabled').first()).not.toBeChecked();
   await window.getByTestId('toolbar-undo').click();
   await expect(window.getByTestId(`element-row-${scriptId}`)).toHaveCount(0);
-  await expect(window.locator('footer')).toContainText(`Redo: Copy ${BOOK_ID} as my own script`);
+  await expect(window.locator('footer')).toContainText('Redo: Copy rules as my own script');
 });

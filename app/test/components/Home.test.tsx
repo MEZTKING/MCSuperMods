@@ -505,9 +505,15 @@ describe('the one toolbar (ADR 0130 D1)', () => {
     const p = toolbarProps();
     renderToolbar(p);
     const user = userEvent.setup();
-    for (const shown of ['toolbar-save', 'toolbar-add-element', 'toolbar-new-project']) {
+    for (const shown of ['toolbar-save', 'toolbar-more']) {
       expect(screen.getByTestId(shown), shown).toBeTruthy();
     }
+    // New mod and Add from the full list are in More (ADR 0131 D1).
+    await user.click(screen.getByTestId('toolbar-more'));
+    for (const inMore of ['toolbar-add-element', 'toolbar-new-project']) {
+      expect(await screen.findByTestId(inMore), inMore).toBeTruthy();
+    }
+    await user.keyboard('{Escape}');
     for (const gone of ['toolbar-mode', 'toolbar-mode-row', 'toolbar-very-easy']) {
       expect(screen.queryByTestId(gone), gone).toBeNull();
     }

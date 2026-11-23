@@ -40,7 +40,7 @@ import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { strToU8, unzipSync, zipSync } from 'fflate';
 import { expect, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, outputDir, toast, toolbarMenu } from './fixtures';
 
 /** The Skyblock starter's namespace and world setup. */
 const NAMESPACE = 'msm_starter';
@@ -252,12 +252,13 @@ test('maps: Play my game, export the world as a map, bring a build in from it', 
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
   await seedFabricApi(launched);
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${SETUP_ID}`)).toBeVisible({ timeout: 30_000 });
 
   // 1. Play my game. ---------------------------------------------------------------------------
   const chip = window.getByTestId('play-chip');
-  await expect(chip).toHaveAttribute('data-state', /not-running|no-prism/);
+  const controls = window.getByTestId('play-controls');
+  await expect(controls).toHaveAttribute('data-state', /not-running|no-prism/);
   await window.getByTestId('play-menu').click();
   const playGame = window.getByTestId('play-menu-play-game');
   await expect(playGame).toBeEnabled();
@@ -273,7 +274,10 @@ test('maps: Play my game, export the world as a map, bring a build in from it', 
     gameMode: 'survival',
     difficulty: 'normal',
   });
+  // The seed is a line of the Play menu (ADR 0131 D3).
+  await window.getByTestId('play-menu').click();
   await expect(window.getByTestId('play-seed')).toHaveText(`Seed ${plays[0]?.seed}`);
+  await window.keyboard.press('Escape');
   const worldDir = join(gameDirOf(root), 'saves', GAME_WORLD);
   expect(existsSync(join(worldDir, 'level.dat'))).toBe(true);
 
@@ -302,10 +306,13 @@ test('maps: Play my game, export the world as a map, bring a build in from it', 
   // The game closes: its status stops coming, and the chip leaves "In my game" (it reads
   // "Starting…" until three minutes after the launch, `STARTING_WINDOW_MS`).
   stopStubs(root);
-  await expect(chip).toHaveAttribute('data-state', /^(not-running|starting)$/, {
+  await expect(controls).toHaveAttribute('data-state', /^(not-running|starting)$/, {
     timeout: 60_000,
   });
+  await window.getByTestId('play-menu').click();
+  await expect(window.getByTestId('play-menu-new-world')).toBeVisible();
   await expect(window.getByTestId('play-seed')).toHaveCount(0);
+  await window.keyboard.press('Escape');
 
   const second = await exportMap(launched, false);
   await expect(second.picker).toBeHidden({ timeout: 30_000 });

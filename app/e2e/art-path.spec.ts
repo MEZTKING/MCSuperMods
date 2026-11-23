@@ -38,7 +38,14 @@ import {
   placeholderPng,
 } from '@msm/plugin-library';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, newProjectInFolder, outputDir, toast } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openCreator,
+  outputDir,
+  toast,
+} from './fixtures';
 import { readPng } from './png';
 
 /** The project folder name; a blank project's namespace is derived from it. */
@@ -114,7 +121,7 @@ async function chooseVariation(dialog: Locator, index: number): Promise<number> 
 
 /** Opens the Creator from the toolbar and picks `flowId` (the first card of that flow). */
 async function openFlow(window: Page, flowId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId(`creator-flow-${flowId}`).first().click();

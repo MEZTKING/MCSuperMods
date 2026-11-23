@@ -928,7 +928,8 @@ describe('the prompt in topic files (B681)', () => {
   // ADR 0129 D4 moved it for Home's tile Change a Minecraft texture in the app map.
   // ADR 0130 moved it for one mode: the app map's toolbar, More options, Where it goes and Edit as
   // raw text, the picture buttons' one set of words, and how to speak without a View line.
-  const PINNED = 'ee09a0ebaa70fc957e0368924d315c59f19914a82fcd9415675a9cfded2b4725';
+  // B701 moved it for the one toolbar row (ADR 0131 D1): the row's labels and the More menu's.
+  const PINNED = '6611ac4a3df72313846b1e83ac0423e8489d112dfaceeac909ceb7f2df2a428f';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');

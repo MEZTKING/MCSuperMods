@@ -27,7 +27,16 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  appDir,
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  openDockTab,
+  openToolbarMenu,
+  outputDir,
+  toolbarMenu,
+} from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'amber_e2e';
@@ -95,12 +104,12 @@ async function problemRows(window: Page, severity?: 'error' | 'warning'): Promis
 /** Asserts that the Problems panel lists nothing at all and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the export chevron menu and returns the item `testId` (not clicked). */
 async function exportItem(window: Page, testId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const item = window.getByTestId(testId);
   await expect(item).toBeVisible();
   return item;
@@ -131,8 +140,7 @@ test('worldgen: starter, pool connections, import .nbt, export, feature order, s
   const { window } = first;
   await window.waitForLoadState('domcontentloaded');
 
-  await window.getByTestId('toolbar-new-menu').click();
-  await window.getByTestId('toolbar-new-from-starter').click();
+  await toolbarMenu(window, 'toolbar-new-from-starter');
   const newProject = window.getByTestId('new-project-dialog');
   await expect(newProject).toBeVisible();
   const starter = newProject.getByTestId('starter-picker').getByTestId('starter-worldgen_pack');
@@ -172,7 +180,7 @@ test('worldgen: starter, pool connections, import .nbt, export, feature order, s
   await expect(importDialog.getByTestId('import-files-importers')).toContainText('.nbt');
   await importDialog.getByTestId('import-files-dialog-submit').click();
   await expect(importDialog).toBeHidden();
-  const structures = window.getByRole('region', { name: `${NAMESPACE} Structures` });
+  const structures = window.getByRole('region', { name: 'Structures' });
   const importedRow = structures.getByTestId(`element-row-${IMPORTED_ID}`);
   await expect(importedRow).toBeVisible();
   await importedRow.click();
@@ -208,7 +216,7 @@ test('worldgen: starter, pool connections, import .nbt, export, feature order, s
   rmSync(join(folders.outDir, zipName));
 
   // A second biome, then a step warning and a feature order error. --------------------------
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const newElement = window.getByTestId('new-element-dialog');
   await expect(newElement).toBeVisible();
   await newElement.getByTestId('new-element-filter').fill('temperate forest');
@@ -289,11 +297,7 @@ test('worldgen: starter, pool connections, import .nbt, export, feature order, s
   // Export the structures as Sponge schematics. ---------------------------------------------
   // The submenu is driven by keyboard: Playwright's pointer jumps out of Radix's grace area
   // between the submenu trigger and its content, which closes the submenu mid-click.
-  await window.getByTestId('toolbar-export-menu').click();
-  const more = window.getByTestId('export-more');
-  await expect(more).toBeVisible();
-  await more.focus();
-  await window.keyboard.press('ArrowRight');
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const schematics = window.getByTestId('export-schematics');
   await expect(schematics).toBeVisible();
   await expect(schematics).not.toHaveAttribute('data-disabled', /.*/);
@@ -318,7 +322,7 @@ test('worldgen: starter, pool connections, import .nbt, export, feature order, s
   launches.push(second);
   const w2 = second.window;
   await w2.waitForLoadState('domcontentloaded');
-  await w2.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(w2, 'toolbar-open-project');
   await expect(w2.getByTestId(`element-row-${IMPORTED_ID}`)).toBeVisible();
   await expect(w2.getByTestId(`element-row-${SECOND_BIOME_ID}`)).toHaveCount(0);
   await w2.getByTestId(`element-row-${CENTRE_POOL_ID}`).click();

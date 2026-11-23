@@ -28,7 +28,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { crc32, deflateSync } from 'node:zlib';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openRawText } from './fixtures';
+import { type LaunchedApp, launchApp, openRawText, toolbarMenu } from './fixtures';
 import { oggVorbis } from './ogg';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
@@ -285,7 +285,7 @@ async function launchProject(): Promise<LaunchedApp> {
   const launched = await launchApp({ args: WEBGL_ARGS, reuse: folders });
   launches.push(launched);
   await launched.window.waitForLoadState('domcontentloaded');
-  await launched.window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(launched.window, 'toolbar-open-project');
   await expect(launched.window.getByTestId(`element-row-${NS}:sunset`)).toBeVisible();
   return launched;
 }

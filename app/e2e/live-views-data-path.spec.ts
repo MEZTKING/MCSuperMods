@@ -25,7 +25,14 @@ import { cpSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, type LaunchOptions, launchApp } from './fixtures';
+import {
+  appDir,
+  type LaunchedApp,
+  type LaunchOptions,
+  launchApp,
+  openCreator,
+  toolbarMenu,
+} from './fixtures';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 
@@ -63,7 +70,7 @@ async function launchFixture(options: LaunchOptions = {}): Promise<LaunchedApp> 
   const launched = await launchApp({ ...options, reuse: folders });
   launches.push(launched);
   await launched.window.waitForLoadState('domcontentloaded');
-  await launched.window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(launched.window, 'toolbar-open-project');
   await expect(launched.window.getByTestId(`element-row-${WEIGHTS_ID}`)).toBeVisible();
   return launched;
 }
@@ -267,7 +274,7 @@ test('a function: its lines marked, and Run in Try it runs it in Try it', async 
 
 test('the Creator: the Mob flow opens on Live and its view follows an answer', async () => {
   const { window } = await launchFixture();
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('creator-flow-custom_mob').click();

@@ -28,7 +28,14 @@ import { join } from 'node:path';
 import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  openDockTab,
+  outputDir,
+  toast,
+} from './fixtures';
 
 const MOD_NAME = 'Garden Mod';
 
@@ -80,7 +87,7 @@ async function expectNoErrors(window: Page): Promise<void> {
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
     0,
   );
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Types `value` into an id field and commits it with Enter. */
@@ -93,7 +100,7 @@ async function commitId(field: Locator, value: string): Promise<void> {
 /** Saves the project, which must have unsaved changes (otherwise "Saved" shows at once). */
 async function save(window: Page): Promise<void> {
   const footer = window.locator('footer');
-  await expect(footer.getByText('Unsaved changes', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Not saved yet', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
   await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
 }
@@ -218,7 +225,7 @@ test('plants: Cave plants and Flower pot from Very easy, the pot and its sounds,
   await expect(things).toContainText('Clay Planter');
 
   // 2. Advanced: the vine, then the pot, a vanilla plant added and its own sounds. ------------
-  await expect(window.getByRole('navigation', { name: 'Elements' })).toBeVisible();
+  await expect(window.getByRole('navigation', { name: 'Things in this mod' })).toBeVisible();
   await window.getByTestId(`element-row-${id('ember_vine')}`).click();
   const studio = window.getByTestId('block-studio');
   await expect(studio).toBeVisible();
@@ -270,7 +277,7 @@ test('plants: Cave plants and Flower pot from Very easy, the pot and its sounds,
   });
 
   // 3. The Vanilla block rules Studio. ----------------------------------------------------------
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const add = window.getByTestId('new-element-dialog');
   await expect(add).toBeVisible();
   await add.getByTestId('new-element-filter').fill('vanilla blocks');
@@ -332,7 +339,9 @@ test('plants: Cave plants and Flower pot from Very easy, the pot and its sounds,
       await expect(toast(window)).toContainText(`Project target changed to ${target.id}.`);
       await expectNoErrors(window);
     }
-    await expect(window.getByTestId('project-target')).toContainText(target.id);
+    await expect(window.getByTestId('project-target')).toContainText(
+      `For Minecraft ${target.mcVersion}`,
+    );
     const jar = await exportJar(window, folders.outDir);
     const names = Object.keys(jar.files);
 

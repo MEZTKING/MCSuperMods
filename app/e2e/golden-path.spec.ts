@@ -21,8 +21,11 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
   openDockTab,
+  openToolbarMenu,
   outputDir,
+  toolbarMenu,
 } from './fixtures';
 import { checkerPng } from './png';
 
@@ -65,7 +68,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(window.getByTestId('element-row-msm_e2e:pack')).toBeVisible();
 
   // Block model from the template picker.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('template-block_model').check();
@@ -76,7 +79,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(window.getByTestId(`element-row-${ELEMENT_ID}`)).toBeVisible();
 
   // Import a texture into textures/block.
-  await window.getByTestId('toolbar-import-assets').click();
+  await toolbarMenu(window, 'toolbar-import-assets');
   const importDialog = window.getByTestId('import-assets-dialog');
   await expect(importDialog).toBeVisible();
   await importDialog.getByTestId('import-assets-folder-block').check();
@@ -134,11 +137,11 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(window.getByTestId('status-toast-text')).toContainText(
     `${ELEMENT_ID} now draws with ${NAMESPACE}:item/blank_gem`,
   );
-  await expect(window.locator('footer')).toContainText(`Undo: Edit ${ELEMENT_ID}`);
+  await expect(window.locator('footer')).toContainText('Undo: Edit test block');
   await window.keyboard.press('ControlOrMeta+Z');
   // The drop is exactly one undo step: one Undo takes it off and leaves the new texture's step.
-  await expect(window.locator('footer')).toContainText(`Redo: Edit ${ELEMENT_ID}`);
-  await expect(window.locator('footer')).not.toContainText(`Undo: Edit ${ELEMENT_ID}`);
+  await expect(window.locator('footer')).toContainText('Redo: Edit test block');
+  await expect(window.locator('footer')).not.toContainText('Undo: Edit test block');
 
   // Point textures.all at the imported texture, through the form.
   await window.getByTestId(`element-row-${ELEMENT_ID}`).click();
@@ -159,9 +162,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
     0,
   );
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
-  const exportButton = window.getByTestId('toolbar-export-zip');
-  await expect(exportButton).toBeEnabled();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   // Preview screenshot (WebGL may be unavailable under xvfb; the panel itself is captured).
   // The live preview is beside the form (ADR 0047 D4); the dock's tab points there.
@@ -171,8 +172,11 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(previewPanel).toBeVisible();
   await previewPanel.screenshot({ path: join(outputDir, 'golden-path-preview.png') });
 
-  // Export the zip into MSM_E2E_OUT_DIR.
-  await exportButton.click();
+  // Export the zip into MSM_E2E_OUT_DIR (More > Export, ADR 0131 D1).
+  await openToolbarMenu(window, 'toolbar-export-menu');
+  const exportEntry = window.getByTestId('export-resource-zip');
+  await expect(exportEntry).not.toHaveAttribute('data-disabled', /.*/);
+  await exportEntry.click();
   await expect
     .poll(() => readdirSync(folders.outDir).filter((name) => name.endsWith('.zip')), {
       timeout: 20_000,
@@ -209,7 +213,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
   const second = await launchApp({ reuse: folders });
   launches.push(second);
   await second.window.waitForLoadState('domcontentloaded');
-  await second.window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(second.window, 'toolbar-open-project');
   const reopened = second.window.getByTestId(`element-row-${ELEMENT_ID}`);
   await expect(reopened).toBeVisible();
   await reopened.click();

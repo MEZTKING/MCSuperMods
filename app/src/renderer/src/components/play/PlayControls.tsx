@@ -1,10 +1,14 @@
 /**
- * The Play controls (ADR 0084 D1, D6, D7): Play, Reload, the game status chip with its
- * progress line, the open world's seed in Play my game, and a small menu with "Play my game"
- * and "Start over" (ADR 0116 D1), "New test world", "Restart" and "Open the test instance's
- * folder". It takes no props: it reads the session and the bridge through the
- * Play store ({@link connectPlay}) and renders nothing until the store is connected and a
- * project is open. The Restart needed dialog and the Prism setup panel open from here.
+ * The Play controls (ADR 0084 D1, D6, D7; ADR 0131 D3): Play and its menu, Reload only while it
+ * can be used, the game status chip only when it needs the user or a game is running (no Prism,
+ * Restart needed, starting or in a world), and the progress line only while busy. The quiet
+ * states (checking, not running) are the first line of the Play menu (`play-status`) and part of
+ * Play's tip; the open world's seed in Play my game is a line of the menu (`play-seed`). The
+ * menu has "Play my game" and "Start over" (ADR 0116 D1), "New test world", "Restart" and "Open
+ * the test instance's folder". It takes no props: it reads the session and the bridge through
+ * the Play store ({@link connectPlay}) and renders nothing until the store is connected and a
+ * mod is open. The Restart needed dialog and the Prism setup panel open from here. The
+ * container carries the state as `data-state` (`checking` before the first status).
  *
  * @packageDocumentation
  */
@@ -24,6 +28,7 @@ import {
 } from '../../store/play-store';
 import { Button, buttonClass } from '../ui/Button';
 import { Tip } from '../ui/Tip';
+import { useMenuOpen } from './menu-open';
 import { PrismSetupPanel } from './PrismSetupPanel';
 import { RestartNeededDialog } from './RestartNeededDialog';
 
@@ -63,6 +68,16 @@ const menuItemClass =
 const menuContentClass =
   'z-50 flex min-w-56 flex-col gap-0.5 rounded-md border border-border bg-panel p-1 text-text shadow-lg';
 
+/** A sentence from the status words: a full stop unless they end in one already. */
+export function statusSentence(words: string): string {
+  return /[.…!?]$/.test(words) ? words : `${words}.`;
+}
+
+/** Whether the chip shows in the row (ADR 0131 D3): it needs the user, or a game runs. */
+export function chipInRow(chip: PlayChipState | null, running: boolean): boolean {
+  return chip === 'no-prism' || chip === 'restart-needed' || running;
+}
+
 /** One entry of the Play menu; `reason` says why it is disabled. */
 function MenuItem(props: {
   label: string;
@@ -96,6 +111,7 @@ export function PlayControls() {
   const prismPanel = usePlayStore((state) => state.prismPanel);
   const prismMessage = usePlayStore((state) => state.prismMessage);
   const snapshot = useSessionSnapshot(host?.session ?? null);
+  const menu = useMenuOpen();
 
   if (host === null || snapshot === null || snapshot.project === null) return null;
   const store = usePlayStore.getState();
@@ -109,17 +125,26 @@ export function PlayControls() {
   const hasGame = playGameSettings(snapshot.project) !== null;
   const seed = status?.state === 'game-world' ? (status.seed ?? null) : null;
 
+  const words = status?.label ?? PLAY_CONTROL_LABELS.checking;
+  const showChip = chipInRow(chip, running_);
+  const playTip = showChip
+    ? PLAY_CONTROL_LABELS.playTip
+    : `${statusSentence(words)} ${PLAY_CONTROL_LABELS.playTip}`;
   const chipContent = (
     <>
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
-      {status?.label ?? PLAY_CONTROL_LABELS.checking}
+      <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current" />
+      <span className="truncate">{words}</span>
     </>
   );
-  const chipClass = `inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs ${chip === null ? 'border-border text-muted' : CHIP_CLASS[chip]}`;
+  const chipClass = `inline-flex max-w-48 items-center gap-1.5 self-center rounded-full border px-2 py-0.5 text-xs whitespace-nowrap ${chip === null ? 'border-border text-muted' : CHIP_CLASS[chip]}`;
 
   return (
-    <div className="inline-flex items-center gap-1.5" data-testid="play-controls">
-      <Tip label={PLAY_CONTROL_LABELS.playTip}>
+    <div
+      className="inline-flex shrink-0 items-center gap-1.5"
+      data-testid="play-controls"
+      data-state={chip ?? 'checking'}
+    >
+      <Tip label={playTip}>
         <Button
           data-testid="play-button"
           disabled={busy}
@@ -130,33 +155,42 @@ export function PlayControls() {
           {PLAY_CONTROL_LABELS.play}
         </Button>
       </Tip>
-      <Tip label={canReload ? PLAY_CONTROL_LABELS.reloadTip : PLAY_CONTROL_LABELS.reloadOff}>
-        {/* A disabled button gets no pointer events; the span keeps the tip. */}
-        <span className="inline-flex">
-          <Button
-            data-testid="play-reload"
-            disabled={busy || !canReload}
-            aria-busy={running === 'reload' || mainBusy === 'reload'}
-            onClick={() => void store.reload()}
-          >
-            <RotateCw size={16} aria-hidden />
-            {PLAY_CONTROL_LABELS.reload}
-          </Button>
-        </span>
-      </Tip>
-      <DropdownMenu.Root modal={false}>
-        <DropdownMenu.Trigger asChild>
-          <button
-            type="button"
-            className={buttonClass}
-            data-testid="play-menu"
-            aria-label={PLAY_CONTROL_LABELS.menu}
-          >
-            <ChevronDown size={16} aria-hidden />
-          </button>
-        </DropdownMenu.Trigger>
+      <DropdownMenu.Root modal={false} {...menu.root}>
+        <Tip label={PLAY_CONTROL_LABELS.menu}>
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className={buttonClass}
+              data-testid="play-menu"
+              aria-label={PLAY_CONTROL_LABELS.menu}
+            >
+              <ChevronDown size={16} aria-hidden />
+            </button>
+          </DropdownMenu.Trigger>
+        </Tip>
         <DropdownMenu.Portal>
-          <DropdownMenu.Content align="start" sideOffset={4} className={menuContentClass}>
+          <DropdownMenu.Content
+            align="start"
+            sideOffset={4}
+            className={menuContentClass}
+            {...menu.content}
+          >
+            {!showChip && (
+              <DropdownMenu.Label
+                data-testid="play-status"
+                className="px-2 py-1 text-sm text-muted"
+              >
+                {words}
+              </DropdownMenu.Label>
+            )}
+            {seed !== null && (
+              <DropdownMenu.Label data-testid="play-seed" className="px-2 py-1 text-xs text-muted">
+                {PLAY_CONTROL_LABELS.seed} {seed}
+              </DropdownMenu.Label>
+            )}
+            {(!showChip || seed !== null) && (
+              <DropdownMenu.Separator className="my-0.5 h-px bg-border" />
+            )}
             <MenuItem
               label={PLAY_CONTROL_LABELS.playGame}
               testId="play-menu-play-game"
@@ -196,41 +230,62 @@ export function PlayControls() {
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
-      {chip === 'restart-needed' ? (
-        <button
-          type="button"
-          className={`${chipClass} cursor-pointer`}
-          data-testid="play-chip"
-          data-state={chip}
-          onClick={() => store.showRestartNeeded()}
-        >
-          {chipContent}
-        </button>
-      ) : chip === 'no-prism' ? (
-        <button
-          type="button"
-          className={`${chipClass} cursor-pointer`}
-          data-testid="play-chip"
-          data-state={chip}
-          onClick={() => store.openPrismPanel()}
-        >
-          {chipContent}
-        </button>
-      ) : (
-        <span className={chipClass} data-testid="play-chip" data-state={chip ?? 'checking'}>
-          {chipContent}
-        </span>
+      {canReload && (
+        <Tip label={PLAY_CONTROL_LABELS.reloadTip}>
+          {/* A disabled button gets no pointer events; the span keeps the tip. */}
+          <span className="inline-flex">
+            <Button
+              data-testid="play-reload"
+              disabled={busy}
+              aria-busy={running === 'reload' || mainBusy === 'reload'}
+              onClick={() => void store.reload()}
+            >
+              <RotateCw size={16} aria-hidden />
+              {PLAY_CONTROL_LABELS.reload}
+            </Button>
+          </span>
+        </Tip>
       )}
-      {seed !== null && (
-        <span className="text-xs text-muted" data-testid="play-seed">
-          {PLAY_CONTROL_LABELS.seed} {seed}
-        </span>
-      )}
+      {showChip &&
+        (chip === 'restart-needed' ? (
+          <button
+            type="button"
+            className={`${chipClass} cursor-pointer`}
+            data-testid="play-chip"
+            data-state={chip}
+            title={words}
+            onClick={() => store.showRestartNeeded()}
+          >
+            {chipContent}
+          </button>
+        ) : chip === 'no-prism' ? (
+          <button
+            type="button"
+            className={`${chipClass} cursor-pointer`}
+            data-testid="play-chip"
+            data-state={chip}
+            title={words}
+            onClick={() => store.openPrismPanel()}
+          >
+            {chipContent}
+          </button>
+        ) : (
+          <span
+            className={chipClass}
+            data-testid="play-chip"
+            data-state={chip ?? 'checking'}
+            title={words}
+          >
+            {chipContent}
+          </span>
+        ))}
+      {/* Always in the page so screen readers hear it; it takes no room while idle. */}
       <span
         role="status"
         aria-live="polite"
-        className="text-xs text-muted"
+        className={busy ? 'max-w-48 truncate text-xs whitespace-nowrap text-muted' : 'sr-only'}
         data-testid="play-progress"
+        title={busy ? (progress ?? '') : undefined}
       >
         {busy ? (progress ?? '') : ''}
       </span>

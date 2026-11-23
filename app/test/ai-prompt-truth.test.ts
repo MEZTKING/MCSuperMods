@@ -496,6 +496,8 @@ function checkAppMap(sources: TruthSources): string[] {
     } else inMarkup(label, F.toolbar);
   }
   if (!M.toolbar.includes(play.play ?? '')) problems.push('no Play in the toolbar');
+  // The More menu (ADR 0131 D1).
+  inMarkup(M.toolbarMore, F.toolbar);
   // More options and Where it goes (ADR 0130 D3, D4).
   inMarkup(M.moreOptions, F.moreOptions);
   inMarkup([M.whereItGoes, M.editAsRawText], F.editorArea);

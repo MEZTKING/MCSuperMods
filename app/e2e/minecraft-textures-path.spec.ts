@@ -29,7 +29,13 @@ import { strToU8, unzipSync, zipSync } from 'fflate';
 import { expect, test } from 'playwright/test';
 import { makeOfficialDir } from '../test/helpers/fake-launchers';
 import { KEPT_ENTRIES, makePng } from '../test/helpers/synthetic-jar';
-import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openToolbarMenu,
+  outputDir,
+} from './fixtures';
 import { readPng } from './png';
 
 /** The project folder name; a new project's namespace is derived from it. */
@@ -156,9 +162,10 @@ test('minecraft textures: set up, change Stone, start a texture from Water still
   await expect.poll(() => existsSync(stone)).toBe(true);
 
   // The resource pack export carries it at the same path.
-  const exportButton = window.getByTestId('toolbar-export-zip');
-  await expect(exportButton).toBeEnabled();
-  await exportButton.click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
+  const exportEntry = window.getByTestId('export-resource-zip');
+  await expect(exportEntry).not.toHaveAttribute('data-disabled', /.*/);
+  await exportEntry.click();
   await expect
     .poll(() => readdirSync(folders.outDir).filter((name) => name.endsWith('.zip')), {
       timeout: 20_000,

@@ -23,7 +23,7 @@
 import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, installPlugin } from './fixtures';
+import { appDir, installPlugin, toolbarMenu } from './fixtures';
 import {
   bluePixelShare,
   launchSearch,
@@ -193,7 +193,7 @@ test('search: Ctrl+K with > and @ for everyone, and the palette still runs comma
   });
   const { window } = launched;
   await expect(window.getByTestId('welcome-dialog')).toHaveCount(0);
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId('element-row-msm_sample_rules:lucky_block')).toBeVisible();
 
   // Ctrl+K, `>`: a command, run. ----------------------------------------------------------------
@@ -310,7 +310,7 @@ test('search on the 26.4 target: a flow it cannot make is last, greyed, with its
     },
   });
   const { window } = launched;
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId('element-row-msm_sample_rules:lucky_block')).toBeVisible();
 
   await window.keyboard.press('Control+K');

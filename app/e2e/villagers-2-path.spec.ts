@@ -60,7 +60,7 @@ async function expectNoProblems(window: Page): Promise<void> {
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   await expect(problems.locator('[data-testid="problem-row"]')).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Runs `flowId` from Home's "Make a trader" tile with the answers `answer` gives. */
@@ -274,7 +274,7 @@ test('villagers 2: a villager look and a merchant that remembers, the Studios, T
 
   // 5. Saved, then the jar. ---------------------------------------------------------------------
   const footer = window.locator('footer');
-  await expect(footer.getByText('Unsaved changes', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Not saved yet', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
   await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
   type Mob = { components: Record<string, Record<string, unknown>> };

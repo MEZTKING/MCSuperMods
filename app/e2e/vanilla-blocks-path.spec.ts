@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, openAddDialog, outputDir } from './fixtures';
 
 const MOD_NAME = 'Tin Mod';
 
@@ -111,7 +111,7 @@ test('vanilla blocks: Very easy picks, Lights and Copper set defaults, a sign in
   await expect(things).toContainText('Copper set');
 
   // Advanced: the sets' elements, then a sign made in the Block Studio. ----------------------
-  await expect(window.getByRole('navigation', { name: 'Elements' })).toBeVisible();
+  await expect(window.getByRole('navigation', { name: 'Things in this mod' })).toBeVisible();
   for (const path of ['glow_torch', 'glow_lantern', 'glow_chain', 'glow_candle', 'tin_block']) {
     await expect(window.getByTestId(`element-row-${id(path)}`)).toBeVisible();
   }
@@ -119,7 +119,7 @@ test('vanilla blocks: Very easy picks, Lights and Copper set defaults, a sign in
     await expect(window.getByTestId(`element-row-${id(path)}`)).toHaveCount(1);
   }
 
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const add = window.getByTestId('new-element-dialog');
   await expect(add).toBeVisible();
   await add.getByTestId('new-element-filter').fill('simple block');
@@ -150,7 +150,7 @@ test('vanilla blocks: Very easy picks, Lights and Copper set defaults, a sign in
   await typeTexture('all', id('block/cut_tin'));
   await typeTexture('sign', id('block/tin_block'));
   await typeTexture('item', id('item/tin_ingot'));
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

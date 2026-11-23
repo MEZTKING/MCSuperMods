@@ -38,7 +38,10 @@ import {
   launchApp,
   newProjectInFolder,
   openDockTab,
+  openExport,
+  openToolbarMenu,
   outputDir,
+  toolbarMenu,
 } from './fixtures';
 import { rgbaPng } from './png';
 
@@ -203,10 +206,10 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
     await expect(window.getByTestId(`element-row-${id}`)).toBeVisible();
   }
   await expect(await errorRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   // Resource pack through the toolbar.
-  await window.getByTestId('toolbar-export-zip').click();
+  await openExport(window, 'export-resource-zip');
   const resource = await newZip(folders.outDir, '.zip', []);
   expect(Object.keys(resource.files)).toEqual(
     expect.arrayContaining([
@@ -222,7 +225,7 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
   expect(lang['item.ruby.ruby_pickaxe']).toBe('Ruby Pickaxe');
 
   // Data pack through the Export menu.
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const dataItem = window.getByTestId('export-data-zip');
   await expect(dataItem).toBeVisible();
   await dataItem.click();
@@ -274,7 +277,7 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
   await expect(window.getByTestId(`element-row-${NAMESPACE}:pack`)).toBeVisible();
 
   // Settings: the scripted key reads as set, with the privacy text.
-  await window.getByTestId('toolbar-settings').click();
+  await toolbarMenu(window, 'toolbar-settings');
   const settings = window.getByTestId('settings-dialog');
   await expect(settings).toBeVisible();
   await expect(settings.getByTestId('settings-ai-key-status')).toHaveText('Key set (…e2e!)');
@@ -332,7 +335,7 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${WAND_ID}`)).toBeVisible();
 
   // The injected error, with an Explain button.
@@ -368,7 +371,7 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   await panel.getByTestId('ai-apply').click();
   await expect(transcript).toContainText('Changed Ruby Wand.');
   await expect(await errorRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

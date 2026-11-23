@@ -35,7 +35,10 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
+  openCreator,
   openDockTab,
+  openExport,
   outputDir,
   toast,
 } from './fixtures';
@@ -125,17 +128,17 @@ async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
 /** No problem of any severity, and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 async function expectNoErrors(window: Page): Promise<void> {
   await expect(await problemRows(window, 'error')).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the Creator from the toolbar and picks `flowId` from the group "Worlds". */
 async function openFlow(window: Page, flowId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('creator-group-worlds').getByTestId(`creator-flow-${flowId}`).click();
@@ -164,7 +167,7 @@ async function applyCreator(
  */
 async function save(window: Page): Promise<void> {
   const footer = window.locator('footer');
-  await expect(footer.getByText('Unsaved changes', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Not saved yet', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
   await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
 }
@@ -534,7 +537,7 @@ test('portals: Dimension flow portal, trigger-lit portal and Light a portal, exp
   await expectNoErrors(window);
 
   // A function that places the portal.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const create = window.getByTestId('new-element-dialog');
   await expect(create).toBeVisible();
   await create.getByTestId('template-function').check();
@@ -561,8 +564,7 @@ test('portals: Dimension flow portal, trigger-lit portal and Light a portal, exp
   console.log(`portals-path edits: ${((Date.now() - started) / 1000).toFixed(1)} s`);
 
   // The vanilla data pack: the dimension and both functions kept, the tag entry optional.
-  await window.getByTestId('toolbar-export-menu').click();
-  await window.getByTestId('export-data-zip').click();
+  await openExport(window, 'export-data-zip');
   const data = await newZip(folders.outDir, '.zip');
   const dataNames = Object.keys(data.files);
   expect(dataNames).toEqual(
@@ -617,7 +619,9 @@ test('portals: Dimension flow portal, trigger-lit portal and Light a portal, exp
       await expect(toast(window)).toContainText(`Project target changed to ${target.id}.`);
       await expectNoErrors(window);
     }
-    await expect(window.getByTestId('project-target')).toContainText(target.id);
+    await expect(window.getByTestId('project-target')).toContainText(
+      `For Minecraft ${target.mcVersion}`,
+    );
     // The jar keeps its name on every target: move the earlier one out of the way.
     for (const name of known) rmSync(join(folders.outDir, name));
     const palette = await openPalette(window, 'fabric mod jar');

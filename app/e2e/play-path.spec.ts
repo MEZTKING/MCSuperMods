@@ -36,6 +36,7 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
   outputDir,
   toast,
 } from './fixtures';
@@ -134,7 +135,7 @@ async function addFromTemplate(
   templateId: string,
   name: string,
 ): Promise<void> {
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill(filter);
@@ -158,6 +159,28 @@ function installedJarEntries(prismRoot: string): string[] {
   const jar = readdirSync(mods).find((name) => name.startsWith(NAMESPACE));
   if (jar === undefined) return [];
   return Object.keys(unzipSync(readFileSync(join(mods, jar))));
+}
+
+const SHOTS = process.env.TOOLBAR_SHOTS;
+
+/** Pictures of the window at 900, 1280 and 1920 px wide when TOOLBAR_SHOTS names a folder. */
+async function toolbarShots(app: LaunchedApp, name: string): Promise<void> {
+  if (SHOTS === undefined) return;
+  mkdirSync(SHOTS, { recursive: true });
+  for (const width of [900, 1280, 1920]) {
+    await app.app.evaluate(({ BrowserWindow }, size) => {
+      const win = BrowserWindow.getAllWindows()[0];
+      if (win?.isMaximized() === true) win.unmaximize();
+      win?.setContentSize(size, 860);
+    }, width);
+    await expect
+      .poll(() =>
+        app.window.evaluate(() => (globalThis as unknown as { innerWidth: number }).innerWidth),
+      )
+      .toBe(width);
+    await app.window.mouse.move(0, 400);
+    await app.window.screenshot({ path: join(SHOTS, `${name}-${width}.png`) });
+  }
 }
 
 let base: string | undefined;
@@ -208,7 +231,11 @@ test('play: Play, Reload a data change, Restart needed for a new block, Restart'
     process.env[key] = value;
   }
 
-  launched = await launchApp({ reuse: folders });
+  // With TOOLBAR_SHOTS=<folder> the row's pictures with a game running are saved there (B701).
+  launched = await launchApp({
+    reuse: folders,
+    ...(SHOTS === undefined ? {} : { args: ['--force-device-scale-factor=2'] }),
+  });
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
   await seedFabricApi(launched);
@@ -221,9 +248,14 @@ test('play: Play, Reload a data change, Restart needed for a new block, Restart'
 
   const chip = window.getByTestId('play-chip');
   const reload = window.getByTestId('play-reload');
-  await expect(chip).toHaveAttribute('data-state', 'not-running');
-  await expect(chip).toHaveText('Game not running');
-  await expect(reload).toBeDisabled();
+  // Quiet states have no chip and no Reload in the row (ADR 0131 D3); Play's menu says them.
+  await expect(window.getByTestId('play-controls')).toHaveAttribute('data-state', 'not-running');
+  await expect(chip).toHaveCount(0);
+  await expect(reload).toHaveCount(0);
+  await window.getByTestId('play-menu').click();
+  await expect(window.getByTestId('play-status')).toHaveText('Game not running');
+  await window.keyboard.press('Escape');
+  await expect(window.getByTestId('play-status')).toHaveCount(0);
 
   // Play: the managed instance, the jar, the dev files, and the stub opens the test world. ---
   await window.getByTestId('play-button').click();
@@ -231,6 +263,7 @@ test('play: Play, Reload a data change, Restart needed for a new block, Restart'
   await expect(chip).toHaveAttribute('data-state', 'test-world', { timeout: 30_000 });
   await expect(chip).toHaveText('In the test world');
   await expect(reload).toBeEnabled();
+  await toolbarShots(launched, 'toolbar-game-running');
   const gameDir = gameDirOf(root);
   const plays = eventsOf(root, 'play');
   expect(plays).toHaveLength(1);

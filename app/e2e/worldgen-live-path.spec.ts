@@ -31,7 +31,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } fro
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, toolbarMenu } from './fixtures';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 
@@ -164,7 +164,7 @@ async function launchProject(args: readonly string[]): Promise<LaunchedApp> {
   const launched = await launchApp({ reuse: folders, args });
   launches.push(launched);
   await launched.window.waitForLoadState('domcontentloaded');
-  await launched.window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(launched.window, 'toolbar-open-project');
   await expect(launched.window.getByTestId(`element-row-${DIMENSION_ID}`)).toBeVisible();
   return launched;
 }

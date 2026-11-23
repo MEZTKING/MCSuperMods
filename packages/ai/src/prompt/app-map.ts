@@ -12,16 +12,32 @@ import { quoted } from './core';
 
 /** The labels the map names, by place, with the component or constant each comes from. */
 export const APP_MAP_LABELS = Object.freeze({
-  /** The toolbar (`Toolbar.tsx`; Play and Reload from `PLAY_CONTROL_LABELS`). */
+  /** The toolbar's one row (`Toolbar.tsx`; Play and Reload from `PLAY_CONTROL_LABELS`). */
   toolbar: Object.freeze([
     'Home',
     'Undo',
     'Redo',
+    'Save',
     'Try it',
     'Play',
     'Reload',
     'Share my mod',
     'AI helper',
+    'Help',
+    'More',
+  ]),
+  /** The toolbar's More menu (`Toolbar.tsx`, ADR 0131 D1). */
+  toolbarMore: Object.freeze([
+    'New mod…',
+    'Open a mod…',
+    'Recent mods',
+    'Make something…',
+    'Add from the full list…',
+    'Bring in pictures or sounds…',
+    'Export',
+    'Install',
+    'Test in Minecraft…',
+    'Settings…',
   ]),
   /** The disclosure at the bottom of each part of a thing (`MoreOptions.tsx`). */
   moreOptions: 'More options',
@@ -101,4 +117,4 @@ export const APP_MAP_TILES = Object.freeze([
 
 const M = APP_MAP_LABELS;
 
-export const APP_MAP = `- The app, by its labels: one view for everyone. The toolbar has ${quoted(M.toolbar)} beside New, Open, Save and the exports, and the menus have the rest ("${M.exportJar}" makes the jar). Every part of an open thing ends in "${M.moreOptions}" with its rarer settings, ids and raw values; its last part "${M.whereItGoes}" holds what uses it and, under its "${M.moreOptions}", "${M.editAsRawText}". Home has "${M.makeSomething}", tiles that open the Creator (plain questions with a live picture) or another maker: ${quoted(APP_MAP_TILES)}; then "${M.myThings}", a card per thing, which opens it, with a menu of ${quoted(M.thingMenu)} (the first only for things a Creator flow made). An empty mod shows "${M.showcase}", clips with ${quoted(M.showcaseButtons)}, later folded under "${M.showShowcase}". "${M.surprise}" makes a random mod to start from. Problems are listed under "${M.thingsToFix}" ("${M.nothingToFix}" when none) with ${quoted(M.thingsToFixButtons)}; the right-hand tabs are ${quoted(M.dockTabs)}, and an open thing's header has ${quoted(M.elementHeader)} ("Preview" is the live view: models, pictures, the world map). "Play" saves, builds and starts Minecraft in a test world (its menu: ${quoted(M.playMenu)}); "Reload" sends changes into the running game and says when one needs a restart. "Share my mod" saves the mod as one file friends put in their mods folder next to Fabric API. Picture fields have "${M.draw}", MSM's own drawing, and "${M.makeWithAi}", which asks the AI picture service set up in Settings, "${M.aiPictures}" (${M.aiPictureService} by default; its own key and cost; until then "${M.setUpAiPictures}"); you cannot make AI pictures yourself. What note_missing_feature notes is in the Wishlist (Help, "${M.wishlist}").`;
+export const APP_MAP = `- The app, by its labels: one view for everyone. The toolbar is one row, ${quoted(M.toolbar)}; "More" holds ${quoted(M.toolbarMore)}, and the menu bar the same ("${M.exportJar}" makes the jar). Every part of an open thing ends in "${M.moreOptions}" with its rarer settings, ids and raw values; its last part "${M.whereItGoes}" holds what uses it and, under its "${M.moreOptions}", "${M.editAsRawText}". Home has "${M.makeSomething}", tiles that open the Creator (plain questions with a live picture) or another maker: ${quoted(APP_MAP_TILES)}; then "${M.myThings}", a card per thing, which opens it, with a menu of ${quoted(M.thingMenu)} (the first only for things a Creator flow made). An empty mod shows "${M.showcase}", clips with ${quoted(M.showcaseButtons)}, later folded under "${M.showShowcase}". "${M.surprise}" makes a random mod to start from. Problems are listed under "${M.thingsToFix}" ("${M.nothingToFix}" when none) with ${quoted(M.thingsToFixButtons)}; the right-hand tabs are ${quoted(M.dockTabs)}, and an open thing's header has ${quoted(M.elementHeader)} ("Preview" is the live view: models, pictures, the world map). "Play" saves, builds and starts Minecraft in a test world (its menu: ${quoted(M.playMenu)}); "Reload" sends changes into the running game and says when one needs a restart. "Share my mod" saves the mod as one file friends put in their mods folder next to Fabric API. Picture fields have "${M.draw}", MSM's own drawing, and "${M.makeWithAi}", which asks the AI picture service set up in Settings, "${M.aiPictures}" (${M.aiPictureService} by default; its own key and cost; until then "${M.setUpAiPictures}"); you cannot make AI pictures yourself. What note_missing_feature notes is in the Wishlist (Help, "${M.wishlist}").`;

@@ -10,7 +10,7 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, openCreator, toolbarMenu } from './fixtures';
 import { readPng } from './png';
 
 const MOD_ID = 'msm_sample_mod';
@@ -38,11 +38,11 @@ test('make a block picture with AI, then undo it', async () => {
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${MOD_ID}:ruby_ore`)).toBeVisible();
 
   // Make a block with the Creator.
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const creator = window.getByTestId('creator-dialog');
   await expect(creator).toBeVisible();
   await creator
@@ -116,7 +116,7 @@ test('make a mob skin and a painting with AI', async () => {
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   const row = window.getByTestId(`element-row-${MOB_MOD}:glow_golem`);
   await expect(row).toBeVisible();
 

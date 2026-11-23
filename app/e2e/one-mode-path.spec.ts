@@ -32,7 +32,7 @@ import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { strToU8, unzipSync, zipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, outputDir, toolbarMenu } from './fixtures';
 
 const MOD_NAME = 'Garden Mod';
 
@@ -251,7 +251,7 @@ test('one mode: the list shows names and groups, More folds the files, Every set
   launched = await launchApp({ reuse: folders, moreOptions: 'closed' });
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
 
   const oreRow = window.getByTestId(`element-row-${MOD_ID}:ruby_ore`);
   const modRow = window.getByTestId(`element-row-${MOD_ID}:mod`);

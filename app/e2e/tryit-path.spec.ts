@@ -75,7 +75,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { vehicleGeometry } from '@msm/plugin-entities';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, toolbarMenu } from './fixtures';
 import { gradientPng } from './png';
 
 const NAMESPACE = 'msm_sample_mob';
@@ -284,7 +284,7 @@ test('Try it: place, break, open a door, spawn, hit, keep the area through edits
       BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
     );
   }
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${BLOCK_ID}`)).toBeVisible();
 
   // 1. F6 opens Try it; the first-run card closes. -------------------------------------------
@@ -579,7 +579,7 @@ test('Try it: a rule gives an item, plays a sound and runs a function, whose /sp
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${CHIME_ID}`)).toBeVisible();
 
   const { canvas, state } = await openTryIt(window);
@@ -706,7 +706,7 @@ test('Try it: place the go-kart, get in, drive and steer, get out, hit it and pi
       BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
     );
   }
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${KART_ID}`)).toBeVisible();
   const { view, canvas, state } = await openTryIt(window);
   await window.getByTestId('tryit-card-close').click();
@@ -872,7 +872,7 @@ test('Try it: a project key fills the mana bar and shows a hidden text on the HU
       BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
     );
   }
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${NAMESPACE}:charge`)).toBeVisible();
   const { view, canvas, state } = await openTryIt(window);
   await window.getByTestId('tryit-card-close').click();
@@ -943,7 +943,7 @@ test('Try it: signs with text, a bed, lanterns, a bag screen, the chat box and a
       BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
     );
   }
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${VB}:cedar_sign`)).toBeVisible();
   const { view, canvas, state } = await openTryIt(window);
   await window.getByTestId('tryit-card-close').click();
@@ -1115,7 +1115,7 @@ test('Try it: the sample script runs in the script worker, and an endless loop i
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${SCRIPT_NAMESPACE}:spark_ore`)).toBeVisible();
   const { canvas, state } = await openTryIt(window);
   await window.getByTestId('tryit-card-close').click();
@@ -1175,7 +1175,7 @@ test('Try it: a logic rule says its steps by the rule, from the script worker (B
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${CHIME_ID}`)).toBeVisible();
   const { canvas, state } = await openTryIt(window);
   await window.getByTestId('tryit-card-close').click();
@@ -1222,7 +1222,7 @@ test('Try it: the Function editor marks each line and Run in Try it runs the fun
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await window.getByTestId(`element-row-${RULES_NAMESPACE}:noted`).click();
 
   // The gutter's words under the editor: the one command is only in the game, and why.

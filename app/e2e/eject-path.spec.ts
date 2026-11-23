@@ -37,7 +37,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  appDir,
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  openDockTab,
+  openToolbarMenu,
+  outputDir,
+  toolbarMenu,
+} from './fixtures';
 
 const MOD_ID = 'msm_sample_mod';
 const SCRIPT_ID = `${MOD_ID}:glow`;
@@ -92,7 +101,7 @@ async function addFromTemplate(
   templateId: string,
   name: string,
 ): Promise<void> {
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const dialog = window.getByTestId('new-element-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('new-element-filter').fill(filter);
@@ -129,11 +138,11 @@ test('eject: sample mod to a Fabric Java project, tree checked, second export bl
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${MOD_ID}:ruby_ore`)).toBeVisible();
 
   // One script, which the Java project leaves out. ------------------------------------------
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const newElement = window.getByTestId('new-element-dialog');
   await expect(newElement).toBeVisible();
   await newElement.getByTestId('new-element-filter').fill('block interaction');
@@ -145,7 +154,7 @@ test('eject: sample mod to a Fabric Java project, tree checked, second export bl
   await expect(window.getByTestId(`element-row-${SCRIPT_ID}`)).toBeVisible();
 
   // The Export menu offers the eject too.
-  await window.getByTestId('toolbar-export-menu').click();
+  await openToolbarMenu(window, 'toolbar-export-menu');
   const menuItem = window.getByTestId('export-java-project');
   await expect(menuItem).toHaveText(/Fabric Java project \(eject\)…/);
   await expect(menuItem).not.toHaveAttribute('data-disabled', /.*/);
@@ -256,7 +265,7 @@ test('eject: a status effect and a throwable give ModEffects and ThrownItemEntit
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${MOD_ID}:ruby_ore`)).toBeVisible();
 
   await addFromTemplate(window, 'status effect', 'msm_effect_status', 'frost_step');
@@ -335,7 +344,7 @@ test('eject: a trader and a fluid are ejected with no not-in-eject warning (ejec
   launches.push(launched);
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
-  await window.getByTestId('toolbar-open-project').click();
+  await toolbarMenu(window, 'toolbar-open-project');
   await expect(window.getByTestId(`element-row-${MOD_ID}:ruby_ore`)).toBeVisible();
 
   await addFromTemplate(window, 'remembers', 'msm_entity_fair_trader', 'fair_trader');

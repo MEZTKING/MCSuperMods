@@ -26,6 +26,7 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openCreator,
   openDockTab,
   outputDir,
   toast,
@@ -60,7 +61,7 @@ async function expectNoProblems(window: Page): Promise<void> {
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   await expect(problems.locator('[data-testid="problem-row"]')).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /** Opens the Creator from the toolbar on `flowId`, sets its answers and applies it. */
@@ -70,7 +71,7 @@ async function runFlow(
   title: string,
   answer: (dialog: Locator) => Promise<void>,
 ): Promise<void> {
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId(`creator-flow-${flowId}`).click();
@@ -89,7 +90,7 @@ async function runFlow(
 /** Saves the project, which must have unsaved changes (otherwise "Saved" shows at once). */
 async function save(window: Page): Promise<void> {
   const footer = window.locator('footer');
-  await expect(footer.getByText('Unsaved changes', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Not saved yet', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
   await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
 }

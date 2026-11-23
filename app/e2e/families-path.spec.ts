@@ -33,7 +33,10 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openAddDialog,
+  openCreator,
   openDockTab,
+  openExport,
   outputDir,
   toast,
 } from './fixtures';
@@ -128,7 +131,7 @@ async function expectNoErrors(window: Page): Promise<void> {
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
     0,
   );
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /**
@@ -149,7 +152,7 @@ async function exportJar(window: Page, outDir: string, known: readonly string[] 
 
 /** Opens the Creator from the toolbar and picks `flowId` from the group "Blocks". */
 async function openFlow(window: Page, flowId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId('creator-group-blocks').getByTestId(`creator-flow-${flowId}`).click();
@@ -352,8 +355,7 @@ test('families: Wood set create, Block Studio edit, kept on Edit in Creator, exp
   await window.screenshot({ path: join(outputDir, 'families-path.png') });
 
   // The vanilla data pack: written, with the mod-only reference warnings (ADR 0066).
-  await window.getByTestId('toolbar-export-menu').click();
-  await window.getByTestId('export-data-zip').click();
+  await openExport(window, 'export-data-zip');
   const data = await newZip(folders.outDir, '.zip');
   expect(Object.keys(data.files)).toContain('pack.mcmeta');
   expect(Object.keys(data.files).some((name) => name.startsWith('msm/'))).toBe(false);
@@ -435,7 +437,7 @@ test('families: Crop flow makes the seeds and the produce; a sapling gets a New 
   expect(lang[`item.${NAMESPACE}.tomato`]).toBeTruthy();
 
   // A sapling from the template, then "New tree" from the "Tree for a sapling" template.
-  await window.getByTestId('toolbar-add-element').click();
+  await openAddDialog(window);
   const add = window.getByTestId('new-element-dialog');
   await expect(add).toBeVisible();
   await add.getByTestId('new-element-filter').fill('sapling');

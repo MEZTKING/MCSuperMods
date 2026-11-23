@@ -51,7 +51,9 @@ import {
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
+  openCreator,
   openDockTab,
+  openExport,
   openRawText,
   outputDir,
   toast,
@@ -134,7 +136,7 @@ async function expectNoErrors(window: Page): Promise<void> {
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
     0,
   );
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
 }
 
 /**
@@ -155,7 +157,7 @@ async function exportJar(window: Page, outDir: string, known: readonly string[] 
 
 /** Opens the Creator from the toolbar and picks `flowId`. */
 async function openFlow(window: Page, flowId: string): Promise<Locator> {
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const dialog = window.getByTestId('creator-dialog');
   await expect(dialog).toBeVisible();
   await dialog.getByTestId(`creator-flow-${flowId}`).click();
@@ -417,13 +419,12 @@ test('Creator: Painting with a picked PNG and a bow from the Weapon flow', async
 
   // Exports: the resource pack holds the picture as picked, the data pack the variant and
   // the placeable tag, the jar the bow.
-  await window.getByTestId('toolbar-export-zip').click();
+  await openExport(window, 'export-resource-zip');
   const resource = await newZip(folders.outDir, '.zip');
   expect(resource.files[`assets/${NAMESPACE}/textures/painting/ruby_sunset.png`]).toEqual(
     new Uint8Array(picture),
   );
-  await window.getByTestId('toolbar-export-menu').click();
-  await window.getByTestId('export-data-zip').click();
+  await openExport(window, 'export-data-zip');
   const data = await newZip(folders.outDir, '.zip', [resource.name]);
   expect(Object.keys(data.files)).toEqual(
     expect.arrayContaining([
@@ -519,7 +520,7 @@ test('Creator: Status effect with a drink and a Throwable (ADRs 0055, 0056)', as
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // Status effect, from the Magic group: opens on its card.
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const picker = window.getByTestId('creator-dialog');
   await expect(picker.getByTestId('creator-group-magic')).toContainText('Magic');
   const effect = await openFlowFrom(picker, 'creator-group-magic', 'status-effect');
@@ -646,7 +647,7 @@ test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () =
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
   await save(window);
 
   // The jar: the world addition in the msm layer, the two worldgen files as data.
@@ -701,7 +702,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
 
   // The Potion flow, from the Magic group, with its defaults: Moon Leap, an effect of its own,
   // longer, stronger, splash and lingering versions.
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const picker = window.getByTestId('creator-dialog');
   const potion = await openFlowFrom(picker, 'creator-group-magic', 'potion');
   await expect(potion.getByRole('heading', { name: 'Create: Potion' })).toBeVisible();
@@ -733,7 +734,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
-  await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
+  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
   await save(window);
 
   // The jar: three potion definitions, the effect, fifteen brewing recipes and the names.
@@ -768,8 +769,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   expect(lang[`item.minecraft.potion.effect.${NAMESPACE}.moon_leap`]).toBe('Potion of Moon Leap');
 
   // The vanilla data pack leaves the potion and its brewing out, with one warning.
-  await window.getByTestId('toolbar-export-menu').click();
-  await window.getByTestId('export-data-zip').click();
+  await openExport(window, 'export-data-zip');
   const data = await newZip(folders.outDir, '.zip');
   expect(Object.keys(data.files).filter((name) => name.includes('/recipe/brewing/'))).toEqual([]);
   await openDockTab(window, 'problems');
@@ -796,7 +796,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
 
   // Mob skin, from the Mobs group: a wolf skin in forests (the defaults).
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const picker = window.getByTestId('creator-dialog');
   const skin = await openFlowFrom(picker, 'creator-group-mobs', 'mob-skin');
   await expect(skin.getByRole('heading', { name: 'Create: Mob skin' })).toBeVisible();
@@ -809,7 +809,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
   await expect(window.getByTestId(`element-row-${id('ember_coat')}`)).toBeVisible();
 
   // Goat horn, from the Gear group: a vanilla call, a recipe and the goats' tag.
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const horn = await openFlowFrom(
     window.getByTestId('creator-dialog'),
     'creator-group-gear',
@@ -834,7 +834,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
 
   // Vanilla packs: the textures and the call's name in the resource pack, the variant, the
   // instrument, its recipe and the merged goat horn tag in the data pack.
-  await window.getByTestId('toolbar-export-zip').click();
+  await openExport(window, 'export-resource-zip');
   const resource = await newZip(folders.outDir, '.zip');
   const resourceNames = Object.keys(resource.files);
   for (const suffix of ['', '_tame', '_angry', '_baby', '_tame_baby', '_angry_baby']) {
@@ -846,8 +846,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
     strFromU8(resource.files[`assets/${NAMESPACE}/lang/en_us.json`] ?? new Uint8Array()),
   ) as Record<string, string>;
   expect(lang[`instrument.${NAMESPACE}.storm_call`]).toBe('Storm Call');
-  await window.getByTestId('toolbar-export-menu').click();
-  await window.getByTestId('export-data-zip').click();
+  await openExport(window, 'export-data-zip');
   const data = await newZip(folders.outDir, '.zip', [resource.name]);
   expect(Object.keys(data.files)).toEqual(
     expect.arrayContaining([

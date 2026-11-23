@@ -17,7 +17,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, newProjectInFolder, outputDir } from './fixtures';
+import {
+  type LaunchedApp,
+  launchApp,
+  newProjectInFolder,
+  openCreator,
+  outputDir,
+} from './fixtures';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 
@@ -208,7 +214,7 @@ test('sky: the Dimension flow with its own sky, chosen in Try it', async () => {
   await expect(window.getByTestId(`element-row-${ns}:pack`)).toBeVisible();
 
   // The Dimension flow, "Give it its own sky and rules" with a dark blue sky. ---------------
-  await window.getByTestId('toolbar-creator').click();
+  await openCreator(window);
   const creator = window.getByTestId('creator-dialog');
   await expect(creator).toBeVisible();
   await creator.getByTestId('creator-flow-dimension').click();

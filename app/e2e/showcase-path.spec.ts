@@ -24,7 +24,7 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp } from './fixtures';
+import { type LaunchedApp, launchApp, toolbarMenu } from './fixtures';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 
@@ -305,7 +305,7 @@ test('showcase: the cards on Home, one clip at a time, reduced motion, the setti
   await expect(pet.locator('canvas')).toHaveCount(1);
 
   // The setting off: no canvas, hovered or not. -----------------------------------------------
-  await window.getByTestId('toolbar-settings').click();
+  await toolbarMenu(window, 'toolbar-settings');
   const settings = window.getByTestId('settings-dialog');
   await expect(settings).toBeVisible();
   const setting = settings.getByTestId('settings-showcase-clips');
@@ -330,8 +330,7 @@ test('showcase: the New project strip, Make this on "Plants that grow" opens the
   const launched = await launch('advanced', WEBGL_ARGS);
   const { window } = launched;
   await expect(window.getByTestId('welcome-dialog')).toHaveCount(0);
-  await window.getByTestId('toolbar-new-menu').click();
-  await window.getByTestId('toolbar-new-from-starter').click();
+  await toolbarMenu(window, 'toolbar-new-from-starter');
   const dialog = window.getByTestId('new-project-dialog');
   await expect(dialog).toBeVisible();
   const strip = dialog.getByTestId('new-project-showcase');
