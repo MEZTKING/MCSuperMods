@@ -3,8 +3,11 @@
  * Mojang names) as a plain helper. Each `msm:components` entry is decoded with its own Codec
  * over `RegistryOps` on the built-in registries; the delayed list (components naming a data
  * pack registry: `jukebox_playable`, `provides_trim_material`, `trim`, `damage_resistant`,
- * `blocks_attacks`, `damage_type`, `block_transformer`) is decoded once data packs are loaded; any other failure is
- * logged and the entry is left out, as the runtime does.
+ * `blocks_attacks`, `damage_type`, `block_transformer`, `enchantments` (ADR 0127 D2), and
+ * `can_break` and `can_place_on` (ADR 0117 Y16: block tags are bound only with the data packs)) is
+ * decoded once data packs are loaded, the same list as the runtime's `ComponentPassthrough.DELAYED`
+ * (a test keeps them equal); any other failure is logged and the entry is left out, as the runtime
+ * does.
  *
  * @packageDocumentation
  */
@@ -49,7 +52,10 @@ import org.slf4j.LoggerFactory;
  */
 public final class VanillaComponents {
     /**
-     * Components whose value names an element or a tag of a data pack registry, decoded once data packs are loaded.
+     * Components whose value names an element or a tag of a data pack registry, decoded once data packs are loaded:
+     * the holders and damage type components of ADR 0044 D1, {@code block_transformer}, {@code enchantments} (an item
+     * that starts enchanted), and {@code can_break} and {@code can_place_on} (block tags are bound only with the data
+     * packs), so a value that does not decode at once waits for them.
      */
     public static final Set<Identifier> DELAYED = Set.of(
             Identifier.withDefaultNamespace("jukebox_playable"),
@@ -58,7 +64,10 @@ public final class VanillaComponents {
             Identifier.withDefaultNamespace("damage_resistant"),
             Identifier.withDefaultNamespace("blocks_attacks"),
             Identifier.withDefaultNamespace("damage_type"),
-            Identifier.withDefaultNamespace("block_transformer"));
+            Identifier.withDefaultNamespace("block_transformer"),
+            Identifier.withDefaultNamespace("enchantments"),
+            Identifier.withDefaultNamespace("can_break"),
+            Identifier.withDefaultNamespace("can_place_on"));
 
     private static final Logger LOGGER = LoggerFactory.getLogger(${javaString(modId)});
     private static RegistryAccess staticRegistries;

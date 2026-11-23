@@ -197,6 +197,16 @@ public final class ModItems {
             .rarity(Rarity.COMMON), "msm_test:ruby_disc", RUBY_DISC_COMPONENTS)
             .stacksTo(1)));
 
+    /** The msm:components of {@code msm_test:enchanted_blade}: vanilla data components as JSON. */
+    private static final String ENCHANTED_BLADE_COMPONENTS = "{\"minecraft:can_break\":[{\"blocks\":[\"minecraft:stone\"]},{\"blocks\":\"#minecraft:logs\"}],\"minecraft:can_place_on\":{\"blocks\":[\"msm_test:chime_block\"]},\"minecraft:enchantments\":{\"minecraft:sharpness\":2},\"minecraft:glider\":{},\"minecraft:stored_enchantments\":{\"minecraft:mending\":1},\"minecraft:unbreakable\":{}}";
+
+    /** {@code msm_test:enchanted_blade} (msm/msm_test/item/enchanted_blade.json). */
+    public static final ResourceKey<Item> ENCHANTED_BLADE_KEY = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("msm_test", "enchanted_blade"));
+    public static final Item ENCHANTED_BLADE = Registry.register(BuiltInRegistries.ITEM, ENCHANTED_BLADE_KEY, new Item(VanillaComponents.apply(new Item.Properties()
+            .setId(ENCHANTED_BLADE_KEY)
+            .rarity(Rarity.COMMON), "msm_test:enchanted_blade", ENCHANTED_BLADE_COMPONENTS)
+            .durability(100))); // after the tool: overrides the tier's durability
+
     private ModItems() {}
 
     /** Loads the class (registering every item) and adds the items to their creative tabs. */

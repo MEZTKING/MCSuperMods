@@ -10,6 +10,8 @@
  * ADRs 0070 and 0071 (`MsmMobBaseGameTest` and the wave 3 tests); `block-type_*` are the
  * `MsmBlockTypeGameTest` and `MsmRedstoneTypeGameTest` building and redstone type blocks and
  * the `MsmPlantGameTest` crops, saplings and leaves;
+ * `item-enchanted_blade` is the `MsmGearGameTest` item whose `msm:components` wait for the data
+ * packs (`enchantments`, `can_break`, `can_place_on`);
  * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
  * `packages/schemas/mcdoc/msm/conformance/definition/valid/`),
  * determinism, and the errors the exporter reports as `export.java-generation-failed`.
@@ -355,6 +357,7 @@ describe('Java generator (mc-26.3)', () => {
       'scute_wolf_armor',
       'winged_charm',
       'ruby_disc',
+      'enchanted_blade',
     ];
     const items = await Promise.all(paths.map((path) => definition('item', path)));
     const { files } = generateJavaProject(input({ items }));
@@ -377,6 +380,14 @@ describe('Java generator (mc-26.3)', () => {
     const charm = files.find((file) => file.path.endsWith('/RubyCharmItem.java'))?.contents ?? '';
     // Item events: other is the player.
     expect(charm).toContain('Actions.applyEffect(OWNER, player, "minecraft:glowing", 40, 0);');
+    // The blade's enchantments, can_break (a block tag) and can_place_on (a project block) are
+    // passed through whole; VanillaComponents decodes them once data packs are loaded.
+    expect(modItems).toContain('"msm_test:enchanted_blade", ENCHANTED_BLADE_COMPONENTS)');
+    const components =
+      files.find((file) => file.path.endsWith('/VanillaComponents.java'))?.contents ?? '';
+    for (const id of ['enchantments', 'can_break', 'can_place_on']) {
+      expect(components).toContain(`Identifier.withDefaultNamespace("${id}")`);
+    }
   });
 
   it('generates apply_effect on blocks and on entities with an other target', async () => {

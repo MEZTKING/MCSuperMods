@@ -55,7 +55,7 @@ Also: the AI helper's topic `packages/ai/src/prompt/games.ts` (3,463 characters)
 ### Open items
 
 - The Rule book Studio's pickers for the seven games slot types (ADR 0115 findings).
-- `can_break` and `can_place_on` have no field in the Item Studio (Y16 measured the forms); an adventure map sets them only in Raw JSON.
+- Done (b35146b, 2026-11-23): `can_break` and `can_place_on` have the Item Studio's Adventure mode fields (Y16 measured the forms), and the runtime decodes both once data packs are loaded; the 26.3 eject's `VanillaComponents.DELAYED` gained them too (ADR 0127 findings).
 - Advancement criteria do not trigger by themselves in Try it, so the Adventure map's checkpoints and the Race's lines need `advancement grant` typed there (a `location` trigger on an area's tag would let them play through).
 - A Cloud Realm card in the Showcase now that Skyblock's start island exists (ADR 0118's follow-up).
 - The fixture's in-game check (`fixtures/sample-game-modes/README.md`) on 26.3 and 26.4.

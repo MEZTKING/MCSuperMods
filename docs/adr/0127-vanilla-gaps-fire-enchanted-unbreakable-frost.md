@@ -45,3 +45,7 @@ The Enchantment flow gains the target **Boots** (`#minecraft:enchantable/foot_ar
 ## Status
 
 Accepted (2026-11-23) as the orchestrator's brief's recommended route, a vetoable default (the user's standing "take the recommended option").
+
+## Findings
+
+- 2026-11-23 (executor, eject delayed components): the delayed passthrough list is now ten components, the six of [ADR 0044](0044-gear-weapons-and-consumables.md)'s B187 findings, `block_transformer`, `enchantments` (D2) and `can_break` and `can_place_on` ([ADR 0117](0117-game-modes-flows-studios-try-it-and-tests.md) Y16, b35146b: block tags are bound only with the data packs). D2 changed only the runtime and the plugin, not the 26.3 Java eject; nothing kept `enchantments` out of the eject (an ejected mod's `Item.Properties.delayedComponent` sees the same registries), so the eject's `VanillaComponents.DELAYED` now has all ten, in the runtime's order, kept equal to `ComponentPassthrough.DELAYED` by `packages/targets/mc-26.3/test/java-project/vanilla-components.test.ts`; the weapons golden carries the runtime's `enchanted_blade` item.

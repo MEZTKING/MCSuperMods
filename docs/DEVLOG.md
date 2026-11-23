@@ -10478,3 +10478,19 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B667: wire `onAskAi={(text, hits) => askAi(text, hits, { controller: aiController, newProjectWithAi })}` in `App.tsx`, where `newProjectWithAi` opens the `ai-start` dialog with `draft.text` as its description and sends `draft.context?.block` as a context block with the first message; show the outcome's `line` quietly when `status` is `unavailable`.
 - B672: the guide's AI helper page can mention that the helper searches the library first.
+
+## 2026-11-23 — executor — Eject delayed components
+
+**What**
+- The 26.3 Java eject's `VanillaComponents.DELAYED` (`packages/targets/mc-26.3/src/java-project/templates/vanilla-components-java.ts`) gains `enchantments`, `can_break` and `can_place_on`, so it is again the runtime's `ComponentPassthrough.DELAYED` (ten components, the runtime's order): an ejected mod whose item starts enchanted, or breaks or is placed on a block tag or a project block, decodes those once data packs are loaded instead of dropping them with a load error.
+- New test `packages/targets/mc-26.3/test/java-project/vanilla-components.test.ts`: reads `ComponentPassthrough.java` and the generated template and requires the same list in the same order (with a `LEFT_OUT` table, empty, for any component left out on purpose with its reason).
+- The weapons golden (`test/fixtures/java-project/expected/weapons/`) gains the runtime's GameTest item `enchanted_blade` (copied to `input/item-enchanted_blade.json`: `enchantments`, `can_break` with a block and a tag, `can_place_on` with a project block, `glider`, `stored_enchantments`, `unbreakable`, `msm:durability`); the `additions` and `weapons` `VanillaComponents.java` goldens and the sample mod's Java tree hash (`packages/exporters/test/fixtures/mc-26.3/sample-mod-java.sha256`) re-pinned. No sample fixture has these components.
+- ADR 0127 gains a Findings section (the ten-entry list, the eject in step); ADR 0117's open item on the Item Studio's `can_break`/`can_place_on` fields marked done (b35146b).
+- Checks: `@msm/target-mc-26.3` (20 files, 269 tests), `@msm/target-mc-26.4` (11 files, 152), `@msm/exporters` (57 files, 2,149 tests; `--maxWorkers=2`), `pnpm typecheck`, `pnpm lint` (one error, not from this change: the formatting of `packages/sim/test/loot/measured.test.ts` from f102014). Not run: `./gradlew build` and the ejected builds (JDK 21 here, the engine needs 25); CI's `engine-mod` job builds the ejected sample mod.
+
+**Decisions**
+- `enchantments` goes into the eject too: ADR 0127 D2 changed only the runtime and the plugin and gave no reason to keep it out of the eject; the ejected mod's `Item.Properties.delayedComponent` sees the same registries the runtime's does.
+
+**Next**
+- Format `packages/sim/test/loot/measured.test.ts` (`pnpm exec biome check --write`) so `pnpm lint` is green again.
+- CI's `engine-mod` job: the ejected sample mod builds with the longer list.
