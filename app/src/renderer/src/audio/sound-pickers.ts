@@ -72,6 +72,11 @@ export const SOUND_PICKERS: readonly SoundPickerPlace[] = [
     via: 'SoundPlayButton',
   },
   {
+    file: 'components/home/MyThings.tsx',
+    place: "Very easy's My things: a sound card's Play (B630)",
+    via: 'SoundPlayButton',
+  },
+  {
     file: 'components/thing-picker/ThingPicker.tsx',
     place: 'The ThingPicker (Rules, Very easy, the Studios)',
     via: 'SoundPlayButton',
@@ -82,6 +87,16 @@ export const SOUND_PICKERS: readonly SoundPickerPlace[] = [
     via: 'SoundPlayButton',
   },
   { file: 'forms/scalars.tsx', place: 'The schema form', via: 'SoundPlayButton' },
+  {
+    file: 'liveviews/looks/instrument/InstrumentView.tsx',
+    place: 'The goat horn call live view (B630)',
+    via: 'SoundPlayButton',
+  },
+  {
+    file: 'liveviews/looks/jukebox/JukeboxSongView.tsx',
+    place: 'The music disc song live view (B630)',
+    via: 'SoundPlayButton',
+  },
   {
     file: 'liveviews/looks/sounds/SoundsView.tsx',
     place: 'The sounds live view',

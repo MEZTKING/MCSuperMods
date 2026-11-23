@@ -17,6 +17,7 @@ import {
   splitSoundId,
 } from '../../../audio/resolve';
 import { SoundPlayButton } from '../../../audio/SoundPlayButton';
+import { useVeryEasy } from '../../../studios/very-easy';
 import { LiveViewFrame } from '../../frame/LiveViewFrame';
 import type { LiveViewProps } from '../../registry';
 
@@ -30,6 +31,15 @@ export const SOUNDS_VIEW_NOTES: readonly string[] = [
   "Minecraft's own files play from your Minecraft folder; nothing is copied.",
 ];
 
+/** A sound id in words, for Very easy (B630: My things opens this view there): no ids drawn. */
+export function soundIdWords(id: string): string {
+  const words = splitSoundId(id)
+    .path.split(/[._/]+/)
+    .filter(Boolean)
+    .join(' ');
+  return words === '' ? 'A sound' : `${words[0]?.toUpperCase()}${words.slice(1)}`;
+}
+
 const percent = (chance: number): string =>
   `${chance >= 0.995 ? 100 : Math.round(chance * 1000) / 10}%`;
 
@@ -40,8 +50,9 @@ function EntryRow(props: {
   common: Pick<LiveViewProps, 'project' | 'sounds'> & {
     readProjectAsset: ReadProjectSound | undefined;
   };
+  veryEasy: boolean;
 }) {
-  const { entry, common } = props;
+  const { entry, common, veryEasy } = props;
   const facts = [
     entry.volume === 1 ? null : `volume ${entry.volume}`,
     entry.pitch === 1 ? null : `pitch ${entry.pitch}`,
@@ -80,7 +91,11 @@ function EntryRow(props: {
     <li className="flex flex-wrap items-center gap-2 text-xs" data-testid="sounds-view-entry">
       {button}
       <span className="font-mono [overflow-wrap:anywhere]">
-        {entry.type === 'event' ? `event ${entry.name}` : entry.name}
+        {veryEasy
+          ? `${entry.type === 'event' ? 'The sound ' : ''}${soundIdWords(entry.name)}`
+          : entry.type === 'event'
+            ? `event ${entry.name}`
+            : entry.name}
       </span>
       <span className="text-muted">{facts.join(', ')}</span>
     </li>
@@ -89,6 +104,7 @@ function EntryRow(props: {
 
 export default function SoundsView(props: LiveViewProps) {
   const { project, element, sounds } = props;
+  const veryEasy = useVeryEasy();
   const namespace = splitSoundId(element.id).namespace;
   const readProject = props.readProject;
   const readProjectAsset = useMemo<ReadProjectSound | undefined>(
@@ -143,7 +159,11 @@ export default function SoundsView(props: LiveViewProps) {
                     onPicked={onPicked(id)}
                     testId={`sounds-view-play-${key}`}
                   />
-                  <span className="font-mono text-sm [overflow-wrap:anywhere]">{id}</span>
+                  <span
+                    className={`text-sm [overflow-wrap:anywhere] ${veryEasy ? '' : 'font-mono'}`}
+                  >
+                    {veryEasy ? soundIdWords(id) : id}
+                  </span>
                   {typeof registration.subtitle === 'string' && (
                     <span className="text-xs text-muted">Subtitle: {registration.subtitle}</span>
                   )}
@@ -159,7 +179,7 @@ export default function SoundsView(props: LiveViewProps) {
                   <span className="text-xs" data-testid={`sounds-view-picked-${key}`}>
                     {shown === null
                       ? 'Nothing to play.'
-                      : `Picked ${shown.file.namespace}:${shown.file.path} at volume ${round(shown.entry.volume)}, pitch ${round(shown.entry.pitch)}.`}
+                      : `Picked ${veryEasy ? soundIdWords(shown.file.path) : `${shown.file.namespace}:${shown.file.path}`} at volume ${round(shown.entry.volume)}, pitch ${round(shown.entry.pitch)}.`}
                   </span>
                 )}
                 <ul className="ml-4 flex flex-col gap-1">
@@ -170,6 +190,7 @@ export default function SoundsView(props: LiveViewProps) {
                       entry={entry}
                       chance={entry.type === 'file' ? chances.get(entry.name) : undefined}
                       common={common}
+                      veryEasy={veryEasy}
                     />
                   ))}
                   {own.entries.length === 0 && (

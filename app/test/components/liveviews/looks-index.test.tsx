@@ -65,7 +65,8 @@ describe('the looks index (B620)', () => {
     for (const kind of LOOKS_STUDIO_KINDS) expect(preview.get(kind), kind).not.toBe('live_view');
   });
 
-  it('shows the frame with Not yet for a stub, and keeps B615 views where they were', async () => {
+  // B630 built the song view, the stub this case drew until then; a built view shows its frame.
+  it('shows the frame for a batch 3 view, and keeps B615 views where they were', async () => {
     const View = liveViewComponent('minecraft:jukebox_song');
     expect(View).not.toBeNull();
     const element = {
@@ -92,7 +93,8 @@ describe('the looks index (B620)', () => {
     } satisfies LiveViewProps;
     const Stub = View as NonNullable<typeof View>;
     render(<Stub {...props} />);
-    await waitFor(() => expect(screen.getByTestId('live-view-not-yet')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId('live-view')).toBeTruthy());
+    expect(screen.queryByTestId('live-view-not-yet')).toBeNull();
     // The six variants keep B615's flat pictures; the potion, effect and job keep theirs.
     const loaded = await Promise.all(
       ['minecraft:wolf_variant', 'msm:potion', 'msm:effect', 'msm:villager_profession'].map(
