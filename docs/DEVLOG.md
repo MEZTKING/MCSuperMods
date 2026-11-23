@@ -9454,3 +9454,20 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B560: test ids above (`world-setup-*`, `one-block-*`, `team-*`, `objective-*`, `timer-*`, `area-*`, `structure-container-<n>-*`).
 - Follow-up (not this brief's file): `terrain/WorldMap.tsx` labels a preset's dimensions and biomes by id (`minecraft:overworld`), which Very easy should not show; the World Setup Studio's map inherits it.
 - `docs/LIVE-VIEW-AUDIT.md` rows for the six kinds at the close (B562).
+
+## 2026-11-23 — executor — Very easy Studios show no ids
+
+**What**
+- New sweep `app/test/components/studios/very-easy-no-ids.test.tsx`: 33 Studios over real library flows and examples (`examples/`), rendered through `ElementForm` in Very easy, every readable string (text, input value, placeholder, title, aria-label, alt) run through `forbiddenIn`; the Notes of five examples and an id-laden note; Easy keeps its id fields. `terrain/WorldMap.test.tsx` gains three Very easy cases (a world type's dimensions, the worlds a biome is seen in, Easy unchanged).
+- `studios/very-easy-things.tsx` (new): `VeryEasyThingsContext` (provided by `ElementForm`), `plainIdWords`, `plainWordsIn`, `plainLabel`, `plainNotes`, `plainWorldLabel`, `VeryEasyIdField` and `VeryEasyIdList`. In Very easy the shared `IdField`, `SelectField` (`structures/pickers.tsx`) and `IdList` (`worldgen/parts.tsx`) show names: an item, block, mob, sound, particle, effect or dimension is a named chip opening the ThingPicker; a biome, creative tab, potion, damage type, attribute or trade set a list of names; a model, picture or loot table its words only. Labels lose their "(empty: id)" hints, which become the empty words.
+- Per Studio (Very easy only): the Block Studio's made-models list and own-models switch hidden; portal and container "Empty: …" lines in words; the Effect icon's id hidden; the Mob Studio's appearance, spawning and spawn egg notes reworded; the Potion name key and potion ids hidden; the Particle frames by name, their notes reworded; the HUD pictures by name and its notes reworded; the Command Studio gets a Very easy list (`COMMAND_VERY_EASY_SECTIONS`: everything but the events editor); the Notes callout (`EditorArea`) keeps only the sentences that read in plain words after ids become words; the world maps (`WorldMap`, `LiveMap`) name dimensions ("The Overworld", "The Nether", "The End", a project dimension's display name) and their notes in words.
+- Guide `very-easy.md` "What Very easy leaves out" updated.
+
+**Decisions**
+- A clock time or ratio (`1:30`, `8:1`) matches `ID_PATTERN` but is not an id; the sweeps ignore all-digit matches.
+- Read-only words where no picker exists (models, pictures): a Very easy user changes a picture with Draw, Paint or Make with AI.
+- `EditorArea` (components) was changed for the Notes, as the brief named the leak; `ai-words` is only imported.
+
+**Next**
+- The games Studios (B555) follow the same rule through `IdField`/`IdList`/`VeryEasyIdField`.
+- Notes are written for Easy; a plain-words line per example (`meta.plainNotes`) would say more than the filtered sentences.

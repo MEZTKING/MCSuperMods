@@ -8,9 +8,16 @@
 
 import type { Json } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useContext, useId, useState } from 'react';
 import { IdInput, idSuggestions, inputClass, resolveNode, type SuggestIds } from '../../forms';
 import { literalChoices, pickableKeys, structShape } from '../../forms/schema-utils';
+import { useVeryEasy } from '../very-easy';
+import {
+  plainIdWords,
+  plainWordsIn,
+  VeryEasyIdField,
+  VeryEasyThingsContext,
+} from '../very-easy-things';
 import type { PoolStatus } from './connections';
 
 const labelClass = 'flex min-w-0 flex-col gap-0.5 text-xs';
@@ -42,6 +49,20 @@ export function IdField(props: {
   className?: string;
 }) {
   const { suggest, registry } = props;
+  const veryEasy = useVeryEasy();
+  // Very easy shows no ids (ADR 0083 D3): the thing's name, picked by name where it can be.
+  if (veryEasy) {
+    return (
+      <VeryEasyIdField
+        label={props.label}
+        value={props.value}
+        registry={registry}
+        testId={props.testId}
+        className={props.className}
+        onCommit={(text) => props.onCommit(text.trim())}
+      />
+    );
+  }
   return (
     <Labelled
       label={props.label}
@@ -120,13 +141,21 @@ export function SelectField(props: {
   testId?: string;
 }) {
   const id = useId();
+  // Very easy names a choice that is an id by its words (ADR 0083 D3).
+  const veryEasy = useVeryEasy();
+  const things = useContext(VeryEasyThingsContext);
+  const words = (option: string) =>
+    veryEasy && option.includes(':') ? plainIdWords(things?.project, option) : option;
+  const label = veryEasy ? plainWordsIn(props.label) : props.label;
+  const emptyLabel =
+    veryEasy && props.emptyLabel !== undefined ? plainWordsIn(props.emptyLabel) : props.emptyLabel;
   const current = props.value ?? '';
   const options = [...props.choices];
   if (current !== '' && !options.includes(current)) options.unshift(current);
   return (
     <div className={labelClass}>
       <label htmlFor={id} className="text-muted">
-        {props.label}
+        {label}
       </label>
       <select
         id={id}
@@ -137,12 +166,12 @@ export function SelectField(props: {
           props.onChange(event.target.value === '' ? undefined : event.target.value)
         }
       >
-        {(props.emptyLabel !== undefined || current === '') && (
-          <option value="">{props.emptyLabel ?? '(none)'}</option>
+        {(emptyLabel !== undefined || current === '') && (
+          <option value="">{emptyLabel ?? '(none)'}</option>
         )}
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {words(option)}
           </option>
         ))}
       </select>

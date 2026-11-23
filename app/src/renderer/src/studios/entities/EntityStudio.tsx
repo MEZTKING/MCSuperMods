@@ -54,6 +54,7 @@ import { projectHandlers } from '../scripting/script-model';
 import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
+import { useVeryEasy } from '../very-easy';
 import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
 import { BossBarSection } from './BossBarSection';
 import { BreedingSection } from './BreedingSection';
@@ -283,6 +284,7 @@ function GoalRow(props: {
 export function EntityStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange, target } = props;
   const [advanced, setAdvanced] = useState(false);
+  const veryEasy = useVeryEasy();
   const [newGoalType, setNewGoalType] = useState<string>(GOALS[0]?.type ?? 'wander');
   // The objects last switched off in this session, per element, so switching them on again
   // restores their fields.
@@ -459,10 +461,11 @@ export function EntityStudio(props: StudioProps) {
         />
       </div>
       <p className="text-muted text-xs">
-        Models and animation sets come from File, Import Blockbench Model, or New element. Textures
-        are the project’s PNGs under textures/. Animation names come from the chosen animation set.
-        Sit plays while sitting, fly and swim while moving in the air or water, shoot on each ranged
-        shot.
+        {veryEasy
+          ? 'Models come from File, Import Blockbench Model; the skin is one of your pictures.'
+          : 'Models and animation sets come from File, Import Blockbench Model, or New element. Textures are the project’s PNGs under textures/.'}{' '}
+        Animation names come from the chosen animation set. Sit plays while sitting, fly and swim
+        while moving in the air or water, shoot on each ranged shot.
       </p>
       <div className="flex flex-wrap items-end gap-2">
         <ChoiceField
@@ -787,8 +790,9 @@ export function EntityStudio(props: StudioProps) {
               onChange={(next) => set(['spawn', 'biomes'], next)}
             />
             <p className="text-muted">
-              Biome ids such as minecraft:plains, or biome tags starting with # such as
-              #minecraft:is_overworld; the entity spawns in all of them.
+              {veryEasy
+                ? 'The mob spawns in all of these biomes.'
+                : 'Biome ids such as minecraft:plains, or biome tags starting with # such as #minecraft:is_overworld; the entity spawns in all of them.'}
             </p>
           </div>
           <div className="flex flex-wrap items-end gap-2">
@@ -894,9 +898,9 @@ export function EntityStudio(props: StudioProps) {
         <p className="text-muted text-xs">The entity registers no spawn egg.</p>
       )}
       <p className="text-muted text-xs">
-        The egg is the item {element.id}_spawn_egg, listed in the Spawn Eggs tab unless another tab
-        is chosen. Without a texture it has no item model; without a name it is called "&lt;display
-        name&gt; Spawn Egg".
+        {veryEasy
+          ? 'The egg is listed in the Spawn Eggs tab unless another tab is chosen. Without a picture it has no look of its own; without a name it is called "<name> Spawn Egg".'
+          : `The egg is the item ${element.id}_spawn_egg, listed in the Spawn Eggs tab unless another tab is chosen. Without a texture it has no item model; without a name it is called "<display name> Spawn Egg".`}
       </p>
       {at(['spawn_egg'])}
       {['creative_tab', 'texture', 'display_name'].map((key) => (

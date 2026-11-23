@@ -32,6 +32,7 @@ import { RulesSlot } from '../RulesSlot';
 import { firstTriggerFor } from '../rules/turn-into-rules';
 import { IdField, NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
+import { useVeryEasy } from '../very-easy';
 import { AdvancedToggle, Section } from '../worldgen/parts';
 import {
   aliasesOf,
@@ -112,6 +113,7 @@ const PERMISSION_OPTIONS = PERMISSION_LABELS.map((label, level) => ({
 export default function CommandStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange } = props;
   const [advanced, setAdvanced] = useState(false);
+  const veryEasy = useVeryEasy();
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const at = (path: readonly (string | number)[]) => (
@@ -395,7 +397,9 @@ export default function CommandStudio(props: StudioProps) {
             }}
           />
           <p className="text-muted text-xs">
-            Its steps are in the events below. The player who typed it is "self".
+            {veryEasy
+              ? 'It does the steps of this event (Easy shows them); rules below can do more.'
+              : 'Its steps are in the events below. The player who typed it is "self".'}
           </p>
         </>
       )}

@@ -147,6 +147,20 @@ export const FLUID_VERY_EASY_SECTIONS: readonly string[] = [
   'fluid-cauldron-bottle',
 ];
 
+/**
+ * The Command Studio's sections in Very easy: everything but the events editor, whose place the
+ * Rules section takes (ADR 0083 D3: Very easy shows no ids).
+ */
+export const COMMAND_VERY_EASY_SECTIONS: readonly string[] = [
+  RULES_SECTION_ID,
+  'command-preview',
+  'command-name-section',
+  'command-arguments',
+  'command-permission-section',
+  'command-runs-section',
+  'command-feedback-section',
+];
+
 /** The Game rule Studio's sections in Very easy (ADR 0111 D5, ADR 0112 D1). */
 export const GAME_RULE_VERY_EASY_SECTIONS: readonly string[] = ['game-rule-general'];
 

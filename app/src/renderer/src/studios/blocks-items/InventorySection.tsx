@@ -25,6 +25,7 @@ import { buttonClass } from '../../components/ui/Button';
 import { type FormProblem, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField } from '../structures/pickers';
+import { usePlainWords } from '../very-easy-things';
 import { Section } from '../worldgen/parts';
 import { asObject, eventNames, pointerOf } from './blocks-items-model';
 import {
@@ -152,6 +153,7 @@ const str = (value: Json | undefined): string => (typeof value === 'string' ? va
 
 export function InventorySection(props: InventorySectionProps) {
   const { element, target, problems, suggest, set, replace } = props;
+  const words = usePlainWords();
   const data = element.data;
   const kind = inventoryKindOf(data);
   const events = eventNames(data);
@@ -310,7 +312,7 @@ export function InventorySection(props: InventorySectionProps) {
         </div>
         {sounds !== undefined && (
           <p className="text-muted text-xs">
-            Empty sounds use {sounds.open} and {sounds.close}.
+            {words(`Empty sounds use ${sounds.open} and ${sounds.close}.`)}
           </p>
         )}
         <div className="flex flex-wrap items-end gap-2">

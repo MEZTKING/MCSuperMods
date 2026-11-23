@@ -24,6 +24,7 @@ import { Button, iconButtonClass } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
+import { useVeryEasy } from '../very-easy';
 import { AdvancedToggle, Section } from '../worldgen/parts';
 import {
   asObject,
@@ -101,6 +102,7 @@ function DurationField(props: {
 export function PotionStudio(props: StudioProps) {
   const { project, element, problems, onChange } = props;
   const [advanced, setAdvanced] = useState(false);
+  const veryEasy = useVeryEasy();
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const suggest = withProjectIds(props.suggest, 'mob_effect', projectEffects(project));
@@ -146,13 +148,16 @@ export function PotionStudio(props: StudioProps) {
         onCommit={(value) => set(['display_name'], value, typingKey('/display_name'))}
       />
       {at(['display_name'])}
-      <TextField
-        label="Name key (optional; the game shows the display name)"
-        value={data.name}
-        testId="potion-name"
-        placeholder={names[0]?.key.replace(/^item\.minecraft\.potion\.effect\./, '') ?? ''}
-        onCommit={(value) => set(['name'], value, typingKey('/name'))}
-      />
+      {/* The name key is a translation key: Very easy shows the display name only. */}
+      {!veryEasy && (
+        <TextField
+          label="Name key (optional; the game shows the display name)"
+          value={data.name}
+          testId="potion-name"
+          placeholder={names[0]?.key.replace(/^item\.minecraft\.potion\.effect\./, '') ?? ''}
+          onCommit={(value) => set(['name'], value, typingKey('/name'))}
+        />
+      )}
       {at(['name'])}
     </Section>
   );

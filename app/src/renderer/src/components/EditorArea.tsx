@@ -2,6 +2,7 @@ import type { Element, Json, ResourceLocation } from '@msm/core';
 import { Braces, Eye, EyeOff, FormInput, Sparkles, WandSparkles } from 'lucide-react';
 import { ScrollArea, Tabs } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
+import { plainNotes } from '../studios/very-easy-things';
 import { useTextureDrop } from '../textures/texture-drop';
 import { RawJsonPanel } from './RawJsonPanel';
 import { tabTriggerClass } from './ui/Button';
@@ -116,7 +117,11 @@ export function EditorArea({
     );
   }
 
-  const notes = element.meta.notes;
+  // Very easy says a note in plain words, or leaves it out (ADR 0083 D3: no ids).
+  const notes =
+    hideIds && element.meta.notes !== undefined
+      ? (plainNotes(element.meta.notes) ?? undefined)
+      : element.meta.notes;
 
   return (
     <Tabs.Root

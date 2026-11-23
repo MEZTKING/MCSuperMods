@@ -25,6 +25,7 @@ import { buttonClass } from '../../components/ui/Button';
 import { type FormProblem, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
+import { usePlainWords } from '../very-easy-things';
 import { Section } from '../worldgen/parts';
 import { asObject, eventNames, pointerOf } from './blocks-items-model';
 import { particlesFirst } from './particle-model';
@@ -113,6 +114,7 @@ function SoundField(props: {
   onChange(value: Json | undefined): void;
 }) {
   const none = props.value === false;
+  const words = usePlainWords();
   return (
     <div className="flex flex-wrap items-end gap-2">
       {!none && (
@@ -133,7 +135,7 @@ function SoundField(props: {
         onChange={(checked) => props.onChange(checked ? false : undefined)}
       />
       {!none && textOf(props.value) === '' && props.fallback !== undefined && (
-        <span className="text-muted text-xs">Empty: {props.fallback}</span>
+        <span className="text-muted text-xs">{words(`Empty: ${props.fallback}`)}</span>
       )}
     </div>
   );
@@ -148,6 +150,7 @@ export function PortalSection(props: PortalSectionProps) {
   const particles = asObject(object.particles);
   const events = eventNames(data);
   const facts = target.blocks?.portal;
+  const words = usePlainWords();
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path)} />
   );
@@ -215,7 +218,7 @@ export function PortalSection(props: PortalSectionProps) {
       <p className="text-muted text-xs">
         {triggerOnly
           ? 'Only a "Light a portal" action lights the frame, from any event of a block, item or effect.'
-          : `Empty: ${DEFAULT_PORTAL_IGNITER}. A "Light a portal" action lights it too.`}
+          : words(`Empty: ${DEFAULT_PORTAL_IGNITER}. A "Light a portal" action lights it too.`)}
       </p>
       {at(['igniter'])}
     </div>
@@ -376,7 +379,7 @@ export function PortalSection(props: PortalSectionProps) {
         />
       </div>
       <p className="text-muted text-xs">
-        Empty type: {facts?.particle ?? "the game's portal particle"}. Empty count:{' '}
+        {words(`Empty type: ${facts?.particle ?? "the game's portal particle"}.`)} Empty count:{' '}
         {DEFAULT_PARTICLE_COUNT}; 0 shows none.
       </p>
       {takesColour(data) && (

@@ -156,7 +156,7 @@ To share the mod with everyone, not only your friends, add the project to the [M
 
 ## What Very easy leaves out
 
-Very easy shows the question pages and the sections that matter and hides the rest of a Studio: the events editor and the triggers, the Advanced switch, Raw JSON and element ids. A few ids can still appear inside the sections that are shown. If you need a field that is hidden, switch to Easy.
+Very easy shows the question pages and the sections that matter and hides the rest of a Studio: the events editor and the triggers, the Advanced switch, Raw JSON and every id. A field that names a thing shows its name instead: an item, block, mob, sound, particle, effect or dimension is a button with its name that opens the picture picker, a biome, creative tab or potion is a list of names, and a model or picture is shown by its name only (change a picture with **Draw…**, **Paint** or **Make with AI**). The made models of a block, a potion's name key and its ids are left out, and an example's **Notes** keep only the sentences that read in plain words. A command's editor shows how it is typed, its name, what follows it, who can use it, what it does and its message, with **Rules** in place of its events. If you need a field that is hidden, switch to Easy.
 
 ## Where next
 

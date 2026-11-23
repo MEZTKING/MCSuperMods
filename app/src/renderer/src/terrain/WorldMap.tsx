@@ -41,6 +41,8 @@ import {
 } from 'react';
 import type { TryItWorldsPlatform } from '../../../shared/platform';
 import { Button } from '../components/ui/Button';
+import { useVeryEasy } from '../studios/very-easy';
+import { plainWordsIn, plainWorldLabel } from '../studios/very-easy-things';
 import CompareView, { compareClientFor } from './CompareView';
 import {
   COARSE_FACTOR,
@@ -558,6 +560,10 @@ export default function WorldMap(props: WorldMapProps) {
 function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) {
   const { project, element, onSetup, vanillaReady } = props;
   const terrain = props.terrain;
+  // Very easy names the worlds, never their ids (ADR 0083 D3).
+  const veryEasy = useVeryEasy();
+  const hostLabel = (entry: TerrainHost) =>
+    veryEasy ? plainWorldLabel(project, entry.label) : entry.label;
   const client = terrain.client;
   const { state, error: filesError } = useSyncExternalStore(terrain.subscribe, terrain.getSnapshot);
 
@@ -1015,7 +1021,7 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
           >
             {hosts.map((entry) => (
               <option key={entry.key} value={entry.key}>
-                {entry.label}
+                {hostLabel(entry)}
               </option>
             ))}
           </select>
@@ -1065,7 +1071,7 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
                   height={MAP_PIXELS}
                   tabIndex={0}
                   role="img"
-                  aria-label={`${MODE_LABELS[mode]} map of ${host.label} around X ${view.x}, Z ${view.z}, ${view.zoom} blocks a pixel. Drag or use the arrow keys to move, + and - to zoom.`}
+                  aria-label={`${MODE_LABELS[mode]} map of ${hostLabel(host)} around X ${view.x}, Z ${view.z}, ${view.zoom} blocks a pixel. Drag or use the arrow keys to move, + and - to zoom.`}
                   className="block size-full cursor-grab touch-none [image-rendering:pixelated] focus-visible:outline focus-visible:outline-accent"
                   onKeyDown={mapKeyHandler(view, setView)}
                   onPointerDown={onPointerDown}
@@ -1164,7 +1170,10 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
             </>
           )}
           <TerrainNotes
-            lines={markerResult === null ? notes : [...notes, MARKER_WORDS, ...markerResult.notes]}
+            lines={(markerResult === null
+              ? notes
+              : [...notes, MARKER_WORDS, ...markerResult.notes]
+            ).map((line) => (veryEasy ? plainWordsIn(line) : line))}
           />
         </>
       )}

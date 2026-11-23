@@ -18,7 +18,8 @@ import {
   isWithin,
   SchemaForm,
 } from '../../forms';
-import { useSectionShown, useVeryEasyLayout } from '../very-easy';
+import { useSectionShown, useVeryEasy, useVeryEasyLayout } from '../very-easy';
+import { VeryEasyIdList } from '../very-easy-things';
 import { moved } from './worldgen-model';
 
 /**
@@ -109,7 +110,12 @@ export function IdList({
   problems,
 }: IdListProps) {
   const [draft, setDraft] = useState('');
+  const veryEasy = useVeryEasy();
   const suggestions = (text: string) => idSuggestions(suggest, registry, text);
+  // Very easy shows no ids (ADR 0083 D3): the things by name, added through the ThingPicker.
+  if (veryEasy) {
+    return <VeryEasyIdList label={label} ids={ids} registry={registry} onChange={onChange} />;
+  }
   const add = () => {
     const id = draft.trim();
     if (id === '') return;

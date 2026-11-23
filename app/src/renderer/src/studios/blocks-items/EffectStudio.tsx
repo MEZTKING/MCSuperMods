@@ -28,6 +28,7 @@ import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
+import { useVeryEasy } from '../very-easy';
 import { ColourField } from '../worldgen/ColourField';
 import { AdvancedToggle, Section } from '../worldgen/parts';
 import {
@@ -77,6 +78,8 @@ export function EffectStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
   const host = useBlocksItemsStudioHost();
   const [advanced, setAdvanced] = useState(false);
+  // Very easy names the icon by its picture, not its id (ADR 0083 D3).
+  const veryEasy = useVeryEasy();
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const events = eventNames(element.data);
@@ -172,9 +175,11 @@ export function EffectStudio(props: StudioProps) {
     <Section title="Icon" testId="effect-icon">
       <div className="flex items-center gap-2">
         <IconImage url={thumbnail} colour={swatch} testId="effect-icon-image" />
-        <code className="font-mono text-xs">
-          {icon.namespace}:{icon.path}
-        </code>
+        {!veryEasy && (
+          <code className="font-mono text-xs">
+            {icon.namespace}:{icon.path}
+          </code>
+        )}
         <Button
           className="text-xs"
           data-testid="effect-paint-icon"
@@ -193,9 +198,9 @@ export function EffectStudio(props: StudioProps) {
       </div>
       {!iconPresent && (
         <p role="status" className="text-warning text-xs" data-testid="effect-icon-missing">
-          No icon yet: the game shows a blank square. Paint {icon.path} ({EFFECT_ICON_SIZE} ×{' '}
-          {EFFECT_ICON_SIZE}) with "Paint icon", or with "New texture…" and the kind "Effect icon"
-          in the sidebar.
+          {veryEasy
+            ? `No icon yet: the game shows a blank square. Paint one (${EFFECT_ICON_SIZE} × ${EFFECT_ICON_SIZE}) with "Paint icon".`
+            : `No icon yet: the game shows a blank square. Paint ${icon.path} (${EFFECT_ICON_SIZE} × ${EFFECT_ICON_SIZE}) with "Paint icon", or with "New texture…" and the kind "Effect icon" in the sidebar.`}
         </p>
       )}
     </Section>

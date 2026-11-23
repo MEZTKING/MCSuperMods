@@ -2,6 +2,8 @@
 import type { Element, OutputFile, Project, Target } from '@msm/plugin-api';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { forbiddenIn } from '../../../src/renderer/src/components/ai/ai-words';
+import { usePreferences } from '../../../src/renderer/src/store/preferences';
 import {
   type MapRegion,
   TerrainClient,
@@ -60,9 +62,13 @@ function kind(folder: string): WorldgenKindLike {
 
 function fakeSession(start: Project, t: Target = target()) {
   const kinds = new Map<string, WorldgenKindLike>(
-    ['dimension', 'worldgen/noise_settings', 'worldgen/biome', 'worldgen/material_rule'].map(
-      (folder) => [`minecraft:${folder}`, kind(folder)],
-    ),
+    [
+      'dimension',
+      'worldgen/noise_settings',
+      'worldgen/biome',
+      'worldgen/material_rule',
+      'worldgen/world_preset',
+    ].map((folder) => [`minecraft:${folder}`, kind(folder)]),
   );
   const listeners = new Set<(s: { project: Project | null }) => void>();
   const session = {
@@ -378,5 +384,77 @@ describe('WorldMap', () => {
     expect(screen.getByTestId('terrain-notes').textContent).toContain(
       'The End is about right here.',
     );
+  });
+});
+
+/** Every readable string of `root` that Very easy forbids (text, attributes, input values). */
+function leaksIn(root: HTMLElement): string[] {
+  const texts: string[] = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+    if (node.parentElement?.closest('style, script') != null) continue;
+    const text = node.textContent?.trim() ?? '';
+    if (text !== '') texts.push(text);
+  }
+  for (const entry of root.querySelectorAll('*')) {
+    for (const attribute of ['placeholder', 'title', 'aria-label', 'alt']) {
+      const value = entry.getAttribute(attribute);
+      if (value !== null && value.trim() !== '') texts.push(value);
+    }
+  }
+  return texts
+    .map((text) => ({ text, found: forbiddenIn(text).filter((hit) => !/^\d+:\d+$/.test(hit)) }))
+    .filter((entry) => entry.found.length > 0)
+    .map((entry) => `${entry.found.join(', ')} in "${entry.text}"`);
+}
+
+describe('WorldMap in Very easy (ADR 0083 D3)', () => {
+  const PRESET = element('demo:islands', 'minecraft:worldgen/world_preset', {
+    dimensions: {
+      'minecraft:overworld': OWN_WORLD.data,
+      'minecraft:the_nether': OWN_WORLD.data,
+      'demo:sky': OWN_WORLD.data,
+    },
+  });
+  const SKY = element('demo:sky', 'minecraft:dimension', {
+    ...(OWN_WORLD.data as object),
+    display_name: 'Sky Realm',
+  });
+
+  beforeEach(() => usePreferences.setState({ mode: 'very-easy' as never }));
+  afterEach(() => usePreferences.setState({ mode: 'easy' as never }));
+
+  it('names a world type’s dimensions in words, never by id', async () => {
+    const start = project([OWN_LAND, MOOR, SKY, PRESET]);
+    const r = rig(start, null);
+    const { container } = show(r, start, PRESET);
+    await settle(r.local);
+    const picker = screen.getByTestId('terrain-host') as HTMLSelectElement;
+    expect([...picker.options].map((o) => o.textContent)).toEqual([
+      'The Overworld',
+      'The Nether',
+      'Sky Realm',
+    ]);
+    expect(leaksIn(container)).toEqual([]);
+  });
+
+  it('names the worlds a biome is seen in, never by id', async () => {
+    const start = project([OWN_LAND, OWN_WORLD, MOOR]);
+    const r = rig(start, null);
+    const { container } = show(r, start, MOOR);
+    await settle(r.local);
+    const picker = screen.getByTestId('terrain-host') as HTMLSelectElement;
+    expect(picker.options[0]?.textContent).toBe('World');
+    expect(leaksIn(container)).toEqual([]);
+  });
+
+  it('keeps the ids in Easy', async () => {
+    usePreferences.setState({ mode: 'easy' as never });
+    const start = project([OWN_LAND, MOOR, SKY, PRESET]);
+    const r = rig(start, null);
+    show(r, start, PRESET);
+    await settle(r.local);
+    const picker = screen.getByTestId('terrain-host') as HTMLSelectElement;
+    expect(picker.options[0]?.textContent).toBe('minecraft:overworld');
   });
 });

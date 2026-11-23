@@ -22,6 +22,8 @@ import { asObject, pathSetter, pointerOf } from '../blocks-items/blocks-items-mo
 import { CheckField, ProblemsAt, TextField } from '../blocks-items/parts';
 import { NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
+import { useVeryEasy } from '../very-easy';
+import { plainIdWords, VeryEasyIdField } from '../very-easy-things';
 import { AdvancedToggle, Section } from '../worldgen/parts';
 import {
   HUD_ANCHOR_LABELS,
@@ -237,6 +239,8 @@ function PairFields(props: {
 export default function HudStudio(props: StudioProps) {
   const { project, element, problems, onChange, target } = props;
   const [advanced, setAdvanced] = useState(false);
+  // Very easy names the pictures, never their ids (ADR 0083 D3).
+  const veryEasy = useVeryEasy();
 
   if (advanced) {
     return (
@@ -264,16 +268,27 @@ export default function HudStudio(props: StudioProps) {
   const at = (field: string) => (
     <ProblemsAt key={field} problems={problems} pointer={`/${field}`} />
   );
-  const sprite = (field: string, label: string) => (
-    <TextField
-      key={field}
-      label={label}
-      value={object[field]}
-      placeholder={`${namespace}:hud/${name}`}
-      testId={`hud-${field.replaceAll('_', '-')}`}
-      onCommit={(value) => set([field], value, typingKey(`/${field}`))}
-    />
-  );
+  const sprite = (field: string, label: string) =>
+    veryEasy ? (
+      <VeryEasyIdField
+        key={field}
+        label={label}
+        value={typeof object[field] === 'string' ? (object[field] as string) : ''}
+        registry="texture"
+        emptyLabel="None"
+        testId={`hud-${field.replaceAll('_', '-')}`}
+        onCommit={(value) => set([field], value === '' ? undefined : value)}
+      />
+    ) : (
+      <TextField
+        key={field}
+        label={label}
+        value={object[field]}
+        placeholder={`${namespace}:hud/${name}`}
+        testId={`hud-${field.replaceAll('_', '-')}`}
+        onCommit={(value) => set([field], value, typingKey(`/${field}`))}
+      />
+    );
 
   return (
     <section aria-label="HUD Studio" data-testid="hud-studio" className="flex flex-col gap-4">
@@ -401,7 +416,9 @@ export default function HudStudio(props: StudioProps) {
               </div>
             )}
             <p className="text-muted text-xs">
-              In GUI pixels. Elements at one place stack; the offset moves only this one.
+              {veryEasy
+                ? 'In screen pixels. Things in one place stack; the offset moves only this one.'
+                : 'In GUI pixels. Elements at one place stack; the offset moves only this one.'}
             </p>
           </div>
         </div>
@@ -471,7 +488,7 @@ export default function HudStudio(props: StudioProps) {
             />
           </div>
         )}
-        {type !== 'text' && (
+        {type !== 'text' && !veryEasy && (
           <p className="text-muted text-xs">
             Pictures are your project’s GUI sprites: {namespace}:hud/{name} is the picture
             textures/gui/sprites/hud/{name}.png.
@@ -484,8 +501,9 @@ export default function HudStudio(props: StudioProps) {
           >
             {missing.map((entry) => (
               <li key={entry.field}>
-                The picture “{entry.sprite}” is not in the project ({entry.path}), so the game draws
-                nothing there. Add the picture or pick another.
+                {veryEasy
+                  ? `The picture “${plainIdWords(project, entry.sprite)}” is not in the project, so the game draws nothing there. Add the picture or pick another.`
+                  : `The picture “${entry.sprite}” is not in the project (${entry.path}), so the game draws nothing there. Add the picture or pick another.`}
               </li>
             ))}
           </ul>
