@@ -11,7 +11,8 @@
  *   being the vanilla set type's it stands on.
  *
  * Easy picks a sound by id with suggestions; Very easy picks it by name in the ThingPicker, so no
- * id is shown. Every change is one undo step.
+ * id is shown. Every change is one undo step. Each sound has a Play button (ADR 0121 D2, B622),
+ * at the block's own volume and pitch; an empty one plays nothing.
  *
  * @packageDocumentation
  */
@@ -20,6 +21,7 @@ import type { Element, Json, Project } from '@msm/core';
 import type { Target } from '@msm/plugin-api';
 import { WOODEN_SET_TYPES } from '@msm/plugin-blocks-items';
 import { useId, useMemo, useState } from 'react';
+import { SoundPlayButton } from '../../audio/SoundPlayButton';
 import {
   ThingPicker,
   type ThingPictures,
@@ -89,6 +91,8 @@ function SoundField(props: {
   registries: ThingRegistries;
   pictures: ThingPictures | null;
   texturesFolder: string;
+  /** The volume and pitch Play multiplies by (the block's own). */
+  sound?: { volume?: number; pitch?: number } | undefined;
   onChange(value: string | undefined): void;
 }) {
   const veryEasy = useVeryEasy();
@@ -113,6 +117,7 @@ function SoundField(props: {
         registry="sound_event"
         suggest={props.suggest}
         testId={props.testId}
+        sound={props.sound}
         onCommit={(text) => props.onChange(text.trim() === '' ? undefined : text.trim())}
       />
     );
@@ -122,14 +127,19 @@ function SoundField(props: {
   return (
     <div className="flex min-w-0 flex-col gap-0.5 text-xs">
       <span className="text-muted">{props.label}</span>
-      <button
-        type="button"
-        className={`${buttonClass} self-start`}
-        data-testid={props.testId}
-        onClick={() => setOpen(true)}
-      >
-        {words}
-      </button>
+      <span className="flex items-center gap-1 self-start">
+        <button
+          type="button"
+          className={buttonClass}
+          data-testid={props.testId}
+          onClick={() => setOpen(true)}
+        >
+          {words}
+        </button>
+        {props.value !== '' && (
+          <SoundPlayButton event={props.value} compact {...(props.sound ?? {})} />
+        )}
+      </span>
       {open && (
         <ThingPicker
           title={`Pick a sound: ${props.label.toLowerCase()}`}
@@ -218,6 +228,10 @@ export function SoundsSection(props: SoundsSectionProps) {
     () => (host === null ? null : { project: host.thumbnail, revision: host.revision }),
     [host],
   );
+  const blockPlay = {
+    ...(typeof sounds.volume === 'number' ? { volume: sounds.volume } : {}),
+    ...(typeof sounds.pitch === 'number' ? { pitch: sounds.pitch } : {}),
+  };
   const at = (path: readonly (string | number)[]) => (
     <ProblemsAt problems={problems} pointer={pointerOf(path.map(String))} />
   );
@@ -229,6 +243,7 @@ export function SoundsSection(props: SoundsSectionProps) {
       value={typeof sounds[key] === 'string' ? (sounds[key] as string) : ''}
       emptyLabel={`the ${soundType.replaceAll('_', ' ')} sound`}
       testId={`block-sound-${key}`}
+      sound={blockPlay}
       suggest={suggest}
       registries={registries}
       pictures={pictures}

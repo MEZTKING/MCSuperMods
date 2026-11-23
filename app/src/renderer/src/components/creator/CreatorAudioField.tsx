@@ -3,7 +3,8 @@
  * (`platform.dialogs.pickFiles`, Ogg filter), checks the bytes with the wizard's helpers
  * (`checkOggBytes`: Ogg Vorbis with a readable length, `maxBytes`) and stores the sound as a
  * `data:` URL; the summary shows its length and channels, or "None"; "Remove sound" clears it.
- * A refused file shows its error under the field and keeps the previous value.
+ * A refused file shows its error under the field and keeps the previous value. A picked sound
+ * has a Play button (ADR 0121 D2, B622): the bytes as they are, through the app's one player.
  *
  * Test ids: `param-<id>` (the choose button), `param-<id>-field`, `param-<id>-summary`,
  * `param-<id>-clear`, `param-<id>-error`.
@@ -12,7 +13,9 @@
  */
 
 import type { StarterParameter } from '@msm/plugin-api';
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
+import { SoundPlayButton } from '../../audio/SoundPlayButton';
+import { bytesOfDataUrl } from '../../audio/sound-pickers';
 import { Button } from '../ui/Button';
 import { audioSummary, checkOggBytes, oggDataUrl } from '../wizard/wizard-model';
 import type { PickImage } from './CreatorImageField';
@@ -45,6 +48,7 @@ export function CreatorAudioField({
   const [pickError, setPickError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const shownError = pickError ?? error;
+  const bytes = useMemo(() => (value === '' ? null : bytesOfDataUrl(value)), [value]);
   const testId = `param-${parameter.id}`;
   const describedBy =
     [
@@ -88,6 +92,13 @@ export function CreatorAudioField({
         >
           <span id={chooseId}>{value === '' ? 'Choose song…' : 'Replace…'}</span>
         </Button>
+        {bytes !== null && (
+          <SoundPlayButton
+            bytes={{ key: `creator:${parameter.id}:${bytes.byteLength}`, bytes }}
+            stream
+            testId={`${testId}-play`}
+          />
+        )}
         {value !== '' && (
           <Button
             data-testid={`${testId}-clear`}

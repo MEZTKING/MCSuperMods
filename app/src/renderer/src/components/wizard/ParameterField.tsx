@@ -10,7 +10,9 @@
  */
 
 import type { StarterParameter } from '@msm/plugin-api';
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useId, useMemo, useState } from 'react';
+import { SoundPlayButton } from '../../audio/SoundPlayButton';
+import { bytesOfDataUrl } from '../../audio/sound-pickers';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
 import {
@@ -33,6 +35,18 @@ export interface ParameterFieldProps {
   /** Focuses the control when it mounts (the first field of a step). */
   autoFocus?: boolean;
   onChange(value: RawValue): void;
+}
+
+/** Play for a picked song (ADR 0121 D2, B622): its bytes as they are. */
+function SongPlay(props: { testId: string; id: string; url: string }) {
+  const bytes = useMemo(() => bytesOfDataUrl(props.url), [props.url]);
+  return bytes === null ? null : (
+    <SoundPlayButton
+      bytes={{ key: `wizard:${props.id}:${bytes.byteLength}`, bytes }}
+      stream
+      testId={props.testId}
+    />
+  );
 }
 
 /** A labelled control for one starter parameter. */
@@ -231,6 +245,7 @@ export function ParameterField({
               });
             }}
           />
+          {text !== '' && <SongPlay testId={`${testId}-play`} id={parameter.id} url={text} />}
           {text !== '' && (
             <Button
               data-testid={`${testId}-clear`}

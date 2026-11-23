@@ -3,7 +3,8 @@
  * particle, effect, function or dimension) by picture and name. A search box first, then the
  * project's own things ("Your things"), then the game's by category. Keyboard: the arrow keys
  * move between tiles, Enter picks, Esc closes, and typing on a tile goes to the search box.
- * Shared by the Rule book and, later, the Very easy mode (ADR 0083).
+ * Shared by the Rule book and, later, the Very easy mode (ADR 0083). A sound's tile has a Play
+ * button beside its name (ADR 0121 D2, B622), out of the arrow keys' way (`tabIndex` -1).
  *
  * @packageDocumentation
  */
@@ -33,6 +34,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { SoundPlayButton } from '../../audio/SoundPlayButton';
 import { pngDataUrl } from '../AssetList';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
@@ -195,6 +197,20 @@ interface TileProps {
 }
 
 function Tile(props: TileProps) {
+  const { thing } = props;
+  if (props.sort !== 'sound' || thing === null) return <TileButton {...props} />;
+  // A sound's tile: Play in its corner, beside the button that picks it (never inside it).
+  return (
+    <div className="relative flex" data-testid={`thing-sound-${thing.id}`}>
+      <TileButton {...props} />
+      <span className="absolute top-0.5 right-0.5">
+        <SoundPlayButton event={thing.id} compact tabIndex={-1} />
+      </span>
+    </div>
+  );
+}
+
+function TileButton(props: TileProps) {
   const { thing, index } = props;
   return (
     <button
@@ -204,7 +220,7 @@ function Tile(props: TileProps) {
       aria-pressed={props.chosen}
       data-testid={thing === null ? 'thing-none' : `thing-${thing.id}`}
       title={props.label}
-      className={`flex flex-col items-center gap-1 rounded border p-1.5 text-center text-xs cursor-pointer hover:border-accent focus:border-accent focus:outline-none ${props.chosen ? 'border-accent bg-bg' : 'border-border'}`}
+      className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded border p-1.5 text-center text-xs cursor-pointer hover:border-accent focus:border-accent focus:outline-none ${props.chosen ? 'border-accent bg-bg' : 'border-border'}`}
       onClick={props.onPick}
       onKeyDown={(event) => props.onKeyDown(event, index)}
     >

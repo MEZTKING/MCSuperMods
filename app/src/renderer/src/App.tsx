@@ -33,6 +33,8 @@ import type {
   WorldInfo,
 } from '../../shared/platform';
 import { elementChipLabel, problemChipLabel } from './ai/context-blocks';
+import { SoundPlayerProvider, type SoundSources, SoundSourcesProvider } from './audio/provider';
+import { createVanillaSoundReader } from './audio/vanilla-sounds';
 import { namespaceOfId } from './changeset/creator-sets';
 import {
   type BuiltInCommandId,
@@ -503,12 +505,16 @@ type Action = () => void;
 function ShellProviders(props: {
   textureDrop: TextureDropHandler | null;
   plainWords: PlainProblemWords;
+  sounds: SoundSources;
   children: ReactNode;
 }) {
   return (
     <TextureDropContext.Provider value={props.textureDrop}>
       <PlainProblemWordsContext.Provider value={props.plainWords}>
-        {props.children}
+        {/* The one sound player and what every Play button reads (ADR 0121 D2, B622). */}
+        <SoundPlayerProvider>
+          <SoundSourcesProvider value={props.sounds}>{props.children}</SoundSourcesProvider>
+        </SoundPlayerProvider>
       </PlainProblemWordsContext.Provider>
     </TextureDropContext.Provider>
   );
@@ -2567,6 +2573,25 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       session.readAsset(namespace, path).catch((): Uint8Array | null => null),
     [session],
   );
+  const vanillaSounds = useMemo(
+    () =>
+      mcVersion === null
+        ? null
+        : createVanillaSoundReader({
+            mcVersion,
+            readAssetObject: bridge.minecraft.readAssetObject,
+          }),
+    [mcVersion, bridge],
+  );
+  const soundSources = useMemo<SoundSources>(
+    () => ({
+      project,
+      sounds: vanillaSounds,
+      readProjectAsset,
+      onSetup: () => setDialog({ type: 'settings' }),
+    }),
+    [project, vanillaSounds, readProjectAsset],
+  );
 
   const templates = useMemo(
     () =>
@@ -2808,7 +2833,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   );
 
   return (
-    <ShellProviders textureDrop={project === null ? null : dropTexture} plainWords={plainWords}>
+    <ShellProviders
+      textureDrop={project === null ? null : dropTexture}
+      plainWords={plainWords}
+      sounds={soundSources}
+    >
       <AiPicturesContext.Provider value={aiPicturesHost}>
         <Tooltip.Provider delayDuration={400}>
           <Toast.Provider swipeDirection="right" label="Notification">

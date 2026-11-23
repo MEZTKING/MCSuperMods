@@ -1,10 +1,14 @@
 /**
  * Scalar controls: text (with completions), number (with slider when bounded), switch and
- * choice (select, or a segmented control for up to four values).
+ * choice (select, or a segmented control for up to four values). A sound event or sound file
+ * field has a Play button beside it (ADR 0121 D2, B622).
  */
 import type { Json } from '@msm/core';
 import type { NumericRange, SchemaNode } from '@msm/schemas';
 import { useId, useState } from 'react';
+import { splitSoundId } from '../audio/resolve';
+import { SoundPlayButton } from '../audio/SoundPlayButton';
+import { isSoundEventRegistry, isSoundFileRegistry } from '../audio/sound-pickers';
 import { type CompletionSource, typingKey, useForm } from './context';
 import { isFractional, stripMinecraft } from './schema-utils';
 
@@ -45,6 +49,16 @@ export function suggestionsFor(
   return [...out].slice(0, MAX_SUGGESTIONS);
 }
 
+/** The Play button of a sound event or sound file field, or `null`. */
+function soundPlayFor(registry: string | undefined, value: string) {
+  if (value === '') return null;
+  if (isSoundEventRegistry(registry)) return <SoundPlayButton event={value} compact />;
+  if (isSoundFileRegistry(registry)) {
+    return <SoundPlayButton file={splitSoundId(value)} compact />;
+  }
+  return null;
+}
+
 /** Text input; typing coalesces into one undo step per field. */
 export function StringControl({
   node,
@@ -63,21 +77,32 @@ export function StringControl({
     setText(value ?? '');
   }
   const suggestions = suggestionsFor(node, completions, text);
+  const sound = soundPlayFor(node.idRegistry, (value ?? '').trim());
+  const input = (
+    <input
+      type="text"
+      aria-label={label}
+      aria-invalid={invalid}
+      className={inputClass}
+      spellCheck={false}
+      list={suggestions.length > 0 ? listId : undefined}
+      value={text}
+      onChange={(event) => {
+        setText(event.target.value);
+        onChange(pointer, event.target.value, { coalesce: typingKey(pointer) });
+      }}
+    />
+  );
   return (
     <>
-      <input
-        type="text"
-        aria-label={label}
-        aria-invalid={invalid}
-        className={inputClass}
-        spellCheck={false}
-        list={suggestions.length > 0 ? listId : undefined}
-        value={text}
-        onChange={(event) => {
-          setText(event.target.value);
-          onChange(pointer, event.target.value, { coalesce: typingKey(pointer) });
-        }}
-      />
+      {sound === null ? (
+        input
+      ) : (
+        <span className="flex min-w-0 items-center gap-1">
+          {input}
+          {sound}
+        </span>
+      )}
       {suggestions.length > 0 && (
         <datalist id={listId}>
           {suggestions.map((entry) => (

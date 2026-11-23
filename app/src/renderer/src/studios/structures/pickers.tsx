@@ -9,6 +9,8 @@
 import type { Json } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
 import { type ReactNode, useContext, useId, useState } from 'react';
+import { SoundPlayButton } from '../../audio/SoundPlayButton';
+import { isSoundEventRegistry } from '../../audio/sound-pickers';
 import { IdInput, idSuggestions, inputClass, resolveNode, type SuggestIds } from '../../forms';
 import { literalChoices, pickableKeys, structShape } from '../../forms/schema-utils';
 import { useVeryEasy } from '../very-easy';
@@ -47,12 +49,25 @@ export function IdField(props: {
   testId?: string;
   invalid?: boolean;
   className?: string;
+  /** For a sound event field: the volume and pitch its Play button multiplies by. */
+  sound?: { volume?: number; pitch?: number } | undefined;
 }) {
   const { suggest, registry } = props;
   const veryEasy = useVeryEasy();
+  // A sound has its Play button beside it (ADR 0121 D2, B622).
+  // The wrapper stays while the field is empty, so clearing it never remounts the input.
+  const soundField = isSoundEventRegistry(registry);
+  const play =
+    soundField && props.value.trim() !== '' ? (
+      <SoundPlayButton
+        event={props.value.trim()}
+        compact
+        {...(props.sound === undefined ? {} : props.sound)}
+      />
+    ) : null;
   // Very easy shows no ids (ADR 0083 D3): the thing's name, picked by name where it can be.
   if (veryEasy) {
-    return (
+    const field = (
       <VeryEasyIdField
         label={props.label}
         value={props.value}
@@ -62,21 +77,39 @@ export function IdField(props: {
         onCommit={(text) => props.onCommit(text.trim())}
       />
     );
+    return !soundField ? (
+      field
+    ) : (
+      <span className="flex min-w-0 items-end gap-1">
+        {field}
+        {play}
+      </span>
+    );
   }
+  const input = (
+    <IdInput
+      value={props.value}
+      label={props.label}
+      onCommit={(text) => props.onCommit(text.trim())}
+      suggestions={(text) => idSuggestions(suggest, registry, text)}
+      {...(props.testId === undefined ? {} : { testId: props.testId })}
+      invalid={props.invalid === true}
+      className="font-mono"
+    />
+  );
   return (
     <Labelled
       label={props.label}
       {...(props.className === undefined ? {} : { className: props.className })}
     >
-      <IdInput
-        value={props.value}
-        label={props.label}
-        onCommit={(text) => props.onCommit(text.trim())}
-        suggestions={(text) => idSuggestions(suggest, registry, text)}
-        {...(props.testId === undefined ? {} : { testId: props.testId })}
-        invalid={props.invalid === true}
-        className="font-mono"
-      />
+      {!soundField ? (
+        input
+      ) : (
+        <span className="flex min-w-0 items-center gap-1">
+          {input}
+          {play}
+        </span>
+      )}
     </Labelled>
   );
 }

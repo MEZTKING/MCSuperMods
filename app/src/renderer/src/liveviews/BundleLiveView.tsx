@@ -12,6 +12,7 @@
 
 import type { Element, Project } from '@msm/plugin-api';
 import { Suspense, useMemo, useState } from 'react';
+import { createVanillaSoundReader, type VanillaSoundReader } from '../audio/vanilla-sounds';
 import type { VanillaAssetReader } from '../preview/model-chain';
 import { liveViewComponent } from './registry';
 import {
@@ -44,6 +45,11 @@ export interface BundleLiveViewProps {
   readonly mcVersion?: string | null;
   /** A reader to use instead of the one made from {@link mcVersion} (tests, a bundle's host). */
   readonly vanilla?: VanillaDataReader;
+  /**
+   * Reads Minecraft's own sounds (ADR 0121 D2, D3); by default one made from {@link mcVersion}
+   * over the preload bridge's `minecraft.readAssetObject` (`null` without a version).
+   */
+  readonly sounds?: VanillaSoundReader | null;
   /** The project's folder (choices are kept per project), or `null` for a bundle with none. */
   readonly projectRoot?: string | null;
   /**
@@ -69,6 +75,13 @@ export default function BundleLiveView(props: BundleLiveViewProps) {
     [cacheReady, mcVersion],
   );
   const vanilla = props.vanilla ?? made;
+  const madeSounds = useMemo(() => {
+    if (mcVersion === null) return null;
+    // `window.msm` is read here, not through the session (B601's rule for `liveviews/`).
+    const read = (window as Partial<Window>).msm?.minecraft.readAssetObject;
+    return createVanillaSoundReader({ mcVersion, readAssetObject: read });
+  }, [mcVersion]);
+  const sounds = props.sounds === undefined ? madeSounds : props.sounds;
   const root = props.projectRoot ?? null;
   const prefs = useLiveViewPrefs((state) => state.prefs);
   const setPrefs = useLiveViewPrefs((state) => state.setPrefs);
@@ -88,6 +101,7 @@ export default function BundleLiveView(props: BundleLiveViewProps) {
         element={element}
         vanilla={vanilla}
         vanillaAssets={vanillaAssets}
+        sounds={sounds}
         {...(props.readProject === undefined ? {} : { readProject: props.readProject })}
         preferences={root === null ? memory : prefsOf(prefs, root)}
         onPreferences={(patch) => {
