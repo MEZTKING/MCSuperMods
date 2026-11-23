@@ -150,7 +150,7 @@ test('vehicles: the Tank and Car flows, the Vehicle Studio, a Rules get-in card,
   await expect(things).toContainText('Battle Tank');
   await expect(things).toContainText('Racing Car');
 
-  // The Vehicle Studio's Basics (Very easy): speed and seats. --------------------------------
+  // The Vehicle Studio's Basics: speed and seats. --------------------------------------------
   // The tank's card (its shell has a card of its own).
   await things.getByRole('button', { name: /^Battle Tank, / }).click();
   const studio = window.getByTestId('vehicle-studio');
@@ -161,10 +161,7 @@ test('vehicles: the Tank and Car flows, the Vehicle Studio, a Rules get-in card,
   await expect(basics).toContainText('7 blocks a second');
   await basics.getByTestId('vehicle-basics-seats').selectOption('3');
   await expect(basics.getByTestId('vehicle-basics-seats')).toHaveValue('3');
-  // Very easy shows only the Rules, Preview and Basics sections.
-  await expect(studio.getByTestId('vehicle-weapons')).toHaveCount(0);
-
-  // Advanced: the whole Vehicle Studio. -------------------------------------------------------
+  // The rest of the Vehicle Studio, each section with its More options (ADR 0130). ------------
   await window.getByTestId(`element-row-${id('battle_tank')}`).click();
   await expect(studio).toBeVisible();
   await expect(studio.getByTestId('vehicle-seat-2')).toBeVisible();

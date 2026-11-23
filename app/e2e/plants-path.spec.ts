@@ -225,7 +225,7 @@ test('plants: Cave plants and Flower pot from Very easy, the pot and its sounds,
   await expect(studio.getByTestId('block-growing-plant')).toBeVisible();
   await expect(studio.getByTestId('growing-plant-direction')).toHaveValue('down');
   await expect(studio.getByTestId('growing-plant-berries')).toBeChecked();
-  await expect(studio.getByTestId('block-companion')).toContainText(id('ember_vine_plant'));
+  await expect(studio.getByTestId('block-companion-ids')).toContainText(id('ember_vine_plant'));
 
   await window.getByTestId(`element-row-${id('clay_planter')}`).click();
   const pot = studio.getByTestId('block-flower-pot');
@@ -240,9 +240,7 @@ test('plants: Cave plants and Flower pot from Very easy, the pot and its sounds,
   await expect(picker.getByText('Plants Minecraft pots')).toBeVisible();
   await picker.getByTestId('thing-minecraft:allium').click();
   await expect(picker).toBeHidden();
-  await expect(pot.getByTestId(`flower-pot-plant-${POT_PLANTS.length}`)).toContainText(
-    'minecraft:allium',
-  );
+  await expect(pot.getByTestId(`flower-pot-plant-${POT_PLANTS.length}`)).toContainText('Allium');
   await expect(pot.getByTestId('flower-pot-count')).toContainText(
     `It makes ${POT_PLANTS.length + 1} potted plant blocks`,
   );

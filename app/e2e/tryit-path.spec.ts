@@ -1238,7 +1238,8 @@ test('Try it: the Function editor marks each line and Run in Try it runs the fun
   await expect(window.getByTestId('tryit-view')).toBeVisible();
   const lines = window.getByTestId('tryit-log').getByTestId('tryit-log-line');
   await expect(
-    lines.filter({ hasText: `from function ${RULES_NAMESPACE}:noted.` }).first(),
+    // The log says ids in words (ADR 0130).
+    lines.filter({ hasText: /from function \S*noted\./i }).first(),
   ).toBeVisible();
   await expect(
     window

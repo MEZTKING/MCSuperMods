@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, openDockTab, openMoreOptions, outputDir } from './fixtures';
 
 /** The first project's folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'ruby_e2e';
@@ -204,7 +204,9 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   // The starter's elements carry notes.
   await window.getByTestId(`element-row-${ORE_BLOCK_ID}`).click();
   await expect(window.getByTestId('element-notes')).toBeVisible();
-  await expect(window.getByTestId('element-notes-text')).toContainText('pickaxe');
+  // The plain note leaves the technical sentences out; the note as written is under More options.
+  await openMoreOptions(window, 'element-notes');
+  await expect(window.getByTestId('element-notes-full')).toContainText('pickaxe');
 
   await expectNoErrors(window);
   await expect(window.getByTestId('toolbar-export-zip')).toBeEnabled();
@@ -337,7 +339,7 @@ test('library: Custom ore starter, exports, examples gallery, template filter, o
   await exampleRow.click();
   await expect(window.getByTestId('element-notes')).toBeVisible();
   await expect(window.getByTestId('element-notes-text')).toContainText(
-    'pattern is the crafting grid',
+    'Pattern is the crafting grid',
   );
 
   // The second copy added nothing, so one undo removes the first copy; redo brings it back.

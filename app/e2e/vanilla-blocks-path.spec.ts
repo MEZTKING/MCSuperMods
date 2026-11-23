@@ -138,7 +138,7 @@ test('vanilla blocks: Very easy picks, Lights and Copper set defaults, a sign in
   await expect(woodType).toHaveValue('oak');
   await woodType.selectOption('cherry');
   await expect(woodType).toHaveValue('cherry');
-  await expect(studio.getByTestId('block-companion')).toContainText(id('notice_board_wall'));
+  await expect(studio.getByTestId('block-companion-ids')).toContainText(id('notice_board_wall'));
   await expect(studio.getByTestId('block-textures-sign-note')).toBeVisible();
 
   const typeTexture = async (slot: string, value: string) => {

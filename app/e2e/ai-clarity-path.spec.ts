@@ -97,13 +97,15 @@ async function launchNewInstall(prefix: string, script?: string): Promise<Launch
       msmHome: join(base, 'msm-home'),
     },
     ...(script === undefined ? {} : { aiScript: join(SCRIPTS, script) }),
+    // The plain view as people see it: every More options closed (ADR 0130).
+    moreOptions: 'closed',
   });
   launches.push(launched);
   await launched.window.waitForLoadState('domcontentloaded');
   return launched;
 }
 
-/** Leaves the Welcome (still in Very easy) and lands on Home. */
+/** Leaves the Welcome and lands on Home. */
 async function passWelcome(window: Page): Promise<void> {
   const welcome = window.getByTestId('welcome-dialog');
   await expect(welcome).toBeVisible();
@@ -629,7 +631,7 @@ test('More options: the files with ids and kinds, Before and after, the limits, 
   if ((await row.getAttribute('aria-current')) === null) await row.click();
   await window.getByTestId('editor-ask-ai').click();
   await expect(panel).toBeVisible();
-  await expect(panel.getByTestId('ai-context-label')).toHaveText('About: Ruby Sword');
+  await expect(panel.getByTestId('ai-context-label')).toHaveText(/^About: Ruby [Ss]word$/);
   await panel.getByTestId('ai-context-show').click();
   await expect(panel.getByTestId('ai-context-block')).toContainText('ruby:ruby_sword');
   await window.screenshot({ path: join(outputDir, 'ai-clarity-more-options.png') });

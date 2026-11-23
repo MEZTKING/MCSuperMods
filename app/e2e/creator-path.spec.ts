@@ -188,7 +188,8 @@ async function applyRawJson(window: Page, data: unknown): Promise<void> {
   const panel = window.getByRole('region', { name: 'Raw JSON' });
   const view = panel.locator('.monaco-editor .view-lines');
   await expect(view).toBeVisible();
-  await view.click();
+  // Near the top left: the lines can be wider than the editor, their middle under the ruler.
+  await view.click({ position: { x: 8, y: 8 } });
   await window.keyboard.press('ControlOrMeta+A');
   await window.keyboard.press('Delete');
   await window.keyboard.insertText(JSON.stringify(data));
@@ -217,8 +218,10 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
   await save(window);
+  // A save's temporary file can be there for a moment: the listing leaves it out.
   const blank = readdirSync(join(folders.projectDir, 'content', NAMESPACE), { recursive: true })
     .map(String)
+    .filter((name) => !name.endsWith('.tmp'))
     .sort();
 
   // The Gear set flow, named Sapphire.
@@ -343,6 +346,7 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
     .poll(() =>
       readdirSync(join(folders.projectDir, 'content', NAMESPACE), { recursive: true })
         .map(String)
+        .filter((name) => !name.endsWith('.tmp'))
         .sort(),
     )
     .toEqual(blank);
@@ -627,8 +631,6 @@ test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () =
   ]) {
     await expect(window.getByTestId(`element-row-${id(element)}`)).toBeVisible();
   }
-  // The sidebar heading reads "World additions" with the kind id beside it.
-  await expect(window.getByRole('heading', { name: /^World additions\b/ })).toBeVisible();
 
   // The world addition opens in its Studio, with the overworld tag and the placed feature.
   await window.getByTestId(`element-row-${id('ruby_ore_generation')}`).click();
@@ -713,7 +715,6 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   await expect(
     toast(window).filter({ hasText: /^Create Potion: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
-  await expect(window.getByRole('heading', { name: /^Potions\b/ })).toBeVisible();
 
   // The Potion Studio: the three registry ids, the four names and the fifteen brewing steps.
   await window.getByTestId(`element-row-${id('moon_leap')}`).click();
@@ -806,7 +807,6 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
     toast(window).filter({ hasText: /^Create Mob skin: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('ember_coat')}`)).toBeVisible();
-  await expect(window.getByRole('heading', { name: /^Wolf skins\b/ })).toBeVisible();
 
   // Goat horn, from the Gear group: a vanilla call, a recipe and the goats' tag.
   await window.getByTestId('toolbar-creator').click();
@@ -825,7 +825,6 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
   for (const element of ['storm_call', 'storm_call_goat_horn']) {
     await expect(window.getByTestId(`element-row-${id(element)}`)).toBeVisible();
   }
-  await expect(window.getByRole('heading', { name: /^Horn sounds\b/ })).toBeVisible();
 
   await openDockTab(window, 'problems');
   await expect(

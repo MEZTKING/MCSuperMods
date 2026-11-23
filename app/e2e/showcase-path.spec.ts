@@ -305,8 +305,7 @@ test('showcase: the cards on Home, one clip at a time, reduced motion, the setti
   await expect(pet.locator('canvas')).toHaveCount(1);
 
   // The setting off: no canvas, hovered or not. -----------------------------------------------
-  await window.getByTestId('toolbar-help').click();
-  await window.getByTestId('toolbar-help-settings').click();
+  await window.getByTestId('toolbar-settings').click();
   const settings = window.getByTestId('settings-dialog');
   await expect(settings).toBeVisible();
   const setting = settings.getByTestId('settings-showcase-clips');

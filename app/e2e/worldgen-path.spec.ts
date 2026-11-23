@@ -226,14 +226,14 @@ test('worldgen: starter, pool connections, import .nbt, export, feature order, s
   await window.getByTestId(`element-row-${BIOME_ID}`).click();
   const biome = window.getByTestId('biome-studio');
   await expect(biome).toBeVisible();
-  const vegetal = biome.getByTestId('biome-step-9');
   const topLayer = biome.getByTestId('biome-step-10');
-  await expect(
-    topLayer.getByLabel('Top layer modification features 1', { exact: true }),
-  ).toHaveValue(MOVED_FEATURE);
-  await vegetal.getByLabel('New entry in Vegetal decoration features').fill(MOVED_FEATURE);
-  await vegetal.getByRole('button', { name: 'Add to Vegetal decoration features' }).click();
-  await topLayer.getByRole('button', { name: 'Remove Top layer modification features 1' }).click();
+  // The id lists are in each section's More options (ADR 0130), outside the step's box.
+  await expect(biome.getByLabel('Top layer modification features 1', { exact: true })).toHaveValue(
+    MOVED_FEATURE,
+  );
+  await biome.getByLabel('New entry in Vegetal decoration features').fill(MOVED_FEATURE);
+  await biome.getByRole('button', { name: 'Add to Vegetal decoration features' }).click();
+  await biome.getByRole('button', { name: 'Remove Top layer modification features 1' }).click();
   await expect(topLayer.getByText('None.')).toBeVisible();
 
   // A placed feature in different steps is legal: a warning, and export stays enabled.
@@ -251,15 +251,15 @@ test('worldgen: starter, pool connections, import .nbt, export, feature order, s
 
   // Undo the removal and the addition: no step warning any more. ----------------------------
   await window.getByTestId('toolbar-undo').click();
-  await expect(
-    topLayer.getByLabel('Top layer modification features 1', { exact: true }),
-  ).toHaveValue(MOVED_FEATURE);
+  await expect(biome.getByLabel('Top layer modification features 1', { exact: true })).toHaveValue(
+    MOVED_FEATURE,
+  );
   await window.getByTestId('toolbar-undo').click();
   await expect(stepWarnings).toHaveCount(0);
   await expect(errors).toHaveCount(0);
 
   // Two lakes features in opposite order to the second biome in one step: a real cycle. ----
-  const lakes = biome.getByTestId('biome-step-1');
+  const lakes = biome;
   await expect(lakes.getByLabel('Lakes features 1', { exact: true })).toHaveValue(LAKE_FEATURES[0]);
   await expect(lakes.getByLabel('Lakes features 2', { exact: true })).toHaveValue(LAKE_FEATURES[1]);
   await lakes.getByRole('button', { name: 'Move Lakes features 1 down' }).click();

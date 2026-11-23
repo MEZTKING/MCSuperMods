@@ -485,7 +485,7 @@ test('particles: split into frames and Undo, ambient particles and Undo, coloure
     buffer: strip,
   });
   await expect(studio.getByTestId('particle-split-status')).toHaveText(
-    `Split into 4 frames, ${id('ember_0')} to ${id('ember_3')}. Undo puts the old frames back.`,
+    'Split into 4 frames, ember 0 to ember 3. Undo puts the old frames back.',
   );
   for (const frame of [0, 1, 2, 3]) {
     await expect(studio.getByTestId(`particle-frame-${frame}-sprite`)).toHaveValue(

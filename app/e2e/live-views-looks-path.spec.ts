@@ -320,7 +320,8 @@ async function applyRawJson(window: Page, data: unknown): Promise<void> {
   const panel = window.getByRole('region', { name: 'Raw JSON' });
   const lines = panel.locator('.monaco-editor .view-lines');
   await expect(lines).toBeVisible();
-  await lines.click();
+  // Near the top left: the lines can be wider than the editor, their middle under the ruler.
+  await lines.click({ position: { x: 8, y: 8 } });
   await window.keyboard.press('ControlOrMeta+A');
   await window.keyboard.press('Delete');
   await window.keyboard.insertText(JSON.stringify(data));
@@ -435,7 +436,7 @@ test('a project sound plays from the sounds view, a cat voice, a goat horn; a so
   let view = await openView(window, 'sounds', 'Sounds');
   await expect(view.getByTestId('sounds-view-event-block.hum')).toContainText('Humming');
   expectHum(await playFrom(window, view.getByTestId('sounds-view-play-block.hum'), 'sounds view'));
-  await expect(view.getByTestId('sounds-view-picked-block.hum')).toContainText(`${NS}:hum`);
+  await expect(view.getByTestId('sounds-view-picked-block.hum')).toContainText('Picked Hum');
 
   // 2. A cat's voice naming the same event.
   view = await openView(window, 'purring', 'Cat voice');

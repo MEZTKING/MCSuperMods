@@ -259,7 +259,12 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   await expectNoProblems(window);
 
   // Removing the geo model leaves a dangling reference that blocks the jar. -----------------
-  await window.getByRole('button', { name: `Remove ${MODEL_ID}`, exact: true }).click();
+  // The list names things (ADR 0130): the row's Remove sits beside its name.
+  await window
+    .getByTestId(`element-row-${MODEL_ID}`)
+    .locator('xpath=..')
+    .getByRole('button', { name: /^Remove / })
+    .click();
   await expect(window.getByTestId(`element-row-${MODEL_ID}`)).toHaveCount(0);
   await expect(errors).toHaveCount(1);
   await expect(errors.first()).toHaveAttribute('data-code', 'entities.unknown-model');

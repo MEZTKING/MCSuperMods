@@ -192,10 +192,10 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
   // Every row is kept and none conflicts.
   await expect(changeset.locator('li[data-op][data-accepted="false"]')).toHaveCount(0);
   await expect(changeset.locator('[data-testid$="-conflict"]')).toHaveCount(0);
-  await expect(changeset).toContainText(`(${titles.length} of ${titles.length} kept)`);
+  await expect(changeset).toContainText(/Ready to add: \d+ things/);
 
   await panel.getByTestId('ai-apply').click();
-  await expect(panel.getByTestId('ai-transcript')).toContainText(/Applied \d+ changes\./);
+  await expect(panel.getByTestId('ai-transcript')).toContainText(/Added \d+ things to your mod/);
   await expect(changeset).toBeHidden();
 
   // The sidebar shows the new content, and there are no errors.
@@ -344,7 +344,9 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   const panel = window.getByTestId('ai-panel');
   await expect(panel).toBeVisible();
   await expect(panel.getByTestId('ai-context')).toBeVisible();
-  await expect(panel.getByTestId('ai-context-label')).toHaveText(/^Problem \S+ on /);
+  // The chip says the problem in plain words (ADR 0130 D5); the block keeps its code.
+  await expect(panel.getByTestId('ai-context-label')).toHaveText(/^About: Ruby Wand, /);
+  await panel.getByTestId('ai-context-show').click();
   await expect(panel.getByTestId('ai-context-block')).toBeVisible();
   await expect(panel.getByTestId('ai-input')).toHaveValue(
     'Explain this problem and how to fix it.',
@@ -364,7 +366,7 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   await expect(rows.first().locator('code')).toHaveText(WAND_ID);
 
   await panel.getByTestId('ai-apply').click();
-  await expect(transcript).toContainText('Applied 1 change.');
+  await expect(transcript).toContainText('Changed Ruby Wand.');
   await expect(await errorRows(window)).toHaveCount(0);
   await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
 

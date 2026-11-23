@@ -71,7 +71,11 @@ async function blankProject(prefix: string, moreOptions: 'open' | 'closed' = 'op
   const { window } = launched;
   await window.waitForLoadState('domcontentloaded');
   await newProjectInFolder(window);
-  await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+  // The pack settings sit in the list's folded "More" while the More options start closed.
+  await expect.poll(() => existsSync(join(folders.projectDir, 'msm.project.json'))).toBe(true);
+  if (moreOptions === 'open') {
+    await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
+  }
   return { window, folders };
 }
 

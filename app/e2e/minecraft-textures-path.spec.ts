@@ -184,7 +184,7 @@ test('minecraft textures: set up, change Stone, start a texture from Water still
     'true',
   );
   const water = picker.getByTestId('mc-texture-block-water-still');
-  await expect(water).toContainText('minecraft:block/water_still');
+  await expect(water).toContainText('Water still');
   await expect(water).toContainText('Moving');
   await water.click();
   await expect(painter).toBeVisible();

@@ -225,8 +225,8 @@ test('search: Ctrl+K with > and @ for everyone, and the palette still runs comma
     .getByTestId('search-row-project:element:msm_sample_rules:lucky_block')
     .first();
   await expect(thing).toHaveAttribute('aria-selected', 'true');
-  // Advanced shows the id.
-  await expect(thing.getByTestId('search-row-id')).toContainText('msm_sample_rules:lucky_block');
+  // The row names the thing; no id (ADR 0130: the search asks in plain words).
+  await expect(thing.getByTestId('search-row-id')).toHaveCount(0);
   // `@` keeps the mod's things and its Things to fix.
   await expect(
     dialog.locator(
