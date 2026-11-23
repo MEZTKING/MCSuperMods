@@ -75,3 +75,5 @@ Accepted with findings (2026-11-23, close B562; briefs B548–B552 and B551b). D
 - teams and objectives are never removed by MSM;
 - the plugin's `load` and `tick` as function tags, with empty hook tags for Rules;
 - team options and display slots written with the game's own values; the timer's optional `name`.
+
+**Amendment (2026-11-23).** The plain-text command lines of the games plugin and the Rules fallback forms are now named forms in each target's `commands.forms` (plugin API 1.26.0, 31 forms; the lowered files are byte-identical, the goldens unchanged). The game-kit forms other than B547's four Rules forms are checked offline against the vendored command tree and the function checker, not yet run on a server.

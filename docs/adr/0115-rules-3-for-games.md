@@ -65,3 +65,5 @@ Accepted with findings (2026-11-23, close B562; brief B553, the B557 follow-up a
 - weighted picks compiled in the script rather than by `random` in a function;
 - block-changing steps on a break trigger run one tick after the break;
 - readings from a command's result rather than `execute store`.
+
+**Amendment (2026-11-23).** The plain-text command lines of the games plugin and the Rules fallback forms are now named forms in each target's `commands.forms` (plugin API 1.26.0, 31 forms; the lowered files are byte-identical, the goldens unchanged). The game-kit forms other than B547's four Rules forms are checked offline against the vendored command tree and the function checker, not yet run on a server.
