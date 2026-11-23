@@ -269,7 +269,10 @@ describe('createToolExecutor: read tools', () => {
     expect(value.controls.keyboardNamesByCode).toBeUndefined();
     expect(value.vehicles).toEqual(fixture.session.target.vehicles);
     // The command facts (plugin API 1.17.0): vanilla's command names and the argument types.
-    expect(value.commands).toEqual(fixture.session.target.commands);
+    // Without the games lowering's command forms (plugin API 1.22.0, B550).
+    const { forms: _forms, ...commands } = fixture.session.target.commands ?? {};
+    expect(value.commands).toEqual(commands);
+    expect(value.commands.forms).toBeUndefined();
     expect(value.commands.vanillaNames).toContain('give');
     // 44 argument types since plugin API 1.20.0 (B527).
     expect(JSON.stringify(value.commands).length).toBeLessThan(4_000);
