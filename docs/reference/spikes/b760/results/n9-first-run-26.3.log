@@ -1,0 +1,16 @@
+Downloading Minecraft server
+Installing Fabric Loader 0.20.1(26.3) on the server
+Downloading required files
+Downloading library org.ow2.asm:asm:9.10.1
+Downloading library org.ow2.asm:asm-analysis:9.10.1
+Downloading library org.ow2.asm:asm-commons:9.10.1
+Downloading library org.ow2.asm:asm-tree:9.10.1
+Downloading library org.ow2.asm:asm-util:9.10.1
+Downloading library net.fabricmc:sponge-mixin:0.17.5+mixin.0.8.7
+Downloading library net.fabricmc:fabric-loader:0.20.1
+Generating server launch JAR
+Unpacking 26.3/server-26.3.jar (versions:26.3) to versions/26.3/server-26.3.jar
+... (library unpacking lines cut) ...
+	at net.fabricmc.installer.ServerLauncher.main(ServerLauncher.java:69)
+[17:54:25] [main/WARN]: Failed to load eula.txt
+[17:54:25] [main/INFO]: You need to agree to the EULA in order to run the server. Go to eula.txt for more info.

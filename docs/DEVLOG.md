@@ -11100,3 +11100,16 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - The native menu's commands still replace an open dialog (their accelerators reach the app while a dialog is open); a later brief can make them wait or stack, as the keyboard shortcuts already wait.
+
+## 2026-11-23 — executor — B760 spike: launchers, instances and a local server
+
+**What**
+- Answered N1 to N16 of `docs/PLAN-instances.md` in `docs/reference/spikes/b760/README.md` (evidence in `results/`): Prism 11.1.1, MultiMC and PolyMC read from their sources and metadata (no launcher could be run here); a Fabric 26.3 server run five times in a throwaway folder (first start, offline start with a data pack world preset, a taken port, a copied world) and the 26.4-snapshot-7 launcher once; `javap` for "Open to LAN"; CurseForge's support articles and Fabric's installer for the official launcher. Every server, jar and world was deleted.
+- Found: a running Prism lists a new instance by its folder watcher only if the folder appears whole (stage and rename); Prism has `--world` since 9.0 and both 26.x versions carry the quick play traits; MultiMC needs `InstanceType=OneSix` and uses other join keys; PolyMC has no `--world`; CurseForge imports a profile `.zip` only with **All Files** and a tick; the server launcher has no published checksum but stable bytes (the installer plus `install.properties`); the server exits with status 0 on a missing EULA and on a taken port; it rewrites `server.properties` on every start; `white-list=true` and no `enable-command-block` on 26.x; a data pack world preset works on a server.
+
+**Decisions**
+- No launcher build was downloaded (the brief's sources only); live-launcher facts are on the Windows list (N16).
+- Proposed defaults for the plan: staged instance folders, `--world` for the Plain instance (an exception to ADR 0084's runtime hook, as Plain has no runtime), the server's state from its log, the white list off for Play with friends (a question for the user).
+
+**Next**
+- The main session amends section 2, section 3 and draft ADR 0133 as the README's "Changes asked of the plan" says, adds the white-list question, then starts B761.

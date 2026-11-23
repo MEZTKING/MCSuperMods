@@ -1,0 +1,18 @@
+Before the second start, two lines were appended by hand to the server.properties the first run wrote:
+  # my own comment
+  motd=User motd kept
+(the file already had motd=A Minecraft Server), and level-type and server-port were edited in place.
+
+After the server started, the file had been rewritten by the server:
+  - the hand comment was gone; the header is the server's two comment lines (title and a timestamp);
+  - one motd line remained: motd=User motd kept (the last duplicate wins);
+  - level-type=msmtest\:void_world and server-port=25599 were kept;
+  - keys are written sorted, ':' escaped as '\:'.
+
+Default values worth knowing (26.3, and the same on 26.4-snapshot-7):
+  white-list=true, enforce-whitelist=false, online-mode=true, spawn-protection=16,
+  function-permission-level=2, op-permission-level=4, initial-enabled-packs=vanilla,
+  level-type=minecraft\:normal, server-port=25565, pause-when-empty-seconds=60,
+  management-server-enabled=false, enable-rcon=false, enable-query=false.
+No enable-command-block key exists on 26.3 or 26.4-snapshot-7 (command blocks are the game rule command_blocks_work).
+26.4-snapshot-7 writes three more keys than 26.3: allowed-connection-ids, enable-legacy-status, status-contact-details.

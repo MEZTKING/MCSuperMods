@@ -1,0 +1,6 @@
+[17:56:26] [Server thread/WARN]: **** FAILED TO BIND TO PORT!
+[17:56:26] [Server thread/WARN]: The exception was: io.netty.channel.unix.Errors$NativeIoException: bind(..) failed with error(-98): Address already in use
+[17:56:26] [Server thread/WARN]: Perhaps a server is already running on that port?
+[17:56:26] [Server thread/ERROR]: This crash report has been saved to: <scratch>/srv1/crash-reports/crash-2026-11-23_17.56.26-server.txt
+[17:56:26] [Server thread/INFO]: Stopping server
+exit status: 0
