@@ -12,6 +12,8 @@ Nothing yet since 1.5.8.
 
 ### Added
 
+- **See a structure's processors.** A processor list's live view shows a building you pick before and after its processors, with a swipe line, and how many blocks each one changed; the Structure Studio has **Try a processor list on it**. Every kind of thing you can see or hear now has a live view.
+- **Structures draw every part.** A pool entry made of several building files draws all of them, and the step list says how many parts a piece has.
 - **Everything you can make, on Home.** Home now opens with a header (Start a new mod, Open a mod, Surprise me and a picture), Your mods, then a row for each kind of thing: Featured (the moving showcase cards), then Gear, Blocks, Food, Mobs, Vehicles, Magic, Scripts, Worlds, Games and Whole mods and packs. Every guided flow and starter has a card with a picture, a sentence, **Make this** and, where there is one, **See the example**. Rows scroll sideways; **Show all** shows a whole group, and the buttons at the top jump between the groups. The gallery is on Home, with a mod open or not.
 - Draw on Minecraft's own textures (ADR 0129 D4): **Start from a Minecraft texture** in New texture, the texture painter and the Block, Item, Mob and Particle Studios' picture fields opens a picker of the textures in your own Minecraft (by name, in folders, with search), and **Change a Minecraft texture** (a Home tile and a palette command) paints one and saves it as a resource pack override at the same path. The pictures come from your own game; MCSuperMods ships none.
 - **More options in every part.** Each part of a thing's editor now says in one line what it is for, keeps the settings most people need in view and ends in **More options**, which opens in place with the rest of that part: the rarer settings, the names Minecraft uses inside, and raw values. It remembers whether you left it open. A first-time **New here?** tip says what each kind of thing needs and how to try it.
@@ -20,6 +22,10 @@ Nothing yet since 1.5.8.
 ### Changed
 
 - **One mode.** Very easy, Easy and Advanced are now one way of working: plain words for everyone, with nothing taken away (everything Advanced offered is under More options in the part it changes, or in Every setting). The mode switch, View > Mode, the Welcome's question and the mode commands are gone; a mode chosen in an earlier version is forgotten. The list on the left shows names, never ids (search still finds ids, and `@`, `#`, `>` and `?` work for everyone). The toolbar is one toolbar with Home, Share my mod and Help beside New, Open, Save and the exports; New asks only for the mod's name, with **Choose a folder…** under its More options. **Raw JSON** is now **Edit as raw text**, and **Advanced (all fields)** is **Every setting**. The AI helper, the search and Things to fix speak one set of plain words; the helper's run limits and the cost in figures are under its More options.
+
+### Fixed
+
+- Try it's ground picker fits small windows (every ground and setting can be reached), and **Run in Try it** always runs in Try it's own area.
 
 ## [1.5.7] - 2026-11-23
 
