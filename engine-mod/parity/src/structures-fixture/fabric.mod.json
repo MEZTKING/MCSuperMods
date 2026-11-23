@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_structures_parity_fixture",
+  "version": "${version}",
+  "name": "MSM structures parity fixture",
+  "description": "The data pack of fixtures/structures-parity (MSM's own structure templates, template pools, jigsaw structures, structure sets and processor lists, ADR 0122 D9) as mod data, for the parity build's structuresParity task only (B639); never loaded with the other parity GameTests.",
+  "license": "MIT",
+  "environment": "*"
+}

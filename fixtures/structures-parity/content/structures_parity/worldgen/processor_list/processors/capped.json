@@ -1,0 +1,32 @@
+{
+  "data": {
+    "processors": [
+      {
+        "delegate": {
+          "processor_type": "minecraft:rule",
+          "rules": [
+            {
+              "input_predicate": {
+                "block": "minecraft:stone",
+                "predicate_type": "minecraft:block_match"
+              },
+              "location_predicate": {
+                "predicate_type": "minecraft:always_true"
+              },
+              "output_state": "minecraft:iron_block"
+            }
+          ]
+        },
+        "limit": 5,
+        "processor_type": "minecraft:capped"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/capped",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "capped at 5 over a rule of stone to iron block."
+  }
+}

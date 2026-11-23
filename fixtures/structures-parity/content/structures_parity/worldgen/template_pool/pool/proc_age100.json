@@ -1,0 +1,23 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:sample",
+          "processors": "structures_parity:processors/age100",
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:pool/proc_age100",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "The processor sample with list age100."
+  }
+}

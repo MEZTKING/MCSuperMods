@@ -1,0 +1,32 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:street",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 4
+      },
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:crossing",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 2
+      }
+    ],
+    "fallback": "structures_parity:pool/street_ends"
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:pool/streets",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Template pool streets."
+  }
+}

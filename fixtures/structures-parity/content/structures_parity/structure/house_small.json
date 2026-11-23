@@ -1,0 +1,64 @@
+{
+  "data": {
+    "blocks": [
+      [
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        2,
+        1
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:house",
+        "placement_priority": 0,
+        "pool": "minecraft:empty",
+        "pos": [
+          2,
+          0,
+          0
+        ],
+        "selection_priority": 0,
+        "target": "minecraft:empty"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "aligned",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/decor",
+        "pos": [
+          2,
+          0,
+          2
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:decor"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=north_up]",
+      "minecraft:jigsaw[orientation=up_north]"
+    ],
+    "size": [
+      5,
+      4,
+      5
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:house_small",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template house_small (5 by 4 by 5)."
+  }
+}

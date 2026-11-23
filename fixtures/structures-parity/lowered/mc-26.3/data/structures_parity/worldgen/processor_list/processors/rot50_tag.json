@@ -1,0 +1,9 @@
+{
+  "processors": [
+    {
+      "integrity": 0.5,
+      "processor_type": "minecraft:block_rot",
+      "rottable_blocks": "#minecraft:stone_bricks"
+    }
+  ]
+}

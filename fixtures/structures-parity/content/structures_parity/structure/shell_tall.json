@@ -1,0 +1,43 @@
+{
+  "data": {
+    "blocks": [
+      [
+        4,
+        0,
+        4,
+        0
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/inners_tall",
+        "pos": [
+          4,
+          0,
+          4
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:inner"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=up_north]"
+    ],
+    "size": [
+      9,
+      6,
+      9
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:shell_tall",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template shell_tall (9 by 6 by 9)."
+  }
+}

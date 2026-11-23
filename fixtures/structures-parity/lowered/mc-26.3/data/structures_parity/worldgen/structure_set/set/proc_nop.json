@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "salt": 63937,
+    "separation": 1,
+    "spacing": 2,
+    "type": "minecraft:random_spread"
+  },
+  "structures": [
+    {
+      "structure": "structures_parity:structure/proc_nop",
+      "weight": 1
+    }
+  ]
+}

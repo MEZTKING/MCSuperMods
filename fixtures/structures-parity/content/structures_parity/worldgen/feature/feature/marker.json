@@ -1,0 +1,16 @@
+{
+  "data": {
+    "to_place": {
+      "state": "minecraft:gold_block",
+      "type": "minecraft:simple"
+    },
+    "type": "minecraft:simple_block"
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:feature/marker",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "A single gold block, the feature of the misc structure's feature element."
+  }
+}

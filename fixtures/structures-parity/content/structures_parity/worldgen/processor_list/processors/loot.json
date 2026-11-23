@@ -1,0 +1,32 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:rule",
+        "rules": [
+          {
+            "block_entity_modifier": {
+              "loot_table": "minecraft:chests/simple_dungeon",
+              "type": "minecraft:append_loot"
+            },
+            "input_predicate": {
+              "block": "minecraft:chest",
+              "predicate_type": "minecraft:block_match"
+            },
+            "location_predicate": {
+              "predicate_type": "minecraft:always_true"
+            },
+            "output_state": "minecraft:chest"
+          }
+        ]
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/loot",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "rule with the append_loot block entity modifier on the chest (the table is only an id)."
+  }
+}

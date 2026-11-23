@@ -1,0 +1,37 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:rule",
+        "rules": [
+          {
+            "input_predicate": {
+              "predicate_type": "minecraft:any_of",
+              "rules": [
+                {
+                  "block": "minecraft:dirt",
+                  "predicate_type": "minecraft:block_match"
+                },
+                {
+                  "block": "minecraft:sand",
+                  "predicate_type": "minecraft:block_match"
+                }
+              ]
+            },
+            "location_predicate": {
+              "predicate_type": "minecraft:always_true"
+            },
+            "output_state": "minecraft:obsidian"
+          }
+        ]
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/rule_anyof",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "rule: any_of two blocks."
+  }
+}

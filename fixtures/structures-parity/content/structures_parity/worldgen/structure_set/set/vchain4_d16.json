@@ -1,0 +1,23 @@
+{
+  "data": {
+    "placement": {
+      "salt": 63915,
+      "separation": 1,
+      "spacing": 2,
+      "type": "minecraft:random_spread"
+    },
+    "structures": [
+      {
+        "structure": "structures_parity:structure/vchain4_d16",
+        "weight": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:set/vchain4_d16",
+  "kind": "minecraft:worldgen/structure_set",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "The set of vchain4_d16 alone."
+  }
+}

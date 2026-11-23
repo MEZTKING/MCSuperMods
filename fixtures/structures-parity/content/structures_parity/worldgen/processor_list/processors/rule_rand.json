@@ -1,0 +1,29 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:rule",
+        "rules": [
+          {
+            "input_predicate": {
+              "block": "minecraft:stone",
+              "predicate_type": "minecraft:random_block_match",
+              "probability": 0.3
+            },
+            "location_predicate": {
+              "predicate_type": "minecraft:always_true"
+            },
+            "output_state": "minecraft:iron_block"
+          }
+        ]
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/rule_rand",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "rule: random_block_match at 0.3."
+  }
+}

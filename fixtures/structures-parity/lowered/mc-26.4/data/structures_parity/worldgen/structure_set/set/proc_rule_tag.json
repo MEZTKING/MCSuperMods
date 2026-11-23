@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "salt": 63943,
+    "separation": 1,
+    "spacing": 2,
+    "type": "minecraft:random_spread"
+  },
+  "structures": [
+    {
+      "structure": "structures_parity:structure/proc_rule_tag",
+      "weight": 1
+    }
+  ]
+}

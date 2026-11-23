@@ -1,0 +1,17 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:protected_blocks",
+        "value": "#minecraft:features_cannot_replace"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/protected",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "protected_blocks; placed over bedrock."
+  }
+}

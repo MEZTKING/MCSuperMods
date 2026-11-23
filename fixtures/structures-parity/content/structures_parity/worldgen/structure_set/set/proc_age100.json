@@ -1,0 +1,23 @@
+{
+  "data": {
+    "placement": {
+      "salt": 63959,
+      "separation": 1,
+      "spacing": 2,
+      "type": "minecraft:random_spread"
+    },
+    "structures": [
+      {
+        "structure": "structures_parity:structure/proc_age100",
+        "weight": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:set/proc_age100",
+  "kind": "minecraft:worldgen/structure_set",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "The set of proc_age100 alone."
+  }
+}

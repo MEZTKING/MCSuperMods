@@ -1,0 +1,23 @@
+{
+  "data": {
+    "biomes": "#structures_parity:none",
+    "max_distance_from_center": 128,
+    "size": 1,
+    "spawn_overrides": {},
+    "start_height": {
+      "absolute": 200
+    },
+    "start_pool": "structures_parity:pool/proc_static",
+    "step": "surface_structures",
+    "terrain_adaptation": "none",
+    "type": "minecraft:jigsaw",
+    "use_expansion_hack": false
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:structure/proc_static",
+  "kind": "minecraft:worldgen/structure",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "The processor sample with list static, its floor at world y 199."
+  }
+}

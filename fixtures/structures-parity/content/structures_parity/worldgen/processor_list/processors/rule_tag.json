@@ -1,0 +1,28 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:rule",
+        "rules": [
+          {
+            "input_predicate": {
+              "predicate_type": "minecraft:tag_match",
+              "tag": "minecraft:stone_bricks"
+            },
+            "location_predicate": {
+              "predicate_type": "minecraft:always_true"
+            },
+            "output_state": "minecraft:diamond_block"
+          }
+        ]
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/rule_tag",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "rule: tag_match."
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:list_pool_element",
+          "elements": [
+            {
+              "element_type": "minecraft:single_pool_element",
+              "location": "structures_parity:l1",
+              "processors": "minecraft:empty",
+              "projection": "rigid"
+            },
+            {
+              "element_type": "minecraft:single_pool_element",
+              "location": "structures_parity:l2",
+              "processors": "minecraft:empty",
+              "projection": "rigid"
+            }
+          ],
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:pool/lists",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "One list element of l1 and l2."
+  }
+}

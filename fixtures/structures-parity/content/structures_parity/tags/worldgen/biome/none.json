@@ -1,0 +1,12 @@
+{
+  "data": {
+    "values": []
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:none",
+  "kind": "minecraft:tag/worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "An empty biome tag: the fixture's structures never start in a world by themselves."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "data": {
+    "blocks": [
+      [
+        1,
+        0,
+        0,
+        0
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:street",
+        "placement_priority": 0,
+        "pool": "minecraft:empty",
+        "pos": [
+          1,
+          0,
+          0
+        ],
+        "selection_priority": 0,
+        "target": "minecraft:empty"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=north_up]"
+    ],
+    "size": [
+      3,
+      1,
+      1
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:street_end",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template street_end (3 by 1 by 1)."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "processors": [
+    {
+      "mossiness": 1,
+      "processor_type": "minecraft:block_age"
+    }
+  ]
+}

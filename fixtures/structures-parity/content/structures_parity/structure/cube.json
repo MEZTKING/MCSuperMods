@@ -1,0 +1,148 @@
+{
+  "data": {
+    "blocks": [
+      [
+        2,
+        0,
+        2,
+        5
+      ],
+      [
+        2,
+        2,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        2,
+        3
+      ],
+      [
+        4,
+        2,
+        2,
+        1
+      ],
+      [
+        2,
+        2,
+        4,
+        2
+      ],
+      [
+        2,
+        4,
+        2,
+        4
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:cube",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/cubes",
+        "pos": [
+          2,
+          0,
+          2
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:cube"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:cube",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/cubes",
+        "pos": [
+          2,
+          2,
+          0
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:cube"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:cube",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/cubes",
+        "pos": [
+          0,
+          2,
+          2
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:cube"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:cube",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/cubes",
+        "pos": [
+          4,
+          2,
+          2
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:cube"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:cube",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/cubes",
+        "pos": [
+          2,
+          2,
+          4
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:cube"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:cube",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/cubes",
+        "pos": [
+          2,
+          4,
+          2
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:cube"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=north_up]",
+      "minecraft:jigsaw[orientation=east_up]",
+      "minecraft:jigsaw[orientation=south_up]",
+      "minecraft:jigsaw[orientation=west_up]",
+      "minecraft:jigsaw[orientation=up_north]",
+      "minecraft:jigsaw[orientation=down_north]"
+    ],
+    "size": [
+      5,
+      5,
+      5
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:cube",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template cube (5 by 5 by 5)."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "data": {
+    "blocks": [
+      [
+        3,
+        1,
+        1,
+        0
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/segs2",
+        "pos": [
+          3,
+          1,
+          1
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:seg"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=east_up]"
+    ],
+    "size": [
+      4,
+      3,
+      3
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:cstart4",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template cstart4 (4 by 3 by 3)."
+  }
+}

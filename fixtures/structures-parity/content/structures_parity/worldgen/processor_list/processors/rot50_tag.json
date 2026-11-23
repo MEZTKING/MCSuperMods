@@ -1,0 +1,18 @@
+{
+  "data": {
+    "processors": [
+      {
+        "integrity": 0.5,
+        "processor_type": "minecraft:block_rot",
+        "rottable_blocks": "#minecraft:stone_bricks"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/rot50_tag",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "block_rot at 0.5 of the stone bricks tag only."
+  }
+}

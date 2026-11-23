@@ -1,0 +1,43 @@
+{
+  "data": {
+    "blocks": [
+      [
+        0,
+        1,
+        1,
+        0
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:arm",
+        "placement_priority": 0,
+        "pool": "minecraft:empty",
+        "pos": [
+          0,
+          1,
+          1
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:hub"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=west_up]"
+    ],
+    "size": [
+      5,
+      3,
+      3
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:arm_ok",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template arm_ok (5 by 3 by 3)."
+  }
+}

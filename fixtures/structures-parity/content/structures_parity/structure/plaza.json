@@ -1,0 +1,106 @@
+{
+  "data": {
+    "blocks": [
+      [
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        3
+      ],
+      [
+        8,
+        0,
+        4,
+        1
+      ],
+      [
+        4,
+        0,
+        8,
+        2
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/streets",
+        "pos": [
+          4,
+          0,
+          0
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:street"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/streets",
+        "pos": [
+          0,
+          0,
+          4
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:street"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/streets",
+        "pos": [
+          8,
+          0,
+          4
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:street"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/streets",
+        "pos": [
+          4,
+          0,
+          8
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:street"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=north_up]",
+      "minecraft:jigsaw[orientation=east_up]",
+      "minecraft:jigsaw[orientation=south_up]",
+      "minecraft:jigsaw[orientation=west_up]"
+    ],
+    "size": [
+      9,
+      1,
+      9
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:plaza",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template plaza (9 by 1 by 9)."
+  }
+}

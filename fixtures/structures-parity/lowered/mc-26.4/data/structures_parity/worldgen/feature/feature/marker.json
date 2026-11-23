@@ -1,0 +1,7 @@
+{
+  "to_place": {
+    "state": "minecraft:gold_block",
+    "type": "minecraft:simple"
+  },
+  "type": "minecraft:simple_block"
+}

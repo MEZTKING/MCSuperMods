@@ -1,0 +1,63 @@
+{
+  "data": {
+    "blocks": [
+      [
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        4,
+        1,
+        0,
+        0
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/wides",
+        "pos": [
+          0,
+          1,
+          0
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:w"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/wides",
+        "pos": [
+          4,
+          1,
+          0
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:w"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=north_up]"
+    ],
+    "size": [
+      5,
+      3,
+      3
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:whub",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template whub (5 by 3 by 3)."
+  }
+}

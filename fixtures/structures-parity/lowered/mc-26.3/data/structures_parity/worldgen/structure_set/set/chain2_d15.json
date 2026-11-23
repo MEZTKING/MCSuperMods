@@ -1,0 +1,14 @@
+{
+  "placement": {
+    "salt": 63908,
+    "separation": 1,
+    "spacing": 2,
+    "type": "minecraft:random_spread"
+  },
+  "structures": [
+    {
+      "structure": "structures_parity:structure/chain2_d15",
+      "weight": 1
+    }
+  ]
+}

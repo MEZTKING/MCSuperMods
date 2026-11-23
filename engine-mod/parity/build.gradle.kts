@@ -232,3 +232,63 @@ tasks.register<Exec>("liveViewsParity") {
     environment("MSM_LIVE_VIEWS_TARGET", "mc-$mc")
     if (update) environment("MSM_LIVE_VIEWS_UPDATE", "1")
 }
+
+// The structures parity fixture (ADR 0122 D9, B639): this version's fixtures/structures-parity/lowered/mc-<mc>/data
+// (the templates carry the target's DataVersion) as a mod jar of its own, loaded only by structuresParity, so its
+// templates, pools, structures, sets and processor lists are never active in another parity run.
+val structuresFixture: Directory = layout.projectDirectory.dir("../../fixtures/structures-parity")
+
+val structuresFixtureJar = tasks.register<Jar>("structuresFixtureJar") {
+    group = "build"
+    description = "The structures parity fixture's data pack as a mod jar of its own (only structuresParity loads it)."
+    val version = project.version
+    archiveBaseName = "msm_structures_parity_fixture"
+    archiveVersion = version.toString()
+    destinationDirectory = layout.buildDirectory.dir("structures-fixture")
+    inputs.property("version", version)
+    from(layout.projectDirectory.dir("src/structures-fixture")) {
+        include("fabric.mod.json")
+        expand("version" to version)
+    }
+    from(structuresFixture.dir("lowered/mc-$mc")) {
+        include("data/**")
+    }
+}
+
+// StructuresParityTest on a production GameTest server (B639): tools/run-fabric-server runs this jar's
+// structures_parity_test_* tests with the fixture jar as the mod under test, and the tests check this version's
+// section of fixtures/structures-parity/expectations.json (or, with -PupdateStructuresParity, rewrite it). Needs node
+// and JDK 25.
+tasks.register<Exec>("structuresParity") {
+    group = "verification"
+    description = "Measures the structures parity fixture on the real game and checks (or with -PupdateStructuresParity rewrites) its expectations."
+    dependsOn(tasks.jar, structuresFixtureJar)
+    val jarFile = tasks.jar.flatMap { it.archiveFile }
+    val fixtureJarFile = structuresFixtureJar.flatMap { it.archiveFile }
+    val repository = layout.projectDirectory.dir("../..").asFile
+    val expectations = structuresFixture.file("expectations.json").asFile
+    val work = layout.buildDirectory.dir("structures-parity-server").get().asFile
+    val report = layout.buildDirectory.file("structures-parity-report.xml").get().asFile
+    val minecraft = fact("minecraft_version")
+    val loader = fact("loader_version")
+    val fabricApi = fact("fabric_api_version")
+    val update = providers.gradleProperty("updateStructuresParity").isPresent
+    inputs.file(jarFile)
+    inputs.file(fixtureJarFile)
+    outputs.upToDateWhen { false }
+    workingDir = repository
+    executable = "node"
+    argumentProviders.add(CommandLineArgumentProvider {
+        listOf(
+            "tools/run-fabric-server/index.ts",
+            "--jar", fixtureJarFile.get().asFile.absolutePath, "--no-runtime",
+            "--gametest", jarFile.get().asFile.absolutePath,
+            "--gametest-filter", "msm_parity_tests:structures_parity_test_*",
+            "--minecraft", minecraft, "--loader", loader, "--fabric-api", fabricApi,
+            "--work", work.absolutePath, "--report", report.absolutePath,
+        )
+    })
+    environment("MSM_STRUCTURES_EXPECTATIONS", expectations.absolutePath)
+    environment("MSM_STRUCTURES_TARGET", "mc-$mc")
+    if (update) environment("MSM_STRUCTURES_UPDATE", "1")
+}

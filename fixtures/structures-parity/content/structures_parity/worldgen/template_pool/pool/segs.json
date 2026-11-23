@@ -1,0 +1,23 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:seg",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "structures_parity:pool/caps"
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:pool/segs",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Template pool segs."
+  }
+}

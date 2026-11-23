@@ -1,0 +1,14 @@
+{
+  "biomes": "#structures_parity:none",
+  "max_distance_from_center": 128,
+  "size": 1,
+  "spawn_overrides": {},
+  "start_height": {
+    "absolute": 200
+  },
+  "start_pool": "structures_parity:pool/proc_inline",
+  "step": "surface_structures",
+  "terrain_adaptation": "none",
+  "type": "minecraft:jigsaw",
+  "use_expansion_hack": false
+}

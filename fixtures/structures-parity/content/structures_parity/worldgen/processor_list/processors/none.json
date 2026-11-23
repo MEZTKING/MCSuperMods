@@ -1,0 +1,12 @@
+{
+  "data": {
+    "processors": []
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/none",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "No processor at all: the template as the game places it (the inputs of every other list)."
+  }
+}

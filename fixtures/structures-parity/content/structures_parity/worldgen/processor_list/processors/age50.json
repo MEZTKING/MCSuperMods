@@ -1,0 +1,17 @@
+{
+  "data": {
+    "processors": [
+      {
+        "mossiness": 0.5,
+        "processor_type": "minecraft:block_age"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/age50",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "block_age, mossiness 0.5."
+  }
+}

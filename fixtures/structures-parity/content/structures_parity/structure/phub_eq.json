@@ -1,0 +1,64 @@
+{
+  "data": {
+    "blocks": [
+      [
+        0,
+        1,
+        1,
+        1
+      ],
+      [
+        2,
+        1,
+        1,
+        0
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/parms",
+        "pos": [
+          0,
+          1,
+          1
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:parm"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/parms",
+        "pos": [
+          2,
+          1,
+          1
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:parm"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=east_up]",
+      "minecraft:jigsaw[orientation=west_up]"
+    ],
+    "size": [
+      3,
+      3,
+      3
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:phub_eq",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template phub_eq (3 by 3 by 3)."
+  }
+}

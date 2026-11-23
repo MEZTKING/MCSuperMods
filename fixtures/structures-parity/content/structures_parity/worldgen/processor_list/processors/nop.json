@@ -1,0 +1,16 @@
+{
+  "data": {
+    "processors": [
+      {
+        "processor_type": "minecraft:nop"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/nop",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "nop."
+  }
+}

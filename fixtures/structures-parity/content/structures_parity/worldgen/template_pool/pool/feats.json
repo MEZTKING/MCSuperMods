@@ -1,0 +1,22 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:feature_pool_element",
+          "feature": "structures_parity:placed/marker",
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:pool/feats",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "One feature element."
+  }
+}

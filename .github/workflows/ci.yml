@@ -1207,6 +1207,15 @@ jobs:
       - name: Live views parity GameTest (fixtures/live-views)
         working-directory: engine-mod
         run: ./gradlew -p parity liveViewsParity -Pmc=${{ matrix.mc }} --no-daemon
+      # Structures parity (B639, ADR 0122 D9): StructuresParityTest asks the real server for 450
+      # starts of each jigsaw structure of fixtures/structures-parity (this version's lowered data
+      # pack as a mod jar of its own; world seeds 634 and 635), checks every join, overlap, depth and
+      # distance, places the processor sample with each processor list 32 times, and compares with
+      # expectations.json (B634's 4S8 tolerance). `-PupdateStructuresParity` rewrites the file.
+      # About a minute a version.
+      - name: Structures parity GameTest (fixtures/structures-parity)
+        working-directory: engine-mod
+        run: ./gradlew -p parity structuresParity -Pmc=${{ matrix.mc }} --no-daemon
       # The engine over the Loom cache jar's vanilla settings against the real game (ADR 0119 D13,
       # WS5 and WS6; turned on by B581): worldgenVanilla measures MSM's own test dimensions over
       # vanilla's noise settings (fixtures/worldgen-parity/vanilla) into a file that is never

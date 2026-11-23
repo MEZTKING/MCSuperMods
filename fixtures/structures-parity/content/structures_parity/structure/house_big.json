@@ -1,0 +1,84 @@
+{
+  "data": {
+    "blocks": [
+      [
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        3,
+        1
+      ],
+      [
+        6,
+        0,
+        3,
+        1
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:house",
+        "placement_priority": 0,
+        "pool": "minecraft:empty",
+        "pos": [
+          4,
+          0,
+          0
+        ],
+        "selection_priority": 0,
+        "target": "minecraft:empty"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/decor",
+        "pos": [
+          2,
+          0,
+          3
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:decor"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/decor",
+        "pos": [
+          6,
+          0,
+          3
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:decor"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=north_up]",
+      "minecraft:jigsaw[orientation=up_north]"
+    ],
+    "size": [
+      9,
+      6,
+      7
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:house_big",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template house_big (9 by 6 by 7)."
+  }
+}

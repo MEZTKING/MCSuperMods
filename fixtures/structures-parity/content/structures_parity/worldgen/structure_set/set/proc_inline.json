@@ -1,0 +1,23 @@
+{
+  "data": {
+    "placement": {
+      "salt": 63965,
+      "separation": 1,
+      "spacing": 2,
+      "type": "minecraft:random_spread"
+    },
+    "structures": [
+      {
+        "structure": "structures_parity:structure/proc_inline",
+        "weight": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:set/proc_inline",
+  "kind": "minecraft:worldgen/structure_set",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "The set of proc_inline alone."
+  }
+}

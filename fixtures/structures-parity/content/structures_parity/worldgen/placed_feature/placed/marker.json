@@ -1,0 +1,13 @@
+{
+  "data": {
+    "feature": "structures_parity:feature/marker",
+    "placement": []
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:placed/marker",
+  "kind": "minecraft:worldgen/placed_feature",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "The marker feature, placed as it is."
+  }
+}

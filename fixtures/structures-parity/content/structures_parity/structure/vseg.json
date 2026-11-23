@@ -1,0 +1,64 @@
+{
+  "data": {
+    "blocks": [
+      [
+        1,
+        0,
+        1,
+        0
+      ],
+      [
+        1,
+        4,
+        1,
+        1
+      ]
+    ],
+    "jigsaws": [
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "structures_parity:vseg",
+        "placement_priority": 0,
+        "pool": "minecraft:empty",
+        "pos": [
+          1,
+          0,
+          1
+        ],
+        "selection_priority": 0,
+        "target": "minecraft:empty"
+      },
+      {
+        "final_state": "minecraft:air",
+        "joint": "rollable",
+        "name": "minecraft:empty",
+        "placement_priority": 0,
+        "pool": "structures_parity:pool/vsegs",
+        "pos": [
+          1,
+          4,
+          1
+        ],
+        "selection_priority": 0,
+        "target": "structures_parity:vseg"
+      }
+    ],
+    "palette": [
+      "minecraft:jigsaw[orientation=down_north]",
+      "minecraft:jigsaw[orientation=up_north]"
+    ],
+    "size": [
+      3,
+      5,
+      3
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:vseg",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Jigsaw template vseg (3 by 5 by 3)."
+  }
+}

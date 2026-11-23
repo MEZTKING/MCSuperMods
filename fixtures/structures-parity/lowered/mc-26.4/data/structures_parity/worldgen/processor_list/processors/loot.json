@@ -1,0 +1,23 @@
+{
+  "processors": [
+    {
+      "processor_type": "minecraft:rule",
+      "rules": [
+        {
+          "block_entity_modifier": {
+            "loot_table": "minecraft:chests/simple_dungeon",
+            "type": "minecraft:append_loot"
+          },
+          "input_predicate": {
+            "block": "minecraft:chest",
+            "predicate_type": "minecraft:block_match"
+          },
+          "location_predicate": {
+            "predicate_type": "minecraft:always_true"
+          },
+          "output_state": "minecraft:chest"
+        }
+      ]
+    }
+  ]
+}

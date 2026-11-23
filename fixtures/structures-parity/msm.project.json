@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "name": "Structures Parity",
+  "namespaces": [
+    "structures_parity"
+  ],
+  "plugins": [
+    "msm.datapack",
+    "msm.structures",
+    "msm.worldgen"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

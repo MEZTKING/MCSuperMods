@@ -1,0 +1,59 @@
+{
+  "data": {
+    "elements": [
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:arm_ok",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      },
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:arm_name",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      },
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:arm_tgt",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      },
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:arm_vert",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      },
+      {
+        "element": {
+          "element_type": "minecraft:single_pool_element",
+          "location": "structures_parity:arm_two",
+          "processors": "minecraft:empty",
+          "projection": "rigid"
+        },
+        "weight": 1
+      }
+    ],
+    "fallback": "minecraft:empty"
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:pool/arms",
+  "kind": "minecraft:worldgen/template_pool",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "Five arms; only arm_ok, arm_tgt and arm_two can join a hub (J1, J3, J5)."
+  }
+}

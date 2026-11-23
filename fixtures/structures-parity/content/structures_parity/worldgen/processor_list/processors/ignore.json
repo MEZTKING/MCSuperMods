@@ -1,0 +1,20 @@
+{
+  "data": {
+    "processors": [
+      {
+        "blocks": [
+          "minecraft:stone",
+          "minecraft:air"
+        ],
+        "processor_type": "minecraft:block_ignore"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "structures_parity:processors/ignore",
+  "kind": "minecraft:worldgen/processor_list",
+  "meta": {
+    "createdAt": "2026-11-23T00:00:00.000Z",
+    "notes": "block_ignore of stone and air."
+  }
+}
