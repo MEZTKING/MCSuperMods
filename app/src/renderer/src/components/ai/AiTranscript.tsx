@@ -1,97 +1,12 @@
 import { Bot, CircleAlert, Info, User, Wrench } from 'lucide-react';
+import type { ReactNode } from 'react';
 import type { AiDisplayMessage } from '../../store/ai-store';
 import { Markdown } from '../Markdown';
+import { Button } from '../ui/Button';
+import type { AiStatusAction } from './ai-status';
+import { type AiActionWords, noticeWords, toolLine, type UiMode, wordsFor } from './ai-words';
 
 type ToolMessage = Extract<AiDisplayMessage, { role: 'tool' }>;
-
-function field(input: unknown, name: string): string | undefined {
-  if (typeof input !== 'object' || input === null) return undefined;
-  const value = (input as Record<string, unknown>)[name];
-  return typeof value === 'string' ? value : undefined;
-}
-
-function plural(count: number, one: string, many = `${one}s`): string {
-  return `${count} ${count === 1 ? one : many}`;
-}
-
-/** The problem count of a `run_checks` result, or `undefined` while unknown. */
-function checkedCount(result: string | undefined): number | undefined {
-  if (result === undefined) return undefined;
-  try {
-    const parsed = JSON.parse(result) as { counts?: Record<string, number> };
-    if (parsed.counts === undefined) return undefined;
-    return Object.values(parsed.counts).reduce((sum, count) => sum + count, 0);
-  } catch {
-    return undefined;
-  }
-}
-
-/**
- * A tool entry's one-line summary: "Read `ruby:ruby_ore`", "Proposed 4 elements",
- * "Checked: 2 problems" and so on. Code spans use Markdown backticks.
- */
-export function toolSummary(message: Pick<ToolMessage, 'name' | 'input' | 'result'>): string {
-  const { input } = message;
-  const code = (name: string) => {
-    const value = field(input, name);
-    return value === undefined ? '' : ` \`${value}\``;
-  };
-  switch (message.name) {
-    case 'project_summary':
-      return 'Read the project summary';
-    case 'list_kinds':
-      return 'Listed the element kinds';
-    case 'kind_schema':
-      return `Read the schema of${code('kind')}`;
-    case 'list_elements':
-      return 'Listed elements';
-    case 'read_element':
-      return `Read${code('id')}`;
-    case 'list_problems':
-      return 'Listed problems';
-    case 'list_templates':
-      return 'Listed templates';
-    case 'template_data':
-      return `Read template${code('templateId')}`;
-    case 'list_starters':
-      return 'Listed starters';
-    case 'target_facts':
-      return "Read the target's facts";
-    case 'script_api_typings':
-      return 'Read the script API typings';
-    case 'pending_changes':
-      return 'Read the pending changes';
-    case 'create_elements': {
-      const elements = (input as { elements?: unknown[] } | null)?.elements;
-      return `Proposed ${plural(Array.isArray(elements) ? elements.length : 0, 'element')}`;
-    }
-    case 'update_element':
-      return `Proposed a change to${code('id')}`;
-    case 'delete_element':
-      return `Proposed deleting${code('id')}`;
-    case 'rename_element':
-      return `Proposed renaming${code('from')} to${code('to')}`;
-    case 'create_texture': {
-      const namespace = field(input, 'namespace');
-      const path = field(input, 'path');
-      return namespace === undefined || path === undefined
-        ? 'Proposed a texture'
-        : `Proposed the texture \`${namespace}:${path}\``;
-    }
-    case 'add_starter':
-      return `Proposed the starter${code('starterId')}`;
-    case 'run_checks': {
-      const count = checkedCount(message.result);
-      return count === undefined ? 'Checking' : `Checked: ${plural(count, 'problem')}`;
-    }
-    case 'propose_plan':
-      return `Proposed a plan${field(input, 'title') === undefined ? '' : `: ${field(input, 'title')}`}`;
-    case 'checkpoint':
-      return 'Checkpoint';
-    default:
-      return `Used ${message.name}`;
-  }
-}
 
 function pretty(value: unknown): string {
   if (typeof value === 'string') {
@@ -104,15 +19,35 @@ function pretty(value: unknown): string {
   return JSON.stringify(value, null, 2) ?? '';
 }
 
-function ToolEntry({ message }: { message: ToolMessage }) {
-  const status =
-    message.status === 'running' ? ' …' : message.status === 'error' ? ' (failed)' : '';
+/** The words of a tool entry's state after its line. */
+function toolStatus(status: ToolMessage['status']): string {
+  return status === 'running' ? ' …' : status === 'error' ? ' (failed)' : '';
+}
+
+/**
+ * A tool entry: in Advanced the line with its details (input and result), in Very easy and Easy
+ * the plain line only, with nothing to open.
+ */
+function ToolEntry({ message, mode }: { message: ToolMessage; mode: UiMode }) {
+  const line = toolLine(message, mode);
+  if (line === null) return null;
+  if (mode !== 'advanced') {
+    return (
+      <p className="flex items-center gap-1 text-xs text-muted" data-status={message.status}>
+        <Wrench size={12} aria-hidden />
+        <span>
+          {line}
+          {toolStatus(message.status)}
+        </span>
+      </p>
+    );
+  }
   return (
     <details className="text-xs" data-status={message.status}>
       <summary className="flex cursor-pointer items-center gap-1 text-muted">
         <Wrench size={12} aria-hidden />
         <span className="[&_p]:inline">
-          <Markdown source={`${toolSummary(message)}${status}`} />
+          <Markdown source={`${line}${toolStatus(message.status)}`} />
         </span>
       </summary>
       <div className="mt-1 flex flex-col gap-1 pl-4">
@@ -133,12 +68,36 @@ function ToolEntry({ message }: { message: ToolMessage }) {
   );
 }
 
+type NoticeMessage = Extract<AiDisplayMessage, { role: 'notice' }>;
+type PlanMessage = Extract<AiDisplayMessage, { role: 'plan' }>;
+
+/** Whether a notice tells of a failure (drawn in the error colour). */
+function isFailure(kind: NoticeMessage['kind']): boolean {
+  return kind === 'error' || kind === 'refusal';
+}
+
 /**
- * The transcript: user messages (with their context blocks), assistant text through the safe
- * Markdown renderer (re-parsed as it streams) with a collapsed "Thinking" line, one-line tool
- * entries with a disclosure, and notices. The list is an `aria-live` region.
+ * The transcript (ADR 0125 D1, D13): user messages (with their context blocks), the helper's
+ * answers through the safe Markdown renderer (re-parsed as it streams) with a closed "Thinking"
+ * line where the mode shows it, tool lines by mode (Very easy and Easy hide most), plans where
+ * they were proposed (drawn by `renderPlan`), and notices in the mode's words with their
+ * buttons. The list is an `aria-live` region; every entry carries `data-entry` so the panel can
+ * keep the newest one in view.
  */
-export function AiTranscript(props: { messages: readonly AiDisplayMessage[] }) {
+export function AiTranscript(props: {
+  messages: readonly AiDisplayMessage[];
+  mode: UiMode;
+  /** Draws a plan entry (B686's plan, or its closed line). */
+  renderPlan(message: PlanMessage): ReactNode;
+  /**
+   * The buttons a notice offers here: the panel leaves out what it cannot do and what the
+   * state line already offers. Default: none.
+   */
+  noticeActions?(message: NoticeMessage, actions: readonly AiActionWords[]): AiActionWords[];
+  onNoticeAction?(message: NoticeMessage, action: AiStatusAction): void;
+}) {
+  const { mode } = props;
+  const words = wordsFor(mode);
   return (
     <ol
       className="m-0 flex list-none flex-col gap-2 p-0"
@@ -155,6 +114,7 @@ export function AiTranscript(props: { messages: readonly AiDisplayMessage[] }) {
                 key={message.seq}
                 data-testid={testId}
                 data-role="user"
+                data-entry=""
                 className="flex gap-1.5 rounded bg-bg p-2 text-sm"
               >
                 <User size={14} aria-label="You" className="mt-0.5 shrink-0" />
@@ -183,22 +143,25 @@ export function AiTranscript(props: { messages: readonly AiDisplayMessage[] }) {
                 </div>
               </li>
             );
-          case 'assistant':
+          case 'assistant': {
+            const thinking = words.showThinking && message.thinking !== '';
+            if (!thinking && message.text === '') return null;
             return (
               <li
                 key={message.seq}
                 data-testid={testId}
                 data-role="assistant"
+                data-entry=""
                 className="flex gap-1.5 text-sm"
               >
                 <Bot size={14} aria-label="AI helper" className="mt-0.5 shrink-0" />
                 <div className="flex min-w-0 flex-1 flex-col gap-1 [overflow-wrap:anywhere]">
-                  {message.thinking !== '' && (
+                  {thinking && (
                     <details
                       className="text-xs text-muted"
                       data-testid={`ai-thinking-${message.seq}`}
                     >
-                      <summary className="cursor-pointer">Thinking</summary>
+                      <summary className="cursor-pointer">{words.thinking}</summary>
                       <p className="mt-1 whitespace-pre-wrap">{message.thinking}</p>
                     </details>
                   )}
@@ -206,31 +169,67 @@ export function AiTranscript(props: { messages: readonly AiDisplayMessage[] }) {
                 </div>
               </li>
             );
-          case 'tool':
+          }
+          case 'tool': {
+            if (toolLine(message, mode) === null) return null;
             return (
-              <li key={message.seq} data-testid={testId} data-role="tool">
-                <ToolEntry message={message} />
+              <li key={message.seq} data-testid={testId} data-role="tool" data-entry="">
+                <ToolEntry message={message} mode={mode} />
               </li>
             );
-          case 'notice':
+          }
+          case 'plan':
+            return (
+              <li
+                key={message.seq}
+                data-testid={testId}
+                data-role="plan"
+                data-entry=""
+                data-closed={message.closed ? 'true' : 'false'}
+              >
+                {props.renderPlan(message)}
+              </li>
+            );
+          case 'notice': {
+            const said = noticeWords(message, mode);
+            const actions = props.noticeActions?.(message, said.actions) ?? [];
             return (
               <li
                 key={message.seq}
                 data-testid={testId}
                 data-role="notice"
                 data-kind={message.kind}
-                className={`flex items-start gap-1.5 rounded border border-border px-2 py-1 text-xs ${
-                  message.kind === 'error' || message.kind === 'refusal' ? 'text-error' : ''
+                data-entry=""
+                className={`flex flex-col gap-1 rounded border border-border px-2 py-1 text-xs ${
+                  isFailure(message.kind) ? 'text-error' : ''
                 }`}
               >
-                {message.kind === 'error' || message.kind === 'refusal' ? (
-                  <CircleAlert size={12} aria-hidden className="mt-0.5 shrink-0" />
-                ) : (
-                  <Info size={12} aria-hidden className="mt-0.5 shrink-0" />
+                <span className="flex items-start gap-1.5">
+                  {isFailure(message.kind) ? (
+                    <CircleAlert size={12} aria-hidden className="mt-0.5 shrink-0" />
+                  ) : (
+                    <Info size={12} aria-hidden className="mt-0.5 shrink-0" />
+                  )}
+                  <span data-testid={`${testId}-text`}>{said.text}</span>
+                </span>
+                {actions.length > 0 && (
+                  <span className="flex flex-wrap gap-1.5 pl-4">
+                    {actions.map((action) => (
+                      <Button
+                        key={action.id}
+                        className="px-2 py-0.5 text-xs"
+                        data-testid={`${testId}-${action.id}`}
+                        data-action={action.id}
+                        onClick={() => props.onNoticeAction?.(message, action.id)}
+                      >
+                        {action.label}
+                      </Button>
+                    ))}
+                  </span>
                 )}
-                <span>{message.text}</span>
               </li>
             );
+          }
         }
         return null;
       })}

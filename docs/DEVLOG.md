@@ -9065,3 +9065,20 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B685 passes `mode`, `conversation`, `project` and `closed` to `AiPlanView` for each plan entry of the transcript, `mode` to `AiUsageLine` and `AiLimitsPopover`, and deletes the old plan, usage and limits cases of `ai-panel.test.tsx`.
+
+## 2026-11-23 — executor — B685 the AI helper's panel
+
+**What**
+- `components/ai/AiPanel.tsx` (ADR 0125 D1, D2, D13): no Chat or Build switch; the words follow the mode of the preferences store. The empty state says "What would you like to make?" with the four example asks of `EXAMPLE_ASKS`, which fill the box (and the run size: the whole mod runs as a build) without sending. **New chat** carries its word. The conversation follows its newest entry (the bottom, or the newest entry's top when it is taller than the view) until the user scrolls up, then shows **New below**. The tray of waiting changes sits between the conversation and the message box, closed to its heading (`reviewHeading`) and two buttons (**Add to my mod** or **Make these changes**, **Throw away** with its question), opened by **Look** or its heading; open, it holds today's review (B688's next). Run limits only in Advanced. The message box stays usable while a plan or step waits (typing answers it; its hint says "Type go to make all of it…"). One primary button (`data-primary="true"`, `primaryOf`): a waiting plan's or step's own, else the open tray's Add, else the state line's action, else Send. The panel's own words beside `ai-words.ts` are `panelWordsFor(mode)`.
+- New `components/ai/AiStatusLine.tsx`: the state line from `statusWords(conversationStatus(c, now), mode)` with at most one button, ticking once a second while `WORKING_STATES` holds (`useStatusClock`); Stop keeps the test id `ai-stop`, the others are `ai-status-<action>`. Stop, Show the plan, Look, Keep going, Try again, Check my key (to `onOpenSettings`), New chat are wired; Show me, Undo and Put back call the new optional props `onShowMe`, `onUndo`, `onRedo` and are left out without them (B689 passes them).
+- `components/ai/AiTranscript.tsx`: tool lines through `toolLine(message, mode)` (skipping `null`; details only in Advanced), Thinking gated on `wordsFor(mode).showThinking`, plan entries in place through B686's `AiPlanView` (with `mode`, `conversation`, `project`, `closed`), notices through `noticeWords` with their buttons (an Apply notice's, less the one the state line shows); `toolSummary` is gone.
+- `AiKeyMissing` gets `onReady` (the controller re-reads the key) and an optional `ai`.
+- Tests: `ai-panel.test.tsx` loses the plan cases (B686's `ai-plan.test.tsx` has them) and gains every state of `aiStateFixtures()` in the three modes (the line's words, at most one button, exactly one primary, no switch, the box usable), the ticking seconds, a typed answer to a plan, the example asks, Try again, Keep going, Check my key, Look and the tray, Show me, Undo and Put back with and without the host, Thinking and tool lines by mode, New below; new `ai-plain-words.test.tsx` sweeps the Very easy panel's text, placeholders, titles, labels and picture texts through ask, plan, build, ready, added, taken out and nine failures (checked to bite in Advanced).
+
+**Decisions**
+- Failure notices show no button in the transcript: the state line carries the one action, and an older failure's Try again would act on the last run anyway.
+- The open review (`ai-changeset`, B688) is left out of the plain-words sweep until B688 lands; the closed tray is swept.
+- `e2e/ai-path.spec.ts` is B690's file: it still clicks the removed switch and reads the old notice words, so it fails on this branch; it passed with a label-only patch (kept outside the repository, given to the orchestrator for B690).
+
+**Next**
+- B688 fills the tray (its words and the cards) and removes `ai-changeset` from `OTHER_BRIEFS`; B689 passes `onShowMe`, `onUndo`, `onRedo` and stops calling `setMode`; B690 applies the ai-path label patch.

@@ -2,21 +2,33 @@
 import { DEFAULT_AI_SETTINGS } from '@msm/ai';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AiPanel } from '../../src/renderer/src/components/ai/AiPanel';
-import { toolSummary } from '../../src/renderer/src/components/ai/AiTranscript';
+import { AiPanel, primaryOf } from '../../src/renderer/src/components/ai/AiPanel';
 import { usageText } from '../../src/renderer/src/components/ai/AiUsageLine';
 import {
   AiController,
   EXPLAIN_PROBLEM_TEXT,
   useAiPanelStore,
 } from '../../src/renderer/src/components/ai/ai-controller';
+import {
+  AI_STATUS_STATES,
+  conversationStatus,
+} from '../../src/renderer/src/components/ai/ai-status';
+import {
+  statusWords,
+  toolLine,
+  type UiMode,
+  WORDS_MODES,
+  wordsFor,
+} from '../../src/renderer/src/components/ai/ai-words';
 import { lineDiff } from '../../src/renderer/src/components/ai/line-diff';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
-import { useAiStore } from '../../src/renderer/src/store/ai-store';
+import { type AiConversation, applyEvent, useAiStore } from '../../src/renderer/src/store/ai-store';
+import { usePreferences } from '../../src/renderer/src/store/preferences';
 import { useUiStore } from '../../src/renderer/src/store/ui-store';
 import type { AppSettingsView } from '../../src/shared/platform';
-import { aiSession, type FakeAi, fakeAi } from './ai-fixtures';
+import { aiSession, aiStateFixtures, type FakeAi, fakeAi } from './ai-fixtures';
 
 const settingsView = (): AppSettingsView => ({
   minecraftDir: null,
@@ -33,7 +45,9 @@ interface Setup {
   user: ReturnType<typeof userEvent.setup>;
 }
 
-async function setup(ai: FakeAi = fakeAi()): Promise<Setup> {
+type PanelExtras = Partial<Pick<ComponentProps<typeof AiPanel>, 'onShowMe' | 'onUndo' | 'onRedo'>>;
+
+async function setup(ai: FakeAi = fakeAi(), extras: PanelExtras = {}): Promise<Setup> {
   const { session } = await aiSession();
   let next = 0;
   const controller = new AiController({
@@ -44,7 +58,7 @@ async function setup(ai: FakeAi = fakeAi()): Promise<Setup> {
   });
   controller.attach();
   const onOpenSettings = vi.fn();
-  render(<AiPanel controller={controller} onOpenSettings={onOpenSettings} />);
+  render(<AiPanel controller={controller} onOpenSettings={onOpenSettings} {...extras} />);
   return { session, ai, controller, onOpenSettings, user: userEvent.setup() };
 }
 
@@ -77,6 +91,7 @@ beforeEach(() => {
     focusRequest: 0,
   });
   useUiStore.setState({ snapshot: null, rightDock: 'problems' });
+  usePreferences.setState({ mode: 'advanced' });
 });
 
 afterEach(cleanup);
@@ -121,7 +136,7 @@ describe('AiPanel', () => {
       },
     });
     expect(screen.getByTestId('ai-usage').textContent).toMatch(
-      /^12,431 in \/ 3,210 out, 4 requests, about \$0\.\d\d, Opus 5\.5$/,
+      /^This chat has cost about \$0\.\d\d so far \(12,431 in \/ 3,210 out, 4 requests, Opus 5\.5\)\.$/,
     );
     await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
     expect(screen.queryByTestId('ai-stop')).toBeNull();
@@ -151,15 +166,9 @@ describe('AiPanel', () => {
     await waitFor(() => expect(entry.textContent).toContain('Result'));
   });
 
-  it.each([
-    ['ai-plan-build-all', 'build_all'],
-    ['ai-plan-step', 'step'],
-    ['ai-plan-revise', 'revise'],
-  ] as const)('renders the plan and answers it with %s', async (button, decision) => {
+  it('shows a plan where it was proposed, says whose turn it is and takes a typed go', async () => {
     const s = await setup();
-    await s.user.click(await screen.findByTestId('ai-mode-build'));
     const runId = await sendMessage(s, 'Build a ruby mod');
-    expect(s.ai.starts[0]?.mode).toBe('build');
     await s.ai.emit(runId, {
       type: 'tool_request',
       request: {
@@ -170,44 +179,28 @@ describe('AiPanel', () => {
           title: 'Ruby mod',
           items: [
             { itemId: 'ore', kind: 'msm:block', elementId: 'ruby:ruby_ore', summary: 'Ruby ore' },
-            { itemId: 'gem', kind: 'msm:item', elementId: 'ruby:ruby', summary: 'Ruby gem' },
           ],
-          notes: 'Textures are placeholders.',
         },
       },
     });
-    const plan = await screen.findByTestId('ai-plan');
-    expect(plan.textContent).toContain('Ruby mod');
-    expect(plan.textContent).toContain('Textures are placeholders.');
-    await s.user.click(screen.getByTestId('ai-plan-item-gem-remove'));
-    expect(screen.queryByTestId('ai-plan-item-gem')).toBeNull();
-    await s.user.type(screen.getByTestId('ai-plan-comments'), 'Use red');
-    await s.user.click(screen.getByTestId(button));
+    const entry = lastMessage('plan');
+    expect(entry.dataset.closed).toBe('false');
+    expect(within(entry).getByTestId('ai-plan')).toBeTruthy();
+    expect(screen.getByTestId('ai-status').dataset.state).toBe('your-turn-plan');
+    expect(screen.getByTestId('ai-status-text').textContent).toBe(
+      'Your turn: choose what to do with the plan.',
+    );
+    expect(screen.queryByTestId('ai-stop')).toBeNull();
+    const input = screen.getByTestId('ai-input');
+    await s.user.type(input, 'go{Enter}');
     await s.ai.waitForResults(1);
-    const answer = JSON.parse(s.ai.results[0]?.result.content ?? '{}');
-    expect(answer.decision).toBe(decision);
-    expect(answer.items.map((item: { itemId: string }) => item.itemId)).toEqual(['ore']);
-    expect(answer.comments).toBe('Use red');
-    expect(screen.queryByTestId('ai-plan-build-all')).toBeNull();
-
-    if (decision === 'step') {
-      await s.ai.emit(runId, {
-        type: 'tool_request',
-        request: {
-          requestId: 'c1',
-          toolUseId: 'toolu_2',
-          name: 'checkpoint',
-          input: { completedItemIds: ['ore'], summary: 'The ore is proposed.' },
-        },
-      });
-      await s.user.click(await screen.findByTestId('ai-checkpoint-continue'));
-      await s.ai.waitForResults(2);
-      expect(JSON.parse(s.ai.results[1]?.result.content ?? '{}')).toEqual({
-        decision: 'continue',
-      });
-      expect(screen.getByTestId('ai-plan-item-ore').dataset.done).toBe('true');
-      expect(screen.queryByTestId('ai-checkpoint')).toBeNull();
-    }
+    expect(JSON.parse(s.ai.results[0]?.result.content ?? '{}').decision).toBe('build_all');
+    expect(s.ai.starts).toHaveLength(1);
+    expect(lastMessage('user').textContent).toContain('go');
+    await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
+    const closed = within(lastMessage('plan')).getByTestId('ai-plan');
+    expect(closed.dataset.closed).toBe('true');
+    expect(closed.textContent).toBe('Plan: Ruby mod. 0 of 1 made.');
   });
 
   it('reviews the changeset, toggles acceptance and applies it as one undo step', async () => {
@@ -223,15 +216,26 @@ describe('AiPanel', () => {
       },
     });
     await s.ai.waitForResults(1);
-    const changeset = await screen.findByTestId('ai-changeset');
+    // The tray is closed to its heading and two buttons; Apply waits for the run to end.
+    const tray = await screen.findByTestId('ai-tray');
+    expect(tray.dataset.open).toBe('false');
+    expect(screen.queryByTestId('ai-changeset')).toBeNull();
+    expect(screen.getByTestId('ai-tray-toggle').textContent).toBe('Proposed changes (1 of 1 kept)');
+    expect((screen.getByTestId('ai-apply') as HTMLButtonElement).disabled).toBe(true);
+    await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
+    expect((screen.getByTestId('ai-apply') as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByTestId('ai-status-text').textContent).toBe(
+      '1 proposed change is ready. Nothing is applied yet.',
+    );
+    await s.user.click(screen.getByTestId('ai-status-look'));
+    expect(screen.getByTestId('ai-tray').dataset.open).toBe('true');
+    expect(screen.queryByTestId('ai-status-look')).toBeNull();
+    const changeset = screen.getByTestId('ai-changeset');
     expect(changeset.textContent).toContain('Deleted elements (1)');
     const row = within(changeset).getAllByTestId(/^ai-change-item-\d+$/)[0] as HTMLElement;
     const itemId = row.dataset.testid?.replace('ai-change-', '') ?? '';
     const accept = screen.getByTestId(`ai-change-${itemId}-accept`) as HTMLInputElement;
     expect(accept.checked).toBe(true);
-    // Apply waits for the run to end.
-    expect((screen.getByTestId('ai-apply') as HTMLButtonElement).disabled).toBe(true);
-    await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
     expect((screen.getByTestId('ai-apply') as HTMLButtonElement).disabled).toBe(false);
     await s.user.click(accept);
     expect(accept.checked).toBe(false);
@@ -243,7 +247,7 @@ describe('AiPanel', () => {
     expect(screen.getByTestId(`ai-change-${itemId}-diff`).textContent).toContain('- ');
 
     await s.user.click(screen.getByTestId('ai-apply'));
-    await waitFor(() => expect(lastMessage('notice').textContent).toMatch(/Applied 1 change\./));
+    await waitFor(() => expect(lastMessage('notice').textContent).toBe('Applied 1 change.'));
     const ids = (s.session.snapshot.project?.namespaces ?? []).flatMap((namespace) =>
       namespace.elements.map((element) => element.id),
     );
@@ -304,9 +308,13 @@ describe('AiPanel', () => {
     await s.ai.emit(runId, {
       type: 'done',
       reason: 'limit',
-      message: 'The run stopped at its limit (5 tool turns / 100000 output tokens).',
+      message: 'It paused so the cost stays small.',
+      limit: { toolTurns: 5, outputTokens: 100_000 },
     });
-    expect(lastMessage('notice').textContent).toContain('5 tool turns');
+    expect(lastMessage('notice').textContent).toBe(
+      'It paused so the cost stays small (5 tool turns, 100,000 output tokens).',
+    );
+    expect(screen.getByTestId('ai-status-keep-going').textContent).toBe('Keep going');
     // The override was for that run only.
     expect(useAiStore.getState().conversations['/projects/demo']?.runLimits).toBeNull();
   });
@@ -368,19 +376,22 @@ describe('AiPanel', () => {
 });
 
 describe('AI helper panel helpers', () => {
-  it('summarises tool entries', () => {
-    expect(toolSummary({ name: 'read_element', input: { id: 'ruby:ruby_ore' } })).toBe(
+  it('summarises tool entries in Advanced', () => {
+    expect(toolLine({ name: 'read_element', input: { id: 'ruby:ruby_ore' } }, 'advanced')).toBe(
       'Read `ruby:ruby_ore`',
     );
-    expect(toolSummary({ name: 'create_elements', input: { elements: [{}, {}, {}, {}] } })).toBe(
-      'Proposed 4 elements',
-    );
     expect(
-      toolSummary({
-        name: 'run_checks',
-        input: { scope: 'pending' },
-        result: JSON.stringify({ counts: { error: 1, warning: 1, info: 0 } }),
-      }),
+      toolLine({ name: 'create_elements', input: { elements: [{}, {}, {}, {}] } }, 'advanced'),
+    ).toBe('Proposed 4 elements');
+    expect(
+      toolLine(
+        {
+          name: 'run_checks',
+          input: { scope: 'pending' },
+          result: JSON.stringify({ counts: { error: 1, warning: 1, info: 0 } }),
+        },
+        'advanced',
+      ),
     ).toBe('Checked: 2 problems');
   });
 
@@ -411,5 +422,298 @@ describe('AI helper panel helpers', () => {
       { type: 'removed', text: 'a' },
       { type: 'removed', text: 'b' },
     ]);
+  });
+});
+
+const ROOT = '/projects/demo';
+
+/** Puts `conversation` in the store as the open project's, once the panel shows its input. */
+async function show(conversation: AiConversation): Promise<void> {
+  await screen.findByTestId('ai-input');
+  act(() => useAiStore.setState({ conversations: { [ROOT]: conversation } }));
+}
+
+/** The panel's primary buttons. */
+function primaries(): HTMLElement[] {
+  return [...screen.getByTestId('ai-panel').querySelectorAll<HTMLElement>('[data-primary="true"]')];
+}
+
+describe('AiPanel by state and mode', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  for (const mode of WORDS_MODES) {
+    it.each(AI_STATUS_STATES)(`draws the state line of %s in ${mode}`, async (state) => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.setSystemTime(12_000);
+      usePreferences.setState({ mode });
+      await setup();
+      const conversation = aiStateFixtures()[state];
+      await show(conversation);
+      const line = screen.getByTestId('ai-status');
+      expect(line.dataset.state).toBe(state);
+      const expected = statusWords(conversationStatus(conversation, 12_000), mode);
+      expect(screen.getByTestId('ai-status-text').textContent).toBe(expected.text);
+      const buttons = within(line).queryAllByRole('button');
+      expect(buttons.length).toBeLessThanOrEqual(1);
+      if (expected.action !== null) expect(buttons[0]?.textContent).toBe(expected.action.label);
+      // No Chat or Build switch in any mode.
+      expect(screen.queryByTestId('ai-mode-chat')).toBeNull();
+      expect(screen.queryByTestId('ai-mode-build')).toBeNull();
+      // Exactly one primary button (a waiting plan's or step's own, B686).
+      expect(primaries()).toHaveLength(1);
+      // The message box stays usable while the user's answer is awaited.
+      expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).disabled).toBe(false);
+      expect(screen.getByTestId('ai-new-conversation').textContent).toBe(wordsFor(mode).newChat);
+      expect(screen.queryByTestId('ai-limits') !== null).toBe(mode === 'advanced');
+    });
+  }
+
+  it('counts the seconds up once a second while the helper works', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(12_000);
+    await setup();
+    await show(aiStateFixtures().thinking);
+    expect(screen.getByTestId('ai-status-text').textContent).toBe('Thinking… (12 s)');
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByTestId('ai-status-text').textContent).toBe('Thinking… (13 s)');
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(screen.getByTestId('ai-status-text').textContent).toBe('Thinking… (15 s)');
+  });
+
+  it('answers a waiting plan with typed text and keeps the box usable', async () => {
+    const s = await setup();
+    await show(aiStateFixtures()['your-turn-plan']);
+    expect(s.controller.awaitsAnswer()).toBe(true);
+    expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).placeholder).toContain('go');
+    await s.user.type(screen.getByTestId('ai-input'), 'make it red');
+    expect((screen.getByTestId('ai-send') as HTMLButtonElement).disabled).toBe(false);
+    await s.user.click(screen.getByTestId('ai-send'));
+    const conversation = useAiStore.getState().conversations[ROOT];
+    expect(conversation?.plan?.decision?.decision).toBe('revise');
+    expect(conversation?.plan?.decision?.comments).toBe('make it red');
+    expect(s.ai.starts).toHaveLength(0);
+  });
+
+  it('fills the box from an example ask without sending, and a whole mod runs as a build', async () => {
+    usePreferences.setState({ mode: 'very-easy' });
+    const s = await setup();
+    const empty = await screen.findByTestId('ai-empty');
+    expect(empty.textContent).toContain('What would you like to make?');
+    const examples = within(empty).getAllByRole('button');
+    expect(examples).toHaveLength(4);
+    await s.user.click(screen.getByTestId('ai-example-0'));
+    expect((screen.getByTestId('ai-input') as HTMLTextAreaElement).value).toBe('Make a ruby sword');
+    expect(s.ai.starts).toHaveLength(0);
+    await s.user.click(screen.getByTestId('ai-example-3'));
+    await s.user.click(screen.getByTestId('ai-send'));
+    await waitFor(() => expect(s.ai.starts).toHaveLength(1));
+    expect(s.ai.starts[0]?.mode).toBe('build');
+    expect(s.ai.starts[0]?.text).toMatch(/^Make a whole mod/);
+  });
+
+  it('wires Try again, Keep going and Check my key', async () => {
+    const s = await setup();
+    await show(aiStateFixtures().failed);
+    await s.user.click(screen.getByTestId('ai-status-try-again'));
+    await waitFor(() => expect(s.ai.starts).toHaveLength(1));
+    expect(s.ai.starts[0]?.text).toBe('Make ruby tools');
+
+    cleanup();
+    useAiStore.setState({ conversations: {} });
+    const t = await setup();
+    await show(aiStateFixtures().stopped);
+    await t.user.click(screen.getByTestId('ai-status-keep-going'));
+    await waitFor(() => expect(t.ai.starts).toHaveLength(1));
+    expect(t.ai.starts[0]?.text).toBe('continue');
+
+    cleanup();
+    useAiStore.setState({ conversations: {} });
+    const u = await setup();
+    const keyless = applyEvent(aiStateFixtures().thinking, 'r', {
+      type: 'done',
+      reason: 'error',
+      errorClass: 'AuthenticationError',
+      message: 'invalid x-api-key',
+    });
+    await show(keyless);
+    expect(screen.getByTestId('ai-status-text').textContent).toBe(
+      'Your key was not accepted. (AuthenticationError)',
+    );
+    await u.user.click(screen.getByTestId('ai-status-check-key'));
+    expect(u.onOpenSettings).toHaveBeenCalledOnce();
+  });
+
+  it('opens the tray with Look and offers Stop while working', async () => {
+    const s = await setup();
+    await show(aiStateFixtures().making);
+    expect(screen.getByTestId('ai-tray').dataset.open).toBe('false');
+    await s.user.click(screen.getByTestId('ai-stop'));
+    expect(s.ai.cancels).toEqual(['r']);
+    act(() => useAiStore.setState({ conversations: { [ROOT]: aiStateFixtures().ready } }));
+    expect(primaries().map((button) => button.dataset.testid)).toEqual(['ai-status-look']);
+    await s.user.click(screen.getByTestId('ai-status-look'));
+    expect(screen.getByTestId('ai-tray').dataset.open).toBe('true');
+    expect(screen.getByTestId('ai-changeset')).toBeTruthy();
+    await s.user.click(screen.getByTestId('ai-tray-toggle'));
+    expect(screen.getByTestId('ai-tray').dataset.open).toBe('false');
+  });
+
+  it('offers Show me, Undo and Put back on an Apply only when the host handles them', async () => {
+    usePreferences.setState({ mode: 'easy' });
+    const onShowMe = vi.fn();
+    const s = await setup(fakeAi(), {
+      onShowMe,
+      onUndo: () => s.session.undo(),
+      onRedo: () => s.session.redo(),
+    });
+    const runId = await sendMessage(s, 'Make a ruby sword');
+    await s.ai.emit(runId, {
+      type: 'tool_request',
+      request: {
+        requestId: 'c1',
+        toolUseId: 't1',
+        name: 'create_elements',
+        input: {
+          elements: [
+            { id: 'demo:ruby_sword', kind: 'msm:item', data: { display_name: 'Ruby Sword' } },
+          ],
+        },
+      },
+    });
+    await s.ai.waitForResults(1);
+    await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
+    await s.user.click(screen.getByTestId('ai-apply'));
+    await waitFor(() =>
+      expect(screen.getByTestId('ai-status-text').textContent).toBe(
+        'Added 1 thing to your mod: Ruby Sword.',
+      ),
+    );
+    await s.user.click(screen.getByTestId('ai-status-show-me'));
+    expect(onShowMe).toHaveBeenCalledWith(
+      expect.objectContaining({ createdIds: ['demo:ruby_sword'] }),
+    );
+    // The notice offers Undo; Show me is on the state line already.
+    const notice = lastMessage('notice');
+    expect(
+      within(notice)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Undo']);
+    await s.user.click(within(notice).getByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('ai-status-text').textContent).toBe('Taken out again.'),
+    );
+    await s.user.click(screen.getByTestId('ai-status-put-back'));
+    await waitFor(() =>
+      expect(screen.getByTestId('ai-status-text').textContent).toBe(
+        'Put back in your mod: Ruby Sword.',
+      ),
+    );
+  });
+
+  it('leaves out Show me, Undo and Put back without the host', async () => {
+    const s = await setup();
+    const runId = await sendMessage(s, 'Make a ruby sword');
+    await s.ai.emit(runId, {
+      type: 'tool_request',
+      request: {
+        requestId: 'c1',
+        toolUseId: 't1',
+        name: 'create_elements',
+        input: {
+          elements: [
+            { id: 'demo:ruby_sword', kind: 'msm:item', data: { display_name: 'Ruby Sword' } },
+          ],
+        },
+      },
+    });
+    await s.ai.waitForResults(1);
+    await s.ai.emit(runId, { type: 'done', reason: 'end_turn' });
+    await s.user.click(screen.getByTestId('ai-apply'));
+    await waitFor(() => expect(lastMessage('notice').textContent).toBe('Applied 1 change.'));
+    expect(screen.queryByTestId('ai-status-show-me')).toBeNull();
+    expect(within(lastMessage('notice')).queryAllByRole('button')).toHaveLength(0);
+    expect(primaries().map((button) => button.dataset.testid)).toEqual(['ai-send']);
+  });
+
+  it.each(['very-easy', 'easy', 'advanced'] as const)(
+    'shows thinking and tool lines as %s allows',
+    async (mode: UiMode) => {
+      usePreferences.setState({ mode });
+      const s = await setup();
+      const runId = await sendMessage(s, 'Make a sword');
+      await s.ai.emit(runId, { type: 'thinking_delta', text: 'A sword it is.' });
+      await s.ai.emit(runId, { type: 'text_delta', text: 'Here it is.' });
+      await s.ai.emit(runId, {
+        type: 'tool_request',
+        request: {
+          requestId: 'r1',
+          toolUseId: 't1',
+          name: 'read_element',
+          input: { id: 'demo:greet' },
+        },
+      });
+      await s.ai.waitForResults(1);
+      expect(screen.queryAllByTestId(/^ai-thinking-/)).toHaveLength(mode === 'very-easy' ? 0 : 1);
+      const tools = screen
+        .getAllByTestId(/^ai-message-\d+$/)
+        .filter((entry) => entry.dataset.role === 'tool');
+      expect(tools).toHaveLength(mode === 'advanced' ? 1 : 0);
+    },
+  );
+
+  it('follows the newest entry, and says New below once the user has scrolled up', async () => {
+    const s = await setup();
+    const runId = await sendMessage(s, 'Hello');
+    const scroller = screen.getByTestId('ai-conversation');
+    let height = 1000;
+    Object.defineProperty(scroller, 'scrollHeight', { configurable: true, get: () => height });
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, get: () => 200 });
+    // The newest entry starts 50 px above the end of the content.
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const top = this.hasAttribute('data-entry') ? height - 50 - scroller.scrollTop : 0;
+        return {
+          top,
+          bottom: top,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: top,
+        } as DOMRect;
+      });
+    await s.ai.emit(runId, { type: 'text_delta', text: 'First words.' });
+    expect(scroller.scrollTop).toBe(800);
+    expect(screen.queryByTestId('ai-new-below')).toBeNull();
+    // The user scrolls up: the next words do not pull the view down.
+    act(() => {
+      scroller.scrollTop = 100;
+      scroller.dispatchEvent(new Event('scroll'));
+    });
+    height = 1200;
+    await s.ai.emit(runId, { type: 'text_delta', text: ' More words.' });
+    expect(scroller.scrollTop).toBe(100);
+    await s.user.click(await screen.findByTestId('ai-new-below'));
+    expect(scroller.scrollTop).toBe(1000);
+    expect(screen.queryByTestId('ai-new-below')).toBeNull();
+    rect.mockRestore();
+  });
+
+  it('picks the one primary button', () => {
+    const fixtures = aiStateFixtures();
+    const ready = conversationStatus(fixtures.ready, 0);
+    expect(primaryOf(ready, false, true)).toBe('status');
+    expect(primaryOf(ready, true, false)).toBe('tray');
+    expect(primaryOf(conversationStatus(fixtures.idle, 0), false, false)).toBe('send');
+    expect(primaryOf(conversationStatus(fixtures['your-turn-plan'], 0), false, true)).toBe('plan');
   });
 });
