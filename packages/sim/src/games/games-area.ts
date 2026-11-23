@@ -12,7 +12,8 @@
  * - the game mode: adventure stops breaking (the preview's items carry no `can_break`);
  * - the mock cobblestone generator (`generator.ts`);
  * - walks in and out of areas said in "What happened" (`areas.ts`);
- * - the status the side panel draws: one blocks, timers, the sidebar, teams and areas.
+ * - the status the side panel draws: one blocks, timers, the sidebar, the engine's teams and
+ *   the player's team (`team join` or the panel's pick through the engine), and areas.
  */
 
 import type { BlockCatalogue } from '../blocks/catalogue.js';
@@ -54,8 +55,9 @@ export interface GamesStatus {
   readonly gameMode: GameMode | null;
   readonly oneBlocks: readonly OneBlockStatus[];
   readonly timers: readonly TimerStatus[];
+  /** The teams that exist now (the engine's `team add`), looking as the engine keeps them. */
   readonly teams: readonly TeamLook[];
-  /** The team the player is on (picked in the side panel), or `null`. */
+  /** The team the player is on in the engine (`team join`, or the side panel), or `null`. */
   readonly team: TeamLook | null;
   readonly sidebar: SidebarView | null;
   readonly areas: readonly (AreaView & { readonly inside: boolean })[];
@@ -72,7 +74,6 @@ export class GamesArea {
   private prepared: GamesPlan | null = null;
   private joinPending = false;
   private mode: GameMode | null = null;
-  private teamId: string | null = null;
   private readonly generator: MockGenerator;
   private readonly watch = new AreaWatch();
 
@@ -88,9 +89,6 @@ export class GamesArea {
   setProject(games: GamesProject): void {
     this.games = games;
     this.active = hasGames(games);
-    if (this.teamId !== null && !games.elements.some((one) => one.id === this.teamId)) {
-      this.teamId = null;
-    }
   }
 
   /** The project's games as last handed in. */
@@ -176,9 +174,49 @@ export class GamesArea {
     return this.mode;
   }
 
-  /** The team the player is on in Try it (limit M14), or `null`. */
+  /**
+   * Puts the player on a team (a {@link TeamLook} id of {@link status}) or on none, as `team join
+   * <team> Player` and `team leave Player` do in the engine: What happened says it, and a team
+   * the engine does not have answers the game's "Unknown team".
+   */
   setTeam(id: string | null): void {
-    this.teamId = id;
+    const { functions } = this.host;
+    if (id === null) {
+      if (functions.state.teamOf.has(PREVIEW_PLAYER_NAME)) {
+        functions.runChatLine(`team leave ${PREVIEW_PLAYER_NAME}`);
+      }
+      return;
+    }
+    const team = this.teams().find((one) => one.id === id);
+    functions.runChatLine(`team join ${team?.gameName ?? id} ${PREVIEW_PLAYER_NAME}`);
+  }
+
+  /**
+   * The teams the engine has, in the project's order and then the rest by name: an element's
+   * team keeps its id and name words; colour, prefix and suffix are the engine's.
+   */
+  private teams(): TeamLook[] {
+    const { teams } = this.host.functions.state;
+    const looks = teamLooks(this.games);
+    const out: TeamLook[] = [];
+    for (const look of looks) {
+      const team = teams.get(look.gameName);
+      if (team === undefined) continue;
+      out.push({ ...look, colour: team.colour, prefix: team.prefix, suffix: team.suffix });
+    }
+    const named = new Set(looks.map((look) => look.gameName));
+    for (const team of [...teams.values()].sort((a, b) => a.name.localeCompare(b.name))) {
+      if (named.has(team.name)) continue;
+      out.push({
+        id: team.name,
+        gameName: team.name,
+        name: team.displayName,
+        colour: team.colour,
+        prefix: team.prefix,
+        suffix: team.suffix,
+      });
+    }
+    return out;
   }
 
   /**
@@ -261,8 +299,9 @@ export class GamesArea {
   status(): GamesStatus {
     const { functions, world } = this.host;
     const state = functions.state;
-    const teams = teamLooks(this.games);
-    const team = teams.find((one) => one.id === this.teamId) ?? null;
+    const teams = this.teams();
+    const on = state.teamOf.get(PREVIEW_PLAYER_NAME);
+    const team = teams.find((one) => one.gameName === on) ?? null;
     const inside = this.watch.now;
     return {
       ground: this.plan?.kind ?? null,

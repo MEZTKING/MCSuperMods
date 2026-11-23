@@ -1,8 +1,9 @@
 /**
  * Teams and scores in Try it (ADR 0117 D4, B558). Teams are made by their lowered `team`
- * lines, which only the game runs (the engine says so once); their looks (colour, prefix,
- * suffix) come from the elements. Try it is single player (limit M14): the player is on the team
- * the side panel picks, and their name is drawn in its colour. The sidebar mock-up reads the
+ * lines, which the function engine runs (`team add`, `team modify`, `team join`); the side panel
+ * shows the engine's teams with the elements' names, and the player is on the team the engine
+ * says (a function's `team join`, or the panel's pick run as `team join`); their name is drawn in
+ * its colour. Try it is single player (limit M14). The sidebar mock-up reads the
  * scoreboard the function engine keeps: the objective shown in the `sidebar` slot (or the
  * `sidebar.team.<colour>` slot of the player's team, as the game prefers it), its holders whose
  * names do not start with `#` (the game hides those), highest first, at most 15.

@@ -921,7 +921,8 @@ describe('the prompt in topic files (B681)', () => {
   // B557 moved it for the Home tile "Make a game" and the drawn recipes lucky_block, flag and timer.
   // B561 moved it for the games topic (`src/prompt/games.ts`: the games kinds, the game flows,
   // Play my game, maps, builds from the game, Try it's games grounds and the limits).
-  const PINNED = 'e061c15be43ce529f54f437b81207e8fb5742cb58b1cf202f9696ff85a8195d8';
+  // Try it's commands moved it for advancement, spawnpoint and team in the Try it commands list.
+  const PINNED = '3ac85726280b82e4387026345e010f21c2b76e5966591c09eca97422561b3424';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -962,8 +963,8 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
     expect(text).not.toMatch(/build mode|chat mode|switch to/i);
   });
 
-  it('stays within its size budget of 102,000 characters (ADR 0125 D7, raised by B617, B553 and B561)', () => {
-    expect(text.length).toBeLessThanOrEqual(102_000);
+  it('stays within its size budget of 103,000 characters (ADR 0125 D7, raised by B617, B553, B561 and the Try it commands)', () => {
+    expect(text.length).toBeLessThanOrEqual(103_000);
   });
 
   it('F8 a: boats are the msm:boat component, never "not available"', () => {

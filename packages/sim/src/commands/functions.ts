@@ -39,6 +39,7 @@ import {
   type Outcome,
   type RunContext,
   runCompiled,
+  type SimAdvancement,
   type Source,
   snbtWords,
   VANILLA_COMMANDS,
@@ -75,7 +76,107 @@ export interface SimFunction {
 
 /** The folder names functions are read from (`TargetFacts.folders.data`). */
 export interface FunctionsTarget {
-  readonly folders: { readonly data: { readonly function?: string; readonly tags?: string } };
+  readonly folders: {
+    readonly data: {
+      readonly function?: string;
+      readonly tags?: string;
+      /** Where advancements are read from (`advancement grant|revoke`). */
+      readonly advancement?: string;
+    };
+  };
+}
+
+/** Reads one advancement file into what `advancement grant|revoke` needs. */
+export function readAdvancement(id: string, json: Json): SimAdvancement | undefined {
+  if (json === null || typeof json !== 'object' || Array.isArray(json)) return undefined;
+  const file = json as JsonObject;
+  const criteria =
+    file.criteria !== null && typeof file.criteria === 'object' && !Array.isArray(file.criteria)
+      ? Object.keys(file.criteria)
+      : [];
+  const requirements = Array.isArray(file.requirements)
+    ? file.requirements
+        .filter((group): group is Json[] => Array.isArray(group))
+        .map((group) => group.filter((one): one is string => typeof one === 'string'))
+    : criteria.map((one) => [one]);
+  const display =
+    file.display !== null && typeof file.display === 'object' && !Array.isArray(file.display)
+      ? (file.display as JsonObject)
+      : undefined;
+  const rewards =
+    file.rewards !== null && typeof file.rewards === 'object' && !Array.isArray(file.rewards)
+      ? (file.rewards as JsonObject)
+      : {};
+  const title = display === undefined ? id : textWords(display.title) || id;
+  const otherRewards: string[] = [];
+  if (typeof rewards.experience === 'number' && rewards.experience > 0) {
+    otherRewards.push(`${rewards.experience} experience`);
+  }
+  if (Array.isArray(rewards.loot) && rewards.loot.length > 0) otherRewards.push('loot');
+  if (Array.isArray(rewards.recipes) && rewards.recipes.length > 0) otherRewards.push('recipes');
+  return {
+    id,
+    parent: typeof file.parent === 'string' ? normaliseId(file.parent) : undefined,
+    criteria,
+    requirements,
+    title,
+    frame:
+      display === undefined
+        ? undefined
+        : typeof display.frame === 'string'
+          ? display.frame
+          : 'task',
+    announce: display?.announce_to_chat !== false,
+    rewardFunction:
+      typeof rewards.function === 'string' ? normaliseId(rewards.function) : undefined,
+    otherRewards,
+  };
+}
+
+const normaliseId = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
+
+/** A text component's words without a game to ask (titles of advancements). */
+function textWords(value: Json | undefined): string {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(textWords).join('');
+  if (value === null || typeof value !== 'object') return '';
+  const object = value as JsonObject;
+  const own =
+    typeof object.text === 'string'
+      ? object.text
+      : typeof object.fallback === 'string'
+        ? object.fallback
+        : typeof object.translate === 'string'
+          ? object.translate
+          : '';
+  return own + (Array.isArray(object.extra) ? object.extra.map(textWords).join('') : '');
+}
+
+/** Reads the project's advancements from the lowered files, by id. */
+export function readAdvancements(
+  files: SimFiles,
+  target: FunctionsTarget,
+): Map<string, SimAdvancement> {
+  const folder = target.folders.data.advancement;
+  const out = new Map<string, SimAdvancement>();
+  if (folder === undefined) return out;
+  const pattern = new RegExp(`^data/([a-z0-9_.-]+)/${folder}/(.+)\\.json$`);
+  const decoder = new TextDecoder();
+  for (const [path, raw] of [...files].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+    const match = pattern.exec(path);
+    if (match === null) continue;
+    const id = `${match[1]}:${match[2]}`;
+    try {
+      const one = readAdvancement(
+        id,
+        JSON.parse(typeof raw === 'string' ? raw : decoder.decode(raw)) as Json,
+      );
+      if (one !== undefined) out.set(id, one);
+    } catch {
+      // A file the game would not read either.
+    }
+  }
+  return out;
 }
 
 /** Reads the project's functions from the lowered files, by id. */
@@ -185,6 +286,7 @@ export class FunctionEngine {
   private files: SimFiles;
   private readonly compiled = new Map<string, CompiledLine>();
   private tagCache = new Map<string, readonly string[]>();
+  private advancementCache: Map<string, SimAdvancement> | undefined;
   private used = 0;
   private usedTick = -1;
   private stoppedTick = -1;
@@ -217,6 +319,7 @@ export class FunctionEngine {
     this.files = files;
     this.target = target;
     this.tagCache = new Map();
+    this.advancementCache = undefined;
     if (this.signature(files, target) === before) return;
     this.functions = readFunctions(files, target);
     this.loadPending = true;
@@ -334,6 +437,33 @@ export class FunctionEngine {
     this.flush(mode);
     const failed = outcome === undefined || !outcome.success;
     return { result: failed ? 'error' : 'ran', answer: mode.answer };
+  }
+
+  /** The project's advancements (parents before children, then by id). */
+  projectAdvancements(): readonly SimAdvancement[] {
+    this.advancementCache ??= readAdvancements(this.files, this.target);
+    const all = [...this.advancementCache.values()];
+    const out: SimAdvancement[] = [];
+    const placed = new Set<string>();
+    const place = (one: SimAdvancement, path: Set<string>): void => {
+      if (placed.has(one.id) || path.has(one.id)) return;
+      const parent = one.parent === undefined ? undefined : this.advancementCache?.get(one.parent);
+      if (parent !== undefined) place(parent, new Set([...path, one.id]));
+      placed.add(one.id);
+      out.push(one);
+    };
+    for (const one of all) place(one, new Set());
+    return out;
+  }
+
+  /** An advancement: the project's, else one the data lookup finds (vanilla's when given). */
+  advancement(id: string): SimAdvancement | undefined {
+    this.advancementCache ??= readAdvancements(this.files, this.target);
+    const own = this.advancementCache.get(id);
+    if (own !== undefined) return own;
+    const folder = this.target.folders.data.advancement;
+    const file = folder === undefined ? undefined : this.host.data?.()(folder, id);
+    return file === undefined ? undefined : readAdvancement(id, file);
   }
 
   /** Whether Try it runs this line (the Function editor's gutter). */
@@ -499,6 +629,8 @@ export class FunctionEngine {
       },
       only: (what, origin) => this.host.log.onlyInMinecraft(what, origin),
       functionExists: (id) => this.exists(id),
+      advancement: (id) => this.advancement(id),
+      advancements: () => this.projectAdvancements(),
     };
   }
 

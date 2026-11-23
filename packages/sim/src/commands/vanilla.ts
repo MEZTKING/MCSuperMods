@@ -15,6 +15,14 @@
  * (0, 0, 0 but on a games ground), so the games kinds' functions, written for world positions,
  * work in the area.
  *
+ * The game flows (B557) write `team`, `spawnpoint` and `advancement` into project functions, so
+ * they run too: teams with their options and members (score holders) in `CommandState.teams` and
+ * `teamOf`, and the selector filter `team=`; spawn points kept per player (Try it's player never
+ * dies, so nobody respawns there; the point is said); `advancement grant|revoke` with `only`
+ * (and a criterion), `until`, `from`, `through` and `everything` over the project's advancements
+ * (read by the function engine), the criteria kept in `CommandState.advancements`, an advancement
+ * done said in the chat and its reward function run as the player at once, as the game does.
+ *
  * Every other command, and every form of a listed command the preview does not run (`execute
  * store ... storage`, `clone from`, `data merge`, a selector filter such as `gamemode=`), is one
  * "Only in Minecraft" line naming it, never silent. The behaviour is written from the command
@@ -43,6 +51,7 @@ import { PREVIEW_PLAYER_NAME } from './parse.js';
 
 /** The command names Try it runs (some forms of them are still said; see the module comment). */
 export const VANILLA_COMMANDS: readonly string[] = Object.freeze([
+  'advancement',
   'clear',
   'clone',
   'data',
@@ -62,8 +71,10 @@ export const VANILLA_COMMANDS: readonly string[] = Object.freeze([
   'schedule',
   'scoreboard',
   'setblock',
+  'spawnpoint',
   'summon',
   'tag',
+  'team',
   'teleport',
   'tellraw',
   'time',
@@ -182,6 +193,10 @@ export interface RunContext {
   only(what: string, origin?: SimOrigin): void;
   /** Whether a function (or `#` and a function tag) exists. */
   functionExists(id: string): boolean;
+  /** An advancement by id (the project's, else one the data lookup finds), or `undefined`. */
+  advancement?(id: string): SimAdvancement | undefined;
+  /** The project's advancements, parents before children. */
+  advancements?(): readonly SimAdvancement[];
 }
 
 /** A scoreboard objective. */
@@ -191,6 +206,49 @@ export interface Objective {
   readonly displayName: string;
   /** Score holder (a name, `#fake`, or a mob's UUID) to score. */
   readonly scores: Map<string, number>;
+}
+
+/** A team (`team add`, `team modify`): its options as the game keeps them, text as plain words. */
+export interface SimTeam {
+  readonly name: string;
+  displayName: string;
+  /** A chat colour name (`red`, `dark_aqua`, ...) or `reset`. */
+  colour: string;
+  prefix: string;
+  suffix: string;
+  friendlyFire: boolean;
+  seeFriendlyInvisibles: boolean;
+  nametagVisibility: string;
+  deathMessageVisibility: string;
+  collisionRule: string;
+}
+
+/** A player's respawn point (`spawnpoint`), in world positions. */
+export interface SpawnPoint {
+  readonly pos: BlockPos;
+  readonly yaw: number;
+  readonly pitch: number;
+  readonly dimension: string;
+}
+
+/** An advancement as `advancement grant|revoke` needs it (read from the project's files). */
+export interface SimAdvancement {
+  readonly id: string;
+  readonly parent: string | undefined;
+  /** Its criteria, in the file's order. */
+  readonly criteria: readonly string[];
+  /** Groups of criteria: done when each group has one done (every criterion its own by default). */
+  readonly requirements: readonly (readonly string[])[];
+  /** The title the game names it by (`[Title]`), or the id when it has no display. */
+  readonly title: string;
+  /** `task`, `goal` or `challenge`, or `undefined` when it has no display (no chat line). */
+  readonly frame: string | undefined;
+  /** Whether finishing it is said in the chat (`announce_to_chat`). */
+  readonly announce: boolean;
+  /** The reward function, run as the player when it is done. */
+  readonly rewardFunction: string | undefined;
+  /** Rewards only the game gives (experience, loot, recipes), in words. */
+  readonly otherRewards: readonly string[];
 }
 
 /** A function waiting for its tick (`schedule`). */
@@ -220,9 +278,21 @@ export class CommandState {
    * area; every other ground leaves it at 0, 0, 0. "Clear the area" keeps it.
    */
   corner: Vec3 = { x: 0, y: 0, z: 0 };
+  /** Teams by name (`team`). */
+  readonly teams = new Map<string, SimTeam>();
+  /** Score holder key (the player's name, a mob's UUID, a fake name) to its team's name. */
+  readonly teamOf = new Map<string, string>();
+  /** Holder key to its respawn point (`spawnpoint`); the preview's player never dies. */
+  readonly spawnPoints = new Map<string, SpawnPoint>();
+  /** Holder key to advancement id to the criteria done (`advancement grant|revoke`). */
+  readonly advancements = new Map<string, Map<string, Set<string>>>();
 
   /** Forgets everything ("Clear the area"). */
   clear(): void {
+    this.teams.clear();
+    this.teamOf.clear();
+    this.spawnPoints.clear();
+    this.advancements.clear();
     this.objectives.clear();
     this.display.clear();
     this.tags.clear();
@@ -235,6 +305,19 @@ export class CommandState {
   /** A holder's score, or `undefined` when none is set. */
   score(holder: string, objective: string): number | undefined {
     return this.objectives.get(objective)?.scores.get(holder);
+  }
+
+  /** The team a holder is on, or `undefined`. */
+  teamOfHolder(holder: string): SimTeam | undefined {
+    const name = this.teamOf.get(holder);
+    return name === undefined ? undefined : this.teams.get(name);
+  }
+
+  /** Whether a holder has every requirement of an advancement done. */
+  advancementDone(holder: string, advancement: SimAdvancement): boolean {
+    const done = this.advancements.get(holder)?.get(advancement.id);
+    if (done === undefined) return false;
+    return advancement.requirements.every((group) => group.some((one) => done.has(one)));
   }
 
   /** Every score of a holder, by objective. */
@@ -575,8 +658,9 @@ const blockOf = (pos: Vec3): BlockPos => ({
   z: Math.floor(pos.z),
 });
 
-const posWords = (pos: Vec3 | BlockPos): string =>
-  [pos.x, pos.y, pos.z].map((n) => Math.round(n * 100) / 100).join(', ');
+const round2 = (n: number): number => Math.round(n * 100) / 100;
+
+const posWords = (pos: Vec3 | BlockPos): string => [pos.x, pos.y, pos.z].map(round2).join(', ');
 
 /** A rotation argument: two of `~n` or `n`. */
 function readRotation(cur: Cursor): (src: Source) => { yaw: number; pitch: number } {
@@ -625,6 +709,8 @@ interface Filters {
   readonly types: readonly { readonly id: string; readonly not: boolean }[];
   readonly tags: readonly { readonly tag: string; readonly not: boolean }[];
   readonly names: readonly { readonly name: string; readonly not: boolean }[];
+  /** `team=`: a team name, `''` for no team (`team=!` any team). */
+  readonly teams: readonly { readonly team: string; readonly not: boolean }[];
   readonly limit: number | undefined;
   readonly sort: 'nearest' | 'furthest' | 'random' | 'arbitrary' | undefined;
   readonly distance: Range | undefined;
@@ -644,6 +730,7 @@ const NO_FILTERS: Filters = {
   types: [],
   tags: [],
   names: [],
+  teams: [],
   limit: undefined,
   sort: undefined,
   distance: undefined,
@@ -687,6 +774,7 @@ function readSelector(text: string): Selector {
   const types: { id: string; not: boolean }[] = [];
   const tags: { tag: string; not: boolean }[] = [];
   const names: { name: string; not: boolean }[] = [];
+  const teams: { team: string; not: boolean }[] = [];
   let limit: number | undefined;
   let sort: Filters['sort'];
   let distance: Range | undefined;
@@ -709,6 +797,9 @@ function readSelector(text: string): Selector {
         break;
       case 'name':
         names.push({ name: value.replace(/^["']|["']$/g, ''), not });
+        break;
+      case 'team':
+        teams.push({ team: value, not });
         break;
       case 'limit': {
         const n = Number(value);
@@ -754,7 +845,7 @@ function readSelector(text: string): Selector {
   }
   return {
     kind,
-    filters: { types, tags, names, limit, sort, distance, scores, at },
+    filters: { types, tags, names, teams, limit, sort, distance, scores, at },
     text,
   };
 }
@@ -867,6 +958,12 @@ function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean
   for (const one of f.names) {
     const named = actor.kind === 'player' && one.name === PREVIEW_PLAYER_NAME;
     if (named === one.not) return false;
+  }
+  const team = state.teamOf.get(holderOf(actor));
+  for (const one of f.teams) {
+    // `team=` means on no team; `team=!` means on any team.
+    const has = one.team === '' ? team !== undefined : team === one.team;
+    if (one.team === '' ? has !== one.not : has === one.not) return false;
   }
   if (f.distance !== undefined && !inRange(distanceBetween(pos, src.pos), f.distance)) {
     return false;
@@ -1273,7 +1370,556 @@ function teleport(cur: Cursor): Run {
   };
 }
 
+// Teams, spawn points and advancements (B557's game flows write them) ---------------------------
+
+/** The colours `team modify ... color` takes (`minecraft:team_color`), and `reset`. */
+export const TEAM_COLOURS: readonly string[] = Object.freeze([
+  'black',
+  'dark_blue',
+  'dark_green',
+  'dark_aqua',
+  'dark_red',
+  'dark_purple',
+  'gold',
+  'gray',
+  'dark_gray',
+  'blue',
+  'green',
+  'aqua',
+  'red',
+  'light_purple',
+  'yellow',
+  'white',
+  'reset',
+]);
+
+const TEAM_NAME = /^[A-Za-z0-9_.+-]+$/;
+const VISIBILITIES = ['always', 'never', 'hideForOtherTeams', 'hideForOwnTeam'];
+const COLLISION_RULES = ['always', 'never', 'pushOtherTeams', 'pushOwnTeam'];
+
+/** A team argument (`minecraft:team`): an unquoted name. */
+function readTeamName(cur: Cursor): string {
+  const name = cur.next('a team');
+  if (!TEAM_NAME.test(name)) throw new BadLine(`Invalid team name '${name}'`);
+  return name;
+}
+
+function teamOf(rc: RunContext, name: string): SimTeam {
+  const team = rc.state.teams.get(name);
+  if (team === undefined) throw new Failed(`Unknown team '${name}'`);
+  return team;
+}
+
+/** A team in the game's answers: its display name in brackets. */
+const teamWords = (team: SimTeam): string => `[${team.displayName}]`;
+
+/** A text component argument read now and turned to words when it runs. */
+function readComponent(cur: Cursor, what: string): (rc: RunContext, src: Source) => string {
+  const raw = cur.rest();
+  if (raw === '') throw new BadLine(`Expected ${what}`);
+  let value: Json;
+  try {
+    value = parseSnbt(raw);
+  } catch {
+    throw new BadLine(`Invalid text component '${raw}'`);
+  }
+  return (rc, src) => componentText(rc, value, src);
+}
+
+/** Every score holder the scoreboard knows (`*` as team members). */
+function allHolders(rc: RunContext): string[] {
+  const out = new Set<string>();
+  for (const objective of rc.state.objectives.values()) {
+    for (const holder of objective.scores.keys()) out.add(holder);
+  }
+  return [...out];
+}
+
+/** Team members: `*`, names and selectors (score holders); a selector must find someone. */
+function memberKeys(rc: RunContext, spec: Holders, src: Source): string[] {
+  if (spec.all) return allHolders(rc);
+  return holders(rc, spec, src);
+}
+
+const membersWords = (rc: RunContext, keys: readonly string[]): string =>
+  keys.map((key) => holderWords(rc.host, key)).join(', ');
+
+/** `team modify <team> <option> ...`. */
+function teamModify(cur: Cursor): Run {
+  const name = readTeamName(cur);
+  const option = cur.next('an option');
+  const choice = (allowed: readonly string[]): string => {
+    const value = cur.next('a value');
+    if (!allowed.includes(value)) throw new BadLine(`Incorrect argument for command '${value}'`);
+    cur.end();
+    return value;
+  };
+  const what =
+    'what team options do to players (friendly fire, seeing invisible team-mates, name tags, death messages, pushing)';
+  switch (option) {
+    case 'color': {
+      const colour = cur.next('a colour');
+      cur.end();
+      if (!TEAM_COLOURS.includes(colour)) throw new BadLine(`Unknown color '${colour}'`);
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        if (team.colour === colour) {
+          throw new Failed('Nothing changed. That team already has that color');
+        }
+        team.colour = colour;
+        rc.feedback(`Updated the color for team ${teamWords(team)} to ${colour}.`, src.origin);
+        return ok();
+      };
+    }
+    case 'displayName': {
+      const text = readComponent(cur, 'a display name');
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        const value = text(rc, src);
+        if (team.displayName === value) {
+          throw new Failed('Nothing changed. That team already has that name');
+        }
+        team.displayName = value;
+        rc.feedback(`Updated the name of team ${teamWords(team)}.`, src.origin);
+        return ok();
+      };
+    }
+    case 'prefix':
+    case 'suffix': {
+      const text = readComponent(cur, `a ${option}`);
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        const value = text(rc, src);
+        team[option] = value;
+        rc.feedback(`Team ${option} set to ${value}.`, src.origin);
+        return ok();
+      };
+    }
+    case 'friendlyFire':
+    case 'seeFriendlyInvisibles': {
+      const allowed = cur.bool('true or false');
+      cur.end();
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        if (team[option] === allowed) {
+          throw new Failed(
+            option === 'friendlyFire'
+              ? `Nothing changed. Friendly fire is already ${allowed ? 'enabled' : 'disabled'} for that team`
+              : allowed
+                ? 'Nothing changed. That team can already see invisible teammates'
+                : "Nothing changed. That team already can't see invisible teammates",
+          );
+        }
+        team[option] = allowed;
+        rc.only(what, src.origin);
+        rc.feedback(
+          option === 'friendlyFire'
+            ? `${allowed ? 'Enabled' : 'Disabled'} friendly fire for team ${teamWords(team)}.`
+            : `Updated team ${teamWords(team)} to ${allowed ? 'see' : 'no longer see'} invisible teammates.`,
+          src.origin,
+        );
+        return ok();
+      };
+    }
+    case 'nametagVisibility':
+    case 'deathMessageVisibility':
+    case 'collisionRule': {
+      const value = choice(option === 'collisionRule' ? COLLISION_RULES : VISIBILITIES);
+      const words =
+        option === 'nametagVisibility'
+          ? 'Nametag visibility'
+          : option === 'deathMessageVisibility'
+            ? 'Death message visibility'
+            : 'Collision rule';
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        if (team[option] === value) {
+          throw new Failed(`Nothing changed. ${words} is already that value`);
+        }
+        team[option] = value;
+        rc.only(what, src.origin);
+        rc.feedback(`${words} for team ${teamWords(team)} is now "${value}".`, src.origin);
+        return ok();
+      };
+    }
+    default:
+      throw new BadLine(`Unknown team option '${option}'`);
+  }
+}
+
+/** `team add|remove|empty|join|leave|list|modify`: teams kept in `CommandState`. */
+function teamCommand(cur: Cursor): Run {
+  const action = cur.next('add, remove, empty, join, leave, list or modify');
+  switch (action) {
+    case 'add': {
+      const name = cur.next('a team name');
+      if (!TEAM_NAME.test(name)) throw new BadLine(`Invalid team name '${name}'`);
+      const display = cur.done ? undefined : readComponent(cur, 'a display name');
+      return (rc, src) => {
+        if (rc.state.teams.has(name)) throw new Failed('A team already exists by that name');
+        const team: SimTeam = {
+          name,
+          displayName: display === undefined ? name : display(rc, src),
+          colour: 'reset',
+          prefix: '',
+          suffix: '',
+          friendlyFire: true,
+          seeFriendlyInvisibles: true,
+          nametagVisibility: 'always',
+          deathMessageVisibility: 'always',
+          collisionRule: 'always',
+        };
+        rc.state.teams.set(name, team);
+        rc.feedback(`Created team ${teamWords(team)}.`, src.origin);
+        return ok(rc.state.teams.size);
+      };
+    }
+    case 'remove': {
+      const name = readTeamName(cur);
+      cur.end();
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        rc.state.teams.delete(name);
+        for (const [holder, on] of [...rc.state.teamOf]) {
+          if (on === name) rc.state.teamOf.delete(holder);
+        }
+        rc.feedback(`Removed team ${teamWords(team)}.`, src.origin);
+        return ok(rc.state.teams.size);
+      };
+    }
+    case 'empty': {
+      const name = readTeamName(cur);
+      cur.end();
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        const members = [...rc.state.teamOf].filter(([, on]) => on === name).map(([key]) => key);
+        if (members.length === 0) {
+          throw new Failed('Nothing changed. That team is already empty');
+        }
+        for (const key of members) rc.state.teamOf.delete(key);
+        rc.feedback(
+          `Removed ${plural(members.length, 'member')} from team ${teamWords(team)}.`,
+          src.origin,
+        );
+        return ok(members.length);
+      };
+    }
+    case 'join': {
+      const name = readTeamName(cur);
+      const spec = cur.done ? undefined : readHolders(cur);
+      cur.end();
+      return (rc, src) => {
+        const team = teamOf(rc, name);
+        let keys: string[];
+        if (spec === undefined) {
+          if (src.executor === null) {
+            throw new Failed('An entity is required to run this command here');
+          }
+          keys = [holderOf(src.executor)];
+        } else keys = memberKeys(rc, spec, src);
+        for (const key of keys) rc.state.teamOf.set(key, name);
+        rc.feedback(
+          keys.length === 1
+            ? `Added ${membersWords(rc, keys)} to team ${teamWords(team)}.`
+            : `Added ${keys.length} members to team ${teamWords(team)}.`,
+          src.origin,
+        );
+        return ok(keys.length);
+      };
+    }
+    case 'leave': {
+      const spec = readHolders(cur);
+      cur.end();
+      return (rc, src) => {
+        const keys = memberKeys(rc, spec, src);
+        for (const key of keys) rc.state.teamOf.delete(key);
+        rc.feedback(
+          keys.length === 1
+            ? `Removed ${membersWords(rc, keys)} from any team.`
+            : `Removed ${keys.length} members from any team.`,
+          src.origin,
+        );
+        return ok(keys.length);
+      };
+    }
+    case 'list': {
+      const name = cur.done ? undefined : readTeamName(cur);
+      cur.end();
+      return (rc, src) => {
+        if (name === undefined) {
+          const all = [...rc.state.teams.values()];
+          rc.feedback(
+            all.length === 0
+              ? 'There are no teams.'
+              : `There are ${plural(all.length, 'team')}: ${all.map(teamWords).join(', ')}`,
+            src.origin,
+          );
+          return ok(all.length);
+        }
+        const team = teamOf(rc, name);
+        const members = [...rc.state.teamOf].filter(([, on]) => on === name).map(([key]) => key);
+        rc.feedback(
+          members.length === 0
+            ? `There are no members on team ${teamWords(team)}.`
+            : `Team ${teamWords(team)} has ${plural(members.length, 'member')}: ${membersWords(rc, members)}`,
+          src.origin,
+        );
+        return ok(members.length);
+      };
+    }
+    case 'modify':
+      return teamModify(cur);
+    default:
+      throw new BadLine(`Unknown team action '${action}'`);
+  }
+}
+
+/** `spawnpoint [<targets> [<pos> [<rotation>]]]`: kept per player; Try it's player never dies. */
+function spawnpointCommand(cur: Cursor): Run {
+  const targets = cur.done ? undefined : readTargets(cur, 'a target', true);
+  const at = cur.done ? undefined : readVec3(cur);
+  const rotation = cur.done ? undefined : readRotation(cur);
+  cur.end();
+  return (rc, src) => {
+    let found: Actor[];
+    if (targets === undefined) {
+      if (src.executor?.kind !== 'player') {
+        throw new Failed('A player is required to run this command here');
+      }
+      found = [src.executor];
+    } else found = selectSome(rc, targets, src, true);
+    const area = blockOf(at === undefined ? src.pos : resolveVec3(rc, at, src, false));
+    const { corner } = rc.state;
+    const pos: BlockPos = { x: area.x + corner.x, y: area.y + corner.y, z: area.z + corner.z };
+    // Without a rotation the spawn point faces yaw 0, pitch 0 (verify at implementation).
+    const turn = rotation === undefined ? { yaw: 0, pitch: 0 } : rotation(src);
+    for (const actor of found) {
+      rc.state.spawnPoints.set(holderOf(actor), {
+        pos,
+        yaw: turn.yaw,
+        pitch: turn.pitch,
+        dimension: src.dimension,
+      });
+    }
+    rc.only(
+      'respawning at the spawn point (Try it’s player never dies; the point is kept)',
+      src.origin,
+    );
+    const who =
+      found.length === 1 ? actorName(rc.host, found[0] as Actor) : `${found.length} players`;
+    rc.feedback(
+      `Set spawn point to ${posWords(pos)} [${round2(turn.yaw)}, ${round2(turn.pitch)}] in ${src.dimension} for ${who}.`,
+      src.origin,
+    );
+    return ok(found.length);
+  };
+}
+
+type AdvancementMode = 'only' | 'from' | 'through' | 'until' | 'everything';
+
+/** The advancements a mode picks, in the game's order (parents, itself, then children). */
+function advancementsFor(
+  rc: RunContext,
+  mode: AdvancementMode,
+  root: SimAdvancement | undefined,
+): SimAdvancement[] {
+  const all = rc.advancements?.() ?? [];
+  if (mode === 'everything') return [...all];
+  const self = root as SimAdvancement;
+  if (mode === 'only') return [self];
+  const out: SimAdvancement[] = [];
+  if (mode === 'until' || mode === 'through') {
+    const parents: SimAdvancement[] = [];
+    const seen = new Set<string>([self.id]);
+    let parent = self.parent === undefined ? undefined : rc.advancement?.(self.parent);
+    while (parent !== undefined && !seen.has(parent.id)) {
+      seen.add(parent.id);
+      parents.unshift(parent);
+      parent = parent.parent === undefined ? undefined : rc.advancement?.(parent.parent);
+    }
+    out.push(...parents);
+  }
+  out.push(self);
+  if (mode === 'from' || mode === 'through') {
+    const walk = (id: string, seen: Set<string>): void => {
+      for (const child of all) {
+        if (child.parent !== id || seen.has(child.id)) continue;
+        seen.add(child.id);
+        out.push(child);
+        walk(child.id, seen);
+      }
+    };
+    walk(self.id, new Set([self.id]));
+  }
+  return out;
+}
+
+/** `advancement grant|revoke <targets> everything|only|from|through|until ...`. */
+function advancementCommand(cur: Cursor): Run {
+  const action = cur.next('grant or revoke');
+  if (action !== 'grant' && action !== 'revoke') {
+    throw new BadLine(`Unknown advancement action '${action}'`);
+  }
+  const grant = action === 'grant';
+  const targets = readTargets(cur, 'a target', true);
+  const mode = cur.next('everything, only, from, through or until') as AdvancementMode;
+  if (!['everything', 'only', 'from', 'through', 'until'].includes(mode)) {
+    throw new BadLine(`Unknown advancement mode '${mode}'`);
+  }
+  const id = mode === 'everything' ? undefined : cur.id('an advancement');
+  if (id?.startsWith('#') === true) throw new BadLine(`Invalid advancement '${id}'`);
+  const criterion = mode === 'only' && !cur.done ? cur.rest() : undefined;
+  cur.end();
+  return (rc, src) => {
+    const players = selectSome(rc, targets, src, true);
+    let root: SimAdvancement | undefined;
+    if (id !== undefined) {
+      root = rc.advancement?.(id);
+      if (root === undefined) {
+        if (id.startsWith('minecraft:'))
+          throw new NotHere(`/advancement with Minecraft’s own ${id}`);
+        throw new Failed(`Unknown advancement: ${id}`);
+      }
+    }
+    if (mode === 'everything') {
+      rc.only(
+        'Minecraft’s own advancements (/advancement ... everything gives your project’s)',
+        src.origin,
+      );
+    }
+    const verb = grant ? 'grant' : 'revoke';
+    const toFrom = grant ? 'to' : 'from';
+    const who = (n: number): string =>
+      n === 1 ? actorName(rc.host, players[0] as Actor) : `${n} players`;
+    const calls: FunctionCall[] = [];
+    if (criterion !== undefined) {
+      const one = root as SimAdvancement;
+      if (!one.criteria.includes(criterion)) {
+        throw new Failed(`The advancement ${one.id} does not contain the criterion '${criterion}'`);
+      }
+      let changed = 0;
+      for (const player of players) {
+        if (changeCriteria(rc, player, one, [criterion], grant, calls, src)) changed += 1;
+      }
+      if (changed === 0) {
+        throw new Failed(
+          `Couldn't ${verb} criterion '${criterion}' of advancement ${advancementWords(one)} ${toFrom} ${who(players.length)} as they ${grant ? 'already have' : "don't have"} it`,
+        );
+      }
+      rc.feedback(
+        `${grant ? 'Granted' : 'Revoked'} criterion '${criterion}' of advancement ${advancementWords(one)} ${toFrom} ${who(players.length)}.`,
+        src.origin,
+      );
+      return { success: true, result: changed, calls };
+    }
+    const picked = advancementsFor(rc, mode, root);
+    let changed = 0;
+    for (const player of players) {
+      for (const one of picked) {
+        if (changeCriteria(rc, player, one, one.criteria, grant, calls, src)) changed += 1;
+      }
+    }
+    const many = picked.length !== 1;
+    const what = many
+      ? `${picked.length} advancements`
+      : advancementWords(picked[0] as SimAdvancement);
+    if (changed === 0) {
+      throw new Failed(
+        `Couldn't ${verb} ${many ? what : `advancement ${what}`} ${toFrom} ${who(players.length)} as they ${grant ? 'already have' : "don't have"} ${many ? 'them' : 'it'}`,
+      );
+    }
+    rc.feedback(
+      `${grant ? 'Granted' : 'Revoked'} ${many ? what : `the advancement ${what}`} ${toFrom} ${who(players.length)}.`,
+      src.origin,
+    );
+    return { success: true, result: changed, calls };
+  };
+}
+
+const advancementWords = (one: SimAdvancement): string => `[${one.title}]`;
+
+const FRAME_WORDS: Readonly<Record<string, string>> = {
+  task: 'has made the advancement',
+  goal: 'has reached the goal',
+  challenge: 'has completed the challenge',
+};
+
+/**
+ * Grants or revokes criteria of one advancement for one player; true when anything changed. An
+ * advancement that becomes done is said in the chat (when it announces) and its reward function
+ * is queued to run as the player, as the game gives rewards at once.
+ */
+function changeCriteria(
+  rc: RunContext,
+  player: Actor,
+  advancement: SimAdvancement,
+  criteria: readonly string[],
+  grant: boolean,
+  calls: FunctionCall[],
+  src: Source,
+): boolean {
+  const key = holderOf(player);
+  let own = rc.state.advancements.get(key);
+  if (own === undefined) {
+    own = new Map();
+    rc.state.advancements.set(key, own);
+  }
+  let done = own.get(advancement.id);
+  if (done === undefined) {
+    done = new Set();
+    own.set(advancement.id, done);
+  }
+  const wasDone = rc.state.advancementDone(key, advancement);
+  let changed = false;
+  for (const criterion of criteria) {
+    if (grant && !done.has(criterion)) {
+      done.add(criterion);
+      changed = true;
+    } else if (!grant && done.delete(criterion)) changed = true;
+  }
+  if (done.size === 0) own.delete(advancement.id);
+  if (grant && changed && !wasDone && rc.state.advancementDone(key, advancement)) {
+    const name = actorName(rc.host, player);
+    if (advancement.frame !== undefined && advancement.announce) {
+      rc.chat(
+        `${name} ${FRAME_WORDS[advancement.frame] ?? FRAME_WORDS.task} ${advancementWords(advancement)}`,
+        src.origin,
+      );
+    }
+    if (advancement.otherRewards.length > 0) {
+      rc.only(`advancement rewards: ${advancement.otherRewards.join(', ')}`, src.origin);
+    }
+    if (advancement.rewardFunction !== undefined) {
+      const pos = positionOf(rc.host, player) ?? src.pos;
+      calls.push({
+        id: advancement.rewardFunction,
+        source: {
+          executor: player,
+          pos,
+          yaw: rc.host.player.yaw,
+          pitch: rc.host.player.pitch,
+          dimension: AREA_DIMENSION,
+          ...(src.origin === undefined ? {} : { origin: src.origin }),
+        },
+      });
+    }
+  }
+  return changed;
+}
+
 const COMMANDS: Readonly<Record<string, Compile>> = {
+  advancement(cur) {
+    return advancementCommand(cur);
+  },
+
+  spawnpoint(cur) {
+    return spawnpointCommand(cur);
+  },
+
+  team(cur) {
+    return teamCommand(cur);
+  },
+
   // B558: the games kinds roll their chances with `random value` (one block, B552).
   random(cur) {
     const action = cur.next('value, roll or reset');

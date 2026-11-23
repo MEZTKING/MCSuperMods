@@ -53,7 +53,8 @@ describe("the library's function lines", () => {
     const runs = lines.filter(({ line }) => lineSupport(line).runs);
     const not = lines.filter(({ line }) => !lineSupport(line).runs);
     // B600 counted 74 lines with four of the built-in templates' (66 run, 89 %); the mirror and
-    // the fixtures alone hold 70. Every line runs except the 8 that need /spreadplayers.
+    // the fixtures alone hold 70. Every line runs except the 8 that need /spreadplayers (the
+    // game flows' /team, /spawnpoint and /advancement lines run since they were taught).
     expect(lines.length).toBeGreaterThanOrEqual(70);
     expect(not.length).toBe(lines.filter(({ line }) => line.includes('spreadplayers')).length);
     for (const { line } of not) expect(lineSupport(line).why).toBe('/spreadplayers');

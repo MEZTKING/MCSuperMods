@@ -4,9 +4,10 @@
  * engine; this draws what the game shows on screen from what they keep, as mock-ups:
  * - timers on a boss bar (top) or the action bar (above the hotbar) while they run;
  * - the sidebar of the objective the functions show there, names in the player's team colour;
- * - "Your game": the game mode (adventure stops breaking), the team the player is on (Try it is
- *   single player, limit M14), each magic block's phase and breaks, and each area with "You are
- *   in it" and "Rebuild now".
+ * - "Your game": the game mode (adventure stops breaking), the team the player is on as the
+ *   function engine keeps it (a function's `team join` moves the picker; picking runs `team join`
+ *   or `team leave`; Try it is single player, limit M14), each magic block's phase and breaks, and
+ *   each area with "You are in it" and "Rebuild now".
  * The areas' outlines are drawn in the view (`TryItView` adds `source.games.outline()` to the
  * picked block's outline). No ids: names are the elements' own or plain words of their ids.
  */

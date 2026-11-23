@@ -201,13 +201,48 @@ describe('the games panel', () => {
     expect(screen.getByTestId('tryit-games-sidebar').textContent).toContain('Points');
     expect(screen.getByTestId('tryit-games-sidebar').textContent).toContain('Player7');
     expect((screen.getByTestId('tryit-games-mode') as HTMLSelectElement).value).toBe('adventure');
-    fireEvent.change(screen.getByTestId('tryit-games-team'), {
-      target: { value: `${NS}:blue` },
-    });
-    expect(source.games.status().team?.colour).toBe('blue');
-    expect(changed).toBe(1);
+    // No team exists until the team's load lines run in the engine.
+    expect(screen.queryByTestId('tryit-games-team')).toBeNull();
     const panel = screen.getByTestId('tryit-games');
     expect(forbiddenIn(panel.textContent ?? '')).toEqual([]);
+  });
+
+  it('follows the engine’s teams: a function’s team join moves the picker, picking runs it', async () => {
+    const source = voidSource();
+    const team = `${NS}.blue`;
+    for (const line of [
+      `team add ${team} "Blue"`,
+      `team modify ${team} color blue`,
+      `team modify ${team} prefix "[B] "`,
+      `team add ${NS}.extra "Extra"`,
+    ]) {
+      source.chat(`/${line}`);
+    }
+    let changed = 0;
+    const view = () => (
+      <GamesPanel source={source} project={project()} onChanged={() => (changed += 1)} />
+    );
+    const { rerender } = await act(async () => render(view()));
+    const picker = () => screen.getByTestId('tryit-games-team') as HTMLSelectElement;
+    expect(picker().value).toBe('');
+    expect([...picker().options].map((option) => option.textContent)).toEqual([
+      'No team',
+      'Blue',
+      'Extra',
+    ]);
+    // A command (as a game's function would) puts the player on the team.
+    source.chat(`/team join ${team} @s`);
+    await act(async () => rerender(view()));
+    expect(picker().value).toBe(`${NS}:blue`);
+    expect(screen.getByTestId('tryit-games-name').textContent).toBe('[B] Player');
+    expect(source.games.status().team?.colour).toBe('blue');
+    // Picking in the panel runs team leave and team join in the engine.
+    fireEvent.change(picker(), { target: { value: '' } });
+    expect(source.functions.state.teamOf.has('Player')).toBe(false);
+    fireEvent.change(picker(), { target: { value: `${NS}.extra` } });
+    expect(source.functions.state.teamOf.get('Player')).toBe(`${NS}.extra`);
+    expect(changed).toBe(2);
+    expect(source.lines.map((line) => line.text)).toContain('Added Player to team [Extra].');
   });
 
   it('rebuilds an area with Rebuild now', async () => {

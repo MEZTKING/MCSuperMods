@@ -33,6 +33,7 @@ export const TRY_IT_PROMPT_TOOLS = Object.freeze([
 
 /** The game's own commands the chat box runs (`VANILLA_COMMANDS` of `@msm/sim`, B606). */
 export const TRY_IT_PROMPT_COMMANDS = Object.freeze([
+  'advancement',
   'clear',
   'clone',
   'data',
@@ -52,8 +53,10 @@ export const TRY_IT_PROMPT_COMMANDS = Object.freeze([
   'schedule',
   'scoreboard',
   'setblock',
+  'spawnpoint',
   'summon',
   'tag',
+  'team',
   'teleport',
   'tellraw',
   'time',
