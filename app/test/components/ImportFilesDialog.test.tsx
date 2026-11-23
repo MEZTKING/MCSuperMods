@@ -40,6 +40,21 @@ describe('ImportFilesDialog', () => {
     await waitFor(() => expect(onImport).toHaveBeenCalledWith('other'));
   });
 
+  it("defaults to the project's own namespace, not minecraft", async () => {
+    const onImport = vi.fn(async () => null);
+    render(
+      <ImportFilesDialog
+        namespaces={['minecraft', 'sky']}
+        importers={importers}
+        onImport={onImport}
+        onCancel={vi.fn()}
+      />,
+    );
+    expect((screen.getByLabelText('Namespace') as HTMLSelectElement).value).toBe('sky');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Choose files…' }));
+    await waitFor(() => expect(onImport).toHaveBeenCalledWith('sky'));
+  });
+
   it('shows what the host reports and keeps the dialog open', async () => {
     const onImport = vi.fn(async () => 'Nothing was imported:\nhut.nbt is broken.');
     render(

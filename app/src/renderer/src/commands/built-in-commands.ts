@@ -36,6 +36,7 @@ export const BUILT_IN_COMMAND_IDS = [
   'exportSchematics',
   'exportFabricJar',
   'exportJavaProject',
+  'exportMap',
   'testInMinecraft',
   'renameElement',
   'goToDefinition',
@@ -196,6 +197,19 @@ export const BUILT_IN_COMMANDS: Readonly<
     title: 'Export Java project…',
     sentence: 'Turn the mod into a Java project to keep working on in code.',
     words: ['java', 'eject', 'source code', 'gradle', 'intellij', 'code'],
+  },
+  exportMap: {
+    title: 'Export as a map…',
+    sentence: 'Share a world from your game as a map, with or without the mod.',
+    words: [
+      'map',
+      'world',
+      'share world',
+      'adventure map',
+      'mrpack',
+      'download world',
+      'export world',
+    ],
   },
   testInMinecraft: {
     title: 'Test in Minecraft…',

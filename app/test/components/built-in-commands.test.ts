@@ -78,6 +78,19 @@ describe('paletteCommands', () => {
     ]);
   });
 
+  it('offers "Export as a map…" after the Java project', () => {
+    const commands = paletteCommands(
+      { exportJavaProject: vi.fn(), exportMap: vi.fn(), testInMinecraft: vi.fn() },
+      [],
+      { modKey: 'Ctrl', onError: vi.fn() },
+    );
+    expect(commands.map((command) => [command.id, command.title])).toEqual([
+      ['exportJavaProject', 'Export Java project…'],
+      ['exportMap', 'Export as a map…'],
+      ['testInMinecraft', 'Test in Minecraft…'],
+    ]);
+  });
+
   it('reports plugin command failures', async () => {
     const onError = vi.fn();
     const [thrown, rejected] = paletteCommands(

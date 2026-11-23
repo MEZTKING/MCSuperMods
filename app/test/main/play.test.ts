@@ -362,6 +362,17 @@ describe('Play service', () => {
     expect((await service.status('t')).state).toBe('not-running');
   });
 
+  it('reads "Game not running" at once when a game that was seen stops within the starting window', async () => {
+    await playIntoWorld();
+    expect((await service.status('t')).state).toBe('test-world');
+    // The game stops by itself: its status goes stale well inside the three minutes.
+    clock += 60_000;
+    expect(await service.status('t')).toMatchObject({
+      state: 'not-running',
+      label: 'Game not running',
+    });
+  });
+
   it('writes nothing outside the managed instance and the download cache', async () => {
     await playIntoWorld();
     const changed = replace(baseOutputs(), 'data/ruby/recipe/ruby.json', { type: 'shapeless' });

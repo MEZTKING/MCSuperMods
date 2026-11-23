@@ -485,8 +485,13 @@ export function createPlayService(deps: PlayDeps): PlayService {
           : 'starting';
     } else {
       const started = launchedAt.get(targetId);
+      // The starting window only applies before the first sign of life: a game that wrote any
+      // status after the launch and then stopped is simply not running.
+      const sawGame = status !== null && started !== undefined && status.time >= started;
       state =
-        started !== undefined && time - started < STARTING_WINDOW_MS ? 'starting' : 'not-running';
+        !sawGame && started !== undefined && time - started < STARTING_WINDOW_MS
+          ? 'starting'
+          : 'not-running';
     }
     const label =
       reasons.length > 0 && state !== 'not-running'

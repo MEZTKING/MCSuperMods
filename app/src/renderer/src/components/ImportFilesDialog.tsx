@@ -42,6 +42,11 @@ export const saveKey = (save: StructureSaveInfo): string => `${save.world}/${sav
  * Asks which namespace imported files go into and lists the importers that will read them;
  * the host then shows the file picker (filters built from the importers) and imports.
  */
+/** The project's own namespace: the first that is not `minecraft` (vanilla tags), else the first. */
+export function defaultNamespace(namespaces: readonly string[]): string {
+  return namespaces.find((name) => name !== 'minecraft') ?? namespaces[0] ?? '';
+}
+
 export function ImportFilesDialog(props: {
   /** The dialog title, for example "Import structure". */
   title?: string;
@@ -56,7 +61,9 @@ export function ImportFilesDialog(props: {
   /** Adds the "From my test worlds" tab (structure imports, ADR 0116 D3). */
   testWorlds?: TestWorldBuilds | undefined;
 }) {
-  const [namespace, setNamespace] = useState(props.initialNamespace ?? props.namespaces[0] ?? '');
+  const [namespace, setNamespace] = useState(
+    props.initialNamespace ?? defaultNamespace(props.namespaces),
+  );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<'files' | 'test-worlds'>('files');

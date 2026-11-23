@@ -2400,6 +2400,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     exportSchematics: structureExportReason === null ? exportSchematics : null,
     exportFabricJar: fabricJarReason === null ? exportFabricJar : null,
     exportJavaProject: fabricJarReason === null ? exportJavaProject : null,
+    exportMap: project === null || bridge.maps === undefined ? null : handlers.exportMap,
     testInMinecraft: fabricJarReason === null ? testInMinecraft : null,
     renameElement: selected === null ? null : renameSelected,
     goToDefinition: selected === null ? null : () => goToDefinition(),

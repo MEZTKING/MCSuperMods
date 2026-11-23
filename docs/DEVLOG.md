@@ -10228,3 +10228,15 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B633: the root `CLAUDE.md` e2e spec count at the batch close (this spec was already counted as a file since B620).
+## 2026-11-23 — executor — B560 quirks (Play chip, import namespace, palette)
+
+**What**
+- `app/src/main/platform/play.ts`: the "Starting…" window now applies only before the first sign of life; once the game has written a status after the launch and then stops, the chip reads "Game not running" at once. Test in `app/test/main/play.test.ts`.
+- `app/src/renderer/src/components/ImportFilesDialog.tsx`: the namespace defaults to the project's own (`defaultNamespace`: the first that is not `minecraft`, else the first). Test in `app/test/components/ImportFilesDialog.test.tsx`.
+- Built-in command `exportMap` ("Export as a map…", with `sentence` and `words`) in `built-in-commands.ts`, wired in `App.tsx` to the same handler as File > Export as a Map… (left out with no project or no maps platform). Test in `built-in-commands.test.ts`.
+
+**Decisions**
+- The guide pages (`maps.md`, `structures.md`) name neither the default namespace nor the palette, so they are unchanged.
+
+**Next**
+- The B560 e2e could now drop its explicit namespace choice and its "either chip" allowance (not done: e2e not run here).
