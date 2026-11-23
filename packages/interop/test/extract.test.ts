@@ -3,9 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   dataFolderPatterns,
   extractPreviewAssets,
+  isStructureTemplateId,
   LOOKS_ASSET_PATTERNS,
   mergeDataFolders,
   PREVIEW_ASSET_PATTERNS,
+  STRUCTURE_TEMPLATE_PATTERN,
+  structureTemplateJarPath,
 } from '../src/index';
 import { buildSyntheticJar, KEPT_ENTRIES } from './helpers/synthetic-jar';
 
@@ -20,6 +23,7 @@ describe('extractPreviewAssets', () => {
       'assets/minecraft/textures/block/msm_test.png',
       'assets/minecraft/textures/block/msm_test_anim.png',
       'assets/minecraft/textures/block/msm_test_anim.png.mcmeta',
+      'data/minecraft/structure/msm_test/hut.nbt',
       'data/minecraft/worldgen/placed_feature/msm_test_flower.json',
     ]);
     for (const file of files) expect(file.data).toEqual(KEPT_ENTRIES[file.path]);
@@ -43,12 +47,13 @@ describe('extractPreviewAssets', () => {
     });
     const data = files.map((file) => file.path).filter((path) => path.startsWith('data/'));
     expect(data).toEqual([
+      'data/minecraft/structure/msm_test/hut.nbt',
       'data/minecraft/worldgen/configured_feature/msm_test_flower.json',
       'data/minecraft/worldgen/placed_feature/msm_test_flower.json',
       'data/minecraft/worldgen/placed_feature/nested/msm_test.json',
     ]);
     // The preview assets stay, and nothing outside the folders or not JSON is kept.
-    expect(files).toHaveLength(10);
+    expect(files).toHaveLength(11);
     expect(files.some((file) => file.path.endsWith('.txt'))).toBe(false);
     expect(files.some((file) => file.path.startsWith('data/minecraft/recipe/'))).toBe(false);
   });
@@ -169,6 +174,59 @@ describe('extractPreviewAssets', () => {
       'assets/other/textures/entity/wolf/wolf.png',
     ]) {
       expect(matches(path), path).toBe(false);
+    }
+  });
+
+  it('keeps the structure templates and nothing else of their folder (ADR 0122, B634 4S6)', () => {
+    const files = extractPreviewAssets(buildSyntheticJar()).map((file) => file.path);
+    expect(files.filter((path) => path.includes('structure'))).toEqual([
+      'data/minecraft/structure/msm_test/hut.nbt',
+    ]);
+    const matches = (path: string) => PREVIEW_ASSET_PATTERNS.some((pattern) => pattern.test(path));
+    for (const path of [
+      'data/minecraft/structure/igloo/top.nbt',
+      'data/minecraft/structure/village/plains/houses/plains_small_house_1.nbt',
+      'data/minecraft/structure/trial_chambers/corridor/end_1.nbt',
+    ]) {
+      expect(STRUCTURE_TEMPLATE_PATTERN.test(path), path).toBe(true);
+      expect(matches(path), path).toBe(true);
+    }
+    for (const path of [
+      'data/minecraft/structure/igloo/top.json',
+      'data/minecraft/structure/igloo/top.nbt.bak',
+      'data/minecraft/structure.nbt',
+      'data/minecraft/structure/.nbt',
+      'data/minecraft/structures/igloo/top.nbt',
+      'data/other/structure/igloo/top.nbt',
+      'assets/minecraft/structure/igloo/top.nbt',
+    ]) {
+      expect(matches(path), path).toBe(false);
+    }
+  });
+
+  it('maps a template id to its jar path, refusing anything but a plain vanilla id', () => {
+    expect(structureTemplateJarPath('minecraft:igloo/top')).toBe(
+      'data/minecraft/structure/igloo/top.nbt',
+    );
+    expect(structureTemplateJarPath('village/plains/houses/plains_small_house_1')).toBe(
+      'data/minecraft/structure/village/plains/houses/plains_small_house_1.nbt',
+    );
+    for (const id of [
+      '',
+      'minecraft:',
+      'other:igloo/top',
+      'minecraft:../escape',
+      'minecraft:igloo/../top',
+      'minecraft:igloo//top',
+      'minecraft:/igloo',
+      'minecraft:igloo/',
+      'minecraft:Igloo/top',
+      'minecraft:igloo\\top',
+      'minecraft:igloo/./top',
+      `minecraft:${'a'.repeat(257)}`,
+    ]) {
+      expect(isStructureTemplateId(id), id).toBe(false);
+      expect(() => structureTemplateJarPath(id), id).toThrow();
     }
   });
 });

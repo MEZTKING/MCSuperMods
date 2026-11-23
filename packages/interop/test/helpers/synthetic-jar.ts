@@ -3,7 +3,7 @@
  * Mojang bytes exist in the repository.
  */
 
-import { strToU8, zipSync, zlibSync } from 'fflate';
+import { gzipSync, strToU8, zipSync, zlibSync } from 'fflate';
 
 let crcTable: Uint32Array | undefined;
 
@@ -101,6 +101,10 @@ export const KEPT_ENTRIES: Readonly<Record<string, Uint8Array>> = {
   'assets/minecraft/textures/block/msm_test_anim.png.mcmeta': json({
     animation: { frametime: 3, frames: [1, { index: 0, time: 5 }] },
   }),
+  // A structure template (schema 7): made-up gzipped bytes, not a real template.
+  'data/minecraft/structure/msm_test/hut.nbt': gzipSync(strToU8('msm made-up template'), {
+    mtime: 0,
+  }),
 };
 
 /** Entries extraction must skip. */
@@ -115,6 +119,10 @@ export const SKIPPED_ENTRIES: Readonly<Record<string, Uint8Array>> = {
   'data/minecraft/worldgen/placed_feature/nested/msm_test.json': json({ placement: [] }),
   'data/minecraft/worldgen/placed_feature/msm_test.txt': json({}),
   'data/minecraft/recipe/msm_test.json': json({ type: 'minecraft:crafting_shaped' }),
+  'data/minecraft/structure/msm_test/hut.json': json({}),
+  'data/minecraft/structure/msm_test/hut.nbt.bak': strToU8('old'),
+  'data/minecraft/structures/msm_test/old.nbt': strToU8('old folder name'),
+  'data/msm_other/structure/msm_test/hut.nbt': strToU8('another namespace'),
   'net/minecraft/Foo.class': noise(512, 1),
   'net/minecraft/client/Bar.class': noise(2048, 2),
   'pack.mcmeta': json({ pack: { description: 'synthetic' } }),

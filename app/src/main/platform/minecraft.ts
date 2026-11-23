@@ -5,7 +5,7 @@
  * answer for the live world generation preview (ADR 0119 D4), the cached vanilla data files of
  * some folders in one answer for the live views (ADR 0120 D11), one object of the launcher's asset
  * store by its index key on demand (sounds and the unifont archives, ADR 0121 D3; never cached or
- * copied), installing resource packs into the
+ * copied), cached vanilla structure templates by id (ADR 0122, B636), installing resource packs into the
  * selected game location, listing its worlds and installing data packs into a world's
  * `datapacks/` folder.
  *
@@ -31,6 +31,7 @@ import {
   isAllowedAssetKey,
   isPathInside,
   isSafeSegment,
+  isStructureTemplateId,
   joinInstallPath,
   listLauncherClientJars,
   locationPathKey,
@@ -41,8 +42,10 @@ import {
   readAssetIndex,
   readAssetObject,
   readCachedDataFiles,
+  readCachedStructureTemplates,
   readLevelName,
   readOutdatedAssetCacheInfo,
+  STRUCTURE_TEMPLATES_MAX_IDS,
   sameDataFolders,
   writeAssetCache,
 } from '@msm/interop';
@@ -56,6 +59,7 @@ import type {
   ResolvedBiomeListsView,
   VanillaDataFiles,
   VanillaNames,
+  VanillaStructureTemplates,
   VanillaWorldgenFiles,
   WorldBackupList,
   WorldBackupRef,
@@ -142,6 +146,18 @@ export interface MinecraftService {
    * `objects/` folder. The bytes are answered and never cached, copied or exported.
    */
   readAssetObject(mcVersion: string, key: string): Promise<AssetObjectAnswer>;
+  /**
+   * Cached vanilla structure templates of `mcVersion` by id (`minecraft:<path>`; ADR 0122, B636,
+   * the B634 spike's 4S6), as the bytes the jar stores: at most 256 ids, each file at most 2 MB,
+   * starting as NBT and really inside the cache folder (interop's `readCachedStructureTemplates`).
+   * `null` when the cache is not set up for the version.
+   *
+   * @throws Error When an id is not a vanilla structure template id, or too many are asked.
+   */
+  readStructureTemplates(
+    mcVersion: string,
+    ids: readonly string[],
+  ): Promise<VanillaStructureTemplates | null>;
   installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
   /**
    * Worlds in `<gameDir>/saves/` of the selected location that contain `level.dat`, most
@@ -573,6 +589,28 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
         while (indexes.size > 2) indexes.delete(indexes.keys().next().value as string);
       }
       return readAssetObject(fs, found.store, index, key);
+    },
+
+    async readStructureTemplates(mcVersion, ids) {
+      if (ids.length > STRUCTURE_TEMPLATES_MAX_IDS) {
+        throw new Error(
+          `At most ${STRUCTURE_TEMPLATES_MAX_IDS} structure templates are read at once.`,
+        );
+      }
+      for (const id of ids) {
+        if (!isStructureTemplateId(id)) {
+          throw new Error(`${JSON.stringify(id)} is not a vanilla structure template id.`);
+        }
+      }
+      const cache = await validCache(mcVersion);
+      if (cache === null) return null;
+      const read = await readCachedStructureTemplates(fs, cache.dir, ids);
+      return {
+        version: cache.info.version,
+        templates: read.templates,
+        missing: read.missing,
+        refused: read.refused,
+      };
     },
 
     async installResourcePack(fileName, data) {

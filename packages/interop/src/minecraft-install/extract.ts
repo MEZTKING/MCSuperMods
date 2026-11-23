@@ -56,10 +56,60 @@ export const LOOKS_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
 ]);
 
 /**
+ * The jar's structure templates (ADR 0122, Live views 4; the B634 spike's 4S6): every `.nbt` file
+ * below `data/minecraft/structure/`, subfolders included (1,511 files and about 4.2 MB on both
+ * targets, each file gzipped as the jar stores it). Kept as they are, in bulk, since schema 7; the
+ * renderer reads them one template id at a time (`minecraft:structureTemplates`) and parses them
+ * once. One binary pattern, not a data folder: the data folders are JSON only.
+ */
+export const STRUCTURE_TEMPLATE_PATTERN = /^data\/minecraft\/structure\/.+\.nbt$/;
+
+/** The folder of the jar's structure templates, `data/minecraft/structure/`. */
+export const STRUCTURE_TEMPLATE_PREFIX = 'data/minecraft/structure/';
+
+/**
+ * The largest structure template file read back from the cache, as stored (gzipped). The largest
+ * vanilla file is about 80 KB (B634 4S6); the limit guards against a hostile or corrupt cache.
+ */
+export const STRUCTURE_TEMPLATE_MAX_BYTES = 2 * 1024 * 1024;
+
+/** A template id's path: lower case, digits, `_`, `-`, `.` in `/`-separated parts, no `.` or `..` part. */
+const TEMPLATE_PATH = /^[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*$/;
+
+/**
+ * Whether `id` names a vanilla structure template: `minecraft:<path>` (or a bare `<path>`, read as
+ * `minecraft:`), such as `minecraft:village/plains/houses/plains_small_house_1`.
+ */
+export function isStructureTemplateId(id: string): boolean {
+  const path = id.startsWith('minecraft:') ? id.slice('minecraft:'.length) : id;
+  return (
+    path.length > 0 &&
+    path.length <= 256 &&
+    TEMPLATE_PATH.test(path) &&
+    !path.split('/').some((part) => /^\.+$/.test(part))
+  );
+}
+
+/**
+ * The jar path of a vanilla structure template id: `minecraft:village/plains/town_centers/x` is
+ * `data/minecraft/structure/village/plains/town_centers/x.nbt`.
+ *
+ * @throws Error When `id` is not a vanilla structure template id ({@link isStructureTemplateId}).
+ */
+export function structureTemplateJarPath(id: string): string {
+  if (!isStructureTemplateId(id)) {
+    throw new Error(`${JSON.stringify(id)} is not a vanilla structure template id.`);
+  }
+  const path = id.startsWith('minecraft:') ? id.slice('minecraft:'.length) : id;
+  return `${STRUCTURE_TEMPLATE_PREFIX}${path}.nbt`;
+}
+
+/**
  * The jar entries previews need: vanilla models, block and item definitions, block and item
  * textures with their animation sidecars (`.png.mcmeta`), the English lang file, the vanilla
- * placed feature files (the only `data/` entries) and, since schema 6, the looks and sounds
- * views' entries ({@link LOOKS_ASSET_PATTERNS}).
+ * placed feature files, since schema 6 the looks and sounds views' entries
+ * ({@link LOOKS_ASSET_PATTERNS}) and since schema 7 the structure templates
+ * ({@link STRUCTURE_TEMPLATE_PATTERN}).
  */
 export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   /^assets\/minecraft\/(?:models|blockstates|items)\/.+\.json$/,
@@ -69,6 +119,7 @@ export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   // Vanilla placed features, read by the World addition Studio's "Make my own copy".
   /^data\/minecraft\/worldgen\/placed_feature\/[^/]+\.json$/,
   ...LOOKS_ASSET_PATTERNS,
+  STRUCTURE_TEMPLATE_PATTERN,
 ]);
 
 /**

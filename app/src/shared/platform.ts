@@ -339,7 +339,8 @@ export interface AssetCacheInfoView {
   /** The total size of the cached files in bytes (schema 6): the cache size reported. */
   byteCount: number;
   extractedAt: string;
-  schemaVersion: 6;
+  /** 7 since the structure templates (`data/minecraft/structure/**.nbt`, B636, ADR 0122). */
+  schemaVersion: 7;
 }
 
 /** Why an object of the launcher's asset store could not be read (ADR 0121 D3). */
@@ -573,6 +574,23 @@ export interface VanillaDataFiles {
   /** Folder key (as asked) to id (`minecraft:<path below the folder>`) to JSON. */
   folders: WorldgenFileMapView;
   fileCount: number;
+}
+
+/**
+ * The answer of `minecraft:structureTemplates` (ADR 0122, Live views 4; B636): some vanilla
+ * structure templates of one version by id, as the bytes the user's own jar stores them (gzipped
+ * NBT), read from the local cache (schema 7). They stay in the cache and the renderer's memory:
+ * never exported, written into a project or sent to the AI helper.
+ */
+export interface VanillaStructureTemplates {
+  /** The installed version the cache came from. */
+  version: string;
+  /** Id (`minecraft:<path>`) to the file's bytes. */
+  templates: Record<string, Uint8Array>;
+  /** Ids the jar has no template for. */
+  missing: string[];
+  /** Ids whose cached file was refused: too large, not NBT, or outside the cache folder. */
+  refused: string[];
 }
 
 /** What main knows about the Minecraft installation for one version. */
@@ -1281,6 +1299,17 @@ export interface PlatformAdapter {
      * optional so that test doubles written before it may omit it.
      */
     readAssetObject?(mcVersion: string, key: string): Promise<AssetObjectAnswer>;
+    /**
+     * Some vanilla structure templates of `mcVersion` by id (`minecraft:<path>`, at most 256 ids)
+     * as the bytes the jar stores (ADR 0122, B636), from the local cache (schema 7); `null` when
+     * the cache is not set up for the version. Throws for an id that is not a vanilla template
+     * id. The preload always provides it; optional so that test doubles written before it may
+     * omit it.
+     */
+    readStructureTemplates?(
+      mcVersion: string,
+      ids: readonly string[],
+    ): Promise<VanillaStructureTemplates | null>;
     /** Writes a resource pack zip into `<gameDir>/resourcepacks/` of the selected location. */
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
     /** Lists worlds in `<gameDir>/saves/` of the selected location, most recently played first. */

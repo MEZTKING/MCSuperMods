@@ -23,6 +23,9 @@ import {
   isUpdateStatus,
   SCRIPT_MAX_SOURCE_LENGTH,
   SCRIPT_MAX_TYPINGS_LENGTH,
+  STRUCTURE_TEMPLATE_IDS_MAX,
+  STRUCTURE_TEMPLATE_MAX_BYTES,
+  STRUCTURE_TEMPLATES_MAX_TOTAL_BYTES,
   UPDATE_NOTES_MAX,
   type UpdateStatus,
   updateStatusSchema,
@@ -377,7 +380,7 @@ const samples: Record<
         fileCount: 3,
         byteCount: 1024,
         extractedAt: 'now',
-        schemaVersion: 6,
+        schemaVersion: 7,
       },
       {
         version: '1.0',
@@ -387,7 +390,7 @@ const samples: Record<
         fileCount: 3,
         byteCount: 1024,
         extractedAt: 'now',
-        schemaVersion: 5,
+        schemaVersion: 6,
       },
     ],
   },
@@ -959,6 +962,21 @@ const samples: Record<
     request: [undefined, { path: '/etc' }],
     response: [undefined, 'done'],
   },
+  [InvokeChannels.minecraftStructureTemplates]: {
+    request: [
+      { mcVersion: '1.0', ids: ['minecraft:made_up/hut', 'minecraft:made_up/houses/hut_2'] },
+      { mcVersion: '1.0', ids: ['minecraft:../escape'] },
+    ],
+    response: [
+      {
+        version: '1.0',
+        templates: { 'minecraft:made_up/hut': new Uint8Array([0x1f, 0x8b, 8]) },
+        missing: ['minecraft:made_up/none'],
+        refused: [],
+      },
+      { version: '1.0', templates: { 'minecraft:made_up/hut': 'bytes' }, missing: [], refused: [] },
+    ],
+  },
   [InvokeChannels.minecraftAssetObject]: {
     request: [
       { mcVersion: '1.0', key: 'minecraft/sounds/mob/made_up/hum1.ogg' },
@@ -1232,6 +1250,56 @@ describe('IPC contract', () => {
     }
     expect(response.safeParse({ ok: false, reason: 'nope' }).success).toBe(false);
     expect(response.safeParse({ ok: true, bytes: 'x' }).success).toBe(false);
+  });
+
+  it('bounds the structure templates read: its ids, answer and sizes (ADR 0122, B636)', () => {
+    const { request, response } = ipcContract[InvokeChannels.minecraftStructureTemplates];
+    const asks = (ids: unknown) => request.safeParse({ mcVersion: '1.0', ids }).success;
+    expect(
+      asks(['minecraft:igloo/top', 'minecraft:village/plains/houses/plains_small_house_1']),
+    ).toBe(true);
+    for (const id of [
+      '',
+      'igloo/top',
+      'other:igloo/top',
+      'minecraft:',
+      'minecraft:../x',
+      'minecraft:a/../b',
+      'minecraft:a/./b',
+      'minecraft:a//b',
+      'minecraft:/a',
+      'minecraft:a/',
+      'minecraft:A',
+      'minecraft:a\\b',
+      `minecraft:${'a'.repeat(257)}`,
+    ]) {
+      expect(asks([id]), id).toBe(false);
+    }
+    expect(asks([])).toBe(false);
+    const many = Array.from(
+      { length: STRUCTURE_TEMPLATE_IDS_MAX + 1 },
+      (_, i) => `minecraft:t${i}`,
+    );
+    expect(asks(many)).toBe(false);
+    expect(asks(many.slice(1))).toBe(true);
+    expect(request.safeParse({ mcVersion: '..', ids: ['minecraft:a'] }).success).toBe(false);
+
+    const answer = (templates: unknown, extra: object = {}) =>
+      response.safeParse({ version: '1.0', templates, missing: [], refused: [], ...extra }).success;
+    expect(response.safeParse(null).success).toBe(true);
+    expect(answer({ 'minecraft:a': new Uint8Array(4) })).toBe(true);
+    expect(answer({ 'minecraft:a': new Uint8Array(STRUCTURE_TEMPLATE_MAX_BYTES + 1) })).toBe(false);
+    expect(answer({ '../a': new Uint8Array(4) })).toBe(false);
+    const heavy = Object.fromEntries(
+      Array.from({ length: 17 }, (_, i) => [
+        `minecraft:t${i}`,
+        new Uint8Array(STRUCTURE_TEMPLATES_MAX_TOTAL_BYTES / 16),
+      ]),
+    );
+    expect(answer(heavy)).toBe(false);
+    expect(answer({}, { missing: ['minecraft:../x'] })).toBe(false);
+    expect(answer({}, { refused: ['minecraft:a'] })).toBe(true);
+    expect(answer({}, { path: '/etc' })).toBe(false);
   });
 
   it('bounds the live views data answer and its folder keys (ADR 0120 D11)', () => {

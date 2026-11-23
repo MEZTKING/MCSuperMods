@@ -1,11 +1,14 @@
-import { strToU8 } from 'fflate';
+import { gzipSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import {
   assetCacheDir,
   extractPreviewAssets,
   readAssetCacheInfo,
   readCachedDataFiles,
+  readCachedStructureTemplates,
   readOutdatedAssetCacheInfo,
+  STRUCTURE_TEMPLATE_MAX_BYTES,
+  STRUCTURE_TEMPLATES_MAX_IDS,
   sameDataFolders,
   writeAssetCache,
 } from '../src/index';
@@ -40,7 +43,7 @@ describe('asset cache', () => {
     const info = await writeAssetCache(fs, dir, files, INFO);
     const byteCount = files.reduce((sum, file) => sum + file.data.byteLength, 0);
     expect(byteCount).toBeGreaterThan(0);
-    expect(info).toEqual({ ...INFO, byteCount, fileCount: 8, schemaVersion: 6 });
+    expect(info).toEqual({ ...INFO, byteCount, fileCount: 9, schemaVersion: 7 });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);
     for (const [path, data] of Object.entries(KEPT_ENTRIES)) {
       expect(await fs.readFile(`${dir}/${path}`)).toEqual(data);
@@ -62,7 +65,7 @@ describe('asset cache', () => {
     const fs = new MemoryInstallFileSystem();
     fs.seed('/c/cache.json', 'not json');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 7 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 8 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
     // A Phase 1 cache (schema 1) has no `.png.mcmeta` sidecars, so it is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 1 }));
@@ -79,10 +82,16 @@ describe('asset cache', () => {
     // Schema 5 has no looks and sounds views' textures (ADR 0121 D3), so it too is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 5 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
-    const current = { ...INFO, byteCount: 10, fileCount: 1, schemaVersion: 6 };
+    // Schema 6 has no structure templates (ADR 0122, B636), so it too is extracted again.
+    fs.seed(
+      '/c/cache.json',
+      JSON.stringify({ ...INFO, byteCount: 10, fileCount: 1, schemaVersion: 6 }),
+    );
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    const current = { ...INFO, byteCount: 10, fileCount: 1, schemaVersion: 7 };
     fs.seed('/c/cache.json', JSON.stringify(current));
     expect(await readAssetCacheInfo(fs, '/c')).toEqual(current);
-    // Schema 6 needs the jar path, the folder list and the byte count.
+    // Schema 7 needs the jar path, the folder list and the byte count.
     const { jarPath: _jarPath, ...withoutJarPath } = current;
     fs.seed('/c/cache.json', JSON.stringify(withoutJarPath));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
@@ -140,7 +149,7 @@ describe('outdated asset caches (ADR 0119 D4)', () => {
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
     await writeAssetCache(fs, '/c', [], INFO);
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 0, schemaVersion: 7 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 0, schemaVersion: 8 }));
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
     fs.seed('/c/cache.json', JSON.stringify({ version: 1, jarSha1: 'x', schemaVersion: 2 }));
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
@@ -222,5 +231,76 @@ describe('readCachedDataFiles', () => {
     await expect(readCachedDataFiles(fs, '/c', ['../escape'])).rejects.toThrow();
     await expect(readCachedDataFiles(fs, '/c', ['Upper'])).rejects.toThrow();
     await expect(readCachedDataFiles(fs, '/c', ['a//b'])).rejects.toThrow();
+  });
+});
+
+describe('cached structure templates (schema 7, ADR 0122, B636)', () => {
+  const gz = (text: string) => gzipSync(strToU8(text), { mtime: 0 });
+
+  it('reads a schema 6 cache as outdated, so the host extracts the templates again', async () => {
+    const fs = new MemoryInstallFileSystem();
+    const schema6 = { ...INFO, byteCount: 1, fileCount: 1, schemaVersion: 6 };
+    fs.seed('/c/cache.json', JSON.stringify(schema6));
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toEqual({
+      version: '9.1',
+      jarSha1: 'abc123',
+      jarPath: '/games/versions/9.1/9.1.jar',
+      schemaVersion: 6,
+    });
+  });
+
+  it('extracts the templates into the cache and reads them back by id', async () => {
+    const fs = new MemoryInstallFileSystem();
+    const dir = assetCacheDir('/msm', '9.1');
+    await writeAssetCache(fs, dir, extractPreviewAssets(buildSyntheticJar()), INFO);
+    // Only the `.nbt` of the structure folder was written; its decoys were not.
+    const cached = [...fs.files.keys()].filter((path) => path.includes('structure'));
+    expect(cached).toEqual([`${dir}/data/minecraft/structure/msm_test/hut.nbt`]);
+    const answer = await readCachedStructureTemplates(fs, dir, [
+      'minecraft:msm_test/hut',
+      'msm_test/hut',
+      'minecraft:msm_test/none',
+    ]);
+    const hut = KEPT_ENTRIES['data/minecraft/structure/msm_test/hut.nbt'] as Uint8Array;
+    expect(answer).toEqual({
+      templates: { 'minecraft:msm_test/hut': hut },
+      missing: ['minecraft:msm_test/none'],
+      refused: [],
+      byteCount: hut.byteLength,
+    });
+  });
+
+  it('refuses files that are too large, not NBT, or linked out of the cache', async () => {
+    const fs = new MemoryInstallFileSystem();
+    const root = '/c/data/minecraft/structure';
+    fs.seed(`${root}/ok.nbt`, gz('fine'));
+    fs.seed(`${root}/raw.nbt`, new Uint8Array([0x0a, 0, 0, 0]));
+    fs.seed(`${root}/text.nbt`, 'not nbt');
+    const big = new Uint8Array(STRUCTURE_TEMPLATE_MAX_BYTES + 1);
+    big.set([0x1f, 0x8b]);
+    fs.seed(`${root}/big.nbt`, big);
+    fs.seed('/elsewhere/secret.nbt', gz('secret'));
+    fs.link(`${root}/linked.nbt`, '/elsewhere/secret.nbt');
+    const answer = await readCachedStructureTemplates(fs, '/c', [
+      'ok',
+      'raw',
+      'text',
+      'big',
+      'linked',
+    ]);
+    expect(Object.keys(answer.templates)).toEqual(['minecraft:ok', 'minecraft:raw']);
+    expect(answer.refused).toEqual(['minecraft:text', 'minecraft:big', 'minecraft:linked']);
+    expect(answer.missing).toEqual([]);
+  });
+
+  it('refuses ids that are not vanilla template ids, and too many at once', async () => {
+    const fs = new MemoryInstallFileSystem();
+    for (const id of ['../cache', 'minecraft:a/../../b', 'other:a', 'minecraft:A', '']) {
+      await expect(readCachedStructureTemplates(fs, '/c', [id]), id).rejects.toThrow();
+    }
+    const many = Array.from({ length: STRUCTURE_TEMPLATES_MAX_IDS + 1 }, (_, i) => `t${i}`);
+    await expect(readCachedStructureTemplates(fs, '/c', many)).rejects.toThrow(/At most/);
+    expect(fs.log).toEqual([]);
   });
 });

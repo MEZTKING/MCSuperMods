@@ -90,7 +90,7 @@ describe('vanilla data files for the live views (ADR 0120 D11)', () => {
   it('extracts both lists, records them and reads folders in bulk', async () => {
     await installJar(dataJar());
     const info = await service.extract(VERSION);
-    expect(info.schemaVersion).toBe(6);
+    expect(info.schemaVersion).toBe(7);
     expect(info.dataFolders).toEqual([...WORLDGEN, ...LIVE].sort());
     expect(info.fileCount).toBe(7);
 
@@ -158,7 +158,7 @@ describe('vanilla data files for the live views (ADR 0120 D11)', () => {
     expect(await service.readDataFiles(VERSION, LIVE)).toBeNull();
     await service.extract(VERSION);
     status = await service.status(VERSION);
-    expect(status.cache?.schemaVersion).toBe(6);
+    expect(status.cache?.schemaVersion).toBe(7);
     expect(status.cacheOutdated).toBe(false);
     expect((await service.readDataFiles(VERSION, LIVE))?.fileCount).toBe(4);
   });

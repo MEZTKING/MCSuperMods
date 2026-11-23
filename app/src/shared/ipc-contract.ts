@@ -115,7 +115,7 @@ const assetCacheInfo = z
     fileCount: z.number().int().nonnegative(),
     byteCount: z.number().int().nonnegative(),
     extractedAt: z.string(),
-    schemaVersion: z.literal(6),
+    schemaVersion: z.literal(7),
   })
   .strict();
 /** The most worldgen files one answer may carry (both targets have about 1,300; ADR 0119 D4). */
@@ -163,6 +163,59 @@ const vanillaDataFiles = z
         { message: 'Too many data files' },
       ),
     fileCount: z.number().int().nonnegative().max(DATA_FILES_MAX),
+  })
+  .strict();
+/** The most template ids one `minecraft:structureTemplates` call asks (interop's limit). */
+export const STRUCTURE_TEMPLATE_IDS_MAX = 256;
+/** The largest structure template file answered (2 MB as stored; vanilla's largest is about 80 KB). */
+export const STRUCTURE_TEMPLATE_MAX_BYTES = 2 * 1024 * 1024;
+/** The most bytes of templates one answer carries (32 MB; every vanilla template is about 4.2 MB). */
+export const STRUCTURE_TEMPLATES_MAX_TOTAL_BYTES = 32 * 1024 * 1024;
+/**
+ * A vanilla structure template id, `minecraft:<path>` (`isStructureTemplateId` in interop): lower
+ * case, digits, `_`, `-`, `.` in `/`-separated parts, no `.` or `..` part, at most 256 after the
+ * namespace.
+ */
+const structureTemplateId = z
+  .string()
+  .min('minecraft:'.length + 1)
+  .max('minecraft:'.length + 256)
+  .regex(/^minecraft:[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*$/)
+  .refine(
+    (value) =>
+      !value
+        .slice('minecraft:'.length)
+        .split('/')
+        .some((part) => /^\.+$/.test(part)),
+    {
+      message: 'Not a template id',
+    },
+  );
+const vanillaStructureTemplates = z
+  .object({
+    version: z.string().max(64),
+    templates: z
+      .record(
+        structureTemplateId,
+        z.custom<Uint8Array>(
+          (value) =>
+            value instanceof Uint8Array && value.byteLength <= STRUCTURE_TEMPLATE_MAX_BYTES,
+          { message: 'Expected a Uint8Array of at most 2 MB' },
+        ),
+      )
+      .refine(
+        (templates) => {
+          const values = Object.values(templates);
+          return (
+            values.length <= STRUCTURE_TEMPLATE_IDS_MAX &&
+            values.reduce((sum, bytes) => sum + bytes.byteLength, 0) <=
+              STRUCTURE_TEMPLATES_MAX_TOTAL_BYTES
+          );
+        },
+        { message: 'Too many template bytes' },
+      ),
+    missing: z.array(structureTemplateId).max(STRUCTURE_TEMPLATE_IDS_MAX),
+    refused: z.array(structureTemplateId).max(STRUCTURE_TEMPLATE_IDS_MAX),
   })
   .strict();
 /** The largest object `minecraft:assetObject` answers (16 MB; B619 3S1). */
@@ -1348,6 +1401,15 @@ export const ipcContract = {
   [InvokeChannels.minecraftAssetObject]: {
     request: z.object({ mcVersion, key: assetKey }).strict(),
     response: assetObjectAnswer,
+  },
+  [InvokeChannels.minecraftStructureTemplates]: {
+    request: z
+      .object({
+        mcVersion,
+        ids: z.array(structureTemplateId).min(1).max(STRUCTURE_TEMPLATE_IDS_MAX),
+      })
+      .strict(),
+    response: vanillaStructureTemplates.nullable(),
   },
   [InvokeChannels.minecraftInstallResourcePack]: {
     request: z

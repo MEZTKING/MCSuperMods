@@ -5,7 +5,15 @@
  */
 
 import { isProjectRelativePath } from '@msm/plugin-api';
-import { type ExtractedFile, isDataFolder, VANILLA_DATA_PREFIX } from './extract';
+import { isPathInside } from '../launchers/paths';
+import {
+  type ExtractedFile,
+  isDataFolder,
+  isStructureTemplateId,
+  STRUCTURE_TEMPLATE_MAX_BYTES,
+  structureTemplateJarPath,
+  VANILLA_DATA_PREFIX,
+} from './extract';
 import { type InstallFileSystem, joinInstallPath } from './fs';
 
 /** The name of the info file that marks a complete cache. */
@@ -43,14 +51,15 @@ export interface AssetCacheInfo {
    * worldgen data folders with `jarPath` and `dataFolders` (B577), 5 the live views' data
    * folders: loot tables, advancements, predicates, enchantments, dialogs and the other tags
    * (B603, ADR 0120 D11), 6 the looks and sounds views' textures, asset JSON, shaders and data
-   * folders with `byteCount` (B621, ADR 0121 D3); a cache with any other value is invalid, so it
-   * is extracted again.
+   * folders with `byteCount` (B621, ADR 0121 D3), 7 the structure templates
+   * (`data/minecraft/structure/**.nbt`, B636, ADR 0122); a cache with any other value is invalid,
+   * so it is extracted again.
    */
   schemaVersion: typeof ASSET_CACHE_SCHEMA_VERSION;
 }
 
 /** The current {@link AssetCacheInfo.schemaVersion}. */
-export const ASSET_CACHE_SCHEMA_VERSION = 6;
+export const ASSET_CACHE_SCHEMA_VERSION = 7;
 
 /**
  * What an older or otherwise outdated `cache.json` still tells: the version and jar it came
@@ -224,6 +233,118 @@ export async function readCachedDataFiles(
     await walk(root, '');
   }
   return { folders, fileCount, unreadable };
+}
+
+/** The most structure templates one {@link readCachedStructureTemplates} call reads. */
+export const STRUCTURE_TEMPLATES_MAX_IDS = 256;
+
+/**
+ * The most bytes of templates one {@link readCachedStructureTemplates} call answers (all 1,511
+ * vanilla templates are about 4.2 MB as stored, B634 4S6); ids past it are refused.
+ */
+export const STRUCTURE_TEMPLATES_MAX_TOTAL_BYTES = 32 * 1024 * 1024;
+
+/** What {@link readCachedStructureTemplates} found. */
+export interface CachedStructureTemplates {
+  /** Id (`minecraft:<path>`) to the file's bytes as the jar stores them (gzipped NBT). */
+  templates: Record<string, Uint8Array>;
+  /** Ids the cache has no file for (the jar has no such template). */
+  missing: string[];
+  /**
+   * Ids whose file was refused: larger than {@link STRUCTURE_TEMPLATE_MAX_BYTES}, not NBT (gzip,
+   * zlib or a bare compound), outside the cache folder (a link), or past
+   * {@link STRUCTURE_TEMPLATES_MAX_TOTAL_BYTES}.
+   */
+  refused: string[];
+  /** The bytes answered. */
+  byteCount: number;
+}
+
+/** Whether the bytes start as an NBT file does: gzip, zlib, or a bare root compound. */
+function looksLikeNbt(bytes: Uint8Array): boolean {
+  const [first, second] = bytes;
+  if (first === 0x1f && second === 0x8b) return true; // gzip, as the jar stores templates
+  if (first === 0x78) return true; // zlib
+  return first === 0x0a; // an uncompressed root compound
+}
+
+/**
+ * Reads cached structure templates (schema 7, `data/minecraft/structure/**.nbt`; ADR 0122) by id,
+ * as the bytes the jar stores. Each id must be a vanilla template id
+ * ({@link isStructureTemplateId}; `minecraft:` is added to a bare path); the answer is keyed by
+ * the namespaced id. A file is read only when its real path lies inside the cache folder (when
+ * the file system resolves links), is at most {@link STRUCTURE_TEMPLATE_MAX_BYTES} and starts as
+ * NBT. Nothing is parsed here.
+ *
+ * @throws Error When an id is not a vanilla template id, or more than
+ *   {@link STRUCTURE_TEMPLATES_MAX_IDS} ids are asked.
+ */
+export async function readCachedStructureTemplates(
+  fs: InstallFileSystem,
+  dir: string,
+  ids: readonly string[],
+): Promise<CachedStructureTemplates> {
+  if (ids.length > STRUCTURE_TEMPLATES_MAX_IDS) {
+    throw new Error(`At most ${STRUCTURE_TEMPLATES_MAX_IDS} structure templates are read at once.`);
+  }
+  for (const id of ids) {
+    if (!isStructureTemplateId(id)) {
+      throw new Error(`${JSON.stringify(id)} is not a vanilla structure template id.`);
+    }
+  }
+  const wanted = [
+    ...new Set(ids.map((id) => (id.startsWith('minecraft:') ? id : `minecraft:${id}`))),
+  ];
+  let realDir: string | null = null;
+  if (fs.realpath !== undefined) {
+    try {
+      realDir = await fs.realpath(dir);
+    } catch {
+      realDir = null;
+    }
+  }
+  const read = await Promise.all(
+    wanted.map(async (id): Promise<Uint8Array | 'missing' | 'refused'> => {
+      const file = joinInstallPath(dir, ...structureTemplateJarPath(id).split('/'));
+      if (!(await fs.exists(file))) return 'missing';
+      if (fs.realpath !== undefined) {
+        try {
+          const real = await fs.realpath(file);
+          if (realDir === null || !isPathInside(realDir, real)) return 'refused';
+        } catch {
+          return 'missing';
+        }
+      }
+      let bytes: Uint8Array;
+      try {
+        bytes = await fs.readFile(file);
+      } catch {
+        return 'missing';
+      }
+      if (bytes.byteLength > STRUCTURE_TEMPLATE_MAX_BYTES || !looksLikeNbt(bytes)) {
+        return 'refused';
+      }
+      return bytes;
+    }),
+  );
+  const answer: CachedStructureTemplates = {
+    templates: {},
+    missing: [],
+    refused: [],
+    byteCount: 0,
+  };
+  wanted.forEach((id, index) => {
+    const one = read[index];
+    if (one === 'missing' || one === undefined) answer.missing.push(id);
+    else if (one === 'refused') answer.refused.push(id);
+    else if (answer.byteCount + one.byteLength > STRUCTURE_TEMPLATES_MAX_TOTAL_BYTES) {
+      answer.refused.push(id);
+    } else {
+      answer.templates[id] = one;
+      answer.byteCount += one.byteLength;
+    }
+  });
+  return answer;
 }
 
 /**
