@@ -14,6 +14,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import type { ChangeItem } from '../../src/renderer/src/changeset/changeset';
 import { AiChangesetReview } from '../../src/renderer/src/components/ai/AiChangesetReview';
 import { forbiddenIn, type UiMode } from '../../src/renderer/src/components/ai/ai-words';
+import { usePreferences } from '../../src/renderer/src/store/preferences';
 
 vi.mock('../../src/renderer/src/liveviews/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/renderer/src/liveviews/client')>();
@@ -163,6 +164,7 @@ function Review(props: { mode: UiMode; items: ChangeItem[]; running?: boolean })
 
 describe('the review as things (B688)', () => {
   it('shows things with pictures and plain words in Very easy, and no id or file row', async () => {
+    usePreferences.setState({ mode: 'very-easy' });
     render(<Review mode="very-easy" items={proposal()} />);
     const review = screen.getByTestId('ai-changeset');
     expect(screen.getByTestId('ai-review-heading').textContent).toBe('Ready to add: 2 things');
@@ -206,6 +208,7 @@ describe('the review as things (B688)', () => {
   });
 
   it('unticks every file of a thing with its Keep, and the See it pane loses it', async () => {
+    usePreferences.setState({ mode: 'very-easy' });
     render(<Review mode="very-easy" items={proposal()} />);
     const pane = screen.getByTestId('ai-see-it');
     await waitFor(() => expect(within(pane).getByTestId('ai-see-it-thing-2')).toBeTruthy(), {
@@ -229,6 +232,7 @@ describe('the review as things (B688)', () => {
   });
 
   it('folds the files behind each thing in Easy, in words', () => {
+    usePreferences.setState({ mode: 'easy' });
     render(<Review mode="easy" items={proposal()} />);
     expect(screen.getByTestId('ai-review-heading').textContent).toBe(
       'Ready to add: 2 things, 5 files behind them',
@@ -269,6 +273,7 @@ describe('the review as things (B688)', () => {
         conflict: 'demo:old_stone_slab no longer exists.',
       },
     ];
+    usePreferences.setState({ mode: 'very-easy' });
     render(<Review mode="very-easy" items={items} />);
     expect(screen.getByTestId('ai-apply').textContent).toBe('Make these changes');
     expect(screen.getByTestId('ai-thing-1').textContent).toContain('Block · Changed');
@@ -278,12 +283,14 @@ describe('the review as things (B688)', () => {
     );
     expect(forbiddenIn(screen.getByTestId('ai-changeset').textContent ?? '')).toEqual([]);
     cleanup();
+    usePreferences.setState({ mode: 'advanced' });
     render(<Review mode="advanced" items={items} />);
     expect(screen.getByTestId('ai-apply').textContent).toBe('Apply');
     expect(screen.getByTestId('ai-discard').textContent).toBe('Discard');
   });
 
   it('keeps the full file list in Advanced, with Textures for the pictures', () => {
+    usePreferences.setState({ mode: 'advanced' });
     render(<Review mode="advanced" items={proposal()} />);
     const review = screen.getByTestId('ai-changeset');
     expect(screen.getByTestId('ai-review-heading').textContent).toBe(
