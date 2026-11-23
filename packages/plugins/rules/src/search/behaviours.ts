@@ -4,7 +4,8 @@
  * rule of the Rules catalogue with the made thing as its subject (the string `$thing`), as the
  * rule book stores it. Each behaviour applies to one sort of thing, the sort its trigger's
  * subject is, so the same phrase can name a different rule for a block and for a mob. Flow
- * answers and companion flows ("glows", "sets mobs on fire") are the library's.
+ * answers and companion flows ("glows", "fire aspect") are the library's; setting on fire is
+ * the step Set on fire here since ADR 0127 D1.
  *
  * `test/search.test.ts` puts every rule, with a project subject in place of `$thing`, in a rule
  * book, validates the book against `rules.mcdoc` and compiles it with the plugin's own compiler
@@ -122,6 +123,15 @@ const BLOCK_BEHAVIOURS: SearchBehaviour[] = [
     'When something steps on it, it hurts the player by two half hearts.',
     'block_stepped_on',
     [{ amount: 2, step: 'hurt' }],
+    { cooldown_seconds: 1 },
+  ),
+  behaviour(
+    'block-sets-on-fire',
+    'block',
+    ['sets you on fire', 'burns you', 'is hot to stand on', 'sets on fire'],
+    'When something steps on it, the player is set on fire for three seconds.',
+    'block_stepped_on',
+    [{ seconds: 3, step: 'set_on_fire', who: 'player' }],
     { cooldown_seconds: 1 },
   ),
   behaviour(
@@ -425,6 +435,22 @@ const ITEM_BEHAVIOURS: SearchBehaviour[] = [
     { cooldown_seconds: 3 },
   ),
   behaviour(
+    'item-sets-on-fire',
+    'item',
+    [
+      'sets mobs on fire',
+      'sets on fire',
+      'set on fire',
+      'sets things on fire',
+      'burns mobs',
+      'ignites',
+      'ignites mobs',
+    ],
+    'When it hits a mob, the mob is set on fire for five seconds.',
+    'item_hit_mob',
+    [{ seconds: 5, step: 'set_on_fire', who: 'other' }],
+  ),
+  behaviour(
     'item-makes-mobs-glow',
     'item',
     ['makes mobs glow', 'marks mobs', 'highlights mobs', 'shows mobs through walls'],
@@ -651,6 +677,14 @@ const MOB_BEHAVIOURS: SearchBehaviour[] = [
     'When it attacks, the target gets Slowness for five seconds.',
     'mob_attacked',
     [{ effect: 'minecraft:slowness', seconds: 5, step: 'give_effect', who: 'other' }],
+  ),
+  behaviour(
+    'mob-sets-on-fire',
+    'mob',
+    ['sets you on fire', 'sets players on fire', 'burns you', 'fire attack', 'sets on fire'],
+    'When it attacks, the target is set on fire for five seconds.',
+    'mob_attacked',
+    [{ seconds: 5, step: 'set_on_fire', who: 'other' }],
   ),
   behaviour(
     'mob-withers',

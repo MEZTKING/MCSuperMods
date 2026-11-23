@@ -341,16 +341,14 @@
       "class": "id",
       "mode": "advanced",
       "expect": "vanilla:biome:plains",
-      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. `needs` added: it comes first only while the names file leaves the title equal to the id.",
-      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. `needs` added: it comes first only while the names file leaves the title equal to the id. Search follow-ups after the close (2026-11-23): an exact id is matched on whole ids only (the typed id, and its path only when the path is itself a whole id), so `stone`, `plains`, `speed` and `entity` are ordinary words of `end_stone` and the rest; first on both targets with and without the names file, and `needs` is gone."
     },
     {
       "q": "minecraft:speed",
       "class": "id",
       "mode": "advanced",
       "expect": "vanilla:effect:speed",
-      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. `needs` added: it comes first only while the names file leaves the title equal to the id.",
-      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
+      "reason": "B666: ids spelt as B660's entryIds (vanilla sorts mob, biome, effect; guide pages without .md and B656's anchors; project elements as project:element:<id>; the settings catalogue's ids), the same results. `needs` added: it comes first only while the names file leaves the title equal to the id. Search follow-ups after the close (2026-11-23): an exact id is matched on whole ids only (the typed id, and its path only when the path is itself a whole id), so `stone`, `plains`, `speed` and `entity` are ordinary words of `end_stone` and the rest; first on both targets with and without the names file, and `needs` is gone."
     },
     {
       "q": "ruby sword",
@@ -508,8 +506,7 @@
       "class": "command",
       "mode": "easy",
       "expect": "command:whatsNew",
-      "needs": "B666's finding: a stop word that is a title's own word is dropped from the title and the query alike (`very` in Very easy mode, `whats` in What's new), so a shorter title or the learn intent wins; with them kept, it comes first (measured, not committed)",
-      "reason": "B666: `needs` added: the engine drops `whats` from the command's title and reads it as the learn intent."
+      "reason": "B666: `needs` added: the engine drops `whats` from the command's title and reads it as the learn intent. Search follow-ups after the close (2026-11-23): when the words are a title's whole title, its stop and intent words included, the title gets the whole-title bonus (and, where the intent was read from a stop word of the title, a neutral source weight), so the command comes first and `needs` is gone."
     },
     {
       "q": "surprise me",
@@ -523,14 +520,14 @@
       "class": "behaviour",
       "mode": "very-easy",
       "expect": "flow:weapon",
-      "behaviour": "sets-on-fire",
+      "behaviour": "item-sets-on-fire",
       "answers": {
         "weapon_type": "sword",
         "colour": "#3c44aa",
         "weapon_name": "Blue Sword"
       },
       "same": ["entry:msm.library:sword"],
-      "reason": "B666: B654's door opens the expected flow with a choice made (the same Creator), so it counts as the expected result (Sword: the Weapon flow with Sword chosen)."
+      "reason": "B666: B654's door opens the expected flow with a choice made (the same Creator), so it counts as the expected result (Sword: the Weapon flow with Sword chosen). Search follow-ups after the close (2026-11-23): ADR 0127 D1 made Set on fire a Rules step, so \"sets mobs on fire\" is the rules plugin's behaviour `item-sets-on-fire` (one rule on the made sword: when it hits a mob, the mob burns) in place of the Enchantment flow beside it (ADR 0124's open item); the library keeps \"fire aspect\" for that flow."
     },
     {
       "q": "custom ore that drops xp",
@@ -1064,7 +1061,7 @@
       "mode": "easy",
       "expect": "guide:try-it#try-it",
       "same": ["guide:try-it#what-it-is"],
-      "needs": "B666's finding: `work` in \"how does … work\" counts as a word to match, so sections that say \"works\" beat the page; read as part of the question, the page comes first (measured, not committed)"
+      "reason": "Search follow-ups after the close (2026-11-23): \"how \u2026 work\" is read as the question, the last `work` never matched as a word, so the page comes first and `needs` is gone."
     },
     {
       "q": "how to eject to java",
@@ -1165,7 +1162,7 @@
       "class": "id",
       "mode": "advanced",
       "expect": "kind:msm:entity",
-      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
+      "reason": "Search follow-ups after the close (2026-11-23): an exact id is matched on whole ids only (the typed id, and its path only when the path is itself a whole id), so `stone`, `plains`, `speed` and `entity` are ordinary words of `end_stone` and the rest; first on both targets with and without the names file, and `needs` is gone."
     },
     {
       "q": "msm:rules",
@@ -1197,7 +1194,7 @@
       "class": "id",
       "mode": "advanced",
       "expect": "vanilla:thing:stone",
-      "needs": "B666's finding: an id's path is matched as an ordinary word, so every id with the word (end_stone, snowy_plains, soul_speed, tag/entity_type) gets the exact-id score (`query.ts` takes `[id, path]` as exact surfaces); with the whole id only, it comes first on both targets with and without the names file (measured, not committed)"
+      "reason": "Search follow-ups after the close (2026-11-23): an exact id is matched on whole ids only (the typed id, and its path only when the path is itself a whole id), so `stone`, `plains`, `speed` and `entity` are ordinary words of `end_stone` and the rest; first on both targets with and without the names file, and `needs` is gone."
     },
     {
       "q": "ruby helmet",
@@ -1444,7 +1441,7 @@
       "class": "command",
       "mode": "easy",
       "expect": "command:veryEasyMode",
-      "needs": "B666's finding: a stop word that is a title's own word is dropped from the title and the query alike (`very` in Very easy mode, `whats` in What's new), so a shorter title or the learn intent wins; with them kept, it comes first (measured, not committed)"
+      "reason": "Search follow-ups after the close (2026-11-23): when the words are a title's whole title, its stop and intent words included, the title gets the whole-title bonus (and, where the intent was read from a stop word of the title, a neutral source weight), so the command comes first and `needs` is gone."
     },
     {
       "q": "wishlist",
@@ -1490,7 +1487,8 @@
       "mode": "very-easy",
       "expect": "flow:weapon",
       "same": ["entry:msm.library:sword"],
-      "behaviour": "sets-on-fire"
+      "behaviour": "item-sets-on-fire",
+      "reason": "Search follow-ups after the close (2026-11-23): ADR 0127 D1 made Set on fire a Rules step, so \"sets mobs on fire\" is the rules plugin's behaviour `item-sets-on-fire` (one rule on the made sword: when it hits a mob, the mob burns) in place of the Enchantment flow beside it (ADR 0124's open item); the library keeps \"fire aspect\" for that flow."
     },
     {
       "q": "a mob that swims",
@@ -1682,6 +1680,43 @@
       "same": ["guide:search#open-the-search", "guide:search#what-you-see"],
       "top3": ["command:searchEverything"],
       "reason": "B672: the findable rule (ADR 0124 D15) for the new guide page Search everything: the page, or its first sections on opening the search and what it shows, answers the question."
+    },
+    {
+      "q": "set on fire",
+      "class": "plain",
+      "mode": "easy",
+      "expect": "rule:step:set_on_fire",
+      "notes": "ADR 0127 D1: the Rules step Set on fire, findable by its words (findable rule)."
+    },
+    {
+      "q": "a sword that never wears out",
+      "class": "behaviour",
+      "mode": "very-easy",
+      "expect": "flow:weapon",
+      "same": ["entry:msm.library:sword"],
+      "behaviour": "never-wears-out",
+      "answers": {
+        "never_wears_out": true
+      },
+      "notes": "ADR 0127 D3: the Weapon flow's Never wears out, as a behaviour the flow answers."
+    },
+    {
+      "q": "frost walker",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "flow:enchantment",
+      "top3": ["vanilla:enchantment:frost_walker", "example:example_msm_frost_boots"],
+      "answers": {
+        "effect": "freeze_water"
+      },
+      "notes": "ADR 0127 D4: the Enchantment flow's Freeze water under the wearer (as Frost Walker)."
+    },
+    {
+      "q": "unbreakable item",
+      "class": "plain",
+      "mode": "advanced",
+      "expect": "kind:msm:item",
+      "notes": "ADR 0127 D3: the Item Studio's Never wears out, reached through the item kind's words."
     }
   ]
 }

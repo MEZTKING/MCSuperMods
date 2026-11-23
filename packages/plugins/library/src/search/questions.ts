@@ -225,6 +225,20 @@ function vehicle(name: string, extra: Hints = {}): Hints {
 }
 
 /** The mob flows' shared questions. */
+/**
+ * The wear questions of the Weapon and Gear set flows (ADR 0127 D3): "Never wears out" and
+ * "Starts with an enchantment" with its level; the enchantments' own names are their labels.
+ */
+const WEAR: Hints = {
+  never_wears_out: {
+    words: ['never wears out', 'unbreakable', 'never breaks', 'indestructible', 'lasts forever'],
+  },
+  starting_enchantment: {
+    words: ['starts with', 'already enchanted', 'enchanted', 'comes enchanted'],
+  },
+  starting_enchantment_level: { words: ['enchantment level'] },
+};
+
 function mob(name: string, extra: Hints = {}): Hints {
   return {
     [name]: NAME,
@@ -327,6 +341,7 @@ export const QUESTIONS: Record<string, Hints> = {
     ingredient: { after: FROM },
   },
   'gear-set': {
+    ...WEAR,
     material_name: NAME,
     colour: MAIN_COLOUR,
     material_source: {
@@ -897,6 +912,7 @@ export const QUESTIONS: Record<string, Hints> = {
     },
     tier: { words: ['tier', 'material'] },
     durability: { words: ['durability', 'uses', 'lasts', 'durable'] },
+    ...WEAR,
     custom_damage: {
       words: ['own damage', 'custom damage', 'set damage', 'own numbers'],
       appliesWhen: { weapon_type: ['sword', 'spear', 'mace'] },
@@ -1190,6 +1206,7 @@ export const QUESTIONS: Record<string, Hints> = {
         bows: ['bow', 'bows'],
         crossbows: ['crossbow', 'crossbows'],
         armour: ['armour', 'armor', 'helmet', 'chestplate'],
+        boots: ['boots', 'feet', 'shoes'],
         tools: ['tools', 'pickaxe', 'pick', 'axe', 'shovel'],
         everything: ['everything', 'anything', 'all items'],
       },
@@ -1204,6 +1221,15 @@ export const QUESTIONS: Record<string, Hints> = {
         mob_effect: ['effect', 'poison', 'poisons', 'slows', 'wither'],
         durability: ['durability', 'unbreaking', 'lasts longer'],
         mining_speed: ['mining speed', 'efficiency', 'mines faster', 'digs faster'],
+        // ADR 0127 D4.
+        freeze_water: [
+          'frost walker',
+          'freezes water',
+          'freeze water',
+          'ice path',
+          'walk on water',
+          'frosted ice',
+        ],
       },
     },
     hit_effect: {

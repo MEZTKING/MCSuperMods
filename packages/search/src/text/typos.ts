@@ -7,7 +7,10 @@
  *   A candidate must also be within its own limit (at least one), so a short word is never
  *   reached by two edits.
  * - Candidates share at least 30 % of the typed word's trigrams (padded with two spaces in front
- *   and one behind).
+ *   and one behind), or are the typed word with two neighbouring letters swapped: such a swap is
+ *   looked up directly, because in a short word it leaves too few trigrams in common (`tnak`
+ *   shares one of five with `tank`; ADR 0124's open item after B666). It is still one edit, so
+ *   SL13's limits by length hold: a word of three letters or fewer is never corrected.
  * - Ties of edits break by B650's rules: the same first letter, then one letter swapped for a key
  *   beside it (`caje` is `cake`, not `cave`), then a longer word the typed word begins (`flowe`
  *   is `flower`), then frequency, then the word itself.
@@ -197,16 +200,26 @@ export function createTypoIndex(
         }
       }
       const found: TypoCandidate[] = [];
+      const swaps = new Set<number>();
+      for (let i = 0; i + 1 < word.length; i++) {
+        if (word[i] === word[i + 1]) continue;
+        const swapped = `${word.slice(0, i)}${word[i + 1]}${word[i]}${word.slice(i + 2)}`;
+        const n = numberOfWord.get(swapped);
+        if (n !== undefined) swaps.add(n);
+      }
       for (const n of touched) {
         const count = shared[n] as number;
         shared[n] = 0;
-        if (count / grams.size < minShared) continue;
+        if (count / grams.size < minShared && !swaps.has(n)) continue;
+        swaps.delete(n);
         const candidate = words[n] as string;
         const edits = osa(word, candidate, max);
         if (edits <= max && edits <= Math.max(1, editsFor(candidate.length))) {
           found.push({ word: candidate, edits });
         }
       }
+      // Swaps that shared no trigram at all were not touched.
+      for (const n of swaps) found.push({ word: words[n] as string, edits: 1 });
       found.sort((a, b) => rank(word, a, b));
       return found.slice(0, Math.max(0, limit));
     },

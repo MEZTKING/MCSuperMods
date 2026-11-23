@@ -76,17 +76,29 @@ export function behaviourFit(
   return undefined;
 }
 
-/** The first of a phrase's behaviours that fits the flow. */
+/** How close a fit is: the flow itself, then its own answers, then a rule, then a companion. */
+const FIT_ORDER: readonly BehaviourFit[] = ['flow', 'answers', 'rule', 'beside'];
+
+/**
+ * The phrase's behaviour that fits the flow best (SQ12's order: the flow itself, its own answers,
+ * one rule, one companion flow), the first in plugin order among equals. "A wand that strikes
+ * lightning" takes the Scripted behaviour flow's own Lightning answer before a Rules rule that
+ * strikes lightning, now that the flow has a sort (ADR 0124's open item after B666).
+ */
 export function pickBehaviour(
   match: PhraseMatch<PluginBehaviour>,
   starter: string,
   sort: string | undefined,
 ): { readonly item: PluginBehaviour; readonly fit: BehaviourFit } | undefined {
+  let best: { readonly item: PluginBehaviour; readonly fit: BehaviourFit } | undefined;
   for (const item of match.values) {
     const fit = behaviourFit(item.behaviour, starter, sort);
-    if (fit !== undefined) return { item, fit };
+    if (fit === undefined) continue;
+    if (best === undefined || FIT_ORDER.indexOf(fit) < FIT_ORDER.indexOf(best.fit)) {
+      best = { item, fit };
+    }
   }
-  return undefined;
+  return best;
 }
 
 /** A copy of a JSON value with `$thing` replaced by the thing's id in every string. */

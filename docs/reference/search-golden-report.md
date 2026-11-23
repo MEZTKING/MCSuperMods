@@ -112,6 +112,8 @@ New queries, written before the first run and corrected once before this commit 
 
 ## Waiting on later work (`needs`, 8 queries, not counted)
 
+All eight met since: B672 the data pack section, the other seven by the follow-ups after the close (the last section).
+
 Each is an engine finding outside B666's files (`query.ts`, `text/stop-words.ts`, `text/intent.ts`) or a guide section still to be written. The three engine fixes were tried in the worktree and reverted, not committed: with them every waiting query below passes but "what is a datapack" (and "how do rules work", counted, still misses).
 
 | Query | Class | Now | Waits on |
@@ -139,3 +141,18 @@ Each is an engine finding outside B666's files (`query.ts`, `text/stop-words.ts`
 4. `packages/search/src/text/typos.ts`: offer a candidate for a swap of neighbours in a four-letter word (`tnak`); prefer the dictionary word nearer the title words on a tie (`soin`).
 5. `app/src/renderer/src/search/sources/flows.ts`: give the Creator group `scripts` (or the Scripted behaviour flow) the sort `item`, so item behaviours fit it.
 6. B672: the data pack section, then "what is a datapack" expects it first.
+
+## After the close (2026-11-23)
+
+The follow-ups of ADR 0124's open items (DEVLOG "Search follow-ups after the close"). "Before" is this report's set as B672 left it (241 queries, seven with `needs`) on the engine at B673; "after" is the set with the seven `needs` removed (each with its `reason`), the two "sets mobs on fire" behaviours respelt as the Rules plugin's `item-sets-on-fire`, and four new queries for ADR 0127 (`set on fire`, `a sword that never wears out`, `frost walker`, `unbreakable item`). The numbers are the same on both targets and with or without the names file.
+
+| Configuration | Before: first | Before: top three | After: first | After: top three |
+|---|---|---|---|---|
+| Sample mod | 227 of 234 (97.0 %), MRR 0.979 | 232 (99.1 %) | 241 of 245 (98.4 %), MRR 0.988 | 243 (99.2 %) |
+| Empty mod | 204 of 211 (96.7 %), MRR 0.977 | 209 (99.1 %) | 218 of 222 (98.2 %), MRR 0.987 | 220 (99.1 %) |
+
+Per class (sample mod): how-to 22 of 28 (78.6 %) first and 27 in the top three before, 26 of 29 (89.7 %) and 28 after; id 16 of 16 before (the four waiting ids not counted), 20 of 20 after; command 22 of 22 before, 24 of 24 after; behaviour 20 of 20 before, 21 of 21 after; every other class unchanged. Answers and behaviours read right: 26 of 28 before (the two wand queries), 30 of 30 after. The seven waiting queries: before, `minecraft:stone`, `minecraft:plains` and `minecraft:speed` first only without the names file, `msm:entity` and `very easy mode` second, `whats new` and `how does try it work` missed; after, all seven first in every configuration. Flow titles with one wrong letter: 65 of 67 per target before, 67 of 67 after. SQ3's 302 misspellings through the typo index alone: 278 right first and 4 wrong, before and after.
+
+What still misses (every configuration): `how do rules work` (the Triggers section of Blocks and items, whose title the Rules plugin's `rule` idea reaches through its same word `trigger`, and the Templates page's level-4 list "Rules", above the Rules page), `how do I make a game`, `how do I make a machine` (both third) and `tp to spawn` (slang, not shown).
+
+The one weight added: `BONUS.wholeTitle` 1.25 (`rank/weights.ts`, with its reason). The typo candidates offered per word: two as before, and up to four when more tie with the best on edits and first letter (`TYPO_TIES`, `query.ts`).

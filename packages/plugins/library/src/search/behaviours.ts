@@ -6,9 +6,11 @@
  * fire" for swords). Behaviours that are one Rules rule ("drops xp", "explodes", "teleports
  * you") are the rules plugin's (B655).
  *
- * Gaps B650 found, which no line here can make and which belong in docs/COVERAGE-AUDIT.md, not
- * in this file: setting an entity on fire from a rule or a mob's attack, a made item carrying a
- * project enchantment from the start, a Frost Walker-like effect, an "unbreakable" flow answer.
+ * The gaps B650 found were closed by ADR 0127: setting a mob on fire is the Rules step Set on
+ * fire, so "sets mobs on fire" is the rules plugin's behaviour (one rule on the made item) and
+ * only "fire aspect" stays here as the Enchantment flow beside it; "never wears out" is the
+ * Weapon and Gear set flows' own answer; a Frost Walker-like effect is the Enchantment flow's
+ * boots choice (`questions.ts`, `keywords.ts`).
  *
  * Every starter, question and value named here is checked against the library's starters in
  * `test/search.test.ts`, and every answer must pass the wizard's own check.
@@ -20,15 +22,7 @@ import type { SearchBehaviour } from '@msm/plugin-api';
 const ENCHANTMENTS: SearchBehaviour[] = [
   {
     id: 'sets-on-fire',
-    phrases: [
-      'sets mobs on fire',
-      'sets on fire',
-      'set on fire',
-      'sets things on fire',
-      'burns mobs',
-      'fire aspect',
-      'ignites',
-    ],
+    phrases: ['fire aspect', 'has fire aspect'],
     sentence:
       'An enchantment for it that sets the target on fire, offered at the enchanting table.',
     appliesTo: ['item'],
@@ -93,6 +87,17 @@ const ENCHANTMENTS: SearchBehaviour[] = [
     sentence: 'An enchantment for it with extra durability, offered at the enchanting table.',
     appliesTo: ['item'],
     beside: { starter: 'enchantment', values: { effect: 'durability', applies_to: 'everything' } },
+  },
+];
+
+/** Behaviours that are answers of the flow being made (ADR 0127 D3). */
+const WEAR: SearchBehaviour[] = [
+  {
+    id: 'never-wears-out',
+    phrases: ['never wears out', 'never breaks', 'is unbreakable', 'lasts forever'],
+    sentence: 'It never wears out, as with the Unbreakable tag.',
+    appliesTo: ['item'],
+    answers: { weapon: { never_wears_out: true }, 'gear-set': { never_wears_out: true } },
   },
 ];
 
@@ -483,6 +488,7 @@ const ANSWERS: SearchBehaviour[] = [
       'calls lightning',
       'summons lightning',
       'shoots lightning',
+      'strikes lightning',
       'strikes lightning where you look',
     ],
     sentence: 'Used, it strikes lightning where the player looks.',
@@ -513,4 +519,4 @@ const ANSWERS: SearchBehaviour[] = [
 ];
 
 /** Every behaviour of the library (ADR 0124 D7). */
-export const BEHAVIOURS: SearchBehaviour[] = [...ENCHANTMENTS, ...FLOWS, ...ANSWERS];
+export const BEHAVIOURS: SearchBehaviour[] = [...ENCHANTMENTS, ...WEAR, ...FLOWS, ...ANSWERS];

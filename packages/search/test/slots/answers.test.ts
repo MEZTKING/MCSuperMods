@@ -74,6 +74,13 @@ const CASES: Case[] = [
     answers: { light_level: 15 },
   },
   { q: 'a wand that teleports you', entry: 'flow:scripted-item', behaviour: 'item-teleports' },
+  // The follow-ups after the close: a name is made from the words as corrected, not as typed
+  // (the noun of a title that has it was "Blue Swrod").
+  {
+    q: 'blue swrod',
+    entry: 'starter:custom-sword',
+    answers: { colour: '#3c44aa', sword_name: 'Blue Sword' },
+  },
   // The plan's "20 damage bow": bows have no attack damage, and 20 is past the multiplier's 5.
   {
     q: '20 damage bow',

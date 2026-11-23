@@ -50,7 +50,7 @@ Under the field a line of chips shows what search took from your words:
 
 The × on a chip takes those words out of the field and searches again.
 
-For a Creator flow, your words also answer its questions where they can: a colour from a colour name, a choice from its name, a number with a word beside it ("5 hearts"), the name from quotes or "called …". The row shows the answers as a sentence ("Sword, blue, called Blue Sword."). Everything you did not say keeps the flow's own default. One "that …" part can add one thing the made thing does, such as "a block that drops xp" (a rule) or "a sword that sets mobs on fire" (an enchantment made beside it); the row says what it adds.
+For a Creator flow, your words also answer its questions where they can: a colour from a colour name, a choice from its name, a number with a word beside it ("5 hearts"), the name from quotes or "called …". The row shows the answers as a sentence ("Sword, blue, called Blue Sword."). Everything you did not say keeps the flow's own default. One "that …" part can add one thing the made thing does, such as "a block that drops xp" or "a sword that sets mobs on fire" (a rule), "a sword that never wears out" (an answer of the flow) or "a sword that has fire aspect" (an enchantment made beside it); the row says what it adds.
 
 ## Look before you make
 

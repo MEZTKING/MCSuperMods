@@ -137,8 +137,8 @@ describe('the fixed query set', () => {
   });
 
   it('reads the expected answers and behaviours for most queries that have them', () => {
-    // Two known misses (the wand queries) wait on the Scripted behaviour flow having a sort; the
-    // report lists them.
+    // The wand queries read theirs since the Scripted behaviour flow has the sort `item` (the
+    // follow-ups after the close); the report lists any miss.
     for (const { config, results } of runs) {
       const t = tally(counted(results));
       expect(t.answers / t.answersN, configName(config)).toBeGreaterThanOrEqual(0.9);

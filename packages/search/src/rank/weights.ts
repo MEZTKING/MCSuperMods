@@ -90,6 +90,13 @@ export const BONUS = {
   makesThing: 1.3,
   /** A behaviour read from the words fits this flow. */
   behaviour: 1.35,
+  /**
+   * The words are the whole title word for word, stop and intent words included ("Very easy
+   * mode", "What's new"; ADR 0124's open item after B666). On top of the exact title bonus (given
+   * here when the dropped words left no title to compare), so it beats a shorter title that is
+   * exact only once the stop words are gone ("Easy mode" scored 1 % above "Very easy mode").
+   */
+  wholeTitle: 1.25,
 } as const;
 
 /** Coverage: the text score times `floor + (1 - floor) * coverage²`. */

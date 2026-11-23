@@ -183,4 +183,28 @@ describe('the guide source', () => {
     expect(entries[1]?.action).toEqual({ type: 'guide', page: 'vehicles', anchor: 'make-a-car' });
     expect(guideEntries(null)).toEqual([]);
   });
+
+  it('gives a page its subject as words, so the page about a thing comes before a section of another page', () => {
+    // "how do I make a fluid" found the Templates page's list "Fluids" one point above the
+    // Fluids page (B666's misses); the follow-ups after the close give a page its subject.
+    const entries = guideEntries({
+      pages: [{ page: 'rules', title: 'Rules: make things happen without code' }],
+      sections: [
+        {
+          page: 'rules',
+          level: 1,
+          heading: 'Rules: make things happen without code',
+          anchor: 'rules-make-things-happen-without-code',
+          sentence: '',
+        },
+        { page: 'rules', level: 2, heading: 'Where rules live', anchor: 'where', sentence: '' },
+      ],
+    });
+    expect(entries[0]?.words).toEqual(['guide', 'how to', 'Rules']);
+    expect(entries[1]?.words).toEqual([
+      'guide',
+      'how to',
+      'Rules: make things happen without code',
+    ]);
+  });
 });

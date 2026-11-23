@@ -71,4 +71,17 @@ describe('createTypoIndex', () => {
       expect(() => index.complete(word)).not.toThrow();
     }
   });
+
+  it('finds a swap of neighbours that shares too few trigrams (tnak is tank)', () => {
+    // ADR 0124's open item after B666: `tnak` shares one trigram of five with `tank`.
+    const index = createTypoIndex([
+      ['tank', 3],
+      ['task', 9],
+      ['thanks', 1],
+    ]);
+    expect(index.correct('tnak')[0]).toEqual({ word: 'tank', edits: 1 });
+    expect(index.correct('atnk')[0]).toEqual({ word: 'tank', edits: 1 });
+    // Still one edit within SL13's limits: three letters or fewer are never corrected.
+    expect(createTypoIndex([['tan', 1]]).correct('tna')).toEqual([]);
+  });
 });

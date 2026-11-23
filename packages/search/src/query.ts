@@ -14,7 +14,7 @@
 
 import type { Json, SearchVocabulary } from '@msm/plugin-api';
 import { createDictionary, type Dictionary } from './index/dictionary';
-import { actionKey } from './index/entry';
+import { actionKey, isPlainWord } from './index/entry';
 import {
   createLayer,
   type Layer,
@@ -42,6 +42,7 @@ import {
   type SearchContext,
   type Signal,
   titleSignal,
+  wholeTitleSignal,
 } from './rank/signals';
 import {
   ABSORBED_BONUS,
@@ -86,8 +87,19 @@ const MAX_TERMS = 31;
 const PREFIX_WORDS = 6;
 /** Typo candidates read per unknown word. */
 const TYPO_CANDIDATES = 2;
+/**
+ * Candidates read per unknown word when more of them tie with the best on edits and first letter
+ * (`soin`: `spin`, `soil` and `skin`). The typo index's own ties (a key beside, frequency) know
+ * nothing of the other words; the ranker does, so every tied word is offered and the correction
+ * shown is the one the first result was found by (ADR 0124's open item after B666: "mob soin"
+ * is Mob skin). Only for ties: the precision SQ3 measured for the first candidate is unchanged.
+ */
+const TYPO_TIES = 4;
 /** Hits compared for folding (more than can ever be shown). */
 const FOLD_WINDOW = 400;
+/** Titles' whole-title keys remembered (pure); cleared beyond this many. */
+const MAX_TITLE_MEMO = 20000;
+const wholeTitles = new Map<string, string>();
 /** The score of an entry a behaviour names with no word of its own matched (B650: 2). */
 const EXTRA_SCORE = 2;
 
@@ -211,9 +223,13 @@ interface Reading {
   readonly words: string[];
   readonly folded: string[];
   readonly intent: SearchIntent;
+  /** The words that said the intent. */
+  readonly cue: readonly number[];
   readonly terms: Term[];
   readonly corrections: Map<number, string>;
   readonly misspelt: Set<number>;
+  /** Word index to the word as typed, for words offered more than one tied correction. */
+  readonly typos: Map<number, string>;
   readonly notUnderstood: number[];
   readonly ideas: Map<number, string[]>;
 }
@@ -490,12 +506,17 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
   const readWords = (s: State, text: string): Reading => {
     const tokens = tokenise(text);
     const words = tokens.words.slice(0, MAX_QUERY_WORDS).map((t) => t.text);
-    const intent = readIntent(words, text).intent;
+    const intentReading = readIntent(words, text);
+    const intent = intentReading.intent;
+    const cue = intentReading.cue;
+    // The question's own words ("how does … work"): read for the intent, never matched.
+    const frame = new Set(intentReading.frame ?? []);
     const folded = words.map(fold);
     const terms: Term[] = [];
     const consumed = new Uint8Array(words.length);
     const corrections = new Map<number, string>();
     const misspelt = new Set<number>();
+    const typos = new Map<number, string>();
     const notUnderstood: number[] = [];
     const ideas = new Map<number, string[]>();
     const known = (w: string): boolean =>
@@ -511,7 +532,11 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
       else if (!list.includes(idea)) list.push(idea);
     };
 
-    // Whole ids: an exact token each; the words inside it are optional readings.
+    // Whole ids: an exact token each; the words inside it are optional readings. Only whole-id
+    // tokens are exact surfaces: the typed id itself, and its path only when the path is itself
+    // a whole id (`end_stone`). A one-word path (`stone` of `minecraft:stone`) is an ordinary word
+    // of every id that holds it (`end_stone`, `snowy_plains`), so it is left to the optional word
+    // readings (ADR 0124's open item, B666's finding).
     const inId = new Uint8Array(words.length);
     for (const id of tokens.ids) {
       const inside: number[] = [];
@@ -521,7 +546,8 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
       if (inside.length === 0) continue;
       for (const i of inside) inId[i] = 1;
       const colon = id.text.indexOf(':');
-      const surfaces = colon >= 0 ? [id.text, id.text.slice(colon + 1)] : [id.text];
+      const path = colon >= 0 ? id.text.slice(colon + 1) : '';
+      const surfaces = path !== '' && !isPlainWord(path) ? [id.text, path] : [id.text];
       terms.push({
         start: inside[0] as number,
         end: (inside[inside.length - 1] as number) + 1,
@@ -616,7 +642,7 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
 
     // Every word left.
     for (let i = 0; i < words.length; i++) {
-      if (consumed[i] === 1) continue;
+      if (consumed[i] === 1 || frame.has(i)) continue;
       const raw = words[i] as string;
       let w = folded[i] as string;
       const role = wordRole(raw);
@@ -654,7 +680,15 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
       } else if (known(w)) {
         groups.push(...expand(s, w, EXPANSION.exact, `word ${w}`, false));
       } else if (colour[i] === 0 && completions.length === 0) {
-        s.dictionary.typo.correct(w, TYPO_CANDIDATES).forEach((candidate) => {
+        const all = s.dictionary.typo.correct(w, TYPO_TIES);
+        const lead = all[0];
+        const tied = all.filter(
+          (c, k) =>
+            k < TYPO_CANDIDATES ||
+            (c.edits === lead?.edits && c.word[0] === lead.word[0] && c.word[0] === w[0]),
+        );
+        if (tied.length > 1) typos.set(i, w);
+        tied.forEach((candidate) => {
           const found = expand(
             s,
             candidate.word,
@@ -699,9 +733,11 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
       words,
       folded: correctedFolded,
       intent,
+      cue,
       terms: terms.slice(0, MAX_TERMS),
       corrections,
       misspelt,
+      typos,
       notUnderstood,
       ideas,
     };
@@ -850,6 +886,27 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
       total[g] = Math.max(total[g] as number, EXTRA_SCORE);
     }
 
+    // The whole title, stop and intent words included: asked only when the words have one that
+    // the matching drops or reads as a cue (else the title signal sees the whole title).
+    const wholeText = read.words.some((w) => wordRole(w) !== 'keep') ? read.folded.join(' ') : '';
+    // The intent was read from a stop word (`whats`), not from a word with meaning (`make`).
+    const cueIsStop =
+      read.intent === lean &&
+      read.cue.length > 0 &&
+      read.cue.every((i) => isStopWord(read.words[i] as string));
+    const isWholeTitle = (title: unknown): boolean => {
+      if (wholeText === '' || typeof title !== 'string') return false;
+      let key = wholeTitles.get(title);
+      if (key === undefined) {
+        if (wholeTitles.size >= MAX_TITLE_MEMO) wholeTitles.clear();
+        key = tokenise(title)
+          .words.map((t) => fold(t.text))
+          .join(' ');
+        wholeTitles.set(title, key);
+      }
+      return key === wholeText;
+    };
+
     // Each candidate: signals, answers, why.
     const required = terms.filter((t) => !t.optional);
     const titleTerms = required.flatMap((t) => t.keys);
@@ -896,10 +953,13 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
         const titleKeys = titleOf(segment, doc).map((w) => s.dictionary.stem(w));
         const nameLength = segment.nameLengths[doc] as number;
         const nameKeys = nameLength > 0 ? titleKeys.slice(0, nameLength) : undefined;
+        const title = titleSignal(titleKeys, nameKeys, titleTerms);
+        const intent = intentSignal(lean, entry.source);
         signals.push(
-          titleSignal(titleKeys, nameKeys, titleTerms),
+          title,
           orderSignal(titleKeys, titleTerms),
-          intentSignal(lean, entry.source),
+          intent,
+          wholeTitleSignal(isWholeTitle(entry.title), titleTerms.length === 0, intent, cueIsStop),
           makesThingSignal(entryReading?.makesThing === true, lean),
           behaviourSignal(entryReading?.behaviourFits === true),
           availabilitySignal(entry),
@@ -944,7 +1004,13 @@ export function createSearchIndex(options: SearchEngineOptions = {}): SearchEngi
       FOLD_WINDOW,
     );
 
-    const top = folded.find((hit) => hit.entry.available !== false)?.score ?? 0;
+    const first = folded.find((hit) => hit.entry.available !== false);
+    // A tied typo: the correction shown is the one the first result was found by.
+    for (const [i, typed] of read.typos) {
+      const by = first?.why.find((why) => why.startsWith(`typo ${typed}->`));
+      if (by !== undefined) read.corrections.set(i, by.slice(`typo ${typed}->`.length));
+    }
+    const top = first?.score ?? 0;
     const plain = required.filter((t) => t.groups.some((g) => g.typo !== true)).length;
     const confident = isConfident({
       top,

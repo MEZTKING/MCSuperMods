@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 /**
- * The search panel's words per mode (B663; ADR 0124 D11, docs/PLAN-search.md "Very easy
- * wording"): the fixed words of each mode, the examples taken from the fixed query set, the
+ * The search panel's words per mode (B663; ADR 0124 D11 and its findings on the
+ * plan's "Very easy wording"): the fixed words of each mode, the examples taken from the fixed query set, the
  * headings equal to the engine's, the chips, the buttons, the plain text of Very easy, removing a
  * chip's words, and, over the real engine and the built-in plugins, every result of every query
  * of the fixed set shown in Very easy with no id and none of the words template, element,

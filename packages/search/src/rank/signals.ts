@@ -150,3 +150,28 @@ export function makesThingSignal(makesThing: boolean, intent: SearchIntent): Sig
 export function behaviourSignal(fits: boolean): Signal {
   return fits ? { factor: BONUS.behaviour, why: 'behaviour' } : NONE;
 }
+
+/**
+ * The words are the whole title, word for word, with the stop and intent words the matching
+ * drops (`whats new` is the title What's new; `very easy mode` is Very easy mode, not Easy
+ * mode). Asked only when the query has such a word: without one, {@link titleSignal} already
+ * sees the whole title.
+ *
+ * - `blind`: the words left no term for {@link titleSignal} to compare (`whats new` keeps only
+ *   the weak `new`), so the exact title bonus is given here.
+ * - `cueInTitle`: the intent was read from a stop word that is the title's own (`whats`), so the
+ *   intent's source weight is lifted to at least neutral for this entry: its words are a name,
+ *   not a question. An intent read from a word that carries meaning (`make` in "make a potion")
+ *   stays: the Potion flow still beats the guide's section "Make a potion".
+ */
+export function wholeTitleSignal(
+  whole: boolean,
+  blind: boolean,
+  intent: Signal,
+  cueInTitle: boolean,
+): Signal {
+  if (!whole) return NONE;
+  const lift = cueInTitle && intent.factor < 1 ? 1 / intent.factor : 1;
+  const exact = blind ? BONUS.exactTitle : 1;
+  return { factor: BONUS.wholeTitle * exact * lift, why: 'whole title' };
+}

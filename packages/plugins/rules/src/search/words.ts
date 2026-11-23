@@ -328,6 +328,12 @@ const STEP_WORDS: SearchWordGroup[] = [
     vanillaIds: ['minecraft:tnt', 'minecraft:creeper'],
   },
   {
+    // The step Set on fire (ADR 0127 D1).
+    idea: 'set on fire',
+    same: ['sets on fire', 'ignite', 'ignites', 'light on fire', 'catch fire', 'catches fire'],
+    near: ['burn', 'burns', 'burning', 'flames'],
+  },
+  {
     idea: 'shoots',
     same: ['shoot', 'shooting', 'fires a shot', 'fires'],
     near: ['cannon', 'gun'],

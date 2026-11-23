@@ -6,7 +6,7 @@ import {
   replaceThing,
   uniqueRuleKey,
 } from '../../src';
-import { createBehaviourIndex } from '../../src/compose/behaviour';
+import { createBehaviourIndex, pickBehaviour } from '../../src/compose/behaviour';
 import { fold } from '../../src/text';
 import { BEHAVIOURS, flowFacts, pluginData } from '../slots/flows';
 
@@ -32,6 +32,39 @@ describe('behaviours', () => {
     expect(behaviourFit(byId('block-drops-xp').behaviour, 'mount', 'mob')).toBeUndefined();
     expect(behaviourFit(byId('sets-on-fire').behaviour, 'weapon', 'item')).toBe('beside');
     expect(behaviourFit(byId('sets-on-fire').behaviour, 'weapon', undefined)).toBeUndefined();
+  });
+
+  it("picks the closest fit of a phrase's behaviours, not the first in plugin order", () => {
+    // A rule from one plugin and the flow's own answer from another share "strikes lightning";
+    // the flow's own answer wins (SQ12's order), whatever the plugin order.
+    const rule = {
+      plugin: 'rules',
+      behaviour: {
+        id: 'item-lightning-on-hit',
+        phrases: ['strikes lightning'],
+        sentence: 'When it hits a mob, lightning strikes the mob.',
+        appliesTo: ['item' as const],
+        rule: { do: [], key: 'k', name: 'n', when: { subject: '$thing', trigger: 'item_hit_mob' } },
+      },
+    };
+    const answer = {
+      plugin: 'library',
+      behaviour: {
+        id: 'calls-lightning',
+        phrases: ['strikes lightning'],
+        sentence: 'Used, it strikes lightning where the player looks.',
+        appliesTo: ['item' as const],
+        answers: { 'scripted-item': { behaviour: 'lightning' } },
+      },
+    };
+    const match = { start: 0, end: 2, phrase: 'strikes lightning', values: [rule, answer] };
+    expect(pickBehaviour(match, 'scripted-item', 'item')?.item.behaviour.id).toBe(
+      'calls-lightning',
+    );
+    expect(pickBehaviour(match, 'scripted-item', 'item')?.fit).toBe('answers');
+    // Where only the rule fits, the rule is taken.
+    expect(pickBehaviour(match, 'weapon', 'item')?.item.behaviour.id).toBe('item-lightning-on-hit');
+    expect(pickBehaviour(match, 'weapon', undefined)).toBeUndefined();
   });
 
   it('replaces $thing everywhere in a rule, not only in its subject', () => {

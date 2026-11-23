@@ -1,5 +1,5 @@
 /**
- * The library's search data (ADR 0124 D5, D7, D13; docs/PLAN-search.md B654): it passes the
+ * The library's search data (ADR 0124 D5, D7, D13; brief B654): it passes the
  * plugin API's own check with the built-in limits, every vanilla id it names exists on both
  * targets, and every starter, question and value it names is one of the library's own and passes
  * the wizard's check (the rules of `validateParameter` in the app's wizard model, for stored

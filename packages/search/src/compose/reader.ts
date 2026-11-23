@@ -205,7 +205,10 @@ export function createAnswerReader(options: AnswerReaderOptions = {}): AnswerRea
     }
 
     // Colours, things and numbers.
-    const text = answerText(words, folded, answerSkip, query.ideas);
+    // Names are made from the words as corrected ("a blue swrod" names "Blue Sword"); a word
+    // that was not corrected keeps the spelling typed (British or American).
+    const shown = words.map((w, i) => query.corrections.get(i) ?? w);
+    const text = answerText(shown, folded, answerSkip, query.ideas);
     const colours: ColourMention[] = [];
     const colourAt = new Set<number>();
     for (const m of query.vocabulary.colourPhrases.match(folded)) {

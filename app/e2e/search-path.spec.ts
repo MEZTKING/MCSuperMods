@@ -1,5 +1,5 @@
 /**
- * The search path (ADR 0124; docs/PLAN-search.md B671). No network request is made in any test
+ * The search path (ADR 0124; brief B671). No network request is made in any test
  * (asserted at the end of each, renderer and main).
  *
  * 1. Very easy, a brand-new install with no mod, SwiftShader WebGL: Home's bar **What do you want

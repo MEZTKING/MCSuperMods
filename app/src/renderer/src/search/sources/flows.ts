@@ -38,6 +38,24 @@ export const GROUP_SORTS: Readonly<Partial<Record<CreatorGroup, string>>> = {
   vehicles: 'vehicle',
 };
 
+/**
+ * The sort of a flow whose group has none of its own: the `scripts` group mixes an item (the
+ * Scripted behaviour flow) with a command, a creative tab and a game rule, so it cannot take one
+ * sort, and "a wand that teleports you" read no behaviour (ADR 0124's open item after B666).
+ */
+const STARTER_SORTS: Readonly<Record<string, string>> = {
+  'scripted-item': 'item',
+};
+
+/** The sort of thing a flow makes, for behaviours: its group's, else its own (B659). */
+export function sortOfStarter(starter: {
+  readonly id: string;
+  readonly creator?: { readonly group?: CreatorGroup };
+}): string | undefined {
+  const group = starter.creator?.group;
+  return (group === undefined ? undefined : GROUP_SORTS[group]) ?? STARTER_SORTS[starter.id];
+}
+
 /** The group words a flow entry carries, so "a mob" or "gear" reaches its flows. */
 const GROUP_WORDS: Readonly<Record<CreatorGroup, string>> = {
   gear: 'gear',
@@ -119,8 +137,7 @@ export function flowFacts(input: Pick<StaticSourceInput, 'plugins'>): Record<str
     const parameters = (starter.parameters ?? []).map(plainParameter);
     const defaults: Record<string, Json> = {};
     for (const parameter of parameters) defaults[parameter.id] = parameter.default as Json;
-    const group = starter.creator?.group;
-    const sort = group === undefined ? undefined : GROUP_SORTS[group];
+    const sort = sortOfStarter(starter);
     out[starter.id] = { ...(sort !== undefined ? { sort } : {}), defaults, parameters };
   }
   return out;

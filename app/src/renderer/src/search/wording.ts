@@ -1,6 +1,6 @@
 /**
- * Every word of the search panel, per view mode (ADR 0124 D6, D8, D9, D11; docs/PLAN-search.md
- * "Very easy wording"): the field's label and placeholder per door, the examples under an empty
+ * Every word of the search panel, per view mode (ADR 0124 D6, D8, D9, D11; the plan's
+ * "Very easy wording", as built, per ADR 0124's findings): the field's label and placeholder per door, the examples under an empty
  * field, the section headings, the chips, the buttons of each result, the rows' source words, the
  * lines (nothing close, not on this version, the Minecraft folder, privacy) and the live region's
  * sentence. Very easy shows no ids and none of the words template, element, starter, kind,

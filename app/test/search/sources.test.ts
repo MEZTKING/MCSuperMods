@@ -128,6 +128,10 @@ describe.each(TARGET_IDS)('the static layer on %s', (targetId) => {
     expect(weapon?.action).toEqual({ type: 'flow', starter: 'weapon' });
     expect(spec.flows.weapon?.sort).toBe('item');
     expect(spec.flows.custom_mob?.sort ?? spec.flows['flying-mob']?.sort).toBe('mob');
+    // The `scripts` group mixes sorts: the Scripted behaviour flow makes an item, the command
+    // and game rule flows nothing an item behaviour fits (the follow-ups after the close).
+    expect(spec.flows['scripted-item']?.sort).toBe('item');
+    expect(spec.flows['custom-command']?.sort).toBeUndefined();
     for (const [id, flow] of Object.entries(spec.flows)) {
       for (const parameter of flow.parameters)
         expect(flow.defaults[parameter.id], `${id}.${parameter.id}`).toEqual(parameter.default);

@@ -101,6 +101,28 @@ export interface IntentReading {
   readonly intent: SearchIntent;
   /** Indexes into the words of the cue (one or two), empty for `id` and `none`. */
   readonly cue: readonly number[];
+  /**
+   * Indexes of words that are part of the question's frame and are not matched as words: the
+   * `work` of "how does try it work" (ADR 0124's open item, B666's finding). Absent when none.
+   */
+  readonly frame?: readonly number[];
+}
+
+/** Verbs that end a "how do … work" question. */
+const FRAME_END: ReadonlySet<string> = new Set(['work', 'works', 'working']);
+
+/**
+ * The frame of a "how … work" question: `how`, then at least one word that is not a stop word,
+ * then `work` (or `works`, `working`) as the last word. That last word asks how the thing works;
+ * it is not a word of the thing (a Rules trigger that says "starts working" is not what "how do
+ * rules work" asks for). Only the last word is in the frame: `how` is the cue and the stop
+ * words are dropped anyway.
+ */
+function questionFrame(words: readonly string[]): number[] {
+  const last = words.length - 1;
+  if (last < 2 || words[0] !== 'how' || !FRAME_END.has(words[last] as string)) return [];
+  const between = words.slice(1, last);
+  return between.some((word) => !isStopWord(word)) ? [last] : [];
 }
 
 /**
@@ -109,15 +131,18 @@ export interface IntentReading {
  */
 export function readIntent(words: readonly string[], text?: string): IntentReading {
   if (text !== undefined && isBareId(text)) return { intent: 'id', cue: [] };
+  const frame = questionFrame(words);
+  const withFrame = (reading: IntentReading): IntentReading =>
+    frame.length > 0 ? { ...reading, frame } : reading;
   for (let i = 0; i < words.length; i++) {
     const word = words[i] as string;
     const next = words[i + 1];
     if (next !== undefined) {
       const pair = PAIRS[`${word} ${next}`];
-      if (pair !== undefined) return { intent: pair, cue: [i, i + 1] };
+      if (pair !== undefined) return withFrame({ intent: pair, cue: [i, i + 1] });
     }
     const one = WORDS[word];
-    if (one !== undefined) return { intent: one, cue: [i] };
+    if (one !== undefined) return withFrame({ intent: one, cue: [i] });
   }
   return { intent: 'none', cue: [] };
 }

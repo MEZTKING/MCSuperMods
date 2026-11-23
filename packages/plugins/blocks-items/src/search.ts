@@ -59,6 +59,17 @@ export const SEARCH: PluginSearchData = {
         misspellings: ['durabilty', 'durablity'],
       },
       {
+        // The Item Studio's Never wears out (ADR 0127 D3).
+        idea: 'unbreakable',
+        same: ['never wears out', 'never breaks', 'indestructible', 'infinite durability'],
+      },
+      {
+        // The Item Studio's Starts with enchantments (ADR 0127 D3).
+        idea: 'starts enchanted',
+        same: ['starts with enchantments', 'already enchanted', 'comes enchanted'],
+        near: ['enchanted item', 'glint'],
+      },
+      {
         idea: 'hardness',
         same: ['mining time', 'break time', 'how long to mine', 'toughness'],
         near: ['blast resistance', 'strength'],
@@ -77,7 +88,17 @@ export const SEARCH: PluginSearchData = {
   keywords: {
     // Kinds.
     'msm:block': ['block', 'cube', 'custom block', 'new block', 'placeable'],
-    'msm:item': ['item', 'custom item', 'new item', 'tool', 'weapon', 'thing'],
+    'msm:item': [
+      'item',
+      'custom item',
+      'new item',
+      'tool',
+      'weapon',
+      'thing',
+      // The Item Studio's Tool and durability fields (ADR 0127 D3).
+      'unbreakable',
+      'starts enchanted',
+    ],
     'msm:effect': ['effect', 'status effect', 'buff', 'debuff', 'power-up', 'mob effect'],
     'msm:mod': ['mod', 'mod info', 'mod id', 'fabric mod', 'version', 'author', 'description'],
     'msm:biome_addition': [

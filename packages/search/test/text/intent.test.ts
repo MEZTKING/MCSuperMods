@@ -4,6 +4,22 @@ import { isStopWord, readIntent, STOP_WORDS, wordRole, wordsOf } from '../../src
 const intentOf = (text: string): string => readIntent(wordsOf(text), text).intent;
 
 describe('readIntent', () => {
+  it('reads "how … work" as the question: the last word is its frame, not a word to match', () => {
+    const frameOf = (text: string) => readIntent(wordsOf(text), text).frame;
+    expect(readIntent(wordsOf('how does try it work'), 'how does try it work')).toEqual({
+      intent: 'learn',
+      cue: [0],
+      frame: [4],
+    });
+    expect(frameOf('how do rules work')).toEqual([3]);
+    expect(frameOf('how do pistons works')).toEqual([3]);
+    // Nothing but stop words between: nothing to ask about, so no frame.
+    expect(frameOf('how does it work')).toBeUndefined();
+    // Not a "how" question, or `work` not last: matched as a word as before.
+    expect(frameOf('make a block work')).toBeUndefined();
+    expect(frameOf('how to work a furnace')).toBeUndefined();
+  });
+
   it('reads the first intent cue', () => {
     expect(intentOf('make a blue sword')).toBe('make');
     expect(intentOf('I want a flying pig')).toBe('make');

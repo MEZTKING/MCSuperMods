@@ -1,6 +1,6 @@
 /**
- * The frozen interfaces of the search engine (ADR 0124; docs/PLAN-search.md "The entry and the
- * engine's interface", with B650's corrections). Data only: actions and previews are descriptors,
+ * The frozen interfaces of the search engine (ADR 0124, whose findings record the plan's "The entry
+ * and the engine's interface" with B650's corrections). Data only: actions and previews are descriptors,
  * never functions, because they cross the worker boundary.
  */
 

@@ -4,7 +4,7 @@
 
 ## Status
 
-Built (B653, B658, B659; tuned by B666; D6's unavailable rows past the cap after B671). `src/types.ts` holds the interfaces (`SearchEntry`, `SearchRequest`, `SearchAnswer`, `SearchHit`, `SearchHitSlim`, `SearchIndex`); `createSearchIndex` (`src/query.ts`) returns the engine. `./text` exports the text half for the app's filter boxes. Only `app/src/renderer/src/search/host.ts` (and `local-match.ts`, the text half) imports it at run time. The plugin data types (`PluginSearchData` and the rest) live in `@msm/plugin-api`; never redefine them here. Open engine items (ADR 0124 findings): an exact id on whole ids only, stop words kept in titles, "how does … work", `tnak` and `soin`.
+Built (B653, B658, B659; tuned by B666; D6's unavailable rows past the cap after B671). `src/types.ts` holds the interfaces (`SearchEntry`, `SearchRequest`, `SearchAnswer`, `SearchHit`, `SearchHitSlim`, `SearchIndex`); `createSearchIndex` (`src/query.ts`) returns the engine. `./text` exports the text half for the app's filter boxes. Only `app/src/renderer/src/search/host.ts` (and `local-match.ts`, the text half) imports it at run time. The plugin data types (`PluginSearchData` and the rest) live in `@msm/plugin-api`; never redefine them here. The engine items open at the close (an exact id on whole ids only, the whole title with its stop words, "how … work", `tnak` and `soin`) were fixed after it (2026-11-23; `test/follow-ups.test.ts`).
 
 ## Layout and owners
 

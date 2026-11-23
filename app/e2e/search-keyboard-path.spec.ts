@@ -1,5 +1,5 @@
 /**
- * The search with the keyboard only (ADR 0124 D11; docs/PLAN-search.md B671). No mouse is used
+ * The search with the keyboard only (ADR 0124 D11; brief B671). No mouse is used
  * after the launch, and no network request is made (asserted, renderer and main).
  *
  * 1. Very easy, a brand-new install with no mod: Tab reaches Home's bar **What do you want to

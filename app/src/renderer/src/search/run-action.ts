@@ -72,7 +72,7 @@ import type {
   SearchMakeChoice,
 } from './actions';
 import { gatherSearchData } from './plugin-data';
-import { GROUP_SORTS } from './sources/flows';
+import { sortOfStarter } from './sources/flows';
 import { actionOf, NOT_ON_TARGET, type SearchActionDescriptor } from './sources/shared';
 import { vanillaUses } from './vanilla-uses';
 import type { SearchActionKey } from './wording';
@@ -174,9 +174,7 @@ async function behaviourOf(
   for (const data of await searchDataOf(host)) {
     const behaviour = data.behaviours?.find((entry) => entry.id === id);
     if (behaviour === undefined) continue;
-    const group = starter.creator?.group;
-    const sort = group === undefined ? undefined : GROUP_SORTS[group];
-    const fit = fitOf(behaviour, starter.id, sort);
+    const fit = fitOf(behaviour, starter.id, sortOfStarter(starter));
     return fit === null ? null : { behaviour, fit };
   }
   return null;

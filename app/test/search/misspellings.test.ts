@@ -152,18 +152,17 @@ describe('flow titles with one wrong letter', () => {
     }
   });
 
-  /**
-   * Known misses, each an engine finding of B666 for a later brief (not a data line fitted to the
-   * seed): `tnak` shares no trigram with `tank`, so the typo index never offers it (a swap of
-   * neighbours in a four-letter word); `soin` is one letter from `skin` and from `spin`, and the
-   * tie goes to the more frequent `spin`. A fix makes this list shorter.
+  /*
+   * B666's two misses were engine findings, fixed after the close (2026-11-23): `tnak` shared no
+   * trigram with `tank`, and a swap of neighbours is now looked up directly (still one edit, so
+   * SL13's limits by length hold); `soin` ties `skin`, `spin` and `soil`, and every tied word is
+   * now offered, the first result deciding (Mob skin). Every flow title is found; none is known
+   * to miss.
    */
-  const KNOWN = new Set(['Tank', 'Mob skin']);
 
   for (const mode of ['very-easy', 'easy'] as const) {
     it(`finds every flow in the top three in ${mode}, on every target`, () => {
       const missed: string[] = [];
-      const known: string[] = [];
       for (const [target, search] of searches) {
         const { cases, skipped } = casesOf(search);
         expect(cases.length, target).toBeGreaterThan(60);
@@ -172,13 +171,11 @@ describe('flow titles with one wrong letter', () => {
         for (const { flow, title, q } of cases) {
           const top = ranked(search.ask(q, mode)).slice(0, 3);
           if (!top.some((hit) => opens(search, hit.id, flow))) {
-            const line = `${target} ${title} as "${q}": ${top.map((hit) => hit.id).join(', ')}`;
-            (KNOWN.has(title) ? known : missed).push(line);
+            missed.push(`${target} ${title} as "${q}": ${top.map((hit) => hit.id).join(', ')}`);
           }
         }
       }
       expect(missed).toEqual([]);
-      expect(known.length, known.join('\n')).toBe(KNOWN.size * searches.size);
     });
   }
 });

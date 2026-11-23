@@ -146,6 +146,12 @@ export const KEYWORDS: Record<string, string[]> = {
     'knockback',
     'efficiency',
     'unbreaking',
+    // ADR 0127 D4: the boots effect that freezes water.
+    'frost walker',
+    'frost boots',
+    'ice path',
+    'freeze water',
+    'walk on water',
   ],
   painting: ['painting', 'picture', 'art', 'canvas', 'frame', 'wall art'],
   'banner-pattern': ['banner', 'flag', 'loom', 'shield pattern', 'emblem'],
