@@ -686,7 +686,12 @@ test('blocks and items: an extra drop and an on-hit trigger, with Undo, in the j
   const dropId = `${NAMESPACE}:zombie_bonus`;
   await addFromTemplate(window, 'extra mob drop', 'msm_loot_addition_mob_drop', 'zombie_bonus');
   await expect(window.getByTestId(`element-row-${dropId}`)).toBeVisible();
-  await expect(window.getByRole('heading', { name: /^Extra drops\b/ })).toBeVisible();
+  // The editor's own heading; the With and without live view (ADR 0120) has an "Extra drops" heading too.
+  await expect(
+    window
+      .getByRole('heading', { name: /^Extra drops\b/ })
+      .locator('xpath=self::*[not(ancestor::*[@data-testid="live-view"])]'),
+  ).toBeVisible();
   const drops = window.getByTestId('extra-drops-studio');
   await expect(drops).toBeVisible();
   await expect(drops.getByTestId('extra-drops-table-groups')).toContainText(

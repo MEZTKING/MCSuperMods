@@ -223,19 +223,23 @@ for (const target of TARGETS) {
 
     for (const [i, { name, spec }] of cases.entries()) {
       if (!spec) continue;
-      it(`${name} is within ${spec.explosion ? EXPLOSION_TOLERANCE : TOLERANCE} points`, () => {
-        const obs = game[name] as Observed;
-        let hist = obs.hist as Record<string, Record<string, number>>;
-        // The explosion results count apples only, as one histogram.
-        if (spec.explosion)
-          hist = { 'minecraft:apple': obs.hist as unknown as Record<string, number> };
-        const ours = simulate(PACK, target, spec.table, spec.situation, ROLLS, 1000 + i);
-        const worst = worstCell(hist, obs.n, ours, ROLLS);
-        note(target.id, name, worst.points);
-        expect(worst.points, worst.at).toBeLessThanOrEqual(
-          spec.explosion ? EXPLOSION_TOLERANCE : TOLERANCE,
-        );
-      }, CASE_TIMEOUT);
+      it(
+        `${name} is within ${spec.explosion ? EXPLOSION_TOLERANCE : TOLERANCE} points`,
+        () => {
+          const obs = game[name] as Observed;
+          let hist = obs.hist as Record<string, Record<string, number>>;
+          // The explosion results count apples only, as one histogram.
+          if (spec.explosion)
+            hist = { 'minecraft:apple': obs.hist as unknown as Record<string, number> };
+          const ours = simulate(PACK, target, spec.table, spec.situation, ROLLS, 1000 + i);
+          const worst = worstCell(hist, obs.n, ours, ROLLS);
+          note(target.id, name, worst.points);
+          expect(worst.points, worst.at).toBeLessThanOrEqual(
+            spec.explosion ? EXPLOSION_TOLERANCE : TOLERANCE,
+          );
+        },
+        CASE_TIMEOUT,
+      );
     }
   });
 
