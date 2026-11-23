@@ -83,6 +83,14 @@ import {
   monacoCaret,
 } from './components/function-editor/caret';
 import { lineOffset } from './components/function-editor/source-text';
+import { exampleForStarter } from './components/home/gallery/flow-examples';
+import {
+  type GalleryCard,
+  galleryGroups,
+  galleryModName,
+} from './components/home/gallery/gallery-model';
+import { HeroPicture } from './components/home/gallery/HeroPicture';
+import { HomeGallery } from './components/home/gallery/HomeGallery';
 import { Home } from './components/home/Home';
 import { type MakeChoice, MakeChooser } from './components/home/MakeChooser';
 import { MoreIdeas } from './components/home/MoreIdeas';
@@ -2214,16 +2222,24 @@ export function App({
       seeShowcaseExample(clip);
       return;
     }
+    makeShownTile(shown, showcaseModName(clip));
+  };
+  /**
+   * Opens a card's tile (a Showcase or gallery card's **Make this**): in the open mod as its Home
+   * tile; with no mod, Very easy asks for the mod's name and opens the tile once it is made, and
+   * Easy and Advanced open New project on the tile's flows and starters.
+   */
+  const makeShownTile = (shown: ShownTile, name: string): void => {
     if (project !== null) {
       setDialog(null);
       openTile(shown);
       return;
     }
-    if (uiMode !== 'very-easy' && shown.flowIds.length > 0) {
-      setDialog({ type: 'new-project', startWith: shown.flowIds });
+    const startWith = [...shown.flowIds, ...shown.starterIds];
+    if (uiMode !== 'very-easy' && startWith.length > 0) {
+      setDialog({ type: 'new-project', startWith });
       return;
     }
-    const name = showcaseModName(clip);
     const ask = bridge.project.defaultParent;
     const fallback = (): void => {
       setDialog(null);
@@ -2325,6 +2341,80 @@ export function App({
     }
     setDialog({ type: 'new-project' });
   };
+
+  // The gallery of everything (ADR 0129 D1, D5) ------------------------------------------
+
+  const galleryList = useMemo(
+    () =>
+      target === null
+        ? []
+        : galleryGroups({
+            starters: session.library.starters,
+            examples: session.library.examples,
+            target,
+            exampleFor: exampleForStarter,
+          }),
+    [session, target],
+  );
+  /** A gallery card's **Make this**: its flow or starter, as its Home tile would open it. */
+  const makeGalleryCard = (card: GalleryCard): void => {
+    if (tileAvailability === null) return;
+    const tile: MakeTile = {
+      id: `gallery-${card.id}`,
+      label: card.title,
+      sentence: card.sentence,
+      group: 'start',
+      action: card.action,
+    };
+    const shown = shownTiles(tileAvailability, [tile])[0];
+    if (shown === undefined) return;
+    makeShownTile(shown, galleryModName(card));
+  };
+  /** The first Showcase card's example, for the hero's picture. */
+  const heroExample = useMemo(() => {
+    const first = showcaseList[0];
+    if (first === undefined) return null;
+    const example = session.library.examples.find((entry) => entry.id === first.exampleId);
+    return example === undefined ? null : { example, label: first.title };
+  }, [showcaseList, session]);
+  /** Home's gallery: Featured (the Showcase) first, then every group, or nothing. */
+  const homeGallery = (visible: boolean) =>
+    target === null || galleryList.length === 0 ? (
+      showcaseGallery(showcaseList, visible, makeShowcase, seeShowcaseExample)
+    ) : (
+      <HomeGallery
+        groups={galleryList}
+        featuredCount={showcaseList.length}
+        featured={
+          showcaseList.length === 0
+            ? null
+            : (variant, headerEnd) => (
+                <ShowcaseGallery
+                  heading="Featured"
+                  clips={showcaseList}
+                  examples={session.library.examples}
+                  target={target}
+                  deps={showcaseDeps}
+                  vanilla={vanilla}
+                  playClips={showcaseClips}
+                  visible={visible}
+                  onMake={makeShowcase}
+                  onSeeExample={seeShowcaseExample}
+                  variant={variant}
+                  tag="Featured"
+                  headerEnd={headerEnd}
+                />
+              )
+        }
+        starters={session.library.starters}
+        examples={session.library.examples}
+        target={target}
+        onMake={makeGalleryCard}
+        onSeeExample={(card) => {
+          if (card.exampleId !== undefined) seeExample(card.exampleId);
+        }}
+      />
+    );
 
   // More ideas (ADR 0128 D1, D2) -----------------------------------------------------------
 
@@ -3534,6 +3624,8 @@ export function App({
       </Suspense>
     ) : undefined;
 
+  // Whether nothing covers Home, so its one clip may play.
+  const homeClipsVisible = dialog === null && !tryItOpen && !paletteOpen && searchDoor === null;
   const editorArea = (
     <EditorArea
       {...(tryItView === undefined ? {} : { tryIt: tryItView })}
@@ -3554,7 +3646,10 @@ export function App({
       previewShown={centrePreview}
       onTogglePreview={() => usePreferences.getState().toggleCentrePreview()}
       search={veryEasy ? undefined : startSearchBar('editor-search-field')}
-      {...(veryEasy
+      {...(!veryEasy && project !== null
+        ? { gallery: homeGallery(homeClipsVisible && ideaLive === null) }
+        : {})}
+      {...(veryEasy || project === null
         ? {
             home: (
               <Home
@@ -3590,19 +3685,19 @@ export function App({
                         Promise.reject(new Error('No summary.')),
                     })}
                 search={startSearchBar('home-search-field')}
-                showcase={showcaseGallery(
-                  showcaseList,
-                  dialog === null &&
-                    !tryItOpen &&
-                    !paletteOpen &&
-                    searchDoor === null &&
-                    ideaLive === null,
-                  makeShowcase,
-                  seeShowcaseExample,
-                )}
-                moreIdeas={moreIdeas(
-                  dialog === null && !tryItOpen && !paletteOpen && searchDoor === null,
-                )}
+                showcase={homeGallery(homeClipsVisible && ideaLive === null)}
+                {...(heroExample === null || target === null
+                  ? {}
+                  : {
+                      heroPicture: (
+                        <HeroPicture
+                          example={heroExample.example}
+                          target={target}
+                          label={heroExample.label}
+                        />
+                      ),
+                    })}
+                moreIdeas={moreIdeas(homeClipsVisible)}
                 showcaseOpen={showcaseOpen}
                 onShowcaseOpenChange={(open) => usePreferences.getState().setShowcaseOpen(open)}
               />

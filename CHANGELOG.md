@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Everything you can make, on Home.** Home now opens with a header (Start a new mod, Open a mod, Surprise me and a picture), Your mods, then a row for each kind of thing: Featured (the moving showcase cards), then Gear, Blocks, Food, Mobs, Vehicles, Magic, Scripts, Worlds, Games and Whole mods and packs. Every guided flow and starter has a card with a picture, a sentence, **Make this** and, where there is one, **See the example**. Rows scroll sideways; **Show all** shows a whole group, and the buttons at the top jump between the groups. The gallery is the same in every mode: on Home, and with a mod open under the editor when nothing is selected.
 - Draw on Minecraft's own textures (ADR 0129 D4): **Start from a Minecraft texture** in New texture, the texture painter and the Block, Item, Mob and Particle Studios' picture fields opens a picker of the textures in your own Minecraft (by name, in folders, with search), and **Change a Minecraft texture** (a Home tile and a palette command) paints one and saves it as a resource pack override at the same path. The pictures come from your own game; MCSuperMods ships none.
 
 ## [1.5.7] - 2026-11-23

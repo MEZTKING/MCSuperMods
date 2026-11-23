@@ -26,10 +26,12 @@ A card whose flow your Minecraft version does not offer shows only **See the exa
 
 ## Where the cards are
 
-- **Very easy:** **See what you can make** on Home. With no mod open it sits under the three buttons. With a mod open it sits between the Make tiles and **My things**: open while the mod has no things, and folded to a link after that. The link reads **Show what you can make**; once open, **Hide what you can make** folds it again, and your choice is remembered.
+- **Home, the gallery:** the thirteen cards are the first row, **Featured**, of Home's gallery of everything you can make. Under Featured comes one row for each group of guided flows (Gear, Blocks, Food, Mobs, Vehicles, Magic, Scripts, Worlds, Games) and a last row, **Whole mods and packs**, for the starters that are not flows. Every flow and starter has a card with a picture, a sentence, **Make this** and, where an example shows it, **See the example**. A row scrolls sideways (a sideways wheel or trackpad, the arrow keys, or the arrow buttons at its ends when you point at it); **Show all N** at its right shows the whole group as a grid, and **Back** returns. The buttons along the top of the gallery jump to a group. Only the Featured cards move; the others show a still picture, drawn when the row comes near. See [Very easy mode](very-easy.md#everything-you-can-make).
+- **Very easy:** the gallery on Home. With no mod open it sits under the header and **Your mods**. With a mod open it sits between the Make tiles and **My things**: open while the mod has no things, and folded to a link after that. The link reads **Show what you can make**; once open, **Hide what you can make** folds it again, and your choice is remembered.
 - **New project:** the same strip, **See what you can make**, above the starter list. It scrolls sideways.
 - **Examples:** a showcased example's detail pane shows its card under **What it looks like**.
 - **Very easy, under the cards:** **More ideas**, an endless list of mods Surprise me would make, one card each, with **Make this** and **Shuffle**; and above the cards, **Your mods**, your recent mods as cards ([Very easy mode](very-easy.md#more-ideas)). At most one clip moves on Home at a time, whether from these cards or from More ideas.
+- **Easy and Advanced:** with no mod open, Home with the gallery fills the middle of the window. With a mod open, the gallery sits under the empty editor when nothing is selected.
 - **Any mode:** the command palette has "Showcase: see what you can make". In Very easy it opens Home with the cards showing; in Easy and Advanced it opens New project.
 
 ## Make this

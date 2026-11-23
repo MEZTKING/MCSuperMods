@@ -18,7 +18,19 @@
  */
 
 import { Pause, Play } from 'lucide-react';
-import type { FocusEvent, ReactNode, Ref } from 'react';
+import type { ButtonHTMLAttributes, FocusEvent, ReactNode, Ref } from 'react';
+import {
+  pixelImageClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  storeActionsClass,
+  storeBodyClass,
+  storeCardClass,
+  storePictureClass,
+  storeSentenceClass,
+  storeTagClass,
+  storeTitleClass,
+} from '../components/home/gallery/card-style';
 import { Button } from '../components/ui/Button';
 import type { ShowcaseClip } from './clip';
 
@@ -45,12 +57,25 @@ export interface ShowcaseCardProps {
   readonly onSeeExample: () => void;
   readonly onFocusChange?: (inside: boolean) => void;
   readonly cardRef?: Ref<HTMLLIElement>;
+  /**
+   * `store`: Home's card look (ADR 0129 D5: a 16:10 picture, a tag, Make this as the primary
+   * button); `plain` (the default) as in New project and the Examples gallery.
+   */
+  readonly look?: 'plain' | 'store';
+  /** The small tag above the title in the store look ("Featured"). */
+  readonly tag?: string;
+}
+
+/** A bare button for the store look, whose classes are all its own. */
+function StoreButton(props: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type="button" {...props} />;
 }
 
 /** A showcase card. */
 export function ShowcaseCard(props: ShowcaseCardProps) {
   const { clip, still, live, webgl } = props;
   const playing = live !== undefined && live !== null && live !== false;
+  const store = props.look === 'store';
   const name = `Clip: ${clip.title}`;
   const onBlur = (event: FocusEvent<HTMLLIElement>): void => {
     const next = event.relatedTarget;
@@ -62,12 +87,15 @@ export function ShowcaseCard(props: ShowcaseCardProps) {
       {playing ? (
         live
       ) : still === null ? (
-        <span className="block size-full bg-bg" />
+        <span
+          aria-hidden
+          className={store ? 'block size-full animate-pulse bg-border/40' : 'block size-full bg-bg'}
+        />
       ) : (
         <img
           src={still}
           alt=""
-          className="block size-full object-cover [image-rendering:pixelated]"
+          className={pixelImageClass}
           data-testid={`showcase-still-${clip.id}`}
         />
       )}
@@ -82,38 +110,38 @@ export function ShowcaseCard(props: ShowcaseCardProps) {
       )}
     </>
   );
-  const pictureClass =
-    'relative block aspect-video w-full overflow-hidden rounded border border-border bg-bg p-0';
-  return (
-    <li
-      ref={props.cardRef}
-      className="flex w-64 shrink-0 flex-col gap-1.5 rounded-md border border-border bg-panel p-2"
-      data-testid={`showcase-card-${clip.id}`}
-      data-showcase-card={clip.id}
-      onFocus={() => props.onFocusChange?.(true)}
-      onBlur={onBlur}
+  const pictureClass = store
+    ? `${storePictureClass} p-0`
+    : 'relative block aspect-video w-full overflow-hidden rounded border border-border bg-bg p-0';
+  const Action = store ? StoreButton : Button;
+  const makeButton = props.onMake !== undefined && (
+    <Action
+      className={store ? primaryButtonClass : 'border-accent'}
+      {...(store ? { 'aria-label': `Make this: ${clip.title}` } : {})}
+      data-testid={`showcase-make-${clip.id}`}
+      onClick={() => props.onMake?.()}
     >
-      {webgl ? (
-        <button
-          type="button"
-          aria-label={name}
-          aria-pressed={playing}
-          className={`${pictureClass} cursor-pointer focus-visible:outline-2 focus-visible:outline-accent`}
-          data-testid={`showcase-picture-${clip.id}`}
-          onClick={() => props.onTogglePlay?.()}
-        >
-          {picture}
-        </button>
-      ) : (
-        <div
-          role="img"
-          aria-label={name}
-          className={pictureClass}
-          data-testid={`showcase-picture-${clip.id}`}
-        >
-          {picture}
-        </div>
-      )}
+      Make this
+    </Action>
+  );
+  const exampleButton = (
+    <Action
+      {...(store
+        ? {
+            className: props.onMake === undefined ? primaryButtonClass : secondaryButtonClass,
+            'aria-label': `See the example: ${clip.title}`,
+          }
+        : props.onMake === undefined
+          ? { className: 'border-accent' }
+          : {})}
+      data-testid={`showcase-example-${clip.id}`}
+      onClick={() => props.onSeeExample()}
+    >
+      See the example
+    </Action>
+  );
+  const notes = (
+    <>
       {!webgl && (
         <p className="text-muted text-xs" data-testid={`showcase-no-webgl-${clip.id}`}>
           {NO_MOVING_PICTURES}
@@ -124,25 +152,71 @@ export function ShowcaseCard(props: ShowcaseCardProps) {
           {props.note}
         </p>
       )}
+    </>
+  );
+  const pictureBox = webgl ? (
+    <button
+      type="button"
+      aria-label={name}
+      aria-pressed={playing}
+      className={`${pictureClass} cursor-pointer focus-visible:outline-2 focus-visible:outline-accent`}
+      data-testid={`showcase-picture-${clip.id}`}
+      onClick={() => props.onTogglePlay?.()}
+    >
+      {picture}
+    </button>
+  ) : (
+    <div
+      role="img"
+      aria-label={name}
+      className={pictureClass}
+      data-testid={`showcase-picture-${clip.id}`}
+    >
+      {picture}
+    </div>
+  );
+  if (store) {
+    return (
+      <li
+        ref={props.cardRef}
+        className={storeCardClass}
+        data-testid={`showcase-card-${clip.id}`}
+        data-showcase-card={clip.id}
+        onFocus={() => props.onFocusChange?.(true)}
+        onBlur={onBlur}
+      >
+        {pictureBox}
+        <div className={storeBodyClass}>
+          {notes}
+          {props.tag !== undefined && <span className={storeTagClass}>{props.tag}</span>}
+          <h3 className={storeTitleClass} title={clip.title}>
+            {clip.title}
+          </h3>
+          <p className={storeSentenceClass}>{clip.sentence}</p>
+          <div className={storeActionsClass}>
+            {makeButton}
+            {exampleButton}
+          </div>
+        </div>
+      </li>
+    );
+  }
+  return (
+    <li
+      ref={props.cardRef}
+      className="flex w-64 shrink-0 flex-col gap-1.5 rounded-md border border-border bg-panel p-2"
+      data-testid={`showcase-card-${clip.id}`}
+      data-showcase-card={clip.id}
+      onFocus={() => props.onFocusChange?.(true)}
+      onBlur={onBlur}
+    >
+      {pictureBox}
+      {notes}
       <h3 className="font-semibold text-sm">{clip.title}</h3>
       <p className="text-sm">{clip.sentence}</p>
       <div className="mt-auto flex flex-wrap gap-1.5">
-        {props.onMake !== undefined && (
-          <Button
-            className="border-accent"
-            data-testid={`showcase-make-${clip.id}`}
-            onClick={() => props.onMake?.()}
-          >
-            Make this
-          </Button>
-        )}
-        <Button
-          {...(props.onMake === undefined ? { className: 'border-accent' } : {})}
-          data-testid={`showcase-example-${clip.id}`}
-          onClick={() => props.onSeeExample()}
-        >
-          See the example
-        </Button>
+        {makeButton}
+        {exampleButton}
       </div>
     </li>
   );

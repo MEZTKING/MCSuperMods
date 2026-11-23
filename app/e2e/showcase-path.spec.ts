@@ -230,7 +230,7 @@ test('showcase: the cards on Home, one clip at a time, reduced motion, the setti
   // The cards under the buttons. ---------------------------------------------------------------
   const showcase = home.getByTestId('home-showcase');
   await expect(showcase).toBeVisible();
-  await expect(showcase.getByRole('heading', { name: 'See what you can make' })).toBeVisible();
+  await expect(showcase.getByRole('heading', { name: /^Featured/ })).toBeVisible();
   const cards = cardsIn(showcase);
   await expect(cards).toHaveCount(CARD_IDS.length);
   for (const [index, id] of CARD_IDS.entries()) {

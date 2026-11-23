@@ -21,6 +21,7 @@ import type { ExampleProject, Target } from '@msm/plugin-api';
 import {
   type ComponentType,
   lazy,
+  type ReactNode,
   Suspense,
   useCallback,
   useEffect,
@@ -30,6 +31,8 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { gridClass } from '../components/home/gallery/card-style';
+import { Rail } from '../components/home/gallery/Rail';
 import { Button } from '../components/ui/Button';
 import type { VanillaAssetReader } from '../preview/model-chain';
 import { hasWebGL } from '../preview/webgl';
@@ -103,6 +106,18 @@ export interface ShowcaseGalleryProps {
   readonly codec?: StillCodec;
   /** World cards' land stills; `null` draws none (tests). Default the lazy `landStill`. */
   readonly landStill?: LandStillMaker | null;
+  /**
+   * How the cards are laid out: `wrap` (the default; New project, the Examples gallery), `rail`
+   * (Home's sideways row, ADR 0129 D5) or `grid` (Home's Show all). `rail` and `grid` draw the
+   * cards in Home's store look, with the count beside the heading.
+   */
+  readonly variant?: 'wrap' | 'rail' | 'grid';
+  /** The small tag on each card in the store look ("Featured"). */
+  readonly tag?: string;
+  /** Shown at the right of the heading (Home's **Show all**). */
+  readonly headerEnd?: ReactNode;
+  /** The heading's level (default 2). */
+  readonly headingLevel?: 2 | 3;
 }
 
 const NONE: ReadonlySet<string> = new Set();
@@ -294,6 +309,67 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
   };
 
   const View = props.clipView ?? LazyClipView;
+  const variant = props.variant ?? 'wrap';
+  const store = variant !== 'wrap';
+  const Heading = props.headingLevel === 3 ? 'h3' : 'h2';
+  const items = cards.map(({ clip, example }) => {
+    const still = stillOf(clip);
+    const live =
+      clip.id === liveId ? (
+        <Suspense
+          fallback={
+            still === null ? null : (
+              <img
+                src={still}
+                alt=""
+                className="block size-full object-cover [image-rendering:pixelated]"
+              />
+            )
+          }
+        >
+          <View
+            clip={clip}
+            example={example}
+            target={target}
+            deps={props.deps}
+            vanilla={props.vanilla ?? null}
+            {...(props.vanillaBlockstates === undefined
+              ? {}
+              : { vanillaBlockstates: props.vanillaBlockstates })}
+            stillKey={stillKey(clip.id, target.id, withJar)}
+            still={still}
+            once={once}
+            onEnd={() => setRequested((before) => (before === clip.id ? null : before))}
+            onWebGLUnavailable={() => setWebglLost(true)}
+          />
+        </Suspense>
+      ) : undefined;
+    return (
+      <ShowcaseCard
+        key={clip.id}
+        clip={clip}
+        still={still}
+        live={live}
+        webgl={webgl}
+        note={
+          landFailed.has(clip.id) &&
+          !land.has(clip.id) &&
+          takenStill(stillKey(clip.id, target.id, withJar)) === null
+            ? LAND_NOT_MADE
+            : null
+        }
+        cardRef={refFor(clip.id)}
+        onTogglePlay={() => toggle(clip.id)}
+        {...(clip.make.type === 'example' ? {} : { onMake: () => props.onMake(clip) })}
+        onSeeExample={() => props.onSeeExample(clip)}
+        onFocusChange={(inside) =>
+          setFocused((before) => (inside ? clip.id : before === clip.id ? null : before))
+        }
+        {...(store ? { look: 'store' as const } : {})}
+        {...(store && props.tag !== undefined ? { tag: props.tag } : {})}
+      />
+    );
+  });
   return (
     <section
       ref={root}
@@ -302,9 +378,14 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
       data-testid="showcase-gallery"
     >
       <div className="flex flex-wrap items-center gap-2">
-        <h2 id={headingId} className="font-semibold text-base">
+        <Heading id={headingId} className="font-semibold text-base">
           {props.heading}
-        </h2>
+          {store && (
+            <span className="ml-2 font-normal text-muted text-sm" data-testid="showcase-count">
+              {cards.length}
+            </span>
+          )}
+        </Heading>
         {webgl && (
           <Button
             aria-pressed={paused}
@@ -317,65 +398,19 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
             Pause clips
           </Button>
         )}
+        {props.headerEnd !== undefined && props.headerEnd !== null && (
+          <span className="ml-auto">{props.headerEnd}</span>
+        )}
       </div>
-      <ul ref={list} className="m-0 flex list-none flex-wrap gap-2 p-0">
-        {cards.map(({ clip, example }) => {
-          const still = stillOf(clip);
-          const live =
-            clip.id === liveId ? (
-              <Suspense
-                fallback={
-                  still === null ? null : (
-                    <img
-                      src={still}
-                      alt=""
-                      className="block size-full object-cover [image-rendering:pixelated]"
-                    />
-                  )
-                }
-              >
-                <View
-                  clip={clip}
-                  example={example}
-                  target={target}
-                  deps={props.deps}
-                  vanilla={props.vanilla ?? null}
-                  {...(props.vanillaBlockstates === undefined
-                    ? {}
-                    : { vanillaBlockstates: props.vanillaBlockstates })}
-                  stillKey={stillKey(clip.id, target.id, withJar)}
-                  still={still}
-                  once={once}
-                  onEnd={() => setRequested((before) => (before === clip.id ? null : before))}
-                  onWebGLUnavailable={() => setWebglLost(true)}
-                />
-              </Suspense>
-            ) : undefined;
-          return (
-            <ShowcaseCard
-              key={clip.id}
-              clip={clip}
-              still={still}
-              live={live}
-              webgl={webgl}
-              note={
-                landFailed.has(clip.id) &&
-                !land.has(clip.id) &&
-                takenStill(stillKey(clip.id, target.id, withJar)) === null
-                  ? LAND_NOT_MADE
-                  : null
-              }
-              cardRef={refFor(clip.id)}
-              onTogglePlay={() => toggle(clip.id)}
-              {...(clip.make.type === 'example' ? {} : { onMake: () => props.onMake(clip) })}
-              onSeeExample={() => props.onSeeExample(clip)}
-              onFocusChange={(inside) =>
-                setFocused((before) => (inside ? clip.id : before === clip.id ? null : before))
-              }
-            />
-          );
-        })}
-      </ul>
+      {variant === 'rail' ? (
+        <Rail label={props.heading} testId="showcase-rail" listRef={list}>
+          {items}
+        </Rail>
+      ) : (
+        <ul ref={list} className={store ? gridClass : 'm-0 flex list-none flex-wrap gap-2 p-0'}>
+          {items}
+        </ul>
+      )}
     </section>
   );
 }

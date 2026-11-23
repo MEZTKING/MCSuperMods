@@ -10941,3 +10941,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Home's gallery (the parallel worker) reads `FLOW_CARDS` and `flowClips()`; the showcase test's subject-in-view check could be shared with `flow-clips.test.ts`.
 - A drawn still of the example's own pictures is plain for the examples with no pictures (data, rules, worlds, most games); the gallery should prefer the card's `picture` there.
+## 2026-11-23 — executor — Home gallery of everything
+
+**What**
+- ADR 0129 D1 and D5 in the user's layout A, "Store rows" (picked mid-brief from the coordinator's three options): Home without a mod opens with a hero (MCSuperMods, "Make anything Minecraft can do, without code.", Start a new mod as the primary button, Open a mod, Surprise me, and a drawn still of the first Showcase example), then Your mods, then the gallery, then More ideas as before.
+- `app/src/renderer/src/components/home/gallery/`: `gallery-model.ts` (one card per library starter available on the target, first id wins; flows under the Creator's own groups and headings, `CREATOR_GROUPS`, the other starters under **Whole mods and packs** with plain sentences, `PLAIN_STARTER_SENTENCES`; Make this as a `flows` tile action), `flow-examples.ts` (the one lookup to a card's example: `showcase/flow-clips.ts` through `import.meta.glob` once it exists, else a Showcase card that opens only that flow, else an example of the same id), `HomeGallery.tsx` (sticky chip toolbar, one sideways row per group with its count and **Show all N**, Show all as a grid with **Back**, a swappable `GalleryLayout`, pictures drawn only near the view, skeletons, `pixelated`), `Rail.tsx` (snap, partial next card, arrow keys, side buttons on hover), `card-style.ts` (one card look: 16:10 picture, tag, title, sentence, Make this primary), `HeroPicture.tsx`.
+- Featured is the Showcase itself (`ShowcaseGallery` gains `variant` rail or grid, `tag`, `headerEnd`; `ShowcaseCard` a `store` look), so its one live clip and stills are unchanged; gallery cards draw no clip.
+- The same gallery in every mode, no ids: Home in Very easy (with a mod, in the Showcase's folded place); Home with the gallery in Easy and Advanced while no mod is open; under the empty editor with a mod open outside Very easy (`EditorArea` `gallery`).
+- Tests: `app/test/components/home/gallery.test.tsx` (every flow and starter has a card on both targets, group order, no ids, Featured first and its grid, Show all and Back, chips jump and arrow keys, Make this and See the example, lazy pictures, the hero order), `App.test.tsx` (a Games card's Make this opens its flow; Easy and Advanced); e2e `home-gallery-path.spec.ts` (new), `showcase-path` heading updated; app vitest 419 files green; e2e home-gallery, showcase (3), very-easy and home-ideas green under xvfb.
+- Sizes: renderer first paint 5,029,340 to 5,048,627 bytes (+19 KB, the gallery shell), renderer 20,444,647 to 20,464,573 bytes.
+
+**Decisions**
+- Groups are the library's real Creator groups (Gear, Blocks, Food, Mobs, Vehicles, Magic, Scripts, Worlds, Games) plus Whole mods and packs, not the ADR's illustrative list.
+- More ideas stays below the gallery as its own section (its files belong to the ideas worker), not a last row.
+- Gallery cards show stills only; a per-flow clip waits for `flow-clips.ts`.
+
+**Next**
+- Once `showcase/flow-clips.ts` lands, check its export shape against `flow-examples.ts` and consider hover clips on gallery cards under the one-live-clip rule.
+- The ADR 0130 brief folds the modes; the gallery needs no change for it.

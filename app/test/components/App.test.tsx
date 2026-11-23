@@ -1966,7 +1966,9 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
     const harness = await renderApp();
     const user = userEvent.setup();
     const showcase = await screen.findByTestId('home-showcase');
-    expect(within(showcase).getByText('See what you can make')).toBeTruthy();
+    // Featured, the gallery's first row (ADR 0129 D1).
+    expect(within(showcase).getByTestId('gallery-group-featured')).toBeTruthy();
+    expect(within(showcase).getAllByText('Featured').length).toBeGreaterThan(0);
     expect(within(showcase).getByTestId('showcase-card-wood-set')).toBeTruthy();
     expect(within(showcase).getByTestId('showcase-card-rules')).toBeTruthy();
     // The Rules card has See the example as its main button, no Make this.
@@ -1974,6 +1976,42 @@ describe('App showcase (ADR 0118 D1, D10; B569)', () => {
     await user.click(within(showcase).getByTestId('showcase-make-crop'));
     const creator = await screen.findByTestId('creator-dialog');
     expect(creator.textContent).toContain(flowTitle(harness, 'crop'));
+  });
+
+  it('shows every group of the gallery, and a deep card’s Make this opens its flow (ADR 0129 D1)', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    const gallery = await screen.findByTestId('home-gallery');
+    const games = within(gallery).getByTestId('gallery-group-games');
+    const card = within(games)
+      .getAllByTestId(/^gallery-make-flow-/)
+      .at(-1);
+    if (card === undefined) throw new Error('no games card');
+    const flowId = (card.dataset.testid ?? '').replace('gallery-make-flow-', '');
+    await user.click(card);
+    const creator = await screen.findByTestId('creator-dialog');
+    expect(creator.textContent).toContain(flowTitle(harness, flowId));
+  });
+
+  it('shows Home with the gallery in Easy and Advanced while no mod is open', async () => {
+    for (const mode of ['easy', 'advanced'] as const) {
+      usePreferences.setState({ mode, modeChosen: true });
+      await renderApp({ noProject: true });
+      expect(await screen.findByTestId('home-hero')).toBeTruthy();
+      expect(await screen.findByTestId('home-gallery')).toBeTruthy();
+      cleanup();
+    }
+  });
+
+  it('shows the gallery under the empty editor with a mod open, in Easy and Advanced alike', async () => {
+    for (const mode of ['easy', 'advanced'] as const) {
+      usePreferences.setState({ mode, modeChosen: true });
+      await renderApp();
+      expect(await screen.findByTestId('editor-search')).toBeTruthy();
+      expect(await screen.findByTestId('editor-gallery')).toBeTruthy();
+      cleanup();
+    }
   });
 
   it('folds to a link once the mod has things and remembers the choice', async () => {

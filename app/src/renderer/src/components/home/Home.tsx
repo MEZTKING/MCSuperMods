@@ -12,9 +12,11 @@
  * The search's large bar (ADR 0124 D10; B667), built by the host, heads Home with and without a
  * mod (`home-search`).
  *
- * Without a mod (ADR 0128 D5): the start buttons, **Your mods** as cards when there are any
- * (`YourMods.tsx`), the showcase, then **More ideas**, the endless idea cards (built by the host,
- * `MoreIdeas.tsx`).
+ * Without a mod (ADR 0128 D5, ADR 0129 D5, the user's layout A): the hero (the product name, a
+ * headline, the start actions and a picture), **Your mods** as cards when there are any
+ * (`YourMods.tsx`), the gallery of everything that can be made in the showcase's place
+ * (`gallery/HomeGallery.tsx`, built by the host, Featured first), then **More ideas**, the endless
+ * idea cards (built by the host, `MoreIdeas.tsx`). Test ids add `home-hero`, `home-hero-picture`.
  *
  * @packageDocumentation
  */
@@ -25,6 +27,7 @@ import type { ReactNode } from 'react';
 import type { RecentProjectSummary, RecentProjectView } from '../../../../shared/platform';
 import type { ThingPictures } from '../thing-picker/ThingPicker';
 import { Button } from '../ui/Button';
+import { storeTagClass } from './gallery/card-style';
 import { MakeTiles } from './MakeTiles';
 import { MyThings } from './MyThings';
 import type { ThingCard } from './things';
@@ -68,7 +71,22 @@ export interface HomeProps {
   onShowcaseOpenChange?(open: boolean): void;
   /** The search's large bar ("What do you want to make?"); absent shows none. */
   search?: ReactNode;
+  /** The hero's picture at its right without a mod (ADR 0129 D5); absent shows none. */
+  heroPicture?: ReactNode;
 }
+
+/** The product name in the hero's tag. */
+export const PRODUCT_NAME = 'MCSuperMods';
+/** The hero's headline (the user's layout A). */
+export const HERO_HEADLINE = 'Make anything Minecraft can do, without code.';
+/** The hero's sentence. */
+export const HERO_SENTENCE =
+  'A mod is a set of new things for Minecraft: blocks, items, mobs and what they do. Start a new one, or pick something below and press Make this. Everything here is a real example you can open and change.';
+
+const heroPrimaryClass =
+  'inline-flex cursor-pointer items-center gap-1.5 rounded border border-accent bg-accent px-3 py-1.5 ' +
+  'font-semibold text-panel text-sm hover:opacity-90 focus-visible:outline-2 focus-visible:outline-accent ' +
+  'focus-visible:outline-offset-2';
 
 /** The link that opens the folded showcase (ADR 0118 D1). */
 export const SHOW_SHOWCASE = 'Show what you can make';
@@ -119,58 +137,75 @@ export function Home(props: HomeProps) {
       <section
         aria-label="Home"
         data-testid="home"
-        className="flex min-h-0 flex-col items-center gap-4 overflow-auto p-6"
+        className="flex min-h-0 flex-col items-center overflow-auto px-6 pb-10"
       >
-        {props.search !== undefined && props.search !== null && (
-          <div className="flex w-full justify-center" data-testid="home-search">
-            {props.search}
-          </div>
-        )}
-        <h1 className="font-semibold text-lg">Make your own Minecraft mod</h1>
-        <p className="max-w-prose text-center text-muted text-sm">
-          A mod is a set of new things for Minecraft: blocks, items, mobs and what they do. Start a
-          new one, then pick what to make.
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          <Button data-testid="home-new" onClick={props.onNewProject}>
-            <FilePlus size={16} aria-hidden />
-            Start a new mod
-          </Button>
-          <Button data-testid="home-open" onClick={props.onOpenProject}>
-            <FolderOpen size={16} aria-hidden />
-            Open a mod
-          </Button>
-          {props.onSurprise !== undefined && (
-            <Button data-testid="home-surprise" onClick={props.onSurprise}>
-              <Dices size={16} aria-hidden />
-              Surprise me
-            </Button>
+        <div className="flex w-full max-w-[100rem] min-w-0 flex-col gap-6 pt-4">
+          {props.search !== undefined && props.search !== null && (
+            <div className="flex w-full justify-center" data-testid="home-search">
+              {props.search}
+            </div>
+          )}
+          <header
+            className="grid items-center gap-6 rounded-xl border border-border bg-panel p-6 [grid-template-columns:minmax(0,1.2fr)_minmax(0,1fr)] max-[1000px]:[grid-template-columns:minmax(0,1fr)]"
+            data-testid="home-hero"
+          >
+            <div className="flex min-w-0 flex-col gap-3">
+              <span className={storeTagClass}>{PRODUCT_NAME}</span>
+              <h1 className="font-semibold text-2xl leading-tight">{HERO_HEADLINE}</h1>
+              <p className="max-w-prose text-muted text-sm">{HERO_SENTENCE}</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={heroPrimaryClass}
+                  data-testid="home-new"
+                  onClick={props.onNewProject}
+                >
+                  <FilePlus size={16} aria-hidden />
+                  Start a new mod
+                </button>
+                <Button data-testid="home-open" className="py-1.5" onClick={props.onOpenProject}>
+                  <FolderOpen size={16} aria-hidden />
+                  Open a mod
+                </Button>
+                {props.onSurprise !== undefined && (
+                  <Button
+                    data-testid="home-surprise"
+                    className="py-1.5"
+                    title="Makes a random mod to start from"
+                    onClick={props.onSurprise}
+                  >
+                    <Dices size={16} aria-hidden />
+                    Surprise me
+                  </Button>
+                )}
+              </div>
+            </div>
+            {props.heroPicture !== undefined && props.heroPicture !== null && (
+              <div className="min-w-0 max-[1000px]:hidden" data-testid="home-hero-picture">
+                {props.heroPicture}
+              </div>
+            )}
+          </header>
+          {props.onOpenRecent !== undefined && (
+            <YourMods
+              recent={recent}
+              onOpen={props.onOpenRecent}
+              {...(props.onRemoveRecent === undefined ? {} : { onRemove: props.onRemoveRecent })}
+              {...(props.onShowRecentInFolder === undefined
+                ? {}
+                : { onShowInFolder: props.onShowRecentInFolder })}
+              {...(props.recentSummary === undefined ? {} : { summary: props.recentSummary })}
+            />
+          )}
+          {props.showcase !== undefined && props.showcase !== null && (
+            <div className="w-full min-w-0" data-testid="home-showcase">
+              {props.showcase}
+            </div>
+          )}
+          {props.moreIdeas !== undefined && props.moreIdeas !== null && (
+            <div className="w-full min-w-0">{props.moreIdeas}</div>
           )}
         </div>
-        {props.onSurprise !== undefined && (
-          <p className="max-w-prose text-center text-muted text-xs">
-            Not sure what to make? Surprise me makes a random mod to start from.
-          </p>
-        )}
-        {props.onOpenRecent !== undefined && (
-          <YourMods
-            recent={recent}
-            onOpen={props.onOpenRecent}
-            {...(props.onRemoveRecent === undefined ? {} : { onRemove: props.onRemoveRecent })}
-            {...(props.onShowRecentInFolder === undefined
-              ? {}
-              : { onShowInFolder: props.onShowRecentInFolder })}
-            {...(props.recentSummary === undefined ? {} : { summary: props.recentSummary })}
-          />
-        )}
-        {props.showcase !== undefined && props.showcase !== null && (
-          <div className="w-full max-w-5xl" data-testid="home-showcase">
-            {props.showcase}
-          </div>
-        )}
-        {props.moreIdeas !== undefined && props.moreIdeas !== null && (
-          <div className="w-full max-w-5xl">{props.moreIdeas}</div>
-        )}
       </section>
     );
   }

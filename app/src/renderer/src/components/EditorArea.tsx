@@ -58,6 +58,11 @@ export interface EditorAreaProps {
    * (Easy and Advanced; Very easy has it on Home).
    */
   search?: ReactNode;
+  /**
+   * Home's gallery of everything that can be made (ADR 0129 D1), under the empty editor area's
+   * lines when nothing is selected (with a mod open, outside Very easy's Home).
+   */
+  gallery?: ReactNode;
 }
 
 /**
@@ -83,6 +88,7 @@ export function EditorArea({
   hideIds = false,
   tryIt,
   search,
+  gallery,
 }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = hideRawJson ? 'form' : (tab ?? ownTab);
@@ -94,7 +100,11 @@ export function EditorArea({
     return (
       <section
         aria-label="Editor"
-        className="flex min-h-0 flex-col items-center justify-center gap-1 p-4"
+        className={
+          gallery === undefined || gallery === null
+            ? 'flex min-h-0 flex-col items-center justify-center gap-1 p-4'
+            : 'flex min-h-0 flex-col items-center gap-1 overflow-auto px-4 pb-4 [&>:first-child]:mt-4'
+        }
       >
         {search !== undefined && search !== null && (
           <div className="mb-3 flex w-full justify-center" data-testid="editor-search">
@@ -123,6 +133,11 @@ export function EditorArea({
             <WandSparkles size={14} aria-hidden />
             or Create something with the Creator
           </button>
+        )}
+        {gallery !== undefined && gallery !== null && (
+          <div className="mt-6 w-full max-w-[100rem] min-w-0" data-testid="editor-gallery">
+            {gallery}
+          </div>
         )}
       </section>
     );
