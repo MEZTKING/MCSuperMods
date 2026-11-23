@@ -14,6 +14,13 @@
  * {@link chooseLiveClip} is the pure policy; {@link browserLiveEnvironment} reads the browser
  * (media query, window visibility and focus, the observer) and is replaced in tests.
  *
+ * The hovered card is {@link cardUnder} the target of the document's `pointerover`, not React's
+ * `onPointerEnter`: React builds enter and leave from the `pointerout` before an over, and
+ * Chromium sends no `pointerout` when the node under the pointer was removed (a card's still
+ * swapped for its clip, the clip's loading line for its canvas). The over that follows names the
+ * removed node's parent as its related target, so React drops it and the next card never
+ * counted as hovered (the e2e hover flake of 2026-11-23).
+ *
  * @packageDocumentation
  */
 
@@ -58,6 +65,21 @@ export function chooseLiveClip(state: LiveClipState): string | null {
   // After the user paused a card, nothing else starts by itself.
   if (state.stopped.size > 0) return null;
   return state.cards.find((id) => state.inView.has(id)) ?? null;
+}
+
+/** The attribute that carries a card's clip id on its element (`ShowcaseCard`). */
+export const CARD_ATTRIBUTE = 'data-showcase-card';
+
+/**
+ * The clip id of the card of the gallery `root` that `target` is in, or `null` when it is in
+ * none of them (outside the gallery, between cards, or in another gallery).
+ */
+export function cardUnder(target: EventTarget | null, root: Element): string | null {
+  const closest = (target as { closest?: unknown } | null)?.closest;
+  if (typeof closest !== 'function') return null;
+  const card = (target as Element).closest(`[${CARD_ATTRIBUTE}]`);
+  if (card === null || !root.contains(card)) return null;
+  return card.getAttribute(CARD_ATTRIBUTE);
 }
 
 /** What the gallery reads from the browser. */

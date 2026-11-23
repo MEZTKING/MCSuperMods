@@ -46,6 +46,7 @@ import type { ExampleFilesDeps } from './example-files';
 import type { LandStillOptions } from './land-still';
 import {
   browserLiveEnvironment,
+  cardUnder,
   chooseLiveClip,
   type LiveClipEnvironment,
   playsByItself,
@@ -148,6 +149,26 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
       stopShown();
     };
   }, [environment]);
+
+  // The hovered card, from the document's pointer events (`cardUnder` says why not React's
+  // enter and leave): every over names the card under the pointer, or none.
+  const root = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const section = root.current;
+    if (section === null) return;
+    const doc = section.ownerDocument;
+    const onOver = (event: Event): void => setHovered(cardUnder(event.target, section));
+    const onOut = (event: Event): void => {
+      // Out of the window.
+      if ((event as MouseEvent).relatedTarget === null) setHovered(null);
+    };
+    doc.addEventListener('pointerover', onOver);
+    doc.addEventListener('pointerout', onOut);
+    return () => {
+      doc.removeEventListener('pointerover', onOver);
+      doc.removeEventListener('pointerout', onOut);
+    };
+  }, []);
 
   // The cards' elements, for the in-view observer.
   const elements = useRef(new Map<string, Element>());
@@ -275,6 +296,7 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
   const View = props.clipView ?? LazyClipView;
   return (
     <section
+      ref={root}
       aria-labelledby={headingId}
       className="flex flex-col gap-2"
       data-testid="showcase-gallery"
@@ -347,9 +369,6 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
               onTogglePlay={() => toggle(clip.id)}
               {...(clip.make.type === 'example' ? {} : { onMake: () => props.onMake(clip) })}
               onSeeExample={() => props.onSeeExample(clip)}
-              onHover={(inside) =>
-                setHovered((before) => (inside ? clip.id : before === clip.id ? null : before))
-              }
               onFocusChange={(inside) =>
                 setFocused((before) => (inside ? clip.id : before === clip.id ? null : before))
               }

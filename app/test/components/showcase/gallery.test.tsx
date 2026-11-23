@@ -4,7 +4,8 @@
  * environment (reduced motion, window, in-view observer) and a stand-in picture codec: the
  * cards' words and buttons; never two live clips; hover, focus and the first card in view;
  * reduced motion, the setting, Pause clips, a hidden window and no WebGL never mount one by
- * themselves; the play button plays a clip once; taken stills replace drawn ones.
+ * themselves; the play button plays a clip once; taken stills replace drawn ones; a hover
+ * counts even with no pointerout before it (a removed node under the pointer).
  */
 
 import type { ExampleProject } from '@msm/plugin-api';
@@ -15,7 +16,7 @@ import { builtInPlugins } from '../../../src/renderer/src/plugins/built-in';
 import type { ClipViewProps } from '../../../src/renderer/src/showcase/ClipView';
 import type { ShowcaseClip } from '../../../src/renderer/src/showcase/clip';
 import { clearDrawnStills, type StillCodec } from '../../../src/renderer/src/showcase/drawn-still';
-import type { LiveClipEnvironment } from '../../../src/renderer/src/showcase/live-clip';
+import { cardUnder, type LiveClipEnvironment } from '../../../src/renderer/src/showcase/live-clip';
 import { NO_MOVING_PICTURES } from '../../../src/renderer/src/showcase/ShowcaseCard';
 import {
   ShowcaseGallery,
@@ -187,6 +188,24 @@ describe('the showcase gallery', () => {
     ).toBe('false');
   });
 
+  it('a card hovered just after the node under the pointer was removed plays (no pointerout)', () => {
+    // Chromium sends no pointerout when the node under the pointer was removed (a still swapped
+    // for its clip): the next over names the removed node's parent. React's onPointerEnter
+    // dropped that over, so the clip stayed on the old card (the e2e hover flake, 2026-11-23).
+    gallery({}, environment({ inView: ['second'] }));
+    const first = screen.getByRole('button', { name: 'Clip: A set of wood' });
+    fireEvent.pointerOver(first);
+    expect(live()).toEqual(['wood-set']);
+    const second = screen.getByRole('button', { name: 'Clip: A second set' });
+    fireEvent.pointerOver(second, { relatedTarget: first });
+    expect(live()).toEqual(['second']);
+    // Over the heading, between the cards: no card is hovered, the first in view plays.
+    fireEvent.pointerOver(first, { relatedTarget: second });
+    expect(live()).toEqual(['wood-set']);
+    fireEvent.pointerOver(screen.getByRole('heading', { level: 2 }), { relatedTarget: first });
+    expect(live()).toEqual(['second']);
+  });
+
   it('pauses a card by its picture, and plays it again', () => {
     gallery({}, environment({ inView: ['wood-set'] }));
     const picture = screen.getByRole('button', { name: 'Clip: A set of wood' });
@@ -312,5 +331,29 @@ describe('the showcase gallery', () => {
     expect(props?.stillKey).toBe(stillKey('wood-set', target?.id ?? '', false));
     expect(props?.vanilla).toBeNull();
     expect(props?.once).toBe(false);
+  });
+});
+
+describe('cardUnder', () => {
+  it('names the card of the gallery a target is in, else null', () => {
+    const doc = document;
+    const gallery = doc.createElement('section');
+    const card = doc.createElement('li');
+    card.setAttribute('data-showcase-card', 'pet');
+    const picture = doc.createElement('img');
+    card.append(picture);
+    const heading = doc.createElement('h2');
+    gallery.append(heading, card);
+    const other = doc.createElement('section');
+    const otherCard = doc.createElement('li');
+    otherCard.setAttribute('data-showcase-card', 'crop');
+    other.append(otherCard);
+    doc.body.append(gallery, other);
+    expect(cardUnder(picture, gallery)).toBe('pet');
+    expect(cardUnder(card, gallery)).toBe('pet');
+    expect(cardUnder(heading, gallery)).toBeNull();
+    expect(cardUnder(otherCard, gallery)).toBeNull();
+    expect(cardUnder(doc.body, gallery)).toBeNull();
+    expect(cardUnder(null, gallery)).toBeNull();
   });
 });

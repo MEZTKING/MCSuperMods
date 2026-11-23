@@ -5,7 +5,8 @@
  *
  * The picture is a button named "Clip: <title>": a click, Space or Enter plays or pauses it.
  * Without WebGL it is a plain picture with the line "This computer cannot show moving pictures
- * here." Presentational: the gallery decides which card plays.
+ * here." Presentational: the gallery decides which card plays, and finds the hovered card by
+ * the attribute `data-showcase-card` (`cardUnder`).
  *
  * Stills are drawn one still pixel per device pixel (the gallery sizes them, ADR 0128 D3) and
  * shown with `image-rendering: pixelated`, never smoothed.
@@ -42,7 +43,6 @@ export interface ShowcaseCardProps {
   /** Absent hides **Make this** (the Rules card). */
   readonly onMake?: () => void;
   readonly onSeeExample: () => void;
-  readonly onHover?: (inside: boolean) => void;
   readonly onFocusChange?: (inside: boolean) => void;
   readonly cardRef?: Ref<HTMLLIElement>;
 }
@@ -89,8 +89,7 @@ export function ShowcaseCard(props: ShowcaseCardProps) {
       ref={props.cardRef}
       className="flex w-64 shrink-0 flex-col gap-1.5 rounded-md border border-border bg-panel p-2"
       data-testid={`showcase-card-${clip.id}`}
-      onPointerEnter={() => props.onHover?.(true)}
-      onPointerLeave={() => props.onHover?.(false)}
+      data-showcase-card={clip.id}
       onFocus={() => props.onFocusChange?.(true)}
       onBlur={onBlur}
     >
