@@ -49,7 +49,7 @@ export function flowClipsExample(
         if (id !== undefined) return id;
       }
     }
-    for (const name of ['FLOW_CLIPS', 'FLOW_EXAMPLES']) {
+    for (const name of ['FLOW_CARDS', 'FLOW_CLIPS', 'FLOW_EXAMPLES']) {
       const record = module[name];
       if (typeof record === 'object' && record !== null) {
         const id = refId((record as Record<string, ExampleRef>)[starterId]);
