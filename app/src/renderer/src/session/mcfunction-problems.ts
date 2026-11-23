@@ -15,7 +15,7 @@ import type { Element, Problem, Project, ResourceLocation } from '@msm/core';
 import { outputFileBytes } from '@msm/exporters';
 import type { OutputFile, Target } from '@msm/plugin-api';
 import type { McfunctionCompletion, McfunctionProblem } from '../../../shared/platform';
-import { dataRegistryIds } from './schema-context';
+import { dataRegistryIds, gamesCheckerIds } from './schema-context';
 
 export type { McfunctionCompletion, McfunctionProblem };
 
@@ -116,15 +116,26 @@ export function projectObjectives(project: Project): string[] {
  * {@link dataRegistryIds} (`function`, `recipe`, `tag/<registry>`, …), plus
  * {@link KNOWN_FUNCTION_TAGS} under `tag/function` and, under `objective`, the scoreboard
  * objectives any project function creates ({@link projectObjectives}), so an objective made
- * in `load` does not warn in other functions. Sorted; ids namespaced, objectives plain.
+ * in `load` does not warn in other functions, and the objectives, teams, entity tags and boss
+ * bars the games kinds' lowered functions make ({@link gamesCheckerIds}, B551b). The games
+ * kinds' functions and function tags come through {@link dataRegistryIds}. Sorted; ids
+ * namespaced, objectives, teams and entity tags plain.
  */
 export function mcfunctionProjectIds(project: Project): Record<string, string[]> {
   const ids = dataRegistryIds(project);
   ids['tag/function'] = [
     ...new Set([...(ids['tag/function'] ?? []), ...KNOWN_FUNCTION_TAGS]),
   ].sort();
-  const objectives = projectObjectives(project);
+  const games = gamesCheckerIds(project);
+  const objectives = [
+    ...new Set([...projectObjectives(project), ...(games.objective ?? [])]),
+  ].sort();
   if (objectives.length > 0) ids.objective = objectives;
+  for (const category of ['team', 'tag', 'bossbar'] as const) {
+    const names = games[category];
+    if (names !== undefined)
+      ids[category] = [...new Set([...(ids[category] ?? []), ...names])].sort();
+  }
   return ids;
 }
 

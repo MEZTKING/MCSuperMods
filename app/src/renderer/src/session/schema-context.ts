@@ -29,6 +29,7 @@ import {
   defaultTradeSets,
   vehicleItemPicture,
 } from '@msm/plugin-entities';
+import { GAMES_CHECKER_CATEGORIES, GAMES_KIND_IDS, gamesGeneratedIds } from '@msm/plugin-games';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -211,6 +212,11 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * `entity_type`. An `msm:villager_profession` element (ADR 0098 D2) also
  * registers a `point_of_interest_type` of its id and, without `trade_sets`, the five trade sets
  * lowering writes (`defaultTradeSets`) in `trade_set` and their tags in `tag/villager_trade`.
+ * A games element (ADR 0113; no registry of its own) registers the ids its lowering writes
+ * (`gamesGeneratedIds`, B551b): its functions in `function`, its function tags (and
+ * `minecraft:load`, `minecraft:tick`) in `tag/function`, an area's predicate in `predicate` and
+ * a world setup's preset, sky biome, first-join advancement, start structure and
+ * `#minecraft:normal` entry; its plain names are in {@link gamesCheckerIds}.
  * Only registries with at least one id appear. Sorted,
  * namespaced, without duplicates.
  *
@@ -233,6 +239,10 @@ export function dataRegistryIds(
     for (const element of namespace.elements) {
       const registered = kinds.registryFor(element.kind);
       if (!element.kind.startsWith(MINECRAFT_PREFIX)) {
+        // A games kind (no registry of its own): the ids its lowering writes (B551b).
+        if (GAMES_KINDS.has(element.kind)) {
+          for (const [registry, id] of gamesExtraIds(element)) add(registry, id);
+        }
         // Another plugin's kind: only a declared, plain registry name counts.
         if (registered === undefined || registered.includes(':')) continue;
         add(registered, element.id);
@@ -317,6 +327,43 @@ function fluidExtraIds(
   } catch {
     return [];
   }
+}
+
+const GAMES_KINDS: ReadonlySet<string> = new Set(GAMES_KIND_IDS);
+
+/**
+ * The registry ids a games element's lowering writes (B551b; `gamesGeneratedIds`): its functions,
+ * function tags, an area's predicate and a world setup's preset, biome, advancement and start
+ * structure. The objective, team, entity tag and boss bar names are left to the mcfunction
+ * checker ({@link gamesCheckerIds}).
+ */
+function gamesExtraIds(element: Element): [string, string][] {
+  return Object.entries(gamesGeneratedIds(element))
+    .filter(([category]) => !GAMES_CHECKER_CATEGORIES.includes(category))
+    .flatMap(([registry, ids]) => ids.map((id): [string, string] => [registry, id]));
+}
+
+/**
+ * The plain names the project's games elements make in their lowered functions, by mcfunction
+ * checker category (B551b; `gamesGeneratedIds`): `objective`, `team`, `tag` (entity tags) and
+ * `bossbar`. Sorted, without duplicates; only categories with at least one name appear.
+ *
+ * @param project - The project.
+ */
+export function gamesCheckerIds(project: Project): Record<string, string[]> {
+  const map = new Map<string, Set<string>>();
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      if (!GAMES_KINDS.has(element.kind)) continue;
+      for (const [category, ids] of Object.entries(gamesGeneratedIds(element))) {
+        if (!GAMES_CHECKER_CATEGORIES.includes(category)) continue;
+        const set = map.get(category) ?? new Set<string>();
+        for (const id of ids) set.add(id);
+        map.set(category, set);
+      }
+    }
+  }
+  return sortedRecord(new Map([...map].map(([name, ids]) => [name, [...ids]])));
 }
 
 /**

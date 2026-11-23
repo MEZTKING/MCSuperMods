@@ -9324,3 +9324,16 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - `app/test/ai-tool-executor.test.ts` "target_facts, script_api_typings and pending_changes" fails on the base: `commands` facts are 6,780 characters against the 4,000 cap since B550's `CommandFacts.forms`; the AI's `target_facts` should leave `forms` out or the cap move.
 - Show me in Very easy lands on the Item Studio, whose Notes, Model and Creative tab show ids (`msm:tool`, `ruby:item/ruby_sword`, `minecraft:combat`): the Studio's Very easy view, not the helper's.
 - The run's first "Thinking…" counts from the run's start until the turn's start resets it (0 again after about 0.2 s); harmless now that the clock ticks often.
+## 2026-11-23 — executor — B551b the games lowering's ids in the registry view and the checker
+
+**What**
+- `@msm/plugin-games`: `gamesGeneratedIds(element)` (`src/lowering/generated-ids.ts`) lists the ids the lowering of all six games kinds writes, by registry as the app names them: `function`, `tag/function` (the plugin's `load`/`tick`, `minecraft:load`/`tick`, the hooks `timer/<path>/ended`, `area/<path>/entered|left`, `one_block/<path>/broken`), `predicate` (an area's `location_check`), the world setup's `worldSetupGeneratedIds` plus its `#minecraft:normal` entry in `tag/worldgen/world_preset`, and the checker-only categories `GAMES_CHECKER_CATEGORIES` (`objective`, `team`, `tag` for entity tags, `bossbar`). `oneBlockPhaseFunctionNames(data)` in `one-block.ts` gives the phase functions beside the lowering's own conditions. The world setup cases moved to `test/world-setup-samples.ts` so both tests share them.
+- `test/generated-ids.test.ts`: on both targets, for every piece sample, world setup case, template and kind default, the ids equal those the lowered files define (by folder) or make in their lines (`scoreboard objectives add`, `team add`, `tag @s add`, `bossbar add`), no more and no fewer.
+- App: `dataRegistryIds` (`session/schema-context.ts`) adds a games element's registry ids before the "no plain registry" `continue`; the new `gamesCheckerIds(project)` gives the plain names, which `mcfunctionProjectIds` (`session/mcfunction-problems.ts`) merges into `objective`, `team`, `tag` and `bossbar`. `app/test/session-games-export.test.ts` exports a data pack with every games kind (world setup with a start, one block, team, objective, both timers, area) and a project function that uses the generated names: no problem above info. Without the app change the same test lists dozens of false "Cannot find ..." checker warnings and an "Unknown function id" schema warning.
+
+**Decisions**
+- Objective, team, entity tag and boss bar names stay out of `dataRegistryIds` (the registry view has no use for them) and reach only the checker.
+- `gamesGeneratedIds` reads the element alone (no target), like `worldSetupGeneratedIds`, so `mcfunctionProjectIds(project)` keeps its signature; the test against the lowering keeps the two in step.
+
+**Next**
+- None for this brief.

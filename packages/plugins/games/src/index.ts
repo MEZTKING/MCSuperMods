@@ -20,6 +20,7 @@ export {
   timerKind,
   worldSetupKind,
 } from './kinds/index';
+export { GAMES_CHECKER_CATEGORIES, gamesGeneratedIds } from './lowering/generated-ids';
 export {
   lowerWorldSetup,
   worldSetupGeneratedIds,

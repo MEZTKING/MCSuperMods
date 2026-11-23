@@ -63,6 +63,27 @@ function weightedList(value: Json | undefined, key: 'block' | 'mob'): Weighted[]
 const draws = (chance: number): number =>
   Math.min(CHANCE_DRAWS, Math.max(0, Math.round(chance * CHANCE_DRAWS)));
 
+/**
+ * The names of the functions a one block's phases add below `<ns>:msm_games/one_block/<path>/`,
+ * as {@link lowerOneBlock} writes them: `phase_<n>`, `blocks_<n>` and `fill_<n>` for every phase,
+ * and `mobs_<n>` for a phase with mobs and a mob chance that draws at least once.
+ */
+export function oneBlockPhaseFunctionNames(data: Json): string[] {
+  const phases = (Array.isArray(dataOf(data).phases) ? (dataOf(data).phases as Json[]) : []).map(
+    dataOf,
+  );
+  return phases.flatMap((phase, index) => {
+    const mobs = weightedList(phase.mobs, 'mob');
+    const mob = mobs.length === 0 ? 0 : draws(num(phase.mob_chance, 0));
+    return [
+      `phase_${index}`,
+      `blocks_${index}`,
+      ...(mob > 0 ? [`mobs_${index}`] : []),
+      `fill_${index}`,
+    ];
+  });
+}
+
 /** Lowers a one block to its functions, its hook tag and the tag entries that run it. */
 export function lowerOneBlock(element: Element, target: TargetFacts): OutputFile[] {
   const { namespace, path } = splitId(element.id);
