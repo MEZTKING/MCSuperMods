@@ -190,7 +190,9 @@ describe('worldgen validators', () => {
     });
   });
 
-  describe('worldgen.vanilla-feature-order (ADR 0097 D2)', () => {
+  // Heavy: one case lowers every worldgen golden, example and fixture biome against vanilla's
+  // feature order (2026-11-23). An explicit timeout, never a retry.
+  describe('worldgen.vanilla-feature-order (ADR 0097 D2)', { timeout: 60_000 }, () => {
     const CODE = 'worldgen.vanilla-feature-order';
 
     it('has the vanilla order on every built-in target', () => {
