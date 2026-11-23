@@ -20,6 +20,8 @@ export const postEffectKind: ElementKind = {
   id: 'minecraft:post_effect',
   schema: SCHEMA,
   folder: 'post_effect',
+  // Live views 3 (ADR 0121): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   defaultData: { passes: [] },
   lower: (element): OutputFile[] => {
     const { namespace, path } = splitResourceLocation(element.id);

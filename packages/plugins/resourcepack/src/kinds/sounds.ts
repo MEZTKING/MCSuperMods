@@ -15,6 +15,8 @@ export const soundsKind: ElementKind = {
   id: 'minecraft:sounds',
   schema: SCHEMA,
   folder: 'sounds',
+  // Live views 3 (ADR 0121): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   defaultData: {},
   lower: (element, target) => {
     const { namespace, path } = splitResourceLocation(element.id);

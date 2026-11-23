@@ -9611,3 +9611,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - None for this flake; if another light test is added to the runtime GameTests, use `LightWait`.
+## 2026-11-23 — executor — B620 scaffold and stubs for Live views 3 (looks and sounds)
+
+**What**
+- `app/src/renderer/src/liveviews/looks/index.ts`: one lazy entry per batch 3 kind (32 entries: the audit's 30 rows plus `msm:effect` and `msm:villager_profession`), each pointing at a stub file of `looks/` that shows the frame with "Not yet" (B622 sounds, B624 font, B625 flat looks, B626 day strip, B627 variants, villagers and the sulfur cube, B628 paintings, banners, trims and pots, B629 shaders and post effects, B630 songs and horns). `registry.ts` gains the one spread of `LOOKS_VIEWS` and `LiveViewProps.sounds?: VanillaSoundReader | null`.
+- Interface stubs from B619's list, safe answers until their brief: `looks/bodies/index.ts` (`BodyId`, `bodyFor`, always `'flat_sheet'`), `looks/shader/translate.ts` and `compile.ts`, `looks/post/chain.ts`, `looks/font/layout.ts` (`advance`, the bitmap rule, missing glyph 6), `looks/day/strip.ts` (`sampleTrack`), `looks/waypoint/sprites.ts` (`spriteIndex`, the rule of 3S11, tested).
+- New `app/src/renderer/src/audio/`: `player.ts` (Try it's `webAudioOut` and `SoundOut` moved out of `tryit/effects.ts`, which re-exports them; plus `SoundRequest`, `PlayingSound`, `SoundPlayer` and `webAudioPlayer`, `null` until B622), `resolve.ts` (`resolveSoundEvent`, `pickEntry`, stubs), `vanilla-sounds.ts` (the `VanillaSoundReader` type; B621 builds the reader), `SoundPlayButton.tsx` (a disabled button), `provider.tsx` (the one app-level player).
+- `previewKind: 'live_view'` on 27 kinds: 21 datapack generic kinds (jukebox song, banner pattern, painting, trim material and pattern, the seven variants, the four sound variants, instrument, timeline, world clock, pot pattern, sulfur cube archetype) and 6 resource pack kinds (sounds, font, particle, post effect, waypoint style, shader). The potion, the creative tab and the villager type show theirs in their Studios, so they declare none (the plan's "Where" column).
+- Skipped `app/e2e/live-views-looks-path.spec.ts`; no client GameTest class (B619 asked for none).
+
+**Decisions**
+- **Registry overlap.** `existing/index.ts` held nine kinds that batch 3 builds on: `msm:effect`, `msm:potion`, `msm:villager_profession` and the six variants (wolf, cat, pig, cow, chicken, frog). They moved to `looks/index.ts` and are in no other index; the entry survives there and points at a `looks/` file that re-exports B615's view (`PotionLook`, `EffectLook`, `ProfessionLook`) or wraps it (`VariantView` shows B615's `SkinView` for the six and "Not yet" for the zombie nautilus), so the Creator and the AI review lose nothing. The test `looks-index.test.tsx` fails if a kind is in two of the data, existing and looks indexes.
+- The CSP `media-src 'self' blob:` stays with B622, as the plan says.
+
+**Next**
+- B621 (jar textures, sound files, IPC; builds `vanilla-sounds.ts`), then wave 2 (B622 to B626) replaces the stub files' bodies without touching an index.

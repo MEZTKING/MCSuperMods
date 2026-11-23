@@ -39,7 +39,10 @@ const element = (kind: string, id: `${string}:${string}`, data: Json): Element =
 
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
 
-/** The kinds of Live views 2 (ADR 0120 D1) that this plugin makes: 32 of the 34 (the rest are blocks-items'). */
+/**
+ * The kinds of Live views 2 (ADR 0120 D1, 32 of the 34; the rest are blocks-items') and Live views 3
+ * (ADR 0121, 21 of the 30) that this plugin makes.
+ */
 const LIVE_VIEW_KINDS: ReadonlySet<string> = new Set([
   'minecraft:loot_table',
   'minecraft:advancement',
@@ -57,6 +60,27 @@ const LIVE_VIEW_KINDS: ReadonlySet<string> = new Set([
     'enchantment_provider',
     'trial_spawner',
     'block_transformer',
+    'jukebox_song',
+    'banner_pattern',
+    'painting_variant',
+    'trim_material',
+    'trim_pattern',
+    'wolf_variant',
+    'cat_variant',
+    'pig_variant',
+    'cow_variant',
+    'chicken_variant',
+    'frog_variant',
+    'zombie_nautilus_variant',
+    'cat_sound_variant',
+    'pig_sound_variant',
+    'cow_sound_variant',
+    'chicken_sound_variant',
+    'instrument',
+    'timeline',
+    'world_clock',
+    'decorated_pot_pattern',
+    'sulfur_cube_archetype',
   ].map((registry) => `minecraft:${registry}`),
 ]);
 
@@ -94,7 +118,7 @@ describe('@msm/plugin-datapack', () => {
         LIVE_VIEW_KINDS.has(kind.id) ? 'live_view' : undefined,
       );
     }
-    expect(LIVE_VIEW_KINDS.size).toBe(32);
+    expect(LIVE_VIEW_KINDS.size).toBe(53);
   });
 
   it('builds tag kinds for any registry', async () => {

@@ -11,9 +11,11 @@
 
 import type { Element, Project } from '@msm/plugin-api';
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
+import type { VanillaSoundReader } from '../audio/vanilla-sounds';
 import type { VanillaAssetReader } from '../preview/model-chain';
 import { DATA_VIEWS } from './data';
 import { EXISTING_VIEWS } from './existing';
+import { LOOKS_VIEWS } from './looks';
 import type { VanillaDataReader } from './vanilla-data';
 import type { LiveViewPrefs } from './view-prefs';
 
@@ -34,6 +36,11 @@ export interface LiveViewProps {
    * Minecraft folder is not set up.
    */
   readonly vanillaAssets: VanillaAssetReader | null;
+  /**
+   * Reads Minecraft's own sounds from the user's folder (ADR 0121), or `null` when it is not set
+   * up. Absent where nothing plays; the Play buttons then stay off.
+   */
+  readonly sounds?: VanillaSoundReader | null;
   /**
    * Reads one of the project's files by its path in the project (`assets/<ns>/textures/...`),
    * or a bundle's first (`bundleAssetReader`), so the project's own pictures draw; `null` when it
@@ -57,6 +64,8 @@ export const LIVE_VIEWS: Readonly<Record<string, LiveViewLoader>> = Object.freez
   // B615: today's previews (mobs, vehicles, particles, liquids, effects, potions, merchants,
   // blocks and items, mob skins) wrapped as views, for the Creator and the AI helper.
   ...EXISTING_VIEWS,
+  // B620: batch 3's looks and sounds (ADR 0121). A kind is in one index only (a test checks).
+  ...LOOKS_VIEWS,
 });
 
 /** Whether a kind has a live view. */

@@ -11,6 +11,7 @@ import {
 } from '../../../src/renderer/src/liveviews/client';
 import { EXISTING_VIEWS } from '../../../src/renderer/src/liveviews/existing';
 import { weakest } from '../../../src/renderer/src/liveviews/frame/fidelity';
+import { LOOKS_STUDIO_KINDS } from '../../../src/renderer/src/liveviews/looks';
 import { hasLiveView, liveViewKinds } from '../../../src/renderer/src/liveviews/registry';
 import { answerRequest } from '../../../src/renderer/src/liveviews/worker';
 import { builtInPlugins } from '../../../src/renderer/src/plugins/built-in';
@@ -74,10 +75,12 @@ describe('the live view stubs (B601)', () => {
         if (kind.previewKind === 'live_view') declared.push(kind.id);
       }
     }
-    expect(declared).toHaveLength(34);
+    // 34 of batch 2 and the 27 of batch 3's thirty whose view is in the panel (B620).
+    expect(declared).toHaveLength(61);
     const existing = Object.keys(EXISTING_VIEWS);
     expect(existing.filter((kind) => declared.includes(kind))).toEqual([]);
-    expect([...declared, ...existing].sort()).toEqual([...liveViewKinds()]);
+    // The studios' kinds of batch 3 have a view without a panel one (looks/index.ts).
+    expect([...declared, ...existing, ...LOOKS_STUDIO_KINDS].sort()).toEqual([...liveViewKinds()]);
     // The merchant trade tag has the merchant screen (B615), not the tag members.
     expect(hasLiveView('minecraft:tag/villager_trade')).toBe(true);
   });

@@ -61,19 +61,22 @@ describe('@msm/plugin-resourcepack', () => {
     }
   });
 
-  it('sets preview hints only on the kinds the host previews', () => {
+  it('sets preview hints only on the kinds the host previews (batch 3 looks route through the live view)', () => {
     const hints = Object.fromEntries(kinds().map((kind) => [kind.id, kind.previewKind]));
     expect(hints).toEqual({
       'minecraft:model': 'model',
       'minecraft:block_definition': 'block_definition',
       'minecraft:item_definition': 'item_definition',
       'minecraft:lang': undefined,
-      'minecraft:sounds': undefined,
+      'minecraft:sounds': 'live_view',
       'minecraft:pack_mcmeta': undefined,
       'minecraft:equipment': undefined,
       'minecraft:atlas': undefined,
-      'minecraft:font': undefined,
-      'minecraft:particle': undefined,
+      'minecraft:font': 'live_view',
+      'minecraft:particle': 'live_view',
+      'minecraft:post_effect': 'live_view',
+      'minecraft:shader': 'live_view',
+      'minecraft:waypoint_style': 'live_view',
     });
   });
 

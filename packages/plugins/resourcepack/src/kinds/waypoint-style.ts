@@ -18,6 +18,8 @@ export const waypointStyleKind: ElementKind = {
   id: 'minecraft:waypoint_style',
   schema: SCHEMA,
   folder: 'waypoint_style',
+  // Live views 3 (ADR 0121): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   defaultData: { sprites: ['minecraft:default_0'] },
   lower: (element): OutputFile[] => {
     const { namespace, path } = splitResourceLocation(element.id);

@@ -13,30 +13,22 @@ const mob: LiveViewLoader = () => import('./MobView');
 const vehicle: LiveViewLoader = () => import('./VehicleView');
 const particle: LiveViewLoader = () => import('./ParticleView');
 const fluid: LiveViewLoader = () => import('./FluidView');
-const effect: LiveViewLoader = () => import('./EffectView');
-const potion: LiveViewLoader = () => import('./PotionView');
 const merchant: LiveViewLoader = () => import('./MerchantView');
 const piece: LiveViewLoader = () => import('./PieceView');
-const skin: LiveViewLoader = () => import('./SkinView');
 
-/** The kinds whose view is a wrapped preview of today (`previewKind` is not `live_view`). */
+/**
+ * The kinds whose view is a wrapped preview of today. B620 moved nine of them to `looks/index.ts`
+ * (effect, potion, village job and the six mob variants), where batch 3 builds on them: a kind is
+ * in one index only.
+ */
 export const EXISTING_VIEWS: Readonly<Record<string, LiveViewLoader>> = Object.freeze({
   'msm:entity': mob,
   'msm:vehicle': vehicle,
   'msm:particle': particle,
   'msm:fluid': fluid,
-  'msm:effect': effect,
-  'msm:potion': potion,
-  'msm:villager_profession': merchant,
   'minecraft:trade_set': merchant,
   'minecraft:villager_trade': merchant,
   'minecraft:tag/villager_trade': merchant,
   'msm:block': piece,
   'msm:item': piece,
-  'minecraft:wolf_variant': skin,
-  'minecraft:cat_variant': skin,
-  'minecraft:pig_variant': skin,
-  'minecraft:cow_variant': skin,
-  'minecraft:chicken_variant': skin,
-  'minecraft:frog_variant': skin,
 });

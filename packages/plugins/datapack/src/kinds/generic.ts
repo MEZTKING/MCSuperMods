@@ -52,7 +52,10 @@ export const GENERIC_DATA_REGISTRIES = Object.freeze([
 /** A registry with a generic kind. */
 export type GenericDataRegistry = (typeof GENERIC_DATA_REGISTRIES)[number];
 
-/** The generic kinds that Live views 2 gives a view (ADR 0120 D1; the audit's batch 2 rows). */
+/**
+ * The generic kinds that Live views 2 (ADR 0120 D1) and 3 (ADR 0121) give a view in the panel; the
+ * batch 3 registries are listed after the batch 2 ones.
+ */
 const LIVE_VIEW_REGISTRIES: readonly GenericDataRegistry[] = [
   'enchantment',
   'damage_type',
@@ -61,6 +64,28 @@ const LIVE_VIEW_REGISTRIES: readonly GenericDataRegistry[] = [
   'enchantment_provider',
   'trial_spawner',
   'block_transformer',
+  // Live views 3 (ADR 0121): looks and sounds.
+  'jukebox_song',
+  'banner_pattern',
+  'painting_variant',
+  'trim_material',
+  'trim_pattern',
+  'wolf_variant',
+  'cat_variant',
+  'pig_variant',
+  'cow_variant',
+  'chicken_variant',
+  'frog_variant',
+  'zombie_nautilus_variant',
+  'cat_sound_variant',
+  'pig_sound_variant',
+  'cow_sound_variant',
+  'chicken_sound_variant',
+  'instrument',
+  'timeline',
+  'world_clock',
+  'decorated_pot_pattern',
+  'sulfur_cube_archetype',
 ];
 
 /** A mob variant that applies everywhere: one spawn condition with the lowest priority. */
@@ -301,7 +326,7 @@ export function genericKind(registry: GenericDataRegistry): ElementKind {
     schema,
     folder: registry,
     defaultData: structuredClone(DEFAULTS[registry]),
-    // Live views 2 (ADR 0120 D2): the kinds that have a view in the registry of the app.
+    // Live views 2 and 3 (ADR 0120 D2, ADR 0121): the kinds that have a view in the registry of the app.
     ...(LIVE_VIEW_REGISTRIES.includes(registry) ? { previewKind: 'live_view' } : {}),
     lower: (element, target) => lowerJsonData(element, target, registry, schema),
   };

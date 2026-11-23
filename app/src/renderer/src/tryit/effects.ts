@@ -29,7 +29,10 @@ import {
   soundName,
   type Vec3,
 } from '@msm/sim';
+import { type SoundOut, webAudioOut } from '../audio/player';
 import { AMBIENT_RANGE, type Random, seededRandom } from './ambient';
+
+export { type SoundOut, webAudioOut };
 
 /** How long a chip without a time in its words stays, in ticks. */
 export const CHIP_TICKS = 60;
@@ -79,67 +82,8 @@ export interface ShownCaption {
   readonly origin?: SimOrigin;
 }
 
-/** Plays sound bytes; {@link webAudioOut} is the app's, tests pass a fake. */
-export interface SoundOut {
-  /** Plays an Ogg Vorbis file at a volume (0 to 1) and pitch (playback rate). */
-  play(key: string, bytes: Uint8Array, volume: number, pitch: number): void;
-}
-
 /** Reads a project asset (`assets/<namespace>/<path>`) the lowered files do not hold. */
 export type ReadProjectAsset = (namespace: string, path: string) => Promise<Uint8Array | null>;
-
-interface AudioContextLike {
-  readonly destination: unknown;
-  readonly state?: string;
-  resume?(): Promise<void>;
-  decodeAudioData(data: ArrayBuffer): Promise<unknown>;
-  createBufferSource(): {
-    buffer: unknown;
-    playbackRate: { value: number };
-    connect(node: unknown): unknown;
-    start(): void;
-  };
-  createGain(): { gain: { value: number }; connect(node: unknown): unknown };
-}
-
-/**
- * The Web Audio player: one `AudioContext`, made at the first sound; decoded sounds kept by key.
- * `null` where the page has no Web Audio (tests under happy-dom).
- */
-export function webAudioOut(): SoundOut | null {
-  const Context = (globalThis as { AudioContext?: new () => AudioContextLike }).AudioContext;
-  if (Context === undefined) return null;
-  let context: AudioContextLike | null = null;
-  const decoded = new Map<string, Promise<unknown>>();
-  return {
-    play(key, bytes, volume, pitch) {
-      try {
-        context ??= new Context();
-        const ctx = context;
-        if (ctx.state === 'suspended') void ctx.resume?.().catch(() => {});
-        let buffer = decoded.get(key);
-        if (buffer === undefined) {
-          const copy = bytes.slice().buffer;
-          buffer = ctx.decodeAudioData(copy).catch(() => null);
-          decoded.set(key, buffer);
-        }
-        void buffer.then((audio) => {
-          if (audio === null) return;
-          const source = ctx.createBufferSource();
-          source.buffer = audio;
-          source.playbackRate.value = Math.min(2, Math.max(0.5, pitch));
-          const gain = ctx.createGain();
-          gain.gain.value = Math.min(1, Math.max(0, volume));
-          source.connect(gain);
-          gain.connect(ctx.destination);
-          source.start();
-        });
-      } catch {
-        // No sound here; the caption still shows.
-      }
-    },
-  };
-}
 
 const isRecord = (value: Json | undefined): value is JsonObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);

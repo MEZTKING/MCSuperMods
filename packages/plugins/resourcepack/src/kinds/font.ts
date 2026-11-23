@@ -11,6 +11,8 @@ export const fontKind: ElementKind = {
   id: 'minecraft:font',
   schema: SCHEMA,
   folder: 'font',
+  // Live views 3 (ADR 0121): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   defaultData: { providers: [] },
   lower: (element, target) => lowerJsonAsset(element, target, 'font', SCHEMA),
 };

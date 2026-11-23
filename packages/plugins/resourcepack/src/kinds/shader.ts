@@ -19,6 +19,8 @@ export const shaderKind: ElementKind = {
   id: 'minecraft:shader',
   schema: SCHEMA,
   folder: 'shader',
+  // Live views 3 (ADR 0121): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   defaultData: {
     vertex: 'minecraft:core/position',
     fragment: 'minecraft:core/position',
