@@ -11,7 +11,9 @@
  *   pictures" does it for pictures added before. Each picture has **Draw…** (clothes drawn on the
  *   villager's boxes, no key) and **Make with AI** (ADR 0093 D6 as amended on 2026-11-22: a
  *   tileable coat from the image service laid on the same boxes); either writes the picture at
- *   the fixed place and names it, in one undo step ({@link villagerLookChange}).
+ *   the fixed place and names it, in one undo step ({@link villagerLookChange}). Above them, the
+ *   look itself on a turning villager stand-in, with a job's clothes and badge if one is picked
+ *   (ADR 0121 D4, B627; loaded when first shown), following each edit at once.
  *
  * Everything else stays behind "Advanced (all fields)".
  *
@@ -20,7 +22,7 @@
 
 import type { Element, Json } from '@msm/core';
 import { villagerTypeTexturePaths } from '@msm/plugin-entities';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import { MakeWithAiButton } from '../../components/ai-pictures/MakeWithAiButton';
 import { wordsOf } from '../../components/ai-pictures/prompt';
@@ -29,6 +31,7 @@ import { textureChange } from '../../components/ai-pictures/texture-write';
 import { DrawButton } from '../../components/art/DrawButton';
 import { thingWords } from '../../components/thing-picker/thing-sources';
 import { Button } from '../../components/ui/Button';
+import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
 import { asObject, pathSetter, pointerOf } from '../blocks-items/blocks-items-model';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
 import { ProblemsAt } from '../blocks-items/parts';
@@ -45,6 +48,13 @@ import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
 import { ChoiceField } from './MobKindSection';
 
 type JsonObject = { [key: string]: Json };
+
+/** The look on a villager stand-in (B627), a chunk of its own. */
+const VillagerTypeLookFrame = lazy(() =>
+  import('../../liveviews/looks/villager/VillagerTypeView').then((module) => ({
+    default: module.VillagerTypeLookFrame,
+  })),
+);
 
 /** The hats of `textures.hat` (vanilla's `villager.hat`), in the picker's order. */
 export const VILLAGER_HATS: readonly string[] = Object.freeze(['none', 'partial', 'full']);
@@ -133,6 +143,7 @@ const strings = (value: Json | undefined): string[] =>
 export default function VillagerTypeStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
   const host = useBlocksItemsStudioHost();
+  const readProject = useHostProjectReader(host);
   const [advanced, setAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const data = asObject(element.data);
@@ -220,6 +231,14 @@ export default function VillagerTypeStudio(props: StudioProps) {
 
   const pictures = (
     <Section title="Pictures" testId="villager-type-pictures">
+      <Suspense fallback={<p className="text-muted text-xs">Dressing the villager…</p>}>
+        <VillagerTypeLookFrame
+          project={project}
+          element={element}
+          vanillaAssets={host?.modelPreview?.vanilla ?? null}
+          readProject={readProject}
+        />
+      </Suspense>
       {(['villager', 'zombie_villager'] as const).map((slot) => (
         <div key={slot} className="flex items-end gap-2">
           <TextureThumbnail

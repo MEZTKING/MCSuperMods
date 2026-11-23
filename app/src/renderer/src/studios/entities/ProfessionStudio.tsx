@@ -6,7 +6,9 @@
  *   offered first; a vanilla workstation, bed or bell is refused).
  * - "Pictures": the villager's and the zombie villager's picture. The game draws them only from
  *   fixed places (`professionTexturePaths`), so choosing a picture stored elsewhere also copies
- *   it there in the same undo step; "Copy the pictures" does it for pictures added before.
+ *   it there in the same undo step; "Copy the pictures" does it for pictures added before. Above
+ *   them, the job's clothes on a turning villager stand-in at each level's badge (ADR 0121 D4,
+ *   B627; loaded when first shown), following each edit at once.
  * - "Trades": the five levels in the trade editor of the Trader section, writing the level tags
  *   `<ns>:<path>/level_<n>` that lowering's default trade sets draw two trades from; or, with
  *   `trade_sets` set, the five trade sets named.
@@ -19,9 +21,10 @@
 
 import type { Json } from '@msm/core';
 import { PROFESSION_LEVELS } from '@msm/plugin-entities';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
+import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
 import {
   asObject,
   pathSetter,
@@ -44,6 +47,13 @@ import {
 import { TradeEditor } from './TradeEditor';
 import { professionLevelLayout, TRADE_LEVEL_LABELS } from './trade-model';
 
+/** The job's clothes on a villager stand-in (B627), a chunk of its own. */
+const ProfessionLookFrame = lazy(() =>
+  import('../../liveviews/looks/villager/ProfessionLook').then((module) => ({
+    default: module.ProfessionLookFrame,
+  })),
+);
+
 const strings = (value: Json | undefined): string[] =>
   Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
 
@@ -51,6 +61,7 @@ const strings = (value: Json | undefined): string[] =>
 export default function ProfessionStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange, target } = props;
   const host = useBlocksItemsStudioHost();
+  const readProject = useHostProjectReader(host);
   const [advanced, setAdvanced] = useState(false);
   const [level, setLevel] = useState(1);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +159,14 @@ export default function ProfessionStudio(props: StudioProps) {
 
   const pictures = (
     <Section title="Pictures" testId="profession-pictures">
+      <Suspense fallback={<p className="text-muted text-xs">Dressing the villager…</p>}>
+        <ProfessionLookFrame
+          project={project}
+          element={element}
+          vanillaAssets={host?.modelPreview?.vanilla ?? null}
+          readProject={readProject}
+        />
+      </Suspense>
       {(['villager', 'zombie_villager'] as const).map((slot) => (
         <div key={slot} className="flex items-end gap-2">
           <TextureThumbnail

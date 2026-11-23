@@ -88,6 +88,16 @@ export const SOUND_PICKERS: readonly SoundPickerPlace[] = [
     via: 'SoundPlayButton',
   },
   {
+    file: 'liveviews/looks/sulfur-cube/SulfurCubeView.tsx',
+    place: 'The sulfur cube live view: its hit and push sounds',
+    via: 'SoundPlayButton',
+  },
+  {
+    file: 'liveviews/looks/variant/SoundVariantView.tsx',
+    place: "A mob's sound variant live view: each sound of the set",
+    via: 'SoundPlayButton',
+  },
+  {
     file: 'studios/rules/SlotChip.tsx',
     place: 'Rules: a sound slot (`THING_SLOTS.sound`)',
     via: 'ThingPicker',
