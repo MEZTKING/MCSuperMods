@@ -384,6 +384,47 @@ describe('Item Studio', () => {
     expect(lastEdit(onChange)).toEqual(['/components/msm:durability', undefined]);
   });
 
+  it('sets Never wears out and Starts with enchantments in msm:components (ADR 0127)', () => {
+    const id = 'demo:blade' as ResourceLocation;
+    const stack = new CommandStack(
+      projectOf(
+        element(id, 'msm:item', {
+          format: 1,
+          display_name: 'Frost Blade',
+          components: { 'msm:durability': { max: 250 } },
+        }),
+      ),
+    );
+    render(<StackHarness stack={stack} id={id} />);
+    expect(screen.queryByTestId('item-wear-tooltip')).toBeNull();
+    fireEvent.click(screen.getByTestId('item-unbreakable'));
+    expect(dataOf(stack, id)).toMatchObject({
+      components: { 'msm:components': { 'minecraft:unbreakable': {} } },
+    });
+    fireEvent.click(screen.getByTestId('item-enchantment-add'));
+    fireEvent.click(screen.getByTestId('item-enchantment-add'));
+    fireEvent.change(screen.getByTestId('item-enchantment-1-level'), { target: { value: '3' } });
+    expect(dataOf(stack, id)).toMatchObject({
+      components: {
+        'msm:components': {
+          'minecraft:enchantments': { 'minecraft:mending': 3, 'minecraft:unbreaking': 1 },
+          'minecraft:unbreakable': {},
+        },
+      },
+    });
+    const tooltip = within(screen.getByTestId('item-wear-tooltip'));
+    expect(tooltip.getByText('Frost Blade')).toBeTruthy();
+    expect(tooltip.getByText('Unbreaking I')).toBeTruthy();
+    expect(tooltip.getByText('Mending III')).toBeTruthy();
+    expect(tooltip.getByText('Unbreakable')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('item-enchantment-0-remove'));
+    fireEvent.click(screen.getByTestId('item-enchantment-0-remove'));
+    fireEvent.click(screen.getByTestId('item-unbreakable'));
+    const components = (dataOf(stack, id) as { components: Record<string, Json> }).components;
+    expect(components['msm:components']).toBeUndefined();
+    expect(components['msm:durability']).toEqual({ max: 250 });
+  });
+
   it('edits food and on_use with the shared events editor', () => {
     const id = 'demo:wand' as ResourceLocation;
     const stack = new CommandStack(

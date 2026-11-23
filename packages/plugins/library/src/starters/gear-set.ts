@@ -25,13 +25,16 @@
  * upgrade material), the others are crafted. `trim_material` makes the material item an
  * armour trim material too: a `minecraft:trim_material` element `<id>_trim` with the vanilla
  * colour palette nearest to the set's colour, `provides_trim_material` through
- * `msm:components` and the `minecraft:trim_materials` item tag.
+ * `msm:components` and the `minecraft:trim_materials` item tag. "Never wears out" and "Starts
+ * with an enchantment" (ADR 0127 D2, D3; `content/wear.ts`) put `minecraft:unbreakable` and
+ * `minecraft:enchantments` in the `msm:components` of every tool, weapon and armour piece.
  */
 import type {
   BundleContext,
   ContentBundle,
   ContentBundleAsset,
   ContentBundleElement,
+  Json,
   JsonObject,
   ResourceLocation,
   StarterParameter,
@@ -60,6 +63,7 @@ import {
   setValue,
   stringValue,
 } from '../content/parameters';
+import { applyWear, readWear, wearParameters } from '../content/wear';
 
 /** A tool piece: its tool type, display word, recipe pattern and vanilla item tag. */
 interface ToolPiece {
@@ -438,6 +442,7 @@ export const GEAR_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     type: 'boolean',
     default: false,
   },
+  ...wearParameters('Pieces', 'piece'),
   {
     id: 'tier',
     label: 'Tier',
@@ -592,6 +597,17 @@ export const GEAR_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   },
 ]);
 
+/** The components that make an item a piece of gear, which the wear answers apply to. */
+const GEAR_COMPONENTS: readonly string[] = [
+  'msm:tool',
+  'msm:armor',
+  'msm:ranged_weapon',
+  'msm:shield',
+];
+
+const isJsonObject = (value: Json | undefined): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 /** The ore's tool tier for drops: about the strength of the tools the material makes. */
 function oreTier(tier: string, minesLike: string): string {
   const level = tier === 'custom' ? minesLike : tier;
@@ -652,7 +668,26 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
   const blockKey = (id: ResourceLocation): string => `block.${id.replace(':', '.')}`;
   const elements: ContentBundleElement[] = [];
   const assets: ContentBundleAsset[] = [];
+  // "Never wears out" and "Starts with an enchantment" (ADR 0127 D2, D3) on every tool, weapon
+  // and armour piece: the items with one of the gear components.
+  const wear = readWear(
+    (id) => booleanValue(values, id),
+    (id) => stringValue(values, id),
+    (id) => numberValue(values, id),
+  );
   const add = (...entries: ContentBundleElement[]): void => {
+    for (const entry of entries) {
+      const components = isJsonObject(entry.data) ? entry.data.components : undefined;
+      if (
+        entry.kind !== KINDS.item ||
+        !isJsonObject(components) ||
+        !GEAR_COMPONENTS.some((key) => components[key] !== undefined)
+      ) {
+        continue;
+      }
+      const sentence = applyWear(components, wear);
+      if (sentence !== '' && entry.notes !== undefined) entry.notes += sentence;
+    }
     elements.push(...entries);
   };
 

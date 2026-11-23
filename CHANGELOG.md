@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- **Set on fire** in Rules: a new step in the Mobs group sets a mob on fire for the seconds you give ("set the mob on fire for 5 seconds"). Players are not lit, as no Minecraft command can do that.
+- **Items that start enchanted or never wear out.** The Item Studio's **Tool and durability** section has **Never wears out** and **Starts with enchantments** (any enchantment, Minecraft's or your own, with its level), and shows the item's tooltip as the game will. The Weapon and Gear set flows ask the same: **Never wears out**, **Starts with an enchantment** and **Enchantment level**.
+- **Frost Walker's ice path for your own enchantments.** The Enchantment flow can make boots enchantments (**Goes on: Boots**) and has the effect **Freeze water under the wearer (as Frost Walker)**; the new example **Frost boots enchantment** shows how it is written.
+
 - **The AI helper says what it is doing and what it costs.** One state line tells you what is happening ("Thinking… (4 s)", "Making it…", "Your turn: choose what to do with the plan.") and offers at most one button. There is no Chat or Build switch any more, and an empty panel offers four example asks. A first-time **Set up the AI helper** card has three steps (**1. Get a key**, **2. Paste it here**, **Save and check**), says what a first question costs on your model, and checks the key at once; the same card is in Settings. A big ask shows a plan with **Make all of it**, **One at a time**, **Change the plan** and **Leave this out**.
 - **Look before you add.** What the helper makes waits in a tray as cards, one for each thing, with a picture and a **Keep** tick (Easy adds **Files behind this**; Advanced keeps the file list, **Before and after**, **Apply** and **Discard**). **Add to my mod** puts it in, **Show me** opens it, **Undo** takes it out again and **Put back** returns it. **See exactly what is sent** shows what goes with a question.
 - **Ask the helper** on a line of Things to fix attaches that problem in plain words, and failures are one sentence with one button (**Check my key**, **Try again**, **Keep going**, **New chat**). The guide page is rewritten around these screens, with a table of what each sentence means.
@@ -25,6 +29,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Fixed
 
+- An item's `minecraft:enchantments` in `msm:components` (Advanced) is now applied in the game; before, the mod left it out with a load error.
 - AI pictures' clean-up no longer turns a flat area into stripes or speckles of different shades.
 - The AI pictures' outline check now fails a round blob for every armour piece, tool, bow, ingot and gem: it also compares the corners, points and gaps where MCSuperMods' drawing differs from a plain oval. MCSuperMods' drawn leggings now have a clear gap between the legs (the Gear set and Glowshard leggings icons change with them).
 - An item can carry `minecraft:block_transformer` through `msm:components` (naming a block transformer of your data pack, or Minecraft's `minecraft:axe`, `shovel` or `hoe`): using it changes blocks as the transformer says. Before, the game refused it at load.

@@ -55,7 +55,7 @@ Moments with "every few seconds" take a number of seconds; some take a cooldown 
 | World | Place a block; Remove a block (with or without drops); Spawn a mob; Drop an item; Make an explosion; Set the weather; Set a game rule; Run a function; Run a command; Light a portal |
 | On screen | Show on screen; Hide from the screen; Show a number on screen |
 | Sounds and particles | Play a sound; Spawn particles; Play an animation |
-| Mobs | Remove the mob; Show a boss bar |
+| Mobs | Remove the mob; Set on fire (a mob, for some seconds; players are not lit, as no Minecraft command can do that); Show a boss bar |
 | Riding | Ride something; Get off |
 | Logic | If ... otherwise ...; Repeat; For each player; Wait; Stop the normal action; Stop the placing; Stop the explosion; Keep the blocks safe |
 | Counters | Set a counter; Add to a counter; Take from a counter |

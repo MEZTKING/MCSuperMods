@@ -9708,3 +9708,31 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B622 builds the player and the Play buttons over `createVanillaSoundReader` (pass the target's `mcVersion` and `window.msm.minecraft.readAssetObject`) and adds the CSP `media-src 'self' blob:`. B624 reads the unifont archives through the same reader's `file`. B628 reads `TargetFacts.dyes` for banner and shield layers.
+
+## 2026-11-23 — orchestrator and executor — Vanilla gaps: set on fire, items that start enchanted or never wear out, Frost Walker's effect
+
+**What**
+- The four gaps of the search spike recorded in `COVERAGE-AUDIT.md` are closed by [ADR 0127](adr/0127-vanilla-gaps-fire-enchanted-unbreakable-frost.md) (Accepted 2026-11-23 as a vetoable default).
+- Already worked before this change: `minecraft:unbreakable` through `msm:components` (decoded over the static registries, Advanced only); a Frost Walker-like enchantment as a project `minecraft:enchantment` written by hand (vanilla's is data). Did not work: `minecraft:enchantments` through `msm:components` (the runtime dropped it with a load error, the validator warned), and no Rules step lit a mob.
+- Rules (D1): step `set_on_fire` ("Set on fire", Mobs group, `set {who} on fire for {seconds}`, who defaults to the mob, 0 to 1000 seconds or a reading), compiled to `runCommand("data merge entity @s {Fire:<ticks>s}")` per entity with players skipped; the fallback form `set_fire` in `compile/games.ts`, checked offline on both targets; `rules.mcdoc` (both step lists and `SetOnFireStep`) and `symbols.json`; sample and golden `step-set_on_fire`; the AI prompt's step ids (pinned hash moved); 62 steps.
+- Runtime (D2): `ComponentPassthrough.DELAYED` and `DELAYED_PASSTHROUGH_COMPONENTS` gain `enchantments`; `MsmGearGameTest.passthroughStartsEnchantedAndRejectsDynamicHolder` (was `passthroughRejectsDynamicHolder`) on `enchanted_blade.json`, which now also carries `minecraft:unbreakable`, `msm:durability` and a still-rejected `minecraft:stored_enchantments`.
+- Item Studio (D3): **Never wears out** and **Starts with enchantments** in "Tool and durability" (`ItemWearFields.tsx`, `item-wear-model.ts`), writing `minecraft:unbreakable` and `minecraft:enchantments` into `msm:components` (the field removed when empty), with the item's tooltip as the live view. Weapon (Stats) and Gear set (Pieces, every tool, weapon and armour piece) flows: **Never wears out**, **Starts with an enchantment**, **Enchantment level** (`content/wear.ts`).
+- Frost Walker (D4): the Enchantment flow's target **Boots** and effect **Freeze water under the wearer (as Frost Walker)** (`freezeWaterEffects`, the 26.3 data format: loot conditions by `type`, `#` damage tags, `minecraft:simple` state provider with `id` and `properties`); the example `example_msm_frost_boots` (Rime Step) in the blocks-items mirror; 201 examples.
+- Docs: ADR 0127, DESIGN (the items row and the Rules paragraph), COVERAGE-AUDIT (the four closed, what remains), CHANGELOG `[Unreleased]` (three Added, one Fixed), guide pages `rules.md`, `blocks-and-items.md`, `creator.md`, `templates-and-examples.md`, `examples/README.md`, root `CLAUDE.md` (62 steps, 201 examples).
+
+**Live views (ADR 0119 D1)**
+- Set on fire: the rule's sentence on its card; Try it lists the command as an "Only in Minecraft" line in What happened.
+- Starts with enchantments and Never wears out: the Item Studio's tooltip under the fields (name, each enchantment with its level, "Unbreakable"), following every edit; the Creator's preview of the made item.
+- Frost boots and the Enchantment flow's freezing effect: the enchantment's data live view (ADR 0120); the freezing itself only in the game.
+
+**Checks**
+- `pnpm lint`, `pnpm typecheck`; `node tools/build-msm-mcdoc/index.ts --check`; vitest (`--maxWorkers=2`) of `@msm/plugin-rules`, `@msm/plugin-blocks-items`, `@msm/plugin-library`, `@msm/ai`, `@msm/schemas`, `@msm/sim`, `@msm/plugin-datapack`, `@msm/exporters` (`library.test.ts` with the new wizard alternatives and the example on both targets, the mirror rewritten with `UPDATE_GOLDENS=1`), and the app's Rules, AI prompt and blocks-items Studio tests (43 files, 491 tests), `tools/community-repo` and `tools/build-msm-mcdoc` tests. The exporters' "0.8.0 flows" check now also accepts vanilla damage type tags (the Frost Walker effect names `#minecraft:burn_from_stepping`). Free disk at the end: 10.06 GB, at the stop line, so no `pnpm build` or app-wide run. Not run: the engine-mod build and GameTests (this machine has JDK 21, the runtime needs 25): the Java change is one entry in a `Set.of` and a rewritten GameTest, for CI.
+
+**Decisions**
+- Fire through `data merge entity` (data only) rather than a new Script API member; players are skipped, as no vanilla command lights a player. A block is still lit with Place a block and `minecraft:fire`.
+- Both item answers are vanilla components in the existing passthrough, not a new MSM field: no format change.
+- `stored_enchantments` stays undelayed until something asks for it.
+
+**Next**
+- In-game checks (ADR 0127 Consequences): a mob lit by the step, a Weapon flow sword with Sharpness and Never wears out, Rime Step boots on water, on both targets.
+- Search lines for "set on fire", "enchanted", "unbreakable" and "frost walker" (the search plan's).

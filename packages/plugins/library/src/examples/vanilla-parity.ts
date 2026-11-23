@@ -8,13 +8,15 @@
  * with a function and a rule book). Every block and item id differs from every other example's,
  * so the mirror projects hold them in one project. Pictures are the library's placeholders;
  * sign edit-screen pictures are placeholder boards. New blocks, items, commands and tabs
- * need the Fabric mod jar export.
+ * need the Fabric mod jar export. Frost boots (ADR 0127 D4) is an enchantment that freezes
+ * water under the wearer, as Frost Walker does; it is data and works in a data pack.
  */
 import type { ContentBundleElement, ExampleProject, Json, ResourceLocation } from '@msm/plugin-api';
 import { artLookPng } from '../art/draw';
 import type { Rgb } from '../assets/png';
 import { artSeed, COLOURS, element, itemModel, KINDS, rl, texture } from '../content/bundle';
 import { hasFabric } from '../content/supports';
+import { freezeWaterEffects } from '../starters/enchantment';
 import { defineExample } from './define';
 
 const COMMAND_KIND = 'msm:command';
@@ -900,6 +902,43 @@ const berryJuice = defineExample({
   },
 });
 
+// Frost boots (ADR 0127 D4) ------------------------------------------------------------------
+
+/** Frost boots: an enchantment that freezes water under the wearer, as Frost Walker does. */
+const frostBoots = defineExample({
+  id: 'example_msm_frost_boots',
+  title: 'Frost boots enchantment',
+  description: 'A boots enchantment that freezes water under the wearer, as Frost Walker does.',
+  kind: KINDS.enchantment,
+  category: 'Enchantments',
+  tags: ['enchantment', 'frost walker', 'ice', 'freeze water', 'boots'],
+  build: ({ namespace }) => {
+    const id = rl(namespace, 'rime_step');
+    return {
+      elements: [
+        element(
+          id,
+          KINDS.enchantment,
+          {
+            description: { text: 'Rime Step', color: 'aqua' },
+            supported_items: '#minecraft:enchantable/foot_armor',
+            weight: 2,
+            max_level: 2,
+            min_cost: { base: 10, per_level_above_first: 10 },
+            max_cost: { base: 25, per_level_above_first: 10 },
+            anvil_cost: 4,
+            slots: ['feet'],
+            exclusive_set: '#minecraft:exclusive_set/boots',
+            effects: freezeWaterEffects(),
+          },
+          `An enchantment is data, so it can do what vanilla's own do: this one is Frost Walker's. minecraft:location_changed runs each time the wearer moves: standing on the ground and not riding, replace_disk turns still water in a disk under the feet (radius 3 at level I, one more per level) into frosted ice, which melts back by itself. minecraft:damage_immunity keeps magma blocks and campfires from burning the feet. exclusive_set keeps it off boots with Depth Strider or Frost Walker. Try /enchant @s ${id} 2 with boots on, then walk onto water.`,
+        ),
+      ],
+      assets: [],
+    };
+  },
+});
+
 /** The block and item behaviour examples of this brief, for the blocks and items mirror. */
 export const vanillaParityBehaviourExamples: readonly ExampleProject[] = [
   cottageFurniture,
@@ -907,6 +946,7 @@ export const vanillaParityBehaviourExamples: readonly ExampleProject[] = [
   copperRoof,
   adventurersSatchel,
   berryJuice,
+  frostBoots,
 ];
 
 /** The Server helper example, for the scripts mirror. */

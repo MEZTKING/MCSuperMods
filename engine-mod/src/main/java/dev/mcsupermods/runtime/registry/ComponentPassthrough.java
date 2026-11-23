@@ -38,7 +38,9 @@ public final class ComponentPassthrough {
      * ADR 0044 D1's three holders ({@code jukebox_playable}, {@code provides_trim_material}, {@code trim}) and three
      * components that name damage types ({@code damage_resistant} and {@code blocks_attacks} by tag,
      * {@code damage_type} by id), and {@code block_transformer} (a {@code block_transformer} registry entry, the data
-     * pack's {@code data/<ns>/block_transformer/} files: an item with it transforms blocks when used, as an axe strips).
+     * pack's {@code data/<ns>/block_transformer/} files: an item with it transforms blocks when used, as an axe strips),
+     * and {@code enchantments} (ADR 0127 D2: an item that starts enchanted names entries of the enchantment registry,
+     * vanilla's or the project's own).
      */
     public static final Set<Identifier> DELAYED = Set.of(
             Identifier.withDefaultNamespace("jukebox_playable"),
@@ -47,7 +49,8 @@ public final class ComponentPassthrough {
             Identifier.withDefaultNamespace("damage_resistant"),
             Identifier.withDefaultNamespace("blocks_attacks"),
             Identifier.withDefaultNamespace("damage_type"),
-            Identifier.withDefaultNamespace("block_transformer"));
+            Identifier.withDefaultNamespace("block_transformer"),
+            Identifier.withDefaultNamespace("enchantments"));
 
     private static RegistryAccess staticRegistries;
 

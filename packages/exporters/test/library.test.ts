@@ -393,6 +393,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       armor_base: 'leather',
       pieces: ['pickaxe', 'leggings'],
       upgrade_from: 'iron',
+      // ADR 0127 D2, D3: every piece starts enchanted and never wears out.
+      never_wears_out: true,
+      starting_enchantment: 'minecraft:unbreaking',
+      starting_enchantment_level: 3,
     },
     {
       material_name: 'Jade',
@@ -426,6 +430,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       weapon_type: 'bow',
       draw_speed: 2,
       ingredient: 'minecraft:diamond',
+      // ADR 0127 D2, D3.
+      never_wears_out: true,
+      starting_enchantment: 'minecraft:power',
+      starting_enchantment_level: 5,
     },
     {
       weapon_name: 'Oak Guard',
@@ -482,6 +490,8 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
   ],
   enchantment: [
+    // ADR 0127 D4: Frost Walker's effect.
+    { enchantment_name: 'Ice Path', applies_to: 'boots', effect: 'freeze_water', max_level: 2 },
     {
       enchantment_name: 'Frost Bite',
       applies_to: 'bows',
@@ -2576,8 +2586,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           const text = JSON.stringify(built.elements);
           for (const match of text.matchAll(/"#minecraft:([a-z_/]+)"/g)) {
             const tag = match[1] as string;
-            const known = ['tag/item', 'tag/enchantment', 'tag/block'].some((name) =>
-              vanilla(name).has(tag),
+            const known = ['tag/item', 'tag/enchantment', 'tag/block', 'tag/damage_type'].some(
+              (name) => vanilla(name).has(tag),
             );
             expect(known, `${id} #minecraft:${tag}`).toBe(true);
           }

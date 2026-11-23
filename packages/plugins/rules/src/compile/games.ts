@@ -26,10 +26,11 @@
  * `execute if score` the one block is in that phase. The word is `<event><phase>+<ns>+<path>`
  * with each `/` of the path written as `+`.
  *
- * Command text comes from `TargetFacts.commands.forms` (plugin API 1.22.0). Four forms the
+ * Command text comes from `TargetFacts.commands.forms` (plugin API 1.22.0). Five forms the
  * targets do not list yet (`execute if entity`, `execute if score ... matches ... run`,
- * `setworldspawn`, `spawnpoint`; each run by B547 on both versions) are
- * {@link RULES_FALLBACK_FORMS}, used only when the target has no form of that name.
+ * `setworldspawn`, `spawnpoint`, each run by B547 on both versions, and ADR 0127's
+ * `data merge entity ... {Fire:...}`) are {@link RULES_FALLBACK_FORMS}, used only when the
+ * target has no form of that name.
  */
 import type { CommandFormName, TargetFacts } from '@msm/plugin-api';
 import type { SignalName } from '../catalogue';
@@ -124,15 +125,17 @@ export type RulesFallbackFormName =
   | 'if_entity'
   | 'if_score_run'
   | 'set_world_spawn'
-  | 'spawn_point';
+  | 'spawn_point'
+  | 'set_fire';
 
 /** Every form name Rules writes. */
 export type RulesFormName = CommandFormName | RulesFallbackFormName;
 
 /**
- * Forms Rules needs that the targets do not list, each run on both versions' dedicated servers
- * by B547 (`docs/reference/spikes/b547/README.md`, "Other findings") and checked by the offline
- * checker on both targets in the rules tests. They belong in `TargetFacts.commands.forms`; a
+ * Forms Rules needs that the targets do not list, the first four run on both versions'
+ * dedicated servers by B547 (`docs/reference/spikes/b547/README.md`, "Other findings"), and
+ * every one checked by the offline checker on both targets in the rules tests (`set_fire`
+ * waits for the in-game check of ADR 0127). They belong in `TargetFacts.commands.forms`; a
  * target that lists a form of the same name wins.
  */
 export const RULES_FALLBACK_FORMS: Readonly<Record<RulesFallbackFormName, string>> = Object.freeze({
@@ -140,6 +143,8 @@ export const RULES_FALLBACK_FORMS: Readonly<Record<RulesFallbackFormName, string
   if_score_run: 'execute if score <holder> <objective> matches <range> run <command>',
   set_world_spawn: 'setworldspawn <x> <y> <z>',
   spawn_point: 'spawnpoint <players> <x> <y> <z>',
+  // ADR 0127 D1: `Fire` is the entity's ticks of fire (a short; vanilla-mcdoc `EntityBase`).
+  set_fire: 'data merge entity <entities> {Fire:<ticks>s}',
 });
 
 /** The template of `name` on `target`, or undefined when the target has no game kit forms. */
@@ -165,6 +170,7 @@ export const RULES_ENTRY_FORMS: Readonly<Record<string, readonly RulesFormName[]
   add_to_score: ['score_add'],
   set_world_spawn: ['set_world_spawn'],
   set_spawn_point: ['spawn_point'],
+  set_on_fire: ['set_fire'],
   set_world_border: ['worldborder_set', 'worldborder_set_over_seconds', 'worldborder_center'],
   in_area: ['if_entity'],
   on_team: ['if_entity'],

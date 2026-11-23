@@ -731,7 +731,7 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 118 per-kind examples, one per built-in kind, 56 behaviour examples, 5 worlds, 17 popular ideas and 4 starter projects', () => {
+  it('has 118 per-kind examples, one per built-in kind, 57 behaviour examples, 5 worlds, 17 popular ideas and 4 starter projects', () => {
     expect(kindExamples).toHaveLength(118);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
@@ -772,6 +772,7 @@ describe('examples', () => {
       'example_msm_copper_roof',
       'example_msm_adventurers_satchel',
       'example_msm_berry_juice',
+      'example_msm_frost_boots',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -835,7 +836,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(200);
+    expect(libraryExamples).toHaveLength(201);
   });
 
   it('reuses the starter builders for the starter projects', () => {

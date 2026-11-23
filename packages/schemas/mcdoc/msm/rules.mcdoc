@@ -1034,6 +1034,8 @@ enum(string) PlainStepKind {
 	PlayAnimation = "play_animation",
 	/// Removes the mob.
 	RemoveMob = "remove_mob",
+	/// Sets a mob on fire for some seconds (ADR 0127 D1).
+	SetOnFire = "set_on_fire",
 	/// Makes someone ride the player, the mob or the other one (B458).
 	Ride = "ride",
 	/// Makes someone get off what they ride.
@@ -1164,6 +1166,8 @@ enum(string) StepKind {
 	PlayAnimation = "play_animation",
 	/// Removes the mob.
 	RemoveMob = "remove_mob",
+	/// Sets a mob on fire for some seconds (ADR 0127 D1).
+	SetOnFire = "set_on_fire",
 	/// Makes someone ride the player, the mob or the other one (B458).
 	Ride = "ride",
 	/// Makes someone get off what they ride.
@@ -1604,6 +1608,15 @@ dispatch msm:rule_step[play_animation] to struct PlayAnimationStep {
 
 /// Removes a mob from the world without drops.
 dispatch msm:rule_step[remove_mob] to struct RemoveMobStep {
+	/// Defaults to `mob`.
+	who?: Who,
+}
+
+/// Sets a mob, or any other entity but a player, on fire (`data merge entity` of its `Fire`
+/// ticks; ADR 0127 D1). Players are skipped: no command lights a player.
+dispatch msm:rule_step[set_on_fire] to struct SetOnFireStep {
+	/// How long it burns, up to 1000 seconds (the game holds at most 1638).
+	seconds: (double @ 0..1000 | Value),
 	/// Defaults to `mob`.
 	who?: Who,
 }

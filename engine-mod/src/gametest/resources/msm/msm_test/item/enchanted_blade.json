@@ -4,7 +4,14 @@
       "minecraft:enchantments": {
         "minecraft:sharpness": 2
       },
-      "minecraft:glider": {}
+      "minecraft:glider": {},
+      "minecraft:stored_enchantments": {
+        "minecraft:mending": 1
+      },
+      "minecraft:unbreakable": {}
+    },
+    "msm:durability": {
+      "max": 100
     }
   },
   "format": 1

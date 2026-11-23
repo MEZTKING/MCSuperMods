@@ -130,6 +130,9 @@ describe('blocks-items validators', () => {
             'minecraft:stored_enchantments': { 'minecraft:sharpness': 1 },
             jukebox_playable: 'minecraft:cat',
             'minecraft:max_damage': 10,
+            // ADR 0127 D2: an item may start enchanted; unbreakable needs no data pack.
+            'minecraft:enchantments': { 'minecraft:sharpness': 2 },
+            'minecraft:unbreakable': {},
           },
         },
       }),

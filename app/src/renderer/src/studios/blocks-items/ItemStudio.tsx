@@ -6,7 +6,8 @@
  * throw, what happens after the throw, cooldown, sound, dispensers and the two hit events), and
  * the events editor shared with the Block Studio, with its "Triggers" section (B239, ADR 0061
  * D1: on hit, on use on a block, while held, while worn) and "Fuel and compost" (ADR 0060 D4),
- * and the Boat section (B538, ADR 0110 D1: `BoatSection.tsx`).
+ * and the Boat section (B538, ADR 0110 D1: `BoatSection.tsx`); "Never wears out" and "Starts
+ * with enchantments" with their tooltip (ADR 0127 D2, D3: `ItemWearFields.tsx`).
  * Choices come from the schema; everything
  * else stays behind "Advanced (all fields)".
  */
@@ -31,6 +32,7 @@ import {
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { ItemInventorySection } from './ItemInventorySection';
+import { ItemWearFields } from './ItemWearFields';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
 import { projectPortals } from './portal-model';
 import { FuelCompostFields, TriggersSection } from './triggers';
@@ -263,6 +265,13 @@ export function ItemStudio(props: StudioProps) {
         />
       )}
       {at(['components', 'msm:durability', 'max'])}
+      <ItemWearFields
+        components={components}
+        name={typeof data.display_name === 'string' ? data.display_name : element.id}
+        suggest={suggest}
+        setPassthrough={(next) => set(['components', 'msm:components'], next)}
+      />
+      {at(['components', 'msm:components', 'minecraft:enchantments'])}
     </Section>
   );
 

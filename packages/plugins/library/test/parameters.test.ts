@@ -313,6 +313,9 @@ describe('wizard starters', () => {
       'pieces',
       'upgrade_from',
       'trim_material',
+      'never_wears_out',
+      'starting_enchantment',
+      'starting_enchantment_level',
       'tier',
       'custom_durability',
       'custom_speed',
@@ -1323,6 +1326,74 @@ describe('Creator flows', () => {
       exclusive_set: '#minecraft:exclusive_set/armor',
     });
     expect(ids(armour).some((id) => id.startsWith('minecraft:'))).toBe(false);
+  });
+
+  it('Enchantment: boots that freeze water as Frost Walker does (ADR 0127 D4)', () => {
+    const frost = build(starter('enchantment'), { applies_to: 'boots', effect: 'freeze_water' });
+    const enchantment = data(frost, 'demo:ruby_edge');
+    expect(enchantment).toMatchObject({
+      supported_items: '#minecraft:enchantable/foot_armor',
+      slots: ['feet'],
+    });
+    const effects = enchantment.effects as JsonObject;
+    expect(Object.keys(effects)).toEqual([
+      'minecraft:damage_immunity',
+      'minecraft:location_changed',
+    ]);
+    expect(effects['minecraft:location_changed']).toMatchObject([
+      {
+        effect: {
+          type: 'minecraft:replace_disk',
+          block_state: { state: { id: 'minecraft:frosted_ice' } },
+          offset: [0, -1, 0],
+        },
+      },
+    ]);
+  });
+
+  it('Weapon and Gear set: Never wears out and Starts with an enchantment (ADR 0127 D2, D3)', () => {
+    const plain = build(starter('weapon'), { weapon_type: 'sword', weapon_name: 'Ruby Thing' });
+    expect((data(plain, 'demo:ruby_thing').components as JsonObject)['msm:components']).toBe(
+      undefined,
+    );
+    const blade = build(starter('weapon'), {
+      weapon_type: 'sword',
+      weapon_name: 'Ruby Thing',
+      never_wears_out: true,
+      starting_enchantment: 'minecraft:sharpness',
+      starting_enchantment_level: 4,
+    });
+    expect(data(blade, 'demo:ruby_thing')).toMatchObject({
+      components: {
+        'msm:durability': { max: 500 },
+        'msm:components': {
+          'minecraft:enchantments': { 'minecraft:sharpness': 4 },
+          'minecraft:unbreakable': {},
+        },
+      },
+    });
+    const gear = build(starter('gear-set'), {
+      never_wears_out: true,
+      starting_enchantment: 'minecraft:unbreaking',
+      starting_enchantment_level: 3,
+    });
+    const pieces = gear.elements.filter((entry) => entry.kind === 'msm:item');
+    const worn = pieces.filter(
+      (entry) =>
+        ((entry.data as JsonObject).components as JsonObject | undefined)?.['msm:components'] !==
+        undefined,
+    );
+    expect(worn.length).toBeGreaterThan(4);
+    for (const entry of worn) {
+      expect((entry.data as JsonObject).components, entry.id).toMatchObject({
+        'msm:components': {
+          'minecraft:enchantments': { 'minecraft:unbreaking': 3 },
+          'minecraft:unbreakable': {},
+        },
+      });
+    }
+    // The material item itself is not gear.
+    expect(worn.map((entry) => entry.id)).not.toContain('demo:ruby');
   });
 
   it('Painting: a placeholder sized by the choice, or the picked PNG unchanged', () => {

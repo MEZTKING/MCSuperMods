@@ -51,6 +51,7 @@ const SAMPLE_VALUES: Readonly<Record<string, string>> = {
   seconds: '60',
   range: '1',
   command: 'say hi',
+  ticks: '100',
 };
 
 const PROJECT_IDS = {
@@ -134,6 +135,7 @@ describe('the forms of the new entries', () => {
       'add_to_score',
       'set_world_spawn',
       'set_spawn_point',
+      'set_on_fire',
       'set_world_border',
       'in_area',
       'on_team',

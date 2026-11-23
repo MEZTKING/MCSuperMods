@@ -25037,6 +25037,11 @@
           "value": "remove_mob"
         },
         {
+          "desc": "Sets a mob on fire for some seconds (ADR 0127 D1).",
+          "identifier": "SetOnFire",
+          "value": "set_on_fire"
+        },
+        {
           "desc": "Makes someone ride the player, the mob or the other one (B458).",
           "identifier": "Ride",
           "value": "ride"
@@ -26030,6 +26035,43 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::SetOnFireStep": {
+      "fields": [
+        {
+          "desc": "How long it burns, up to 1000 seconds (the game holds at most 1638).",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 1000,
+                  "min": 0
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Defaults to `mob`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::SetSpawnPointStep": {
       "fields": [
         {
@@ -26632,6 +26674,11 @@
           "desc": "Removes the mob.",
           "identifier": "RemoveMob",
           "value": "remove_mob"
+        },
+        {
+          "desc": "Sets a mob on fire for some seconds (ADR 0127 D1).",
+          "identifier": "SetOnFire",
+          "value": "set_on_fire"
         },
         {
           "desc": "Makes someone ride the player, the mob or the other one (B458).",
@@ -30097,6 +30144,10 @@
         "kind": "reference",
         "path": "::msm::rules::SetHudStep"
       },
+      "set_on_fire": {
+        "kind": "reference",
+        "path": "::msm::rules::SetOnFireStep"
+      },
       "set_score": {
         "kind": "reference",
         "path": "::msm::rules::ScoreStep"
@@ -30439,5 +30490,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:5b229ab8ebaa07d5512ee34f42e713358cda64a1f6fec5ab0ee25c68c61cd696"
+  "ref": "msm-mcdoc:sha256:dc257b14cd618bfd5460964909766cbb42e484ab97ff7266c26665cea575c429"
 }

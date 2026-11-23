@@ -3,7 +3,8 @@
  * English name, the items it goes on (a vanilla `enchantable` or base item tag), its highest
  * level, how often it is offered (weight and anvil cost), one effect from a fixed list (extra
  * damage, extra knockback, setting the target on fire, a mob effect on hit, extra durability,
- * faster mining), each with values that grow with the level, and an optional vanilla
+ * faster mining, freezing water under the wearer as Frost Walker does, ADR 0127 D4), each with
+ * values that grow with the level, and an optional vanilla
  * exclusive set. It joins the vanilla enchantment tags that put it on the enchanting table and
  * in villager trades when asked. No runtime: it works in a data pack.
  */
@@ -63,6 +64,13 @@ const TARGETS: readonly {
     what: 'armour',
   },
   {
+    value: 'boots',
+    label: 'Boots',
+    items: '#minecraft:enchantable/foot_armor',
+    slot: 'feet',
+    what: 'boots',
+  },
+  {
     value: 'tools',
     label: 'Tools',
     items: '#minecraft:enchantable/mining',
@@ -94,6 +102,7 @@ const EFFECTS: readonly { value: string; label: string }[] = [
   { value: 'mob_effect', label: 'Give the target a mob effect' },
   { value: 'durability', label: 'Extra durability' },
   { value: 'mining_speed', label: 'Faster mining' },
+  { value: 'freeze_water', label: 'Freeze water under the wearer (as Frost Walker)' },
 ];
 
 /** Vanilla exclusive sets: enchantments in the same set cannot be on one item. */
@@ -190,6 +199,74 @@ const linear = (base: number, perLevel: number): JsonObject => ({
   per_level_above_first: perLevel,
 });
 
+/**
+ * The effects of vanilla's Frost Walker (ADR 0127 D4), written from its data-driven enchantment:
+ * `minecraft:location_changed` replaces a disk of still water under a wearer standing on the
+ * ground (not riding) with frosted ice, which melts back, radius 3 at level I and one more per
+ * level (at most 16); `minecraft:damage_immunity` keeps magma blocks and campfires from burning
+ * the feet.
+ */
+export function freezeWaterEffects(): JsonObject {
+  return {
+    'minecraft:damage_immunity': [
+      {
+        requirements: {
+          type: 'minecraft:damage_source_properties',
+          predicate: {
+            tags: [
+              { id: '#minecraft:burn_from_stepping', expected: true },
+              { id: '#minecraft:bypasses_invulnerability', expected: false },
+            ],
+          },
+        },
+        effect: {},
+      },
+    ],
+    'minecraft:location_changed': [
+      {
+        requirements: {
+          type: 'minecraft:all_of',
+          terms: [
+            {
+              type: 'minecraft:entity_properties',
+              entity: 'this',
+              predicate: { flags: { is_on_ground: true } },
+            },
+            {
+              type: 'minecraft:inverted',
+              term: {
+                type: 'minecraft:entity_properties',
+                entity: 'this',
+                predicate: { vehicle: {} },
+              },
+            },
+          ],
+        },
+        effect: {
+          type: 'minecraft:replace_disk',
+          block_state: {
+            type: 'minecraft:simple',
+            state: { id: 'minecraft:frosted_ice', properties: { age: '0' } },
+          },
+          height: 1,
+          offset: [0, -1, 0],
+          predicate: {
+            type: 'minecraft:all_of',
+            predicates: [
+              { type: 'minecraft:matching_blocks', blocks: 'minecraft:air', offset: [0, 1, 0] },
+              { type: 'minecraft:matching_blocks', blocks: 'minecraft:water' },
+              { type: 'minecraft:matching_fluids', fluids: 'minecraft:water' },
+              { type: 'minecraft:unobstructed' },
+            ],
+          },
+          radius: { type: 'minecraft:clamped', value: linear(3, 1), min: 0, max: 16 },
+          trigger_game_event: 'minecraft:block_place',
+        },
+      },
+    ],
+  };
+}
+
 /** The `effects` of one effect choice, and a sentence saying what it does. */
 function effectsOf(
   effect: string,
@@ -259,6 +336,11 @@ function effectsOf(
           ],
         },
         text: 'minecraft:attributes adds mining efficiency like Efficiency (the level squared, plus one)',
+      };
+    case 'freeze_water':
+      return {
+        effects: freezeWaterEffects(),
+        text: 'minecraft:location_changed freezes still water around the wearer into frosted ice that melts back, as Frost Walker does (radius 3 at level I, one more per level), and minecraft:damage_immunity keeps magma blocks from burning the feet',
       };
     default:
       return {

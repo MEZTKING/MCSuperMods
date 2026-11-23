@@ -48,14 +48,14 @@ describe('the catalogue', () => {
     expect(sorted(CATALOGUE_IDS.who)).toEqual(sorted([...enumValues('WhoName'), 'players_nearby']));
   });
 
-  it('counts 66 triggers, 61 steps, 25 conditions, 17 values and 7 places', () => {
+  it('counts 66 triggers, 62 steps, 25 conditions, 17 values and 7 places', () => {
     expect([
       TRIGGERS.length,
       STEPS.length,
       CONDITIONS.length,
       VALUES.length,
       PLACES.length,
-    ]).toEqual([66, 61, 25, 17, 7]);
+    ]).toEqual([66, 62, 25, 17, 7]);
   });
 
   const all: [string, readonly CatalogueEntry[]][] = [

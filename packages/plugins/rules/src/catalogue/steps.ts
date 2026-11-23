@@ -543,6 +543,16 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     slots: [WHO],
     defaultWho: 'mob',
   }),
+  // Fire (ADR 0127 D1): `data merge entity` of the entity's `Fire` ticks; players are skipped,
+  // as no command can light a player.
+  step({
+    id: 'set_on_fire',
+    label: 'Set on fire',
+    sentence: 'set {who} on fire for {seconds}',
+    group: 'mobs',
+    slots: [WHO, { name: 'seconds', type: 'seconds', min: 0, max: 1000 }],
+    defaultWho: 'mob',
+  }),
   // Riding (Script API 1.6 `Entity.ride` and `dismount`, B458); nothing rides a player.
   step({
     id: 'ride',

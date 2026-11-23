@@ -13,6 +13,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -38,6 +39,8 @@ import net.minecraft.world.item.MaceItem;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -323,15 +326,29 @@ public class MsmGearGameTest {
         helper.succeed();
     }
 
+    /**
+     * ADR 0127 D2: {@code minecraft:enchantments} waits for the data packs ({@link
+     * dev.mcsupermods.runtime.registry.ComponentPassthrough#DELAYED}), so the blade starts enchanted; {@code
+     * minecraft:unbreakable} decodes at once and keeps its {@code msm:durability} from wearing; {@code
+     * minecraft:stored_enchantments} names the same registry but is not delayed, so it is one load error and not set.
+     */
     @GameTest
-    public void passthroughRejectsDynamicHolder(GameTestHelper helper) {
+    public void passthroughStartsEnchantedAndRejectsDynamicHolder(GameTestHelper helper) {
         ItemStack blade = new ItemStack(item("enchanted_blade"));
         helper.assertTrue(blade.getItem() instanceof MsmItem, "enchanted_blade still registers");
-        helper.assertFalse(blade.isEnchanted(), "minecraft:enchantments applied");
+        helper.assertTrue(blade.isEnchanted(), "minecraft:enchantments is decoded once data packs are loaded");
+        Holder<Enchantment> sharpness = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+                .getOrThrow(Enchantments.SHARPNESS);
+        helper.assertValueEqual(blade.getEnchantments().getLevel(sharpness), 2, "sharpness level");
+        helper.assertTrue(blade.has(DataComponents.UNBREAKABLE), "minecraft:unbreakable through msm:components");
+        helper.assertFalse(blade.isDamageableItem(), "an unbreakable item does not wear");
         helper.assertTrue(blade.has(DataComponents.GLIDER), "the other passthrough entries still apply");
+        helper.assertFalse(blade.has(DataComponents.STORED_ENCHANTMENTS), "minecraft:stored_enchantments applied");
         List<String> errors = MsmRuntime.report().errors();
-        helper.assertTrue(errors.stream().anyMatch(e -> e.contains("enchanted_blade.json") && e.contains("minecraft:enchantments")
+        helper.assertTrue(errors.stream().anyMatch(e -> e.contains("enchanted_blade.json") && e.contains("minecraft:stored_enchantments")
                 && e.contains("needs a data pack registry")), "no error for a data pack registry holder: " + errors);
+        helper.assertFalse(errors.stream().anyMatch(e -> e.contains("enchanted_blade.json") && e.contains("minecraft:enchantments:")),
+                "minecraft:enchantments still an error: " + errors);
         helper.succeed();
     }
 }

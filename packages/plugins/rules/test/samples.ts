@@ -232,6 +232,13 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
   },
   play_animation: { trigger: 'mob_used', steps: [{ animation: 'wave', step: 'play_animation' }] },
   remove_mob: { trigger: 'mob_used', steps: [{ step: 'remove_mob' }] },
+  set_on_fire: {
+    trigger: 'mob_hurt',
+    steps: [
+      { seconds: 5, step: 'set_on_fire' },
+      { seconds: { max: 8, min: 2, value: 'random' }, step: 'set_on_fire', who: 'mob' },
+    ],
+  },
   show_boss_bar: {
     trigger: 'mob_hurt',
     steps: [

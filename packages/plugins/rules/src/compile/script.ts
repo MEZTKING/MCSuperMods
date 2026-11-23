@@ -566,6 +566,9 @@ const NEEDS_PLAYER = new Set([
   'set_spawn_point',
 ]);
 
+/** The most ticks of fire `Fire` holds (a short). */
+const MAX_FIRE_TICKS = 32767;
+
 /** The argument types read as one part of a position (ADR 0111 D1). */
 const POSITION_ARGUMENTS = new Set(['position', 'block_position']);
 const AXES: Record<string, number> = { x: 0, y: 1, z: 2 };
@@ -1062,6 +1065,19 @@ class RuleWriter {
     }
     const expression = `Math.round(${this.number(value, env)})`;
     return code(`String(${min === undefined ? expression : `Math.max(${min}, ${expression})`})`);
+  }
+
+  /**
+   * Seconds of fire as the whole ticks of `Fire` (a short): from 1 to 32767, a literal worked
+   * out now, a reading at run time (ADR 0127 D1).
+   */
+  private fireTicks(value: Json | undefined, env: Env): Piece {
+    if (typeof value === 'number') {
+      return words(String(Math.min(MAX_FIRE_TICKS, Math.max(1, Math.round(value * 20)))));
+    }
+    return code(
+      `String(Math.min(${MAX_FIRE_TICKS}, Math.max(1, Math.round(${this.number(value, env)} * 20))))`,
+    );
   }
 
   /** The steps of "Pick one at random": an `if` chain on a weighted pick of `do`'s steps. */
@@ -1635,6 +1651,12 @@ class RuleWriter {
         // skipped (removing a player is a TypeError).
         return [
           `${who('mob')}.forEach((target) => { if (target.asPlayer() === undefined) target.remove(); });`,
+        ];
+      case 'set_on_fire':
+        // ADR 0127 D1: the entity's `Fire` ticks through `data merge entity`, run as it; a
+        // player cannot be changed by `data`, so players are skipped.
+        return [
+          `${who('mob')}.forEach((target) => { if (target.asPlayer() === undefined) target.runCommand(${this.command('set_fire', { entities: words('@s'), ticks: this.fireTicks(step.seconds, env) })}); });`,
         ];
       case 'show_boss_bar': {
         const title = step.title === undefined ? 'undefined' : this.text(step.title, env);

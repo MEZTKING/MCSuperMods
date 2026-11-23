@@ -119,6 +119,7 @@ export const RULES_PROMPT_IDS = Object.freeze({
     'spawn_particles',
     'play_animation',
     'remove_mob',
+    'set_on_fire',
     'ride',
     'dismount',
     'show_boss_bar',

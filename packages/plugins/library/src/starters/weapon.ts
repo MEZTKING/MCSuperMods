@@ -6,7 +6,9 @@
  * `msm:durability`, a model with a tinted placeholder texture of its type, an optional shaped
  * recipe from a vanilla ingot or gem, its English name and the `msm:mod` metadata; a sword
  * also joins `minecraft:swords` (spears, maces, bows, crossbows and shields get their
- * enchanting tags from the blocks and items lowering). Ids derive from `weapon_name`. New
+ * enchanting tags from the blocks and items lowering). "Never wears out" and "Starts with an
+ * enchantment" (ADR 0127 D2, D3; `content/wear.ts`) add `minecraft:unbreakable` and
+ * `minecraft:enchantments` to its `msm:components`. Ids derive from `weapon_name`. New
  * items need the Fabric mod jar export (with `msm_runtime`).
  */
 import type {
@@ -41,6 +43,7 @@ import {
   rgbFromHex,
   stringValue,
 } from '../content/parameters';
+import { applyWear, readWear, wearParameters } from '../content/wear';
 
 /** A weapon type: its label, model parent, placeholder, recipe and what it is. */
 interface WeaponType {
@@ -196,6 +199,7 @@ export const WEAPON_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     max: 0,
     step: 0.1,
   },
+  ...wearParameters('Stats', 'weapon'),
   {
     id: 'draw_speed',
     label: 'Draw speed',
@@ -316,6 +320,14 @@ export function weaponBundle(context: BundleContext): ContentBundle {
     notes = `A shield: held up, msm:shield starts blocking after ${shield.block_delay_seconds} seconds and blocks ${Math.round(Number(shield.damage_reduction) * 100)} per cent of the damage. msm:durability gives it ${durability} uses. Its model is a flat item; vanilla's banner shield drawing is not reproduced.`;
   }
   components['msm:durability'] = { max: durability };
+  notes += applyWear(
+    components,
+    readWear(
+      (id) => booleanValue(values, id),
+      (id) => stringValue(values, id),
+      (id) => numberValue(values, id),
+    ),
+  );
 
   const elements: ContentBundleElement[] = [
     packElement(namespace, `${projectName}: ${name.lower}`, PACK_NOTES),

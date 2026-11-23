@@ -207,6 +207,7 @@ const STEPS: Record<string, Json> = {
   },
   play_animation: { animation: 'wave', step: 'play_animation' },
   remove_mob: { step: 'remove_mob' },
+  set_on_fire: { seconds: 5, step: 'set_on_fire' },
   show_boss_bar: {
     bar: 'guard',
     color: 'red',
