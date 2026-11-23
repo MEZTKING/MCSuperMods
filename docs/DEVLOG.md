@@ -9514,3 +9514,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Orchestrator: the plans that counted on about 1 MB of room from this follow-up (`PLAN-search.md`, `PLAN-ai-helper-2.md`) get none under the total-based budget; decide whether `check-size` gains a first-paint report or budget (entry script plus its `modulepreload` chunks and CSS from `index.html`) beside the total.
 - Root `CLAUDE.md`'s "Plugin API 1.23.0" status line and `docs/HANDOFF.md` name the old version; update at the next handover.
+
+## 2026-11-23 — executor — Molten amber light flake (CI run 45098044992)
+
+**What**
+- Cause: `SampleVillagersParityTest.moltenAmberGivesLight` read the block light a fixed 5 ticks after setting the block. The server's light engine (`ThreadedLevelLightEngine`, whose `checkBlock` only queues the work) runs the update later on the shared background workers, which also generate the other tests' chunks, and `getBrightness` reads 0 until it has. The GameTest server does not pace its ticks (0.46 ms a tick at the fastest measured), so 5 ticks is a few milliseconds against work measured in wall time. Neither the ejected code nor the runtime is wrong: the liquid block's emission is 12 in both, and the light is 12 and 11 above once the engine has run.
+- Evidence (26.3, temporary probe tests, not committed): light 0 at tick 0 and 12/11 from tick 1 (15 ms) on an idle server, tick 1 (113 to 133 ms) in three full `sample_villagers_*` runs; with the background workers held for 300 ms the old test body failed 3 of 3 with the CI message ("was 0 on tick 5"), the light arriving at tick 315; in a full ejected run on one CPU (`taskset -c 0`) the real test failed with the CI message in 1 of 3 runs while the probe in the same run saw the light arrive at tick 11 (385 ms). In every run the light engine's `waitForPendingTasks` future was done exactly when the numbers were right.
+- Fix: the test takes `waitForPendingTasks` for the block's chunk and `succeedWhen` waits for it, then checks 12 and 11; `maxTicks` 6000 (about 3 s of light delay at the fastest tick; a first 1000 was too short with five 300 ms tasks on three workers: 1000 ticks in 0.75 s), with the measured reason in its Javadoc. `SampleModParityTest.skyLightPassesTheRubyGlass` (the only other parity test that reads the light engine) waits the same way for both chunks' futures (before them the cell below the glass reads 15 whatever the glass does), `maxTicks` 100 to 6000.
+- Verified: the fixed test with the workers held passed 5 of 5; full `sample_villagers_*` 15 of 15 on the ejected jar 3 times, on the content jar 3 times and on the ejected jar on one CPU 4 times; the ruby glass test 3 times each on the sample mod's ejected and content jars, full `sample_mod_*` 83 of 83 on each; the parity jar builds for 26.3 and 26.4.
+
+**Decisions**
+- Waiting on the light engine's own future rather than on the numbers: a wrong light value then fails as a wrong value, not as a slow engine.
+- The runtime's own GameTests `MsmFluidGameTest.liquidBlockLight` and `MsmShapeGameTest.skyLightPassesASeeThroughCube` poll with `succeedWhen` at `maxTicks` 100 (about 46 ms at the fastest tick): the same weakness, outside this brief, left for a follow-up.
+
+**Next**
+- Give the two runtime GameTests above the same wait (the light engine's future, a budget sized in wall time).

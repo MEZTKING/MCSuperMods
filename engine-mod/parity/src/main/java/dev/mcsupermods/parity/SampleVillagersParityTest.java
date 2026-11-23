@@ -3,6 +3,7 @@ package dev.mcsupermods.parity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -10,6 +11,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -585,18 +587,34 @@ public class SampleVillagersParityTest {
         });
     }
 
-    /** Molten amber lights its block at 12, less one a block away. */
-    @GameTest(structure = ARENA, maxTicks = 40)
+    /**
+     * Molten amber lights its block at 12, less one a block away.
+     *
+     * <p>The server's light engine ({@code ThreadedLevelLightEngine}) only queues the update when the block is set; the
+     * update runs later on the shared background workers, which also generate the chunks of the other tests, and
+     * {@code getBrightness} reads 0 until it has run. The GameTest server does not pace its ticks (about 0.5 ms a tick
+     * when little else runs), so a fixed tick delay is a race against those workers: the old 5-tick wait failed once
+     * in CI (run 45098044992) and every time with the workers held for 300 ms, and on one CPU the full run saw the
+     * light arrive at tick 11 (417 ms). So the test asks the light engine for a future that completes once the chunk's
+     * queued light work has run, waits for it, then checks the numbers. The wait is the game taking time, measured in
+     * wall time, not ticks: 15 to 133 ms normally (tick 1), up to 417 ms on one CPU, over 750 ms (more than 1000 ticks)
+     * with five 300 ms tasks queued on the three workers. {@code maxTicks} 6000 is about 3 s of light delay at the
+     * fastest tick measured (0.46 ms), seven times the worst seen in a full run; only a failing test reaches it.
+     */
+    @GameTest(structure = ARENA, maxTicks = 6000)
     public void moltenAmberGivesLight(GameTestHelper helper) {
         BlockPos at = MID;
         for (Direction side : Direction.Plane.HORIZONTAL) {
             helper.setBlock(at.relative(side), Blocks.GLASS);
         }
         helper.setBlock(at, block(helper, "molten_amber"));
-        helper.runAfterDelay(5, () -> {
-            helper.assertValueEqual(helper.getLevel().getBrightness(LightLayer.BLOCK, helper.absolutePos(at)), 12, "light in the block");
-            helper.assertValueEqual(helper.getLevel().getBrightness(LightLayer.BLOCK, helper.absolutePos(at.above())), 11, "light above");
-            helper.succeed();
+        BlockPos lit = helper.absolutePos(at);
+        CompletableFuture<?> lightRun = helper.getLevel().getChunkSource().getLightEngine()
+                .waitForPendingTasks(SectionPos.blockToSectionCoord(lit.getX()), SectionPos.blockToSectionCoord(lit.getZ()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(lightRun.isDone(), "the light engine has not run the queued update yet");
+            helper.assertValueEqual(helper.getLevel().getBrightness(LightLayer.BLOCK, lit), 12, "light in the block");
+            helper.assertValueEqual(helper.getLevel().getBrightness(LightLayer.BLOCK, lit.above()), 11, "light above");
         });
     }
 

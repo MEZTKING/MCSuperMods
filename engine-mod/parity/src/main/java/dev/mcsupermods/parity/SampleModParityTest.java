@@ -8,11 +8,13 @@ import com.mojang.serialization.JsonOps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -1097,19 +1099,36 @@ public class SampleModParityTest {
         helper.succeed();
     }
 
-    /** Sky light reaches the cell below the ruby glass at full strength; below stone it is at most 14 (from the side). */
-    @GameTest(structure = ARENA, maxTicks = 100)
+    /**
+     * Sky light reaches the cell below the ruby glass at full strength; below stone it is at most 14 (from the side).
+     *
+     * <p>The light engine runs the updates later on the shared background workers, in wall time, while the GameTest
+     * server does not pace its ticks (as {@code SampleVillagersParityTest.moltenAmberGivesLight} measured: 0.46 ms a
+     * tick at the fastest, light delays up to 417 ms in a full run on one CPU). So the test waits for the light engine's
+     * futures for both chunks before it checks (before then the cell below the glass reads 15 whatever the glass does),
+     * and {@code maxTicks} 6000 is about 3 s of light delay at the fastest tick; only a failing test reaches it.
+     */
+    @GameTest(structure = ARENA, maxTicks = 6000)
     public void skyLightPassesTheRubyGlass(GameTestHelper helper) {
         BlockPos glass = new BlockPos(3, 2, 5);
         BlockPos stone = new BlockPos(7, 2, 5);
         helper.setBlock(glass, block(helper, "ruby_glass"));
         helper.setBlock(stone, Blocks.STONE);
         ServerLevel level = helper.getLevel();
+        CompletableFuture<?> lightRun = CompletableFuture.allOf(lightUpdates(helper, glass), lightUpdates(helper, stone));
         helper.succeedWhen(() -> {
+            helper.assertTrue(lightRun.isDone(), "the light engine has not run the queued updates yet");
             int underGlass = level.getBrightness(LightLayer.SKY, helper.absolutePos(glass.below()));
             int underStone = level.getBrightness(LightLayer.SKY, helper.absolutePos(stone.below()));
             helper.assertValueEqual(underGlass, 15, "sky light below the ruby glass");
-            helper.assertTrue(underStone < 15, "sky light below stone is " + underStone + " (light engine not updated yet)");
+            helper.assertTrue(underStone < 15, "sky light below stone is " + underStone);
         });
+    }
+
+    /** A future that completes once the light engine has run the light work queued for {@code pos}'s chunk. */
+    private static CompletableFuture<?> lightUpdates(GameTestHelper helper, BlockPos pos) {
+        BlockPos at = helper.absolutePos(pos);
+        return helper.getLevel().getChunkSource().getLightEngine()
+                .waitForPendingTasks(SectionPos.blockToSectionCoord(at.getX()), SectionPos.blockToSectionCoord(at.getZ()));
     }
 }
