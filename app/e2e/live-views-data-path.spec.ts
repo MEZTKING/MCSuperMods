@@ -354,11 +354,12 @@ test('the AI helper: See it rolls a proposed loot table before it is added', asy
     await palette.getByTestId('command-aiHelper').click();
     const panel = window.getByTestId('ai-panel');
     await expect(panel).toBeVisible();
-    await panel.getByTestId('ai-mode-chat').click();
     await panel.getByTestId('ai-input').fill('Add a chest loot table with diamonds and emeralds.');
     await panel.getByTestId('ai-send').click();
     await expect(panel.getByTestId('ai-transcript')).toContainText('The checks report no errors');
     await expect(panel.getByTestId('ai-stop')).toBeHidden();
+    // The panel has no Chat or Build switch since B685; Look opens the waiting changes.
+    await panel.getByTestId('ai-status-look').click();
 
     // See it: the proposed table rolled before Apply; the project does not have it yet.
     const seeIt = panel.getByTestId('ai-see-it');
