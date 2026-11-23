@@ -271,13 +271,20 @@ const entries: readonly (ProjectStarter | ExampleProject)[] = [
 
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 
+/** Default builds are cached: a dozen tests walk every entry, and the bundles are only read. */
+const defaultBuilds = new Map<string, ContentBundle>();
+
 const build = (
   entry: ProjectStarter | ExampleProject,
   namespace = 'demo',
   values: Record<string, Json> = {},
 ): ContentBundle => {
+  const cacheable = namespace === 'demo' && Object.keys(values).length === 0;
+  const cached = cacheable ? defaultBuilds.get(entry.id) : undefined;
+  if (cached !== undefined) return cached;
   const bundle = entry.build({ namespace, projectName: 'Demo Project', target, values });
   if (bundle instanceof Promise) throw new Error(`${entry.id} builds asynchronously.`);
+  if (cacheable) defaultBuilds.set(entry.id, bundle);
   return bundle;
 };
 
