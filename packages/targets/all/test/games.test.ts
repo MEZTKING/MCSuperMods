@@ -1,5 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import type { CommandFormName } from '@msm/plugin-api';
+import type { CommandFormName, Json } from '@msm/plugin-api';
+import {
+  createRegistryIndex,
+  createSchemaIndex,
+  parseVanillaMcdocSymbols,
+  validateJson,
+} from '@msm/schemas';
 import { createMcfunctionService, defaultFunctionUri } from '@msm/schemas/mcfunction';
 import { describe, expect, it } from 'vitest';
 import { builtInTargets, readVendoredJson, type TargetBundle, targetFacts } from '../src/index';
@@ -8,6 +14,9 @@ import { builtInTargets, readVendoredJson, type TargetBundle, targetFacts } from
  * The game kits' facts (ADR 0113 D8; plugin API 1.22.0): `worlds`, `scoreboard` and
  * `commands.forms`, measured by B547 (`docs/reference/spikes/b547/README.md`) and tied here to
  * each target's vendored registries, command tree and mcdoc, and to the offline function checker.
+ * Since plugin API 1.27.0 also the community game types' facts (ADR 0132), measured by B720
+ * (`docs/reference/spikes/b720/README.md`): more criteria, the game rules they set, their
+ * command forms and fragments, and `dataForms`.
  */
 
 const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
@@ -93,7 +102,115 @@ const SAMPLES: Readonly<Record<string, string>> = {
   amplifier: '0',
   hide_particles: 'false',
   dialog: 'minecraft:server_links',
+  // The community game types' lines (plugin API 1.27.0), as the B720 spike wrote them.
+  entity: '@s',
+  attribute: 'minecraft:max_health',
+  modifier: 'msm:hold',
+  amount: '-1',
+  operation: 'add_multiplied_total',
+  scale: '2',
+  source_path: 'Pos',
+  block_path: 'Items[0].components."minecraft:profile".name',
+  block_slot: 'container.0',
+  item_slots: 'weapon.mainhand',
+  item_predicate: 'minecraft:compass[minecraft:custom_data~{msm_tracker:1b}]',
+  block_predicate: '#minecraft:beds[part=foot]',
+  block_predicate_2: '#minecraft:beds[part=head]',
+  x_2: '0',
+  y_2: '64',
+  z_2: '-1',
+  comparison: '<=',
+  score_operation: '+=',
+  y1: '40',
+  y2: '40',
+  max_count: '0',
+  advancement: 'msm:msm_games/kill',
+  item_modifier: '{type:"minecraft:set_components",components:{"minecraft:max_stack_size":16}}',
+  profession: 'minecraft:armorer',
+  villager_type: 'minecraft:plains',
+  offers:
+    '{buy:{id:"minecraft:iron_ingot",count:4},sell:{id:"minecraft:iron_sword",count:1},maxUses:2147483647,rewardExp:0b,xp:0}',
+  buy: '{id:"minecraft:iron_ingot",count:4}',
+  buy_b: '{id:"minecraft:gold_ingot",count:1}',
+  sell: '{id:"minecraft:iron_sword",count:1,components:{"minecraft:custom_name":{text:"Team sword",italic:false},"minecraft:unbreakable":{}}}',
 };
+
+/** The command forms of the community game types (plugin API 1.27.0, the B720 spike). */
+const GAME_TYPE_FORMS: readonly CommandFormName[] = [
+  'attribute_base_set',
+  'attribute_modifier_add',
+  'attribute_modifier_remove',
+  'attribute_get',
+  'trigger',
+  'trigger_add',
+  'trigger_set',
+  'time_query_gametime',
+  'store_result_storage_run',
+  'function_with_storage',
+  'storage_set_from_entity',
+  'storage_set_from_block',
+  'data_get_entity',
+  'data_get_storage',
+  'loot_replace_block',
+  'on_attacker_run',
+  'at_run',
+  'as_at_run',
+  'if_entity_run',
+  'if_items_run',
+  'if_block_if_block_run',
+  'unless_block_run',
+  'if_score_compare_run',
+  'unless_score_compare_run',
+  'as_if_score_compare_run',
+  'as_unless_score_compare_run',
+  'store_result_score_if_entity',
+  'score_operation',
+  'score_reset',
+  'item_modify_entity',
+  'clear',
+  'effect_clear',
+  'fill',
+  'team_empty',
+  'advancement_revoke_only',
+  'summon_item',
+  'summon_trader',
+];
+
+/**
+ * A warning the offline checker gives for a line the game runs: on 26.4 the inline item
+ * modifier of `item modify` (`{type:"minecraft:set_components",...}`) draws "Unknown key"
+ * warnings for its own keys, while B720 K7 ran the same line on that version's dedicated server
+ * and the compass was pointed. A checker gap, as the spike's `summon minecraft:block_display`
+ * one; errors are never excused.
+ */
+function knownCheckerGap(targetId: string, line: string, message: string): boolean {
+  return (
+    targetId === 'mc-26.4' &&
+    line.startsWith('item modify entity ') &&
+    /^Unknown key “(type|components)”$/.test(message)
+  );
+}
+
+/**
+ * Fills a data form: each JSON string whose whole text is `<name>` becomes `values[name]`.
+ * Throws on a placeholder without a value.
+ */
+function fillJson(form: Json, values: Readonly<Record<string, Json>>): Json {
+  if (typeof form === 'string') {
+    const name = /^<([a-z0-9_]+)>$/.exec(form)?.[1];
+    if (name === undefined) return form;
+    const value = values[name];
+    if (value === undefined) throw new Error(`no value for ${name}`);
+    return value;
+  }
+  if (Array.isArray(form)) return form.map((item) => fillJson(item, values));
+  if (form !== null && typeof form === 'object') {
+    return Object.fromEntries(
+      Object.entries(form).map(([key, item]) => [key, fillJson(item, values)]),
+    );
+  }
+  return form;
+}
 
 /** Fills every placeholder of `form` with its sample, optional ones included. */
 function fill(form: string): string {
@@ -179,7 +296,16 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         ...(scoreboard?.teamColours ?? []).map((colour) => `sidebar.team.${colour}`),
       ]);
       expect(scoreboard?.statTypes).toEqual([...(registries.stat_type ?? [])].sort());
-      expect(scoreboard?.criteria).toEqual(['dummy', 'health', 'playerKillCount']);
+      // B547 Y10's three, then B720 K1's `deathCount`, `totalKillCount` and `trigger` (1.27.0).
+      expect(scoreboard?.criteria).toEqual([
+        'deathCount',
+        'dummy',
+        'health',
+        'playerKillCount',
+        'totalKillCount',
+        'trigger',
+      ]);
+      expect(scoreboard?.criteria).toEqual([...(scoreboard?.criteria ?? [])].sort());
       expect(targetFacts(target.id)?.scoreboard).toEqual(scoreboard);
     });
 
@@ -204,6 +330,11 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
               commands,
             );
           }
+          if (word === '<command>') {
+            // `run` has no children: it goes back to the root of the tree.
+            expect(node?.children, `${name}: ${word}`).toBeUndefined();
+            break;
+          }
           if (/[<[]/.test(word)) {
             const children = Object.entries(node?.children ?? {});
             const kinds = children.map(([, child]) => child.type);
@@ -215,7 +346,14 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
             ).toContain(SAMPLES[placeholder]);
             break;
           }
-          node = node?.children?.[word];
+          const next: CommandNode | undefined = node?.children?.[word];
+          if (next === undefined) {
+            // Ready text for an argument, such as `summon`'s `minecraft:item`.
+            const kinds = Object.values(node?.children ?? {}).map((child) => child.type);
+            expect(kinds, `${name}: ${word}`).toContain('argument');
+            break;
+          }
+          node = next;
           expect(node?.type, `${name}: ${word}`).toBe('literal');
         }
       }
@@ -240,6 +378,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         structure: ['msm:island'],
         function: ['msm:msm_games/start'],
         predicate: ['msm:msm_games/area/arena'],
+        advancement: ['msm:msm_games/kill'],
       };
       const forms = (target.commands?.forms ?? {}) as Readonly<Record<CommandFormName, string>>;
       for (const [name, form] of Object.entries(forms)) {
@@ -254,6 +393,117 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(fill(forms.worldborder_set_over_seconds)).toBe('worldborder set 2000 5s');
       // The redirect is walked: `tp` stays the word the game kits always wrote.
       expect(fill(forms.teleport)).toBe('tp @s[tag=msm.area.arena] 0 64 0');
+      // The game types' lines (1.27.0) pass with no warning either (ADR 0132's rule), and each
+      // fragment, filled, makes a line the checker accepts in the placeholder it fills.
+      const fragments = target.commands?.fragments;
+      expect(fragments).toBeDefined();
+      if (fragments === undefined) return;
+      const gameTypeLines = [
+        ...GAME_TYPE_FORMS.map((name) => fill(forms[name])),
+        fill(forms.summon_trader).replace(
+          SAMPLES.offers as string,
+          `${fill(fragments.trade_offer)},${fill(fragments.trade_offer_two)}`,
+        ),
+        fill(forms.item_modify_entity).replace(
+          SAMPLES.item_modifier as string,
+          fill(fragments.lodestone_tracker_modifier),
+        ),
+      ];
+      for (const line of gameTypeLines) {
+        const problems = await service.check(line, { uri, projectIds });
+        expect(
+          problems.filter((problem) => !knownCheckerGap(target.id, line, problem.message)),
+          line,
+        ).toEqual([]);
+      }
     }, 120_000);
+
+    it('lists the criteria, statistics and game rules B720 measured', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const scoreboard = target.scoreboard;
+      expect(scoreboard?.teamCriteria).toEqual(['killedByTeam', 'teamkill']);
+      expect(scoreboard?.customStatCriteria).toEqual([
+        'minecraft.custom:minecraft.deaths',
+        'minecraft.custom:minecraft.leave_game',
+        'minecraft.custom:minecraft.player_kills',
+        'minecraft.custom:minecraft.time_since_death',
+      ]);
+      const prefix = target.stats?.criterionPrefix ?? '';
+      for (const criterion of scoreboard?.customStatCriteria ?? []) {
+        expect(criterion.startsWith(prefix), criterion).toBe(true);
+        const id = criterion.slice(prefix.length).replace(/^minecraft\./, '');
+        expect(registries.custom_stat, criterion).toContain(id);
+        expect(target.stats?.vanillaCustomStats).toContain(id);
+      }
+      const rules = target.gameRules;
+      expect(rules?.forGames).toEqual([...(rules?.forGames ?? [])].sort());
+      for (const rule of rules?.forGames ?? []) {
+        expect(rules?.vanillaNames, rule).toContain(rule);
+        expect(registries.game_rule, rule).toContain(rule);
+      }
+      expect(targetFacts(target.id)?.gameRules).toEqual(rules);
+    });
+
+    it('writes data forms the vendored mcdoc accepts', async () => {
+      const symbols = parseVanillaMcdocSymbols(
+        await readVendoredJson(bundle, 'vanillaMcdocSymbols', nodeReadFile),
+      );
+      const index = createSchemaIndex(symbols, { mcVersion: target.mcVersion });
+      const registries = createRegistryIndex({
+        vanilla: (await readVendoredJson(bundle, 'mcmetaRegistries', nodeReadFile)) as Record<
+          string,
+          string[]
+        >,
+      });
+      const forms = target.dataForms;
+      expect(forms).toBeDefined();
+      if (forms === undefined) return;
+      const condition = fillJson(forms.entity_is_type, { entity_type: 'minecraft:player' });
+      const criteria: Record<string, Json> = {
+        killed_player: fillJson(forms.player_killed_entity, { entity_condition: condition }),
+        killed_dragon: fillJson(forms.player_killed_entity, {
+          entity_condition: fillJson(forms.entity_is_type, {
+            entity_type: 'minecraft:ender_dragon',
+          }),
+        }),
+        ate_heart: fillJson(forms.consume_item_with_data, {
+          item: 'minecraft:red_dye',
+          custom_data: '{msm_heart:1b}',
+        }),
+      };
+      const problemsOf = (resource: string, value: Json): string[] => {
+        const node = index.dispatch('minecraft:resource', resource);
+        if (node === undefined) throw new Error(`no ${resource} schema`);
+        return validateJson(value, node, { registries }).map(
+          (problem) => `${problem.severity} ${problem.path} ${problem.code}`,
+        );
+      };
+      for (const [id, criterion] of Object.entries(criteria)) {
+        const advancement: Json = {
+          criteria: { c: criterion },
+          rewards: { function: 'msm:msm_games/kill' },
+        };
+        expect(problemsOf('advancement', advancement), id).toEqual([]);
+      }
+      // The one-condition form: a list where the game wants one condition is refused.
+      expect(
+        problemsOf('advancement', {
+          criteria: { c: fillJson(forms.player_killed_entity, { entity_condition: [condition] }) },
+        }),
+      ).not.toEqual([]);
+      const lootTable: Json = {
+        type: 'minecraft:command',
+        pools: [{ rolls: 1, entries: [forms.player_head_of_this] }],
+      };
+      expect(problemsOf('loot_table', lootTable)).toEqual([]);
+      // Left out until measured: B720 wrote the victim's `entity_killed_player` condition under
+      // `killing_entity`, which the vendored mcdoc does not know (its field is `entity`).
+      expect(Object.keys(forms)).not.toContain('entity_killed_player');
+      expect(targetFacts(target.id)?.dataForms).toEqual(forms);
+    });
   },
 );

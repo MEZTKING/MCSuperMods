@@ -2,6 +2,20 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.27.0 — 2026-11-23
+
+The community game types' facts (ADR 0132, Plan A brief B723), every value measured on a dedicated server of both built-in targets by the B720 spike (`docs/reference/spikes/b720/README.md`). `API_VERSION` is `1.27.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `ProjectStarter.game?: StarterGameInfo` (`category: GameCategory`, `players: [min, max]`) lists a starter in the host's catalogue of game types. `GameCategory` is `survival`, `battle`, `team`, `minigame`, `party`, `chase`, `creative`, `course` or `economy`.
+- `ScoreboardFacts.teamCriteria?` (`killedByTeam`, `teamkill`, each followed by `.<colour>`) and `customStatCriteria?` (the four custom statistics whose timing is known); both built-in targets' `criteria` grow by `deathCount`, `totalKillCount` and `trigger`.
+- `GameRuleFacts.forGames?`: the vanilla game rules the game types set (`block_drops`, `immediate_respawn`, `keep_inventory`, `natural_health_regeneration`, `pvp`, `show_death_messages`, `spawn_mobs`, `spawn_monsters`).
+- `CommandFormName` gains 37 names (`attribute_base_set` to `summon_trader`, listed on the type) and `CommandFacts.fragments?: Readonly<Record<CommandFragmentName, string>>` (`trade_offer`, `trade_offer_two`, `lodestone_tracker_modifier`), the text a game type puts into a form's placeholder.
+- `TargetFacts.dataForms?: Readonly<Record<DataFormName, Json>>`: the JSON forms the game types write (`entity_is_type`, `player_killed_entity`, `consume_item_with_data`, `player_head_of_this`); a JSON string whose whole text is `<name>` is a placeholder.
+
+### Migration from 1.26.0
+
+None for plugins: every new member is optional. A target typed against 1.27.0 that lists `forms` lists the new names too.
+
 ## 1.26.0 — 2026-11-23
 
 Every command line of the game kits and of Rules for games as a target fact (ADR 0113 D8, the follow-up its findings named). `API_VERSION` is `1.26.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

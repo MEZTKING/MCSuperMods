@@ -1681,6 +1681,70 @@ export const target: Target = {
       effect_give: 'effect give <entities> <effect> <seconds> <amplifier> <hide_particles>',
       tellraw: 'tellraw <players> <text>',
       dialog_show: 'dialog show <players> <dialog>',
+      // The community game types' lines (ADR 0132; plugin API 1.27.0), each run and answered on
+      // this version's dedicated server by the B720 spike (`docs/reference/spikes/b720/README.md`,
+      // K2 to K16, `results/server-<version>.json`) and checked by the offline function checker.
+      // `spreadplayers` and `schedule` were not run: left out (verify at implementation).
+      attribute_base_set: 'attribute <entity> <attribute> base set <value>',
+      attribute_modifier_add:
+        'attribute <entity> <attribute> modifier add <modifier> <amount> <operation>',
+      attribute_modifier_remove: 'attribute <entity> <attribute> modifier remove <modifier>',
+      attribute_get: 'attribute <entity> <attribute> get',
+      trigger: 'trigger <objective>',
+      trigger_add: 'trigger <objective> add <value>',
+      trigger_set: 'trigger <objective> set <value>',
+      time_query_gametime: 'time query gametime',
+      store_result_storage_run:
+        'execute store result storage <storage> <nbt_path> int <scale> run <command>',
+      function_with_storage: 'function <function> with storage <storage>',
+      storage_set_from_entity:
+        'data modify storage <storage> <nbt_path> set from entity <entity> <source_path>',
+      storage_set_from_block:
+        'data modify storage <storage> <nbt_path> set from block <x> <y> <z> <block_path>',
+      data_get_entity: 'data get entity <entity> <source_path>',
+      data_get_storage: 'data get storage <storage> <nbt_path>',
+      loot_replace_block: 'loot replace block <x> <y> <z> <block_slot> loot <loot_table>',
+      on_attacker_run: 'execute on attacker run <command>',
+      at_run: 'execute at <entities> run <command>',
+      as_at_run: 'execute as <entities> at <anchor> run <command>',
+      if_entity_run: 'execute if entity <entities> run <command>',
+      if_items_run:
+        'execute if items entity <entities> <item_slots> <item_predicate> run <command>',
+      if_block_if_block_run:
+        'execute if block <x> <y> <z> <block_predicate> if block <x_2> <y_2> <z_2> <block_predicate_2> run <command>',
+      unless_block_run: 'execute unless block <x> <y> <z> <block_predicate> run <command>',
+      if_score_compare_run:
+        'execute if score <holder> <objective> <comparison> <holder_2> <objective_2> run <command>',
+      unless_score_compare_run:
+        'execute unless score <holder> <objective> <comparison> <holder_2> <objective_2> run <command>',
+      as_if_score_compare_run:
+        'execute as <entities> if score <holder> <objective> <comparison> <holder_2> <objective_2> run <command>',
+      as_unless_score_compare_run:
+        'execute as <entities> unless score <holder> <objective> <comparison> <holder_2> <objective_2> run <command>',
+      store_result_score_if_entity:
+        'execute store result score <holder> <objective> if entity <entities>',
+      score_operation:
+        'scoreboard players operation <holders> <objective> <score_operation> <holder_2> <objective_2>',
+      score_reset: 'scoreboard players reset <holders> <objective>',
+      item_modify_entity: 'item modify entity <entities> <item_slot> <item_modifier>',
+      clear: 'clear <players> <item_predicate> <max_count>',
+      effect_clear: 'effect clear <entities> <effect>',
+      fill: 'fill <x1> <y1> <z1> <x2> <y2> <z2> <block>',
+      team_empty: 'team empty <team>',
+      advancement_revoke_only: 'advancement revoke <players> only <advancement>',
+      summon_item:
+        'summon minecraft:item <x> <y> <z> {Item:{id:"<item>",count:<count>},Motion:[0.0d,0.0d,0.0d]}',
+      summon_trader:
+        'summon minecraft:villager <x> <y> <z> {Tags:["<tag>"],NoAI:1b,Invulnerable:1b,Silent:1b,PersistenceRequired:1b,VillagerData:{profession:"<profession>",level:5,type:"<villager_type>"},Offers:{Recipes:[<offers>]}}',
+    },
+    // The pieces the game types put into a form's placeholder (plugin API 1.27.0), as B720 ran
+    // them: a trader's offers (K13: shown on the merchant screen with their components) and the
+    // compass's inline modifier (K7: the tracker in the main and the off hand).
+    fragments: {
+      trade_offer: '{buy:<buy>,sell:<sell>,maxUses:2147483647,rewardExp:0b,xp:0}',
+      trade_offer_two: '{buy:<buy>,buyB:<buy_b>,sell:<sell>,maxUses:2147483647,rewardExp:0b,xp:0}',
+      lodestone_tracker_modifier:
+        '{type:"minecraft:set_components",components:{"minecraft:lodestone_tracker":{target:{dimension:"<dimension>",pos:[I;<x>,<y>,<z>]},tracked:false}}}',
     },
   },
   // gameRules (ADR 0111 D5, D8, as amended after B525; plugin API 1.20.0): vanilla's two kinds of
@@ -1751,6 +1815,19 @@ export const target: Target = {
       'tnt_explosion_drop_decay',
       'universal_anger',
       'water_source_conversion',
+    ],
+    // The rules the community game types set (ADR 0132; plugin API 1.27.0): each set and read
+    // back on this version's dedicated server by B720 (K10: `block_drops`, the camel-case
+    // `doTileDrops` refused; K11: `immediate_respawn`, `doImmediateRespawn` refused).
+    forGames: [
+      'block_drops',
+      'immediate_respawn',
+      'keep_inventory',
+      'natural_health_regeneration',
+      'pvp',
+      'show_death_messages',
+      'spawn_mobs',
+      'spawn_monsters',
     ],
   },
   // stats (ADR 0111 D6, D8, as amended after B525; plugin API 1.20.0): the formatters ADR 0111
@@ -1865,7 +1942,18 @@ export const target: Target = {
   // (`sidebar.team.red`); the team colours of the vendored mcdoc `TextColor` enum, which the
   // `minecraft:team_color` argument takes (Y10 ran `color red`). The same on both targets.
   scoreboard: {
-    criteria: ['dummy', 'health', 'playerKillCount'],
+    // B720 K1 (plugin API 1.27.0) added `deathCount`, `totalKillCount` and `trigger`, the team
+    // criteria (run with `red` and `blue`) and four custom statistics, all moved at the death
+    // or leaving itself, before that tick's tick function; `health` is the health points
+    // rounded up to a whole number and moves a tick later.
+    criteria: ['deathCount', 'dummy', 'health', 'playerKillCount', 'totalKillCount', 'trigger'],
+    teamCriteria: ['killedByTeam', 'teamkill'],
+    customStatCriteria: [
+      'minecraft.custom:minecraft.deaths',
+      'minecraft.custom:minecraft.leave_game',
+      'minecraft.custom:minecraft.player_kills',
+      'minecraft.custom:minecraft.time_since_death',
+    ],
     statTypes: [
       'broken',
       'crafted',
@@ -1947,6 +2035,36 @@ export const target: Target = {
     green: '#5e7c16',
     red: '#b02e26',
     black: '#1d1d21',
+  },
+  // dataForms (ADR 0132; plugin API 1.27.0): the JSON the community game types write, as the
+  // B720 spike loaded and fired it on this version's dedicated server (K3: the one-condition
+  // `entity` form and the sub-predicate map; the short `{"type": ...}` form and the list form stop
+  // the whole server loading; K4: `consume_item` with a `custom_data` predicate, the string form;
+  // K4: the player head entry whose `modifier` fills the head). The victim's criterion
+  // `entity_killed_player` is left out: the spike wrote its condition under `killing_entity`, a
+  // field the vendored mcdoc does not have (its condition is `entity`), and killed players with
+  // players only, so the condition was never shown to filter (verify at implementation).
+  dataForms: {
+    entity_is_type: {
+      type: 'minecraft:entity_properties',
+      entity: 'this',
+      predicate: { 'minecraft:entity_type': '<entity_type>' },
+    },
+    player_killed_entity: {
+      trigger: 'minecraft:player_killed_entity',
+      conditions: { entity: '<entity_condition>' },
+    },
+    consume_item_with_data: {
+      trigger: 'minecraft:consume_item',
+      conditions: {
+        item: { items: '<item>', predicates: { 'minecraft:custom_data': '<custom_data>' } },
+      },
+    },
+    player_head_of_this: {
+      type: 'minecraft:item',
+      name: 'minecraft:player_head',
+      modifier: [{ type: 'minecraft:fill_player_head', entity: 'this' }],
+    },
   },
   fabric: {
     loader: '0.20.1',

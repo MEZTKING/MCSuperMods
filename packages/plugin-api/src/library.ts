@@ -394,6 +394,38 @@ export interface StarterCreatorInfo {
 }
 
 /**
+ * The kind of game a game type is, as the host's catalogue of game types groups them by chip
+ * (ADR 0132): `survival`, `battle`, `team`, `minigame`, `party`, `chase`, `creative`, `course`
+ * or `economy`. Since 1.27.0.
+ */
+export type GameCategory =
+  | 'survival'
+  | 'battle'
+  | 'team'
+  | 'minigame'
+  | 'party'
+  | 'chase'
+  | 'creative'
+  | 'course'
+  | 'economy';
+
+/**
+ * How a {@link ProjectStarter} that makes a game appears in the host's catalogue of game types
+ * (ADR 0132): its kind of game and how many players it is made for. Whether it plays without
+ * mods is not declared here: the host works it out from the bundle. Since 1.27.0.
+ */
+export interface StarterGameInfo {
+  /** The kind of game, the catalogue's chip and first pill. */
+  category: GameCategory;
+  /**
+   * The fewest and the most players the game is made for, both whole numbers of at least 1
+   * with the first no greater than the second (`[2, 2]` for a game of exactly two; the pill
+   * reads "2-100 players" or "2 players").
+   */
+  players: readonly [min: number, max: number];
+}
+
+/**
  * One entry of the host's "New project" starter list.
  */
 export interface ProjectStarter {
@@ -427,6 +459,16 @@ export interface ProjectStarter {
    * ```
    */
   creator?: StarterCreatorInfo;
+  /**
+   * Lists the starter in the host's catalogue of game types (ADR 0132) with its kind of game and
+   * player count. Omit it for a starter that is not a game type. Since 1.27.0.
+   *
+   * @example
+   * ```ts
+   * game: { category: 'minigame', players: [2, 16] },
+   * ```
+   */
+  game?: StarterGameInfo;
   /**
    * Whether the starter applies to a target. The host hides a starter that returns `false`
    * for the chosen target, and the library tests build it only for the targets it supports.

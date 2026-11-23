@@ -11228,3 +11228,16 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B724 to B726 lower these fields; B732 builds the sections on them; B723's facts in parallel.
+## 2026-11-23 — executor — B723 Plugin API 1.27.0 and the community game types' facts
+
+**What**
+- Plugin API 1.27.0 (additive; built-ins keep `^1.0.0`): `ProjectStarter.game?` (`StarterGameInfo`: `category: GameCategory`, the nine catalogue chips, and `players: [min, max]`); `ScoreboardFacts.teamCriteria?` and `customStatCriteria?`; `GameRuleFacts.forGames?`; 37 more `CommandFormName`s and `CommandFacts.fragments?` (`CommandFragmentName`); `TargetFacts.dataForms?` (`DataFormName`, JSON forms with whole-string `<name>` placeholders). CHANGELOG, version, package version and the version tests.
+- Both targets, from the B720 spike only: criteria `deathCount`, `totalKillCount`, `trigger`; team criteria `killedByTeam`, `teamkill`; the four custom statistics K1 timed; the eight game rules the game types set; 117 forms (`attribute`, `trigger`, `time query gametime`, macro storage, `execute on attacker`, `if items`, the bed test, score comparisons and operations, `clear`, `fill`, `team empty`, `advancement revoke ... only`, the item drop and the still trader); the trader offer and compass modifier fragments; four data forms (`entity_is_type` with the sub-predicate map, `player_killed_entity` with its one condition, `consume_item_with_data`, `player_head_of_this`). Rows in both `CHANGES.md`.
+- `packages/targets/all/test/games.test.ts`: every new form walked down the vendored command tree (a `run` back to the root, ready argument text such as `minecraft:item`) and passed by the offline checker with no error and no warning, fragments checked inside the forms they fill, the criteria, statistics and rules tied to the vendored registries, and every data form validated against the vendored mcdoc (and a list condition refused).
+
+**Decisions**
+- Left out: `spreadplayers` and `schedule` (the spike did not run them); the victim's `entity_killed_player` criterion, because the spike wrote its condition under `killing_entity`, which the vendored mcdoc does not have (its field is `entity`), and only players killed, so the condition never showed it filters; Hide and seek's display and interaction forms (batch 2); the most-health clamp (1 to 1024) as a fact, which no field holds yet. All (verify at implementation).
+- On 26.4 the offline checker warns "Unknown key" for `type` and `components` of the inline item modifier in `item modify`, a line the 26.4 server ran (K7); the test excuses exactly those two warnings on that target, never an error.
+
+**Next**
+- B724 to B726 write every game line from these forms and data forms; the games validators and the Objective Studio read `teamCriteria` (today a `killedByTeam.red` objective draws the unknown-criterion warning).

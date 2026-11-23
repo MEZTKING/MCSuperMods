@@ -579,7 +579,23 @@ export interface CommandFacts {
    * external plugin reading them must handle their absence. Since 1.22.0.
    */
   forms?: Readonly<Record<CommandFormName, string>>;
+  /**
+   * Pieces of command text the game types put into a placeholder of a form (ADR 0132, measured
+   * by B720): an inline item modifier, a trader's offer. Templates as in {@link forms}; each
+   * filled fragment is ready text for one placeholder (`trade_offer`, joined by commas, fills
+   * `summon_trader`'s `<offers>`; `lodestone_tracker_modifier` fills `item_modify_entity`'s
+   * `<item_modifier>`). Optional, as {@link forms}. Since 1.27.0.
+   */
+  fragments?: Readonly<Record<CommandFragmentName, string>>;
 }
+
+/**
+ * The names of the command fragments in {@link CommandFacts.fragments}: `trade_offer` (one
+ * offer of a trader, one item bought), `trade_offer_two` (two items bought) and
+ * `lodestone_tracker_modifier` (an inline `set_components` item modifier that points a compass
+ * at a position in a dimension). Since 1.27.0.
+ */
+export type CommandFragmentName = 'trade_offer' | 'trade_offer_two' | 'lodestone_tracker_modifier';
 
 /**
  * The names of the command forms in {@link CommandFacts.forms} (ADR 0113 D8): the `team`,
@@ -594,6 +610,18 @@ export interface CommandFacts {
  * remove`, `setblock`, `summon`, `tp`, `gamemode`, `defaultgamemode`, `difficulty`, `gamerule`,
  * `give`, `item replace entity`, `effect give`, `tellraw` and `dialog show`. A target that lists
  * forms lists every name.
+ *
+ * Since 1.27.0 also the lines the community game types write (ADR 0132), each run on a dedicated
+ * server of both built-in targets by the B720 spike: `attribute` (base set, modifier add and
+ * remove, get), `trigger` (bare, add, set), `time query gametime`, `execute store result storage
+ * ... int <scale> run`, `function ... with storage`, `data modify storage ... set from entity` and
+ * `from block`, `data get entity` and `storage`, `loot replace block`, `execute on attacker`,
+ * `at`, `as ... at`, `if entity ... run`, `if items entity`, `if block ... if block`, `unless
+ * block`, the four score comparisons (`if`/`unless score ... <comparison> ...`, alone or after
+ * `as`), `execute store result score ... if entity`, `scoreboard players operation` and
+ * `reset`, `item modify entity`, `clear`, `effect clear`, `fill`, `team empty`, `advancement
+ * revoke ... only`, the item drop `summon minecraft:item` and the still trader `summon
+ * minecraft:villager` with its offers.
  */
 export type CommandFormName =
   | 'team_add'
@@ -675,7 +703,44 @@ export type CommandFormName =
   | 'item_replace_entity'
   | 'effect_give'
   | 'tellraw'
-  | 'dialog_show';
+  | 'dialog_show'
+  | 'attribute_base_set'
+  | 'attribute_modifier_add'
+  | 'attribute_modifier_remove'
+  | 'attribute_get'
+  | 'trigger'
+  | 'trigger_add'
+  | 'trigger_set'
+  | 'time_query_gametime'
+  | 'store_result_storage_run'
+  | 'function_with_storage'
+  | 'storage_set_from_entity'
+  | 'storage_set_from_block'
+  | 'data_get_entity'
+  | 'data_get_storage'
+  | 'loot_replace_block'
+  | 'on_attacker_run'
+  | 'at_run'
+  | 'as_at_run'
+  | 'if_entity_run'
+  | 'if_items_run'
+  | 'if_block_if_block_run'
+  | 'unless_block_run'
+  | 'if_score_compare_run'
+  | 'unless_score_compare_run'
+  | 'as_if_score_compare_run'
+  | 'as_unless_score_compare_run'
+  | 'store_result_score_if_entity'
+  | 'score_operation'
+  | 'score_reset'
+  | 'item_modify_entity'
+  | 'clear'
+  | 'effect_clear'
+  | 'fill'
+  | 'team_empty'
+  | 'advancement_revoke_only'
+  | 'summon_item'
+  | 'summon_trader';
 
 /**
  * The kind of value a game rule holds: vanilla's two. Since 1.20.0 (ADR 0111 D5).
@@ -700,6 +765,14 @@ export interface GameRuleFacts {
    * beside the project's rules.
    */
   vanillaNames: readonly string[];
+  /**
+   * The vanilla game rules the community game types set (ADR 0132), each set and read back on a
+   * dedicated server by the B720 spike, sorted (for example `block_drops`, `immediate_respawn`
+   * and `pvp`). Every name is one of {@link vanillaNames}; the older camel-case names (such as
+   * `doTileDrops`) are refused by `gamerule`. Optional: absent where they have not been
+   * measured. Since 1.27.0.
+   */
+  forGames?: readonly string[];
 }
 
 /**
@@ -786,6 +859,22 @@ export interface ScoreboardFacts {
    * `health`). A project statistic's criterion comes from {@link StatFacts.criterionPrefix}.
    */
   criteria: readonly string[];
+  /**
+   * The team criteria measured in the game, sorted: each is followed by a dot and one of
+   * {@link teamColours} (`killedByTeam.red` counts the deaths of a player killed by a member of
+   * a red team, whatever the victim's own team; `teamkill.blue` counts the kills a player makes
+   * of members of a blue team). Optional: absent where they have not been measured. Since
+   * 1.27.0 (ADR 0132, the B720 spike K1).
+   */
+  teamCriteria?: readonly string[];
+  /**
+   * The custom statistic criteria the game types read, measured in the game, sorted (for
+   * example `minecraft.custom:minecraft.deaths`, which counts as `deathCount` does, and
+   * `minecraft.custom:minecraft.leave_game`, one more at each leaving). Any custom statistic
+   * makes a criterion with {@link StatFacts.criterionPrefix}; these are the ones whose timing is
+   * known. Optional. Since 1.27.0 (ADR 0132, the B720 spike K1).
+   */
+  customStatCriteria?: readonly string[];
   /**
    * The statistic types, bare and sorted (for example `mined`): the criterion
    * `minecraft.<type>:<namespace>.<path>` counts that statistic of one id, such as
@@ -1496,7 +1585,40 @@ export interface TargetFacts {
    * absence. Since 1.25.0.
    */
   dyes?: Readonly<Record<string, string>>;
+  /**
+   * The exact JSON forms the game types write into data pack files (ADR 0132, measured by the
+   * B720 spike): advancement criteria, the loot condition that tests an entity's type and a loot
+   * entry. A JSON string whose whole text is `<name>` is a placeholder the lowering replaces
+   * with a JSON value (a string, or a whole object such as the filled `entity_is_type`); nothing
+   * else is added, so a form that changes between versions changes here only. On every
+   * built-in target an advancement's `entity` or `killing_entity` condition is one loot
+   * condition, not a list, and an entity predicate is a map keyed by sub-predicate type; a
+   * wrong form stops the server loading the whole data pack. Optional: a target without them
+   * cannot lower the game types, and an external plugin reading them must handle their absence.
+   * Since 1.27.0.
+   */
+  dataForms?: Readonly<Record<DataFormName, Json>>;
 }
+
+/**
+ * The names of the JSON forms in {@link TargetFacts.dataForms} (ADR 0132):
+ *
+ * - `entity_is_type`: the loot condition "this entity is of type `<entity_type>`", which fills
+ *   `<entity_condition>` below;
+ * - `player_killed_entity`: the advancement criterion that fires for a player who kills an
+ *   entity matching `<entity_condition>` (the killer's reward runs as the killer);
+ * - `consume_item_with_data`: the criterion that fires when a player finishes eating or drinking
+ *   an `<item>` whose `minecraft:custom_data` matches `<custom_data>` (SNBT text);
+ * - `player_head_of_this`: a loot entry giving the player head of the entity the loot is made
+ *   for (`this`).
+ *
+ * Since 1.27.0.
+ */
+export type DataFormName =
+  | 'entity_is_type'
+  | 'player_killed_entity'
+  | 'consume_item_with_data'
+  | 'player_head_of_this';
 
 /**
  * One Minecraft version, contributed by a `@msm/target-mc-<version>` package: the

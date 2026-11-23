@@ -4,8 +4,10 @@ import type {
   CommandArgumentFacts,
   CommandFacts,
   CommandFormName,
+  CommandFragmentName,
   ControlFacts,
   DataFolderKey,
+  DataFormName,
   DefinitionInput,
   DevFacts,
   DimensionHeightFacts,
@@ -21,6 +23,7 @@ import type {
   FabricFacts,
   FixedPlacementShapeFacts,
   FluidTagFacts,
+  GameCategory,
   GameRuleFacts,
   GameRuleKindName,
   GeckolibFacts,
@@ -42,6 +45,7 @@ import type {
   Problem,
   Project,
   ProjectExpander,
+  ProjectStarter,
   ProjectValidator,
   ResourceFolderKey,
   RuntimeKeyFacts,
@@ -51,6 +55,7 @@ import type {
   SearchQuestionHint,
   SearchWordGroup,
   SoundSetFacts,
+  StarterGameInfo,
   StatFacts,
   StatFormatName,
   Target,
@@ -1155,5 +1160,51 @@ describe('1.0.0 additions', () => {
     };
     expect(names).toHaveLength(12);
     expect(forms.teleport).toBe('tp <entities> <x> <y> <z>');
+  });
+  it('adds the community game types: starters, criteria, rules, forms (1.27.0)', () => {
+    expectTypeOf<ProjectStarter['game']>().toEqualTypeOf<StarterGameInfo | undefined>();
+    expectTypeOf<GameCategory>().toEqualTypeOf<
+      | 'survival'
+      | 'battle'
+      | 'team'
+      | 'minigame'
+      | 'party'
+      | 'chase'
+      | 'creative'
+      | 'course'
+      | 'economy'
+    >();
+    const game: StarterGameInfo = { category: 'chase', players: [2, 10] };
+    expect(game.players[0]).toBe(2);
+    expectTypeOf<ScoreboardFacts['teamCriteria']>().toEqualTypeOf<readonly string[] | undefined>();
+    expectTypeOf<ScoreboardFacts['customStatCriteria']>().toEqualTypeOf<
+      readonly string[] | undefined
+    >();
+    expectTypeOf<GameRuleFacts['forGames']>().toEqualTypeOf<readonly string[] | undefined>();
+    expectTypeOf<CommandFacts['fragments']>().toEqualTypeOf<
+      Readonly<Record<CommandFragmentName, string>> | undefined
+    >();
+    expectTypeOf<TargetFacts['dataForms']>().toEqualTypeOf<
+      Readonly<Record<DataFormName, Json>> | undefined
+    >();
+    const names: CommandFormName[] = [
+      'attribute_base_set',
+      'attribute_modifier_add',
+      'trigger_set',
+      'time_query_gametime',
+      'function_with_storage',
+      'on_attacker_run',
+      'if_items_run',
+      'score_operation',
+      'item_modify_entity',
+      'clear',
+      'fill',
+      'summon_trader',
+    ];
+    expect(names).toHaveLength(12);
+    // Older targets, and the test target, leave every 1.27.0 fact out.
+    const older: TargetFacts = { ...testTarget };
+    expect(older.dataForms).toBeUndefined();
+    expect(older.scoreboard?.teamCriteria).toBeUndefined();
   });
 });

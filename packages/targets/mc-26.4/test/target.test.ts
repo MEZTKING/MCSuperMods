@@ -919,14 +919,23 @@ describe('target mc-26.4', () => {
       fixedPlacementShape: { type: 'minecraft:fixed_placement', minPositions: 1 },
       firstJoinCriterion: 'minecraft:tick',
     });
-    expect(target.scoreboard?.criteria).toEqual(['dummy', 'health', 'playerKillCount']);
+    // B547 Y10's three, then B720 K1's three (plugin API 1.27.0).
+    expect(target.scoreboard?.criteria).toEqual([
+      'deathCount',
+      'dummy',
+      'health',
+      'playerKillCount',
+      'totalKillCount',
+      'trigger',
+    ]);
     expect(target.scoreboard?.displaySlots.slice(0, 3)).toEqual(['list', 'sidebar', 'below_name']);
     expect(target.scoreboard?.displaySlots).toHaveLength(19);
     expect(target.scoreboard?.renderTypes).toEqual(['integer', 'hearts']);
     expect(target.scoreboard?.numberFormats).toEqual(['blank', 'fixed', 'styled']);
     const forms = target.commands?.forms;
-    // 49 game kit forms of 1.22.0, then the five Rules forms and 26 game kit lines of 1.26.0.
-    expect(Object.keys(forms ?? {})).toHaveLength(80);
+    // 49 game kit forms of 1.22.0, then the five Rules forms and 26 game kit lines of 1.26.0,
+    // then the 37 lines of the community game types of 1.27.0.
+    expect(Object.keys(forms ?? {})).toHaveLength(117);
     expect(forms?.set_fire).toBe('data merge entity <entities> {Fire:<ticks>s}');
     expect(forms?.teleport).toBe('tp <entities> <x> <y> <z>');
     expect(forms?.place_template).toBe(
