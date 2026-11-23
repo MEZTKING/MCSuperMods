@@ -9034,3 +9034,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B615's See it pane names things by their element's own name, not the proposal's language file ("Ruby sword" where the cards say "Ruby Sword"), and its removed line shows a rename's two ids ("demo:a renamed to demo:b") in every mode; `AiSeeIt.tsx` is outside this brief.
 - B690 can walk the review through `ai-review-heading`, `ai-thing-<n>` and its `-keep`; e2e `ai-path` (Advanced) keeps passing on the file rows.
 - `docs/LIVE-VIEW-AUDIT.md`'s AI proposals row is for the close.
+
+## 2026-11-23 — executor — B548 scaffold and stubs for game modes
+
+**What**
+- New plugin `@msm/plugin-games` (plugin id `msm.games`), made with `node tools/new-plugin games`: `GAMES_KIND_IDS` (the six stub kind ids `msm:world_setup`, `msm:one_block`, `msm:team`, `msm:objective`, `msm:timer`, `msm:area`, not registered until B549), seven empty lowering modules (`world-setup`, `start`, `one-block`, `team`, `objective`, `timer`, `area`), an empty `gamesValidators`, a smoke test and a 38-line `CLAUDE.md`. Added to the app's built-in plugin list (`plugins/built-in.ts`, before the library) and to `app/package.json`; `tools/check-deps` needed no line (`@msm/plugin-*` is already allowed).
+- `studios/games/studios.tsx`: six empty Studio entries (`msm.games.world-setup`, `one-block`, `team`, `objective`, `timer`, `area`) found by the registry's glob; `packages/sim/src/games/index.ts` stub (not yet exported from the sim index); parity class `SampleGameModesParityTest` (no tests) with its `fabric.mod.json` entry; `fixtures/sample-game-modes/README.md`; skipped e2e specs `games-path` and `maps-path`.
+
+**Decisions**
+- Plugin stays contributing nothing; the studio entries match kind ids no plugin registers yet, so they cannot take over any element.
+- `@msm/exporters` does not yet depend on `@msm/plugin-games` (not in the brief's list); B551 or B559 add it with its `layers.json` line.
+- The sim stub is not exported from `packages/sim/src/index.ts` (B558 does it with the first module).
+- B547's notes (Y10 `#holder` mcfunction validator bug, the structure template writer's palette keys) are untouched; they block B551 and B552.
+
+**Next**
+- B549 registers the kinds; B550 plugin API; the exporters dependency when the first test needs the plugin.

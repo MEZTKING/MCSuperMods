@@ -22,6 +22,7 @@
       "dev.mcsupermods.parity.SampleRulesParityTest",
       "dev.mcsupermods.parity.SampleRulesScriptParityTest",
       "dev.mcsupermods.parity.SampleVehiclesParityTest",
+      "dev.mcsupermods.parity.SampleGameModesParityTest",
       "dev.mcsupermods.parity.SampleVanillaBlocksParityTest",
       "dev.mcsupermods.parity.SampleVanillaBlocksScriptParityTest",
       "dev.mcsupermods.parity.SampleVillagersParityTest",

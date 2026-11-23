@@ -4,8 +4,9 @@
  * and examples over the kinds of the others, and the structures and worldgen plugins
  * (Phase 3, ADRs 0021 and 0022), the blocks and items plugin (Phase 4, ADR 0025), and the
  * models and animations and entities plugins (Phase 5, ADRs 0028 and 0029), and the scripting
- * plugin (Phase 6, ADRs 0031 and 0032), the Rules plugin (ADR 0082) and the controls plugin
- * (key binds and HUD elements, ADRs 0088 and 0089; no kinds yet).
+ * plugin (Phase 6, ADRs 0031 and 0032), the Rules plugin (ADR 0082), the controls plugin
+ * (key binds and HUD elements, ADRs 0088 and 0089; no kinds yet) and the games plugin (ADR 0113;
+ * stubs from B548, no kinds yet).
  *
  * @packageDocumentation
  */
@@ -15,6 +16,7 @@ import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import controlsPlugin from '@msm/plugin-controls';
 import datapackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
+import gamesPlugin from '@msm/plugin-games';
 import libraryPlugin from '@msm/plugin-library';
 import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
@@ -28,6 +30,7 @@ export {
   controlsPlugin,
   datapackPlugin,
   entitiesPlugin,
+  gamesPlugin,
   libraryPlugin,
   modelsAnimPlugin,
   resourcePackPlugin,
@@ -49,5 +52,6 @@ export const builtInPlugins: readonly Plugin[] = Object.freeze([
   scriptingPlugin,
   rulesPlugin,
   controlsPlugin,
+  gamesPlugin,
   libraryPlugin,
 ]);

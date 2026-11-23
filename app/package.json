@@ -30,6 +30,7 @@
     "@msm/plugin-controls": "workspace:*",
     "@msm/plugin-datapack": "workspace:*",
     "@msm/plugin-entities": "workspace:*",
+    "@msm/plugin-games": "workspace:*",
     "@msm/plugin-library": "workspace:*",
     "@msm/plugin-models-anim": "workspace:*",
     "@msm/plugin-resourcepack": "workspace:*",
