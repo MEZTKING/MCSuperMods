@@ -10688,3 +10688,26 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - Live views batch 4, B635 onward (`docs/PLAN-live-views.md`).
 - A small search engine brief: an exact id on whole ids only, stop words kept in titles, "how does … work", `tnak` and `soin`, the `scripts` group's sort, then the `needs` lines removed; the pet fox's food and the misspelt name; "Type more words to see the rest". A words brief for ADR 0127's four.
 - Ask the user ADR 0124's vetoable defaults and the golden rule question (HANDOFF item 33).
+## 2026-11-23 — executor — B637 jigsaw assembly
+
+### What
+
+- `packages/terrain/src/structures/assemble.ts`: the assembler as a generator of steps (`assembleSteps`; `assemble` collects them), built clean room from the spike B634's rules J1 to J19: names matched to targets, the child's jigsaw in front of the parent's and facing it, horizontal with horizontal, the parent's `joint` for vertical joins; elements drawn by weight without putting back, an empty element a valid pick with no fallback after it, the fallback pool when nothing fits; no overlap but a child wholly inside its parent; the horizontal limit from the start box's centre by truncating division and the vertical one from the start height; depth with fallback-only filling at `size` and nothing past `size + 1`; `size` 0 makes nothing; jigsaws shuffled then sorted by selection priority; the queue ordered by the parent jigsaw's placement priority; the start piece at the start corner turned by one draw, its bottom at the start height − 1, or a named start jigsaw at the start position; list elements as one piece, feature elements as a one-block piece on a `minecraft:bottom` jigsaw; the 500-piece stop (`stoppedLine`: "Stopped at 500 pieces."). Every refusal carries a reason; the start's tries name parent −1.
+- `jigsaw.ts`: the 12 orientations, turns, the join rule (`canJoin`), templates prepared once per template object for the four turns, `pieceJigsaws` (where a placed piece's jigsaws stand, for lighting the two that met), MSM's own seeded random. `boxes.ts`: boxes, the truncated centre, both limits, a column index for overlap tests.
+- Tests (`packages/terrain/test/structures/`): the spike's fixtures rebuilt as MSM's own in-memory templates and pools (`fixtures.ts`), each assembly checked for legal joins, nesting-only overlap, depth, both limits and a reason on every refusal; the exact counts of 4S8 (`chain_s1` 3 to `chain_s20` 22, `chain_d16` 4, `chain_d32` 7, `chain2_*` 8, `chain4_d16` 8, `chain4_d17` 8 or 9 by the sign of the start box's sum, the vertical chains 4, 21, 7, 8, 7, 7, `fb_s5` 7, `shell` 2, `shell_big` 2, `shell_tall` 1, `match` 5, `back` 5, `whub` 3, `phub_*` 4, the lattices 113 and 841) and its priority winners at 100 %; shares (weights, arms, selection and placement priority at equal values, the joint's turns, start turns) at |z| at most 4; a town of streets, houses and furniture over 300 seeds (55 to 170 pieces); the timing test `speed.test.ts`.
+- Speed (Node, this machine): 100 pieces 1.7 to 2.3 ms median (worst 23 ms), the first piece after 0.1 ms; the spike's 113-lattice 1.1 to 1.4 ms; the town about 121 pieces 1.3 ms; the 341-piece 3D lattice 11 to 13 ms (worst 61 ms); 841 pieces 10 to 11 ms; ADR 0122 D10's budget (2 s, first piece 250 ms) met by a factor of about 100.
+
+### Decisions
+
+- A child's joined jigsaw is not tried again: a piece through it would always overlap the parent, so leaving it out changes no assembly and keeps the step list readable.
+- Two children inside one parent may not overlap each other (not measured by the spike); a child inside its parent may overlap only the pieces wholly holding it, so every overlapping pair is nested, as in vanilla's own structures.
+- The piece limit stops when the piece past it fits, so an assembly of exactly the limit ends as done.
+- `source` is `box` for a template without blocks, else `vanilla` for a `minecraft:` id and `project` otherwise (the template carries no source of its own).
+- The new helpers (`pieceJigsaws`, `stoppedLine`, `DEFAULT_PIECE_LIMIT`, `FEATURE_PIECE`) are exported from `structures/assemble.ts`; `structures/index.ts` (B635's) still exports only `assemble` and `assembleSteps`.
+
+### Next
+
+- `structures/index.ts` could export `*` from `./assemble` for B640's view (one line, outside this brief's files).
+- A list element's other templates are inside its piece's box but have no name on the piece (`AssembledPiece.template` holds one id); a `members` field in `api.ts` would let B640 draw them (an orchestrator decision).
+- B639's measured `expectations.json` can replace the rebuilt fixtures' counts once it exists.
+- `JigsawStructureData.maxDistanceFromCenter`'s object form types `vertical` as required, but the data may leave it out (no height limit, J13); the host passes `Infinity` then, or `api.ts` makes it optional (the assembler already reads a missing one as no limit).
