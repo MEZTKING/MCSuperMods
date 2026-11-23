@@ -36,3 +36,5 @@ The Showcase (ADR 0118) has thirteen hand-picked cards, each a library example w
 Accepted (2026-11-23, user's request on Home; the defaults above are vetoable).
 
 **Amendment (2026-11-23, ADR 0131 plan) to D3:** a clip steps its pixel ratio down from 2 to 1.5 to 1 while its own median frame time is over 1000/24 ms, and does not step up again for that card in the session (replaces the open item "measure at ratio 2 on a quiet machine").
+
+Amendment (B713, 2026-11-23): D3's cap of 2 is where a clip starts; it steps to 1.5, then 1, while the median of its last 30 frames is over 1000/24 ms, per card and never back up in the session. D7: in the app's 14-pixel rem, gallery and idea cards are 242 by 272.25 px with a 12 px gap.

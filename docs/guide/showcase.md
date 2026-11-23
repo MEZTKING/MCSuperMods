@@ -71,3 +71,4 @@ Every card shows a **Preview** tag. A picture is a short clip, about 8 to 12 sec
 - Only the built-in examples have cards; a plugin cannot add one.
 - A card shows only where its example works on your Minecraft version: the open mod's version, or the default one when no mod is open.
 - A slow computer plays a clip more slowly, so it may take longer than 12 seconds.
+- On a slow computer a clip draws a little less sharply so it stays smooth.

@@ -6,7 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.8.
+- The toolbar is one row: Home, Undo, Redo, Save, Try it, Play, Share my mod, search, AI helper, Help and More; the menu bar uses the same words.
+- The lists of things in your mod and the status bar speak plain words.
+- More ideas cards match the gallery's cards; vehicle and mob cards no longer show the flat skin picture.
+- On a slow computer a clip draws a little less sharply so it stays smooth.
 
 ## [1.5.8] - 2026-11-23
 
