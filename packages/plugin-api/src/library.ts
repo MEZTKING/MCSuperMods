@@ -368,8 +368,8 @@ export type StarterParameter =
 /**
  * The Creator group a {@link ProjectStarter} is listed under (ADR 0043 D1): `gear` (tools and
  * armour), `blocks`, `food`, `mobs`, `scripts`, `worlds` (dimensions; since 1.5.0, ADR 0051) or
- * `magic` (status effects; since 1.6.0, ADR 0055) or `vehicles` (since 1.17.0, ADR 0091). Since
- * 1.1.0.
+ * `magic` (status effects; since 1.6.0, ADR 0055) or `vehicles` (since 1.17.0, ADR 0091) or `games`
+ * (game kits such as a Skyblock or an arena; since 1.22.0, ADR 0113 D8). Since 1.1.0.
  */
 export type CreatorGroup =
   | 'gear'
@@ -379,7 +379,8 @@ export type CreatorGroup =
   | 'vehicles'
   | 'scripts'
   | 'worlds'
-  | 'magic';
+  | 'magic'
+  | 'games';
 
 /**
  * How a {@link ProjectStarter} appears in the host's Creator, the guided flow with a live

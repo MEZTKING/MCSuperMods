@@ -1584,6 +1584,64 @@ export const target: Target = {
         keyOnly: true,
       },
     },
+    // forms (ADR 0113 D8; plugin API 1.22.0): every line B547 ran on the dedicated server of this
+    // version and the game accepted (docs/reference/spikes/b547/README.md Y3, Y9 to Y12;
+    // results/server-<version>.json `forms`), with its values made placeholders. `worldborder set
+    // <width> <n>` counts ticks, so the timed form writes seconds with `s`. The same on both targets.
+    forms: {
+      team_add: 'team add <team> <display_name>',
+      team_colour: 'team modify <team> color <colour>',
+      team_friendly_fire: 'team modify <team> friendlyFire <boolean>',
+      team_see_invisible_friends: 'team modify <team> seeFriendlyInvisibles <boolean>',
+      team_name_tags: 'team modify <team> nametagVisibility <name_tags>',
+      team_collision: 'team modify <team> collisionRule <collision>',
+      team_death_messages: 'team modify <team> deathMessageVisibility <death_messages>',
+      team_prefix: 'team modify <team> prefix <text>',
+      team_suffix: 'team modify <team> suffix <text>',
+      team_display_name: 'team modify <team> displayName <text>',
+      team_join: 'team join <team> <members>',
+      team_leave: 'team leave <members>',
+      objective_add: 'scoreboard objectives add <objective> <criterion> [display_name]',
+      objective_display: 'scoreboard objectives setdisplay <slot> <objective>',
+      objective_render_type: 'scoreboard objectives modify <objective> rendertype <render_type>',
+      objective_number_format:
+        'scoreboard objectives modify <objective> numberformat <number_format>',
+      objective_display_name: 'scoreboard objectives modify <objective> displayname <text>',
+      objective_auto_update: 'scoreboard objectives modify <objective> displayautoupdate <boolean>',
+      score_set: 'scoreboard players set <holders> <objective> <score>',
+      score_add: 'scoreboard players add <holders> <objective> <score>',
+      score_get: 'scoreboard players get <holder> <objective>',
+      score_enable: 'scoreboard players enable <holders> <objective>',
+      score_display_name: 'scoreboard players display name <holders> <objective> <text>',
+      score_number_format:
+        'scoreboard players display numberformat <holders> <objective> <number_format>',
+      bossbar_add: 'bossbar add <bossbar> <text>',
+      bossbar_max: 'bossbar set <bossbar> max <max>',
+      bossbar_value: 'bossbar set <bossbar> value <value>',
+      bossbar_colour: 'bossbar set <bossbar> color <bossbar_colour>',
+      bossbar_style: 'bossbar set <bossbar> style <bossbar_style>',
+      bossbar_players: 'bossbar set <bossbar> players <players>',
+      bossbar_visible: 'bossbar set <bossbar> visible <boolean>',
+      bossbar_name: 'bossbar set <bossbar> name <text>',
+      bossbar_remove: 'bossbar remove <bossbar>',
+      bossbar_store_value: 'execute store result bossbar <bossbar> value run <command>',
+      actionbar: 'title <players> actionbar <text>',
+      worldborder_set: 'worldborder set <width>',
+      worldborder_set_over_seconds: 'worldborder set <width> <seconds>s',
+      worldborder_center: 'worldborder center <x> <z>',
+      worldborder_warning_distance: 'worldborder warning distance <distance>',
+      place_template:
+        'place template <template> <x> <y> <z> [rotation] [mirror] [integrity] [seed]',
+      place_structure: 'place structure <structure> <x> <y> <z>',
+      forceload_add: 'forceload add <x1> <z1> <x2> <z2>',
+      forceload_remove: 'forceload remove <x1> <z1> <x2> <z2>',
+      forceload_query: 'forceload query <x> <z>',
+      loot_spawn: 'loot spawn <x> <y> <z> loot <loot_table>',
+      loot_give: 'loot give <players> loot <loot_table>',
+      loot_insert: 'loot insert <x> <y> <z> loot <loot_table>',
+      random_value: 'random value <min>..<max> [sequence]',
+      random_roll: 'random roll <min>..<max>',
+    },
   },
   // gameRules (ADR 0111 D5, D8, as amended after B525; plugin API 1.20.0): vanilla's two kinds of
   // value; the categories are the public static `GameRuleCategory` fields in declaration order
@@ -1742,6 +1800,87 @@ export const target: Target = {
       'walk_one_cm',
       'walk_under_water_one_cm',
     ],
+  },
+  // worlds (ADR 0113 D8; plugin API 1.22.0), measured by B547 (2026-11-22,
+  // docs/reference/spikes/b547/README.md): the vendored `worldgen/structure_placement` registry
+  // (Y1 placed `dimension_origin`); `the_void` (Y6, Y7); `floating_islands` as a noise dimension
+  // (Y1); `fixed_placement` positions as `[x, y, z]` (Y8; B547 Y8: this version refuses `"positions": []` ("List must have contents")); the
+  // first-join advancement on `minecraft:tick` (Y4). The End-like noise settings were not
+  // measured and stay out.
+  worlds: {
+    structurePlacements: [
+      'minecraft:concentric_rings',
+      'minecraft:dimension_origin',
+      'minecraft:random_spread',
+    ],
+    voidBiome: 'minecraft:the_void',
+    floatingIslandsSettings: 'minecraft:floating_islands',
+    fixedPlacementShape: { type: 'minecraft:fixed_placement', minPositions: 1 },
+    firstJoinCriterion: 'minecraft:tick',
+  },
+  // scoreboard (ADR 0113 D8; plugin API 1.22.0): `criteria` the three plain criteria B547 Y10 ran
+  // (`dummy`, `health`, `playerKillCount`); `statTypes` the vendored `stat_type` registry (Y10 ran
+  // `minecraft.mined:minecraft.stone`); the display slots, render types, number formats and team
+  // option values of the vendored command tree, each value of which Y10 ran at least once
+  // (`sidebar.team.red`); the team colours of the vendored mcdoc `TextColor` enum, which the
+  // `minecraft:team_color` argument takes (Y10 ran `color red`). The same on both targets.
+  scoreboard: {
+    criteria: ['dummy', 'health', 'playerKillCount'],
+    statTypes: [
+      'broken',
+      'crafted',
+      'custom',
+      'dropped',
+      'killed',
+      'killed_by',
+      'mined',
+      'picked_up',
+      'used',
+    ],
+    displaySlots: [
+      'list',
+      'sidebar',
+      'below_name',
+      'sidebar.team.black',
+      'sidebar.team.dark_blue',
+      'sidebar.team.dark_green',
+      'sidebar.team.dark_aqua',
+      'sidebar.team.dark_red',
+      'sidebar.team.dark_purple',
+      'sidebar.team.gold',
+      'sidebar.team.gray',
+      'sidebar.team.dark_gray',
+      'sidebar.team.blue',
+      'sidebar.team.green',
+      'sidebar.team.aqua',
+      'sidebar.team.red',
+      'sidebar.team.light_purple',
+      'sidebar.team.yellow',
+      'sidebar.team.white',
+    ],
+    renderTypes: ['integer', 'hearts'],
+    numberFormats: ['blank', 'fixed', 'styled'],
+    teamColours: [
+      'black',
+      'dark_blue',
+      'dark_green',
+      'dark_aqua',
+      'dark_red',
+      'dark_purple',
+      'gold',
+      'gray',
+      'dark_gray',
+      'blue',
+      'green',
+      'aqua',
+      'red',
+      'light_purple',
+      'yellow',
+      'white',
+    ],
+    nameTagVisibility: ['always', 'hideForOtherTeams', 'hideForOwnTeam', 'never'],
+    collisionRules: ['always', 'never', 'pushOtherTeams', 'pushOwnTeam'],
+    deathMessageVisibility: ['always', 'hideForOtherTeams', 'hideForOwnTeam', 'never'],
   },
   // Verified 2026-11-05: meta.fabricmc.net lists Loader 0.20.1 for 26.4-snapshot-7, and
   // 0.165.4+26.4 is the newest Fabric API for 26.4 on maven.fabricmc.net (ADR 0037 D2). Loom

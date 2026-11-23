@@ -128,7 +128,7 @@ The rules of `docs/HANDOFF.md` "Rules for every brief" (moved there from the van
 
 - **Stubs first.** B548 makes every shared registration point: the new plugin `packages/plugins/games` (`@msm/plugin-games`, made with `tools/new-plugin`), its stub kinds, its entry in the app's built-in plugin list, the empty Studio entries, `packages/sim/src/games/` stubs, the parity class, the fixture README and the skipped e2e specs.
 - **Format.** Only B549 edits `packages/schemas/mcdoc/msm/games.mcdoc` (new) and the vanilla overlay; `rules.mcdoc` belongs to B553. Run `node tools/build-msm-mcdoc/index.ts --check`.
-- **Plugin API.** Only B550 edits `packages/plugin-api/src/` and the target facts (plugin API 1.21.0).
+- **Plugin API.** Only B550 edits `packages/plugin-api/src/` and the target facts (plugin API 1.22.0).
 - **IPC.** One brief per wave owns `app/src/shared/` and `app/src/preload/` (B554 in wave 2, B556 in wave 3).
 - **Data packs first.** Everything the games kinds lower to must load in a vanilla data pack with zero problems on both targets (the exporters' library test); a line that needs the jar is a Rules line, never a games kind line.
 - **Models.** Opus at medium effort; B547 at high effort; Sonnet for B548 and the guide half of B561.
@@ -145,7 +145,7 @@ The rules of `docs/HANDOFF.md` "Rules for every brief" (moved there from the van
 | Wave | Briefs (parallel) | Engine-mod briefs | Depends on |
 |---|---|---|---|
 | 0 | B547 spike; then B548 scaffold and stubs | B547, then B548 (parity stub only) | B544; B548 after B547 reports |
-| 1 | B549 format; B550 plugin API 1.21.0 and facts | none | B548 |
+| 1 | B549 format; B550 plugin API 1.22.0 and facts | none | B548 |
 | 2 | B551 games: world setup and start; B552 games: one block, teams, objectives, timers, areas; B553 Rules 3; B554 Play my game | B554 | B549, B550 |
 | 3 | B555 app: Games Studios and chests; B556 map export and builds from the game | none | wave 2 (B556 after B554) |
 | 4 | B557 flows, templates, examples, tiles; B558 Try it | none | waves 2–3 |
@@ -175,11 +175,11 @@ Order: the spike first (every route depends on it), then the frozen shapes, then
 - **Scope:** the frozen shapes of ADR 0113 D2–D7 with the defaults and ranges ADR 0113 lists; the overlay so a `structure_set` with `dimension_origin` has a full form with zero unsupported nodes.
 - **Exit criteria:** `node tools/build-msm-mcdoc/index.ts --check`; schemas tests; the targets' coverage test still at zero unsupported nodes; games plugin tests (each kind's default data validates on both targets).
 
-### B550 Plugin API 1.21.0 and target facts (wave 1; Opus)
+### B550 Plugin API 1.22.0 and target facts (wave 1; Opus)
 
 - **Owner files:** `packages/plugin-api/src/library.ts` (`CreatorGroup` gains `'games'`), `src/target.ts`, `version.ts`, `package.json` version, CHANGELOG lines, README version table; `packages/targets/mc-26.3/src/target.ts`, `mc-26.4/src/target.ts`, their tests and `CHANGES.md`; `packages/targets/all/test/`.
 - **Scope:** ADR 0113 D8 facts as B547 measured: `TargetFacts.worlds` (`structurePlacements`, `voidBiome`, `floatingIslandsSettings`, `endLikeSettings`, `fixedPlacementShape`, `firstJoinCriterion`), `TargetFacts.scoreboard` (vanilla criteria names, display slots incl. the team-coloured sidebars, render types, number formats, team colours, name tag visibility and collision values), `TargetFacts.commands.forms` (the exact `team`, `scoreboard`, `bossbar`, `worldborder`, `place template`, `forceload`, `loot`, `random` forms the lowering writes, per version). Anything B547 did not measure stays out of the facts and is "(verify at implementation)" in `CHANGES.md`.
-- **Exit criteria:** `pnpm --filter "@msm/target-*" test`, `@msm/plugin-api` tests; `tools/check-deps`; plugin API 1.21.0 declared; built-in plugins still declare `^1.0.0`.
+- **Exit criteria:** `pnpm --filter "@msm/target-*" test`, `@msm/plugin-api` tests; `tools/check-deps`; plugin API 1.22.0 declared; built-in plugins still declare `^1.0.0`.
 
 ### B551 Games plugin: world setup and the start (wave 2; Opus)
 

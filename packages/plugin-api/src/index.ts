@@ -67,6 +67,7 @@ export type {
   BlockFacts,
   CommandArgumentFacts,
   CommandFacts,
+  CommandFormName,
   ControlFacts,
   DataFolderKey,
   DefinitionInput,
@@ -75,6 +76,7 @@ export type {
   DimensionHeightFacts,
   EntityFacts,
   FabricFacts,
+  FixedPlacementShapeFacts,
   FluidTagFacts,
   GameRuleFacts,
   GameRuleKindName,
@@ -92,6 +94,7 @@ export type {
   RangedPullFacts,
   ResourceFolderKey,
   RuntimeKeyFacts,
+  ScoreboardFacts,
   SoundSetFacts,
   StatFacts,
   StatFormatName,
@@ -105,6 +108,7 @@ export type {
   VanillaToolStats,
   VanillaTradeSetFacts,
   VehicleFacts,
+  WorldFacts,
   WorldgenFacts,
 } from './target';
 export { API_VERSION } from './version';

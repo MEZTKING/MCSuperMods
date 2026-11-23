@@ -569,7 +569,73 @@ export interface CommandFacts {
    * them.
    */
   argumentTypes: Readonly<Record<string, CommandArgumentFacts>>;
+  /**
+   * The exact command forms the game kits' lowering writes (ADR 0113 D8), each a template of
+   * literal words and placeholders: `<name>` is required, `[name]` is optional and written only
+   * together with every optional placeholder before it. The lowering replaces each placeholder
+   * with ready command text (a name, a number, a position, a text component, a whole command
+   * after `run`) and never adds words of its own, so a form that changes between versions
+   * changes here only. Optional: a target without them cannot lower the game kits, and an
+   * external plugin reading them must handle their absence. Since 1.22.0.
+   */
+  forms?: Readonly<Record<CommandFormName, string>>;
 }
+
+/**
+ * The names of the command forms in {@link CommandFacts.forms} (ADR 0113 D8): the `team`,
+ * `scoreboard`, `bossbar`, `title` (action bar), `worldborder`, `place`, `forceload`, `loot` and
+ * `random` lines the game kits write. Since 1.22.0.
+ */
+export type CommandFormName =
+  | 'team_add'
+  | 'team_colour'
+  | 'team_friendly_fire'
+  | 'team_see_invisible_friends'
+  | 'team_name_tags'
+  | 'team_collision'
+  | 'team_death_messages'
+  | 'team_prefix'
+  | 'team_suffix'
+  | 'team_display_name'
+  | 'team_join'
+  | 'team_leave'
+  | 'objective_add'
+  | 'objective_display'
+  | 'objective_render_type'
+  | 'objective_number_format'
+  | 'objective_display_name'
+  | 'objective_auto_update'
+  | 'score_set'
+  | 'score_add'
+  | 'score_get'
+  | 'score_enable'
+  | 'score_display_name'
+  | 'score_number_format'
+  | 'bossbar_add'
+  | 'bossbar_max'
+  | 'bossbar_value'
+  | 'bossbar_colour'
+  | 'bossbar_style'
+  | 'bossbar_players'
+  | 'bossbar_visible'
+  | 'bossbar_name'
+  | 'bossbar_remove'
+  | 'bossbar_store_value'
+  | 'actionbar'
+  | 'worldborder_set'
+  | 'worldborder_set_over_seconds'
+  | 'worldborder_center'
+  | 'worldborder_warning_distance'
+  | 'place_template'
+  | 'place_structure'
+  | 'forceload_add'
+  | 'forceload_remove'
+  | 'forceload_query'
+  | 'loot_spawn'
+  | 'loot_give'
+  | 'loot_insert'
+  | 'random_value'
+  | 'random_roll';
 
 /**
  * The kind of value a game rule holds: vanilla's two. Since 1.20.0 (ADR 0111 D5).
@@ -617,6 +683,96 @@ export interface StatFacts {
   criterionPrefix: string;
   /** Every vanilla custom statistic id without `minecraft:`, sorted (for example `jump`). */
   vanillaCustomStats: readonly string[];
+}
+
+/**
+ * How a `minecraft:fixed_placement` placement modifier lists its positions on a target: a list
+ * of absolute `[x, y, z]` positions, all placed, stacked or in other chunks. A placed feature
+ * runs only where its biome's features run, which a flat world without a solid layer never
+ * does, so it cannot place a start platform in a void world (B547 Y6, Y8). Since 1.22.0 (ADR 0113
+ * D8).
+ */
+export interface FixedPlacementShapeFacts {
+  /** The placement modifier type, namespaced (`minecraft:fixed_placement`). */
+  type: string;
+  /**
+   * The fewest positions the list may hold: `0` where an empty list loads, `1` where the game
+   * refuses an empty list and with it the whole data pack.
+   */
+  minPositions: number;
+}
+
+/**
+ * World facts of a target: what the game kits' world types and start lower against (ADR 0113
+ * D8, ADR 0114). Since 1.22.0.
+ */
+export interface WorldFacts {
+  /**
+   * Every structure placement type, namespaced and sorted (for example
+   * `minecraft:dimension_origin`, which has no fields and places one start in chunk 0 0 of every
+   * dimension whose generator uses the set, its piece's bottom at `start_height - 1` and its
+   * rotation random).
+   */
+  structurePlacements: readonly string[];
+  /**
+   * The vanilla void biome, namespaced (`minecraft:the_void`): empty spawn lists, and its own
+   * stone start platform when the flat generator's `features` is true.
+   */
+  voidBiome: string;
+  /** The vanilla noise settings of floating islands, namespaced (`minecraft:floating_islands`). */
+  floatingIslandsSettings: string;
+  /**
+   * The vanilla noise settings of an End-like world, namespaced. Absent where it has not been
+   * measured in the game.
+   */
+  endLikeSettings?: string;
+  /** How `minecraft:fixed_placement` lists its positions. */
+  fixedPlacementShape: FixedPlacementShapeFacts;
+  /**
+   * The advancement criterion trigger that fires on a player's first tick after being placed,
+   * namespaced (`minecraft:tick`): with a reward function, the vanilla first-join pattern, once
+   * per player.
+   */
+  firstJoinCriterion: string;
+}
+
+/**
+ * Scoreboard and team facts of a target: what the `msm:team` and `msm:objective` kinds and their
+ * validators check against (ADR 0113 D4, D5, D8). Since 1.22.0.
+ */
+export interface ScoreboardFacts {
+  /**
+   * The plain objective criteria measured in the game, sorted (for example `dummy` and
+   * `health`). A project statistic's criterion comes from {@link StatFacts.criterionPrefix}.
+   */
+  criteria: readonly string[];
+  /**
+   * The statistic types, bare and sorted (for example `mined`): the criterion
+   * `minecraft.<type>:<namespace>.<path>` counts that statistic of one id, such as
+   * `minecraft.mined:minecraft.stone`.
+   */
+  statTypes: readonly string[];
+  /**
+   * The display slots, in this order: `list`, `sidebar`, `below_name`, then
+   * `sidebar.team.<colour>` for each of {@link ScoreboardFacts.teamColours}, shown only to the
+   * players of a team of that colour.
+   */
+  displaySlots: readonly string[];
+  /** The objective render types (`integer`, `hearts`). */
+  renderTypes: readonly string[];
+  /**
+   * The number format keywords (`blank`; `fixed`, followed by a text component; `styled`,
+   * followed by a style).
+   */
+  numberFormats: readonly string[];
+  /** The team colours, in the game's order (`black` to `white`, sixteen on every target). */
+  teamColours: readonly string[];
+  /** The values of a team's `nametagVisibility` (for example `hideForOtherTeams`), sorted. */
+  nameTagVisibility: readonly string[];
+  /** The values of a team's `collisionRule` (for example `pushOwnTeam`), sorted. */
+  collisionRules: readonly string[];
+  /** The values of a team's `deathMessageVisibility`, sorted. */
+  deathMessageVisibility: readonly string[];
 }
 
 /**
@@ -1278,6 +1434,19 @@ export interface TargetFacts {
    * them. Since 1.20.0 (ADR 0111 D6, D8).
    */
   stats?: StatFacts;
+  /**
+   * World facts: the structure placements, the void biome, the floating-island noise settings,
+   * the `fixed_placement` shape and the first-join criterion the game kits lower against.
+   * Optional: a target without them skips the checks that need them, and an external plugin
+   * reading them must handle their absence. Since 1.22.0 (ADR 0113 D8).
+   */
+  worlds?: WorldFacts;
+  /**
+   * Scoreboard facts: objective criteria, display slots, render types, number formats, team
+   * colours and the team options' values. Optional: a target without them skips the checks that
+   * need them. Since 1.22.0 (ADR 0113 D8).
+   */
+  scoreboard?: ScoreboardFacts;
 }
 
 /**

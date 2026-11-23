@@ -9114,3 +9114,17 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - `docs/CLAUDE.md`'s list of guide pages wants `live-views.md` (not this brief's file).
 - B669 and B672 (the search plan's AI words) will need their own budget line in ADR 0125: the prompt is at the 98,000 limit.
 - B618: `docs/LIVE-VIEW-AUDIT.md` rows and the close.
+## 2026-11-23 — executor — B550 plugin API 1.22.0 and the game kits' target facts
+
+**What**
+- Plugin API 1.22.0 (ADR 0113 D8; the plan's "1.21.0" renumbered, as the plan's Versions line says): `CreatorGroup` gains `games`; `TargetFacts.worlds?` (`WorldFacts`: `structurePlacements`, `voidBiome`, `floatingIslandsSettings`, `endLikeSettings?`, `fixedPlacementShape` (`FixedPlacementShapeFacts`: `type`, `minPositions`), `firstJoinCriterion`); `TargetFacts.scoreboard?` (`ScoreboardFacts`: criteria, stat types, display slots with the 16 team sidebars, render types, number formats, team colours, name tag, collision and death message values); `CommandFacts.forms?` (`CommandFormName`, 49 forms as templates with `<required>` and `[optional]` placeholders). `API_VERSION`, package version, CHANGELOG; built-ins still declare `^1.0.0`.
+- Facts on `mc-26.3` and `mc-26.4` from B547's measurements: identical but for `fixedPlacementShape.minPositions` (0 on 26.3, 1 on 26.4, which refuses an empty `positions` list). `endLikeSettings` left out on both; the criteria, forms and in-game questions B547 did not run are listed "(verify at implementation)" in both `CHANGES.md`.
+- Tests: `packages/targets/all/test/games.test.ts` ties the facts to each target's vendored registries, command tree and mcdoc `TextColor` enum, walks every form's leading words down the tree, and checks every filled form with `@msm/schemas/mcfunction` (no errors; a wrong option value fails it); both `target.test.ts` pin the values; plugin-api type tests for the new shapes.
+- Root `CLAUDE.md` plugin API mention; the plan's four "1.21.0" mentions of B550 now read 1.22.0; `packages/core/test/registry.test.ts` expects 1.22.0.
+
+**Decisions**
+- Forms are templates the lowering fills with ready text and never extends, so a form that changes between versions changes only in `packages/targets`. The timed world border form writes seconds (`<seconds>s`), since a bare number is ticks (B547 Y10).
+- `statTypes`, team colours and the team option values come from the vendored data, each kind of value run at least once by B547; only the three plain criteria B547 ran are in `criteria`.
+
+**Next**
+- B551 and B552 read `worlds`, `scoreboard` and `commands.forms`. Main session: `packages/plugin-api/CLAUDE.md` and `packages/targets/CLAUDE.md` status lines still say 1.21.0 (not this brief's files); the app's `CREATOR_GROUPS` (`app/src/renderer/src/components/creator/creator-model.ts`) needs a `games` heading when the first games flow lands.

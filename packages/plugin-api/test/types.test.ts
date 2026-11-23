@@ -3,6 +3,7 @@ import type {
   BlockFacts,
   CommandArgumentFacts,
   CommandFacts,
+  CommandFormName,
   ControlFacts,
   DataFolderKey,
   DefinitionInput,
@@ -18,6 +19,7 @@ import type {
   ExporterInput,
   ExporterOption,
   FabricFacts,
+  FixedPlacementShapeFacts,
   FluidTagFacts,
   GameRuleFacts,
   GameRuleKindName,
@@ -42,6 +44,7 @@ import type {
   ProjectValidator,
   ResourceFolderKey,
   RuntimeKeyFacts,
+  ScoreboardFacts,
   SoundSetFacts,
   StatFacts,
   StatFormatName,
@@ -56,6 +59,7 @@ import type {
   VanillaPairFacts,
   VanillaTradeSetFacts,
   VehicleFacts,
+  WorldFacts,
   WorldgenFacts,
 } from '../src/index';
 import { testTarget } from './target-fixture';
@@ -786,6 +790,48 @@ describe('0.8.0 additions', () => {
     expect(wrongPart.approximate).toEqual(['carvers']);
     // 1.20.0-shaped worldgen facts without it stay assignable.
     expect(testTarget.worldgen.terrainPreview).toBeUndefined();
+  });
+
+  it('carries world, scoreboard and command form facts (1.22.0)', () => {
+    expectTypeOf<TargetFacts['worlds']>().toEqualTypeOf<WorldFacts | undefined>();
+    expectTypeOf<TargetFacts['scoreboard']>().toEqualTypeOf<ScoreboardFacts | undefined>();
+    expectTypeOf<WorldFacts['fixedPlacementShape']>().toEqualTypeOf<FixedPlacementShapeFacts>();
+    expectTypeOf<WorldFacts['endLikeSettings']>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<CommandFacts['forms']>().toEqualTypeOf<
+      Readonly<Record<CommandFormName, string>> | undefined
+    >();
+    const worlds: WorldFacts = {
+      structurePlacements: ['minecraft:dimension_origin'],
+      voidBiome: 'minecraft:the_void',
+      floatingIslandsSettings: 'minecraft:floating_islands',
+      fixedPlacementShape: { type: 'minecraft:fixed_placement', minPositions: 1 },
+      firstJoinCriterion: 'minecraft:tick',
+    };
+    expect(worlds.endLikeSettings).toBeUndefined();
+    const scoreboard: ScoreboardFacts = {
+      criteria: ['dummy'],
+      statTypes: ['mined'],
+      displaySlots: ['list', 'sidebar', 'below_name', 'sidebar.team.red'],
+      renderTypes: ['integer', 'hearts'],
+      numberFormats: ['blank', 'fixed', 'styled'],
+      teamColours: ['red'],
+      nameTagVisibility: ['always'],
+      collisionRules: ['always'],
+      deathMessageVisibility: ['always'],
+    };
+    expect(scoreboard.displaySlots).toContain('sidebar.team.red');
+    const partial: Partial<Record<CommandFormName, string>> = {
+      team_join: 'team join <team> <members>',
+    };
+    expect(partial.team_join).toContain('<team>');
+    // @ts-expect-error: forms are keyed by the documented names only.
+    const wrongForm: Partial<Record<CommandFormName, string>> = { team_rename: '' };
+    expect(wrongForm).toBeDefined();
+    // 1.21.0-shaped targets and command facts without them stay assignable.
+    const older: CommandFacts = { vanillaNames: [], argumentTypes: {} };
+    expect(older.forms).toBeUndefined();
+    expect(testTarget.worlds).toBeUndefined();
+    expect(testTarget.scoreboard).toBeUndefined();
   });
 
   it('carries optional command facts on a target (1.17.0)', () => {

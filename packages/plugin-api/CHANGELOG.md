@@ -2,6 +2,19 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.22.0 — 2026-11-23
+
+The game kits' Creator group and target facts (ADR 0113 D8, measured by the B547 spike). `API_VERSION` is `1.22.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `CreatorGroup` gains `'games'` (game kits such as a Skyblock, a one-block world or an arena). A host or plugin that switches over every group without a default case adds it.
+- `TargetFacts.worlds?: WorldFacts { structurePlacements; voidBiome; floatingIslandsSettings; endLikeSettings?; fixedPlacementShape; firstJoinCriterion }` with `FixedPlacementShapeFacts { type; minPositions }`: the structure placement types (`minecraft:dimension_origin` among them), the void biome, the floating-island noise settings, how `minecraft:fixed_placement` lists its positions (at least one on the snapshot target, none needed on the release target) and the first-join advancement trigger (`minecraft:tick`). `endLikeSettings` is absent on both built-in targets until it is measured.
+- `TargetFacts.scoreboard?: ScoreboardFacts { criteria; statTypes; displaySlots; renderTypes; numberFormats; teamColours; nameTagVisibility; collisionRules; deathMessageVisibility }`: what the team and objective kinds check against, the display slots including the 16 team-coloured sidebars.
+- `CommandFacts.forms?: Readonly<Record<CommandFormName, string>>` with `CommandFormName` (49 names): the exact `team`, `scoreboard`, `bossbar`, `title` action bar, `worldborder`, `place`, `forceload`, `loot` and `random` lines the game kits write, as templates of literal words, `<required>` and `[optional]` placeholders.
+
+### Migration from 1.21.0
+
+None. A plugin that reads the new facts should declare `^1.22.0` and treat an absent value as "no facts to check against" (or, for `forms`, "cannot lower the game kits on this target"). A test that compares `CreatorGroup` with an exact union adds `'games'`.
+
 ## 1.21.0 — 2026-11-22
 
 The live world generation preview's target fact (ADR 0119 D16). `API_VERSION` is `1.21.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

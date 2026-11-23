@@ -905,4 +905,31 @@ describe('target mc-26.4', () => {
     };
     expect(source.ref).toBe('26.4-snapshot-7-summary');
   });
+
+  it('sets the game kit facts B547 measured (ADR 0113 D8)', () => {
+    expect(target.worlds).toEqual({
+      structurePlacements: [
+        'minecraft:concentric_rings',
+        'minecraft:dimension_origin',
+        'minecraft:random_spread',
+      ],
+      voidBiome: 'minecraft:the_void',
+      floatingIslandsSettings: 'minecraft:floating_islands',
+      // this version refuses an empty `positions` list (B547 Y8).
+      fixedPlacementShape: { type: 'minecraft:fixed_placement', minPositions: 1 },
+      firstJoinCriterion: 'minecraft:tick',
+    });
+    expect(target.scoreboard?.criteria).toEqual(['dummy', 'health', 'playerKillCount']);
+    expect(target.scoreboard?.displaySlots.slice(0, 3)).toEqual(['list', 'sidebar', 'below_name']);
+    expect(target.scoreboard?.displaySlots).toHaveLength(19);
+    expect(target.scoreboard?.renderTypes).toEqual(['integer', 'hearts']);
+    expect(target.scoreboard?.numberFormats).toEqual(['blank', 'fixed', 'styled']);
+    const forms = target.commands?.forms;
+    expect(Object.keys(forms ?? {})).toHaveLength(49);
+    expect(forms?.place_template).toBe(
+      'place template <template> <x> <y> <z> [rotation] [mirror] [integrity] [seed]',
+    );
+    expect(forms?.worldborder_set_over_seconds).toBe('worldborder set <width> <seconds>s');
+    expect(forms?.random_value).toBe('random value <min>..<max> [sequence]');
+  });
 });
