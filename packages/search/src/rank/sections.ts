@@ -3,8 +3,11 @@
  * sections in the order of their best score (Things you can make, In your mod, From Minecraft,
  * How to, Settings and commands, Things to fix), three rows each and a count of the rest; Very
  * easy's technical entries sit in More, always last. An unavailable entry is never a Best match
- * and comes after the available ones of its section. Below the confidence floor there is no Best
- * match: the list reads as Closest things. Pure.
+ * and comes after the available ones of its section; a section cut at the row cap Show more cannot
+ * lift (`MAX_SECTION_ROWS`) still lists up to `UNAVAILABLE_BEYOND_CAP` of the unavailable matches
+ * that would fall off, after its rows, so a thing the target cannot make is shown greyed, never
+ * hidden (ADR 0124 D6, amended). Below the confidence floor there is no Best match: the list reads
+ * as Closest things. Pure.
  */
 
 import type {
@@ -15,7 +18,13 @@ import type {
   SearchSection,
   SearchSource,
 } from '../types';
-import { BEST_MATCHES, CONFIDENCE_FLOOR } from './weights';
+import { BEST_MATCHES, CONFIDENCE_FLOOR, MAX_SECTION_ROWS } from './weights';
+
+/**
+ * Unavailable matches a section cut at the row cap keeps after its rows (ADR 0124 D6, amended):
+ * the cap is exceeded by at most this many rows; any further ones are counted in `more`.
+ */
+export const UNAVAILABLE_BEYOND_CAP = 5;
 
 /** Section ids, in the order they are shown when their best scores tie. */
 export const SECTION_IDS = [
@@ -144,10 +153,16 @@ export function arrange(
   for (const [id, group] of grouped) {
     const all = [...group.available, ...group.unavailable];
     const top = all.reduce((max, hit) => Math.max(max, hit.score), Number.NEGATIVE_INFINITY);
+    const rows = all.slice(0, options.rows);
+    if (options.rows >= MAX_SECTION_ROWS && all.length > options.rows) {
+      // Show more cannot lift this cut: keep the best unavailable ones that would fall off, last.
+      const cut = Math.max(0, options.rows - group.available.length);
+      rows.push(...group.unavailable.slice(cut, cut + UNAVAILABLE_BEYOND_CAP));
+    }
     sections.push({
       id,
-      hits: all.slice(0, options.rows),
-      more: Math.max(0, all.length - options.rows),
+      hits: rows,
+      more: all.length - rows.length,
       top: id === 'more' ? Number.NEGATIVE_INFINITY : top,
       order: SECTION_IDS.indexOf(id),
     });

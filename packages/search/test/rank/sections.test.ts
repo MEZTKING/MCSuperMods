@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { SearchHit } from '../../src';
-import { arrange, inScope, isConfident, sectionOf } from '../../src/rank/sections';
+import {
+  arrange,
+  inScope,
+  isConfident,
+  sectionOf,
+  UNAVAILABLE_BEYOND_CAP,
+} from '../../src/rank/sections';
+import { MAX_SECTION_ROWS } from '../../src/rank/weights';
 import { entry } from '../engine-fixtures';
 
 const hit = (
@@ -69,5 +76,79 @@ describe('sections', () => {
     expect(isConfident({ top: 5, plain: 0, words: 2, corrected: 2, exactId: false })).toBe(false);
     expect(isConfident({ top: 5, plain: 0, words: 1, corrected: 1, exactId: false })).toBe(true);
     expect(isConfident({ top: 1, plain: 0, words: 1, corrected: 0, exactId: true })).toBe(true);
+  });
+  describe('a section over the cap with unavailable matches (ADR 0124 D6, amended)', () => {
+    const flows = (prefix: string, count: number, from: number, extra = {}) =>
+      Array.from({ length: count }, (_, i) =>
+        hit(`${prefix}${String(i).padStart(2, '0')}`, 'flow', from - i, extra),
+      );
+    const unavailable = { available: false };
+
+    it('lists the unavailable ones after the cap, greyed and last, never a Best match', () => {
+      // An unavailable flow scoring above every available one, as a broad word can on a newer target.
+      const hits = [...flows('u', 2, 1000, unavailable), ...flows('a', 63, 900)];
+      const { best, sections } = arrange(hits, {
+        mode: 'easy',
+        confident: true,
+        rows: MAX_SECTION_ROWS,
+      });
+      expect(best.map((h) => h.entry.id)).toEqual(['a00', 'a01', 'a02']);
+      const make = sections.find((s) => s.id === 'make');
+      expect(make?.hits).toHaveLength(MAX_SECTION_ROWS + 2);
+      expect(make?.hits.slice(-2).map((h) => h.entry.id)).toEqual(['u00', 'u01']);
+      expect(make?.hits.slice(-2).every((h) => h.entry.available === false)).toBe(true);
+      expect(make?.hits.slice(0, MAX_SECTION_ROWS).every((h) => h.entry.available !== false)).toBe(
+        true,
+      );
+      // 60 available after the Best matches: 50 shown, 10 counted.
+      expect(make?.more).toBe(10);
+    });
+
+    it('exceeds the cap by at most UNAVAILABLE_BEYOND_CAP and counts the rest', () => {
+      const hits = [...flows('a', 60, 900), ...flows('u', 8, 100, unavailable)];
+      const { sections } = arrange(hits, {
+        mode: 'easy',
+        confident: false,
+        rows: MAX_SECTION_ROWS,
+      });
+      const make = sections[0];
+      expect(make?.hits).toHaveLength(MAX_SECTION_ROWS + UNAVAILABLE_BEYOND_CAP);
+      expect(make?.hits.slice(MAX_SECTION_ROWS).map((h) => h.entry.id)).toEqual([
+        'u00',
+        'u01',
+        'u02',
+        'u03',
+        'u04',
+      ]);
+      expect(make?.more).toBe(60 + 8 - MAX_SECTION_ROWS - UNAVAILABLE_BEYOND_CAP);
+    });
+
+    it('keeps the next unavailable ones when some already fit inside the cap', () => {
+      const hits = [...flows('a', 48, 900), ...flows('u', 9, 100, unavailable)];
+      const { sections } = arrange(hits, {
+        mode: 'easy',
+        confident: false,
+        rows: MAX_SECTION_ROWS,
+      });
+      const ids = sections[0]?.hits.map((h) => h.entry.id) ?? [];
+      expect(ids).toHaveLength(MAX_SECTION_ROWS + UNAVAILABLE_BEYOND_CAP);
+      expect(ids.slice(48)).toEqual(['u00', 'u01', 'u02', 'u03', 'u04', 'u05', 'u06']);
+      expect(sections[0]?.more).toBe(2);
+    });
+
+    it('leaves a cut Show more can lift, and a section inside the cap, as they were', () => {
+      const hits = [...flows('a', 10, 900), ...flows('u', 2, 100, unavailable)];
+      const closed = arrange(hits, { mode: 'easy', confident: false, rows: 3 }).sections[0];
+      expect(closed?.hits.map((h) => h.entry.id)).toEqual(['a00', 'a01', 'a02']);
+      expect(closed?.more).toBe(9);
+      const opened = arrange(hits, {
+        mode: 'easy',
+        confident: false,
+        rows: MAX_SECTION_ROWS,
+      }).sections[0];
+      expect(opened?.hits.map((h) => h.entry.id).slice(-2)).toEqual(['u00', 'u01']);
+      expect(opened?.hits).toHaveLength(12);
+      expect(opened?.more).toBe(0);
+    });
   });
 });

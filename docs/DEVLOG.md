@@ -10630,3 +10630,19 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - Ranking: an unavailable entry sits after every available one of its section and the section is cut at 50 rows, so with a broad word ("lantern", 63 rows in Things you can make) a flow the target cannot make is not shown at all, which ADR 0124 says never happens ("shown last and greyed, never hidden"); `packages/search/src/rank/sections.ts` `arrange` could keep the unavailable ones inside the cut (B673 or a small engine brief).
 - Root `CLAUDE.md` says 47 e2e spec files; there are 52.
 - A Showcase card's hover clip sometimes mounts no canvas late in a full e2e run (one test per run, a different one each time); worth a look at `chooseLiveClip`'s `windowShown` or the hover timing under a long run.
+
+## 2026-11-23 — executor — Unavailable flows never hidden
+
+**What**
+- `packages/search/src/rank/sections.ts` `arrange`: when a section is cut at `MAX_SECTION_ROWS` (50, the cut Show more cannot lift), up to `UNAVAILABLE_BEYOND_CAP` (5) of its unavailable matches that would fall off are listed after its rows, best first; the rest still counts in `more`. Before, an unavailable entry sorted after every available one and a broad word ("lantern", 63 rows in Things you can make) hid it entirely, against ADR 0124 D6 ("shown last and greyed, never hidden").
+- `packages/search/test/rank/sections.test.ts`: four tests for a section over the cap (an unavailable flow scoring above every available one is listed last and is never a Best match; the cap exceeded by at most five, the rest counted; unavailable rows already inside the cut followed by the next five; the closed three-row cut and a section inside the cap unchanged).
+- ADR 0124 D6: one amendment line with the rule.
+- Checks: `@msm/search` tests (28 files, 222 passed); `app/test/search/golden.test.ts`, `misspellings.test.ts` and `app/test/components/search/` (8 files, 347 passed), all with `--maxWorkers=2`; `pnpm lint`, `pnpm typecheck`.
+
+**Decisions**
+- The rule applies only at the 50-row cap: below it (the closed three rows) nothing is hidden, since Show more reveals the rest, so the closed panel keeps its three rows and the greyed rows stay last.
+- Extra rows after the cap rather than taking the lowest available rows: the available order inside the 50 is untouched and the panel already shows every engine row of an opened section (`SearchPanel` slices only closed ones).
+- Five, not all: on a target with many unavailable matches the opened list stays bounded (at most 55 rows); more than five unavailable beyond the cap is counted, not listed.
+
+**Next**
+- The panel's rest count after an opened section at the cap has nothing to open; a line such as "Type more words to see the rest" could say so (app, B673 or later).
