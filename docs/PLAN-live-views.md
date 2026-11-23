@@ -1,6 +1,6 @@
 # Plan: Live views 2 to 4
 
-**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data; accepted with findings at B618, 2026-11-23), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), the last two Proposed. **Batch 2 is closed** (B600–B618); batch 3 is next, with its spike B619. Live world generation is closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md) accepted with findings). Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
+**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data; accepted with findings at B618, 2026-11-23), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds; accepted with findings at B633, 2026-11-23) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), the last Proposed. **Batches 2 and 3 are closed** (B600–B618, B619–B633); batch 4 is next, with its spike B634. Live world generation is closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md) accepted with findings). Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
 
 Working plan for the rest of the user's standing rule of 2026-11-22, **Everything visible live** ([ADR 0119 D1](adr/0119-live-worldgen-preview.md)). The audit [`docs/LIVE-VIEW-AUDIT.md`](LIVE-VIEW-AUDIT.md) (B575) counted 118 kinds when this plan was written: 28 had a live view, 9 were exempt, 81 needed one. Fourteen of those were live world generation's (B574–B592, closed at B591 into ADR 0119) and now have one, so the audit stands at 42, 9 and 67. This plan closes the other 67 in three batches, plus the two surfaces that are not kinds: the Creator's flows that show nothing of what they make, and the AI helper's proposals, seen only as JSON. Written 2026-11-22 by the orchestrator at 505d7c3 (branch `ccr-d077e76e-4gnbx2`). Every "today" claim was checked against the code at that commit or is the audit's; what was not checked says "(verify at implementation)".
 
@@ -245,56 +245,9 @@ Batch 2 is closed (B618, 2026-11-23): its fact table 2F1–2F15, the spike's ans
 - **Potion bottles and creative tabs.** The bottle is vanilla's own two pictures from the jar with the colour laid on the liquid as the item definition's tint says; without the jar, MSM's drawn bottle. The tab page is MSM's drawing with the items' pictures.
 - **My things** gains cards for particles and sounds (the audit's note), each opening the view.
 
-### Fact table (3F1 to 3F12)
+### Fact table, spike questions and limits
 
-| # | Fact | Source |
-|---|---|---|
-| 3F1 | Try it's sound player: `webAudioOut`, one `AudioContext` for the app, Ogg Vorbis bytes, project sounds only; a vanilla sound is a caption with a note | `app/src/renderer/src/tryit/effects.ts`, `TryItView.tsx` |
-| 3F2 | The client jar holds no sound files; `sounds.json`, the `.ogg` files and the non-English language files are in the launcher's asset store (`assets/indexes/`, `assets/objects/`) | (verify at implementation; B619) |
-| 3F3 | No play button exists outside Try it; the Creator has an audio field (`CreatorAudioField.tsx`) and the Studios a Sounds section (`SoundsSection.tsx`) | the audit; `app/src/renderer/src/components/creator/`, `studios/blocks-items/` |
-| 3F4 | The art generator draws vanilla mob variant textures as an even coat because "their layout is not MSM's to know" | `packages/plugins/library/src/art/skins.ts` |
-| 3F5 | The geo renderer draws `msm:geo_model` bodies with animations; the armour figure draws equipment layers | `app/src/renderer/src/preview/geo/`, `ArmourPreviewView.tsx` |
-| 3F6 | The Villager look Studio shows flat pictures; the Potion Studio the four names; the Creative Tab Studio a text summary | the audit |
-| 3F7 | `minecraft:shader` is a raw file, unchecked; post effects and waypoint styles are schema forms | ADR 0106; the audit |
-| 3F8 | The jar extraction keeps only `textures/block` and `textures/item` | `packages/interop/src/minecraft-install/extract.ts` |
-| 3F9 | The Particle Studio plays `msm:particle` frames (`ParticlePreview.tsx`, `particle-frames.ts`) | `app/src/renderer/src/studios/blocks-items/` |
-| 3F10 | The Creator's gaps: Music disc and Goat horn play nothing; Banner pattern, Armour trim and Pot pattern show items but not the pattern in place; Creative tab shows no tab | the audit |
-| 3F11 | My things has no card for particles or sounds | the audit |
-| 3F12 | Showcase and Try it already fall back to stills and captions without WebGL or under reduced motion | ADR 0118 D7–D9 |
-
-### Spike questions (3S1 to 3S12), answered by B619 on both targets
-
-| # | Question |
-|---|---|
-| 3S1 | Where the launcher keeps the asset index and objects for each supported launcher kind; how `@msm/interop` finds them from the install it already knows; read time for one sound |
-| 3S2 | Do all vanilla sound files decode in the app (mono, stereo, long music)? Memory for a music disc; streaming or whole-file |
-| 3S3 | For each of the seven variant mobs, the villager and the sulfur cube: can a stand-in body be written from screenshots and the texture layout so the user's texture sits right? Which model names does a variant offer per target? |
-| 3S4 | The texture folders batch 3 needs from the jar (entity, painting, banner and shield patterns, trims and their palettes, pot patterns, GUI sprites for the tab and effect frame, particle, font, potion overlays), counts, sizes, cache growth |
-| 3S5 | Trim colouring: is "the palette picture applied to the pattern picture" what the game shows (client GameTest screenshot against MSM's drawing)? |
-| 3S6 | Banner and shield pattern layering and dye colours (from the target's dye facts), by screenshot |
-| 3S7 | Font providers per target; which are exact from data; the cost of `unihex` |
-| 3S8 | Shaders: the share of the jar's post programs, and of a self-written set, that compile under WebGL 2 after the mechanical translation; which constructs fail; whether core shaders can be shown at all |
-| 3S9 | Post effects: the pass, target and uniform fields per target; a Try it still frame as the input; speed under SwiftShader |
-| 3S10 | Timelines and world clocks: fields per target, which values can be drawn as a strip (verify both targets have both) |
-| 3S11 | Waypoint styles, the creative tab page and the effect frame by screenshot, for proportions |
-| 3S12 | Size of this batch's chunks; whether the stand-in bodies fit the 100 kB renderer JSON rule (they are code or small JSON) |
-
-### Limits (3L1 to 3L12)
-
-| # | Limit | Why | What users see | Mitigation |
-|---|---|---|---|---|
-| 3L1 | **Minecraft's own sounds need your Minecraft folder.** | Never shipped; not in the jar. | The Play button is off with the set-up link; your own sounds always play. | Set up the folder once. |
-| 3L2 | **A sound is heard flat.** | No world around it. | No distance, no echo, no category volume. | Try it, Play. |
-| 3L3 | **Mob bodies are MSM's stand-ins.** | The game's shapes are code. | "About right"; small parts may sit differently. | Reserve B646; Play. |
-| 3L4 | **No vanilla animations on stand-ins.** | As 3L3. | The body turns; it does not walk. | — |
-| 3L5 | **Some bodies show as a flat sheet.** | Where 3S3 says no. | The texture with its parts named. | Reserve B646. |
-| 3L6 | **Shaders run only where the app's graphics can.** | WebGL 2 is not the game's OpenGL. | Compiles and runs, or the compiler's lines and "only in the game". | Play. |
-| 3L7 | **Post effects are shown on a still frame of Try it.** | No live game picture. | One frame, not motion. | Play. |
-| 3L8 | **No WebGL: flat pictures.** | As the preview panel today. | Textures and sheets instead of bodies; sounds still play. | — |
-| 3L9 | **TrueType and unihex fonts are about right or named.** | Browser text drawing; file size. | A label on the line. | Play. |
-| 3L10 | **The creative tab page is a drawing.** | The game's screen is its code. | Order and icons are the data's; search and scrolling are not there. | Play. |
-| 3L11 | **A day strip shows values, not the sky.** | The sky's drawing is the game's. | Swatches and numbers over the day. | Try it's Sky choice for dimension types. |
-| 3L12 | **Other languages' text does not show.** | Only `en_us` is read (the audit). | English names. | An idea, not in this plan. |
+Batch 3 is closed (B633, 2026-11-23): its fact table 3F1–3F12, the spike's answers 3S1–3S12 and the limits 3L1–3L12 with their outcome are in [ADR 0121](adr/0121-live-views-looks-and-sounds.md), accepted with findings.
 
 ### Briefs
 
