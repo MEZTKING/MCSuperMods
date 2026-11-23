@@ -66,6 +66,8 @@ export default defineConfig({
           { text: 'Boats', link: '/boats' },
           { text: 'Vehicles', link: '/vehicles' },
           { text: 'Keys and the screen', link: '/keys-and-hud' },
+          { text: 'Game modes', link: '/game-modes' },
+          { text: 'Maps', link: '/maps' },
           { text: 'The Creator', link: '/creator' },
           { text: 'Rules', link: '/rules' },
           { text: 'Status effects and throwables', link: '/effects-and-throwables' },

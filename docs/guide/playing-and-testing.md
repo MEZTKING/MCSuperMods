@@ -21,7 +21,7 @@ The game opens by itself in a **test world**: a flat Creative world named "MCSup
 - a 21 by 21 smooth stone **test area** at the spawn, with a sign "MCSuperMods test area", a lever, a button, a pressure plate, redstone dust, a small pool of water, grass and farmland, and a fenced pen;
 - **chests by the spawn** with a stack of every item of your project: items, block items and spawn eggs. The first nine are also in your hotbar.
 
-The chip beside the buttons shows the game's state: **Game not running**, **Starting…**, **In the test world**, **In another world** or **Restart needed**. A progress line shows "Saving the project…" and "Building the mod…".
+The chip beside the buttons shows the game's state: **Game not running**, **Starting…**, **In the test world**, **In my game** (see [Play my game](#play-my-game)), **In another world** or **Restart needed**. A progress line shows "Saving the project…" and "Building the mod…".
 
 If Minecraft was already running when you pressed Play, it restarts with the new mod and comes back to the same world. If it will not close, MCSuperMods waits about 30 seconds and then says "Close Minecraft, then press Play again."
 
@@ -31,17 +31,35 @@ The very first time Minecraft starts it may ask about accessibility settings bef
 
 The small menu beside Play has:
 
+- **Play my game** and **Start over**: your game in a world of its own (see [Play my game](#play-my-game)).
 - **New test world**: keeps the old world under the name `msm-test-<namespace>-old-1` (and so on) in the instance, and makes a fresh one next time. Counters from your rules start again. Close Minecraft first.
 - **Restart**: closes the game and starts it again with the latest mod (see below).
 - **Open the test instance's folder**: opens the instance's game folder.
 
 An entry that is off says why.
 
+## Play my game
+
+The test world suits trying a block, not playing a Skyblock or an adventure map. Once your project has a world setup (**Make a game** on Home, or a flow of [Game modes](game-modes.md)), **Play my game** in the Play menu plays it the way players will:
+
+- it opens your game's own world, `msm-game-<namespace>` in the test instance, or makes it the first time: your game's World Type, its game mode and difficulty, structures on and a random seed;
+- there is no test area, no chests of items and no change to time, weather or mobs; your world setup places the start island, gives the kit and sets the game rules, as it does for players;
+- commands are on, so you can use them to test;
+- the seed is shown beside the chip as **Seed** and a number, and the chip says **In my game**.
+
+**Reload** works in your game's world as in the test world, and a change to the world's data reopens your game. **Restart** comes back to the world you played last.
+
+**Start over** keeps the old game world under the name `msm-game-<namespace>-old-1` (and so on) and makes a fresh one the next time you press **Play my game**. Close Minecraft first. There is one game world per project and Minecraft version.
+
+Minecraft shows an "experimental settings" screen each time a world with a World Type from a data pack is opened. In **Play my game** MCSuperMods answers it for you with "I Know What I'm Doing!", so a Reload that reopens the world and a second Play do not wait for a click. When you open the world yourself from Minecraft's world list, the screen asks you: choose to go on.
+
+**Play my game** is off until the project has a world setup, and says "Add a world setup first (Make a game), so Minecraft knows how your world starts." To share the world as a map, see [Maps](maps.md).
+
 ## Reload
 
 Change something, then press **Reload**, **File > Reload in Game** or **Ctrl+R** (Cmd+R on a Mac). MCSuperMods saves, sends what changed and the game picks it up in a few seconds without closing. The chat in the game says "MCSuperMods: reloaded (N changes)". If the changes were to the world's data (biomes, structures, dimensions), the game reopens the test world instead and says "MCSuperMods: reopened the test world (N changes)". A reopen **refills the chests** with your items, so anything you moved out of them is replaced.
 
-Reload works while the game is in the test world; it is off when the game is not running or you are in another world.
+Reload works while the game is in the test world or in your game's world ([Play my game](#play-my-game)); it is off when the game is not running or you are in another world.
 
 What reloads in place:
 
@@ -88,7 +106,7 @@ Backups are zips in the `backups` folder of MCSuperMods' own folder (`.msm` in y
 
 ## Things to know
 
-- **The world is flat on purpose.** The test world is for trying blocks, items, mobs and rules quickly. To see a biome or a structure in real terrain, make a world in Minecraft with the data pack ([Worldgen](worldgen.md), [Structures](structures.md)).
+- **The world is flat on purpose.** The test world is for trying blocks, items, mobs and rules quickly. To see a biome or a structure in real terrain, make a world in Minecraft with the data pack ([Worldgen](worldgen.md), [Structures](structures.md)). A game of your own has **Play my game**.
 - **Counters are saved with the world.** A new test world starts them again.
 - **Rules need the jar.** Play always builds the Fabric mod jar, so rules work ([Rules](rules.md)).
 - **Keyboard.** F5 plays, Ctrl+R reloads in the game and F6 opens Try it. The app window's own reload moved to **Ctrl+Shift+R** (**View > Reload Window**).
@@ -98,7 +116,7 @@ Backups are zips in the `backups` folder of MCSuperMods' own folder (`.msm` in y
 
 - **Play does nothing and the chip says Prism Launcher not found.** Open the panel and use **Find Prism**, or choose Prism's folder; start Prism once after installing.
 - **"Play blocked by N error(s)".** Fix the errors in Problems (or **Things to fix**); nothing was sent to the game.
-- **Reload is off.** The game is not in the test world. Press Play, or leave the other world and open the test world.
+- **Reload is off.** The game is not in the test world or your game's world. Press Play (or **Play my game**), or leave the other world and open the test world.
 - **The change did not show.** Look at the chip: **Restart needed** lists what the game only reads at start. Otherwise check `logs/latest.log` in the test instance for lines starting `[msm_runtime]`.
 - **Minecraft does not close for a restart.** Close it from its own window, then press Play.
 - **The first start is slow.** Prism downloads Minecraft and its libraries once.

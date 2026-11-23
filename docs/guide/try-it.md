@@ -6,7 +6,7 @@ It is a preview, not the game. A strip across the top always says **Preview, not
 
 ## What it is
 
-- An area of 48 by 48 blocks, 32 high. It starts on a plain grid floor; you can start on a flat world, a quick landscape, an area of one of your own worlds or the land your own world generation makes instead ([Grounds](#grounds)). You stand in the middle.
+- An area of 48 by 48 blocks, 32 high. It starts on a plain grid floor; you can start on a flat world, a quick landscape, an area of one of your own worlds, the land your own world generation makes, or, for a game, your start island in empty sky or one of your buildings instead ([Grounds](#grounds)). You stand in the middle.
 - Your project's blocks and spawn eggs are in the hotbar. Minecraft's own blocks can be placed too, for looks only.
 - A clock runs the area 20 times a second, as the game does: buttons let go, pressure plates spring back, mobs wander and particles fly. You can pause it and step it.
 - **What happened** lists what the area did, and what it could not do ("Only in Minecraft: …").
@@ -90,6 +90,8 @@ What the area stands on. Choose it in the first-run card (**Start on:**) or with
   - **Presets**: Classic flat, Island, Hills and Sandbox. **Save as my preset** keeps your settings under a name, on this computer for you, not in the project.
 - **From my world**: an area copied from one of your own saves. Pick a world from the list (its picture, name, game folder and when it was last played; worlds that cannot be read are greyed out with the reason), then the centre: **The world spawn**, or **Here:** with a block X and Z. The area is 48 by 48 around the centre and 32 high, from 8 blocks below the ground there. Your save is only read, never changed, and a world that is open in Minecraft can still be read. What was left out (chests' contents, signs, mobs, chunks not generated yet) is listed in **What happened**.
 - **My world generation**: "The land your own world makes, around where you stand." See [My world generation](#my-world-generation).
+- **Empty sky**: "Your game’s start island in empty sky, holding what new players get." For a project with a game ([Game modes](game-modes.md)); see [Games](#games).
+- **One of my buildings**: "One of your project’s structures as the ground, where your game puts it." Pick the building in the list; a project without any says "Your project has no buildings yet. Make one in Minecraft, save it with a structure block and bring it in."
 
 Minecraft's blocks in a ground are props (see [Limits](#limits)). With your Minecraft folder set up they show their real pictures; without it the terrain (stone, dirt, grass, sand, gravel, cobblestone) and the wood (planks, logs, leaves) show as MCSuperMods' own drawn pictures and other blocks are plain coloured cubes, and the panel says so with a **Set it up** link. Water and lava are always drawn as plain see-through blocks.
 
@@ -210,6 +212,17 @@ Your on-screen elements are drawn over the picture at the game's automatic GUI s
 - What the rule did is said under its name: "gave you 1 Ruby", "played sound ...", "says to you", "set ... at x, y, z", "showed 4 ... particles", "set its counter ... to ...". A rule step the preview cannot do is said as "Only in Minecraft: <Member>, used by rule "<name>"".
 - The "Mob drops a reward" template cannot be seen running here, because Minecraft's own zombies cannot be spawned in Try it. Use **Play**.
 
+## Games
+
+For a project with a game ([Game modes](game-modes.md)), Try it has the grounds **Empty sky** and **One of my buildings**, and a panel **Your game**.
+
+- **Empty sky** puts your world setup's start island in the middle of empty sky, with you standing where new players start, in the game mode they start in and holding what they get. Without a world setup it says "Your project has no world setup yet ("How my world starts"): the sky will be empty."
+- **One of my buildings** stands one of your structures on the floor, where your game places it (an arena where its area rebuilds it, an island where the world setup starts on it).
+- Your game's own functions run, as in the game: the magic block turns into the next block phase after phase, timers count, areas notice you walking in and out, and scores count. Each area is outlined in the area.
+- **Your game** shows the boss bar and the text above the hotbar of your timers, the sidebar of your scores (with your team's colour), **Play as** (the game mode; in Adventure blocks do not break), **Your team** (pick one, since `/team join` runs only in the game), each magic block's phase and breaks, and each area ("you are in it") with **Rebuild now**.
+- Water and lava are props, so the cobblestone generator is simplified: a block you break between water and lava turns into cobblestone a second later, and **What happened** says so once.
+- What the functions do that Try it cannot (boss bars and teams made by commands, the game mode, loading chunks, the world spawn, chest loot, Minecraft's mobs and others) is said as "Only in Minecraft". Scores that count by themselves (kills, blocks mined) count only in the game.
+
 ## What happened
 
 **What happened** lists the newest lines first: what you placed, broke, spawned and hit, what grew or was powered, and what was refused. Lines in the warning colour start with **Only in Minecraft:**. They name something your project has that Try it does not run, for example:
@@ -262,6 +275,7 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **Other plugins' blocks** | A block from a third-party plugin is drawn from its files, but its own behaviour does not run. |
 | **Grounds from your worlds** | Only the Overworld, and only saves from Minecraft 1.18 on (open an older world once in 1.18 or later). Chests' contents, signs and other block entities, and mobs and items, are not copied. Another mod's blocks are left out. Its Minecraft blocks are props like any other. |
 | **Your own world is a window** | **My world generation** shows 48 by 48 blocks, 32 high; taller land is cut. Trees, plants and ores are about right, carved caves, buildings and the land shaped around them are not there, and the End and biome borders on 26.4-snapshot-7 are about right. Vanilla's overworld and Nether show one biome. Old chunks are not blended, and mobs, light and weather do not come from the biome. See [The live world map](live-world.md#limits). |
+| **Games have one player** | Teams and scores are shown for you alone, your team is picked in the panel, and a start island or building larger than the area is cut at its edge. Your game's functions run as far as Try it understands their commands ([Games](#games)). |
 | **Quick worlds are not Minecraft's world generation** | Their hills, islands, valleys and trees are MCSuperMods' own simple shapes, made to look natural around your blocks, not to match a real seed. |
 
 The tests check what Try it does (counts, states, what you point at), and that it draws something, not exactly how it looks. If a picture looks wrong in Try it but right in the game, the game is right.

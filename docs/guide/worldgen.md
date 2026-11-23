@@ -22,10 +22,14 @@ Every flow also asks for a **Name** (the World Type's name on Create New World).
 
 Good to know:
 
-- **Empty sky with a start island**: the start island, its chest and the things you start with come from the Skyblock flow; until MCSuperMods has it, this makes the empty world only. Players start in the air and fall: play it in Creative, or build a start island with the Structure Studio.
+- **Empty sky with a start island**: this makes the empty world only. The start island, its chest and the things you start with come from the **Skyblock** flow under **Games** ([Game modes](game-modes.md)), which **Make a world** offers in its place in Very easy mode. On its own, players start in the air and fall: play it in Creative, or add a start island in the World Setup Studio.
 - **Caves only** with a roof: players start on top of the rock roof and dig down.
 - Each flow has an example under **Help > Examples…**, category **Worlds**: Coral Isles, Frost Peaks, Endless Blossom, Ember Caverns and Cloud Realm. Three of them are cards in [See what you can make](showcase.md).
 - The templates **Noise settings: islands**, **Noise settings: tall mountains**, **Noise settings: caves only** and **Noise settings: empty sky** (category **Worldgen (advanced)**) are the same land on their own, to build on.
+
+## Games and their worlds
+
+A game's world is set in its world setup (the World Setup Studio, [Game modes](game-modes.md#how-my-world-starts)): **Empty sky**, **Floating islands** or **Flat** each become a World Type of your own, **My own world type** uses one of yours, and **As normal** keeps Minecraft's own world. The Nether and the End can be empty too. The Studio's **Your world** draws the map of it live. A World Type in a vanilla data pack is offered only when the pack is added on the Create New World screen ([A World Type in a vanilla data pack](game-modes.md#a-world-type-in-a-vanilla-data-pack)); **Play my game** makes the world for you ([Playing and testing](playing-and-testing.md#play-my-game)).
 
 ## Start from a starter
 
@@ -129,5 +133,6 @@ The full in-game check of the sample biome, World Type and hamlet is in the [sam
 
 - [The live world map](live-world.md): the map, the side cut, value maps, Scatter, Compare with vanilla and the limits.
 - [Structures](structures.md): jigsaw structures and how they generate.
+- [Game modes](game-modes.md): Skyblock, one block, sky islands and other games, with their worlds.
 - [Templates, starters and examples](templates-and-examples.md).
 - [Known limitations](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#known-limitations).

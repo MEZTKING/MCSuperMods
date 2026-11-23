@@ -65,6 +65,11 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  * characters). The fluid's mixing, cauldron and bottle, the item's `msm:boat` and boat
  * pictures, `msm:villager_type`, `msm:game_rule`, `msm:stat` and the hand-ordered
  * `msm:creative_tab` are complete within their bounds.
+ *
+ * Game modes (B561): `msm:one_block` goes one level deeper so a phase's blocks and mobs show
+ * `block`, `mob` and `weight` (about 480 characters). `msm:world_setup` (about 1,100),
+ * `msm:team`, `msm:objective`, `msm:timer` and `msm:area` are complete within the defaults, and
+ * `msm:rules` with Rules 3 and the step `set_on_fire` is about 28,500 characters.
  */
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>
@@ -77,6 +82,8 @@ export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   'msm:command': Object.freeze({ maxDepth: 5, maxChars: 4_000, maxList: 48 }),
   'msm:entity': Object.freeze({ maxDepth: 7, maxChars: 13_000, maxCases: 24 }),
   'msm:fluid': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
+  // Game modes (B561): a phase's blocks and mobs with their weights.
+  'msm:one_block': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
   'minecraft:dimension_type': Object.freeze({
     maxDepth: 4,
     maxChars: 14_000,

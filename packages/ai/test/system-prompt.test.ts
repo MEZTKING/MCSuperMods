@@ -919,7 +919,9 @@ describe('the prompt in topic files (B681)', () => {
   // moved it for Rules 3's 25 catalogue ids for games, ADR 0127 for the step `set_on_fire`, and B558
   // for Try it's games grounds ("Empty sky", "One of my buildings") and the commands `place` and `random`.
   // B557 moved it for the Home tile "Make a game" and the drawn recipes lucky_block, flag and timer.
-  const PINNED = '20a2fa82d8a679c61906090638ac2aa71d271a377eb5960f0fbcbeacb5f496ad';
+  // B561 moved it for the games topic (`src/prompt/games.ts`: the games kinds, the game flows,
+  // Play my game, maps, builds from the game, Try it's games grounds and the limits).
+  const PINNED = 'e061c15be43ce529f54f437b81207e8fb5742cb58b1cf202f9696ff85a8195d8';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -960,8 +962,8 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
     expect(text).not.toMatch(/build mode|chat mode|switch to/i);
   });
 
-  it('stays within its size budget of 99,000 characters (ADR 0125 D7, raised by B617 and B553)', () => {
-    expect(text.length).toBeLessThanOrEqual(99_000);
+  it('stays within its size budget of 102,000 characters (ADR 0125 D7, raised by B617, B553 and B561)', () => {
+    expect(text.length).toBeLessThanOrEqual(102_000);
   });
 
   it('F8 a: boats are the msm:boat component, never "not available"', () => {

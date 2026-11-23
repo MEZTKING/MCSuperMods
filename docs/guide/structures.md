@@ -29,6 +29,8 @@ Some templates start a link pointing at the new element's own id (a structure se
 
 Each file becomes a structure template named after the file (lower case, spaces as `_`), listed under **Structures**. A file whose element already exists is skipped; one undo removes the whole import. A file saved by a newer game than the project's target gets the `structures.newer-data-version` note in **Problems**.
 
+Builds you saved in a world of Play or Play my game need no file picking: the dialog's tab **From my test worlds** lists them under **Bring builds from my test worlds**, and **Bring builds** imports the ones you tick ([Maps](maps.md#bring-builds-from-my-test-worlds)).
+
 To update a template after rebuilding it in the game, select it and choose **Replace from file…** in the Structure Studio. The element keeps its id, so pools that use it keep working; one undo restores the old blocks.
 
 ## The Structure Studio
@@ -42,6 +44,15 @@ Select a structure template to open the Structure Studio. The **Preview** tab of
 - **Advanced (all fields)** shows the whole element as a form.
 
 Blocks themselves cannot be edited in MCSuperMods: change them in the game and use **Replace from file…**. Only the first palette is read when a file has several random palettes.
+
+## Chests and containers
+
+Under the jigsaw blocks, **Chests and containers** lists every chest, barrel, shulker box and other block with an inventory in the template, by name and place. For each:
+
+- **Loot table** fills it from a loot table, yours or Minecraft's (**None: only the items below** for none). The loot is rolled when a player first opens it; the items below are there as well. **Loot seed (empty: a new roll each world)** makes the roll the same every time.
+- The items: an **Item**, **How many** and the **Slot** for each, **Add an item** for another.
+
+Each change is one undo step, and everything else the block holds is kept. A start island's chest in a Skyblock is set here ([Game modes](game-modes.md)). To add a chest, place it in the game, save with a structure block and use **Replace from file…**.
 
 ## Jigsaw blocks in the game
 

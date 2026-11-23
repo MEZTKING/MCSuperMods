@@ -10,6 +10,7 @@
  * contains itself no longer overflows the stack.
  * Vanilla parity 3 batch 2 (B543, B544): `msm:entity` shows the swoop and roost goals and the
  * open_dialog action with their fields, and `msm:rules` stays under its 31,000 characters.
+ * Game modes (B561): the six games kinds render whole, `msm:one_block` through its allowance.
  */
 import { CONDITIONS, STEPS, TRIGGERS } from '@msm/plugin-rules';
 import { builtInTargets } from '@msm/targets';
@@ -291,6 +292,54 @@ describe('kind_schema for vanilla parity 3 batch 2 (B543)', () => {
       const text = kindSchemaSummary(index.resolveSchemaRef('msm:rules'), options);
       expect(text).not.toContain('(truncated');
       expect(text.length).toBeLessThan(31_000);
+    });
+  }
+});
+
+describe('kind_schema for the games kinds (B561)', () => {
+  /** Words each games kind's summary must show (fields below the default depth among them). */
+  const TERMS: Readonly<Record<string, readonly string[]>> = {
+    'msm:world_setup': [
+      '"vanilla" | "void" | "flat" | "sky_islands" | "preset"',
+      'structure: id(structure)',
+      '"first_join" | "world_generation"',
+      'game_rules:',
+      'new_player?:',
+      'loot_table?: id(loot_table)',
+      'goals?: id(advancement)',
+    ],
+    'msm:one_block': [
+      'phases: list 1..64 of',
+      'block: id(block)',
+      'mob: id(entity_type)',
+      'weight: int 1..',
+      'chest_loot?: id(loot_table)',
+    ],
+    'msm:team': ['colour:', 'friendly_fire: boolean', 'name_tags:', 'collision:'],
+    'msm:objective': ['criterion:', '"sidebar"', 'render:', 'case styled: {'],
+    'msm:timer': ['seconds: int 1..86400', '"down" | "up"', '"boss_bar"', 'on_end?: id(function)'],
+    'msm:area': ['from: list<int> 3..3', 'to: list<int> 3..3', 'structure: id(structure)'],
+  };
+
+  for (const bundle of builtInTargets) {
+    const targetId = bundle.target.id;
+
+    it(`renders every games kind whole on ${targetId}`, async () => {
+      const index = await schemaIndexFor(bundle);
+      for (const [kind, words] of Object.entries(TERMS)) {
+        const options = kindSchemaSummaryOptions(kind);
+        const text = kindSchemaSummary(index.resolveSchemaRef(kind), options);
+        expect(text, kind).not.toContain('(truncated');
+        expect(text, kind).not.toContain('in all)');
+        expect(text, kind).not.toContain('(other cases not shown)');
+        expect(text, kind).not.toContain('{...}');
+        expect(text.length, kind).toBeLessThanOrEqual(options.maxChars);
+        for (const word of words) expect(text, `${kind}: ${word}`).toContain(word);
+      }
+      // The default depth hides a phase's blocks, which is why the kind has an allowance.
+      expect(kindSchemaSummary(index.resolveSchemaRef('msm:one_block'))).not.toContain(
+        'block: id(block)',
+      );
     });
   }
 });

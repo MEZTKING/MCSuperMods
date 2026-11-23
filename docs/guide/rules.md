@@ -30,14 +30,14 @@ A rule's **key** (a to z, 0 to 9 and `_`, at most 32 characters, different in ea
 
 | Group | Moments |
 |---|---|
-| Blocks | A player uses the block; Something steps on the block; A player breaks the block; The block is placed; The block gets a random tick; Something is inside the block; The block is powered by redstone; The block stops being powered |
+| Blocks | A player uses the block; Something steps on the block; A player breaks the block; The block is placed; The block gets a random tick; Something is inside the block; The block is powered by redstone; The block stops being powered; The one block is broken |
 | Containers, machines, portals | A player opens or closes the container; The machine starts working or finishes; Something travels through the portal |
 | Items | A player uses the item; uses it on a block; The item hits a mob; Every few seconds while the item is held or worn |
 | Thrown items | The thrown item hits a mob or a block |
 | Mobs | The mob is hurt, dies, attacks or spawns; A player uses the mob; Every few seconds while the mob is alive |
 | Effects | The effect starts, ends, or every few seconds while it lasts |
-| Players | A player joins, leaves, respawns, chats or changes dimension; Every few seconds for each player; A player crafts; A player picks up; A player eats; A player goes to sleep; A player wakes up; A player gets an advancement |
-| The world | The world starts; Every few seconds |
+| Players | A player joins, leaves, respawns, chats or changes dimension; Every few seconds for each player; A player crafts; A player picks up; A player eats; A player goes to sleep; A player wakes up; A player gets an advancement; A player enters the area; A player leaves the area |
+| The world | The world starts; Every few seconds; A timer ends |
 | Keys | A player presses a key; A player lets go of a key; A player holds a key (every half second by default) |
 | Vehicles | Someone gets in the vehicle; Someone gets out; The vehicle fires; The vehicle is destroyed; Every few seconds while the vehicle is driven |
 | Placing, explosions, commands, riding | A player places a block; Something explodes; A player types the command (one of your [commands](commands-and-tabs.md)); A player gets on something; A player gets off something |
@@ -51,14 +51,14 @@ Moments with "every few seconds" take a number of seconds; some take a cooldown 
 
 | Group | Steps |
 |---|---|
-| Players | Give an item; Take an item away; Heal; Hurt; Feed; Give experience; Set the game mode; Teleport; Launch; Show a chat message; Show a title; Show text above the hotbar; Give an effect; Remove an effect; Open a dialog; Add to a statistic |
-| World | Place a block; Remove a block (with or without drops); Spawn a mob; Drop an item; Make an explosion; Set the weather; Set a game rule; Run a function; Run a command; Light a portal |
+| Players | Give an item; Give from a loot table; Take an item away; Heal; Hurt; Feed; Give experience; Set the game mode; Teleport; Launch; Show a chat message; Show a title; Show text above the hotbar; Give an effect; Remove an effect; Open a dialog; Add to a statistic; Join a team; Leave the team; Set the player's spawn point |
+| World | Place a block; Remove a block (with or without drops); Spawn a mob; Drop an item; Drop from a loot table; Place a structure; Make an explosion; Set the weather; Set a game rule; Run a function; Run a command; Light a portal; Reset an area; Set the world spawn; Set the world border |
 | On screen | Show on screen; Hide from the screen; Show a number on screen |
 | Sounds and particles | Play a sound; Spawn particles; Play an animation |
 | Mobs | Remove the mob; Set on fire (a mob, for some seconds; players are not lit, as no Minecraft command can do that); Show a boss bar |
 | Riding | Ride something; Get off |
-| Logic | If ... otherwise ...; Repeat; For each player; Wait; Stop the normal action; Stop the placing; Stop the explosion; Keep the blocks safe |
-| Counters | Set a counter; Add to a counter; Take from a counter |
+| Logic | If ... otherwise ...; Repeat; For each player; Wait; Pick one at random; Stop the normal action; Stop the placing; Stop the explosion; Keep the blocks safe |
+| Counters | Set a counter; Add to a counter; Take from a counter; Set a score; Add to a score; Start a timer; Stop a timer |
 
 Places are "Here", "Above here", "In front of here" (one block along the way the block faces), "At the player", "At the mob", "Where the player looks" and "Offset". Who is "The player", "The mob", "The other one", "Every player" or "Every player nearby". A moment offers only what exists there: a random tick has no player, so there is no "The player".
 
@@ -113,6 +113,19 @@ Script API 1.7 gave rules six more moments, three steps, two checks and a readin
 - **Set a game rule** sets one of your [game rules](commands-and-tabs.md#game-rules) or Minecraft's, and **The game rule is** checks it. For one of Minecraft's rules the editor offers both true or false and a number, because it does not know which the rule holds.
 
 The six moments come from small hooks the runtime adds to the game, and a rule on them, like the steps and checks above other than **Open a dialog**, is a rule with logic. Try it says them in **What happened** as "Only in Minecraft" ([Try it](try-it.md)).
+
+## Games: teams, scores, timers and areas
+
+Rules 3 gave rules what games need ([Game modes](game-modes.md)). They work with the pieces of a game, a team, a score, a timer, an area or a magic block of your project (or a team or score of Minecraft's by its name), and with loot tables and structures.
+
+- Moments: **A player enters the area** and **A player leaves the area** pick one of your areas. **A timer ends** picks one of your timers; it has no player. **The one block is broken** picks one of your magic blocks and, if you like, a phase (from 1): it has no player and no place either, since the game counts the break before anyone can be named.
+- Steps: **Give from a loot table** (to a player) and **Drop from a loot table** (at a place) roll a loot table. **Place a structure** places one of your structures, turned and mirrored if you like. **Pick one at random** runs one of its steps, each with a weight from 0 to 1000 (at most 16): the lucky block uses it. **Join a team** and **Leave the team**; **Set a score** and **Add to a score**; **Start a timer** and **Stop a timer**; **Reset an area** (rebuilds it from its buildings, or only clears its mobs and items when it has none); **Set the world spawn**, **Set the player's spawn point** and **Set the world border** (how wide, over how many seconds, and its centre).
+- Checks: **The player is in the area**, **The player is on the team**, **The score is at least** and **The timer is running**.
+- Readings: **The score of**, **Time left on the timer** (in seconds) and **Players on the team**.
+
+Scores are not counters. A counter belongs to your rules and is kept by the mod; a score is Minecraft's own scoreboard, which the sidebar, functions and commands can see. Use **Set a score** and **Add to a score** for anything players should see on the sidebar.
+
+Every one of these is a rule with logic (it runs a command through the script), so it needs the Fabric mod jar. Rules on an area, a timer or a magic block reach the rules through a small command of the mod's own, run by your game's functions only when a rule listens. In a vanilla data pack the game skips those few functions and everything else of the game still works. In Try it, a step it cannot run is said as "Only in Minecraft" ([Try it](try-it.md#games)).
 
 ## Counters
 
