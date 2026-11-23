@@ -1,12 +1,14 @@
 /**
  * Home's endless ideas and Your mods (ADR 0128 D1, D2, D4, D5; the user's look at 1.5.6's Home).
  *
- * 1. A brand-new install (`MSM_E2E_NEW_INSTALL`), Very easy's Home with no mod: under the
- *    Showcase, **More ideas** loads its cards as it comes into view, each named after its lead
- *    thing ("Frost Wolf", ADR 0129 D3) and its neighbour named otherwise; scrolling far down keeps
- *    bringing new cards (card numbers past 300) while the cards behind are unmounted, so the
- *    page's element count stays bounded. **Make this** on the 30th card asks for the mod's name
- *    (the card's), makes the mod and fills it with the idea's things (My things).
+ * 1. A brand-new install (`MSM_E2E_NEW_INSTALL`), Very easy's Home with no mod: **More ideas**
+ *    is the gallery's last row (ADR 0129 D5, layout A) and loads its cards as it comes into view,
+ *    each named after its lead thing ("Frost Wolf", ADR 0129 D3) and its neighbour named
+ *    otherwise; scrolled sideways, the row keeps bringing new cards. Its **Show all** opens the
+ *    endless grid: scrolling far down keeps bringing new cards (card numbers past 300) while the
+ *    cards behind are unmounted, so the page's element count stays bounded. **Make this** on the
+ *    30th card asks for the mod's name (the card's), makes the mod and fills it with the idea's
+ *    things (My things).
  * 2. The same folders launched again (Advanced, then Very easy): **Your mods** shows the mod as
  *    a card with its own picture and its things above the Showcase; **Open** opens it.
  *
@@ -30,7 +32,7 @@ import { type LaunchedApp, launchApp } from './fixtures';
 
 const SHOTS = process.env.HOME_SHOTS;
 /** An idea's name: its theme word and its lead thing ("Frost Wolf"), never "<Theme> Mod". */
-const IDEA_NAME = /^[A-Z][a-z]+ [A-Z](?!od$)[A-Za-z ]*$/;
+const IDEA_NAME = /^(?!.* Mod$)[A-Z][a-z]+ [A-Z][A-Za-z ]*$/;
 const ARGS = SHOTS === undefined ? [] : ['--force-device-scale-factor=2'];
 
 let base: string | undefined;
@@ -142,7 +144,7 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   const home = window.getByTestId('home');
   await expect(home).toBeVisible();
 
-  // More ideas under the Showcase, made as it comes near the view. ---------------------------
+  // More ideas, the gallery's last row, made as it comes near the view. ----------------------
   const ideas = home.getByTestId('more-ideas');
   await expect(ideas).toHaveCount(1);
   await expect(ideas.getByRole('heading', { name: 'More ideas' })).toBeVisible();
@@ -157,6 +159,7 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   expect(order[0]).toBeGreaterThanOrEqual(0);
   expect(order[0]).toBeLessThan(order[1] ?? -1);
   await expect(showcase).toBeVisible();
+  await expect(home.getByTestId('gallery-group-ideas').getByTestId('more-ideas')).toHaveCount(1);
   await ideas.scrollIntoViewIfNeeded();
   await expect(home.getByTestId('idea-card-0')).toBeVisible({ timeout: 30_000 });
   await expect(home.getByTestId('idea-name-0')).toHaveText(IDEA_NAME, { timeout: 30_000 });
@@ -185,15 +188,35 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   });
   expect(still.rendering).toBe('pixelated');
   expect(still.natural).toBe(still.shown);
+  // The row keeps loading as it is scrolled sideways. ------------------------------------------
+  const row = home.getByTestId('ideas-list');
+  await expect(row).toHaveAttribute('data-layout', 'row');
+  for (let step = 0; step < 40 && (await lastCard(window)) < 30; step += 1) {
+    await row.evaluate((element) => {
+      element.scrollLeft += 1200;
+    });
+    await window.waitForTimeout(120);
+  }
+  expect(await lastCard(window)).toBeGreaterThanOrEqual(30);
+  await expect(home.getByTestId('idea-card-0')).toHaveCount(0);
+  await row.evaluate((element) => {
+    element.scrollLeft = 0;
+  });
   if (SHOTS !== undefined) {
-    await home.getByTestId('more-ideas').evaluate((element) => element.scrollIntoView());
+    await home.getByTestId('gallery-group-ideas').evaluate((element) => element.scrollIntoView());
     await window.mouse.move(2, 2);
-    for (let index = 0; index < 10; index += 1) {
+    for (let index = 0; index < 4; index += 1) {
       await expect(home.getByTestId(`idea-still-${index}`)).toBeVisible({ timeout: 30_000 });
     }
     await window.waitForTimeout(800);
     await window.screenshot({ path: join(SHOTS, 'home-more-ideas.png') });
   }
+
+  // Show all: the endless grid, with Back. ---------------------------------------------------
+  await home.getByTestId('gallery-show-all-ideas').click();
+  await expect(home.getByTestId('gallery-back')).toBeFocused();
+  await expect(home.getByTestId('gallery-all').getByTestId('ideas-list')).toBeVisible();
+  await expect(home.getByTestId('idea-card-0')).toBeVisible({ timeout: 30_000 });
 
   // The 30th card: scroll until it is mounted, then Make this. -------------------------------
   const thirtieth = home.getByTestId('idea-card-29');
@@ -237,6 +260,7 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   await home.evaluate((element) => {
     element.scrollTop = 0;
   });
+  await expect(home.getByTestId('gallery-all')).toBeVisible();
   for (let step = 0; step < 80 && (await thirtieth.count()) === 0; step += 1) {
     await scrollHome(home, 300);
   }
@@ -252,8 +276,12 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   await expect.poll(() => existsSync(join(projectDir, 'msm.project.json'))).toBe(true);
   const things = home.getByTestId('my-things');
   await expect(things).toBeVisible({ timeout: 30_000 });
-  await expect.poll(() => things.locator('li').count(), { timeout: 30_000 }).toBeGreaterThan(1);
-  const madeThings = await things.locator('li').count();
+  // Its things: My things and, for a mod with sounds or particles, Particles and sounds.
+  const madeCount = (scope: Locator): Promise<number> =>
+    scope.locator('[data-testid="my-things"] > li, [data-testid="my-looks"] > li').count();
+  // (An idea may make one thing: a sword led card with nothing else, on some install seeds.)
+  await expect.poll(() => madeCount(home), { timeout: 30_000 }).toBeGreaterThan(0);
+  const madeThings = await madeCount(home);
   // Saved, so the next launch reads the mod's things and pictures from its folder.
   await window.keyboard.press('Control+S');
   await expect.poll(() => existsSync(join(projectDir, 'content'))).toBe(true);
@@ -300,5 +328,5 @@ test('home ideas: endless idea cards, Make this on the 30th, Your mods opens the
   await card.getByTestId('home-recent-0').click();
   const things2 = home2.getByTestId('my-things');
   await expect(things2).toBeVisible({ timeout: 30_000 });
-  await expect.poll(() => things2.locator('li').count()).toBe(madeThings);
+  await expect.poll(() => madeCount(home2)).toBe(madeThings);
 });

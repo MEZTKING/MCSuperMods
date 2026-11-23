@@ -358,7 +358,6 @@ describe('Home without a mod', () => {
       recentProjects: [],
       heroPicture: <span data-testid="the-picture" />,
       showcase: <div data-testid="the-gallery" />,
-      moreIdeas: <div data-testid="the-ideas" />,
     };
     render(<Home {...props} />);
     const hero = screen.getByTestId('home-hero');
@@ -366,7 +365,7 @@ describe('Home without a mod', () => {
     for (const id of ['home-new', 'home-open', 'home-surprise', 'the-picture']) {
       expect(within(hero).getByTestId(id)).toBeTruthy();
     }
-    const order = ['home-hero', 'the-gallery', 'the-ideas'].map((id) => screen.getByTestId(id));
+    const order = ['home-hero', 'the-gallery'].map((id) => screen.getByTestId(id));
     for (let at = 1; at < order.length; at += 1) {
       const before = order[at - 1] as HTMLElement;
       expect(

@@ -17,12 +17,18 @@
  *   (its lazy chunk) over the idea's bundle.
  * - The arrow keys move between cards (Up and Down by a row), Home and End to the first and
  *   the last card made; a polite line says when more ideas have come.
+ * - `layout: 'row'` (Home's **More ideas** row, ADR 0129 D5 layout A): the same cards in one
+ *   line that scrolls sideways, windowed and growing the same way (`ideasRowWindow`), with the
+ *   gallery rows' **Scroll left** and **Scroll right** buttons. On Home the one clip is shared
+ *   with Featured and the gallery's cards (`showcase/home-live.ts`).
  *
- * Test ids: `ideas-list`, `ideas-status`, and the card's (`IdeaCard.tsx`).
+ * Test ids: `ideas-list`, `ideas-status`, `ideas-row-left`, `ideas-row-right`, and the card's
+ * (`IdeaCard.tsx`).
  *
  * @packageDocumentation
  */
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   type ComponentType,
   type KeyboardEvent,
@@ -35,11 +41,13 @@ import {
   useRef,
   useState,
 } from 'react';
+import { sideButton } from '../components/home/gallery/Rail';
 import type { VanillaAssetReader } from '../preview/model-chain';
 import { hasWebGL } from '../preview/webgl';
 import type { ClipViewProps } from '../showcase/ClipView';
 import type { StillCodec } from '../showcase/drawn-still';
 import type { ExampleFilesDeps } from '../showcase/example-files';
+import { useHomeLive } from '../showcase/home-live';
 import {
   browserLiveEnvironment,
   chooseLiveClip,
@@ -49,12 +57,17 @@ import {
 import { stillKey } from '../showcase/still-cache';
 import { IdeaCard } from './IdeaCard';
 import {
+  IDEA_CARD_HEIGHT,
   IDEA_CARD_WIDTH,
   IDEA_FIRST_ROWS,
   IDEA_GAP,
   IDEA_ROW,
+  IDEA_ROW_FIRST,
+  IDEA_STEP,
+  type IdeasRowView,
   type IdeasView,
   ideaColumns,
+  ideasRowWindow,
   ideasWindow,
 } from './idea-seeds';
 import {
@@ -73,6 +86,37 @@ const LazyClipView = lazy(() => import('../showcase/ClipView'));
 export interface IdeasEnvironment {
   /** Calls `listener` with the list's place now and whenever it changes; returns the stop. */
   watchView(element: HTMLElement, listener: (view: IdeasView) => void): () => void;
+  /**
+   * The row's: calls `listener` with the scroller's sideways place now and whenever it changes;
+   * returns the stop. Absent: the browser's.
+   */
+  watchRow?(element: HTMLElement, listener: (view: IdeasRowView) => void): () => void;
+}
+
+/** The browser's sideways watch of a row's scroller. */
+export function browserWatchRow(
+  element: HTMLElement,
+  listener: (view: IdeasRowView) => void,
+): () => void {
+  let frame = 0;
+  const read = (): void => {
+    frame = 0;
+    listener({ left: element.scrollLeft, width: element.clientWidth });
+  };
+  const schedule = (): void => {
+    if (frame === 0) frame = requestAnimationFrame(read);
+  };
+  read();
+  element.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule);
+  const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+  resize?.observe(element);
+  return () => {
+    if (frame !== 0) cancelAnimationFrame(frame);
+    element.removeEventListener('scroll', schedule);
+    window.removeEventListener('resize', schedule);
+    resize?.disconnect();
+  };
 }
 
 /** The nearest ancestor that scrolls, or `null` for the window. */
@@ -114,6 +158,7 @@ export function browserIdeasEnvironment(): IdeasEnvironment {
         resize?.disconnect();
       };
     },
+    watchRow: browserWatchRow,
   };
 }
 
@@ -143,6 +188,8 @@ export interface IdeaListProps {
   readonly codec?: StillCodec;
   /** Device pixels per CSS pixel for the drawn pictures (default the window's, as it changes). */
   readonly scale?: number;
+  /** `grid` (the default): the endless grid; `row`: one sideways row (Home's More ideas row). */
+  readonly layout?: 'grid' | 'row';
 }
 
 const NONE: ReadonlySet<string> = new Set();
@@ -250,15 +297,19 @@ export function IdeaList(props: IdeaListProps) {
   const scale = props.scale ?? windowRatio;
   const plan = useMemo(() => ideaPlan(input), [input]);
 
+  const isRow = props.layout === 'row';
   const host = useRef<HTMLDivElement | null>(null);
   const [view, setView] = useState<IdeasView | null>(null);
+  const [rowView, setRowView] = useState<IdeasRowView | null>(null);
   const [rows, setRows] = useState(IDEA_FIRST_ROWS);
+  const [count, setCount] = useState(IDEA_ROW_FIRST);
   const [status, setStatus] = useState('');
   useEffect(() => {
     const element = host.current;
     if (element === null) return;
+    if (isRow) return (environment.watchRow ?? browserWatchRow)(element, setRowView);
     return environment.watchView(element, setView);
-  }, [environment]);
+  }, [environment, isRow]);
 
   // Shuffle: every card a new seed (the list keeps its length).
   const seenBase = useRef(baseSeed);
@@ -268,14 +319,30 @@ export function IdeaList(props: IdeaListProps) {
     setStatus('New ideas.');
   }, [baseSeed]);
 
-  const window_ = view === null ? null : ideasWindow(view, rows);
+  const gridWindow = isRow || view === null ? null : ideasWindow(view, rows);
+  const rowWindow = !isRow || rowView === null ? null : ideasRowWindow(rowView, count);
+  // The row is one row of `count` columns.
+  const window_ =
+    rowWindow === null
+      ? gridWindow
+      : { columns: rowWindow.count, first: 0, last: 0, rows: 1, from: rowWindow.first };
   const columns = window_?.columns ?? ideaColumns(view?.width ?? 0);
   useEffect(() => {
-    if (window_ === null || window_.rows <= rows) return;
-    const added = (window_.rows - rows) * window_.columns;
-    setRows(window_.rows);
+    if (gridWindow === null || gridWindow.rows <= rows) return;
+    const added = (gridWindow.rows - rows) * gridWindow.columns;
+    setRows(gridWindow.rows);
     setStatus(`${added} more ideas below.`);
-  }, [window_, rows]);
+  }, [gridWindow, rows]);
+  useEffect(() => {
+    if (rowWindow === null || rowWindow.count <= count) return;
+    setStatus(`${rowWindow.count - count} more ideas to the right.`);
+    setCount(rowWindow.count);
+  }, [rowWindow, count]);
+  // Shuffle in the row goes back to its first card.
+  useEffect(() => {
+    if (!isRow || baseSeed === undefined) return;
+    host.current?.scrollTo?.({ left: 0 });
+  }, [isRow, baseSeed]);
 
   // Ideas of the mounted cards, by index.
   const [ready, setReady] = useState<ReadonlyMap<number, Idea>>(new Map());
@@ -331,7 +398,10 @@ export function IdeaList(props: IdeaListProps) {
     windowShown,
     visible: props.visible ?? true,
   };
-  const liveKey = chooseLiveClip(state);
+  const wanted = chooseLiveClip(state);
+  // On Home, one clip among Featured, the gallery's cards and these (`home-live.ts`).
+  const mayPlay = useHomeLive(wanted === null ? null : { id: `idea-${wanted}`, by: 'user' });
+  const liveKey = mayPlay ? wanted : null;
   const once = !playsByItself(state);
   const liveIdea = liveKey === null ? undefined : ready.get(Number(liveKey));
   const liveClipId = liveIdea === undefined ? null : ideaClipId(liveIdea);
@@ -372,12 +442,9 @@ export function IdeaList(props: IdeaListProps) {
   const last = window_ === null ? -1 : Math.min(window_.rows, window_.last + 1) * columns - 1;
   const onKeyDown = useCallback(
     (index: number, event: KeyboardEvent<HTMLElement>) => {
-      const moves: Record<string, number> = {
-        ArrowRight: 1,
-        ArrowLeft: -1,
-        ArrowDown: columns,
-        ArrowUp: -columns,
-      };
+      const moves: Record<string, number> = isRow
+        ? { ArrowRight: 1, ArrowLeft: -1 }
+        : { ArrowRight: 1, ArrowLeft: -1, ArrowDown: columns, ArrowUp: -columns };
       let to: number | null = null;
       if (event.key in moves) to = index + (moves[event.key] ?? 0);
       else if (event.key === 'Home' && event.ctrlKey) to = 0;
@@ -387,9 +454,9 @@ export function IdeaList(props: IdeaListProps) {
       if (button === null || button === undefined) return;
       event.preventDefault();
       button.focus();
-      button.scrollIntoView?.({ block: 'nearest' });
+      button.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     },
-    [columns, last],
+    [columns, last, isRow],
   );
 
   const withJar = props.vanilla !== null && props.vanilla !== undefined;
@@ -423,8 +490,10 @@ export function IdeaList(props: IdeaListProps) {
 
   const slots: ReactNode[] = [];
   if (window_ !== null) {
+    const from = 'from' in window_ ? window_.from : 0;
+    const to = rowWindow === null ? columns - 1 : rowWindow.last;
     for (let row = window_.first; row <= window_.last; row += 1) {
-      for (let column = 0; column < columns; column += 1) {
+      for (let column = from; column <= to; column += 1) {
         const index = row * columns + column;
         const spec = plan(baseSeed, index);
         if (spec === null) continue;
@@ -452,6 +521,64 @@ export function IdeaList(props: IdeaListProps) {
     }
   }
   const total = window_?.rows ?? rows;
+  if (isRow) {
+    const shown = rowWindow?.count ?? count;
+    const left = (rowView?.left ?? 0) > 1;
+    const right =
+      rowView === null || rowView.left + rowView.width < shown * IDEA_STEP - IDEA_GAP - 1;
+    const page = (direction: 1 | -1): void => {
+      const element = host.current;
+      if (element === null) return;
+      const by = Math.max(IDEA_STEP, element.clientWidth * 0.8) * direction;
+      if (typeof element.scrollBy === 'function')
+        element.scrollBy({ left: by, behavior: 'smooth' });
+      else element.scrollLeft += by;
+    };
+    return (
+      <div className="group/rail relative min-w-0">
+        {left && (
+          <button
+            type="button"
+            aria-label="Scroll More ideas left"
+            className={`${sideButton} -left-3`}
+            data-testid="ideas-row-left"
+            onClick={() => page(-1)}
+          >
+            <ChevronLeft size={18} aria-hidden />
+          </button>
+        )}
+        <div
+          ref={host}
+          className="w-full overflow-x-auto scroll-smooth pt-1 pb-2 [scrollbar-width:thin] motion-reduce:scroll-auto"
+          data-testid="ideas-list"
+          data-layout="row"
+        >
+          <ul
+            ref={list}
+            aria-label="More ideas"
+            className="relative m-0 list-none p-0"
+            style={{ width: shown * IDEA_STEP - IDEA_GAP, height: IDEA_CARD_HEIGHT }}
+          >
+            {slots}
+          </ul>
+        </div>
+        {right && (
+          <button
+            type="button"
+            aria-label="Scroll More ideas right"
+            className={`${sideButton} -right-3`}
+            data-testid="ideas-row-right"
+            onClick={() => page(1)}
+          >
+            <ChevronRight size={18} aria-hidden />
+          </button>
+        )}
+        <p aria-live="polite" className="sr-only" data-testid="ideas-status">
+          {status}
+        </p>
+      </div>
+    );
+  }
   return (
     <div ref={host} className="w-full" data-testid="ideas-list">
       <ul

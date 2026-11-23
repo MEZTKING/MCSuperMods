@@ -188,7 +188,6 @@ describe('Your mods', () => {
         recentProjects={[mod('Ruby Mod', 2)]}
         onOpenRecent={vi.fn()}
         showcase={<p data-testid="the-showcase">Showcase</p>}
-        moreIdeas={<p data-testid="the-ideas">Ideas</p>}
       />,
     );
     const home = screen.getByTestId('home');
@@ -196,7 +195,6 @@ describe('Your mods', () => {
       screen.getByTestId('home-new'),
       screen.getByTestId('home-your-mods'),
       screen.getByTestId('the-showcase'),
-      screen.getByTestId('the-ideas'),
     ];
     for (let at = 1; at < order.length; at += 1) {
       const before = order[at - 1] as Node;

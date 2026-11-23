@@ -7,11 +7,17 @@
  * 2. Every chip jumps to its group, whose row comes into view and draws its first card's picture
  *    (lazy: a far row's pictures are not drawn before it is near).
  * 3. A group's **Show all N** opens all its cards as a grid; **Back** returns to the rows.
- * 4. **Make this** on the last card of the Games row asks for the mod's name, makes the mod and
+ * 4. A card with a clip plays it on hover (one canvas on Home); a card whose example has no
+ *    pictures shows its drawn picture.
+ * 5. **More ideas** is the last row (one place only), with Shuffle; **Show all** opens the grid,
+ *    **Back** returns.
+ * 6. **Make this** on the last card of the Games row asks for the mod's name, makes the mod and
  *    opens that flow in the Creator.
  *
- * With `GALLERY_SHOTS=<folder>` the window is drawn at device scale 2 and screenshots of Home's
- * top, a middle group and a Show all are saved there at widths 1280 and 1920.
+ * Every card in a row has the same height; at 900, 1280 and 1920 pixels wide the page does not
+ * scroll sideways. With `GALLERY_SHOTS=<folder>` the window is drawn at device scale 2 and
+ * screenshots of Home's top, a middle row, the More ideas row and a Show all are saved there at
+ * widths 1280 and 1920.
  */
 
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
@@ -21,7 +27,9 @@ import { expect, type Locator, type Page, test } from 'playwright/test';
 import { type LaunchedApp, launchApp } from './fixtures';
 
 const SHOTS = process.env.GALLERY_SHOTS;
-const ARGS = SHOTS === undefined ? [] : ['--force-device-scale-factor=2'];
+/** WebGL under xvfb (the cards' clips), as the Showcase's e2e. */
+const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+const ARGS = SHOTS === undefined ? WEBGL_ARGS : [...WEBGL_ARGS, '--force-device-scale-factor=2'];
 
 let base: string | undefined;
 const launches: LaunchedApp[] = [];
@@ -63,7 +71,26 @@ async function groupIds(home: Locator): Promise<string[]> {
     );
 }
 
-/** Saves Home's top, a middle group and a Show all at `width`. */
+/** Every row's cards share one height; the page never scrolls sideways. */
+async function checkLayout(launched: LaunchedApp, home: Locator, width: number): Promise<void> {
+  await sizeWindow(launched, width);
+  const heights = await home
+    .locator('[data-testid^="gallery-row-"]')
+    .evaluateAll((rows) =>
+      rows
+        .filter((row) => row.tagName === 'UL')
+        .map((row) => [
+          ...new Set(
+            [...row.children].map((card) => Math.round(card.getBoundingClientRect().height)),
+          ),
+        ]),
+    );
+  for (const one of heights) expect(one.length).toBe(1);
+  const sideways = await home.evaluate((element) => element.scrollWidth - element.clientWidth);
+  expect(sideways).toBeLessThanOrEqual(0);
+}
+
+/** Saves Home's top, a middle row, the More ideas row and a Show all at `width`. */
 async function shots(launched: LaunchedApp, home: Locator, width: number): Promise<void> {
   if (SHOTS === undefined) return;
   const window: Page = launched.window;
@@ -71,14 +98,21 @@ async function shots(launched: LaunchedApp, home: Locator, width: number): Promi
   await home.evaluate((element) => {
     element.scrollTop = 0;
   });
-  await window.waitForTimeout(1500);
+  await window.mouse.move(2, 2);
+  await window.waitForTimeout(2500);
   await window.screenshot({ path: join(SHOTS, `home-top-${width}.png`) });
   await home.getByTestId('gallery-chip-mobs').click();
-  await window.waitForTimeout(2500);
+  await window.waitForTimeout(3000);
   await window.screenshot({ path: join(SHOTS, `home-middle-${width}.png`) });
+  await home.getByTestId('gallery-chip-ideas').click();
+  await expect(home.getByTestId('idea-still-0')).toBeVisible({ timeout: 30_000 });
+  await window.waitForTimeout(3000);
+  await window.mouse.move(2, 2);
+  await window.screenshot({ path: join(SHOTS, `home-more-ideas-${width}.png`), timeout: 90_000 });
   await home.getByTestId('gallery-show-all-blocks').click();
-  await window.waitForTimeout(2500);
-  await window.screenshot({ path: join(SHOTS, `home-show-all-${width}.png`) });
+  await window.mouse.move(2, 2);
+  await window.waitForTimeout(4000);
+  await window.screenshot({ path: join(SHOTS, `home-show-all-${width}.png`), timeout: 90_000 });
   await home.getByTestId('gallery-back').click();
 }
 
@@ -112,11 +146,15 @@ test('home gallery: every group, Show all, and Make this from a deep card', asyn
   await expect(gallery).toBeVisible();
   const ids = await groupIds(home);
   expect(ids[0]).toBe('featured');
+  expect(ids.at(-1)).toBe('ideas');
   expect(ids.length).toBeGreaterThan(6);
   for (const id of ['blocks', 'mobs', 'worlds', 'games']) expect(ids).toContain(id);
+  // More ideas only as the gallery's last row.
+  await expect(home.getByTestId('more-ideas')).toHaveCount(1);
+  await expect(gallery.getByTestId('gallery-group-ideas').getByTestId('more-ideas')).toHaveCount(1);
 
   // A far row draws no picture before it is near. --------------------------------------------
-  const last = ids.at(-1) ?? '';
+  const last = ids.at(-2) ?? '';
   const farFirst = gallery
     .getByTestId(`gallery-row-${last}`)
     .locator('[data-testid^="gallery-picture-"]')
@@ -130,6 +168,10 @@ test('home gallery: every group, Show all, and Make this from a deep card', asyn
     await expect(group).toBeInViewport({ timeout: 10_000 });
     if (id === 'featured') {
       await expect(group.locator('[data-testid^="showcase-card-"]').first()).toBeVisible();
+      continue;
+    }
+    if (id === 'ideas') {
+      await expect(group.getByTestId('idea-card-0')).toBeVisible({ timeout: 30_000 });
       continue;
     }
     const picture = group.locator('[data-testid^="gallery-picture-"]').first();
@@ -159,6 +201,62 @@ test('home gallery: every group, Show all, and Make this from a deep card', asyn
   await expect(all).toBeHidden();
   await expect(blocksRow).toBeVisible();
 
+  // A card with a clip plays it on hover; a card without pictures shows its drawn one. ----------
+  await home.getByTestId('gallery-chip-vehicles').click();
+  const vehicle = gallery
+    .getByTestId('gallery-row-vehicles')
+    .locator('[data-testid^="gallery-card-"]')
+    .first();
+  await expect(vehicle.locator('[data-testid^="gallery-example-"]')).toBeVisible();
+  const vehiclePicture = vehicle.locator('[data-testid^="gallery-picture-"]');
+  await expect(vehiclePicture).toHaveAttribute('data-loaded', 'true', { timeout: 30_000 });
+  await vehiclePicture.hover();
+  await expect(vehiclePicture).toHaveAttribute('data-playing', 'true', { timeout: 10_000 });
+  await expect(home.locator('canvas')).toHaveCount(1, { timeout: 30_000 });
+  await window.mouse.move(2, 2);
+  await expect(vehiclePicture).toHaveAttribute('data-playing', 'false', { timeout: 10_000 });
+  await home.getByTestId('gallery-chip-scripts').click();
+  const rule = gallery.getByTestId('gallery-picture-flow-game-rule');
+  // Off the row's end: scrolled to, it comes near and is drawn.
+  await rule.scrollIntoViewIfNeeded();
+  await expect(rule).toHaveAttribute('data-picture', 'look', { timeout: 30_000 });
+  const ruleStill = await gallery.getByTestId('gallery-still-flow-game-rule').evaluate((image) => {
+    const page = globalThis as unknown as {
+      devicePixelRatio: number;
+      getComputedStyle(element: unknown): { imageRendering: string };
+    };
+    const one = image as unknown as {
+      naturalWidth: number;
+      getBoundingClientRect(): { width: number };
+    };
+    return {
+      rendering: page.getComputedStyle(one).imageRendering,
+      natural: one.naturalWidth,
+      shown: Math.round(one.getBoundingClientRect().width * Math.min(2, page.devicePixelRatio)),
+    };
+  });
+  expect(ruleStill.rendering).toBe('pixelated');
+  expect(Math.abs(ruleStill.natural - ruleStill.shown)).toBeLessThanOrEqual(1);
+
+  // More ideas: the last row, Shuffle, Show all and Back. -------------------------------------
+  await home.getByTestId('gallery-chip-ideas').click();
+  const ideasRow = gallery.getByTestId('gallery-group-ideas');
+  await expect(ideasRow.getByRole('heading', { name: 'More ideas' })).toBeVisible();
+  await expect(ideasRow.getByTestId('idea-name-0')).not.toBeEmpty({ timeout: 30_000 });
+  const before = await ideasRow.getByTestId('idea-name-0').textContent();
+  await ideasRow.getByTestId('more-ideas-shuffle').click();
+  await expect(ideasRow.getByTestId('idea-name-0')).not.toHaveText(before ?? '', {
+    timeout: 30_000,
+  });
+  await gallery.getByTestId('gallery-show-all-ideas').click();
+  const ideasAll = gallery.getByTestId('gallery-all');
+  await expect(ideasAll.getByTestId('ideas-list')).toBeVisible();
+  await expect(ideasAll.getByTestId('idea-card-0')).toBeVisible({ timeout: 30_000 });
+  await gallery.getByTestId('gallery-back').click();
+  await expect(ideasAll).toBeHidden();
+  await expect(ideasRow).toBeVisible();
+
+  for (const width of [900, 1280, 1920]) await checkLayout(launched, home, width);
   await shots(launched, home, 1280);
   await shots(launched, home, 1920);
 

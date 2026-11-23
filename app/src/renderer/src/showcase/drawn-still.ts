@@ -191,24 +191,28 @@ export const CANVAS_CODEC: StillCodec = {
   encode: encodePicture,
 };
 
-const cache = new Map<string, Promise<string>>();
+/** A drawn still and how many of the example's own pictures it shows. */
+interface Drawn {
+  readonly url: string;
+  readonly pictures: number;
+}
+
+const cache = new Map<string, Promise<Drawn>>();
+/** The URL promise of each drawn still, so a caller gets the same promise each time. */
+const urls = new WeakMap<Promise<Drawn>, Promise<string>>();
 
 /** Forgets every drawn still (tests). */
 export function clearDrawnStills(): void {
   cache.clear();
 }
 
-/**
- * The drawn still of `example` on `target`, as a PNG `data:` URL `size` pixels big (each picture
- * scaled by a whole number): built once per session and size (a failed build is not kept). A
- * picture that cannot be decoded is left out.
- */
-export function drawnStill(
+/** The drawn still and its picture count, built once per session and size. */
+function drawn(
   example: ExampleProject,
   target: Target,
-  codec: StillCodec = CANVAS_CODEC,
-  size: StillSize = DEFAULT_STILL_SIZE,
-): Promise<string> {
+  codec: StillCodec,
+  size: StillSize,
+): Promise<Drawn> {
   const key = `${example.id}\u0000${target.id}\u0000${size.width}x${size.height}`;
   const hit = cache.get(key);
   if (hit !== undefined) return hit;
@@ -227,11 +231,48 @@ export function drawnStill(
         // A picture that cannot be read is left out.
       }
     }
-    return imageDataUrl(codec.encode(composeStill(decoded, size.width, size.height)));
+    return {
+      url: imageDataUrl(codec.encode(composeStill(decoded, size.width, size.height))),
+      pictures: decoded.length,
+    };
   })();
   cache.set(key, made);
   made.catch(() => {
     if (cache.get(key) === made) cache.delete(key);
   });
   return made;
+}
+
+/**
+ * The drawn still of `example` on `target`, as a PNG `data:` URL `size` pixels big (each picture
+ * scaled by a whole number): built once per session and size (a failed build is not kept). A
+ * picture that cannot be decoded is left out.
+ */
+export function drawnStill(
+  example: ExampleProject,
+  target: Target,
+  codec: StillCodec = CANVAS_CODEC,
+  size: StillSize = DEFAULT_STILL_SIZE,
+): Promise<string> {
+  const made = drawn(example, target, codec, size);
+  const hit = urls.get(made);
+  if (hit !== undefined) return hit;
+  const url = made.then((one) => one.url);
+  urls.set(made, url);
+  return url;
+}
+
+/**
+ * {@link drawnStill}, or `null` when the example has no pictures of its own (data, rules,
+ * commands, most worlds and games), so the caller can show something better than a plain tint
+ * (Home's gallery shows the card's drawn picture, ADR 0129 D2).
+ */
+export async function drawnStillIfPictures(
+  example: ExampleProject,
+  target: Target,
+  codec: StillCodec = CANVAS_CODEC,
+  size: StillSize = DEFAULT_STILL_SIZE,
+): Promise<string | null> {
+  const made = await drawn(example, target, codec, size);
+  return made.pictures === 0 ? null : made.url;
 }

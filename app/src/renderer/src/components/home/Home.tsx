@@ -15,8 +15,8 @@
  * Without a mod (ADR 0128 D5, ADR 0129 D5, the user's layout A): the hero (the product name, a
  * headline, the start actions and a picture), **Your mods** as cards when there are any
  * (`YourMods.tsx`), the gallery of everything that can be made in the showcase's place
- * (`gallery/HomeGallery.tsx`, built by the host, Featured first), then **More ideas**, the endless
- * idea cards (built by the host, `MoreIdeas.tsx`). Test ids add `home-hero`, `home-hero-picture`.
+ * (`gallery/HomeGallery.tsx`, built by the host, Featured first and **More ideas** as its last
+ * row, layout A). Test ids add `home-hero`, `home-hero-picture`.
  *
  * @packageDocumentation
  */
@@ -61,8 +61,6 @@ export interface HomeProps {
   onShowRecentInFolder?(root: string): void;
   /** Reads a recent mod's picture and thing count for its card. */
   recentSummary?(root: string): Promise<RecentProjectSummary>;
-  /** **More ideas** (ADR 0128 D1), under the showcase without a mod; absent shows none. */
-  moreIdeas?: ReactNode;
   /** The showcase gallery (**See what you can make**); absent shows none. */
   showcase?: ReactNode;
   /** Whether the showcase stays open for a mod that has things (default folded). */
@@ -201,9 +199,6 @@ export function Home(props: HomeProps) {
             <div className="w-full min-w-0" data-testid="home-showcase">
               {props.showcase}
             </div>
-          )}
-          {props.moreIdeas !== undefined && props.moreIdeas !== null && (
-            <div className="w-full min-w-0">{props.moreIdeas}</div>
           )}
         </div>
       </section>

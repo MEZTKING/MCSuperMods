@@ -44,7 +44,7 @@ export const secondaryButtonClass =
 
 /** A row of cards: one sideways-scrolling line that snaps to cards and shows part of the next. */
 export const railClass =
-  'm-0 grid list-none auto-cols-[15rem] grid-flow-col gap-3 overflow-x-auto scroll-smooth p-0 pt-1 pb-2 ' +
+  'm-0 grid list-none auto-cols-[15.125rem] grid-flow-col gap-3 overflow-x-auto scroll-smooth p-0 pt-1 pb-2 ' +
   'snap-x snap-mandatory [scrollbar-width:thin] motion-reduce:scroll-auto';
 
 /** A whole group as a grid (Show all). */

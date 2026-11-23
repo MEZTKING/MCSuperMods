@@ -2377,13 +2377,29 @@ export function App({
     const example = session.library.examples.find((entry) => entry.id === first.exampleId);
     return example === undefined ? null : { example, label: first.title };
   }, [showcaseList, session]);
-  /** Home's gallery: Featured (the Showcase) first, then every group, or nothing. */
-  const homeGallery = (visible: boolean) =>
+  /**
+   * Home's gallery: Featured (the Showcase) first, then every group, then More ideas as the last
+   * row when `ideasVisible` is given (Home without a mod), or nothing.
+   */
+  const homeGallery = (visible: boolean, ideasVisible?: boolean) =>
     target === null || galleryList.length === 0 ? (
-      showcaseGallery(showcaseList, visible, makeShowcase, seeShowcaseExample)
+      <>
+        {showcaseGallery(showcaseList, visible, makeShowcase, seeShowcaseExample)}
+        {ideasVisible === undefined ? null : moreIdeas(ideasVisible)}
+      </>
     ) : (
       <HomeGallery
         groups={galleryList}
+        deps={showcaseDeps}
+        vanilla={vanilla}
+        playClips={showcaseClips}
+        visible={visible}
+        {...(ideasVisible === undefined || ideaInput === null
+          ? {}
+          : {
+              ideas: (variant: 'row' | 'grid', headerEnd: ReactNode) =>
+                moreIdeas(ideasVisible, variant, headerEnd),
+            })}
         featuredCount={showcaseList.length}
         featured={
           showcaseList.length === 0
@@ -2477,10 +2493,12 @@ export function App({
       fallback,
     );
   };
-  /** Home's **More ideas**, or nothing without a target. */
-  const moreIdeas = (visible: boolean) =>
-    ideaInput === null ? null : (
+  /** Home's **More ideas** (the gallery's last row, or its Show all grid), or nothing. */
+  function moreIdeas(visible: boolean, variant: 'row' | 'grid' = 'grid', headerEnd?: ReactNode) {
+    return ideaInput === null ? null : (
       <MoreIdeas
+        variant={variant}
+        headerEnd={headerEnd}
         baseSeed={ideasSeed}
         input={ideaInput}
         deps={showcaseDeps}
@@ -2492,6 +2510,7 @@ export function App({
         onShuffle={() => usePreferences.getState().shuffleIdeas()}
       />
     );
+  }
   /** Goes to Home in Very easy and scrolls to one of its sections (the palette, ADR 0128 D6). */
   const showHomeSection = (id: 'home-more-ideas' | 'home-your-mods'): void => {
     goHome();
@@ -3685,7 +3704,7 @@ export function App({
                         Promise.reject(new Error('No summary.')),
                     })}
                 search={startSearchBar('home-search-field')}
-                showcase={homeGallery(homeClipsVisible && ideaLive === null)}
+                showcase={homeGallery(homeClipsVisible && ideaLive === null, homeClipsVisible)}
                 {...(heroExample === null || target === null
                   ? {}
                   : {
@@ -3697,7 +3716,6 @@ export function App({
                         />
                       ),
                     })}
-                moreIdeas={moreIdeas(homeClipsVisible)}
                 showcaseOpen={showcaseOpen}
                 onShowcaseOpenChange={(open) => usePreferences.getState().setShowcaseOpen(open)}
               />

@@ -2,13 +2,12 @@
  * The one lookup from a flow or starter to the library example that shows it (ADR 0129 D1, D2),
  * for a gallery card's picture and **See the example**.
  *
- * The map of record is `showcase/flow-clips.ts` (ADR 0129 D2: one library example per flow, with
- * its clip). It is read through `import.meta.glob`, so the gallery works before that file exists
- * and picks it up by itself once it does. Its shapes understood here: a function
- * `exampleForFlow(id)` or `flowExampleId(id)` returning an example id, or a record `FLOW_CLIPS` /
- * `FLOW_EXAMPLES` from flow or starter id to an example id or to `{ exampleId }`.
+ * The map of record is `showcase/flow-clips.ts`' `FLOW_CARDS` (ADR 0129 D2: one library example
+ * per flow, with its clip and picture), so every card, the vehicles' included, has its own
+ * **See the example**. `flowClipsExample` also reads the other shapes a module may give (a
+ * function `exampleForFlow(id)` or `flowExampleId(id)`, a record `FLOW_CLIPS` / `FLOW_EXAMPLES`).
  *
- * Until then (and for a flow that file leaves out), a flow is shown by the example of the
+ * For a flow that file leaves out, a flow is shown by the example of the
  * Showcase card whose **Make this** opens it, else by an example whose id is the starter's own.
  * A flow with none gets its own drawn picture (`gallery-model.ts`'s `starterAsExample`).
  *
@@ -16,15 +15,15 @@
  */
 
 import type { ExampleProject } from '@msm/plugin-api';
+import { FLOW_CARDS } from '../../../showcase/flow-clips';
 import { SHOWCASES } from '../../../showcase/showcases';
 
 type ExampleRef = string | { readonly exampleId?: unknown };
 
-/** The modules of `showcase/flow-clips.ts`, when it exists (empty otherwise). */
-const flowClipModules: Record<string, Record<string, unknown>> = import.meta.glob(
-  '../../../showcase/flow-clips.ts',
-  { eager: true },
-);
+/** The map of record, `showcase/flow-clips.ts`' `FLOW_CARDS`, in the shape read below. */
+const flowClipModules: Record<string, Record<string, unknown>> = {
+  'flow-clips': { FLOW_CARDS },
+};
 
 /** The id a reference names, when it is one. */
 function refId(ref: unknown): string | undefined {

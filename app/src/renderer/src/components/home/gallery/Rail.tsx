@@ -46,7 +46,8 @@ export function onCardArrows(event: KeyboardEvent<HTMLElement>): void {
   sibling?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
 }
 
-const sideButton =
+/** A row's **Scroll left** or **Scroll right** button (shown on hover or focus). */
+export const sideButton =
   'absolute top-[calc(50%-1rem)] z-10 hidden size-8 cursor-pointer items-center justify-center ' +
   'rounded-full border border-border bg-panel/95 shadow-md hover:border-accent group-hover/rail:flex ' +
   'focus-visible:flex focus-visible:outline-2 focus-visible:outline-accent';

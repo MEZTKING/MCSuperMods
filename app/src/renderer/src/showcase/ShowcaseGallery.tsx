@@ -11,6 +11,9 @@
  * pictures, so its drawn still is its land drawn from the clip's camera (`land-still.ts`, loaded
  * lazily); a land that cannot be made leaves the plain still with the line `LAND_NOT_MADE`.
  *
+ * On Home its choice is shared with the gallery's cards and More ideas (`home-live.ts`): a card
+ * the user points at there plays instead of this gallery's.
+ *
  * Not wired into Home or New project here (B569 does that). Test ids: `showcase-gallery`,
  * `showcase-pause`, and the card's (`ShowcaseCard.tsx`).
  *
@@ -46,6 +49,7 @@ import {
   stillSizeFor,
 } from './drawn-still';
 import type { ExampleFilesDeps } from './example-files';
+import { useHomeLive } from './home-live';
 import type { LandStillOptions } from './land-still';
 import {
   browserLiveEnvironment,
@@ -290,7 +294,17 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
     windowShown,
     visible: props.visible ?? true,
   };
-  const liveId = chooseLiveClip(state);
+  const wanted = chooseLiveClip(state);
+  // On Home, a gallery card or an idea the user points at plays instead (`home-live.ts`).
+  const mayPlay = useHomeLive(
+    wanted === null
+      ? null
+      : {
+          id: wanted,
+          by: wanted === hovered || wanted === focused || wanted === requested ? 'user' : 'self',
+        },
+  );
+  const liveId = mayPlay ? wanted : null;
   const once = !playsByItself(state);
 
   const toggle = (id: string): void => {

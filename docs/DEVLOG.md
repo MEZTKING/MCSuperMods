@@ -10904,6 +10904,7 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - `docs/guide/very-easy.md` "More ideas" still says each card is "a mod Surprise me would make"; it should say each card starts from one thing (a mob, a vehicle, a world...) named after it.
+- Checks: `pnpm lint`, `pnpm typecheck`, `pnpm build` clean; renderer 19.6 of 21 MB, first paint 4.9 of 6 MB (check-size); e2e `home-gallery-path`, `home-ideas-path` (twice) and `showcase-path` (3) green under xvfb with `--trace off`. Screenshots at device scale 2, 1280 and 1920 wide: top, Mobs and Vehicles rows, the More ideas row, a Show all.
 - `pnpm --filter @msm/app dist:dir` was not run (disk at 11 GB with other workers building); the renderer stays 19.5 of 21 MB and first paint 4.8 of 6 MB.
 ## 2026-11-23 — executor — Draw on Minecraft's textures
 
@@ -10959,3 +10960,23 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Once `showcase/flow-clips.ts` lands, check its export shape against `flow-examples.ts` and consider hover clips on gallery cards under the one-live-clip rule.
 - The ADR 0130 brief folds the modes; the gallery needs no change for it.
+
+## 2026-11-23 — executor — Home gallery polish
+
+**What**
+- ADR 0129 D1, D2, D5 in layout A, finishing Home's gallery. Cards read `showcase/flow-clips.ts`' `FLOW_CARDS` (imported directly now; `flow-examples.ts` no longer globs): a card's still is its example's drawn still when the example has pictures of its own, else the card's `picture` drawn with the library's `artLookPng` (loaded lazily) and composed the drawn-still way (whole-pixel scale, centred on a tint, at the card's exact device pixels, `pixelated`) — `components/home/gallery/card-picture.ts`, `drawn-still.ts`' new `drawnStillIfPictures`. Every vehicle card has its own See the example.
+- Cards with a clip play it while hovered or focused, or once their picture (a "Clip: <title>" button with a Play mark) is pressed, by `chooseLiveClip` (reduced motion and **Play showcase clips** respected; never by themselves for being in view). One clip on all of Home: `showcase/home-live.ts` is a small shared choice handed down by the gallery; Featured (`ShowcaseGallery`), the gallery's cards and More ideas (`IdeaList`) each report what they want, and a card the user asked for (the newest ask) wins over Featured's in-view card. Outside Home nothing changes.
+- **More ideas** is the gallery's last row (chip **More ideas**, `gallery-group-ideas`): `MoreIdeas` `variant: 'row'` with **Shuffle** and the gallery's **Show all** in its header, `IdeaList` `layout: 'row'` (windowed sideways and growing as it scrolls, pure `ideasRowWindow`, scroll buttons as the rows', skeleton cards of the cards' size while its chunk loads). **Show all** opens the existing endless grid with **Back**. Home's separate More ideas section and its `moreIdeas` prop are gone (one place only); App builds the row through `homeGallery(visible, ideasVisible)`.
+- Polish: rail cards 15.125rem so pictures are 240 by 150 CSS pixels (no fractional height); stills re-measured from the exact layout size on resize and on Show all; the hero picture measured the same way and redrawn when its size changes; focus ring inside the clip button.
+- Tests: `app/test/components/home/gallery-polish.test.tsx` (new: cards read FLOW_CARDS and every vehicle card has See the example; example still versus drawn look; hover plays a card's clip and stops Featured's, a second card takes it, off the cards Featured resumes; focus plays; the setting off and reduced motion only on the play button; no clip buttons without WebGL; More ideas last row with Shuffle and sideways loading; Show all and Back; no ids; the row window and the shared choice). `gallery.test.tsx` and `your-mods.test.tsx` follow the removed prop. e2e `home-gallery-path` (WebGL args, a vehicle card's clip on hover, the game rule's drawn picture pixel for pixel, the More ideas row, Shuffle, Show all and Back, equal card heights per row and no sideways page scroll at 900, 1280 and 1920), `home-ideas-path` (row loads sideways, then Show all's grid for the endless and Make this parts; two old flakes from the random per-install ideas seed fixed: the name pattern rejected names ending in "Rod", and a one-thing idea or one whose second thing is a sound under Particles and sounds failed the "more than one thing" count), `showcase-path` (a gallery mob card takes the one canvas).
+- Guide: `very-easy.md` (More ideas as the last row with Show all; card pictures and clips) and `showcase.md`.
+
+**Decisions**
+- `App.tsx` was touched only in `homeGallery` and `moreIdeas` (not the mode code): the gallery needs the clip deps and the ideas renderer, which only the host has.
+- A newer ask wins rather than a fixed order between the three places, so focus left on one card never blocks a hover elsewhere.
+- More ideas keeps its own wider card (274 px) in the row; heights are equal within each row.
+
+**Next**
+- Checks: `pnpm lint`, `pnpm typecheck`, `pnpm build` clean; renderer 19.6 of 21 MB, first paint 4.9 of 6 MB (check-size); e2e `home-gallery-path`, `home-ideas-path` (twice) and `showcase-path` (3) green under xvfb with `--trace off`. Screenshots at device scale 2, 1280 and 1920 wide: top, Mobs and Vehicles rows, the More ideas row, a Show all.
+- `pnpm --filter @msm/app dist:dir` (app.asar size) was not run: disk at 12 GB against the 10 GB stop line.
+- The idea card's Make this is a plain button, the gallery's is the accent one; worth matching when the ideas files are next open.

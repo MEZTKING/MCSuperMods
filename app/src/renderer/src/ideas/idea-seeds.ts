@@ -81,3 +81,40 @@ export function ideasWindow(view: IdeasView, rows: number): IdeasWindow {
   const last = Math.min(grown - 1, near);
   return { columns, first, last, rows: grown };
 }
+
+/** Cards the **More ideas** row starts with (ADR 0129 D5, layout A). */
+export const IDEA_ROW_FIRST = 8;
+/** Cards kept ready past the last one near the row's view, so more keep coming. */
+export const IDEA_ROW_AHEAD = 4;
+/** A row card's step sideways: a card and the gap after it. */
+export const IDEA_STEP = IDEA_CARD_WIDTH + IDEA_GAP;
+
+/** Where the row is scrolled: its scroll from the left and its visible width. */
+export interface IdeasRowView {
+  readonly left: number;
+  readonly width: number;
+}
+
+/** The window of the row: the first and last card mounted and how many cards it has. */
+export interface IdeasRowWindow {
+  readonly first: number;
+  /** `last < first` for none. */
+  readonly last: number;
+  /** How many cards the row has (it only grows). */
+  readonly count: number;
+}
+
+/**
+ * The window of the **More ideas** row for `view` when it has `count` cards: the cards within
+ * {@link IDEA_OVERSCAN} of the view sideways are mounted, and the row grows to
+ * {@link IDEA_ROW_AHEAD} cards past the last of them (never shrinks). Pure.
+ */
+export function ideasRowWindow(view: IdeasRowView, count: number): IdeasRowWindow {
+  const from = view.left - IDEA_OVERSCAN;
+  const to = view.left + view.width + IDEA_OVERSCAN;
+  const near = Math.max(0, Math.floor(to / IDEA_STEP));
+  const grown = Math.max(count, IDEA_ROW_FIRST, near + 1 + IDEA_ROW_AHEAD);
+  const first = Math.max(0, Math.floor(from / IDEA_STEP));
+  const last = Math.min(grown - 1, near);
+  return { first, last, count: grown };
+}

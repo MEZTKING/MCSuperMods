@@ -270,6 +270,19 @@ test('showcase: the cards on Home, one clip at a time, reduced motion, the setti
   await expect(showcase.locator('canvas')).toHaveCount(1);
   await expect.poll(() => pictureColours(machine), { timeout: 20_000 }).toBeGreaterThan(1);
 
+  // A gallery card with a clip, hovered, takes the one clip on Home (ADR 0129 D5). -------------
+  await home.getByTestId('gallery-chip-mobs').click();
+  const mobCard = home
+    .getByTestId('gallery-row-mobs')
+    .locator('[data-testid^="gallery-card-"]')
+    .filter({ has: window.getByRole('button', { name: /^Clip: / }) })
+    .first();
+  await mobCard.locator('[data-testid^="gallery-picture-"]').hover();
+  await expect(mobCard.locator('canvas')).toHaveCount(1, { timeout: 30_000 });
+  await expect(showcase.locator('canvas')).toHaveCount(1);
+  await expect.poll(() => pictureColours(mobCard), { timeout: 20_000 }).toBeGreaterThan(1);
+  await home.getByTestId('gallery-chip-featured').click();
+
   // Reduced motion: stills and no canvas, hovered or not, until a play button is pressed. ------
   await window.emulateMedia({ reducedMotion: 'reduce' });
   await expect(showcase.locator('canvas')).toHaveCount(0);
