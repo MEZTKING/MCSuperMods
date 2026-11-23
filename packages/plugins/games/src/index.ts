@@ -41,6 +41,7 @@ export default definePlugin({
   id: 'msm.games',
   apiVersion: '^1.0.0',
   contributes: {
+    searchData: () => import('./search').then((m) => m.SEARCH),
     elementKinds: [...gamesKinds],
     validators: [...gamesValidators, ...piecesValidators, ...worldSetupValidators],
     elementTemplates: [...piecesTemplates, ...worldSetupTemplates],
