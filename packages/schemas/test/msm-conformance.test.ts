@@ -220,13 +220,31 @@ interface Expected {
 
 const index = createSchemaIndex({ ref: 'empty', mcdoc: {}, dispatchers: {} }, { mcVersion: '1.0' });
 
-const files = (group: Group, kind: 'valid' | 'invalid'): string[] =>
-  readdirSync(new URL(`${group}/${kind}/`, CORPUS))
-    .filter((name) => name.endsWith('.json'))
-    .sort();
+// The corpus is read once: the coverage cases each walk every valid file, and reading the
+// folder again per case made a case outrun its timeout on a busy runner (2026-11-23).
+const listed = new Map<string, string[]>();
+const files = (group: Group, kind: 'valid' | 'invalid'): string[] => {
+  const key = `${group}/${kind}`;
+  let names = listed.get(key);
+  if (names === undefined) {
+    names = readdirSync(new URL(`${group}/${kind}/`, CORPUS))
+      .filter((name) => name.endsWith('.json'))
+      .sort();
+    listed.set(key, names);
+  }
+  return names;
+};
 
-const read = (group: Group, kind: 'valid' | 'invalid', name: string): Json =>
-  JSON.parse(readFileSync(new URL(`${group}/${kind}/${name}`, CORPUS), 'utf8')) as Json;
+const parsed = new Map<string, Json>();
+const read = (group: Group, kind: 'valid' | 'invalid', name: string): Json => {
+  const key = `${group}/${kind}/${name}`;
+  let json = parsed.get(key);
+  if (json === undefined) {
+    json = JSON.parse(readFileSync(new URL(key, CORPUS), 'utf8')) as Json;
+    parsed.set(key, json);
+  }
+  return json;
+};
 
 const expectations = (group: Group): Record<string, Expected> =>
   JSON.parse(readFileSync(new URL(`${group}/expected-errors.json`, CORPUS), 'utf8')) as Record<
