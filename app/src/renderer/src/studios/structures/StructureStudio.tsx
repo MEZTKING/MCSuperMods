@@ -1,13 +1,15 @@
 /**
  * Structure Studio (plan D7): a structure template's size and block count, its palette, and
  * a table of its jigsaw blocks (pool, name, target, final state, joint, priorities) edited
- * through `onChange`; "Replace from file…" re-imports a `.nbt` or `.schem` file into the same
+ * through `onChange`; "Chests and containers" (B555, ADR 0116 D4: `ContainersSection.tsx`) edits
+ * each container's loot table, loot seed and items as its SNBT; "Replace from file…" re-imports a `.nbt` or `.schem` file into the same
  * id, and the two structure export commands run from here. The 3D preview is the dock.
  * "Advanced" shows the full schema form.
  *
  * data-testids: `structure-studio`, `structure-advanced-toggle`, `structure-summary`,
  * `structure-replace`, `structure-export-nbt`, `structure-export-schem`, `structure-palette`,
- * `structure-jigsaw-<n>`, `structure-jigsaw-<n>-pool`, `structure-jigsaw-<n>-pool-status`.
+ * `structure-jigsaw-<n>`, `structure-jigsaw-<n>-pool`, `structure-jigsaw-<n>-pool-status`,
+ * `structure-containers`, `structure-container-<n>` (`<n>` its index in `block_entities`).
  *
  * @packageDocumentation
  */
@@ -18,6 +20,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { type FormProblem, isWithin, ProblemList } from '../../forms';
 import type { StudioProps } from '../types';
+import { ContainersSection } from './ContainersSection';
 import { poolStatus, TEMPLATE_POOL_KIND, vanillaIdSet } from './connections';
 import { useStructureStudioHost } from './host';
 import {
@@ -210,6 +213,8 @@ export function StructureStudio(props: StudioProps) {
               (problem) => problem.path === '' || problem.path === '/jigsaws',
             )}
           />
+          <ContainersSection studio={props} />
+          <ProblemList problems={within(problems, '/block_entities')} />
         </>
       )}
     </section>

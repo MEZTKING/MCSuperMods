@@ -154,6 +154,55 @@ export const GAME_RULE_VERY_EASY_SECTIONS: readonly string[] = ['game-rule-gener
 export const STAT_VERY_EASY_SECTIONS: readonly string[] = ['stat-general'];
 
 /**
+ * The games Studios' sections in Very easy (ADR 0117 D1, D3; B555): every section of each, in
+ * plain words; the pickers show names, never ids, and the chat commands and "Place it while the
+ * world generates" stay out.
+ */
+export const WORLD_SETUP_VERY_EASY_SECTIONS: readonly string[] = [
+  'world-setup-map',
+  'world-setup-world',
+  'world-setup-start',
+  'world-setup-players',
+  'world-setup-rules',
+  'world-setup-new-player',
+];
+
+/** The One Block Studio's sections in Very easy (ADR 0117 D1). */
+export const ONE_BLOCK_VERY_EASY_SECTIONS: readonly string[] = [
+  'one-block-live',
+  'one-block-place',
+  'one-block-phases',
+];
+
+/** The Team Studio's sections in Very easy (ADR 0117 D1). */
+export const TEAM_VERY_EASY_SECTIONS: readonly string[] = [
+  'team-live',
+  'team-general',
+  'team-options',
+];
+
+/** The Objective Studio's sections in Very easy (ADR 0117 D1). */
+export const OBJECTIVE_VERY_EASY_SECTIONS: readonly string[] = [
+  'objective-live',
+  'objective-general',
+  'objective-numbers',
+];
+
+/** The Timer Studio's sections in Very easy (ADR 0117 D1). */
+export const TIMER_VERY_EASY_SECTIONS: readonly string[] = [
+  'timer-live',
+  'timer-general',
+  'timer-when',
+];
+
+/** The Area Studio's sections in Very easy (ADR 0117 D1). */
+export const AREA_VERY_EASY_SECTIONS: readonly string[] = [
+  'area-live',
+  'area-general',
+  'area-reset',
+];
+
+/**
  * The Very easy picks of "Make a block", "Make an item" (ADR 0101 D4) and "Make a world" (ADR 0119 D11). They live with the
  * Home tiles they feed (`components/home/tiles.ts`, which must stay free of React for the Node
  * build) and are re-exported here.
