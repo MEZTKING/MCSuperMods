@@ -93,6 +93,11 @@ export const GAME_RESERVED_OBJECTIVE_PATHS: readonly string[] = Object.freeze([
   'msm_deaths',
   'msm_died',
   'msm_team',
+  // The mechanics' own (B725): hearts, the kept-out clock and the withdraw trigger.
+  'msm_hearts',
+  'msm_out_until',
+  'msm_out_since',
+  'msm_withdraw',
 ]);
 
 /** The function of a kit `<ns>:<path>` that gives it to `@s`: `<ns>:msm_games/kit/<path>/give`. */
