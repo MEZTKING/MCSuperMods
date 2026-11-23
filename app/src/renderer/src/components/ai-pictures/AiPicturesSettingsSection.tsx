@@ -123,24 +123,26 @@ export function AiPicturesSettingsSection(props: {
       <p className="text-xs text-muted" data-testid="settings-ai-pictures-privacy">
         {AI_PICTURES_PRIVACY_TEXT}
       </p>
-      <label htmlFor={serviceId}>Image service</label>
-      <select
-        id={serviceId}
-        data-testid="settings-ai-pictures-service"
-        className={fieldClass}
-        value={service}
-        disabled={busy || status === null}
-        onChange={(event) => void choose(event.target.value as AiPictureServiceId)}
-      >
-        {AI_PICTURE_SERVICES.map((id) => (
-          <option key={id} value={id}>
-            {AI_PICTURE_SERVICE_INFO[id].label}
-          </option>
-        ))}
-      </select>
-      <p className="text-xs text-muted">
-        {info.blurb} Get a key at {info.signUp}
-      </p>
+      <div className="flex flex-col gap-1.5" data-setting="ai-pictures-service">
+        <label htmlFor={serviceId}>Image service</label>
+        <select
+          id={serviceId}
+          data-testid="settings-ai-pictures-service"
+          className={fieldClass}
+          value={service}
+          disabled={busy || status === null}
+          onChange={(event) => void choose(event.target.value as AiPictureServiceId)}
+        >
+          {AI_PICTURE_SERVICES.map((id) => (
+            <option key={id} value={id}>
+              {AI_PICTURE_SERVICE_INFO[id].label}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted">
+          {info.blurb} Get a key at {info.signUp}
+        </p>
+      </div>
       <p className="text-sm" role="status" data-testid="settings-ai-pictures-status">
         {aiPicturesKeyText(status, service)}
       </p>
@@ -149,46 +151,48 @@ export function AiPicturesSettingsSection(props: {
           Encrypted storage is not available on this system, so a key cannot be saved.
         </p>
       )}
-      <label htmlFor={keyId}>{info.label} key</label>
-      <input
-        id={keyId}
-        type="password"
-        autoComplete="off"
-        spellCheck={false}
-        className={fieldClass}
-        data-testid="settings-ai-pictures-key"
-        value={key}
-        placeholder={keySet ? 'Enter a new key to replace the stored one' : info.keyHint}
-        onChange={(event) => setKey(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            if (key.trim() !== '' && encryption && !busy) void save();
-          }
-        }}
-      />
-      <div className="flex flex-wrap gap-1.5">
-        <Button
-          data-testid="settings-ai-pictures-save-key"
-          disabled={busy || !encryption || key.trim() === ''}
-          onClick={() => void save()}
-        >
-          Save key
-        </Button>
-        <Button
-          data-testid="settings-ai-pictures-test-key"
-          disabled={busy || !keySet}
-          onClick={() => void test()}
-        >
-          Test key
-        </Button>
-        <Button
-          data-testid="settings-ai-pictures-clear-key"
-          disabled={busy || !keySet}
-          onClick={() => void clear()}
-        >
-          Clear key
-        </Button>
+      <div className="flex flex-col gap-1.5" data-setting="ai-pictures-key">
+        <label htmlFor={keyId}>Image service key</label>
+        <input
+          id={keyId}
+          type="password"
+          autoComplete="off"
+          spellCheck={false}
+          className={fieldClass}
+          data-testid="settings-ai-pictures-key"
+          value={key}
+          placeholder={keySet ? 'Enter a new key to replace the stored one' : info.keyHint}
+          onChange={(event) => setKey(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              if (key.trim() !== '' && encryption && !busy) void save();
+            }
+          }}
+        />
+        <div className="flex flex-wrap gap-1.5">
+          <Button
+            data-testid="settings-ai-pictures-save-key"
+            disabled={busy || !encryption || key.trim() === ''}
+            onClick={() => void save()}
+          >
+            Save key
+          </Button>
+          <Button
+            data-testid="settings-ai-pictures-test-key"
+            disabled={busy || !keySet}
+            onClick={() => void test()}
+          >
+            Test key
+          </Button>
+          <Button
+            data-testid="settings-ai-pictures-clear-key"
+            disabled={busy || !keySet}
+            onClick={() => void clear()}
+          >
+            Clear key
+          </Button>
+        </div>
       </div>
       {result !== null && (
         <p

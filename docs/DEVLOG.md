@@ -9910,3 +9910,24 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - A target fact for vanilla mob effect colours (a plugin API minor) would let the bottle colour Minecraft's effects and lift the limit.
 - `SOUND_PICKERS` needs `search/sources/vanilla.ts` (B660) or the walk an exception.
+## 2026-11-23 — executor — B662 settings lines and command words
+
+**What**
+- `components/settings-catalogue.ts` (ADR 0124 D1): 21 lines, one per setting of the Settings dialog (Game locations 3, Vanilla assets 1, Updates 1, Showcase 1, Search 2, World backups 4, AI helper 6, AI pictures 2, Plugins 1), each with its id, its label exactly as the dialog shows it (`title`), one sentence, its section and extra words (American spellings and short forms included); `modes` (new, optional) marks **Default limits** as Advanced only.
+- The dialog marks each line with `data-setting="<id>"` (and `data-setting-label` where the label is a heading or a button): `SettingsDialog.tsx`, `WorldBackupsSection.tsx`, `ai/AiSettingsSection.tsx`, `ai-pictures/AiPicturesSettingsSection.tsx`.
+- New section **Search** with **Remember my searches** (`setRememberSearches`) and **Clear my searches** (`clearSearchHistory`; off while there is nothing to forget; says "Your searches are forgotten.").
+- `focusSetting` on `SettingsDialog`: opens at a line, scrolls it to the middle (smooth, or a jump under reduced motion), focuses its first enabled control, marks it with an accent outline for `SETTING_MARK_MS` (2 s; fades unless reduced motion) and keeps it in view while the sections above load, until the user scrolls, clicks or types. A line that appears later (the backups list) is found when it appears.
+- Small label changes so each line has one fixed label: the AI key card has the heading **Your Anthropic key**; the AI pictures key field reads **Image service key** (was "<service> key"); the backups folder row reads **Backups folder**; the backups list has the heading **Restore a backup**; **Other launchers** also shows over the added folders when the add buttons are absent.
+- `commands/built-in-commands.ts`: one sentence and extra words for each of the 51 built-in commands; the palette still shows titles only.
+- Tests: `app/test/components/settings-catalogue.test.tsx` (every catalogue line against the dialog's lines, labels and sections and every control against a line, in Very easy, Easy and Advanced; Search's two lines; `focusSetting` with and without reduced motion, a line that loads late, unpinning; the command sentences and the palette's titles).
+
+**Decisions**
+- The catalogue keeps B652's field name `title` for the label (B660's settings source and the search fixtures read it).
+- A "control" is an `input`, `select`, `textarea` or `button` (links such as the AI helper guide are not settings); Close is the one control outside a line.
+- The Vanilla assets line is the whole section (its button's words change after extraction), labelled by its heading.
+- `modes` uses its own `SettingsMode` (the same three values as `UiMode`): the search's Node project compiles the catalogue without the preferences store.
+
+**Next**
+- B667: hand `SETTINGS_CATALOGUE` and `BUILT_IN_COMMANDS`' `sentence`/`words` to the feed; the host's "open Settings at a line" passes the hit's setting id as `focusSetting`.
+- B664: the setting action carries the catalogue id as is.
+- Guide: `docs/guide/` does not yet name the Search section or the relabelled lines (Image service key, Your Anthropic key); a docs brief should add them.

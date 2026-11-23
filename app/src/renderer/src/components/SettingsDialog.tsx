@@ -84,6 +84,31 @@ export interface SettingsDialogProps {
    * until the user scrolls, clicks or types.
    */
   focus?: 'ai' | undefined;
+  /**
+   * A line of the settings catalogue (`settings-catalogue.ts`, its `data-setting` id): the
+   * dialog opens scrolled to it, focuses its first control and marks it for a moment, and keeps
+   * it in view while the sections above load, until the user scrolls, clicks or types.
+   */
+  focusSetting?: string | undefined;
+}
+
+/** How long a line opened by `focusSetting` stays marked, in milliseconds. */
+export const SETTING_MARK_MS = 2000;
+
+/** The classes that mark a line opened by `focusSetting`. */
+const MARK_CLASSES = ['rounded', 'outline-2', 'outline-offset-2', 'outline-accent'] as const;
+
+/** The motion of the mark, left out under reduced motion. */
+const MARK_MOTION = 'transition-[outline-color]';
+
+const prefersReducedMotion = (): boolean =>
+  globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+
+/** The first enabled control of a settings line. */
+function firstControl(line: Element): HTMLElement | null {
+  return line.querySelector<HTMLElement>(
+    'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])',
+  );
 }
 
 /** The label of a plugin state in Settings > Plugins. */
@@ -149,8 +174,9 @@ export function PluginsSection(props: {
         </ul>
       )}
       <p className="text-xs text-muted">Changes take effect after restarting MCSuperMods.</p>
-      <div>
+      <div data-setting="plugins-folder">
         <Button
+          data-setting-label
           data-testid="settings-open-plugins"
           disabled={props.onOpenFolder === undefined}
           onClick={() => void open()}
@@ -276,6 +302,7 @@ function LocationList(props: {
   return (
     <fieldset
       data-testid="settings-locations"
+      data-setting="install-target"
       className="m-0 flex min-w-0 flex-col gap-1 border-0 p-0"
     >
       <legend className="mb-1 text-sm">Install packs into</legend>
@@ -417,9 +444,18 @@ export function SettingsDialog(props: SettingsDialogProps) {
   // while what is above it loads (the detected folder, the game locations and the status lines
   // move it), until the user scrolls, clicks or types.
   const pinAi = useRef(props.focus === 'ai' && props.ai !== undefined);
-  const unpinAi = (): void => {
+  // Opened at a settings line: the same, for the line `focusSetting` names.
+  const pinSetting = useRef(props.focusSetting !== undefined);
+  const unpin = (): void => {
     pinAi.current = false;
+    pinSetting.current = false;
   };
+  // The portal mounts the content after the first render: held in state so the effect runs then.
+  const [content, setContent] = useState<HTMLDivElement | null>(null);
+  const rememberSearches = usePreferences((state) => state.rememberSearches);
+  const searchHistory = usePreferences((state) => state.searchHistory);
+  const rememberSearchesId = useId();
+  const [searchesCleared, setSearchesCleared] = useState(false);
   const aiSection = useCallback((node: HTMLElement | null) => {
     if (node === null || !pinAi.current) return;
     const scroll = (): void => {
@@ -432,6 +468,68 @@ export function SettingsDialog(props: SettingsDialogProps) {
     observer.observe(content);
     return () => observer.disconnect();
   }, []);
+
+  const focusSetting = props.focusSetting;
+  useEffect(() => {
+    if (focusSetting === undefined || content === null) return;
+    const reduce = prefersReducedMotion();
+    const selector = `[data-setting="${globalThis.CSS?.escape?.(focusSetting) ?? focusSetting}"]`;
+    let marked: Element | null = null;
+    let focused = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const unmark = (line: Element): void => {
+      line.classList.remove(...MARK_CLASSES, MARK_MOTION, 'outline-transparent');
+      line.removeAttribute('data-marked');
+    };
+    const find = (): void => {
+      const line = content.querySelector(selector);
+      if (line === null) return;
+      if (line !== marked) {
+        if (marked !== null) unmark(marked);
+        marked = line;
+        line.classList.add(...MARK_CLASSES);
+        if (!reduce) line.classList.add(MARK_MOTION);
+        line.setAttribute('data-marked', 'true');
+        timers.push(
+          setTimeout(() => {
+            line.removeAttribute('data-marked');
+            if (reduce) {
+              unmark(line);
+              return;
+            }
+            line.classList.remove('outline-accent');
+            line.classList.add('outline-transparent');
+            timers.push(setTimeout(() => unmark(line), 300));
+          }, SETTING_MARK_MS),
+        );
+        line.scrollIntoView?.({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      } else if (pinSetting.current) {
+        line.scrollIntoView?.({ block: 'center', behavior: 'auto' });
+      }
+      if (!focused) {
+        const control = firstControl(line);
+        if (control !== null) {
+          control.focus({ preventScroll: true });
+          focused = true;
+        }
+      }
+    };
+    find();
+    if (!focused) content.focus?.({ preventScroll: true });
+    const mutations =
+      typeof MutationObserver === 'undefined' ? null : new MutationObserver(() => find());
+    mutations?.observe(content, { childList: true, subtree: true, attributes: true });
+    const form = content.querySelector('form');
+    const sizes =
+      typeof ResizeObserver === 'undefined' || form === null ? null : new ResizeObserver(find);
+    if (form !== null) sizes?.observe(form);
+    return () => {
+      mutations?.disconnect();
+      sizes?.disconnect();
+      for (const timer of timers) clearTimeout(timer);
+      if (marked !== null) unmark(marked);
+    };
+  }, [focusSetting, content]);
 
   useEffect(() => {
     let live = true;
@@ -531,13 +629,15 @@ export function SettingsDialog(props: SettingsDialogProps) {
         <Dialog.Content
           aria-describedby={undefined}
           data-testid="settings-dialog"
+          ref={setContent}
           onOpenAutoFocus={(event) => {
-            // The key field takes the focus instead of the first field.
+            // The key field (or the line's first control) takes the focus instead of the first field.
             if (props.focus === 'ai' && props.ai !== undefined) event.preventDefault();
+            if (props.focusSetting !== undefined) event.preventDefault();
           }}
-          onWheel={unpinAi}
-          onPointerDown={unpinAi}
-          onKeyDown={unpinAi}
+          onWheel={unpin}
+          onPointerDown={unpin}
+          onKeyDown={unpin}
           className="fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[min(94vw,520px)] overflow-x-hidden overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
           <Dialog.Title className="mb-2 text-base font-semibold">Settings</Dialog.Title>
@@ -562,144 +662,158 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 overrideInstance={heldBy}
               />
             )}
-            <h4 className="mt-1 text-sm font-semibold">Official launcher folder</h4>
-            <p
-              className="text-sm text-muted [overflow-wrap:anywhere]"
-              data-testid="settings-detected"
-            >
-              Detected:{' '}
-              {view === null ? '…' : (view.detectedMinecraftDir ?? 'no launcher folder found')}
-            </p>
-            <label htmlFor={folderId}>
-              Use this folder instead (leave empty for the detected one)
-            </label>
-            <div className="flex min-w-0 gap-1.5">
-              <input
-                id={folderId}
-                data-testid="settings-minecraft-folder"
-                className={`${fieldClass} min-w-0 flex-1`}
-                value={folder}
-                spellCheck={false}
-                placeholder={view?.detectedMinecraftDir ?? '/path/to/.minecraft'}
-                onChange={(event) => setFolder(event.target.value)}
-              />
-              <Button
-                className="shrink-0"
-                onClick={() =>
-                  void props.browse().then((path) => {
-                    if (path !== null) setFolder(path);
-                  })
-                }
+            <div className="flex min-w-0 flex-col gap-1.5" data-setting="minecraft-folder">
+              <h4 className="mt-1 text-sm font-semibold" data-setting-label>
+                Official launcher folder
+              </h4>
+              <p
+                className="text-sm text-muted [overflow-wrap:anywhere]"
+                data-testid="settings-detected"
               >
-                Browse…
-              </Button>
-              <Button className="shrink-0" onClick={() => setFolder('')} disabled={folder === ''}>
-                Use detected
-              </Button>
-            </div>
-            {heldBy !== null && (
-              <OverrideHint
-                instance={heldBy}
-                onSelect={props.onSelectTarget}
-                testId="settings-override-hint"
-              />
-            )}
-            <div className="flex gap-1.5">
-              <Button type="submit" disabled={busy} data-testid="settings-save">
-                Save folder
-              </Button>
-            </div>
-            {props.onAddLauncherRoot !== undefined && (
-              <>
-                <h4 className="mt-1 text-sm font-semibold">Other launchers</h4>
-                <p className="text-xs text-muted">
-                  Prism Launcher and the CurseForge app are found in their usual folders. Add a
-                  folder here if yours lives somewhere else, or for MultiMC and PolyMC.
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {ADD_ROOT_BUTTONS.map((entry) => (
-                    <Button
-                      key={entry.kind}
-                      data-testid={`settings-add-${entry.kind}`}
-                      disabled={busy}
-                      onClick={() => void addRoot(entry.kind)}
-                    >
-                      {entry.label}
-                    </Button>
-                  ))}
-                </div>
-              </>
-            )}
-            {manualRoots.length > 0 && (
-              <ul
-                className="m-0 flex list-none flex-col gap-1 p-0"
-                aria-label="Added launcher folders"
-              >
-                {manualRoots.map((root, index) => (
-                  <li
-                    key={`${root.kind}:${root.path}`}
-                    data-testid={`settings-root-${index}`}
-                    className="flex items-center gap-1.5"
-                  >
-                    <span className={badgeClass}>{launcherLabel(root.kind)}</span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className={pathClass} title={root.path}>
-                        {root.path}
-                      </span>
-                      {root.found === 0 && (
-                        <span className="text-xs text-muted">
-                          No instances found in this folder.
-                        </span>
-                      )}
-                    </span>
-                    <Button
-                      data-testid={`settings-remove-root-${index}`}
-                      aria-label={`Remove ${launcherLabel(root.kind)} folder ${root.path}`}
-                      disabled={props.onRemoveLauncherRoot === undefined}
-                      onClick={() => void removeRoot(root)}
-                    >
-                      Remove
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <h3 className="mt-3 font-semibold">Vanilla assets</h3>
-            <p className="text-sm" role="status" data-testid="settings-status">
-              {minecraftSummary(props.mcVersion, status, jarSource)}
-            </p>
-            <p className="text-xs text-muted">
-              The preview uses models and textures from your own Minecraft client. MSM copies them
-              into its cache on this computer and never puts them into exports.
-            </p>
-            {progress !== null && (
-              <div className="flex flex-col gap-0.5">
-                <label htmlFor={progressId} className="text-sm">
-                  {PHASE_LABELS[progress.phase]}
-                  {progress.total > 1 ? ` (${progress.done} of ${progress.total})` : '…'}
-                </label>
-                <progress
-                  id={progressId}
-                  data-testid="settings-extract-progress"
-                  max={Math.max(progress.total, 1)}
-                  value={progress.done}
-                  className="w-full"
+                Detected:{' '}
+                {view === null ? '…' : (view.detectedMinecraftDir ?? 'no launcher folder found')}
+              </p>
+              <label htmlFor={folderId}>
+                Use this folder instead (leave empty for the detected one)
+              </label>
+              <div className="flex min-w-0 gap-1.5">
+                <input
+                  id={folderId}
+                  data-testid="settings-minecraft-folder"
+                  className={`${fieldClass} min-w-0 flex-1`}
+                  value={folder}
+                  spellCheck={false}
+                  placeholder={view?.detectedMinecraftDir ?? '/path/to/.minecraft'}
+                  onChange={(event) => setFolder(event.target.value)}
                 />
+                <Button
+                  className="shrink-0"
+                  onClick={() =>
+                    void props.browse().then((path) => {
+                      if (path !== null) setFolder(path);
+                    })
+                  }
+                >
+                  Browse…
+                </Button>
+                <Button className="shrink-0" onClick={() => setFolder('')} disabled={folder === ''}>
+                  Use detected
+                </Button>
+              </div>
+              {heldBy !== null && (
+                <OverrideHint
+                  instance={heldBy}
+                  onSelect={props.onSelectTarget}
+                  testId="settings-override-hint"
+                />
+              )}
+              <div className="flex gap-1.5">
+                <Button type="submit" disabled={busy} data-testid="settings-save">
+                  Save folder
+                </Button>
+              </div>
+            </div>
+            {(props.onAddLauncherRoot !== undefined || manualRoots.length > 0) && (
+              <div className="flex min-w-0 flex-col gap-1.5" data-setting="launcher-folders">
+                <h4 className="mt-1 text-sm font-semibold" data-setting-label>
+                  Other launchers
+                </h4>
+                {props.onAddLauncherRoot !== undefined && (
+                  <>
+                    <p className="text-xs text-muted">
+                      Prism Launcher and the CurseForge app are found in their usual folders. Add a
+                      folder here if yours lives somewhere else, or for MultiMC and PolyMC.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {ADD_ROOT_BUTTONS.map((entry) => (
+                        <Button
+                          key={entry.kind}
+                          data-testid={`settings-add-${entry.kind}`}
+                          disabled={busy}
+                          onClick={() => void addRoot(entry.kind)}
+                        >
+                          {entry.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {manualRoots.length > 0 && (
+                  <ul
+                    className="m-0 flex list-none flex-col gap-1 p-0"
+                    aria-label="Added launcher folders"
+                  >
+                    {manualRoots.map((root, index) => (
+                      <li
+                        key={`${root.kind}:${root.path}`}
+                        data-testid={`settings-root-${index}`}
+                        className="flex items-center gap-1.5"
+                      >
+                        <span className={badgeClass}>{launcherLabel(root.kind)}</span>
+                        <span className="flex min-w-0 flex-1 flex-col">
+                          <span className={pathClass} title={root.path}>
+                            {root.path}
+                          </span>
+                          {root.found === 0 && (
+                            <span className="text-xs text-muted">
+                              No instances found in this folder.
+                            </span>
+                          )}
+                        </span>
+                        <Button
+                          data-testid={`settings-remove-root-${index}`}
+                          aria-label={`Remove ${launcherLabel(root.kind)} folder ${root.path}`}
+                          disabled={props.onRemoveLauncherRoot === undefined}
+                          onClick={() => void removeRoot(root)}
+                        >
+                          Remove
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
-            <div className="flex gap-1.5">
-              <Button
-                data-testid="settings-extract"
-                disabled={!canExtract}
-                onClick={() => void extract()}
-              >
-                {status?.cache != null ? 'Extract again' : 'Extract vanilla assets'}
-              </Button>
+
+            <div className="flex min-w-0 flex-col gap-1.5" data-setting="vanilla-assets">
+              <h3 className="mt-3 font-semibold" data-setting-label>
+                Vanilla assets
+              </h3>
+              <p className="text-sm" role="status" data-testid="settings-status">
+                {minecraftSummary(props.mcVersion, status, jarSource)}
+              </p>
+              <p className="text-xs text-muted">
+                The preview uses models and textures from your own Minecraft client. MSM copies them
+                into its cache on this computer and never puts them into exports.
+              </p>
+              {progress !== null && (
+                <div className="flex flex-col gap-0.5">
+                  <label htmlFor={progressId} className="text-sm">
+                    {PHASE_LABELS[progress.phase]}
+                    {progress.total > 1 ? ` (${progress.done} of ${progress.total})` : '…'}
+                  </label>
+                  <progress
+                    id={progressId}
+                    data-testid="settings-extract-progress"
+                    max={Math.max(progress.total, 1)}
+                    value={progress.done}
+                    className="w-full"
+                  />
+                </div>
+              )}
+              <div className="flex gap-1.5">
+                <Button
+                  data-testid="settings-extract"
+                  disabled={!canExtract}
+                  onClick={() => void extract()}
+                >
+                  {status?.cache != null ? 'Extract again' : 'Extract vanilla assets'}
+                </Button>
+              </div>
             </div>
 
             <h3 className="mt-3 font-semibold">Updates</h3>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5" data-setting="auto-update">
               <input
                 id={autoCheckId}
                 type="checkbox"
@@ -717,7 +831,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
             </p>
 
             <h3 className="mt-3 font-semibold">Showcase</h3>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5" data-setting="showcase-clips">
               <input
                 id={showcaseClipsId}
                 type="checkbox"
@@ -732,6 +846,43 @@ export function SettingsDialog(props: SettingsDialogProps) {
             <p className="text-xs text-muted">
               Moving pictures on Home and in New project. Off shows still pictures.
             </p>
+
+            <h3 className="mt-3 font-semibold">Search</h3>
+            <div className="flex items-center gap-1.5" data-setting="remember-searches">
+              <input
+                id={rememberSearchesId}
+                type="checkbox"
+                data-testid="settings-remember-searches"
+                checked={rememberSearches}
+                onChange={(event) => {
+                  usePreferences.getState().setRememberSearches(event.target.checked);
+                  setSearchesCleared(false);
+                }}
+              />
+              <label htmlFor={rememberSearchesId}>Remember my searches</label>
+            </div>
+            <p className="text-xs text-muted">
+              Your recent searches and the results you chose come first next time. They stay on this
+              computer. Off forgets them.
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5" data-setting="clear-searches">
+              <Button
+                data-setting-label
+                data-testid="settings-clear-searches"
+                disabled={searchHistory.chosen.length === 0 && searchHistory.searches.length === 0}
+                onClick={() => {
+                  usePreferences.getState().clearSearchHistory();
+                  setSearchesCleared(true);
+                }}
+              >
+                Clear my searches
+              </Button>
+              {searchesCleared && (
+                <span className="text-sm" role="status" data-testid="settings-searches-cleared">
+                  Your searches are forgotten.
+                </span>
+              )}
+            </div>
 
             {props.worldBackups !== undefined && (
               <WorldBackupsSection backups={props.worldBackups} load={load} save={saveSettings} />

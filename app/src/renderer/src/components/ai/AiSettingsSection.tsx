@@ -36,6 +36,9 @@ import {
 export { keyStatusText } from './AiKeySetup';
 export { AI_GUIDE_URL } from './ai-setup-words';
 
+/** The heading of the key card in Settings (the settings line `ai-key`). */
+export const KEY_HEADING = 'Your Anthropic key';
+
 /** The fallback switch's label (ADR 0041 D7). */
 export const AI_FALLBACK_LABEL = SETUP_WORDS.fallback;
 
@@ -166,7 +169,7 @@ export const AiSettingsSection = forwardRef<
   const current = settings ?? DEFAULT_AI_SETTINGS;
   const model = modelInfo(current.model);
   const effortSelect = (size: AiMode, id: string, label: string) => (
-    <span className="flex flex-col gap-0.5">
+    <span className="flex flex-col gap-0.5" data-setting={`ai-effort-${size}`}>
       <label htmlFor={id}>{label}</label>
       <select
         id={id}
@@ -198,43 +201,50 @@ export const AiSettingsSection = forwardRef<
       aria-label={SETUP_WORDS.sectionHeading}
     >
       <h3 className="mt-3 font-semibold">{SETUP_WORDS.sectionHeading}</h3>
-      <AiKeySetup
-        ai={ai}
-        model={current.model}
-        manage
-        hideHeading
-        autoFocus={props.focusKey === true}
-        statusTestId="settings-ai-key-status"
-        sentTestId="settings-ai-privacy"
-        onChanged={() => onChanged?.()}
-        onReady={() => onChanged?.()}
-      />
-      <label htmlFor={modelId}>{SETUP_WORDS.model}</label>
-      <select
-        id={modelId}
-        className={fieldClass}
-        data-testid="settings-ai-model"
-        value={current.model}
-        disabled={settings === null}
-        onChange={(event) => void change({ ...current, model: event.target.value as AiModelId })}
-      >
-        {AI_MODELS.map((entry) => (
-          <option key={entry.id} value={entry.id}>
-            {advanced ? modelOptionAdvanced(entry.id) : modelOption(entry.id)}
-          </option>
-        ))}
-      </select>
-      {props.conversationModel != null && props.conversationModel !== current.model && (
-        <p className="text-xs text-muted" data-testid="settings-ai-model-notice">
-          {modelChangeNotice(current.model)}
-        </p>
-      )}
+      <div className="flex flex-col gap-1.5" data-setting="ai-key">
+        <h4 className="mt-1 text-sm font-semibold" data-setting-label>
+          {KEY_HEADING}
+        </h4>
+        <AiKeySetup
+          ai={ai}
+          model={current.model}
+          manage
+          hideHeading
+          autoFocus={props.focusKey === true}
+          statusTestId="settings-ai-key-status"
+          sentTestId="settings-ai-privacy"
+          onChanged={() => onChanged?.()}
+          onReady={() => onChanged?.()}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5" data-setting="ai-model">
+        <label htmlFor={modelId}>{SETUP_WORDS.model}</label>
+        <select
+          id={modelId}
+          className={fieldClass}
+          data-testid="settings-ai-model"
+          value={current.model}
+          disabled={settings === null}
+          onChange={(event) => void change({ ...current, model: event.target.value as AiModelId })}
+        >
+          {AI_MODELS.map((entry) => (
+            <option key={entry.id} value={entry.id}>
+              {advanced ? modelOptionAdvanced(entry.id) : modelOption(entry.id)}
+            </option>
+          ))}
+        </select>
+        {props.conversationModel != null && props.conversationModel !== current.model && (
+          <p className="text-xs text-muted" data-testid="settings-ai-model-notice">
+            {modelChangeNotice(current.model)}
+          </p>
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-1.5">
         {effortSelect('chat', chatId, SETUP_WORDS.effortSmall)}
         {effortSelect('build', buildId, SETUP_WORDS.effortBuild)}
       </div>
       <p className="text-xs text-muted">{SETUP_WORDS.effortHint}</p>
-      <span className="flex items-start gap-1.5">
+      <span className="flex items-start gap-1.5" data-setting="ai-fallbacks">
         <input
           id={fallbackId}
           type="checkbox"
@@ -250,8 +260,14 @@ export const AiSettingsSection = forwardRef<
         <p className="text-xs text-muted">{noFallback(current.model)}</p>
       )}
       {advanced && (
-        <div className="flex flex-col gap-2" data-testid="settings-ai-limits">
-          <h4 className="mt-1 text-sm font-semibold">{LIMITS_HEADING}</h4>
+        <div
+          className="flex flex-col gap-2"
+          data-testid="settings-ai-limits"
+          data-setting="ai-limits"
+        >
+          <h4 className="mt-1 text-sm font-semibold" data-setting-label>
+            {LIMITS_HEADING}
+          </h4>
           <p className="text-xs text-muted">{LIMITS_INTRO}</p>
           {(['chat', 'build'] as const).map((size) => (
             <LimitsRow

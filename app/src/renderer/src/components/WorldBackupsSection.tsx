@@ -150,7 +150,10 @@ export function WorldBackupsSection(props: WorldBackupsSectionProps) {
         Before MCSuperMods installs a data pack into one of your worlds, it saves a copy of the
         whole world as a zip. Backups stay on this computer.
       </p>
-      <div className="flex min-w-0 items-center gap-1.5">
+      <div className="flex min-w-0 items-center gap-1.5" data-setting="backups-folder">
+        <span className="shrink-0 text-sm" data-setting-label>
+          Backups folder
+        </span>
         <span
           className="min-w-0 flex-1 break-all font-mono text-xs [overflow-wrap:anywhere]"
           data-testid="settings-backups-folder"
@@ -165,7 +168,7 @@ export function WorldBackupsSection(props: WorldBackupsSectionProps) {
           Open folder
         </Button>
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5" data-setting="backups-before-install">
         <input
           id={beforeId}
           type="checkbox"
@@ -180,7 +183,7 @@ export function WorldBackupsSection(props: WorldBackupsSectionProps) {
         />
         <label htmlFor={beforeId}>Back up a world before installing into it</label>
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5" data-setting="backups-keep">
         <label htmlFor={keepId}>Backups to keep per world</label>
         <input
           id={keepId}
@@ -212,51 +215,56 @@ export function WorldBackupsSection(props: WorldBackupsSectionProps) {
         </p>
       )}
       {list !== null && list.groups.length > 0 && (
-        <ul className="m-0 flex list-none flex-col gap-1.5 p-0" aria-label="World backups list">
-          {list.groups.map((group, groupIndex) => (
-            <li
-              key={`${group.location}/${group.worldDir}`}
-              data-testid={`backup-group-${groupIndex}`}
-              className="flex flex-col gap-0.5 rounded border border-border p-2"
-            >
-              <span className="text-sm">
-                <span className="font-medium">{group.worldDir}</span>
-                <span className="text-muted"> in {group.locationName}</span>
-              </span>
-              {!group.available && (
-                <span className="text-xs text-muted">
-                  This game folder was not found, so Restore is off. The zips are still in the
-                  backups folder.
+        <div className="flex flex-col gap-1.5" data-setting="backups-restore">
+          <h4 className="mt-1 text-sm font-semibold" data-setting-label>
+            Restore a backup
+          </h4>
+          <ul className="m-0 flex list-none flex-col gap-1.5 p-0" aria-label="World backups list">
+            {list.groups.map((group, groupIndex) => (
+              <li
+                key={`${group.location}/${group.worldDir}`}
+                data-testid={`backup-group-${groupIndex}`}
+                className="flex flex-col gap-0.5 rounded border border-border p-2"
+              >
+                <span className="text-sm">
+                  <span className="font-medium">{group.worldDir}</span>
+                  <span className="text-muted"> in {group.locationName}</span>
                 </span>
-              )}
-              <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-                {group.backups.map((backup, index) => {
-                  const key = `${group.location}/${group.worldDir}/${backup.fileName}`;
-                  return (
-                    <li
-                      key={backup.fileName}
-                      data-testid={`backup-${groupIndex}-${index}`}
-                      className="flex items-center gap-1.5 text-sm"
-                    >
-                      <span className="flex-1">
-                        {backupLabel(backup.fileName)}{' '}
-                        <span className="text-xs text-muted">{sizeLabel(backup.size)}</span>
-                      </span>
-                      <Button
-                        data-testid={`backup-restore-${groupIndex}-${index}`}
-                        aria-label={`Restore ${group.worldDir} from ${backupLabel(backup.fileName)}`}
-                        disabled={!group.available || restoring !== null}
-                        onClick={() => void restore(group, backup.fileName)}
+                {!group.available && (
+                  <span className="text-xs text-muted">
+                    This game folder was not found, so Restore is off. The zips are still in the
+                    backups folder.
+                  </span>
+                )}
+                <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+                  {group.backups.map((backup, index) => {
+                    const key = `${group.location}/${group.worldDir}/${backup.fileName}`;
+                    return (
+                      <li
+                        key={backup.fileName}
+                        data-testid={`backup-${groupIndex}-${index}`}
+                        className="flex items-center gap-1.5 text-sm"
                       >
-                        {restoring === key ? 'Restoring…' : 'Restore'}
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </li>
-          ))}
-        </ul>
+                        <span className="flex-1">
+                          {backupLabel(backup.fileName)}{' '}
+                          <span className="text-xs text-muted">{sizeLabel(backup.size)}</span>
+                        </span>
+                        <Button
+                          data-testid={`backup-restore-${groupIndex}-${index}`}
+                          aria-label={`Restore ${group.worldDir} from ${backupLabel(backup.fileName)}`}
+                          disabled={!group.available || restoring !== null}
+                          onClick={() => void restore(group, backup.fileName)}
+                        >
+                          {restoring === key ? 'Restoring…' : 'Restore'}
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       {error !== null && (
         <p role="alert" className="text-sm text-error" data-testid="settings-backups-error">
