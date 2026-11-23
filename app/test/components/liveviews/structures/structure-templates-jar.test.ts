@@ -6,8 +6,8 @@ import { STRUCTURE_TEMPLATE_MAX_BYTES, STRUCTURE_TEMPLATE_PATTERN } from '@msm/i
 import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { parsePieceTemplate } from '../src/renderer/src/liveviews/structures/vanilla-pieces';
-import { InvokeChannels, ipcContract } from '../src/shared/ipc-contract';
+import { parsePieceTemplate } from '../../../../src/renderer/src/liveviews/structures/vanilla-pieces';
+import { InvokeChannels, ipcContract } from '../../../../src/shared/ipc-contract';
 
 /**
  * The jar's structure templates (ADR 0122, B636; the B634 spike's 4S6) against the client jar
