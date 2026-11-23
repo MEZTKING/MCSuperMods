@@ -27,6 +27,7 @@ Play (ADR 0084) always makes one test world. It uses the flat preset, creative m
 - A Skyblock or map can be played as players will play it, and shipped as one file.
 - Main gains a map export service beside world backups. Both reuse the same zip code and the same containment rules (writes only into the picked output file).
 - Without level.dat edits a map keeps the author's world settings (cheats, seed). The guide says so.
+- Found at B554 (2026-11-23): the game asks "experimental settings" every time a world with its own world type is reopened (B547 Y14). In Play my game the runtime's dev client answers it itself ("I Know What I'm Doing!", found by its translation key), only for `msm-game-` worlds and only during its own open request, so Reload and a second Play do not wait for a click; a world opened by hand still asks. Game worlds are made with commands on (B547's settings). Both are vetoable defaults, for review at the plan's close.
 
 ## Status
 
