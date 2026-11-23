@@ -48,6 +48,7 @@ import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
@@ -136,7 +137,7 @@ async function expectNoErrors(window: Page): Promise<void> {
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
     0,
   );
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /**
@@ -647,7 +648,7 @@ test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () =
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
   await save(window);
 
   // The jar: the world addition in the msm layer, the two worldgen files as data.
@@ -734,7 +735,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
   await save(window);
 
   // The jar: three potion definitions, the effect, fifteen brewing recipes and the names.

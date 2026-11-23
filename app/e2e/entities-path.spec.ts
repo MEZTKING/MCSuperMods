@@ -24,6 +24,7 @@ import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
   appDir,
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
@@ -120,7 +121,7 @@ async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
 /** Asserts that the Problems panel lists nothing at all and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /** Opens the export chevron menu and returns the item `testId` (not clicked). */
@@ -176,10 +177,11 @@ test('entities: Blockbench import, Monster template, Entity Studio, unknown mode
   await expect(importDialog).toBeHidden();
 
   const models = window.getByRole('region', { name: 'Models and animations' });
+  // Names only in the rows; the kinds are small headings in the group (plan B703).
   await expect(models.getByTestId(`element-row-${MODEL_ID}`)).toBeVisible();
-  await expect(models.getByTestId(`element-row-${MODEL_ID}`)).toContainText('model');
+  await expect(models.getByRole('heading', { name: 'Models', exact: true })).toBeVisible();
   await expect(models.getByTestId(`element-row-${ANIMATIONS_ID}`)).toBeVisible();
-  await expect(models.getByTestId(`element-row-${ANIMATIONS_ID}`)).toContainText('animation');
+  await expect(models.getByRole('heading', { name: 'Animations', exact: true })).toBeVisible();
   await expect(
     window.getByTestId(`asset-row-${NAMESPACE}:textures/entity/two_bones.png`),
   ).toBeVisible();

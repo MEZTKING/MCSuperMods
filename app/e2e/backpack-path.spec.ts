@@ -15,7 +15,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openAddDialog, outputDir } from './fixtures';
+import {
+  expectStatusAgrees,
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  outputDir,
+} from './fixtures';
 
 const MOD_NAME = 'Pack Mod';
 
@@ -134,7 +140,7 @@ test('backpack: the Very easy pick, the Backpack flow defaults, the Item Studio 
   await expect(inventory.getByTestId('item-bundle-open-front')).toHaveValue(
     'minecraft:item/bundle_open_front',
   );
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

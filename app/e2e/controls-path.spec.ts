@@ -16,7 +16,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openAddDialog, outputDir } from './fixtures';
+import {
+  expectStatusAgrees,
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  outputDir,
+} from './fixtures';
 
 const MOD_NAME = 'Magic Keys';
 
@@ -183,7 +189,7 @@ test('controls: a key bind pressed in its Studio, a mana bar, a Rules key card, 
     'When a player presses Dash, set Mana to 25',
   );
   await expect(card.getByRole('alert')).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   // Save: the files hold the key, the HUD and the rule. ---------------------------------------
   await window.getByTestId('toolbar-save').click();

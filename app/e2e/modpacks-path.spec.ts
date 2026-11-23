@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, newProjectInFolder } from './fixtures';
+import { expectStatusAgrees, type LaunchedApp, launchApp, newProjectInFolder } from './fixtures';
 
 let launched: LaunchedApp | undefined;
 
@@ -23,7 +23,7 @@ test('modpacks: create one, add the open project and build it', async () => {
   await window.waitForLoadState('domcontentloaded');
 
   await newProjectInFolder(window);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   await window.keyboard.press('ControlOrMeta+Shift+P');
   const palette = window.getByTestId('command-palette');

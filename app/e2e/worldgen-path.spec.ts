@@ -29,6 +29,7 @@ import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
   appDir,
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   openAddDialog,
@@ -104,7 +105,7 @@ async function problemRows(window: Page, severity?: 'error' | 'warning'): Promis
 /** Asserts that the Problems panel lists nothing at all and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /** Opens the export chevron menu and returns the item `testId` (not clicked). */

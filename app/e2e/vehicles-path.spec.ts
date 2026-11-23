@@ -17,7 +17,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openAddDialog, outputDir } from './fixtures';
+import {
+  expectStatusAgrees,
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  outputDir,
+} from './fixtures';
 
 const MOD_NAME = 'Garage Mod';
 
@@ -192,7 +198,7 @@ test('vehicles: the Tank and Car flows, the Vehicle Studio, a Rules get-in card,
   const itemPicture = studio.getByTestId('vehicle-item-texture');
   await itemPicture.fill(`${ns}:item/racing_car`);
   await itemPicture.press('Enter');
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   // Rules: "Someone gets in the vehicle" shows a HUD element. --------------------------------
   await addFromTemplate(window, ns, 'coordinates', 'msm_hud_coordinates', 'height');
@@ -250,7 +256,7 @@ test('vehicles: the Tank and Car flows, the Vehicle Studio, a Rules get-in card,
     'When someone gets in Racing Car, show Height to',
   );
   await expect(window.getByTestId('rule-book-error')).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   // Save: the files hold every change. ---------------------------------------------------------
   await window.getByTestId('toolbar-save').click();

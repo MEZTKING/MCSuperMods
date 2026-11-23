@@ -32,6 +32,7 @@ import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
@@ -128,12 +129,12 @@ async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
 /** No problem of any severity, and the status bar agrees. */
 async function expectNoProblems(window: Page): Promise<void> {
   await expect(await problemRows(window)).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 async function expectNoErrors(window: Page): Promise<void> {
   await expect(await problemRows(window, 'error')).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /** Opens the Creator from the toolbar and picks `flowId` from the group "Worlds". */

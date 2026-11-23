@@ -17,9 +17,10 @@ test('launches, shows the window title and renders the toolbar', async () => {
   await window.waitForLoadState('domcontentloaded');
   await expect(window).toHaveTitle(/^MSM/);
 
-  const toolbar = window.getByRole('toolbar', { name: 'Project' });
+  // The one toolbar row (ADR 0131 D1): new mods are in its More menu.
+  const toolbar = window.getByRole('toolbar', { name: 'Mod' });
   await expect(toolbar).toBeVisible();
-  await expect(toolbar.getByRole('button', { name: 'New' })).toBeVisible();
+  await expect(toolbar.getByRole('button', { name: 'More' })).toBeVisible();
 
   // Smoke mode is off in e2e runs, so the renderer keeps Monaco.
   const isSmoke = await window.evaluate(

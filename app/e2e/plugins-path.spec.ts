@@ -21,6 +21,7 @@ import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
   ensureSamplePluginBuilt,
+  expectStatusAgrees,
   installPlugin,
   type LaunchedApp,
   launchApp,
@@ -164,7 +165,7 @@ test('plugins: the sample plugin loads, its kind has a schema form and exports',
   await expect(message).toHaveValue(MESSAGE);
 
   await expect(await problemRows(window, 'error')).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   // The data pack carries the greeting function and the load tag entry.
   const dataItem = await exportItem(window, 'export-data-zip');

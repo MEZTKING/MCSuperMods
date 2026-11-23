@@ -25,6 +25,7 @@ import { defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
@@ -219,7 +220,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   // Fix it: no errors left.
   await typeSource(window, GOOD_LINES);
   await expect(errors).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   // Completion: a new line starting `gi` offers `give` from Spyglass through main (the
   // suggest controller has been registered since B140; before that no list ever showed).

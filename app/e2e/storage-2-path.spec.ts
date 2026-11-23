@@ -23,6 +23,7 @@ import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
@@ -61,7 +62,7 @@ async function expectNoProblems(window: Page): Promise<void> {
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   await expect(problems.locator('[data-testid="problem-row"]')).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /** Opens the Creator from the toolbar on `flowId`, sets its answers and applies it. */

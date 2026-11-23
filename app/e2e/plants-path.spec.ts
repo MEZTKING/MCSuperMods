@@ -29,6 +29,7 @@ import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   openAddDialog,
@@ -87,7 +88,7 @@ async function expectNoErrors(window: Page): Promise<void> {
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
     0,
   );
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /** Types `value` into an id field and commits it with Enter. */

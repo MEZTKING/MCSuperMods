@@ -19,7 +19,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openAddDialog, outputDir } from './fixtures';
+import {
+  expectStatusAgrees,
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  outputDir,
+} from './fixtures';
 
 const MOD_NAME = 'Tin Mod';
 
@@ -150,7 +156,7 @@ test('vanilla blocks: Very easy picks, Lights and Copper set defaults, a sign in
   await typeTexture('all', id('block/cut_tin'));
   await typeTexture('sign', id('block/tin_block'));
   await typeTexture('item', id('item/tin_ingot'));
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

@@ -18,6 +18,7 @@ import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, test } from 'playwright/test';
 import {
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
@@ -162,7 +163,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
     0,
   );
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   // Preview screenshot (WebGL may be unavailable under xvfb; the panel itself is captured).
   // The live preview is beside the form (ADR 0047 D4); the dock's tab points there.

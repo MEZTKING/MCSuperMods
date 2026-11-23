@@ -19,7 +19,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openAddDialog, outputDir } from './fixtures';
+import {
+  expectStatusAgrees,
+  type LaunchedApp,
+  launchApp,
+  openAddDialog,
+  outputDir,
+} from './fixtures';
 
 const MOD_NAME = 'Chat Mod';
 const EVENT_ID = 'give_gift';
@@ -164,7 +170,7 @@ test('commands: the flows with defaults, a command in its Studio, nothing to fix
 
   // A Rules section: the Rules catalogue has a trigger for commands (B458).
   await expect(studio.getByTestId('rules-section')).toBeVisible();
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

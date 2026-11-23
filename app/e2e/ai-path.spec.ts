@@ -34,6 +34,7 @@ import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
   appDir,
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   newProjectInFolder,
@@ -206,7 +207,7 @@ test('AI helper: build the ruby tools mod, apply, export, undo; Settings key sta
     await expect(window.getByTestId(`element-row-${id}`)).toBeVisible();
   }
   await expect(await errorRows(window)).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   // Resource pack through the toolbar.
   await openExport(window, 'export-resource-zip');
@@ -371,7 +372,7 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
   await panel.getByTestId('ai-apply').click();
   await expect(transcript).toContainText('Changed Ruby Wand.');
   await expect(await errorRows(window)).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();

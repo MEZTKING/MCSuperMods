@@ -213,6 +213,29 @@ export async function toolbarMenu(window: Page, ...ids: [...string[], string]): 
   await window.getByTestId(entry).click();
 }
 
+/**
+ * The status bar agrees with the Problems panel (plan B703): it counts warnings and errors as
+ * things to fix, so with no error it says how many warnings there are, or nothing. With the panel
+ * shut it must say nothing.
+ */
+export async function expectStatusAgrees(window: Page): Promise<void> {
+  const status = window.getByTestId('status-things-to-fix');
+  const panel = window.getByTestId('problems-panel');
+  if (!(await panel.isVisible())) {
+    await expect(status).toHaveCount(0);
+    return;
+  }
+  await expect(panel.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(0);
+  const warnings = await panel
+    .locator('[data-testid="problem-row"][data-severity="warning"]')
+    .count();
+  if (warnings === 0) await expect(status).toHaveCount(0);
+  else
+    await expect(status).toHaveText(
+      warnings === 1 ? '1 thing to fix' : `${warnings} things to fix`,
+    );
+}
+
 /** Saves the mod with the toolbar's Save and waits for the status bar's "Saved". */
 export async function saveMod(window: Page): Promise<void> {
   await window.getByTestId('toolbar-save').click();

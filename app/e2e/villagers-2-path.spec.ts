@@ -25,7 +25,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
+import {
+  expectStatusAgrees,
+  type LaunchedApp,
+  launchApp,
+  openDockTab,
+  outputDir,
+} from './fixtures';
 
 const MOD_NAME = 'Market Mod';
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
@@ -60,7 +66,7 @@ async function expectNoProblems(window: Page): Promise<void> {
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   await expect(problems.locator('[data-testid="problem-row"]')).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /** Runs `flowId` from Home's "Make a trader" tile with the answers `answer` gives. */

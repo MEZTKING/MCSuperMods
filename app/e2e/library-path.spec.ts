@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
+  expectStatusAgrees,
   type LaunchedApp,
   launchApp,
   openAddDialog,
@@ -129,7 +130,7 @@ async function errorRows(window: Page): Promise<Locator> {
 /** Asserts that no error problem is listed and the status bar agrees. */
 async function expectNoErrors(window: Page): Promise<void> {
   await expect(await errorRows(window)).toHaveCount(0);
-  await expect(window.getByTestId('status-things-to-fix')).toHaveCount(0);
+  await expectStatusAgrees(window);
 }
 
 /** The status toast's text. */
