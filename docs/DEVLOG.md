@@ -10394,3 +10394,23 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - ADR 0125's Open items can drop the See it, `setMode`/`conversation.plan`, F19 panel line and "placeholder" entries at the next docs close; Show me's Item Studio ids in Very easy and `CHARS_PER_TOKEN` stay open.
+## 2026-11-23 — executor — B670 search for third-party plugins
+
+**What**
+- The sandbox (`app/src/renderer/src/plugins/sandbox/`): a `searchData` method (deadline 2 s) that calls the plugin's `contributes.searchData()` in the worker and returns it as data (a function or other non-data in it fails the call with `plugin.bad-result`, not the worker); the `ready` description says whether the plugin has search data (`searchData?: boolean`). Search data is not a contribution point and needs no capability in `msm-plugin.json`.
+- `external-plugins.ts`: a loaded plugin with search data is asked for it once at start-up; `checkPluginSearchData` runs `validateSearchContributions` with the plugin's own things (from its facade) and `THIRD_PARTY_SEARCH_LIMITS`. Any error (an entry, keyword, question hint or behaviour naming another plugin's thing, a line past a limit, a malformed line) leaves the data out whole; the plugin still loads, and its state carries `search: { state: 'left-out' }` with the warning `plugin.search-data-refused` and up to five of the check's problems. Fields the API does not define (so any stop or intent words) are left out with a `search.unknown-field` warning. Kept data reaches the search through the facade's `searchData`, and each extra door's sentence ends "From <plugin name>." A plugin whose worker stops while answering is marked failed.
+- Settings > Plugins: one line per plugin with search data, "Search finds it by its own words (N lines)." or "Loaded without its search words: they did not pass the check."
+- `fixtures/sample-plugin`: `src/search.ts` (the idea `greeting` with "welcome message", "join message", "howdy", "motd"; the door "Welcome message" opening its example; keywords on its template), wired as `contributes.searchData`; its test checks the data passes the third-party check whole; README row.
+- `tools/new-plugin --external`: a commented `searchData` example in the template's `src/index.ts` (left a comment so the template builds on any 1.x plugin API; it says to raise `apiVersion` to `^1.23.0`).
+- Tests: `app/test/plugins-search.test.ts` (new: kept data and the name on doors; a plugin naming the library's `weapon` starter loads without its search data; keywords, hints and behaviours about other plugins' things refused; no stop or intent words; the 50-entry limit; a throwing or non-data `searchData`; the sample plugin bundled with esbuild as its build does, loaded through the sandbox and found by "howdy", "welcome message", "motd" and "join message" in the real static layer over every built-in plugin), `plugins-sandbox.test.ts` (the method and the description flag), `components/settings-plugins.test.tsx` (the Settings line), the sample plugin's and `tools/new-plugin`'s tests.
+- Checks: `pnpm lint`, `pnpm typecheck`; app `test/plugins*`, `test/session-plugins`, `test/search`, `test/components/settings*`, `test/main-plugins` (197, `--maxWorkers=2`); sample plugin 8 tests and `pnpm build` (esbuild and the mcdoc export) with the built `dist/` loading in `plugins-external.test.ts`; `tools/new-plugin` 49 tests.
+
+**Decisions**
+- All or nothing for third-party search data: one failing line leaves the whole data out, so a plugin cannot get part of a hijack through; built-in plugins keep the per-line check of `plugin-data.ts`.
+- The data is asked for at start-up rather than at the search's first build, so Settings > Plugins can say whether it passed; it is at most 500 lines and costs one worker call.
+- "Carry the plugin's name": the extra doors' sentences end "From <name>."; the plugin's own starters, templates and examples are found under their own titles as before.
+- No capability for `searchData` (the manifest's capability list is a contract in `app/src/shared/`, and search data is data, not a point); the sample plugin keeps `apiVersion` `^1.0.0` (an older host ignores the field).
+
+**Next**
+- B667 or B671: the result row could show the plugin's name for every third-party result (entries already carry `plugin`, the id; the name is in `ExternalPluginState`).
+- B672: the plugins guide's search data section (the limits, all or nothing, the Settings line).

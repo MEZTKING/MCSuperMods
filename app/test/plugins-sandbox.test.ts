@@ -241,6 +241,44 @@ describe('plugin sandbox host', () => {
       import: 30_000,
       run: 120_000,
       supports: 1000,
+      searchData: 2000,
     });
+  });
+
+  it('passes search data across as data and says whether a plugin has any (ADR 0124 D13)', async () => {
+    const withData = createPluginWorker(
+      sampleBundle(
+        '',
+        `searchData() {
+          return Promise.resolve({ vocabulary: { words: [{ idea: 'greeting', same: ['howdy'] }] } });
+        },`,
+      ),
+      { spawn: vmWorkers().spawn },
+    );
+    const description = await withData.ready;
+    expect(description.searchData).toBe(true);
+    // Search data is not a contribution point: it is not described as one.
+    expect(Object.keys(description.contributes)).not.toContain('searchData');
+    await expect(withData.call('searchData', [])).resolves.toEqual({
+      vocabulary: { words: [{ idea: 'greeting', same: ['howdy'] }] },
+    });
+    withData.terminate();
+
+    const without = createPluginWorker(sampleBundle(), { spawn: vmWorkers().spawn });
+    expect((await without.ready).searchData).toBe(false);
+    await expect(without.call('searchData', [])).resolves.toBeNull();
+    without.terminate();
+
+    // Code cannot cross: a function in the search data fails the call, not the worker.
+    const withCode = createPluginWorker(
+      sampleBundle('', `searchData() { return { keywords: { x: () => 'y' } }; },`),
+      { spawn: vmWorkers().spawn },
+    );
+    await withCode.ready;
+    await expect(withCode.call('searchData', [])).rejects.toMatchObject({
+      code: 'plugin.bad-result',
+    });
+    expect(withCode.state).toBe('ready');
+    withCode.terminate();
   });
 });

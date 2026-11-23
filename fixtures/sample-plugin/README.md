@@ -11,6 +11,7 @@
 | Example | `sample-greeting-example` | "Welcome greeting" in the Examples gallery: `<ns>:welcome` in aqua. |
 | Validator | `sample.empty-message` | A warning on `/message` for a greeting whose message is empty or only spaces. |
 | Exporter | `sample-greeting-list` | "Greeting list into a folder…" under More exports (and the palette): asks for the option "Sort by function id" (on by default), then writes `greetings.txt` with one line per greeting function, `<function id>: <command>`; nothing when the project has no greetings. |
+| Search data | `searchData` (plugin API 1.23.0, `src/search.ts`) | One vocabulary group (the idea `greeting`: "welcome message", "howdy", "motd"), one extra door "Welcome message" that opens the example, and keywords on the template. The app asks the worker for it once, checks it with `validateSearchContributions` and the third-party limits, and leaves it out whole if a line fails (Settings, Plugins then says so). Its results end with "From Greetings.". It needs no capability in the manifest. |
 
 The kind has no custom editor (external plugins cannot add editors in 1.0): the app draws the schema-driven form from `dist/symbols.json`, which the build exports from `mcdoc/greeting.mcdoc`.
 
@@ -18,6 +19,7 @@ The kind has no custom editor (external plugins cannot add editors in 1.0): the 
 
 - `msm-plugin.json`: the manifest (ADR 0035 D2). `main` and `schemas` are relative to the installed folder, which is the contents of `dist/`; `capabilities` names the four contribution points the plugin uses.
 - `src/index.ts`: the plugin (`definePlugin`).
+- `src/search.ts`: its search data (plain data: the words, one extra door and the template's keywords).
 - `mcdoc/greeting.mcdoc`: the data type of the kind. The module folder is the plugin's namespace (`sample`, the id up to the first dot) and the file name is the next path segment.
 - `build.ts`: the build, the same steps as the scaffold's `scripts/build.mjs` (a test in `tools/new-plugin` keeps them identical).
 - `test/plugin.test.ts`: lowers a greeting against a hand-written `TargetFacts` stub and checks the function text, the tag file, the template, the example, the validator and the manifest.

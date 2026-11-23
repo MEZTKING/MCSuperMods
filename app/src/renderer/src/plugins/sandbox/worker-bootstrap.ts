@@ -219,6 +219,14 @@ export function workerBootstrap(stripped: readonly string[], keep: number): void
           ? invoke(entry, 'supports', [args[2]]) === true
           : true;
       }
+      case 'searchData': {
+        // The lazy search data (plugin API 1.23.0): plain data the host checks itself.
+        const contributes = plugin?.contributes as Obj | undefined;
+        if (contributes === undefined || contributes === null) return null;
+        return typeof contributes.searchData === 'function'
+          ? invoke(contributes, 'searchData', [])
+          : null;
+      }
       default:
         throw new Error(`Unknown method ${String(request.method)}.`);
     }
@@ -292,7 +300,13 @@ export function workerBootstrap(stripped: readonly string[], keep: number): void
     }
     post({
       type: 'ready',
-      description: { id: String(plugin.id), apiVersion: String(plugin.apiVersion), contributes },
+      description: {
+        id: String(plugin.id),
+        apiVersion: String(plugin.apiVersion),
+        contributes,
+        searchData:
+          typeof raw === 'object' && raw !== null && typeof (raw as Obj).searchData === 'function',
+      },
     });
   });
 }

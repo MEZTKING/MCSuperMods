@@ -157,6 +157,15 @@ export function PluginsSection(props: {
                   {PLUGIN_STATE_LABELS[plugin.state]}
                 </span>
               </span>
+              {plugin.search !== undefined && (
+                <span className="text-xs text-muted" data-testid={`plugin-${plugin.id}-search`}>
+                  {plugin.search.state === 'included'
+                    ? `Search finds it by its own words (${plugin.search.lines} ${
+                        plugin.search.lines === 1 ? 'line' : 'lines'
+                      }).`
+                    : 'Loaded without its search words: they did not pass the check.'}
+                </span>
+              )}
               {plugin.problems.length > 0 && (
                 <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-xs">
                   {plugin.problems.map((problem, index) => (

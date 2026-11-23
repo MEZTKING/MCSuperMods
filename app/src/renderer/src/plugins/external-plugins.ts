@@ -11,6 +11,14 @@
  * loaded keeps its kinds registered so its elements still round-trip, and the session reports
  * `plugin.unavailable` for them).
  *
+ * Search data (plugin API 1.23.0, ADR 0124 D13): a plugin whose `contributes.searchData` is a
+ * function is asked for it once at start-up, through the worker, as data. The host checks it
+ * with `validateSearchContributions`, the plugin's own things and the third-party limits; data
+ * with any error (a line naming another plugin's thing, a line past a limit, a malformed line)
+ * is left out whole, and the plugin loads without it, saying so in Settings > Plugins. The API
+ * has no field for stop or intent words, and fields it does not define are left out. The
+ * sentence of each extra door ends with the plugin's name, so its results carry it.
+ *
  * @packageDocumentation
  */
 
@@ -33,6 +41,7 @@ import type {
   OutputLayer,
   Plugin,
   PluginContributions,
+  PluginSearchData,
   Problem,
   ProjectStarter,
   ProjectValidator,
@@ -42,6 +51,11 @@ import type {
   TemplateContext,
   ValidationInput,
   ValidationRegistry,
+} from '@msm/plugin-api';
+import {
+  searchOwnThingsOf,
+  THIRD_PARTY_SEARCH_LIMITS,
+  validateSearchContributions,
 } from '@msm/plugin-api';
 import type { VanillaMcdocSymbols } from '@msm/schemas';
 import { targetById, targetFacts } from '@msm/targets';
@@ -71,6 +85,12 @@ export interface ExternalPluginState {
   state: 'loaded' | 'refused' | 'failed';
   /** Why it was refused or failed, plus warnings of a loaded plugin. */
   problems: Problem[];
+  /**
+   * The plugin's search data (plugin API 1.23.0), when it declares any: `included` with the
+   * number of lines that reach the search, or `left-out` when it failed the check or could not
+   * be read (the problems say why). Absent for a plugin without search data.
+   */
+  search?: { state: 'included' | 'left-out'; lines: number };
 }
 
 /** Live plugin states: the session republishes when one changes (a plugin failing later). */
@@ -534,6 +554,116 @@ function messageOf(error: unknown): string {
   return message.replace(/^Error invoking remote method '[^']*': (?:\w*Error: )?/, '');
 }
 
+/** The problem code of a plugin whose search data was left out (ADR 0124 D13). */
+export const SEARCH_DATA_REFUSED = 'plugin.search-data-refused';
+
+/** How many of the check's problems Settings > Plugins lists for one plugin. */
+export const SEARCH_PROBLEMS_SHOWN = 5;
+
+/** The number of lines in checked search data (each word group, colour, behaviour, entry, keyword list and question hint). */
+export function searchLineCount(data: PluginSearchData): number {
+  let lines =
+    (data.vocabulary?.words?.length ?? 0) +
+    (data.vocabulary?.colours?.length ?? 0) +
+    (data.behaviours?.length ?? 0) +
+    (data.entries?.length ?? 0) +
+    Object.keys(data.keywords ?? {}).length;
+  for (const hints of Object.values(data.questions ?? {})) lines += Object.keys(hints).length;
+  return lines;
+}
+
+/** The outcome of {@link checkPluginSearchData}. */
+export interface PluginSearchCheck {
+  /** The data to hand to the search, or `null` when it is left out. */
+  data: PluginSearchData | null;
+  /** What Settings > Plugins shows (warnings: the plugin loads either way). */
+  problems: Problem[];
+}
+
+/**
+ * Checks a third-party plugin's search data as it arrived from the worker (ADR 0124 D13):
+ * `validateSearchContributions` with its own things and {@link THIRD_PARTY_SEARCH_LIMITS}. Any
+ * error leaves the whole data out; warnings (fields the API does not define, such as words a
+ * plugin may not add) are reported and those fields left out. The sentence of each extra door
+ * gains "From <name>." so a result names the plugin it comes from.
+ *
+ * @param manifest - The plugin's manifest (its id and name).
+ * @param contributions - The facade's contributions (its own things).
+ * @param input - What `searchData()` returned.
+ */
+export function checkPluginSearchData(
+  manifest: Pick<PluginManifest, 'id' | 'name'>,
+  contributions: PluginContributions,
+  input: unknown,
+): PluginSearchCheck {
+  const { data, problems } = validateSearchContributions(
+    input,
+    searchOwnThingsOf(contributions),
+    THIRD_PARTY_SEARCH_LIMITS,
+  );
+  const shown = (list: readonly Problem[]): Problem[] =>
+    list.slice(0, SEARCH_PROBLEMS_SHOWN).map((entry) => ({
+      severity: 'warning',
+      code: entry.code,
+      message: entry.path === undefined ? entry.message : `${entry.path}: ${entry.message}`,
+    }));
+  const errors = problems.filter((entry) => entry.severity === 'error');
+  if (errors.length > 0) {
+    return {
+      data: null,
+      problems: [
+        {
+          severity: 'warning',
+          code: SEARCH_DATA_REFUSED,
+          message: `${manifest.id} loads without its search words: ${errors.length} ${
+            errors.length === 1 ? 'line does' : 'lines do'
+          } not pass the check, so the search finds it only by its titles.`,
+        },
+        ...shown(errors),
+      ],
+    };
+  }
+  const suffix = `From ${manifest.name}.`;
+  const entries = data.entries?.map((entry) => ({
+    ...entry,
+    sentence: `${entry.sentence.trim()} ${suffix}`,
+  }));
+  return {
+    data: entries === undefined ? data : { ...data, entries },
+    problems: shown(problems),
+  };
+}
+
+/**
+ * Asks a started plugin for its search data and checks it; never rejects. A call that fails
+ * (crash, timeout, a result that is not data) leaves the data out with the call's code.
+ */
+async function loadPluginSearchData(
+  manifest: PluginManifest,
+  contributions: PluginContributions,
+  worker: PluginWorker,
+): Promise<PluginSearchCheck> {
+  let value: unknown;
+  try {
+    value = await worker.call('searchData', []);
+  } catch (error) {
+    return {
+      data: null,
+      problems: [
+        {
+          severity: 'warning',
+          code: SEARCH_DATA_REFUSED,
+          message: `${manifest.id} loads without its search words: they could not be read (${pluginCodeOf(
+            error,
+            PluginProblemCodes.crashed,
+          )}: ${messageOf(error)}).`,
+        },
+      ],
+    };
+  }
+  return checkPluginSearchData(manifest, contributions, value);
+}
+
 interface Started {
   entry: ExternalPluginEntry;
   state: ExternalPluginState;
@@ -541,6 +671,8 @@ interface Started {
   worker?: PluginWorker;
   symbols?: VanillaMcdocSymbols[];
   points?: ReturnType<typeof checkDescription>['points'];
+  /** Whether the worker described a `searchData` function. */
+  searchData?: boolean;
 }
 
 /**
@@ -627,6 +759,7 @@ export async function loadExternalPlugins(
       worker,
       symbols: schemas.symbols,
       points: checked.points,
+      searchData: description.searchData === true,
       state: { ...base, state: 'loaded', problems: checked.problems },
     };
   };
@@ -685,11 +818,43 @@ export async function loadExternalPlugins(
       });
       continue;
     }
+    let loadedState = item.state;
+    if (item.searchData === true) {
+      const search = await loadPluginSearchData(manifest, facade.contributes, worker);
+      if (worker.state === 'failed') {
+        // The worker stopped while answering (a timeout): the plugin is not usable.
+        states.push({
+          ...item.state,
+          state: 'failed',
+          problems: [
+            ...item.state.problems,
+            {
+              severity: 'error',
+              code: worker.failure?.code ?? PluginProblemCodes.crashed,
+              message: `${manifest.id} stopped while giving its search data: ${
+                worker.failure?.message ?? 'the worker failed.'
+              }`,
+            },
+          ],
+        });
+        continue;
+      }
+      const data = search.data;
+      if (data !== null) facade.contributes.searchData = () => data;
+      loadedState = {
+        ...item.state,
+        problems: [...item.state.problems, ...search.problems],
+        search:
+          data === null
+            ? { state: 'left-out', lines: 0 }
+            : { state: 'included', lines: searchLineCount(data) },
+      };
+    }
     addTaken(taken, facade);
     plugins.push(facade);
     symbols.push(...(item.symbols ?? []));
     const index = states.length;
-    states.push(item.state);
+    states.push(loadedState);
     worker.onFail((error) => {
       const current = snapshot[index];
       if (current === undefined) return;

@@ -5,7 +5,9 @@
  * a data pack function that greets every player with `tellraw` and to an entry in the
  * `minecraft:load` function tag, so the greeting runs whenever the world loads. It also
  * contributes a "New element" template, an example for the Examples gallery, a validator
- * that warns about an empty message and an exporter that writes every greeting into a text file.
+ * that warns about an empty message and an exporter that writes every greeting into a text file,
+ * and search data (`src/search.ts`: a vocabulary group and one extra door) so the app's search
+ * finds the greeting by words such as "howdy" or "welcome message".
  *
  * Like every external plugin it imports nothing but `@msm/plugin-api`, and esbuild bundles that
  * into `dist/main.js` (see `build.ts`). The app runs the bundle in a sandboxed worker
@@ -24,6 +26,7 @@ import {
   type ProjectValidator,
   type TargetFacts,
 } from '@msm/plugin-api';
+import { SAMPLE_SEARCH_DATA } from './search';
 
 /** The kind id. */
 export const GREETING_KIND = 'sample:greeting';
@@ -193,5 +196,7 @@ export default definePlugin({
     examples: [greetingExample],
     validators: [emptyMessageValidator],
     exporters: [greetingListExporter],
+    // Search data is data, not a contribution point: it needs no capability in msm-plugin.json.
+    searchData: () => SAMPLE_SEARCH_DATA,
   },
 });

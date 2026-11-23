@@ -7,6 +7,11 @@ import type {
   TargetFacts,
   ValidationRegistry,
 } from '@msm/plugin-api';
+import {
+  searchOwnThingsOf,
+  THIRD_PARTY_SEARCH_LIMITS,
+  validateSearchContributions,
+} from '@msm/plugin-api';
 import { describe, expect, it } from 'vitest';
 import plugin, { greetingCommand } from '../src/index';
 
@@ -129,6 +134,7 @@ describe('sample.greetings', () => {
       'elementTemplates',
       'examples',
       'exporters',
+      'searchData',
       'validators',
     ]);
   });
@@ -260,8 +266,29 @@ describe('sample.greetings', () => {
     };
     expect(manifest.id).toBe(plugin.id);
     expect(manifest.apiVersion).toBe(plugin.apiVersion);
-    expect([...manifest.capabilities].sort()).toEqual(Object.keys(plugin.contributes).sort());
+    // `searchData` is data, not a contribution point, so it has no capability.
+    expect([...manifest.capabilities].sort()).toEqual(
+      Object.keys(plugin.contributes)
+        .filter((point) => point !== 'searchData')
+        .sort(),
+    );
     expect(manifest.main).toBe('main.js');
     expect(manifest.schemas).toEqual(['symbols.json']);
+  });
+
+  it('gives search data that passes the third-party check whole', async () => {
+    const input = await plugin.contributes.searchData?.();
+    // It crosses the worker boundary: plain data only.
+    expect(structuredClone(input)).toEqual(input);
+    const { data, problems } = validateSearchContributions(
+      input,
+      searchOwnThingsOf(plugin.contributes),
+      THIRD_PARTY_SEARCH_LIMITS,
+    );
+    expect(problems).toEqual([]);
+    expect(data.vocabulary?.words?.map((group) => group.idea)).toEqual(['greeting']);
+    expect(data.entries?.map((entry) => [entry.id, entry.opens])).toEqual([
+      ['welcome-message', { type: 'example', id: 'sample-greeting-example' }],
+    ]);
   });
 });

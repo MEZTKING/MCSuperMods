@@ -634,6 +634,25 @@ export default definePlugin({
   contributes: {
     elementKinds: [exampleKind],
     elementTemplates: [exampleTemplate],
+    // Search data (plugin API 1.23.0: raise apiVersion here and in msm-plugin.json to ^1.23.0):
+    // plain data that lets the app's search find this plugin's things by the words people
+    // type. It needs no capability. The app checks it with validateSearchContributions (at
+    // most 500 lines, 50 behaviours and 50 entries); an entry may open only this plugin's own
+    // templates, starters, examples and kinds, and if any line fails the plugin loads without
+    // its search data (Settings, Plugins says why). There is no field for stop or intent words.
+    // searchData: () => ({
+    //   vocabulary: { words: [{ idea: 'example', same: ['sample text'], slang: ['ex'] }] },
+    //   entries: [
+    //     {
+    //       id: 'short-text',
+    //       title: 'Short text',
+    //       sentence: 'One language key with a short text.',
+    //       words: ['language key', 'translation'],
+    //       opens: { type: 'template', id: '${name}-example' },
+    //     },
+    //   ],
+    //   keywords: { '${name}-example': ['language key'] },
+    // }),
   },
 });
 `,

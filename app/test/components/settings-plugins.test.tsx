@@ -43,6 +43,45 @@ describe('Settings > Plugins', () => {
     expect(section.textContent).toContain('install them only from sources you trust');
   });
 
+  it("says whether a plugin's search words are in the search (ADR 0124 D13)", () => {
+    render(
+      <PluginsSection
+        plugins={[
+          { ...(plugins[0] as ExternalPluginState), search: { state: 'included', lines: 3 } },
+          {
+            id: 'other.words',
+            name: 'Other words',
+            version: '1.0.0',
+            state: 'loaded',
+            search: { state: 'left-out', lines: 0 },
+            problems: [
+              {
+                severity: 'warning',
+                code: 'plugin.search-data-refused',
+                message: 'other.words loads without its search words.',
+              },
+              {
+                severity: 'warning',
+                code: 'search.not-own',
+                message: '/entries/0/opens/id: weapon is not one of its own things.',
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByTestId('plugin-sample.greetings-search').textContent).toBe(
+      'Search finds it by its own words (3 lines).',
+    );
+    expect(screen.getByTestId('plugin-other.words-state').textContent).toBe('Loaded');
+    expect(screen.getByTestId('plugin-other.words-search').textContent).toBe(
+      'Loaded without its search words: they did not pass the check.',
+    );
+    expect(screen.getByTestId('plugin-other.words').textContent).toContain(
+      'search.not-own: /entries/0/opens/id',
+    );
+  });
+
   it('opens the plugins folder and shows a failure', async () => {
     const open = vi.fn(async () => {
       throw new Error('The plugins folder could not be opened: no shell');

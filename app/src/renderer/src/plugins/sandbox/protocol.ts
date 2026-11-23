@@ -6,7 +6,15 @@
  */
 
 /** Methods the host may call on a plugin worker; each names one contribution function. */
-export type SandboxMethod = 'lower' | 'data' | 'build' | 'validate' | 'run' | 'import' | 'supports';
+export type SandboxMethod =
+  | 'lower'
+  | 'data'
+  | 'build'
+  | 'validate'
+  | 'run'
+  | 'import'
+  | 'supports'
+  | 'searchData';
 
 /**
  * The arguments of each method. `point` and `id` name the contribution; the rest are the
@@ -25,6 +33,11 @@ export interface SandboxArgs {
   ];
   run: [exporterId: string, input: unknown];
   import: [importerId: string, file: unknown, namespace: string];
+  /**
+   * The plugin's `contributes.searchData()` (plugin API 1.23.0, ADR 0124 D13): plain data,
+   * checked by the host with `validateSearchContributions` and the third-party limits.
+   */
+  searchData: [];
 }
 
 /** Host to worker: one request. */
@@ -76,4 +89,9 @@ export interface PluginDescription {
   apiVersion: string;
   /** Every contribution point the plugin object has, including unsupported ones. */
   contributes: Record<string, ContributionDescription[]>;
+  /**
+   * Whether `contributes.searchData` is a function (plugin API 1.23.0): the host then asks for
+   * the data once with the `searchData` method. Absent from older workers' descriptions.
+   */
+  searchData?: boolean;
 }

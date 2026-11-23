@@ -257,6 +257,10 @@ describe('externalPluginFiles', () => {
     expect(source).toContain("id: 'greetings-example'");
     expect(source).toContain("apiVersion: '^1.0.0'");
     expect(source).not.toContain('\\`');
+    // The search data example stays a comment: the template builds on any 1.x plugin API.
+    expect(source).toContain('//   entries: [');
+    expect(source).toContain("//       opens: { type: 'template', id: 'greetings-example' },");
+    expect(source).not.toMatch(/^\s*searchData:/m);
     expect(files['mcdoc/greetings.mcdoc']).toContain('struct Example {');
   });
 
