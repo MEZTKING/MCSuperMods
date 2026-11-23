@@ -157,8 +157,8 @@ const SEVERITIES: ReadonlySet<string> = new Set(['error', 'warning', 'info']);
 const facts = new WeakMap<object, TargetFacts>();
 
 /**
- * The data fields of a target, without its hook functions (`javaProject`, `migrateFrom`),
- * which cannot be structured-cloned (ADR 0036 D3). Memoised per target object.
+ * The data fields of a target, without its hook functions (`javaProject`, `loadJavaProject`,
+ * `migrateFrom`), which cannot be structured-cloned (ADR 0036 D3). Memoised per target object.
  */
 export function toTargetFacts(target: TargetFacts | Target): TargetFacts {
   const cached = facts.get(target);

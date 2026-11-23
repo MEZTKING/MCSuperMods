@@ -9496,3 +9496,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B660: hand in the plugins' vocabularies with `setVocabulary`, the protected words (game id words and headwords) with `setProtected`, the open mod's kinds and templates and the history with `setContext`; call `warm()` after each `setLayer` or `patchLayer` so the key press never builds the dictionary; give a tile, a card and the flow they open the same action descriptor; give Rules entries their catalogue labels as titles (B655); send `toSlim` hits. A vanilla id a target lacks simply matches nothing.
 - B666: tune in `rank/weights.ts` only; the B650 misses (Custom sword, vanilla exact titles under the make lean, guide pages against problems) are the first to check.
 - Close: `packages/search/CLAUDE.md`'s Status still describes the B652 stub.
+## 2026-11-23 — executor — ADR 0126: the Java project generator loaded on first use
+
+**What**
+- ADR 0126 (Accepted 2026-11-23, a vetoable default), ADR 0123 D4's follow-up: plugin API **1.24.0** adds `Target.loadJavaProject?(): Promise<JavaProjectGenerator>`, purely additive (`JavaProjectGenerator.generate` stays synchronous, `Target.javaProject` stays, `TargetFacts` has neither; built-ins keep `^1.0.0`). CHANGELOG, `API_VERSION`, package version and the type test updated.
+- `packages/targets/mc-26.3/src/target.ts` sets only `loadJavaProject`, a dynamic `import('./java-project/index')`, so the generator is a chunk of its own in the renderer (`assets/java-project-*.js`, 976,443 B) and in main (`java-project-*.js`). `targetFacts` and the app's `toTargetFacts` strip the new hook.
+- The `java-project` exporter uses `javaProject` when set, else awaits `loadJavaProject`; a loader that rejects is `export.java-generation-failed` and writes nothing (new exporter test).
+- Tests that found the generator through `target.javaProject` read `loadJavaProject` (17 exporter test files, the 26.3 target's tests); the plugins' template tests strip `loadJavaProject` with the other hooks.
+- Sizes (Linux, from an empty `app/out`): renderer first paint 5,721,711 B to 4,746,064 B (-975,647 B); renderer total, what `check-size` budgets, 19,370,570 B to 19,371,628 B (18.5 of 19 MB either way: the lazy chunk is counted); main `index.js` 2.5 to 1.3 MB; `app.asar` 27.2 MB both. `check-size` within budget.
+- Checks: `pnpm lint`, `pnpm typecheck`, tests of plugin-api (107), core (206), targets all (82), mc-26.3 (267), mc-26.4 (151), exporters (2,001 passed, 139 skipped as before; goldens unchanged), the ten touched plugins and the app (3,435 passed, 1 skipped; `--maxWorkers=2`); `pnpm build`, `dist:dir`, e2e `eject-path` (3 passed, `--trace off`).
+
+**Decisions**
+- A new optional hook rather than `generate` returning `MaybePromise`: widening a 1.x member's return narrows what callers may rely on (ADR 0036's policy); the hook is additive.
+- Option B (eject in main) not taken: option A keeps the generator out of first paint without IPC.
+- `tools/check-size` not changed: no budget loosened; whether it reports or budgets the first-paint set is the orchestrator's call.
+
+**Next**
+- Orchestrator: the plans that counted on about 1 MB of room from this follow-up (`PLAN-search.md`, `PLAN-ai-helper-2.md`) get none under the total-based budget; decide whether `check-size` gains a first-paint report or budget (entry script plus its `modulepreload` chunks and CSS from `index.html`) beside the total.
+- Root `CLAUDE.md`'s "Plugin API 1.23.0" status line and `docs/HANDOFF.md` name the old version; update at the next handover.

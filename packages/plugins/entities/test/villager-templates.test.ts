@@ -46,10 +46,12 @@ const kindOf = (template: ElementTemplate) =>
 function contextFor(template: ElementTemplate, target: TargetFacts): TemplateContext {
   const {
     javaProject: _javaProject,
+    loadJavaProject: _loadJavaProject,
     migrateFrom: _migrateFrom,
     ...facts
   } = target as TargetFacts & {
     javaProject?: unknown;
+    loadJavaProject?: unknown;
     migrateFrom?: unknown;
   };
   const path = template.defaultName ?? 'sample';

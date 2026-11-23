@@ -34,6 +34,7 @@ const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
 const {
   javaProject: _javaProject,
+  loadJavaProject: _loadJavaProject,
   migrateFrom: _migrateFrom,
   ...FIRST_TARGET
 } = (builtInTargets[0] as TargetBundle).target;

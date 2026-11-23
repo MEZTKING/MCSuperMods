@@ -123,7 +123,7 @@ async function ejectExpanded(
 
 describe.each(
   builtInTargets
-    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .filter((bundle) => bundle.target.loadJavaProject !== undefined)
     .map((bundle) => [bundle.target.id, bundle] as const),
 )('sample rules Java project (%s)', (_id, bundle) => {
   const run = (wrapper: GradleWrapper | undefined = STUB_WRAPPER) => ejectExpanded(bundle, wrapper);

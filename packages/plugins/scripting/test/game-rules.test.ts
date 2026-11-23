@@ -329,7 +329,12 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       'template %s validates, passes the validators and lowers',
       async (_id, template: ElementTemplate) => {
         // A template context is plain data: the target's facts without its hooks.
-        const { javaProject: _javaProject, migrateFrom: _migrateFrom, ...facts } = bundle.target;
+        const {
+          javaProject: _javaProject,
+          loadJavaProject: _loadJavaProject,
+          migrateFrom: _migrateFrom,
+          ...facts
+        } = bundle.target;
         const kind = template.kind === gameRuleKind.id ? gameRuleKind : statKind;
         const id = `demo:${template.defaultName}` as ResourceLocation;
         const context: TemplateContext = {

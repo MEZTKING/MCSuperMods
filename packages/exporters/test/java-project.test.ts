@@ -120,7 +120,7 @@ describe('Java identifiers of the mod', () => {
 
 describe.each(
   builtInTargets
-    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .filter((bundle) => bundle.target.loadJavaProject !== undefined)
     .map((bundle) => [bundle.target.id, bundle] as const),
 )('java project (%s)', (_id, bundle) => {
   const { target } = bundle;
@@ -233,7 +233,7 @@ describe.each(
   });
 
   it('reports a missing generator or missing Fabric facts and writes nothing', async () => {
-    const { javaProject: _ignored, ...withoutGenerator } = target;
+    const { javaProject: _ignored, loadJavaProject: _ignoredLoad, ...withoutGenerator } = target;
     const missing = await eject([plainItem], { wrapper, target: withoutGenerator });
     expect(missing.report.ok).toBe(false);
     expect(codes(missing.report.problems)).toEqual([ExportProblemCodes.noJavaProjectTarget]);
@@ -242,6 +242,30 @@ describe.each(
     const noFabric = await eject([plainItem], { wrapper, target: withoutFabric });
     expect(codes(noFabric.report.problems)).toEqual([ExportProblemCodes.noFabricTarget]);
     expect(noFabric.files.size).toBe(0);
+  });
+
+  it('loads the generator on first use and reports a loader that fails (ADR 0126)', async () => {
+    const { javaProject: _ignored, loadJavaProject: _ignoredLoad, ...withoutGenerator } = target;
+    let loads = 0;
+    const lazy: Target = {
+      ...withoutGenerator,
+      loadJavaProject: async () => {
+        loads++;
+        return { generate: () => [{ path: 'src/main/java/Lazy.java', contents: 'class Lazy {}' }] };
+      },
+    };
+    const loaded = await eject([plainItem], { wrapper, target: lazy });
+    expect(loads).toBe(1);
+    expect(loaded.files.has('src/main/java/Lazy.java')).toBe(true);
+    const failing: Target = {
+      ...withoutGenerator,
+      loadJavaProject: () => Promise.reject(new Error('chunk not found')),
+    };
+    const failed = await eject([plainItem], { wrapper, target: failing });
+    expect(failed.report.ok).toBe(false);
+    expect(codes(failed.report.problems)).toEqual([ExportProblemCodes.javaGenerationFailed]);
+    expect(failed.report.problems[0]?.message).toContain('chunk not found');
+    expect(failed.files.size).toBe(0);
   });
 
   it('writes the project without the wrapper and says how to add it', async () => {
@@ -614,7 +638,7 @@ describe.each(
 // the eject with export.no-java-project-target and writes nothing.
 describe.each(
   builtInTargets
-    .filter((bundle) => bundle.target.javaProject === undefined)
+    .filter((bundle) => bundle.target.loadJavaProject === undefined)
     .map((bundle) => [bundle.target.id, bundle] as const),
 )('java project without a generator (%s)', (_id, bundle) => {
   it('reports export.no-java-project-target and writes nothing', async () => {
@@ -638,5 +662,5 @@ describe.each(
 });
 
 it('at least one built-in target can eject a Java project', () => {
-  expect(builtInTargets.some((bundle) => bundle.target.javaProject !== undefined)).toBe(true);
+  expect(builtInTargets.some((bundle) => bundle.target.loadJavaProject !== undefined)).toBe(true);
 });

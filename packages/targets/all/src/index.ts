@@ -50,14 +50,19 @@ export function targetById(id: string): TargetBundle | undefined {
 }
 
 /**
- * The facts of the built-in target `id` without its hooks (`javaProject`, `migrateFrom`), or
- * `undefined`. The result is plain data, so it survives `structuredClone` (and `postMessage`
- * to a worker); a fresh object on every call.
+ * The facts of the built-in target `id` without its hooks (`javaProject`, `loadJavaProject`,
+ * `migrateFrom`), or `undefined`. The result is plain data, so it survives `structuredClone`
+ * (and `postMessage` to a worker); a fresh object on every call.
  */
 export function targetFacts(id: string): TargetFacts | undefined {
   const target = targetById(id)?.target;
   if (target === undefined) return undefined;
-  const { javaProject: _javaProject, migrateFrom: _migrateFrom, ...facts } = target;
+  const {
+    javaProject: _javaProject,
+    loadJavaProject: _loadJavaProject,
+    migrateFrom: _migrateFrom,
+    ...facts
+  } = target;
   return structuredClone(facts);
 }
 

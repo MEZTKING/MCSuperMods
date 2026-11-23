@@ -28,7 +28,7 @@ Shared modules in `src/`: `run-export.ts`, `zip.ts`, `sinks.ts`, `assets.ts` (as
 - The data exporter synthesises `pack.mcmeta` from `packFormats.data` when absent; a combined export is two runs into two sinks, not a third exporter.
 - Zips: entries sorted by path, level 6, `os: 0`, timestamp `new Date(2000, 0, 1)` (local-time constructor, ADR 0013).
 - The runtime jar is nested by default; "separate runtime" is an option for modpack makers. Projects with entities (`msm/<ns>/entity/`) that need GeckoLib (`renderer` `geckolib`, or `auto` where `Target.geckolib` exists; ADR 0072 D5) depend on it and nest it from `loadGeckolibJar` unless `separateRuntime` is set (ADR 0029 D4; `export.geckolib-missing`, `export.no-geckolib-target`). Mobs on 26.4 are drawn by the runtime's built-in renderer, so `auto` and `vanilla` mobs export there without GeckoLib.
-- The `java-project` eject is one-way and includes a README in the generated project. Its source names no Minecraft class: the Java comes from `Target.javaProject` (`export.no-java-project-target`, `export.java-generation-failed`); the wrapper comes from the host (`export.gradle-wrapper-missing`, info).
+- The `java-project` eject is one-way and includes a README in the generated project. Its source names no Minecraft class: the Java comes from `Target.javaProject`, else `await Target.loadJavaProject()` (ADR 0126; `export.no-java-project-target`, `export.java-generation-failed`, also for a loader that rejects); the wrapper comes from the host (`export.gradle-wrapper-missing`, info).
 - Content jars write each `msm`-layer `language: 'typescript'` file as its transpiled `.js` (ADR 0031 D5); transpile problems carry the script's path and block the jar.
 
 ## Do / Don't

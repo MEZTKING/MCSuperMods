@@ -369,7 +369,9 @@ describe('the vanilla parity types in the vanilla data pack', () => {
 });
 
 describe('the vanilla parity types in the Java project', () => {
-  for (const bundle of builtInTargets.filter((entry) => entry.target.javaProject !== undefined)) {
+  for (const bundle of builtInTargets.filter(
+    (entry) => entry.target.loadJavaProject !== undefined,
+  )) {
     it(`generates every new type, weathering, bags, commands and tabs (${bundle.target.id})`, async () => {
       const { schemaIndex, registries } = await indexesFor(bundle);
       const sink = createMemorySink();

@@ -119,7 +119,9 @@ export interface ExporterInput {
   projectName: string;
   /**
    * The target being exported for: the full {@link Target}, hooks included (an exporter may
-   * call {@link Target.javaProject}).
+   * call {@link Target.loadJavaProject} or {@link Target.javaProject}). A sandboxed
+   * third-party exporter receives the target's facts only, since functions cannot cross the
+   * sandbox.
    */
   target: Target;
   /** The merged, validated output files of every element. */

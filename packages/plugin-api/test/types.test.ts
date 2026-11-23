@@ -1110,4 +1110,18 @@ describe('1.0.0 additions', () => {
     const older: PluginContributions = { commands: [] };
     expect(older.searchData).toBeUndefined();
   });
+  it('types the lazily loaded Java generator on a target (1.24.0)', async () => {
+    expectTypeOf<Target['loadJavaProject']>().toEqualTypeOf<
+      (() => Promise<JavaProjectGenerator>) | undefined
+    >();
+    expectTypeOf<TargetFacts>().not.toHaveProperty('loadJavaProject');
+    // The generator itself keeps its synchronous shape.
+    expectTypeOf<JavaProjectGenerator['generate']>().returns.toEqualTypeOf<GeneratedFile[]>();
+    const generator: JavaProjectGenerator = { generate: () => [] };
+    const target: Target = { ...testTarget, loadJavaProject: async () => generator };
+    expect(await target.loadJavaProject?.()).toBe(generator);
+    // A 1.23.0-shaped target with a synchronous generator only stays assignable.
+    const older: Target = { ...testTarget, javaProject: generator };
+    expect(older.loadJavaProject).toBeUndefined();
+  });
 });

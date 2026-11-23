@@ -5,7 +5,6 @@
 import type { Target } from '@msm/plugin-api';
 import featureOrder from '../vendor/worldgen/feature-order.json' with { type: 'json' };
 import { controls } from './controls';
-import { javaProjectGenerator } from './java-project/index';
 import { SOUND_TYPES } from './sound-types';
 
 /** The decoration step names, in the order the game runs them (`worldgen.featureSteps`). */
@@ -1761,5 +1760,9 @@ export const target: Target = {
       'c7c89bd6c5f2801ef1575e2e1212202f5a3eff480d73503beff12b1d60dfb751112fccf36e36c243b26b6b492261cef12d8b2c1a92a734bb0b621daa8c158fc5',
     modrinthVersionId: 'kSxHvs99',
   },
-  javaProject: javaProjectGenerator,
+  // The Java generator (about 1 MB, mostly Java template strings) loads on first eject, so
+  // bundlers put it in a chunk of its own, out of the app's start-up bundle (ADR 0126). Nothing
+  // else may import `./java-project/` statically, or the chunk folds back in.
+  loadJavaProject: () =>
+    import('./java-project/index').then((module) => module.javaProjectGenerator),
 };

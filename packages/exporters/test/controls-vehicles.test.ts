@@ -138,7 +138,9 @@ describe('vehicles in the vanilla data pack', () => {
 });
 
 describe('key binds, HUD elements and vehicles in the Java project', () => {
-  for (const bundle of builtInTargets.filter((entry) => entry.target.javaProject !== undefined)) {
+  for (const bundle of builtInTargets.filter(
+    (entry) => entry.target.loadJavaProject !== undefined,
+  )) {
     it(`warns once per element and still builds the tree (${bundle.target.id})`, async () => {
       const { schemaIndex, registries } = await indexesFor(bundle);
       const sink = createMemorySink();

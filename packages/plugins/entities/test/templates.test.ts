@@ -23,6 +23,7 @@ import { blockingProblems, element, indexesFor, sortedJson } from './support';
 /** The first target's facts without its hooks: a template context is plain data. */
 const {
   javaProject: _javaProject,
+  loadJavaProject: _loadJavaProject,
   migrateFrom: _migrateFrom,
   ...FIRST_TARGET
 } = (builtInTargets[0] as TargetBundle).target;

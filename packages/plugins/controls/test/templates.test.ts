@@ -36,7 +36,12 @@ const TITLES = [
 
 /** A target's facts without its hooks: a template context is plain data. */
 function factsOf(bundle: TargetBundle): TargetFacts {
-  const { javaProject: _javaProject, migrateFrom: _migrateFrom, ...facts } = bundle.target;
+  const {
+    javaProject: _javaProject,
+    loadJavaProject: _loadJavaProject,
+    migrateFrom: _migrateFrom,
+    ...facts
+  } = bundle.target;
   return facts;
 }
 

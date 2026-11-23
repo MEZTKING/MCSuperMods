@@ -79,11 +79,14 @@ export const ExportProblemCodes = {
    * returns keep their own codes.
    */
   scriptTranspileFailed: 'export.script-transpile-failed',
-  /** Java project: the target has no Java generator (`Target.javaProject`). Nothing is written. */
+  /**
+   * Java project: the target has no Java generator (`Target.loadJavaProject` or
+   * `Target.javaProject`). Nothing is written.
+   */
   noJavaProjectTarget: 'export.no-java-project-target',
   /**
-   * Java project: the target's generator threw, or a definition is not a JSON object.
-   * Nothing is written.
+   * Java project: the target's generator threw or could not be loaded, or a definition is not
+   * a JSON object. Nothing is written.
    */
   javaGenerationFailed: 'export.java-generation-failed',
   /**

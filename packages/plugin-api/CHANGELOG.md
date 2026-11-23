@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.24.0 — 2026-11-23
+
+The Java project generator loaded on first use (ADR 0126). `API_VERSION` is `1.24.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `Target.loadJavaProject?(): Promise<JavaProjectGenerator>`: loads a target's Java generator when an eject needs it, so a host can keep the generator's code out of its start-up bundle (the built-in release target provides it through a dynamic `import()`). A host that ejects uses `Target.javaProject` when present and calls `loadJavaProject` otherwise; a target that sets both resolves to the same generator. A rejected promise is reported as `export.java-generation-failed` and nothing is written.
+- `JavaProjectGenerator.generate` keeps its synchronous signature; `Target.javaProject` stays (not deprecated). `TargetFacts` has neither hook, so a plugin-facing function and a sandboxed third-party exporter never see them.
+
+### Migration from 1.23.0
+
+None for plugins. A host or test that reads `target.javaProject` to find or call the generator also reads `target.loadJavaProject` (the built-in release target now sets only `loadJavaProject`), and a host that strips a target's hooks before cloning its facts strips `loadJavaProject` too.
+
 ## 1.23.0 — 2026-11-23
 
 Search data (ADR 0124 D5, D7, D13; the interface as corrected by the B650 spike). `API_VERSION` is `1.23.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

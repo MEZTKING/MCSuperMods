@@ -82,7 +82,7 @@ describe
   .skipIf(PENDING_B301)
   .each(
     builtInTargets
-      .filter((bundle) => bundle.target.javaProject !== undefined)
+      .filter((bundle) => bundle.target.loadJavaProject !== undefined)
       .map((bundle) => [bundle.target.id, bundle] as const),
   )('sample creatures Java project (%s)', (_id, bundle) => {
   const run = (wrapper = STUB_WRAPPER) =>

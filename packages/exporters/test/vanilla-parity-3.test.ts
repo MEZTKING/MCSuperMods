@@ -322,7 +322,9 @@ describe('vanilla parity 3, batch 1, in the vanilla data pack', () => {
 });
 
 describe('vanilla parity 3, batch 1, in the Java project', () => {
-  for (const bundle of builtInTargets.filter((entry) => entry.target.javaProject !== undefined)) {
+  for (const bundle of builtInTargets.filter(
+    (entry) => entry.target.loadJavaProject !== undefined,
+  )) {
     it(`generates the plants, pots, weathering, storage, sounds and pairs (${bundle.target.id})`, async () => {
       const { schemaIndex, registries } = await indexesFor(bundle);
       const sink = createMemorySink();

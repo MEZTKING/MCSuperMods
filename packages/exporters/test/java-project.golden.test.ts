@@ -50,7 +50,7 @@ const PINNED = [
 
 describe.each(
   builtInTargets
-    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .filter((bundle) => bundle.target.loadJavaProject !== undefined)
     .map((bundle) => [bundle.target.id, bundle] as const),
 )('Java project files (%s)', (_id, bundle) => {
   it.each(['sample-mod', 'sample-mob'])('%s', async (sample) => {

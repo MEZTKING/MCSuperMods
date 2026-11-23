@@ -336,9 +336,14 @@ describe('loadExternalPlugins', () => {
   });
 
   it('strips target hooks and memoises the facts', () => {
-    const withHooks = { ...target, javaProject: { generate: () => [] } } as Target;
+    const withHooks = {
+      ...target,
+      javaProject: { generate: () => [] },
+      loadJavaProject: async () => ({ generate: () => [] }),
+    } as Target;
     const facts = toTargetFacts(withHooks);
     expect('javaProject' in facts).toBe(false);
+    expect('loadJavaProject' in facts).toBe(false);
     expect(() => structuredClone(facts)).not.toThrow();
     expect(toTargetFacts(withHooks)).toBe(facts);
     // Data fields are copied, the 1.16.0 control and vehicle facts included.

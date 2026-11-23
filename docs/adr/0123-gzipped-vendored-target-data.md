@@ -74,7 +74,7 @@ So, as ADR 0091 D5 allows with a recorded reason and as `docs/PLAN-live-views.md
 - The bytes in `out/main/vendor/` are gzip of the compact JSON; `readVendored` returns the same parsed values as before (checked: all ten files gunzip to JSON deep-equal to their sources, with no line feed).
 - The renderer drops by 0.17 MB to 17.44 MB and has a 19 MB budget, 18.5 MB stop line: 1.06 MB of room before the stop line, 1.56 MB before the budget.
 - `tools/check-size` fails plain or non-compact vendored JSON. Its README, DESIGN §14, `app/CLAUDE.md`, `docs/HANDOFF.md` and the two plans name the new numbers and stop lines; `docs/PLAN-live-views.md`'s B602 is done ahead by this ADR.
-- Follow-up (needs an ADR): load the 26.3 Java project generator lazily (an asynchronous `JavaProjectGenerator.generate`, or the eject in main), about 1 MB of the renderer's first-paint bundle.
+- Follow-up (needs an ADR): load the 26.3 Java project generator lazily (an asynchronous `JavaProjectGenerator.generate`, or the eject in main), about 1 MB of the renderer's first-paint bundle. Done by [ADR 0126](0126-java-project-generator-loaded-on-first-use.md) (2026-11-23: `Target.loadJavaProject`, plugin API 1.24.0; first paint 0.93 MB smaller, the budgeted renderer total unchanged because `tools/check-size` counts the lazy chunk).
 
 ## Status
 

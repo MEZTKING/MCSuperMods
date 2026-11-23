@@ -195,7 +195,7 @@ const FILES = [
 
 describe.each(
   builtInTargets
-    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .filter((bundle) => bundle.target.loadJavaProject !== undefined)
     .map((bundle) => [bundle.target.id, bundle] as const),
 )('batch 2 in the Java project (%s)', (_id, bundle) => {
   it('generates fluids, professions, villager types, rules, stats, commands and tabs', async () => {

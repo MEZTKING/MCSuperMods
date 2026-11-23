@@ -197,6 +197,7 @@ describe('builtInTargets', () => {
       expect(facts).toBeDefined();
       if (facts === undefined) continue;
       expect(facts).not.toHaveProperty('javaProject');
+      expect(facts).not.toHaveProperty('loadJavaProject');
       expect(facts).not.toHaveProperty('migrateFrom');
       expect(facts.id).toBe(target.id);
       expect(facts.channel).toBe(target.channel);

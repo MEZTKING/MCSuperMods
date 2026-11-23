@@ -1468,9 +1468,27 @@ export interface TargetFacts {
 export interface Target extends TargetFacts {
   /**
    * The Java generator of the `java-project` exporter (ADR 0033). Optional: a target without
-   * it cannot eject a Java project, and the exporter reports a problem. Since 0.8.0.
+   * it or {@link Target.loadJavaProject} cannot eject a Java project, and the exporter reports
+   * a problem. Since 0.8.0; since 1.24.0 a target may give {@link Target.loadJavaProject}
+   * instead.
    */
   javaProject?: JavaProjectGenerator;
+  /**
+   * Loads the Java generator of the `java-project` exporter on first use, so a host can keep
+   * the generator's code out of its start-up bundle (ADR 0126). Optional. A host that ejects
+   * uses {@link Target.javaProject} when it is present and calls this otherwise; a target
+   * without either cannot eject a Java project. A target that sets both resolves to the same
+   * generator. The promise rejects when the generator cannot be loaded; the exporter reports
+   * that as `export.java-generation-failed` and writes nothing. Since 1.24.0.
+   *
+   * @example
+   * ```ts
+   * loadJavaProject: () => import('./java-project/index').then((m) => m.javaProjectGenerator),
+   * ```
+   *
+   * @returns The target's generator.
+   */
+  loadJavaProject?(): Promise<JavaProjectGenerator>;
   /**
    * Works out how to move a project written for `previous` to this target.
    *

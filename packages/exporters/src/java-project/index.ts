@@ -5,8 +5,9 @@
  *
  * This module is version-free. It reads the definitions from the `msm` layer, writes the
  * Gradle files, README, licence notes, wrapper, `fabric.mod.json`, the copied `assets/` and
- * `data/` files and the manifest, and calls the target's `javaProject` generator for the Java
- * sources. Scripts are not ejected (`export.scripts-not-ejected`).
+ * `data/` files and the manifest, and calls the target's Java generator (`javaProject`, else
+ * `loadJavaProject`; ADR 0126) for the Java sources. Scripts are not ejected
+ * (`export.scripts-not-ejected`).
  *
  * @packageDocumentation
  */
@@ -17,6 +18,7 @@ import type {
   Exporter,
   ExporterInput,
   GeneratedFile,
+  JavaProjectGenerator,
   Json,
   JsonObject,
   OutputFile,
@@ -378,7 +380,20 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         });
         return;
       }
-      const generator = target.javaProject;
+      // A target without a synchronous generator may load one on first use (plugin API 1.24.0,
+      // ADR 0126); the built-in release target does, so its code stays out of the app's
+      // start-up bundle.
+      let generator: JavaProjectGenerator | undefined;
+      try {
+        generator = target.javaProject ?? (await target.loadJavaProject?.());
+      } catch (error) {
+        problems.report({
+          severity: 'error',
+          code: ExportProblemCodes.javaGenerationFailed,
+          message: `The Java generator of target ${target.id} could not be loaded: ${error instanceof Error ? error.message : String(error)}`,
+        });
+        return;
+      }
       if (generator === undefined) {
         problems.report({
           severity: 'error',

@@ -150,7 +150,7 @@ describe('vanilla data pack with traders, professions and fluids', () => {
 
 describe.each(
   builtInTargets
-    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .filter((bundle) => bundle.target.loadJavaProject !== undefined)
     .map((bundle) => [bundle.target.id, bundle] as const),
 )('Java eject with batch 2 features (%s)', (_id, bundle) => {
   const component = (name: string): Json => ({

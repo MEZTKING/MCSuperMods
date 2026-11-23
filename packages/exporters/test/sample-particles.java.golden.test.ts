@@ -78,7 +78,7 @@ async function inTimeZone<T>(zone: string, body: () => Promise<T>): Promise<T> {
 
 describe.each(
   builtInTargets
-    .filter((bundle) => bundle.target.javaProject !== undefined)
+    .filter((bundle) => bundle.target.loadJavaProject !== undefined)
     .map((bundle) => [bundle.target.id, bundle] as const),
 )('sample particles Java project (%s)', (_id, bundle) => {
   const run = (wrapper = STUB_WRAPPER) =>
