@@ -235,8 +235,8 @@ export const floorGeneratedIds: MechanicIds = (mechanic, element) => {
  * time and cannot read the area itself. A floor that already has both corners, or whose area the
  * project does not have, is left as it is (the check reports a missing area).
  *
- * Not registered by this file: the plugin lists it in its `projectExpanders` (and the schema's
- * `FloorMechanic` takes `from?` and `to?`) by the orchestrator's decision (B726's report).
+ * Registered in the plugin's `projectExpanders`; the schema's `FloorMechanic` takes `from?` and
+ * `to?`.
  */
 export const floorAreaExpander: ProjectExpander = {
   id: 'msm.games.floor-area',

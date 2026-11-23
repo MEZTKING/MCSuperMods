@@ -59,6 +59,8 @@ export {
 } from './validators-pieces';
 export { worldSetupValidators } from './validators-world-setup';
 
+import { floorAreaExpander } from './lowering/game/mechanics/floor';
+
 export default definePlugin({
   id: 'msm.games',
   apiVersion: '^1.0.0',
@@ -67,5 +69,7 @@ export default definePlugin({
     elementKinds: [...gamesKinds],
     validators: [...gamesValidators, ...piecesValidators, ...worldSetupValidators],
     elementTemplates: [...piecesTemplates, ...worldSetupTemplates],
+    // The floor mechanic's area corners, copied onto the game before lowering (B726).
+    projectExpanders: [floorAreaExpander],
   },
 });

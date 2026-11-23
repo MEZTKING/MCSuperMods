@@ -928,6 +928,11 @@ dispatch msm:game_mechanic[floor] to struct FloorMechanic {
 	/// A building placed to rebuild the floor in place of filling the box with `block` (for a
 	/// patterned floor, or one over 32,768 blocks).
 	structure?: #[id="structure"] string,
+	/// The area's lowest corner, copied from the area by MSM before the game is lowered; you do
+	/// not set it yourself.
+	from?: BlockPos,
+	/// The area's highest corner, copied from the area by MSM before the game is lowered.
+	to?: BlockPos,
 }
 
 /// One team's base.

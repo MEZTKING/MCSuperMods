@@ -20078,6 +20078,26 @@
             ],
             "kind": "string"
           }
+        },
+        {
+          "desc": "The area's lowest corner, copied from the area by MSM before the game is lowered; you do\nnot set it yourself.",
+          "key": "from",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
+        },
+        {
+          "desc": "The area's highest corner, copied from the area by MSM before the game is lowered.",
+          "key": "to",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::games::BlockPos"
+          }
         }
       ],
       "kind": "struct"
@@ -32782,5 +32802,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:6b4a11c835f73e840a11e76868797f073a1c8f48b837812443770b4a9a5b6185"
+  "ref": "msm-mcdoc:sha256:5a4d4e47d4389e871ec7fb706059dc5b63cf9fcb7eea7ccfb973cb837e927adf"
 }
