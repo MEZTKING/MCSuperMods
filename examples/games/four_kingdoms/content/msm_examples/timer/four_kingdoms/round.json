@@ -1,0 +1,23 @@
+{
+  "data": {
+    "colour": "red",
+    "count": "down",
+    "name": "Round",
+    "on_end": "msm_examples:four_kingdoms/round_end",
+    "repeat": false,
+    "seconds": 180,
+    "show": "boss_bar",
+    "starts": "manual"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:four_kingdoms/round",
+  "kind": "msm:timer",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The round: 3 minutes counting down on a red boss bar. The start function starts it; when the time is up it runs msm_examples:four_kingdoms/round_end.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

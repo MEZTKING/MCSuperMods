@@ -1,0 +1,20 @@
+{
+  "data": {
+    "lines": [
+      "# Checkpoint 1 of Crystal Road: run as the player who reached it",
+      "spawnpoint @s ~ ~ ~",
+      "title @s actionbar {\"text\":\"Checkpoint 1 reached\",\"color\":\"gold\"}"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crystal_road/reached_checkpoint_1",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Run as the player when they first reach checkpoint 1 (the reward of its advancement): their spawn point is set where they stand and the action bar says so.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

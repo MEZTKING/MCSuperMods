@@ -1,0 +1,23 @@
+{
+  "data": {
+    "dimension": "minecraft:overworld",
+    "from": [
+      94,
+      -64,
+      -2
+    ],
+    "name": "Checkpoint 2",
+    "to": [
+      98,
+      319,
+      2
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_sprint/checkpoint_2",
+  "kind": "msm:area",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Checkpoint 2: a column five blocks wide through the whole height of the overworld, 96 blocks east of the spawn. Its tick function tags the players inside, and the line's advancement tests that tag, so moving the area in the Area Studio moves the line. Move it onto your course."
+  }
+}

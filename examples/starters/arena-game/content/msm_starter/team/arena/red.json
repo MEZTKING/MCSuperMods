@@ -1,0 +1,18 @@
+{
+  "data": {
+    "collision": "pushOtherTeams",
+    "colour": "red",
+    "friendly_fire": false,
+    "name": "Red",
+    "name_tags": "always",
+    "prefix": "[Red] ",
+    "see_invisible_friends": true
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:arena/red",
+  "kind": "msm:team",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The red team: red names with a [Red] tag, team mates cannot hurt each other. It is made when the world loads, and the start function puts players on it."
+  }
+}

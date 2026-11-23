@@ -1,0 +1,28 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "recipes": "minecraft:furnace"
+        },
+        "trigger": "minecraft:recipe_crafted"
+      }
+    },
+    "display": {
+      "description": "Craft a furnace",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:furnace"
+      },
+      "title": "Hot Stuff"
+    },
+    "parent": "msm_starter:sky_survival/goals/get_cobblestone"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_survival/goals/craft_furnace",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: craft a furnace. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:recipe_crafted) is met."
+  }
+}

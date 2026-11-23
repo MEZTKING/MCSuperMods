@@ -1,0 +1,27 @@
+{
+  "data": {
+    "blocks": [
+      [
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "palette": [
+      "minecraft:grass_block[snowy=false]"
+    ],
+    "size": [
+      1,
+      1,
+      1
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:one_block/start",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The start: one grass block, where the magic block is. The magic block refills itself from here on."
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "data": {
+    "difficulty": "normal",
+    "game_mode": "survival",
+    "game_rules": {},
+    "new_player": {
+      "effects": [
+        {
+          "effect": "minecraft:slow_falling",
+          "hide_particles": true,
+          "seconds": 10
+        }
+      ]
+    },
+    "spawn_radius": 0,
+    "start": {
+      "at": [
+        0,
+        160,
+        0
+      ],
+      "spawn": [
+        5,
+        3,
+        3
+      ],
+      "structure": "msm_starter:sky_islands/island"
+    },
+    "world": {
+      "end": "vanilla",
+      "nether": "vanilla",
+      "type": "sky_islands"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_islands",
+  "kind": "msm:world_setup",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the world starts: a World Type called Sky Islands of islands floating over the void, with the overworld's biomes, listed on the Create New World screen, and the start island msm_starter:sky_islands/island high above the others at 0 160 0, placed when the first player joins, with the spawn on it and ten seconds of slow falling for each new player. Everything lowers to plain data pack files."
+  }
+}

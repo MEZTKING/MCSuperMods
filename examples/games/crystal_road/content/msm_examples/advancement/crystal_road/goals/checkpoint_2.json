@@ -1,0 +1,41 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "player": {
+            "entity": "this",
+            "predicate": {
+              "nbt": "{Tags:[\"msm_examples.area.crystal_road.checkpoint_2\"]}"
+            },
+            "type": "minecraft:entity_properties"
+          }
+        },
+        "trigger": "minecraft:location"
+      }
+    },
+    "display": {
+      "description": "Reach checkpoint 2",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:lantern"
+      },
+      "title": "Checkpoint 2"
+    },
+    "parent": "msm_examples:crystal_road/goals/checkpoint_1",
+    "rewards": {
+      "function": "msm_examples:crystal_road/reached_checkpoint_2"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crystal_road/goals/checkpoint_2",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: reach checkpoint 2. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:location) is met. Then it runs msm_examples:crystal_road/reached_checkpoint_2 as the player (rewards): it sets their spawn point and says so.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

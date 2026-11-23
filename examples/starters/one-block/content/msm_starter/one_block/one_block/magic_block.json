@@ -1,0 +1,268 @@
+{
+  "data": {
+    "announce": true,
+    "at": [
+      0,
+      64,
+      0
+    ],
+    "loop": true,
+    "phases": [
+      {
+        "blocks": [
+          {
+            "block": "minecraft:grass_block",
+            "weight": 4
+          },
+          {
+            "block": "minecraft:dirt",
+            "weight": 4
+          },
+          {
+            "block": "minecraft:oak_log",
+            "weight": 3
+          },
+          {
+            "block": "minecraft:oak_leaves",
+            "weight": 1
+          },
+          {
+            "block": "minecraft:melon",
+            "weight": 1
+          }
+        ],
+        "breaks": 100,
+        "chest_chance": 0.02,
+        "chest_loot": "minecraft:chests/village/village_plains_house",
+        "mob_chance": 0.05,
+        "mobs": [
+          {
+            "mob": "minecraft:cow",
+            "weight": 1
+          },
+          {
+            "mob": "minecraft:sheep",
+            "weight": 1
+          },
+          {
+            "mob": "minecraft:chicken",
+            "weight": 1
+          },
+          {
+            "mob": "minecraft:pig",
+            "weight": 1
+          }
+        ],
+        "name": "Plains"
+      },
+      {
+        "blocks": [
+          {
+            "block": "minecraft:stone",
+            "weight": 10
+          },
+          {
+            "block": "minecraft:coal_ore",
+            "weight": 3
+          },
+          {
+            "block": "minecraft:iron_ore",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:copper_ore",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:gold_ore",
+            "weight": 1
+          },
+          {
+            "block": "minecraft:redstone_ore",
+            "weight": 1
+          },
+          {
+            "block": "minecraft:lapis_ore",
+            "weight": 1
+          }
+        ],
+        "breaks": 100,
+        "chest_chance": 0.02,
+        "chest_loot": "minecraft:chests/simple_dungeon",
+        "mob_chance": 0.05,
+        "mobs": [
+          {
+            "mob": "minecraft:zombie",
+            "weight": 2
+          },
+          {
+            "mob": "minecraft:skeleton",
+            "weight": 1
+          },
+          {
+            "mob": "minecraft:spider",
+            "weight": 1
+          }
+        ],
+        "name": "Underground"
+      },
+      {
+        "blocks": [
+          {
+            "block": "minecraft:deepslate",
+            "weight": 8
+          },
+          {
+            "block": "minecraft:cobbled_deepslate",
+            "weight": 3
+          },
+          {
+            "block": "minecraft:sculk",
+            "weight": 4
+          },
+          {
+            "block": "minecraft:deepslate_iron_ore",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:deepslate_diamond_ore",
+            "weight": 1
+          }
+        ],
+        "breaks": 100,
+        "chest_chance": 0.02,
+        "chest_loot": "minecraft:chests/ancient_city",
+        "mob_chance": 0,
+        "name": "Deep dark"
+      },
+      {
+        "blocks": [
+          {
+            "block": "minecraft:netherrack",
+            "weight": 10
+          },
+          {
+            "block": "minecraft:soul_sand",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:nether_quartz_ore",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:nether_gold_ore",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:magma_block",
+            "weight": 1
+          },
+          {
+            "block": "minecraft:glowstone",
+            "weight": 1
+          }
+        ],
+        "breaks": 100,
+        "chest_chance": 0.02,
+        "chest_loot": "minecraft:chests/nether_bridge",
+        "mob_chance": 0.05,
+        "mobs": [
+          {
+            "mob": "minecraft:piglin",
+            "weight": 2
+          },
+          {
+            "mob": "minecraft:zombified_piglin",
+            "weight": 1
+          }
+        ],
+        "name": "Nether"
+      },
+      {
+        "blocks": [
+          {
+            "block": "minecraft:sand",
+            "weight": 6
+          },
+          {
+            "block": "minecraft:gravel",
+            "weight": 3
+          },
+          {
+            "block": "minecraft:clay",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:prismarine",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:sea_lantern",
+            "weight": 1
+          },
+          {
+            "block": "minecraft:tube_coral_block",
+            "weight": 1
+          }
+        ],
+        "breaks": 100,
+        "chest_chance": 0.02,
+        "chest_loot": "minecraft:chests/buried_treasure",
+        "mob_chance": 0.05,
+        "mobs": [
+          {
+            "mob": "minecraft:turtle",
+            "weight": 1
+          },
+          {
+            "mob": "minecraft:drowned",
+            "weight": 1
+          }
+        ],
+        "name": "Ocean"
+      },
+      {
+        "blocks": [
+          {
+            "block": "minecraft:end_stone",
+            "weight": 10
+          },
+          {
+            "block": "minecraft:obsidian",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:purpur_block",
+            "weight": 2
+          },
+          {
+            "block": "minecraft:end_stone_bricks",
+            "weight": 1
+          }
+        ],
+        "breaks": 100,
+        "chest_chance": 0.02,
+        "chest_loot": "minecraft:chests/end_city_treasure",
+        "mob_chance": 0.05,
+        "mobs": [
+          {
+            "mob": "minecraft:enderman",
+            "weight": 2
+          },
+          {
+            "mob": "minecraft:shulker",
+            "weight": 1
+          }
+        ],
+        "name": "End"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:one_block/magic_block",
+  "kind": "msm:one_block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The magic block at 0 64 0: each time it is broken it turns into a block of its phase, picked by weight (plains, underground, deep dark, nether, ocean, end), 100 breaks a phase, now and then a chest of loot of the phase, now and then a mob on top. The name of each phase shows in chat when it starts, and after the last phase the first comes again. Its tick function runs in a vanilla data pack."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "lines": [
+      "# Runs when the round of Four Kingdoms ends (the timer's on_end)",
+      "title @a title {\"text\":\"Round over\",\"color\":\"gold\"}",
+      "execute as @a[scores={msm_examples.four_kingdoms.points=10..}] run tellraw @a [{\"selector\":\"@s\"},{\"text\":\" wins the round!\",\"color\":\"gold\"}]",
+      "function msm_examples:msm_games/area/four_kingdoms/arena/reset"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:four_kingdoms/round_end",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Ends a round, run by the timer when the time is up: names the players with 10 or more defeats and rebuilds the arena. Run msm_examples:four_kingdoms/start again for the next round.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

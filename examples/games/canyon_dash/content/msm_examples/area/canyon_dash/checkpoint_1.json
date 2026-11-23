@@ -1,0 +1,27 @@
+{
+  "data": {
+    "dimension": "minecraft:overworld",
+    "from": [
+      46,
+      -64,
+      -2
+    ],
+    "name": "Checkpoint 1",
+    "to": [
+      50,
+      319,
+      2
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:canyon_dash/checkpoint_1",
+  "kind": "msm:area",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Checkpoint 1: a column five blocks wide through the whole height of the overworld, 48 blocks east of the spawn. Its tick function tags the players inside, and the line's advancement tests that tag, so moving the area in the Area Studio moves the line. Move it onto your course.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

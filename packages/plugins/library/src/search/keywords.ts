@@ -210,4 +210,21 @@ export const KEYWORDS: Record<string, string[]> = {
   'custom-command': ['command', 'slash', '/heal', 'chat command', 'operator'],
   'creative-tab': ['creative', 'tab', 'creative menu', 'inventory tab', 'item group'],
   'game-rule': ['gamerule', 'game rule', 'world setting', 'toggle', 'setting'],
+  // The game flows (ADR 0117 D2; B557).
+  skyblock: [
+    'skyblock',
+    'sky block',
+    'void',
+    'island',
+    'cobblestone generator',
+    'empty world',
+    'game',
+  ],
+  'one-block': ['one block', 'oneblock', 'single block', 'phases', 'magic block', 'game'],
+  'sky-islands': ['sky islands', 'floating islands', 'aether', 'islands', 'world type', 'game'],
+  'lucky-block': ['lucky block', 'lucky', 'random', 'surprise', 'gamble', 'game'],
+  'adventure-map': ['adventure map', 'adventure', 'map', 'checkpoint', 'welcome', 'story', 'game'],
+  'arena-game': ['arena', 'pvp', 'teams', 'minigame', 'battle', 'rounds', 'scoreboard', 'game'],
+  race: ['race', 'parkour', 'timer', 'checkpoints', 'stopwatch', 'time trial', 'minigame', 'game'],
+  goals: ['goals', 'advancements', 'achievements', 'quests', 'challenges', 'advancement tab'],
 };

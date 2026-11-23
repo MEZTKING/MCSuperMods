@@ -1,0 +1,23 @@
+{
+  "data": {
+    "colour": "white",
+    "count": "down",
+    "name": "Time left",
+    "on_end": "msm_examples:canyon_dash/time_up",
+    "repeat": false,
+    "seconds": 90,
+    "show": "action_bar",
+    "starts": "manual"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:canyon_dash/clock",
+  "kind": "msm:timer",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The race's time limit: 90 seconds counting down on the action bar, started by the start line; when the time is up it runs msm_examples:canyon_dash/time_up.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

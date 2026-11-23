@@ -122,6 +122,10 @@ export const ART_RECIPE_IDS = Object.freeze([
   'particle_orb',
   'particle_puff',
   'particle_leaf',
+  // Games (B557)
+  'lucky_block',
+  'flag',
+  'timer',
 ] as const);
 
 /** The id of a recipe: one kind of picture the generator draws (ADR 0092 D7). */

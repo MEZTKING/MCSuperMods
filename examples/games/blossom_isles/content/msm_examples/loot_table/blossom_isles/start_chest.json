@@ -1,0 +1,53 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 3,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:wheat_seeds",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "name": "minecraft:oak_sapling",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 4,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:bread",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:chest"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blossom_isles/start_chest",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the start chest holds: seeds, a sapling and bread, one pool each.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

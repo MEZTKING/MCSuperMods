@@ -1,0 +1,36 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "items": [
+            {
+              "items": "minecraft:oak_log"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "description": "Get an oak log",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:oak_log"
+      },
+      "title": "Getting Wood"
+    },
+    "parent": "msm_examples:cloud_farm/goals/root"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cloud_farm/goals/get_wood",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: get an oak log. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:inventory_changed) is met.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

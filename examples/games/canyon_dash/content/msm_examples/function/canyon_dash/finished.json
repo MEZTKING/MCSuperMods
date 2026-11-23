@@ -1,0 +1,24 @@
+{
+  "data": {
+    "lines": [
+      "# The finish line of Canyon Dash: run as the runner, only while the clock runs",
+      "execute unless score #canyon_dash.clock.on msm_examples.msm_timers matches 1 run return 0",
+      "function msm_examples:msm_games/timer/canyon_dash/clock/stop",
+      "title @s title {\"text\":\"Finished!\",\"color\":\"gold\"}",
+      "title @s subtitle [{\"score\":{\"name\":\"#canyon_dash.clock\",\"objective\":\"msm_examples.msm_timers\"}},{\"text\":\" seconds left\"}]",
+      "execute unless score @s msm_examples.canyon_dash.best matches 1.. run scoreboard players operation @s msm_examples.canyon_dash.best = #canyon_dash.clock msm_examples.msm_timers",
+      "scoreboard players operation @s msm_examples.canyon_dash.best > #canyon_dash.clock msm_examples.msm_timers"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:canyon_dash/finished",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Run when a runner reaches the finish, while the clock runs: stops it and shows the time left, and keeps it in msm_examples.canyon_dash.best when it is more than their best so far.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "data": {
+    "gives": {
+      "count": 2,
+      "id": "minecraft:pumpkin_seeds"
+    },
+    "max_uses": 8,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 1,
+      "id": "minecraft:emerald"
+    },
+    "xp": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wandering_trader/cloud_farm_pumpkin_seeds",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A trade for the sky: the wandering trader sells 2 pumpkin seeds for an emerald, up to eight times.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

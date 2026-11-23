@@ -1,0 +1,75 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "name": "minecraft:lava_bucket",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 2,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:ice",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 3,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:wheat_seeds",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "name": "minecraft:oak_sapling",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 4,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:bread",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:chest"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cloud_farm/start_chest",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the island's chest holds: 1 lava bucket, 2 ice, 3 wheat seeds, 1 oak sapling, 4 bread. One pool for each, rolled once, so each comes exactly once.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

@@ -14,7 +14,8 @@
     "msm.models-anim",
     "msm.scripting",
     "msm.rules",
-    "msm.controls"
+    "msm.controls",
+    "msm.games"
   ],
   "settings": {},
   "targets": [

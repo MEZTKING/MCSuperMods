@@ -72,11 +72,13 @@ import blocksItemsPlugin, {
 import controlsPlugin from '@msm/plugin-controls';
 import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin, { bucketItemId } from '@msm/plugin-entities';
+import gamesPlugin, { GAMES_CHECKER_CATEGORIES, gamesGeneratedIds } from '@msm/plugin-games';
 import libraryPlugin, {
   behaviourExamples,
   EXTRA_DROP_TABLES,
   encodePng,
   entityBehaviourExamples,
+  gameExamples,
   kindExamples,
   libraryExamples,
   libraryStarters,
@@ -157,6 +159,7 @@ const PLUGINS: readonly Plugin[] = [
   scriptingPlugin,
   rulesPlugin,
   controlsPlugin,
+  gamesPlugin,
   libraryPlugin,
 ];
 const PACK_KIND = 'minecraft:pack_mcmeta';
@@ -1096,6 +1099,43 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { rule_name: 'Odd Range', kind: 'number', number_min: 8, number_max: 2, number_default: 99 },
     { rule_name: 'Count Me', counts: true, greeting: '', description: '' },
   ],
+  // The game flows (ADR 0117 D2; B557): every island, the generator, no extras, other phases,
+  // the End-like islands, every outcome alone, the welcome screen, four teams, a count down.
+  skyblock: [
+    { game_name: 'Tiny Sky', island: 'tiny', chest: ['bread'], mobs: false, nether: 'void' },
+    { island: 'round', generator: true, generator_makes: 'obsidian', goals: false },
+    { island: 'own', trades: false, recipes: false, chest: [] },
+  ],
+  'one-block': [
+    { game_name: 'Deep One', phases: ['deep_dark', 'end'], breaks: 10, chests: false },
+    { world: 'vanilla', mobs: false, loop: false, phases: ['ocean'] },
+  ],
+  'sky-islands': [
+    { islands: 'end', biome: 'minecraft:desert' },
+    { biome: 'minecraft:mushroom_fields', start_island: false },
+  ],
+  'lucky-block': [
+    { loot: 'never', mob: 'never', explosion: 'never', building: 'never', effect: 'never' },
+    { loot: 'never', mob: 'often', mob_kind: 'minecraft:pig', explosion: 'often', mark: 'star' },
+    { building: 'often', effect: 'often', effect_kind: 'minecraft:levitation', colour: '#204080' },
+  ],
+  'adventure-map': [
+    { world: 'flat', welcome: 'dialog', checkpoints: 5, game_rules: [] },
+    { welcome: 'none', checkpoints: 0, goals: false, start_as: 'survival' },
+    { checkpoints: 0, goals: true, welcome_text: '' },
+  ],
+  'arena-game': [
+    { teams: '4', size: 'large', kit: 'bow', rebuild: false, floor: 'minecraft:quartz_block' },
+    { teams: '3', size: 'small', kit: 'none', minutes: 1, win_score: 1 },
+  ],
+  race: [
+    { count: 'down', limit: 30, checkpoints: 0 },
+    { checkpoints: 5, best: false },
+  ],
+  goals: [
+    { goals: ['reach_sky'], icon: 'timer', icon_colour: '#204080', background: 'end' },
+    { tab_name: 'Hunter', goals: ['defeat_zombie', 'defeat_creeper'], icon: 'minecraft:compass' },
+  ],
   // ADR 0069 D1: vanilla logs and leaves, every tree shape, a tinted leaf, pictures.
   tree: [
     {
@@ -1319,6 +1359,15 @@ const MIRRORED_STARTERS = [
   'wandering-merchant',
   'village-job',
   'fluid',
+  // The game flows (ADR 0117 D2; B557).
+  'skyblock',
+  'one-block',
+  'sky-islands',
+  'lucky-block',
+  'adventure-map',
+  'arena-game',
+  'race',
+  'goals',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -1526,6 +1575,12 @@ function projectRegistryIds(
     for (const element of namespace.elements) {
       const kind = registry.get(element.kind);
       const name = kind?.registry ?? element.kind.replace(/^minecraft:/, '');
+      // The ids the games lowering writes (B551b): functions, function tags, predicates, the
+      // world type and sky biome, and the objective, team, entity tag and boss bar names the
+      // mcfunction checker takes (`GAMES_CHECKER_CATEGORIES`).
+      for (const [category, list] of Object.entries(gamesGeneratedIds(element))) {
+        for (const id of list) add(category, id);
+      }
       if (name.includes(':')) continue;
       if (name === 'block' && typeof element.data === 'object' && element.data !== null) {
         // The block item's own id: `item.id` (seeds planting a crop), else the block's id.
@@ -1660,11 +1715,22 @@ function projectRegistryIds(
 function mcfunctionIds(project: Project, ids: Record<string, string[]>): Record<string, string[]> {
   const out: Record<string, string[]> = {};
   for (const [registry, list] of Object.entries(ids)) {
-    if (DATA_REGISTRY_KINDS.has(registry) || registry.startsWith('tag/')) out[registry] = list;
+    // Structure templates too, as the app's data registry ids hold every registered data kind
+    // (a games function places them with `place template`).
+    if (
+      DATA_REGISTRY_KINDS.has(registry) ||
+      registry.startsWith('tag/') ||
+      registry === 'structure'
+    )
+      out[registry] = list;
   }
   out['tag/function'] = [
     ...new Set([...(out['tag/function'] ?? []), 'minecraft:load', 'minecraft:tick']),
   ].sort();
+  // The games kinds' objective, team, entity tag and boss bar names (B551b).
+  for (const category of GAMES_CHECKER_CATEGORIES) {
+    if (ids[category] !== undefined) out[category] = [...ids[category]];
+  }
   const sources: string[] = [];
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
@@ -1674,8 +1740,8 @@ function mcfunctionIds(project: Project, ids: Record<string, string[]>): Record<
       }
     }
   }
-  const objective = collectProjectObjectives(sources);
-  if (objective.length > 0) out.objective = objective;
+  const objective = [...new Set([...collectProjectObjectives(sources), ...(out.objective ?? [])])];
+  if (objective.length > 0) out.objective = objective.sort();
   return out;
 }
 
@@ -2043,6 +2109,13 @@ const MIRROR: readonly MirrorProject[] = [
   })),
   ...worldExamples.map((example) => ({
     folder: `worlds/${example.id.replace(/^example_world_/, '')}`,
+    build: () =>
+      buildProject(example.title, 'msm_examples', [
+        buildEntry(example, 'msm_examples', example.title),
+      ]),
+  })),
+  ...gameExamples.map((example) => ({
+    folder: `games/${example.id.replace(/^example_game_/, '')}`,
     build: () =>
       buildProject(example.title, 'msm_examples', [
         buildEntry(example, 'msm_examples', example.title),

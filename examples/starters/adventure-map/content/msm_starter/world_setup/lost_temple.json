@@ -1,0 +1,27 @@
+{
+  "data": {
+    "difficulty": "normal",
+    "game_mode": "adventure",
+    "game_rules": {
+      "keep_inventory": true,
+      "mob_griefing": false
+    },
+    "goals": "msm_starter:lost_temple/goals/root",
+    "new_player": {
+      "message": "Welcome, adventurer! Find the treasure at the end of the road."
+    },
+    "spawn_radius": 0,
+    "world": {
+      "end": "vanilla",
+      "nether": "vanilla",
+      "type": "vanilla"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:lost_temple",
+  "kind": "msm:world_setup",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the world starts: the game's own world (no World Type of its own). Players play in adventure mode on normal difficulty; when the world first starts the game rules are set: mobs do not break blocks, keep things on death. Each new player is welcomed by a message, once. Build your map in the game and bring the builds back as structures. Everything here lowers to plain data pack files."
+  }
+}

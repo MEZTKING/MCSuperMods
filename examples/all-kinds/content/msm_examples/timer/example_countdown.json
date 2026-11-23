@@ -1,0 +1,22 @@
+{
+  "data": {
+    "colour": "blue",
+    "count": "down",
+    "name": "Next wave",
+    "repeat": true,
+    "seconds": 60,
+    "show": "boss_bar",
+    "starts": "world_start"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:example_countdown",
+  "kind": "msm:timer",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A timer in whole seconds, shared by every player: one minute counting down on a blue boss bar named Next wave. It starts when the world first starts and, with repeat, starts again whenever the time is up. A function in on_end, or a rule on \"The time is up\", says what happens then. It runs in a vanilla data pack.",
+    "tags": [
+      "example",
+      "game-kits"
+    ]
+  }
+}

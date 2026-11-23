@@ -1,0 +1,40 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "name": "minecraft:lava_bucket",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 2,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:ice",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:chest"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:example_sky_island_chest",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The chest of the island: a lava bucket and two ice, for a cobblestone generator.",
+    "tags": [
+      "example",
+      "game-kits"
+    ]
+  }
+}

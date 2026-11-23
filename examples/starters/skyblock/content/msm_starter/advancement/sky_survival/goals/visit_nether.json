@@ -1,0 +1,28 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "to": "minecraft:the_nether"
+        },
+        "trigger": "minecraft:changed_dimension"
+      }
+    },
+    "display": {
+      "description": "Travel to the Nether",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:netherrack"
+      },
+      "title": "Into the Fire"
+    },
+    "parent": "msm_starter:sky_survival/goals/get_iron"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_survival/goals/visit_nether",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: travel to the nether. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:changed_dimension) is met."
+  }
+}

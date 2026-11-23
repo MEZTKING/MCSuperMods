@@ -1,0 +1,15 @@
+{
+  "data": {
+    "model": {
+      "model": "msm_starter:item/my_goals/flag",
+      "type": "minecraft:model"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:my_goals/flag",
+  "kind": "minecraft:item_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the tab's icon looks like: the root's icon names msm_starter:my_goals/flag in its minecraft:item_model component, and this definition shows the flat model below."
+  }
+}

@@ -14,6 +14,8 @@ import type {
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 import { hasFabric } from '../content/supports';
+import { ADVENTURE_MAP_PARAMETERS, adventureMapBundle } from './adventure-map';
+import { ARENA_GAME_PARAMETERS, arenaGameBundle } from './arena-game';
 import { ARMOUR_TRIM_PARAMETERS, armourTrimBundle } from './armour-trim';
 import { BACKPACK_PARAMETERS, backpackBundle } from './backpack';
 import { BANNER_PATTERN_PARAMETERS, bannerPatternBundle } from './banner-pattern';
@@ -55,14 +57,17 @@ import { functionStarterBundle } from './function-starter';
 import { GAME_RULE_PARAMETERS, gameRuleBundle } from './game-rule';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { GLIDER_PARAMETERS, gliderBundle } from './glider';
+import { GOALS_PARAMETERS, goalsBundle } from './goals';
 import { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 import { jigsawStructureBundle } from './jigsaw-structure';
 import { LIGHTS_PARAMETERS, lightsBundle } from './lights';
+import { LUCKY_BLOCK_PARAMETERS, luckyBlockBundle } from './lucky-block';
 import { MACHINE_PARAMETERS, machineBundle } from './machine';
 import { MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
 import { MOUNT_PARAMETERS, mountBundle } from './mount';
 import { musicDiscBundle } from './music-disc';
 import { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
+import { ONE_BLOCK_PARAMETERS, oneBlockBundle } from './one-block';
 import { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 import { PAINTING_PARAMETERS, paintingBundle } from './painting';
 import { PARTICLE_PARAMETERS, particleBundle } from './particle';
@@ -70,10 +75,13 @@ import { PET_PARAMETERS, petBundle } from './pet';
 import { PORTAL_PARAMETERS, portalBundle } from './portal';
 import { POT_PATTERN_PARAMETERS, potPatternBundle } from './pot-pattern';
 import { POTION_PARAMETERS, potionBundle } from './potion';
+import { RACE_PARAMETERS, raceBundle } from './race';
 import { recipePackBundle } from './recipe-pack';
 import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
 import { scriptedOreBundle } from './scripted-ore';
 import { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
+import { SKY_ISLANDS_PARAMETERS, skyIslandsBundle } from './sky-islands';
+import { SKYBLOCK_PARAMETERS, skyblockBundle } from './skyblock';
 import { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 import { STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
 import { STORAGE_CRATE_PARAMETERS, storageCrateBundle } from './storage-crate';
@@ -93,6 +101,8 @@ import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 import { worldgenPackBundle } from './worldgen-pack';
 
+export { ADVENTURE_MAP_PARAMETERS, adventureMapBundle, MAP_GAME_RULES } from './adventure-map';
+export { ARENA_GAME_PARAMETERS, ARENA_TEAMS, arenaGameBundle } from './arena-game';
 export { ARMOUR_TRIM_PARAMETERS, armourTrimBundle } from './armour-trim';
 export { BACKPACK_PARAMETERS, backpackBundle } from './backpack';
 export { BANNER_PATTERN_PARAMETERS, bannerPatternBundle } from './banner-pattern';
@@ -153,9 +163,18 @@ export { functionStarterBundle } from './function-starter';
 export { GAME_RULE_CATEGORIES, GAME_RULE_PARAMETERS, gameRuleBundle } from './game-rule';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
 export { GLIDER_PARAMETERS, gliderBundle } from './glider';
+export {
+  GOAL_BACKGROUNDS,
+  GOAL_CHOICES,
+  GOAL_ICONS,
+  GOALS_PARAMETERS,
+  goalsBundle,
+  goalsTabBundle,
+} from './goals';
 export { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
 export { LIGHTS_MEMBERS, LIGHTS_PARAMETERS, lightsBundle } from './lights';
+export { LUCKY_BLOCK_PARAMETERS, luckyBlockBundle } from './lucky-block';
 export {
   MACHINE_PARAMETERS,
   MACHINE_RECIPES,
@@ -166,6 +185,7 @@ export { MOB_SKIN_BIOMES, MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin'
 export { MOUNT_PARAMETERS, mountBundle } from './mount';
 export { musicDiscBundle, SONG } from './music-disc';
 export { MUSIC_DISC_ITEM_PARAMETERS, musicDiscItemBundle } from './music-disc-item';
+export { ONE_BLOCK_PARAMETERS, ONE_BLOCK_PHASES, oneBlockBundle } from './one-block';
 export { blankBundle, combinedBundle, dataPackBundle, resourcePackBundle } from './packs';
 export {
   PAINTING_MAX_BYTES,
@@ -183,6 +203,7 @@ export {
   POTION_PARAMETERS,
   potionBundle,
 } from './potion';
+export { RACE_PARAMETERS, raceBundle } from './race';
 export { recipePackBundle } from './recipe-pack';
 export {
   SCRIPTED_ITEM_PARAMETERS,
@@ -191,6 +212,16 @@ export {
 } from './scripted-item';
 export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
+export { SKY_ISLAND_BIOMES, SKY_ISLANDS_PARAMETERS, skyIslandsBundle } from './sky-islands';
+export {
+  CHEST_CHOICES,
+  GAME_FLOW_IDS,
+  GAME_KINDS,
+  ISLAND_SHAPES,
+  islandTemplate,
+  SKYBLOCK_PARAMETERS,
+  skyblockBundle,
+} from './skyblock';
 export { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 export { STONE_SET_MEMBERS, STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
 export {
@@ -1283,6 +1314,109 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       parameters: GAME_RULE_PARAMETERS,
       creator: { group: 'scripts', blurb: 'A world setting of your own, set with /gamerule.' },
       probeValues: [{ counts: true }],
+    },
+  ),
+  // The game flows (ADR 0117 D2, D3; B557), group `games`, in Home's order.
+  starter(
+    'skyblock',
+    'Skyblock',
+    'A game in a world of empty sky: a World Type of your own where players start on a small island with a chest (a lava bucket and ice for a cobblestone generator, seeds, a sapling and bone meal), placed when the first player joins, with extra wandering trader trades, recipes for sand and gravel, and goals. It works in a vanilla data pack; choose the World Type under More > World Type when creating a world, or use Play my game.',
+    'content',
+    ['datapack', 'resourcepack'],
+    skyblockBundle,
+    {
+      parameters: SKYBLOCK_PARAMETERS,
+      creator: { group: 'games', blurb: 'Start on a small island in an empty sky.' },
+      probeValues: [{ generator: true }],
+    },
+  ),
+  starter(
+    'one-block',
+    'One block',
+    'A game on one magic block that turns into the next block each time it is broken, phase after phase (plains, underground, the deep dark, the Nether, the ocean, the End), with a chest and a mob now and then, in an empty sky or high above your world. It works in a vanilla data pack.',
+    'content',
+    ['datapack', 'resourcepack'],
+    oneBlockBundle,
+    {
+      parameters: ONE_BLOCK_PARAMETERS,
+      creator: {
+        group: 'games',
+        blurb: 'One block that turns into the next each time you break it.',
+      },
+    },
+  ),
+  starter(
+    'sky-islands',
+    'Sky islands',
+    "A World Type of islands floating over the void, of the overworld's biomes or of one biome, with a start island where players begin. It works in a vanilla data pack; choose it under More > World Type when creating a world.",
+    'content',
+    ['datapack', 'resourcepack'],
+    skyIslandsBundle,
+    {
+      parameters: SKY_ISLANDS_PARAMETERS,
+      creator: { group: 'games', blurb: 'A world of islands floating in the sky.' },
+    },
+  ),
+  starter(
+    'lucky-block',
+    'Lucky block',
+    'A block of your own that does something random when broken: prizes from a loot table, a mob, an explosion, a small building or an effect, each as often as you choose, made with a Rule book. Lucky blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    luckyBlockBundle,
+    {
+      supports: hasFabric,
+      parameters: LUCKY_BLOCK_PARAMETERS,
+      creator: { group: 'games', blurb: 'A block that does something random when you break it.' },
+    },
+  ),
+  starter(
+    'adventure-map',
+    'Adventure map',
+    'The start of an adventure map: players start in adventure mode with a welcome message or screen, the game rules you pick are set when the world starts, checkpoints set where players respawn, and goals mark the way. Build the map in the game. It works in a vanilla data pack.',
+    'content',
+    ['datapack'],
+    adventureMapBundle,
+    {
+      parameters: ADVENTURE_MAP_PARAMETERS,
+      creator: { group: 'games', blurb: 'A map with a welcome, checkpoints and goals.' },
+      probeValues: [{ welcome: 'dialog' }],
+    },
+  ),
+  starter(
+    'arena-game',
+    'Arena game',
+    'Teams fighting rounds in an arena: two to four teams, defeats on the sidebar, a round timer on the boss bar and an arena rebuilt for each round, started with a function. It works in a vanilla data pack.',
+    'content',
+    ['datapack'],
+    arenaGameBundle,
+    {
+      parameters: ARENA_GAME_PARAMETERS,
+      creator: { group: 'games', blurb: 'Teams, points and rounds in an arena.' },
+    },
+  ),
+  starter(
+    'race',
+    'Race',
+    'A race from a start through checkpoints to a finish, timed on the action bar, with the best times on the sidebar. It works in a vanilla data pack.',
+    'content',
+    ['datapack'],
+    raceBundle,
+    {
+      parameters: RACE_PARAMETERS,
+      creator: { group: 'games', blurb: 'A timed race through checkpoints.' },
+    },
+  ),
+  starter(
+    'goals',
+    'Goals',
+    'A tab of goals in the advancements screen: get an item, craft something, defeat a mob, visit a place or reach a height, with a flag, a timer or an item on the tab. It works in a vanilla data pack.',
+    'content',
+    ['datapack', 'resourcepack'],
+    goalsBundle,
+    {
+      parameters: GOALS_PARAMETERS,
+      creator: { group: 'games', blurb: 'A tab of goals in the advancements screen.' },
     },
   ),
 ]);

@@ -1,0 +1,31 @@
+{
+  "data": {
+    "criteria": {
+      "started": {
+        "trigger": "minecraft:tick"
+      }
+    },
+    "display": {
+      "announce_to_chat": false,
+      "background": "minecraft:gui/advancements/backgrounds/adventure",
+      "description": "Grow your island",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:grass_block"
+      },
+      "show_toast": false,
+      "title": "Cloud Farm"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cloud_farm/goals/root",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The root of the tab \"Cloud Farm\": an advancement without a parent opens a tab of its own in the advancements screen (L). It is granted on the player's first tick, so the tab shows at once. The goals below hang from it, each from the one before.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

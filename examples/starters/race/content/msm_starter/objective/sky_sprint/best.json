@@ -1,0 +1,15 @@
+{
+  "data": {
+    "criterion": "dummy",
+    "display": "sidebar",
+    "name": "Best time",
+    "render": "integer"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_sprint/best",
+  "kind": "msm:objective",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Each runner's best time in seconds, on the sidebar, kept by the finish line's function."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "data": {
+    "difficulty": "normal",
+    "game_mode": "survival",
+    "game_rules": {},
+    "new_player": {
+      "message": "Welcome to Deep Block! Break the block under you."
+    },
+    "spawn_radius": 0,
+    "start": {
+      "at": [
+        0,
+        64,
+        0
+      ],
+      "spawn": [
+        0,
+        1,
+        0
+      ],
+      "structure": "msm_examples:deep_block/start"
+    },
+    "world": {
+      "end": "vanilla",
+      "nether": "vanilla",
+      "type": "void"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:deep_block",
+  "kind": "msm:world_setup",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the world starts: a World Type called Deep Block of empty sky (void), listed on the Create New World screen. When the first player joins, the start msm_examples:deep_block/start is placed at 0 64 0, the world spawn set on top of it and the player sent there; each new player gets a welcome, once. Everything lowers to plain data pack files.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

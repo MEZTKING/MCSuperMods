@@ -1,0 +1,18 @@
+{
+  "data": {
+    "collision": "pushOtherTeams",
+    "colour": "blue",
+    "friendly_fire": false,
+    "name": "Blue",
+    "name_tags": "always",
+    "prefix": "[Blue] ",
+    "see_invisible_friends": true
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:arena/blue",
+  "kind": "msm:team",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The blue team: blue names with a [Blue] tag, team mates cannot hurt each other. It is made when the world loads, and the start function puts players on it."
+  }
+}

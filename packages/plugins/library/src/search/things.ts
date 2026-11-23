@@ -598,17 +598,16 @@ const WORLDS: SearchWordGroup[] = [
   },
   {
     idea: 'skyblock',
-    same: [
-      'sky block',
-      'sky island',
-      'void world',
-      'empty world',
-      'floating island',
-      'one block',
-      'oneblock',
-    ],
+    same: ['sky block', 'void world', 'empty world'],
     phrases: ['empty sky', 'one island', 'start island', 'island in the sky'],
     near: ['void', 'sky'],
+  },
+  // The game flows' own ideas (B557): one block and sky islands have flows of their own now.
+  { idea: 'one block', same: ['oneblock', 'single block'], near: ['skyblock'] },
+  {
+    idea: 'sky islands',
+    same: ['sky island', 'floating island', 'floating islands'],
+    near: ['skyblock', 'sky'],
   },
   { idea: 'void', same: ['empty', 'air world'] },
   {

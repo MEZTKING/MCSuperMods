@@ -1,0 +1,39 @@
+{
+  "data": {
+    "dimension": "minecraft:overworld",
+    "from": [
+      -16,
+      100,
+      -16
+    ],
+    "name": "Four Kingdoms",
+    "reset": {
+      "structures": [
+        {
+          "at": [
+            -16,
+            100,
+            -16
+          ],
+          "structure": "msm_examples:four_kingdoms/arena_build"
+        }
+      ]
+    },
+    "to": [
+      15,
+      104,
+      15
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:four_kingdoms/arena",
+  "kind": "msm:area",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The arena's area, floating at height 100 above the spawn so the land does not matter. Resetting it removes the mobs and items in it and places msm_examples:four_kingdoms/arena_build again: the start function does that, and so does the end of a round if chosen. It also knows when players walk in or out.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

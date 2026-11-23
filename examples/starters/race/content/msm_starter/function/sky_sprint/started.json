@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "# The start line of Sky Sprint: run as a runner standing in the start",
+      "function msm_starter:msm_games/timer/sky_sprint/clock/start",
+      "advancement revoke @s only msm_starter:sky_sprint/lines/checkpoint_1",
+      "advancement revoke @s only msm_starter:sky_sprint/lines/checkpoint_2",
+      "advancement revoke @s only msm_starter:sky_sprint/lines/finish",
+      "advancement revoke @s only msm_starter:sky_sprint/lines/start"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_sprint/started",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Starts the clock afresh while a runner stands in the start, and takes back the lines' advancements so they fire again this run; it takes back its own last, so it fires again a moment later while the runner is still there. The clock therefore runs from the moment they leave."
+  }
+}

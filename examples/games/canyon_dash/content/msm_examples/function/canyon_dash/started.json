@@ -1,0 +1,24 @@
+{
+  "data": {
+    "lines": [
+      "# The start line of Canyon Dash: run as a runner standing in the start",
+      "function msm_examples:msm_games/timer/canyon_dash/clock/start",
+      "advancement revoke @s only msm_examples:canyon_dash/lines/checkpoint_1",
+      "advancement revoke @s only msm_examples:canyon_dash/lines/checkpoint_2",
+      "advancement revoke @s only msm_examples:canyon_dash/lines/checkpoint_3",
+      "advancement revoke @s only msm_examples:canyon_dash/lines/finish",
+      "advancement revoke @s only msm_examples:canyon_dash/lines/start"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:canyon_dash/started",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Starts the clock afresh while a runner stands in the start, and takes back the lines' advancements so they fire again this run; it takes back its own last, so it fires again a moment later while the runner is still there. The clock therefore runs from the moment they leave.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

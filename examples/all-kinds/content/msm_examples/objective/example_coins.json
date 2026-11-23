@@ -1,0 +1,24 @@
+{
+  "data": {
+    "criterion": "dummy",
+    "display": "sidebar",
+    "name": "Coins",
+    "number_format": {
+      "bold": true,
+      "colour": "yellow",
+      "type": "styled"
+    },
+    "render": "integer"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:example_coins",
+  "kind": "msm:objective",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A scoreboard objective, made when the world loads if it is missing, named msm_examples.example_coins in commands. The criterion dummy means only commands and Rules change it. It shows on the sidebar with yellow bold numbers. Change a player's coins with /scoreboard players add or the Rules step Add to a score.",
+    "tags": [
+      "example",
+      "game-kits"
+    ]
+  }
+}

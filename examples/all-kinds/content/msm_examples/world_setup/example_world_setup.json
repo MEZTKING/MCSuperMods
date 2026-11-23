@@ -1,0 +1,48 @@
+{
+  "data": {
+    "difficulty": "normal",
+    "game_mode": "survival",
+    "game_rules": {
+      "spawn_phantoms": false
+    },
+    "new_player": {
+      "items": [
+        {
+          "count": 4,
+          "item": "minecraft:bread"
+        }
+      ],
+      "message": "Welcome! Do not fall."
+    },
+    "spawn_radius": 0,
+    "start": {
+      "at": [
+        0,
+        64,
+        0
+      ],
+      "spawn": [
+        1,
+        2,
+        1
+      ],
+      "structure": "msm_examples:example_sky_island"
+    },
+    "world": {
+      "end": "vanilla",
+      "nether": "vanilla",
+      "type": "void"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:example_world_setup",
+  "kind": "msm:world_setup",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the world starts, once: world.type void makes a World Type of empty sky called Example World Setup on the Create New World screen. When the first player joins, start places msm_examples:example_sky_island with its corner at 0 64 0, sets the world spawn on it and sends the player there. game_rules are set when the world first starts (no phantoms here). new_player gives each player four bread and a welcome, once, by an advancement on their first tick. It all lowers to plain data pack files under msm_games/.",
+    "tags": [
+      "example",
+      "game-kits"
+    ]
+  }
+}

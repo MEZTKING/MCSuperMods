@@ -1,0 +1,18 @@
+{
+  "data": {
+    "lines": [
+      "tellraw @s {\"text\":\"Checkpoint 2\",\"color\":\"aqua\"}"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:canyon_dash/passed_checkpoint_2",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Says \"Checkpoint 2\" in the runner's chat when they pass it.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

@@ -162,6 +162,14 @@ const WIZARDS = [
   'custom-command',
   'creative-tab',
   'game-rule',
+  'skyblock',
+  'one-block',
+  'sky-islands',
+  'lucky-block',
+  'adventure-map',
+  'arena-game',
+  'race',
+  'goals',
 ];
 
 /** The Creator flows (ADR 0043 D1) and their groups. */
@@ -228,6 +236,15 @@ const FLOWS: Record<string, string> = {
   'vehicle-boat': 'vehicles',
   'scripted-item': 'scripts',
   'game-rule': 'scripts',
+  // The game flows (ADR 0117 D2; B557).
+  skyblock: 'games',
+  'one-block': 'games',
+  'sky-islands': 'games',
+  'lucky-block': 'games',
+  'adventure-map': 'games',
+  'arena-game': 'games',
+  race: 'games',
+  goals: 'games',
 };
 
 describe('wizard starters', () => {

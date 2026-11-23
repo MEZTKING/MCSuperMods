@@ -1,0 +1,27 @@
+{
+  "data": {
+    "action": {
+      "label": "Begin"
+    },
+    "body": {
+      "contents": "Follow the crystal road to its end. The checkpoints keep your place.",
+      "type": "minecraft:plain_message"
+    },
+    "title": {
+      "color": "gold",
+      "text": "Crystal Road"
+    },
+    "type": "minecraft:notice"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crystal_road/welcome",
+  "kind": "minecraft:dialog",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The welcome screen: a dialog of the type notice, with the map's name, the welcome and one button. The world setup opens it for each new player, once.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

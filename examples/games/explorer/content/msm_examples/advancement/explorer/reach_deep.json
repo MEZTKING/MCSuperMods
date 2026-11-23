@@ -1,0 +1,44 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "player": {
+            "entity": "this",
+            "predicate": {
+              "location": {
+                "position": {
+                  "y": {
+                    "max": -50
+                  }
+                }
+              }
+            },
+            "type": "minecraft:entity_properties"
+          }
+        },
+        "trigger": "minecraft:location"
+      }
+    },
+    "display": {
+      "description": "Stand at height -50 or below",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:deepslate"
+      },
+      "title": "Deep Down"
+    },
+    "parent": "msm_examples:explorer/reach_sky"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:explorer/reach_deep",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: stand at height -50 or below. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:location) is met.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

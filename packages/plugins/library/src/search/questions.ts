@@ -2097,6 +2097,205 @@ export const QUESTIONS: Record<string, Hints> = {
     },
     counts: { words: ['counts', 'statistic', 'stat', 'count the greetings'] },
   },
+  // The game flows (ADR 0117 D2; B557).
+  skyblock: {
+    game_name: NAME,
+    island: {
+      words: ['island', 'start on'],
+      choiceWords: {
+        classic: ['classic', 'corner', 'l shaped'],
+        round: ['round', 'circle'],
+        tiny: ['tiny', 'small'],
+        own: ['my own', 'own building'],
+      },
+    },
+    chest: {
+      words: ['chest', 'in the chest', 'starts with'],
+      choiceWords: {
+        lava_ice: ['lava', 'ice', 'cobblestone generator'],
+        bread: ['bread', 'food'],
+        mushrooms: ['mushrooms'],
+      },
+    },
+    mobs: { words: ['mobs', 'monsters spawn'] },
+    nether: { words: ['nether'], choiceWords: { void: ['empty nether', 'void nether'] } },
+    trades: { words: ['trades', 'wandering trader'] },
+    recipes: { words: ['recipes', 'sand', 'gravel'] },
+    generator: { words: ['generator', 'own liquid'] },
+    generator_name: {
+      words: ['liquid called'],
+      after: ['liquid called'],
+      appliesWhen: { generator: [true] },
+    },
+    generator_makes: { words: ['makes with water'], appliesWhen: { generator: [true] } },
+    goals: { words: ['goals', 'advancements'] },
+  },
+  'one-block': {
+    game_name: NAME,
+    phases: {
+      words: ['phases'],
+      choiceWords: {
+        deep_dark: ['deep dark', 'sculk'],
+        nether: ['nether'],
+        ocean: ['ocean', 'sea'],
+        end: ['the end', 'end'],
+      },
+    },
+    breaks: { role: 'main-number', words: ['breaks'] },
+    chests: { words: ['chests'] },
+    mobs: { words: ['mobs'] },
+    loop: { words: ['loop', 'start again'] },
+    world: {
+      words: ['world'],
+      choiceWords: { void: ['empty', 'void', 'sky'], vanilla: ['normal world', 'normal'] },
+    },
+  },
+  'sky-islands': {
+    game_name: NAME,
+    islands: {
+      words: ['islands'],
+      choiceWords: { floating: ['floating'], end: ['end', 'end like'] },
+    },
+    biome: {
+      words: ['biome'],
+      choiceWords: {
+        'minecraft:cherry_grove': ['cherry', 'blossom', 'pink'],
+        'minecraft:snowy_plains': ['snow', 'snowy'],
+        'minecraft:desert': ['desert', 'sand'],
+        'minecraft:jungle': ['jungle'],
+        'minecraft:mushroom_fields': ['mushroom', 'no monsters'],
+      },
+    },
+    start_island: { words: ['start island'] },
+  },
+  'lucky-block': {
+    block_name: NAME,
+    loot: { words: ['prizes', 'loot'] },
+    mob: { words: ['mob appears', 'spawns a mob'] },
+    mob_kind: {
+      words: ['which mob'],
+      choiceWords: {
+        'minecraft:zombie': ['zombie'],
+        'minecraft:creeper': ['creeper'],
+        'minecraft:skeleton': ['skeleton'],
+        'minecraft:chicken': ['chicken'],
+        'minecraft:pig': ['pig'],
+      },
+    },
+    explosion: { words: ['explosion', 'explodes', 'boom'] },
+    building: { words: ['building', 'house', 'hut'] },
+    effect: { words: ['effect'] },
+    effect_kind: {
+      words: ['which effect'],
+      choiceWords: {
+        'minecraft:speed': ['speed', 'fast'],
+        'minecraft:regeneration': ['healing', 'regeneration'],
+        'minecraft:jump_boost': ['jump', 'jumps'],
+        'minecraft:levitation': ['levitation', 'float'],
+        'minecraft:blindness': ['blindness', 'blind'],
+      },
+    },
+    colour: MAIN_COLOUR,
+    mark: {
+      words: ['mark', 'on it'],
+      choiceWords: { question: ['question mark'], star: ['star'] },
+    },
+  },
+  'adventure-map': {
+    map_name: NAME,
+    world: { words: ['world'], choiceWords: { flat: ['flat', 'superflat'] } },
+    start_as: {
+      words: ['start as', 'game mode'],
+      choiceWords: { survival: ['survival'], creative: ['creative'] },
+    },
+    welcome: {
+      words: ['welcome'],
+      choiceWords: { dialog: ['welcome screen', 'dialog', 'screen'], none: ['no welcome'] },
+    },
+    welcome_text: { words: ['says'], after: ['says', 'saying'] },
+    game_rules: {
+      words: ['game rules', 'rules'],
+      choiceWords: {
+        no_griefing: ['no griefing', 'mob griefing'],
+        keep_inventory: ['keep inventory'],
+        always_day: ['always day', 'no night'],
+        no_weather: ['no weather', 'no rain'],
+        no_fall_damage: ['no fall damage'],
+        no_monsters: ['no monsters', 'peaceful'],
+      },
+    },
+    checkpoints: { role: 'main-number', words: ['checkpoints'] },
+    goals: { words: ['goals', 'advancements'] },
+  },
+  'arena-game': {
+    game_name: NAME,
+    teams: {
+      words: ['teams'],
+      choiceWords: { '2': ['two teams'], '3': ['three teams'], '4': ['four teams'] },
+    },
+    size: {
+      words: ['arena', 'size'],
+      choiceWords: { small: ['small'], medium: ['medium'], large: ['large', 'big'] },
+    },
+    floor: {
+      words: ['made of', 'floor'],
+      choiceWords: {
+        'minecraft:smooth_sandstone': ['sandstone'],
+        'minecraft:polished_deepslate': ['deepslate'],
+        'minecraft:quartz_block': ['quartz'],
+      },
+    },
+    rebuild: { words: ['rebuild', 'reset'] },
+    minutes: { role: 'main-number', words: ['minutes', 'round length'] },
+    win_score: { words: ['score to win', 'to win', 'points to win'] },
+    kit: {
+      words: ['kit', 'players get'],
+      choiceWords: {
+        sword: ['sword', 'shield'],
+        bow: ['bow', 'arrows'],
+        snowballs: ['snowballs', 'snowball fight'],
+        none: ['no kit', 'nothing'],
+      },
+    },
+  },
+  race: {
+    race_name: NAME,
+    checkpoints: { words: ['checkpoints'] },
+    count: {
+      words: ['timer'],
+      choiceWords: {
+        up: ['stopwatch', 'count up'],
+        down: ['time limit', 'count down', 'countdown'],
+      },
+    },
+    limit: {
+      role: 'main-number',
+      words: ['seconds', 'time limit'],
+      appliesWhen: { count: ['down'] },
+    },
+    best: { words: ['best time', 'sidebar', 'leaderboard'] },
+  },
+  goals: {
+    tab_name: NAME,
+    goals: {
+      words: ['goals'],
+      choiceWords: {
+        get_diamond: ['diamond'],
+        defeat_dragon: ['dragon', 'ender dragon'],
+        visit_nether: ['nether'],
+        visit_end: ['the end'],
+      },
+    },
+    icon: {
+      words: ['picture', 'icon'],
+      choiceWords: { flag: ['flag'], timer: ['timer', 'clock', 'stopwatch'] },
+    },
+    icon_colour: MAIN_COLOUR,
+    background: {
+      words: ['background', 'behind'],
+      choiceWords: { nether: ['netherrack'], end: ['end stone'] },
+    },
+  },
 };
 
 /** A machine recipe question (B650 SQ6 rules 1 and 3: "from" words, filled in order). */

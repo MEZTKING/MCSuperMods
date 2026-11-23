@@ -1,0 +1,15 @@
+{
+  "data": {
+    "criterion": "playerKillCount",
+    "display": "sidebar",
+    "name": "Defeats",
+    "render": "integer"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:arena/points",
+  "kind": "msm:objective",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The points: how many players each player has defeated, counted by the game (playerKillCount) and shown on the sidebar. The start function sets them to 0; at the end of a round, players with 5 or more win."
+  }
+}

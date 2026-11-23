@@ -1,5 +1,6 @@
 /**
- * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4, ADR 0101 D4, ADR 0119 D11)
+ * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4, ADR 0101 D4, ADR 0119 D11,
+ * ADR 0117 D3)
  * under their headings,
  * and what each opens: "Surprise me", Creator flows by flow id (the library's starters with
  * `creator`), other library starters by id, the Rule book, the picture painter or the AI helper.
@@ -125,6 +126,56 @@ export const MAKE_WORLD_PICKS: readonly VeryEasyPick[] = [
 ];
 
 /**
+ * The eight games "Make a game" offers (ADR 0117 D2, D3, plan "Creator flows, Very easy picks and
+ * Try it grounds"), in order, each a flow of the library's Creator group `games`.
+ */
+export const MAKE_GAME_PICKS: readonly VeryEasyPick[] = [
+  {
+    id: 'skyblock',
+    flowId: 'skyblock',
+    label: 'Skyblock',
+    sentence: 'Start on a small island with a chest, in an empty sky.',
+  },
+  {
+    id: 'one-block',
+    flowId: 'one-block',
+    label: 'One block',
+    sentence: 'One magic block that turns into the next each time you break it.',
+  },
+  {
+    id: 'sky-islands',
+    flowId: 'sky-islands',
+    label: 'Sky islands',
+    sentence: 'A world of islands floating in the sky.',
+  },
+  {
+    id: 'lucky-block',
+    flowId: 'lucky-block',
+    label: 'Lucky block',
+    sentence: 'A block that does something random when you break it.',
+  },
+  {
+    id: 'adventure-map',
+    flowId: 'adventure-map',
+    label: 'Adventure map',
+    sentence: 'A map with a welcome, checkpoints and goals.',
+  },
+  {
+    id: 'arena-game',
+    flowId: 'arena-game',
+    label: 'Arena game',
+    sentence: 'Teams, points and rounds in an arena.',
+  },
+  { id: 'race', flowId: 'race', label: 'Race', sentence: 'A timed race through checkpoints.' },
+  {
+    id: 'goals',
+    flowId: 'goals',
+    label: 'Goals',
+    sentence: 'A list of goals in the advancements screen.',
+  },
+];
+
+/**
  * The hand-over of "Empty sky with a start island" (ADR 0119 D11): once the library has the
  * game modes plan's Skyblock flow (ADR 0114), "Make a world" offers that flow in its place.
  */
@@ -140,7 +191,12 @@ export function pickFlowIds(picks: readonly VeryEasyPick[]): string[] {
 /** The pick of `flowId` among the tile picks, or `undefined`. */
 export function veryEasyPickOf(
   flowId: string,
-  picks: readonly VeryEasyPick[] = [...MAKE_BLOCK_PICKS, ...MAKE_ITEM_PICKS, ...MAKE_WORLD_PICKS],
+  picks: readonly VeryEasyPick[] = [
+    ...MAKE_BLOCK_PICKS,
+    ...MAKE_ITEM_PICKS,
+    ...MAKE_WORLD_PICKS,
+    ...MAKE_GAME_PICKS,
+  ],
 ): VeryEasyPick | undefined {
   return picks.find((pick) => pick.flowId === flowId);
 }
@@ -185,6 +241,7 @@ export const TILE_GROUPS = [
   { id: 'vehicles', title: 'Vehicles' },
   { id: 'magic', title: 'Magic' },
   { id: 'worlds', title: 'Worlds' },
+  { id: 'games', title: 'Games' },
   { id: 'looks', title: 'Looks and sounds' },
   { id: 'more', title: 'Rules and help' },
 ] as const;
@@ -387,6 +444,15 @@ export const MAKE_TILES: readonly MakeTile[] = [
     sentence: 'An extra drop from a mob, block or chest, or a new villager trade.',
     group: 'worlds',
     action: flows('extra-drop', 'villager-trade'),
+  },
+  {
+    id: 'game',
+    label: 'Make a game',
+    sentence:
+      'A Skyblock, one block, sky islands, a lucky block, an adventure map, an arena, a race or goals.',
+    group: 'games',
+    // The eight games (ADR 0117 D3) with their Very easy words.
+    action: withPicks([], MAKE_GAME_PICKS),
   },
   {
     id: 'looks',

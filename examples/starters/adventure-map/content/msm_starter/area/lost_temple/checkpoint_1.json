@@ -1,0 +1,23 @@
+{
+  "data": {
+    "dimension": "minecraft:overworld",
+    "from": [
+      30,
+      -64,
+      -2
+    ],
+    "name": "Checkpoint 1",
+    "to": [
+      34,
+      319,
+      2
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:lost_temple/checkpoint_1",
+  "kind": "msm:area",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Checkpoint 1: a column five blocks wide through the whole height of the overworld, 32 blocks east of the spawn. Its tick function tags the players inside, and the checkpoint's advancement tests that tag, so moving the area in the Area Studio moves the checkpoint. Move it onto your build."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "data": {
+    "criteria": {
+      "started": {
+        "trigger": "minecraft:tick"
+      }
+    },
+    "display": {
+      "announce_to_chat": false,
+      "background": "minecraft:gui/advancements/backgrounds/stone",
+      "description": "Goals to reach",
+      "frame": "task",
+      "icon": {
+        "components": {
+          "minecraft:item_model": "msm_starter:my_goals/flag"
+        },
+        "id": "minecraft:paper"
+      },
+      "show_toast": false,
+      "title": "My Goals"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:my_goals/root",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The root of the tab \"My Goals\": an advancement without a parent opens a tab of its own in the advancements screen (L). It is granted on the player's first tick, so the tab shows at once. Its icon is paper showing MSM's drawn flag through the minecraft:item_model component, which names msm_starter:my_goals/flag; no item is added, so it works in a vanilla data pack. The goals below hang from it, each from the one before."
+  }
+}

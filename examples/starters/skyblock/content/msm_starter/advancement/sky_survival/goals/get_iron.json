@@ -1,0 +1,32 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "items": [
+            {
+              "items": "minecraft:iron_ingot"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "description": "Get an iron ingot",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:iron_ingot"
+      },
+      "title": "Iron Age"
+    },
+    "parent": "msm_starter:sky_survival/goals/craft_furnace"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_survival/goals/get_iron",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: get an iron ingot. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:inventory_changed) is met."
+  }
+}

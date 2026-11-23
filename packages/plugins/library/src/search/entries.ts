@@ -1,8 +1,7 @@
 /**
  * Extra doors to the library's own flows and examples (ADR 0124 D13): things known by another
  * name than the flow that makes them ("Elytra" is the Glider flow, "Sleeping bag" the Bed flow
- * with its kind answered, "Skyblock" the Empty sky flow until the game modes plan adds its own
- * Skyblock flow, B557), each opening the flow with the answers that make that thing. An entry is
+ * with its kind answered, "Skyblock" the Skyblock flow of the game modes plan, B557), each opening the flow with the answers that make that thing. An entry is
  * available when the thing it opens is (the flow's own `supports`).
  *
  * Every starter, example, question and value named here is checked in `test/search.test.ts`;
@@ -445,11 +444,38 @@ const MOBS: SearchEntryContribution[] = [
 ];
 
 const WORLDS: SearchEntryContribution[] = [
-  flow('skyblock', 'Skyblock', 'An empty sky world for a Skyblock.', 'world-empty-sky', {}, [
-    'sky block',
-    'void world',
-    'one block',
-  ]),
+  flow(
+    'skyblock',
+    'Skyblock',
+    'A game on a small island with a chest in an empty sky.',
+    'skyblock',
+    {},
+    ['sky block', 'void world'],
+  ),
+  flow(
+    'oneblock',
+    'One block',
+    'A game on one block that turns into the next each time you break it.',
+    'one-block',
+    {},
+    ['oneblock', 'one block'],
+  ),
+  flow(
+    'pvp-arena',
+    'PvP arena',
+    'Two teams fighting rounds in an arena, with points on the sidebar.',
+    'arena-game',
+    { teams: '2' },
+    ['pvp', 'team fight'],
+  ),
+  flow(
+    'parkour',
+    'Parkour race',
+    'A timed run through checkpoints, the best times on the sidebar.',
+    'race',
+    {},
+    ['parkour', 'time trial'],
+  ),
   flow(
     'superflat-biome',
     'Flat world',
@@ -501,6 +527,13 @@ const EXAMPLES: SearchEntryContribution[] = [
     'A block that does something random when broken, made with Rules.',
     'example_msm_rules',
     ['random block'],
+  ),
+  example(
+    'sky-farm',
+    'Skyblock farm',
+    'A ready-made Skyblock on a round island with food in the chest.',
+    'example_game_cloud_farm',
+    ['sky farm'],
   ),
   example(
     'furniture',

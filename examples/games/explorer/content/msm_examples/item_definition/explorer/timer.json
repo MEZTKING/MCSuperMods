@@ -1,0 +1,19 @@
+{
+  "data": {
+    "model": {
+      "model": "msm_examples:item/explorer/timer",
+      "type": "minecraft:model"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:explorer/timer",
+  "kind": "minecraft:item_definition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the tab's icon looks like: the root's icon names msm_examples:explorer/timer in its minecraft:item_model component, and this definition shows the flat model below.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

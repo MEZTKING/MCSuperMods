@@ -1,0 +1,40 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "player": {
+            "entity": "this",
+            "predicate": {
+              "location": {
+                "biomes": "minecraft:ocean"
+              }
+            },
+            "type": "minecraft:entity_properties"
+          }
+        },
+        "trigger": "minecraft:location"
+      }
+    },
+    "display": {
+      "description": "Stand in an ocean",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:kelp"
+      },
+      "title": "Sea Breeze"
+    },
+    "parent": "msm_examples:explorer/visit_desert"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:explorer/visit_ocean",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: stand in an ocean. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:location) is met.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

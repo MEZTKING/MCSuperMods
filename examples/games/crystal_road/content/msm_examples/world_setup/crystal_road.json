@@ -1,0 +1,46 @@
+{
+  "data": {
+    "difficulty": "normal",
+    "game_mode": "adventure",
+    "game_rules": {
+      "advance_time": false,
+      "keep_inventory": true,
+      "spawn_monsters": false
+    },
+    "goals": "msm_examples:crystal_road/goals/root",
+    "new_player": {
+      "dialog": "msm_examples:crystal_road/welcome"
+    },
+    "spawn_radius": 0,
+    "world": {
+      "end": "vanilla",
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:dirt",
+          "height": 2
+        },
+        {
+          "block": "minecraft:grass_block",
+          "height": 1
+        }
+      ],
+      "nether": "vanilla",
+      "type": "flat"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crystal_road",
+  "kind": "msm:world_setup",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the world starts: a World Type called Crystal Road, flat grass on dirt over bedrock, listed on the Create New World screen. Players play in adventure mode on normal difficulty; when the world first starts the game rules are set: keep things on death, always day, no monsters. Each new player is welcomed by the welcome screen, once. Build your map in the game and bring the builds back as structures. Everything here lowers to plain data pack files.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

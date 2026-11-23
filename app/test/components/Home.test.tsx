@@ -101,6 +101,7 @@ describe('Home tiles', () => {
       'worlds: Make a portal',
       'worlds: Make a building',
       'worlds: Change drops and trades',
+      'games: Make a game',
       'looks: Change how Minecraft looks',
       'looks: Make a painting or pattern',
       'looks: Make a sound or music',
@@ -221,6 +222,7 @@ describe('Home tiles', () => {
       'home-group-vehicles',
       'home-group-magic',
       'home-group-worlds',
+      'home-group-games',
       'home-group-looks',
       'home-group-more',
     ]);

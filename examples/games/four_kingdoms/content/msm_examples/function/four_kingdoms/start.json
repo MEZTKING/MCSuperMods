@@ -1,0 +1,61 @@
+{
+  "data": {
+    "lines": [
+      "# Starts a round of Four Kingdoms: run with /function msm_examples:four_kingdoms/start",
+      "team leave @a",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "team join msm_examples.four_kingdoms.red @r[team=]",
+      "team join msm_examples.four_kingdoms.blue @r[team=]",
+      "team join msm_examples.four_kingdoms.green @r[team=]",
+      "team join msm_examples.four_kingdoms.yellow @r[team=]",
+      "scoreboard players set @a msm_examples.four_kingdoms.points 0",
+      "function msm_examples:msm_games/area/four_kingdoms/arena/reset",
+      "tp @a 0 101 0",
+      "clear @a",
+      "give @a minecraft:bow 1",
+      "give @a minecraft:arrow 32",
+      "give @a minecraft:stone_sword 1",
+      "give @a minecraft:bread 8",
+      "function msm_examples:msm_games/timer/four_kingdoms/round/start",
+      "title @a title {\"text\":\"Fight!\",\"color\":\"gold\"}"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:four_kingdoms/start",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Starts a round: takes everyone off their team and puts them on the red, blue, green, yellow teams in turn at random, sets the points to 0, builds the arena afresh, sends everyone to its middle with a bow and arrows and starts the round timer. Run it with /function msm_examples:four_kingdoms/start.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

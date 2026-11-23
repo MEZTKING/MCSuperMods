@@ -1,0 +1,23 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:wandering_trader/cloud_farm_sand",
+      "msm_examples:wandering_trader/cloud_farm_red_sand",
+      "msm_examples:wandering_trader/cloud_farm_birch_sapling",
+      "msm_examples:wandering_trader/cloud_farm_spruce_sapling",
+      "msm_examples:wandering_trader/cloud_farm_sugar_cane",
+      "msm_examples:wandering_trader/cloud_farm_pumpkin_seeds"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:wandering_trader/common",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the sky trades to the vanilla trade tag the wandering trader draws its common trades from. The export merges it into vanilla's tag (replace stays false), so the vanilla trades stay; each trader draws a few, so a trade is a candidate, not a certainty.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

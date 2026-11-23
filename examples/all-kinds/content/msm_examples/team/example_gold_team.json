@@ -1,0 +1,22 @@
+{
+  "data": {
+    "collision": "pushOtherTeams",
+    "colour": "gold",
+    "friendly_fire": false,
+    "name": "Gold",
+    "name_tags": "hideForOtherTeams",
+    "prefix": "* ",
+    "see_invisible_friends": true
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:example_gold_team",
+  "kind": "msm:team",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A team, made when the world loads if it is missing; its options are set on every load. Its players have gold names with a star before them, cannot hurt each other and see each other when invisible. Other teams do not see their name tags, and they push only other teams. Put players on it with /team join or the Rules step Join a team.",
+    "tags": [
+      "example",
+      "game-kits"
+    ]
+  }
+}

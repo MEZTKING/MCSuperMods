@@ -1,0 +1,62 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "do": [
+              {
+                "loot_table": "msm_examples:star_block/prizes",
+                "step": "drop_loot",
+                "where": "here"
+              },
+              {
+                "count": 1,
+                "mob": "minecraft:creeper",
+                "step": "spawn_mob",
+                "where": "here"
+              },
+              {
+                "step": "place_structure",
+                "structure": "msm_examples:star_block/surprise_hut",
+                "where": "here"
+              },
+              {
+                "effect": "minecraft:jump_boost",
+                "level": 1,
+                "seconds": 30,
+                "step": "give_effect"
+              }
+            ],
+            "step": "pick_random",
+            "weights": [
+              3,
+              1,
+              6,
+              3
+            ]
+          }
+        ],
+        "key": "open_star_block",
+        "name": "Open the star block",
+        "when": {
+          "subject": "msm_examples:star_block",
+          "trigger": "block_broken"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:star_block_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "When a player breaks msm_examples:star_block, one thing happens, picked at random by weight: it drops prizes rolled from msm_examples:star_block/prizes (weight 3), or brings a creeper (weight 1), or places the building msm_examples:star_block/surprise_hut (weight 6), or gives higher jumps for 30 seconds (weight 3). On export the book becomes the block's break event and a generated script, so it needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

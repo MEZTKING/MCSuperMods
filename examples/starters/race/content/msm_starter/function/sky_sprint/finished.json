@@ -1,0 +1,20 @@
+{
+  "data": {
+    "lines": [
+      "# The finish line of Sky Sprint: run as the runner, only while the clock runs",
+      "execute unless score #sky_sprint.clock.on msm_starter.msm_timers matches 1 run return 0",
+      "function msm_starter:msm_games/timer/sky_sprint/clock/stop",
+      "title @s title {\"text\":\"Finished!\",\"color\":\"gold\"}",
+      "title @s subtitle [{\"score\":{\"name\":\"#sky_sprint.clock\",\"objective\":\"msm_starter.msm_timers\"}},{\"text\":\" seconds\"}]",
+      "execute unless score @s msm_starter.sky_sprint.best matches 1.. run scoreboard players operation @s msm_starter.sky_sprint.best = #sky_sprint.clock msm_starter.msm_timers",
+      "scoreboard players operation @s msm_starter.sky_sprint.best < #sky_sprint.clock msm_starter.msm_timers"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_sprint/finished",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Run when a runner reaches the finish, while the clock runs: stops it and shows the time, and keeps it in msm_starter.sky_sprint.best when it is less than their best so far."
+  }
+}

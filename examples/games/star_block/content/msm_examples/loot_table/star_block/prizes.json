@@ -1,0 +1,77 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": {
+                "max": 4,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:iron_ingot",
+            "type": "minecraft:item",
+            "weight": 5
+          },
+          {
+            "modifier": {
+              "count": {
+                "max": 3,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:gold_ingot",
+            "type": "minecraft:item",
+            "weight": 4
+          },
+          {
+            "name": "minecraft:diamond",
+            "type": "minecraft:item",
+            "weight": 2
+          },
+          {
+            "name": "minecraft:golden_apple",
+            "type": "minecraft:item",
+            "weight": 2
+          },
+          {
+            "name": "minecraft:ender_pearl",
+            "type": "minecraft:item",
+            "weight": 2
+          },
+          {
+            "modifier": {
+              "count": 6,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:cookie",
+            "type": "minecraft:item",
+            "weight": 4
+          }
+        ],
+        "rolls": {
+          "max": 4,
+          "min": 2,
+          "type": "minecraft:uniform"
+        }
+      }
+    ],
+    "type": "minecraft:chest"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:star_block/prizes",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The prizes: two to four rolls of iron, gold, a diamond, a golden apple, an ender pearl or cookies. Change the entries and weights to change the prizes.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

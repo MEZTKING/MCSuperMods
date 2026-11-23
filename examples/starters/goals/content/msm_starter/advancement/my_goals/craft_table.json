@@ -1,0 +1,28 @@
+{
+  "data": {
+    "criteria": {
+      "done": {
+        "conditions": {
+          "recipes": "minecraft:crafting_table"
+        },
+        "trigger": "minecraft:recipe_crafted"
+      }
+    },
+    "display": {
+      "description": "Craft a crafting table",
+      "frame": "task",
+      "icon": {
+        "id": "minecraft:crafting_table"
+      },
+      "title": "Workbench"
+    },
+    "parent": "msm_starter:my_goals/get_wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:my_goals/craft_table",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A goal: craft a crafting table. It shows in the tab once the goal before it is done (parent), and the game grants it when its criterion (minecraft:recipe_crafted) is met."
+  }
+}

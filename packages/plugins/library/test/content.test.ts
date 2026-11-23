@@ -17,6 +17,8 @@ import {
   boxSkinPng,
   categoryTag,
   entityBehaviourExamples,
+  GAMES_CATEGORY,
+  gameExamples,
   kindExamples,
   libraryExamples,
   libraryStarters,
@@ -113,6 +115,14 @@ const STARTER_IDS = [
   'custom-command',
   'creative-tab',
   'game-rule',
+  'skyblock',
+  'one-block',
+  'sky-islands',
+  'lucky-block',
+  'adventure-map',
+  'arena-game',
+  'race',
+  'goals',
 ];
 
 /**
@@ -239,6 +249,13 @@ const KIND_IDS = [
   'msm:villager_profession',
   'msm:fluid',
   'msm:vanilla_block_rules',
+  // The games kinds (B557).
+  'msm:world_setup',
+  'msm:one_block',
+  'msm:team',
+  'msm:objective',
+  'msm:timer',
+  'msm:area',
 ];
 
 /**
@@ -315,7 +332,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the seventy-four starters in order', () => {
+  it('lists the eighty-two starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -325,7 +342,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(70).fill('content'),
+      ...Array<string>(78).fill('content'),
     ]);
   });
 
@@ -731,8 +748,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 118 per-kind examples, one per built-in kind, 57 behaviour examples, 5 worlds, 17 popular ideas and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(118);
+  it('has 124 per-kind examples, one per built-in kind, 57 behaviour examples, 5 worlds, 8 games, 17 popular ideas and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(124);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -808,6 +825,19 @@ describe('examples', () => {
       ),
     );
     for (const example of worldExamples) expect(example.category).toBe(WORLDS_CATEGORY);
+    expect(gameExamples.map((example) => example.id)).toEqual(
+      [
+        'cloud_farm',
+        'deep_block',
+        'blossom_isles',
+        'star_block',
+        'crystal_road',
+        'four_kingdoms',
+        'canyon_dash',
+        'explorer',
+      ].map((id) => `example_game_${id}`),
+    );
+    for (const example of gameExamples) expect(example.category).toBe(GAMES_CATEGORY);
     expect(vehicleBehaviourExamples.map((example) => example.id)).toEqual([
       'example_vehicles_seaside',
     ]);
@@ -836,7 +866,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(201);
+    expect(libraryExamples).toHaveLength(215);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -937,6 +967,14 @@ describe('every starter and example', () => {
         ['wood-set', { boats: true }],
         ['custom-command', { own_rule: true }],
         ['game-rule', { counts: true }],
+      ] as const) {
+        if (entry.id !== id) continue;
+        for (const element of build(entry, 'demo', values).elements) used.add(element.kind);
+      }
+      // The Skyblock flow's generator of its own and the Adventure map's welcome screen (B557).
+      for (const [id, values] of [
+        ['skyblock', { generator: true }],
+        ['adventure-map', { welcome: 'dialog' }],
       ] as const) {
         if (entry.id !== id) continue;
         for (const element of build(entry, 'demo', values).elements) used.add(element.kind);
@@ -1123,7 +1161,7 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops, the fluid lakes, the five worlds and four popular ideas', () => {
+  it('covers the worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops, the fluid lakes, the five worlds, the game flows and their examples and four popular ideas', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
       'wood-set',
@@ -1141,12 +1179,20 @@ describe('structure and worldgen content', () => {
       'jigsaw_structure',
       'worldgen_pack',
       'scripted_ore',
+      // The game flows whose islands, starts and arenas are structure templates (B557).
+      'skyblock',
+      'one-block',
+      'sky-islands',
+      'lucky-block',
+      'arena-game',
       ...WORLDGEN_KIND_IDS.map((kind) => {
         const example = kindExamples.find((entry) => entry.kind === kind);
         return example?.id;
       }),
       'example_msm_biome_addition',
       'example_msm_fluid',
+      'example_msm_world_setup',
+      'example_msm_area',
       'example_msm_wood_set',
       'example_msm_crop',
       'example_msm_tree',
@@ -1158,6 +1204,11 @@ describe('structure and worldgen content', () => {
       'example_world_endless_blossom',
       'example_world_ember_caverns',
       'example_world_cloud_realm',
+      'example_game_cloud_farm',
+      'example_game_deep_block',
+      'example_game_blossom_isles',
+      'example_game_star_block',
+      'example_game_four_kingdoms',
       'example_popular_glowshard',
       'example_popular_sunken_crypt',
       'example_popular_amber_realm',

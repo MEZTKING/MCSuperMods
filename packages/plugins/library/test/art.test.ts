@@ -170,7 +170,7 @@ describe('the recipe table (ADR 0092 D7)', () => {
   it('has every recipe id once, in the order of ART_RECIPE_IDS', () => {
     expect(ART_RECIPE_INFO.map((info) => info.id)).toEqual([...ART_RECIPE_IDS]);
     expect(new Set(ART_RECIPE_IDS).size).toBe(ART_RECIPE_IDS.length);
-    expect(ART_RECIPE_IDS.length).toBe(98);
+    expect(ART_RECIPE_IDS.length).toBe(101);
   });
 
   it('gives each row a label, a kind, a size and its rules', () => {
@@ -250,6 +250,10 @@ describe('placeholder patterns map to recipes (ADR 0092 D13 (e), D14)', () => {
       'boat_layer',
       'chest_boat_layer',
       'villager_robe',
+      // The pictures of the game flows (B557).
+      'lucky_block',
+      'flag',
+      'timer',
     ]);
   });
 

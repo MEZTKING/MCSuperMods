@@ -1,0 +1,27 @@
+{
+  "data": {
+    "dimension": "minecraft:overworld",
+    "from": [
+      190,
+      -64,
+      -2
+    ],
+    "name": "Finish",
+    "to": [
+      194,
+      319,
+      2
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:canyon_dash/finish",
+  "kind": "msm:area",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Finish: a column five blocks wide through the whole height of the overworld, 192 blocks east of the spawn. Its tick function tags the players inside, and the line's advancement tests that tag, so moving the area in the Area Studio moves the line. Move it onto your course.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

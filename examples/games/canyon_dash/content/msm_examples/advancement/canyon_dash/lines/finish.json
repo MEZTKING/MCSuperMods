@@ -1,0 +1,32 @@
+{
+  "data": {
+    "criteria": {
+      "reached": {
+        "conditions": {
+          "player": {
+            "entity": "this",
+            "predicate": {
+              "nbt": "{Tags:[\"msm_examples.area.canyon_dash.finish\"]}"
+            },
+            "type": "minecraft:entity_properties"
+          }
+        },
+        "trigger": "minecraft:location"
+      }
+    },
+    "rewards": {
+      "function": "msm_examples:canyon_dash/finished"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:canyon_dash/lines/finish",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The finish line, hidden (no display): granted when a player stands in msm_examples:canyon_dash/finish (the entity tag its tick function gives the players inside), it runs msm_examples:canyon_dash/finished as that player.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

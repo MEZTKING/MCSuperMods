@@ -1,0 +1,39 @@
+{
+  "data": {
+    "dimension": "minecraft:overworld",
+    "from": [
+      20,
+      64,
+      20
+    ],
+    "name": "Pen",
+    "reset": {
+      "structures": [
+        {
+          "at": [
+            20,
+            64,
+            20
+          ],
+          "structure": "msm_examples:example_pen_fence"
+        }
+      ]
+    },
+    "to": [
+      26,
+      66,
+      26
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:example_pen",
+  "kind": "msm:area",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An area: a box of the overworld from 20 64 20 to 26 66 26, both corners inside. Its tick function tags the players who walk in and runs the hook a rule listens to, and the same when they walk out. Resetting it removes the mobs and items in it and places msm_examples:example_pen_fence again. Run the reset with /function msm_examples:msm_games/area/example_pen/reset or the Rules step Rebuild an area.",
+    "tags": [
+      "example",
+      "game-kits"
+    ]
+  }
+}

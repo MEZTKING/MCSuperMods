@@ -1,0 +1,48 @@
+{
+  "data": {
+    "difficulty": "normal",
+    "game_mode": "survival",
+    "game_rules": {},
+    "goals": "msm_examples:cloud_farm/goals/root",
+    "new_player": {
+      "effects": [
+        {
+          "effect": "minecraft:slow_falling",
+          "hide_particles": true,
+          "seconds": 10
+        }
+      ],
+      "message": "Welcome to Cloud Farm! Everything you need is in the chest. Do not fall!"
+    },
+    "spawn_radius": 0,
+    "start": {
+      "at": [
+        0,
+        64,
+        0
+      ],
+      "spawn": [
+        6,
+        3,
+        7
+      ],
+      "structure": "msm_examples:cloud_farm/island"
+    },
+    "world": {
+      "end": "vanilla",
+      "nether": "void",
+      "type": "void"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cloud_farm",
+  "kind": "msm:world_setup",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How the world starts: a World Type called Cloud Farm of empty sky (void), listed on the Create New World screen, with the island msm_examples:cloud_farm/island, placed with its corner at 0 64 0 when the first player joins, the spawn on its grass. Players start in survival on normal difficulty; each new player gets a welcome and ten seconds of slow falling, once. The welcome names the goals tab. Mobs spawn on what players build, as on plains (the sky biome of the game kits); the Nether is empty sky too. Everything lowers to plain data pack files.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

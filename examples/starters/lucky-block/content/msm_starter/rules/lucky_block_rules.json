@@ -1,0 +1,65 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "do": [
+              {
+                "loot_table": "msm_starter:lucky_block/prizes",
+                "step": "drop_loot",
+                "where": "here"
+              },
+              {
+                "count": 1,
+                "mob": "minecraft:zombie",
+                "step": "spawn_mob",
+                "where": "here"
+              },
+              {
+                "break_blocks": false,
+                "power": 2,
+                "step": "explode",
+                "where": "here"
+              },
+              {
+                "step": "place_structure",
+                "structure": "msm_starter:lucky_block/surprise_hut",
+                "where": "here"
+              },
+              {
+                "effect": "minecraft:speed",
+                "level": 1,
+                "seconds": 30,
+                "step": "give_effect"
+              }
+            ],
+            "step": "pick_random",
+            "weights": [
+              6,
+              3,
+              1,
+              3,
+              3
+            ]
+          }
+        ],
+        "key": "open_lucky_block",
+        "name": "Open the lucky block",
+        "when": {
+          "subject": "msm_starter:lucky_block",
+          "trigger": "block_broken"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:lucky_block_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "When a player breaks msm_starter:lucky_block, one thing happens, picked at random by weight: it drops prizes rolled from msm_starter:lucky_block/prizes (weight 6), or brings a zombie (weight 3), or makes an explosion that breaks no blocks (weight 1), or places the building msm_starter:lucky_block/surprise_hut (weight 3), or gives speed for 30 seconds (weight 3). On export the book becomes the block's break event and a generated script, so it needs the Fabric mod jar export."
+  }
+}

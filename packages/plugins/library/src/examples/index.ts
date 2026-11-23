@@ -3,7 +3,7 @@
  * items behaviour examples (with the container and machine examples, ADR 0076 D4, the portal
  * example, ADR 0078 D4, and the firefly jar, ADR 0081 D5), the entity behaviour examples, the
  * script behaviour examples, the rules behaviour examples (ADR 0082 D11), the world examples
- * (ADR 0119 D11), the "Popular ideas"
+ * (ADR 0119 D11), the game examples (ADR 0117 D2), the "Popular ideas"
  * examples, then the four content starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
@@ -24,6 +24,7 @@ import { dataKindExamples } from './data-kinds';
 import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
 import { entityKindExamples, entityBehaviourExamples as mobBehaviourExamples } from './entities';
+import { gameExamples, gameKindExamples } from './games';
 import { particleExamples, particleKindExamples } from './particles';
 import { popularExamples } from './popular';
 import { portalExamples } from './portals';
@@ -47,6 +48,7 @@ import { worldgenExamples } from './worldgen';
 import { worldExamples } from './worlds';
 
 export { categoryTag, defineExample, type ExampleInput } from './define';
+export { GAMES_CATEGORY, gameExamples, gameKindExamples } from './games';
 export { POPULAR_CATEGORY, popularExamples, popularFolder } from './popular';
 export { rulesBehaviourExamples, rulesKindExamples } from './rules';
 export { vehicleBehaviourExamples } from './vehicles';
@@ -81,8 +83,8 @@ const [particleDescriptionExample, particleTypeExample] = particleKindExamples a
  * data pack, tags, registries, the data kinds sweep, structures, worldgen, blocks and items
  * (the particle type last), entities, models and animations, scripts, rules (the lucky block,
  * ADR 0082 D11), the vehicle, key bind and HUD examples (ADR 0091 D3), the command and creative
- * tab examples (B461), the villager profession and fluid examples (B481), and the rules for
- * vanilla blocks (B518).
+ * tab examples (B461), the villager profession and fluid examples (B481), the rules for
+ * vanilla blocks (B518) and the six games kinds (B557).
  */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
@@ -102,6 +104,7 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...vanillaParityKindExamples,
   ...villagerFluidKindExamples,
   vanillaBlockRulesKindExample,
+  ...gameKindExamples,
 ]);
 
 /**
@@ -170,6 +173,7 @@ export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...rulesBehaviourExamples,
   ...vehicleBehaviourExamples,
   ...worldExamples,
+  ...gameExamples,
   ...popularExamples,
   ...starterExamples,
 ]);

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/star_block"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/star_block",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube with the same picture on every side: MSM's drawn lucky block, with a star on it.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "data": {
+    "announce": true,
+    "at": [
+      0,
+      100,
+      0
+    ],
+    "loop": true,
+    "phases": [
+      {
+        "blocks": [
+          {
+            "block": "minecraft:grass_block",
+            "weight": 3
+          },
+          {
+            "block": "minecraft:oak_log",
+            "weight": 2
+          }
+        ],
+        "breaks": 50,
+        "chest_chance": 0,
+        "mob_chance": 0.05,
+        "mobs": [
+          {
+            "mob": "minecraft:sheep",
+            "weight": 1
+          }
+        ],
+        "name": "Meadow"
+      },
+      {
+        "blocks": [
+          {
+            "block": "minecraft:stone",
+            "weight": 8
+          },
+          {
+            "block": "minecraft:iron_ore",
+            "weight": 1
+          }
+        ],
+        "breaks": 100,
+        "chest_chance": 0.02,
+        "chest_loot": "minecraft:chests/simple_dungeon",
+        "mob_chance": 0,
+        "name": "Mine"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:example_one_block",
+  "kind": "msm:one_block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A one block: each time the block at 0 100 0 is broken, a tick function sets the next block of its phase, picked by weight. The first phase lasts 50 breaks and now and then brings a sheep; the second 100 breaks, with a dungeon chest now and then. announce says each phase in chat, and loop starts again after the last. It runs in a vanilla data pack.",
+    "tags": [
+      "example",
+      "game-kits"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "data": {
+    "collision": "pushOtherTeams",
+    "colour": "green",
+    "friendly_fire": false,
+    "name": "Green",
+    "name_tags": "always",
+    "prefix": "[Green] ",
+    "see_invisible_friends": true
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:four_kingdoms/green",
+  "kind": "msm:team",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The green team: green names with a [Green] tag, team mates cannot hurt each other. It is made when the world loads, and the start function puts players on it.",
+    "tags": [
+      "example",
+      "games"
+    ]
+  }
+}
