@@ -1,12 +1,8 @@
 // @vitest-environment happy-dom
 
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import {
-  hasLiveView,
-  type LiveViewProps,
-  liveViewComponent,
-} from '../../../src/renderer/src/liveviews/registry';
+import { hasLiveView, liveViewComponent } from '../../../src/renderer/src/liveviews/registry';
 import {
   STRUCTURES_PANEL_KINDS,
   STRUCTURES_VIEWS,
@@ -20,7 +16,7 @@ afterEach(cleanup);
 beforeAll(async () => {
   await Promise.all([
     import('../../../src/renderer/src/liveviews/structures/assembly/AssemblyView'),
-    import('../../../src/renderer/src/liveviews/structures/ProcessorListView'),
+    import('../../../src/renderer/src/liveviews/structures/processors/ProcessorListView'),
   ]);
 }, 60_000);
 
@@ -40,16 +36,21 @@ describe('the structures index (B635)', () => {
     expect(preview.get('minecraft:worldgen/structure_set')).not.toBe('live_view');
   });
 
-  it('says not yet inside the frame, naming the brief', async () => {
-    // B640 built the template pool's and the structure's (`structures/assembly/`).
-    for (const [kind, brief] of [['minecraft:worldgen/processor_list', 'B641']] as const) {
-      const View = liveViewComponent(kind);
-      expect(View, kind).not.toBeNull();
-      if (View === null) continue;
-      render(<View {...({} as LiveViewProps)} />);
-      await waitFor(() => expect(screen.getByTestId('live-view-not-yet')).toBeTruthy());
-      expect(screen.getByTestId('live-view').textContent).toContain(brief);
-      cleanup();
+  it('loads the built views, none a stub (B640, B641)', async () => {
+    const assembly = await import(
+      '../../../src/renderer/src/liveviews/structures/assembly/AssemblyView'
+    );
+    const processors = await import(
+      '../../../src/renderer/src/liveviews/structures/processors/ProcessorListView'
+    );
+    const built: Record<string, unknown> = {
+      'minecraft:worldgen/template_pool': assembly.default,
+      'minecraft:worldgen/structure': assembly.default,
+      'minecraft:worldgen/processor_list': processors.default,
+    };
+    for (const kind of STRUCTURES_PANEL_KINDS) {
+      expect(liveViewComponent(kind), kind).not.toBeNull();
+      expect((await STRUCTURES_VIEWS[kind]?.())?.default, kind).toBe(built[kind]);
     }
   });
 });

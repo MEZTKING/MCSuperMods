@@ -11039,3 +11039,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B642: place every member from `piece.members` (each at `pieceOrigin({ box: member.box, rotation: piece.rotation }, template.size)`), else the piece's one template; apply each member's own `processors`.
 - A fixture with two list members sharing a cell (B639's next run) would settle the overwrite order.
+## 2026-11-23 — executor — B641 processor view and structures parity test
+
+**What**
+- The processor list has its live view (ADR 0122 D6, 4L4): `app/src/renderer/src/liveviews/structures/processors/` (`ProcessorListView.tsx`, `model.ts`, `host.ts`, `client.ts`, `OnTemplate.tsx`). A building to try the list on (first those a pool of the mod places with this list, Minecraft's own from the jar, then the mod's others), a seed box, a **Swipe line** through the building (before left of it, after right of it, in one 3D view), "N of M blocks changed" and one row per processor in plain words with its count and level. Exact rows of the types the parity fixture measured show as checked; other exact ones (gravity) and rules with block state tests as about right; `block_age`, the position tests and `lava_submerged_block` as about right; `clear`, `passthrough` and `corner_constraint` as only in the game. More options holds what surrounds the building (air, water, lava, stone), the floor's height, the building's id, the processor ids and the time taken. The B635 stub is deleted; the index entry loads the new view.
+- The Structure Studio's **Try a processor list on it** (`structure-try-processors`) opens the view on this building with the mod's lists in a picker (the list a pool places it with first).
+- `packages/terrain/test/structures-parity.test.ts`: plays `fixtures/structures-parity/lowered/<target>/data/` through the assembler and the processors on every target and compares with `expectations.json` by the README's tolerance (exact breach counters and extents; |z| at most 4 shares and 4-standard-error means; deterministic lists cell for cell; about-right lists only outcomes the game gave). 135 tests, about 9 s.
+- The processors run in the structures worker through new messages (`host.ts`, `isProcessorRequest`); the routing lines in `assembly/worker.ts` (B712's this wave) are not committed and are reported to the orchestrator.
+
+**Decisions**
+- The parity test starts its assemblies at positive chunk origins as the game's starts are: the start box's centre truncates, and at origin 0 `chain4_d17` always made 8 pieces where the game makes 8 or 9.
+- `nestedInParent` (a child wholly inside its parent, allowed) follows the random picks in the town, so it is compared as a share of pieces where both sides have some; every breach counter and every largest extent stay exact.
+- The game writes full block states; MSM's states that leave defaults out are matched to the one state the game wrote with the same block and properties.
+- Three known differences are listed in the test's `KNOWN` with their cause (each must still show, so the entry goes when the engine is fixed): `rule_state` and `rule_rstate` (a block state test against a template state that leaves `waterlogged` out) and `lava` (`isFullBlock` takes air as full and a sea lantern as not).
+- Debounce 100 ms, so an edit redraws within 150 ms with the work (measured 134 ms in the component test).
+
+**Next**
+- Apply the worker routing (orchestrator, at merge with B712), then B643's e2e.
+- Engine follow-ups in `packages/terrain/src/structures/processors/`: defaults in block state tests, `isFullBlock` for air and the sea lantern.

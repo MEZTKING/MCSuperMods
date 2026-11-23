@@ -9,16 +9,20 @@
  * data-testids: `structure-studio`, `structure-advanced-toggle`, `structure-summary`,
  * `structure-replace`, `structure-export-nbt`, `structure-export-schem`, `structure-palette`,
  * `structure-jigsaw-<n>`, `structure-jigsaw-<n>-pool`, `structure-jigsaw-<n>-pool-status`,
- * `structure-containers`, `structure-container-<n>` (`<n>` its index in `block_entities`).
+ * `structure-containers`, `structure-container-<n>` (`<n>` its index in `block_entities`),
+ * `structure-try-processors` (B641: **Try a processor list on it**, the processor list view on
+ * this building under the button).
  *
  * @packageDocumentation
  */
 
 import type { Json } from '@msm/core';
 import { Download, FileUp } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { type FormProblem, isWithin, ProblemList } from '../../forms';
+import { createVanillaDataReader, NOT_SET_UP_VANILLA_DATA } from '../../liveviews/vanilla-data';
+import { useUiStore } from '../../store/ui-store';
 import type { StudioProps } from '../types';
 import { ContainersSection } from './ContainersSection';
 import { poolStatus, TEMPLATE_POOL_KIND, vanillaIdSet } from './connections';
@@ -78,6 +82,58 @@ export function templateSummary(data: Json): {
 }
 
 const POOL_REGISTRY = 'worldgen/template_pool';
+
+const ProcessorsOnTemplate = lazy(() => import('../../liveviews/structures/processors/OnTemplate'));
+
+/**
+ * **Try a processor list on it** (B641): the processor list view on this building, under the
+ * button, with the mod's lists in a picker. It follows the Studio's edits.
+ */
+function TryProcessors(props: StudioProps) {
+  const { project, element, target } = props;
+  const [open, setOpen] = useState(false);
+  const root = useUiStore((state) => state.snapshot?.root ?? null);
+  const cacheReady = useUiStore((state) => state.minecraft.status?.cache != null);
+  const vanilla = useMemo(
+    () =>
+      cacheReady
+        ? createVanillaDataReader({ mcVersion: target.mcVersion })
+        : NOT_SET_UP_VANILLA_DATA,
+    [cacheReady, target.mcVersion],
+  );
+  const onSetup = useCallback(
+    () =>
+      useUiStore.getState().setMessage({
+        kind: 'info',
+        text: 'Set up your Minecraft folder in Settings, under Game locations, to use Minecraft’s own blocks here.',
+      }),
+    [],
+  );
+  return (
+    <div className="flex flex-col gap-2" data-testid="structure-processors">
+      <div>
+        <Button
+          aria-expanded={open}
+          data-testid="structure-try-processors"
+          onClick={() => setOpen((before) => !before)}
+        >
+          {open ? 'Hide the processors' : 'Try a processor list on it'}
+        </Button>
+      </div>
+      {open && (
+        <Suspense fallback={<p className="text-muted text-xs">Loading the view…</p>}>
+          <ProcessorsOnTemplate
+            project={project}
+            template={element.id}
+            vanilla={vanilla}
+            projectRoot={root}
+            onSetup={onSetup}
+          />
+        </Suspense>
+      )}
+    </div>
+  );
+}
 
 /** The structure template Studio. */
 export function StructureStudio(props: StudioProps) {
@@ -215,6 +271,7 @@ export function StructureStudio(props: StudioProps) {
           />
           <ContainersSection studio={props} />
           <ProblemList problems={within(problems, '/block_entities')} />
+          <TryProcessors {...props} />
         </>
       )}
     </section>
