@@ -112,7 +112,7 @@ export interface SearchAnswer {
   readonly confident: boolean;
 }
 
-/** The index: layers built, replaced and patched by deltas. Filled by B658. */
+/** The index: layers built, replaced and patched by deltas. Made by `createSearchIndex` (`query.ts`, B658). */
 export interface SearchIndex {
   /** Replaces one layer (static, vanilla or project) with these entries. */
   setLayer(layer: string, entries: readonly SearchEntry[]): void;
@@ -120,11 +120,4 @@ export interface SearchIndex {
   patchLayer(layer: string, upserts: readonly SearchEntry[], removes: readonly string[]): void;
   /** Answers a request. Never throws, on any string. */
   query(request: SearchRequest): SearchAnswer;
-}
-
-const NOT_YET = 'The search engine is not built yet (docs/PLAN-search.md, wave 2 and 3).';
-
-/** Makes an index. A stub until B658. */
-export function createSearchIndex(): SearchIndex {
-  throw new Error(NOT_YET);
 }
