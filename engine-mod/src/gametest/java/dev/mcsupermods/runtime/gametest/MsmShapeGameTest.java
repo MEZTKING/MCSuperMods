@@ -7,6 +7,7 @@ import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.registry.MsmBlock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -241,19 +242,26 @@ public class MsmShapeGameTest {
         helper.succeed();
     }
 
-    /** Sky light reaches the cell below a glass-like cube at full strength; below stone it is at most 14 (from the side). */
-    @GameTest(structure = ARENA, maxTicks = 100)
+    /**
+     * Sky light reaches the cell below a glass-like cube at full strength; below stone it is at most 14 (from the side).
+     * The test waits for the light engine's own future for both chunks before it checks ({@link LightWait}: the light
+     * work runs on the shared background workers in wall time while the GameTest server's ticks are unpaced, and before
+     * it has run the cell below the cube reads 15 whatever the cube does); {@code maxTicks} is sized in wall time there.
+     */
+    @GameTest(structure = ARENA, maxTicks = LightWait.MAX_TICKS)
     public void skyLightPassesASeeThroughCube(GameTestHelper helper) {
         BlockPos glass = new BlockPos(3, 2, 5);
         BlockPos stone = new BlockPos(7, 2, 5);
         helper.setBlock(glass, block("shape_glass"));
         helper.setBlock(stone, Blocks.STONE);
         ServerLevel level = helper.getLevel();
+        CompletableFuture<?> lightRun = LightWait.queued(helper, glass, stone);
         helper.succeedWhen(() -> {
+            LightWait.assertRun(helper, lightRun);
             int underGlass = level.getBrightness(LightLayer.SKY, helper.absolutePos(glass.below()));
             int underStone = level.getBrightness(LightLayer.SKY, helper.absolutePos(stone.below()));
             helper.assertValueEqual(underGlass, 15, "sky light below the see-through cube");
-            helper.assertTrue(underStone < 15, "sky light below stone is " + underStone + " (light engine not updated yet)");
+            helper.assertTrue(underStone < 15, "sky light below stone is " + underStone);
             MsmRuntime.LOGGER.info("[msm_runtime] shape: sky light below see-through cube {}, below stone {}", underGlass, underStone);
         });
     }

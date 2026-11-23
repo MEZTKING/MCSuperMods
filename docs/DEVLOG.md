@@ -9597,3 +9597,17 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - App briefs have about 2.0 MB under the 20.5 MB total stop line and 1.0 MB under the 5.5 MB first-paint one.
+## 2026-11-23 — executor — Runtime light GameTests wait for the light engine
+
+**What**
+- The follow-up of the molten amber light flake (84ecab7): the runtime's own `MsmFluidGameTest.liquidBlockLight` and `MsmShapeGameTest.skyLightPassesASeeThroughCube` polled the light with `succeedWhen` at `maxTicks` 100, which on the unpaced GameTest server (about 0.5 ms a tick) is tens of milliseconds against light work that the server's light engine runs later, in wall time, on the shared background workers. Both now take the light engine's `waitForPendingTasks` futures for the chunks of the blocks they set, fail each poll until those are done, then check the values; `maxTicks` 6000.
+- New package-private helper `engine-mod/src/gametest/.../gametest/LightWait.java` (`queued(helper, positions...)`, `assertRun`, `MAX_TICKS` 6000) with the measured reason in its Javadoc; the two tests' Javadocs say why.
+- Searched the gametest sources for every other light read: `MsmGrowingPlantGameTest` reads `getMaxLocalRawBrightness` only for a failure message; `MsmPlants3ClientGameTest` and `MsmVanillaBlocksClientGameTest` read the client level's light, which the client works through on its own paced ticks, with `waitFor` timeouts; none has this weakness, none changed.
+- Evidence (temporary probe tests and a temporary filter property, not committed; the probe ran the old and the new forms side by side, with the background workers held by `2 x maxAllowedExecutorThreads + 1` tasks of 300 ms or not, filtered run of five tests on a fresh server, 4 CPUs): 26.3, the values arrived at tick 236 (641 ms) even unheld and at ticks 1327 to 1338 (about 1.8 s) held, so the old 100-tick form failed in 4 of 4 and the new form passed in 4 of 4; 26.4, unheld at tick 9 (28 ms, old form passes), held at tick 3247 (1.87 s, 0.57 ms a tick), old form failed 3 of 3, new form passed. A probe expecting a wrong value (8 for the custom liquid's 9) failed on 26.3 as "Expected ... to be 8: was 9", not as a slow light engine (on 26.4 it ran out of its own short 200-tick limit with the workers still held).
+- `./gradlew build` passed for `-Pmc=26.3` and `-Pmc=26.4`: 851 of 851 required GameTests each, the shape test logging 15 below the cube and 14 below stone.
+
+**Decisions**
+- One shared helper rather than a copy per test, matching the parity mod's form (future first, then the values, so a wrong value fails as a wrong value).
+
+**Next**
+- None for this flake; if another light test is added to the runtime GameTests, use `LightWait`.
