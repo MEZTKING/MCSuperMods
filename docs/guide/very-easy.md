@@ -66,6 +66,7 @@ With a mod open, Home shows **Make something** with these tiles, under headings:
 | | **Change drops and trades** | An extra drop from a mob, block or chest, or a new villager trade |
 | Games | **Make a game** | A Skyblock, one block, sky islands, a lucky block, an adventure map, an arena, a race or goals |
 | Looks and sounds | **Change how Minecraft looks** | A new skin for a wolf, cat or pig, or a new look for a vanilla item |
+| | **Change a Minecraft texture** | Paint over stone, dirt, a sword or a mob, and the game shows your version ([Change a Minecraft texture](pictures.md#change-a-minecraft-texture)) |
 | | **Make a painting or pattern** | A painting of your own picture, a pattern for banners or a picture for pots |
 | | **Make a sound or music** | A music disc with your own song, or a goat horn call |
 | | **Paint a picture** | Draw a new picture, pixel by pixel |

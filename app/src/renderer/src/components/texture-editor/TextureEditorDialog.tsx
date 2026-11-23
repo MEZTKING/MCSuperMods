@@ -3,7 +3,9 @@
  * and eyedropper, a colour picker and the texture's own palette, zoom, undo and redo inside the
  * dialog. Save hands the PNG bytes to the host, which writes them as one undoable step.
  * "Draw…" (ADR 0092 D10 (b)) and "Make with AI" (ADR 0093) replace the canvas with the picked
- * picture as one painter undo step.
+ * picture as one painter undo step, and so does "Start from a Minecraft texture" (ADR 0129 D4),
+ * which keeps the picked picture's size; an animation strip keeps MSM's own `.png.mcmeta`, handed
+ * to the host on Save while the picture is still a strip.
  *
  * @packageDocumentation
  */
@@ -17,6 +19,9 @@ import { defaultPrompt, styleForTexturePath } from '../ai-pictures/prompt';
 import { shapeForTexture } from '../ai-pictures/shapes';
 import { DrawButton, drawFieldForTexture } from '../art/DrawButton';
 import type { DrawnPicture } from '../art/draw-model';
+import { folderOfPath, isStrip } from '../mc-textures/catalogue';
+import type { McTexturePick } from '../mc-textures/host';
+import { StartFromMinecraftButton } from '../mc-textures/StartFromMinecraftButton';
 import { Button } from '../ui/Button';
 import { fitInside } from './image-convert';
 import {
@@ -46,6 +51,13 @@ const CLEAR: Rgba = [0, 0, 0, 0];
 export interface TextureEditorDialogProps {
   /** Shown in the title, for example `ruby_mod:textures/item/ruby.png`. */
   name: string;
+  /** The title in place of "Paint <name>" (Change a Minecraft texture's plain words). */
+  title?: string;
+  /**
+   * MSM's own animation sidecar of a picture started from an animated Minecraft texture (ADR
+   * 0129 D4); a later Start from a Minecraft texture replaces it.
+   */
+  mcmeta?: Uint8Array | null;
   /** The PNG to edit, or `null` for a new, transparent picture of `size`. */
   bytes: Uint8Array | null;
   /** The size of a new picture (used when `bytes` is `null`; 16 × 16 by default). */
@@ -55,8 +67,11 @@ export interface TextureEditorDialogProps {
    * change. Defaults to `bytes === null`.
    */
   isNew?: boolean;
-  /** Saves the edited PNG (the host writes it as one undoable step). */
-  onSave(bytes: Uint8Array): Promise<void> | void;
+  /**
+   * Saves the edited PNG (the host writes it as one undoable step), with the animation sidecar
+   * while the picture is an animation strip started from a Minecraft texture (else `null`).
+   */
+  onSave(bytes: Uint8Array, mcmeta: Uint8Array | null): Promise<void> | void;
   onClose(): void;
 }
 
@@ -68,6 +83,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
   const [zoom, setZoom] = useState(16);
   const [dirty, setDirty] = useState(props.isNew ?? props.bytes === null);
   const [saving, setSaving] = useState(false);
+  const [meta, setMeta] = useState<Uint8Array | null>(props.mcmeta ?? null);
   const [, setTick] = useState(0);
   const history = useRef(new PixelHistory());
   const drawing = useRef(false);
@@ -184,7 +200,8 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
     setSaving(true);
     setError(null);
     try {
-      await props.onSave(encodePng(image));
+      const strip = meta !== null && isStrip(image.width, image.height);
+      await props.onSave(encodePng(image), strip ? meta : null);
       props.onClose();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
@@ -194,6 +211,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
   };
 
   const palette = image === null ? [] : paletteOf(image);
+  const pickerFolder = folderOfPath(props.name);
   const aiShape = image === null ? null : shapeForTexture(props.name, image.width, image.height);
   const aiStyle =
     aiShape !== null && !isSquareStyle(aiShape.style)
@@ -211,6 +229,19 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
         : fitInside(decoded, image.width, image.height, 'sharp');
     history.current.push(image);
     setImage(next);
+    setDirty(true);
+  };
+
+  /**
+   * Puts a picked Minecraft texture (ADR 0129 D4) on the canvas at its own size as one painter
+   * undo step.
+   */
+  const takeMinecraftPicture = async (pick: McTexturePick): Promise<void> => {
+    if (image === null) return;
+    const decoded = await decodePng(pick.bytes);
+    history.current.push(image);
+    setImage(decoded);
+    setMeta(pick.mcmeta);
     setDirty(true);
   };
 
@@ -253,7 +284,9 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
             }
           }}
         >
-          <Dialog.Title className="text-base font-semibold">Paint {props.name}</Dialog.Title>
+          <Dialog.Title className="text-base font-semibold">
+            {props.title ?? `Paint ${props.name}`}
+          </Dialog.Title>
           {image === null && error === null && <p className="text-sm text-muted">Loading…</p>}
           {image !== null && (
             <>
@@ -322,6 +355,12 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
                     ...aiShapeProps,
                     onPick: takeAiPicture,
                   }}
+                />
+                <StartFromMinecraftButton
+                  testId="texture-start-minecraft"
+                  target={props.name.slice(props.name.lastIndexOf('/') + 1).replace(/\.png$/, '')}
+                  {...(pickerFolder === undefined ? {} : { folder: pickerFolder })}
+                  onPick={takeMinecraftPicture}
                 />
                 <MakeWithAiButton
                   testId="texture-make-with-ai"

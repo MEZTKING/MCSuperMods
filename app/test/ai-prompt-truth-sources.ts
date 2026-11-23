@@ -105,6 +105,7 @@ export const SOURCE_FILES = Object.freeze({
   playStore: 'app/src/renderer/src/store/play-store.ts',
   toolbar: 'app/src/renderer/src/components/Toolbar.tsx',
   tiles: 'app/src/renderer/src/components/home/tiles.ts',
+  minecraftTextureTile: 'app/src/renderer/src/components/home/minecraft-texture-tile.ts',
   makeTiles: 'app/src/renderer/src/components/home/MakeTiles.tsx',
   myThings: 'app/src/renderer/src/components/home/MyThings.tsx',
   home: 'app/src/renderer/src/components/home/Home.tsx',

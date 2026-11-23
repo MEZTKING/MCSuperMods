@@ -85,7 +85,7 @@ describe('Minecraft service', () => {
       version: VERSION,
       fileCount: Object.keys(KEPT_ENTRIES).length,
       extractedAt: '2026-01-01T00:00:00.000Z',
-      schemaVersion: 7,
+      schemaVersion: 8,
       dataFolders: [],
     });
     expect(info.jarPath).toBe(join(minecraftDir, 'versions', VERSION, `${VERSION}.jar`));
@@ -156,7 +156,7 @@ describe('Minecraft service', () => {
       '../cache.json',
       'cache.json',
       'assets/minecraft/lang/de_de.json',
-      'assets/minecraft/textures/entity/a.png',
+      'assets/minecraft/textures/environment/sun.png',
       '/etc/passwd',
       'assets\\minecraft\\lang\\en_us.json',
     ]) {

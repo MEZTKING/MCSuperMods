@@ -2,7 +2,7 @@
 
 MCSuperMods draws pictures for you. Every texture the Creator, a starter, an example, Surprise me or the AI helper makes is drawn in a Minecraft-like style: a few shades of each colour that lean warm where the light falls and cool in the shadow, light from the top left, clumpy texture instead of flat colour, a dark outline round items, and bricks, boards, bark and leaves that look like what they are. The same drawing is on offer for any picture field through **Draw…**, so you can pick the look yourself.
 
-The pictures are MCSuperMods' own drawings. They are never copied, traced, recoloured or learned from Minecraft's textures, and no Minecraft picture is read to make them. They work without a key and without the internet. See [Limits](#limits) for what drawing does not do.
+The pictures are MCSuperMods' own drawings. They are never copied, traced, recoloured or learned from Minecraft's textures, and no Minecraft picture is read to make them (to draw on Minecraft's own pictures instead, see [Start from a Minecraft texture](#start-from-a-minecraft-texture)). They work without a key and without the internet. See [Limits](#limits) for what drawing does not do.
 
 ## Draw a picture
 
@@ -56,22 +56,41 @@ In the Particle Studio, **Draw frames…** draws all four frames of a spark, orb
 
 **New texture…** (the brush beside the namespace's assets heading) asks **Start from**: **Blank** or **Drawn picture**. With a drawn picture the button reads **Draw…**; you pick the look in the same window, and the picture opens in the texture painter to change before you **Save**. Paintings start blank: "Paintings start blank."
 
+## Start from a Minecraft texture
+
+You can also start from one of Minecraft's own textures and draw on it. **Start from a Minecraft texture…** sits beside **Draw…** in the texture painter, in the Block and Item Studios' picture rows and texture slots, in the Mob Studio beside **Draw a skin** and on each frame of the Particle Studio; **New texture…** offers it under **Start from** as **A Minecraft texture** (the button then reads **Pick…**).
+
+It opens a picker of the textures in your own Minecraft. They are listed by name, made from the file names (Stone, Stone bricks, Full (heart)), in the folders **Blocks**, **Items**, **Mobs**, **Particles**, **GUI** and **Paintings**, with a search box and small pictures drawn pixel-sharp as they come into view. Ids such as `minecraft:block/stone` show only in Advanced mode. A moving texture (water, lava, fire) says **Moving**. Pick one and it becomes the start of your own picture: in the painter it replaces the canvas at its own size as one painter step (**Undo** in the painter takes it back), and elsewhere it is written as one undo step.
+
+A moving texture is a strip of frames, one under another. It opens as the whole strip, as the painter shows any strip. When you save it while it is still a strip, MCSuperMods writes its own `.png.mcmeta` beside it with the same frame timing, so it moves in the game too.
+
+The pictures come from your own Minecraft: MCSuperMods reads them from the game you set up in **Settings** (the same files the previews use) at the moment you pick, and ships none. Without the Minecraft folder set up, the picker says "Minecraft's textures come from your own Minecraft: set up the Minecraft folder first." with **Set up Minecraft folder**, which opens Settings. What you save is your own picture in your own project.
+
+## Change a Minecraft texture
+
+**Change a Minecraft texture** changes how Minecraft itself looks: a resource pack that repaints stone, dirt, a sword or a mob. It is a Home tile under **Looks and sounds**, an action in the command palette (Ctrl+Shift+P) and a result of the search ("minecraft texture", "change how dirt looks", "edit stone texture").
+
+It opens the same picker. The texture you pick opens in the painter, titled for example "Change how Stone looks in Minecraft". Paint it and **Save**: MCSuperMods saves it in your project at the same place as the game's own (`assets/minecraft/textures/block/stone.png`), in one undo step, so the resource pack replaces the game's picture with yours. **Undo** removes it again. If your project already changes that texture, the painter opens on your version instead.
+
+The resource pack export and **Install** carry your picture; turn the pack on in Minecraft's **Resource Packs** screen to see it. Previews of your own blocks and items that use the texture show your version.
+
 ## Draw it for me in Very easy mode
 
 Wherever a picture can be made in Very easy mode, **Draw it for me** replaces **Draw…**. Pick the **Colour**, pick one of the six variations and **Use this picture**. The mod's own things are already drawn when you make them ([Very easy mode](very-easy.md)); this is for choosing another look afterwards.
 
 ## Drawing, painting, Picture to texture and Make with AI
 
-Four ways to get a picture, which you can mix:
+Five ways to get a picture, which you can mix:
 
 - **Draw…** makes a picture in the Minecraft-like style from a recipe. It works offline and costs nothing.
 - **Paint this texture** (the texture editor) changes any picture pixel by pixel. Paint over a drawn picture to restyle it ([Replacing the placeholders](creator.md#replacing-the-placeholders)).
+- **Start from a Minecraft texture** begins from one of the textures of your own Minecraft ([Start from a Minecraft texture](#start-from-a-minecraft-texture)).
 - **Picture to texture** turns a picture of your own into a texture ([Picture to texture](creator.md#picture-to-texture)). It does not make the picture look like Minecraft.
 - **Make with AI** makes a picture from a description with your own key, Retro Diffusion by default ([AI pictures](ai-pictures.md)). It starts from MCSuperMods' drawing of the same thing, checks each result's outline and colour against that drawing, and falls back to the drawing when the service gets it wrong. Its clean-up uses the same shades as drawn pictures. It is on offer wherever **Draw…** is, and also for paintings, armour layers and banner and pot patterns in the painter and **New texture…**.
 
 ## Limits
 
-- **Vanilla-like, not vanilla.** The pictures are in the same style, not the same pixels. MCSuperMods never copies, recolours or learns from Minecraft's textures. To get an exact look, paint it, use Picture to texture or Make with AI.
+- **Vanilla-like, not vanilla.** Drawn pictures are in the same style, not the same pixels: the drawing never copies, recolours or learns from Minecraft's textures. To start from Minecraft's own picture, use [Start from a Minecraft texture](#start-from-a-minecraft-texture), which reads it from your own game when you ask.
 - **Paintings keep their placeholder landscape.** A painting is your own picture, so the Painting flow's default picture is unchanged. Choose your own with **Choose picture…**, or **Make with AI** with a key.
 - **Vanilla mob variant skins are an even coat.** A wolf, cat or pig variant drawn by a flow has fur shading but no eyes or markings in place, because their layout belongs to Minecraft's own models. Paint it or use Picture to texture.
 - **Draw a skin needs a model with boxes.** A model that maps its faces one by one gives the button greyed out (see above).

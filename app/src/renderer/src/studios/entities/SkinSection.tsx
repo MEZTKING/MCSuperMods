@@ -17,7 +17,10 @@
  * Very easy mode "Make it with AI"; Very easy's **Draw its skin** dialog also offers **Make it
  * with AI instead** when a key is set.
  *
- * Test ids: `entity-draw-skin`, `entity-draw-skin-note`, `entity-ai-skin` (and
+ * **Start from a Minecraft texture** (ADR 0129 D4) puts a mob picture of the user's own Minecraft
+ * in the same place, in one undo step, to paint over (its layout fits Minecraft's own models).
+ *
+ * Test ids: `entity-draw-skin`, `entity-minecraft-skin`, `entity-draw-skin-note`, `entity-ai-skin` (and
  * `entity-ai-skin-setup` without a key), `entity-draw-skin-ai-instead`.
  *
  * @packageDocumentation
@@ -36,6 +39,8 @@ import { boxesShape } from '../../components/ai-pictures/shapes';
 import { textureAsset, textureChange } from '../../components/ai-pictures/texture-write';
 import { LazyDrawPictureDialog, MAKE_IT_WITH_AI_INSTEAD } from '../../components/art/DrawButton';
 import type { DrawField } from '../../components/art/draw-model';
+import { metaChange } from '../../components/mc-textures/picture-change';
+import { StartFromMinecraftButton } from '../../components/mc-textures/StartFromMinecraftButton';
 import { Button } from '../../components/ui/Button';
 import { usePreferences } from '../../store/preferences';
 import { findElement } from '../blocks-items/blocks-items-model';
@@ -234,6 +239,26 @@ export function SkinSection(props: SkinSectionProps) {
           plan.ok ? 'Make a coat with your image service and lay it on the model' : plan.reason
         }
         onPick={writeAi}
+      />
+      <StartFromMinecraftButton
+        testId="entity-minecraft-skin"
+        target="the skin"
+        folder="entity"
+        onPick={async (pick) => {
+          const change = skinChange(props.project, props.element, pick.bytes);
+          const meta = metaChange(
+            props.project,
+            asset.namespace,
+            asset.path,
+            pick.bytes,
+            pick.mcmeta,
+          );
+          await apply(
+            [...change.items, ...meta.items],
+            `Start the skin from ${pick.texture.name}`,
+            [...change.writes, ...meta.writes],
+          );
+        }}
       />
       {!plan.ok && (
         <span className="text-muted" data-testid="entity-draw-skin-note">

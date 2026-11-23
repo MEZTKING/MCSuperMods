@@ -43,7 +43,7 @@ describe('asset cache', () => {
     const info = await writeAssetCache(fs, dir, files, INFO);
     const byteCount = files.reduce((sum, file) => sum + file.data.byteLength, 0);
     expect(byteCount).toBeGreaterThan(0);
-    expect(info).toEqual({ ...INFO, byteCount, fileCount: 9, schemaVersion: 7 });
+    expect(info).toEqual({ ...INFO, byteCount, fileCount: 9, schemaVersion: 8 });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);
     for (const [path, data] of Object.entries(KEPT_ENTRIES)) {
       expect(await fs.readFile(`${dir}/${path}`)).toEqual(data);
@@ -88,7 +88,7 @@ describe('asset cache', () => {
       JSON.stringify({ ...INFO, byteCount: 10, fileCount: 1, schemaVersion: 6 }),
     );
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
-    const current = { ...INFO, byteCount: 10, fileCount: 1, schemaVersion: 7 };
+    const current = { ...INFO, byteCount: 10, fileCount: 1, schemaVersion: 8 };
     fs.seed('/c/cache.json', JSON.stringify(current));
     expect(await readAssetCacheInfo(fs, '/c')).toEqual(current);
     // Schema 7 needs the jar path, the folder list and the byte count.

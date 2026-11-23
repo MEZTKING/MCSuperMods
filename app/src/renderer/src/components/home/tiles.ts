@@ -10,6 +10,8 @@
  * @packageDocumentation
  */
 
+import { MINECRAFT_TEXTURE_TILE } from './minecraft-texture-tile';
+
 // ---------------------------------------------------------------------------------------------
 // Very easy picks (ADR 0101 D4): the new kinds of block and item that "Make a block" and "Make
 // an item" offer, in plain words and without ids. Each pick opens a Creator flow; a pick whose
@@ -231,7 +233,9 @@ export type MakeTileAction =
   /** The picture painter, for a new picture. */
   | { readonly type: 'paint' }
   /** The AI helper's Build mode. */
-  | { readonly type: 'ai' };
+  | { readonly type: 'ai' }
+  /** Change a Minecraft texture (ADR 0129 D4): pick, paint and save as an override. */
+  | { readonly type: 'minecraft-texture' };
 
 /** The headings Home groups its tiles under, in order (ADR 0086 D8). */
 export const TILE_GROUPS = [
@@ -461,6 +465,7 @@ export const MAKE_TILES: readonly MakeTile[] = [
     group: 'looks',
     action: choices(['mob-skin'], ['resource_pack']),
   },
+  MINECRAFT_TEXTURE_TILE,
   {
     id: 'painting',
     label: 'Make a painting or pattern',

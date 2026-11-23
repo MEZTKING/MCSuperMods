@@ -101,7 +101,7 @@ describe('vanilla structure templates (ADR 0122, B636)', () => {
   it('extracts the templates in bulk and nothing else of their folders', async () => {
     await installJar(structureJar());
     const info = await service.extract(VERSION);
-    expect(info.schemaVersion).toBe(7);
+    expect(info.schemaVersion).toBe(8);
     expect(info.fileCount).toBe(3);
     expect(await filesBelow(cacheDir())).toEqual([
       'assets/minecraft/lang/en_us.json',
@@ -188,7 +188,7 @@ describe('vanilla structure templates (ADR 0122, B636)', () => {
     expect(await service.readStructureTemplates(VERSION, ['minecraft:made_up/hut'])).toBeNull();
     await service.extract(VERSION);
     status = await service.status(VERSION);
-    expect(status.cache?.schemaVersion).toBe(7);
+    expect(status.cache?.schemaVersion).toBe(8);
     expect(status.cacheOutdated).toBe(false);
     const answer = await service.readStructureTemplates(VERSION, ['minecraft:made_up/hut']);
     expect(answer?.templates['minecraft:made_up/hut']).toEqual(HUT);

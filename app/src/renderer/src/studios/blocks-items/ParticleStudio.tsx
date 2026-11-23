@@ -28,6 +28,8 @@ import { particleShape } from '../../components/ai-pictures/shapes';
 import { textureChange } from '../../components/ai-pictures/texture-write';
 import { DrawButton } from '../../components/art/DrawButton';
 import type { DrawnPicture } from '../../components/art/draw-model';
+import { pictureChange } from '../../components/mc-textures/picture-change';
+import { StartFromMinecraftButton } from '../../components/mc-textures/StartFromMinecraftButton';
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
 import { IdInput, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
@@ -233,6 +235,31 @@ export default function ParticleStudio(props: StudioProps) {
                       await host.applyChanges(
                         change.items,
                         `Make with AI ${sprite}`,
+                        change.writes,
+                      );
+                    }}
+                  />
+                )}
+              {!isVanillaSprite(sprite) &&
+                host?.applyChanges !== undefined &&
+                spriteAsset(target, sprite) !== undefined && (
+                  <StartFromMinecraftButton
+                    testId={`particle-frame-${index}-minecraft`}
+                    target={`frame ${index + 1}`}
+                    folder="particle"
+                    onPick={async (pick) => {
+                      const asset = spriteAsset(target, sprite);
+                      if (asset === undefined || host.applyChanges === undefined) return;
+                      const change = pictureChange(
+                        project,
+                        asset.namespace,
+                        asset.path,
+                        pick.bytes,
+                        pick.mcmeta,
+                      );
+                      await host.applyChanges(
+                        change.items,
+                        `Start ${sprite} from ${pick.texture.name}`,
                         change.writes,
                       );
                     }}

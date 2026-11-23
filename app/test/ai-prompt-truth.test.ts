@@ -548,7 +548,7 @@ function checkAppMap(sources: TruthSources): string[] {
   if (JSON.stringify(APP_MAP_TILES) !== JSON.stringify(tiles)) {
     problems.push(`the tiles are ${tiles.join(', ')}, not the prompt's`);
   }
-  inMarkup(APP_MAP_TILES, F.tiles);
+  inMarkup(APP_MAP_TILES, F.tiles, F.minecraftTextureTile);
   return problems;
 }
 

@@ -110,8 +110,8 @@ export const KEPT_ENTRIES: Readonly<Record<string, Uint8Array>> = {
 /** Entries extraction must skip. */
 export const SKIPPED_ENTRIES: Readonly<Record<string, Uint8Array>> = {
   'assets/minecraft/lang/de_de.json': json({ 'block.minecraft.msm_test': 'MSM-Testblock' }),
-  'assets/minecraft/textures/entity/ignored.png': makePng(1, 1),
-  'assets/minecraft/textures/entity/ignored.png.mcmeta': json({ animation: {} }),
+  'assets/minecraft/textures/environment/ignored.png': makePng(1, 1),
+  'assets/minecraft/textures/environment/ignored.png.mcmeta': json({ animation: {} }),
   'assets/minecraft/textures/block/msm_test.mcmeta': json({ animation: {} }),
   'data/minecraft/worldgen/configured_feature/msm_test_flower.json': json({
     type: 'minecraft:flower',

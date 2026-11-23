@@ -1732,6 +1732,30 @@
       "mode": "advanced",
       "expect": "kind:msm:item",
       "notes": "ADR 0127 D3: the Item Studio's Never wears out, reached through the item kind's words."
+    },
+    {
+      "q": "minecraft texture",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "command:changeMinecraftTexture",
+      "same": ["tile:minecraft-texture"],
+      "reason": "ADR 0129 D4 (2026-11-23): Change a Minecraft texture is a palette command and a Home tile with the same action, so they fold; its words carry the ways people ask for a retexture."
+    },
+    {
+      "q": "change how dirt looks",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "command:changeMinecraftTexture",
+      "same": ["tile:minecraft-texture"],
+      "reason": "ADR 0129 D4 (2026-11-23): Change a Minecraft texture is a palette command and a Home tile with the same action, so they fold; its words carry the ways people ask for a retexture."
+    },
+    {
+      "q": "edit stone texture",
+      "class": "plain",
+      "mode": "easy",
+      "expect": "command:changeMinecraftTexture",
+      "same": ["tile:minecraft-texture"],
+      "reason": "ADR 0129 D4 (2026-11-23): Change a Minecraft texture is a palette command and a Home tile with the same action, so they fold; its words carry the ways people ask for a retexture."
     }
   ]
 }

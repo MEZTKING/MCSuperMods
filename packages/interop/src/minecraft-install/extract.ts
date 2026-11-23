@@ -105,11 +105,22 @@ export function structureTemplateJarPath(id: string): string {
 }
 
 /**
+ * The texture folders Start from a Minecraft texture lists in full (ADR 0129 D4, schema 8): every
+ * `.png` and `.png.mcmeta` below `textures/entity/` and `textures/gui/`, beside the block, item,
+ * particle and painting folders the patterns above keep already (about 1.4 MB more). They
+ * are read on demand from the user's own jar and never exported unless the user saves a picture.
+ */
+export const PICKER_TEXTURE_PATTERNS: readonly RegExp[] = Object.freeze([
+  /^assets\/minecraft\/textures\/(?:entity|gui)\/.+\.png(?:\.mcmeta)?$/,
+]);
+
+/**
  * The jar entries previews need: vanilla models, block and item definitions, block and item
  * textures with their animation sidecars (`.png.mcmeta`), the English lang file, the vanilla
  * placed feature files, since schema 6 the looks and sounds views' entries
- * ({@link LOOKS_ASSET_PATTERNS}) and since schema 7 the structure templates
- * ({@link STRUCTURE_TEMPLATE_PATTERN}).
+ * ({@link LOOKS_ASSET_PATTERNS}), since schema 7 the structure templates
+ * ({@link STRUCTURE_TEMPLATE_PATTERN}) and since schema 8 every mob and GUI texture
+ * ({@link PICKER_TEXTURE_PATTERNS}).
  */
 export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   /^assets\/minecraft\/(?:models|blockstates|items)\/.+\.json$/,
@@ -120,6 +131,7 @@ export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   /^data\/minecraft\/worldgen\/placed_feature\/[^/]+\.json$/,
   ...LOOKS_ASSET_PATTERNS,
   STRUCTURE_TEMPLATE_PATTERN,
+  ...PICKER_TEXTURE_PATTERNS,
 ]);
 
 /**

@@ -51,6 +51,7 @@ export const BUILT_IN_COMMAND_IDS = [
   'toggleMode',
   'newWithAi',
   'pictureToTexture',
+  'changeMinecraftTexture',
   'wishlist',
   'checkForUpdates',
   'aiHelper',
@@ -285,6 +286,24 @@ export const BUILT_IN_COMMANDS: Readonly<
     title: 'Picture to texture (screenshot, image or skin)…',
     sentence: 'Turn a screenshot, picture or skin into a texture for the mod.',
     words: ['image', 'picture', 'photo', 'screenshot', 'skin', 'texture', 'convert'],
+  },
+  changeMinecraftTexture: {
+    title: 'Change a Minecraft texture…',
+    sentence:
+      "Pick one of Minecraft's own textures, paint your version, and the game shows yours (a resource pack override).",
+    words: [
+      'minecraft texture',
+      'retexture',
+      'resource pack retexture',
+      'edit stone texture',
+      'change how dirt looks',
+      'change how minecraft looks',
+      'vanilla texture',
+      'override texture',
+      'repaint',
+      'draw on minecraft textures',
+      'texture pack',
+    ],
   },
   wishlist: {
     title: 'Wishlist: what MCSuperMods could not make yet…',

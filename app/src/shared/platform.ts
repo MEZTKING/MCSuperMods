@@ -352,8 +352,8 @@ export interface AssetCacheInfoView {
   /** The total size of the cached files in bytes (schema 6): the cache size reported. */
   byteCount: number;
   extractedAt: string;
-  /** 7 since the structure templates (`data/minecraft/structure/**.nbt`, B636, ADR 0122). */
-  schemaVersion: 7;
+  /** 8 since every mob and GUI texture (ADR 0129 D4); 7 added the structure templates (B636). */
+  schemaVersion: 8;
 }
 
 /** Why an object of the launcher's asset store could not be read (ADR 0121 D3). */

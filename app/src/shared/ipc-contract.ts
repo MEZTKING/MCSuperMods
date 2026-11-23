@@ -115,7 +115,7 @@ const assetCacheInfo = z
     fileCount: z.number().int().nonnegative(),
     byteCount: z.number().int().nonnegative(),
     extractedAt: z.string(),
-    schemaVersion: z.literal(7),
+    schemaVersion: z.literal(8),
   })
   .strict();
 /** The most worldgen files one answer may carry (both targets have about 1,300; ADR 0119 D4). */

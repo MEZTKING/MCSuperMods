@@ -6,7 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.7.
+### Added
+
+- Draw on Minecraft's own textures (ADR 0129 D4): **Start from a Minecraft texture** in New texture, the texture painter and the Block, Item, Mob and Particle Studios' picture fields opens a picker of the textures in your own Minecraft (by name, in folders, with search), and **Change a Minecraft texture** (a Home tile and a palette command) paints one and saves it as a resource pack override at the same path. The pictures come from your own game; MCSuperMods ships none.
 
 ## [1.5.7] - 2026-11-23
 

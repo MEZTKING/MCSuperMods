@@ -387,7 +387,7 @@ const samples: Record<
         fileCount: 3,
         byteCount: 1024,
         extractedAt: 'now',
-        schemaVersion: 7,
+        schemaVersion: 8,
       },
       {
         version: '1.0',

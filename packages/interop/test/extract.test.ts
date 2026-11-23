@@ -111,7 +111,8 @@ describe('extractPreviewAssets', () => {
     expect(matches('data/minecraft/worldgen/placed_feature/sub/flower_plains.json')).toBe(false);
     expect(matches('data/minecraft/worldgen/configured_feature/flower_plains.json')).toBe(false);
     expect(matches('data/minecraft/worldgen/placed_feature/flower_plains.txt')).toBe(false);
-    expect(matches('assets/minecraft/textures/gui/widgets.png')).toBe(false);
+    expect(matches('assets/minecraft/textures/gui/widgets.png')).toBe(true); // schema 8 (ADR 0129 D4)
+    expect(matches('assets/minecraft/textures/environment/sun.png')).toBe(false);
     expect(matches('assets/minecraft/textures/block/water_still.png.mcmeta')).toBe(true);
     expect(matches('assets/minecraft/textures/item/compass.png.mcmeta')).toBe(true);
     expect(matches('assets/minecraft/textures/entity/x.png.mcmeta')).toBe(false);
@@ -159,11 +160,19 @@ describe('extractPreviewAssets', () => {
       expect(looks(path), path).toBe(true);
       expect(matches(path), path).toBe(true);
     }
+    // Not the looks views', but kept since schema 8 for Start from a Minecraft texture (ADR 0129 D4).
     for (const path of [
       'assets/minecraft/textures/entity/zombie/zombie.png',
       'assets/minecraft/textures/entity/wolfish/x.png',
       'assets/minecraft/textures/gui/sprites/hud/heart/full.png',
+      'assets/minecraft/textures/gui/sprites/hud/heart/full.png.mcmeta',
+    ]) {
+      expect(looks(path), path).toBe(false);
+      expect(matches(path), path).toBe(true);
+    }
+    for (const path of [
       'assets/minecraft/textures/gui/sprites/hud/locator_bar_dot.json',
+      'assets/minecraft/textures/environment/sun.png',
       'assets/minecraft/textures/painting/kebab.txt',
       'assets/minecraft/font/unifont.zip',
       'assets/minecraft/font/default.ttf',

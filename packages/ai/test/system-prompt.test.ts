@@ -926,7 +926,8 @@ describe('the prompt in topic files (B681)', () => {
   // Play, their labels and the limits 3L1 to 3L12).
   // B669 moved it for search_library: a starter is found with the user's words before listing
   // (ADR 0124 D12).
-  const PINNED = 'eab51e725c550d25123921b6266cd18e32ea477b2db3fd0ce6dd4825e3a422f2';
+  // ADR 0129 D4 moved it for Home's tile Change a Minecraft texture in the app map.
+  const PINNED = 'a63c6f4e37a8249b3f3d2e55b2ff47f1178c730ed74a16818ee1ca9f49cf260a';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');

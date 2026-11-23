@@ -5,7 +5,9 @@
  * to the namespace on Save. Paintings have no drawing, so they start blank or, with a key for an
  * image service, **Made with AI** (ADR 0093 D6 as amended on 2026-11-22), which opens Make with AI
  * for the kind's shape (a block or item square, a coat laid on the armour or skin boxes, a
- * painting of its size) and then the painter on the cleaned-up picture.
+ * painting of its size) and then the painter on the cleaned-up picture. **A Minecraft texture**
+ * (ADR 0129 D4) opens the picker of the user's own Minecraft textures, and the painter opens on
+ * the picked picture at its own size (an animation strip with MSM's own `.png.mcmeta`).
  *
  * @packageDocumentation
  */
@@ -18,6 +20,9 @@ import { MakeWithAiDialog } from '../ai-pictures/MakeWithAiDialog';
 import { defaultPrompt } from '../ai-pictures/prompt';
 import { shapeForTexture } from '../ai-pictures/shapes';
 import { drawFieldForTexture, LazyDrawPictureDialog } from '../art/DrawButton';
+import { folderOfPath } from '../mc-textures/catalogue';
+import { useMinecraftTextures } from '../mc-textures/host';
+import { LazyMinecraftTexturePicker } from '../mc-textures/StartFromMinecraftButton';
 import { fieldClass, Modal } from '../NewElementDialog';
 
 /**
@@ -94,8 +99,11 @@ export const NEW_TEXTURE_KINDS = [
 
 export type NewTextureKind = (typeof NEW_TEXTURE_KINDS)[number];
 
-/** Where a new texture starts: a blank picture or a drawn one (ADR 0092 D10 (b)). */
-export type NewTextureStart = 'blank' | 'drawn' | 'ai';
+/**
+ * Where a new texture starts: a blank picture, a drawn one (ADR 0092 D10 (b)), one made with AI
+ * (ADR 0093) or one of the user's Minecraft textures (ADR 0129 D4).
+ */
+export type NewTextureStart = 'blank' | 'drawn' | 'ai' | 'minecraft';
 
 /** Whether a kind of texture can start from a drawn picture (paintings cannot). */
 export function drawableKind(kind: NewTextureKind): boolean {
@@ -109,8 +117,17 @@ export interface NewTextureDialogProps {
   namespace: string;
   /** Asset paths the namespace already has (`textures/item/ruby.png`), to refuse clashes. */
   existing: readonly string[];
-  /** Opens the painter on the new texture: on `bytes` (a drawn picture), or blank without. */
-  onPaint(choice: { kind: NewTextureKind; name: string; path: string; bytes?: Uint8Array }): void;
+  /**
+   * Opens the painter on the new texture: on `bytes` (a drawn or picked picture), or blank
+   * without; `mcmeta` is the animation sidecar of a picked animation strip.
+   */
+  onPaint(choice: {
+    kind: NewTextureKind;
+    name: string;
+    path: string;
+    bytes?: Uint8Array;
+    mcmeta?: Uint8Array | null;
+  }): void;
   onClose(): void;
 }
 
@@ -120,6 +137,8 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
   const [startChoice, setStart] = useState<NewTextureStart>('blank');
   const [drawing, setDrawing] = useState(false);
   const [making, setMaking] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const minecraft = useMinecraftTextures();
   const ai = useAiPictures();
   const aiReady = ai !== null && aiPicturesReady(ai.status);
   const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
@@ -127,9 +146,20 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
   const kindIdField = useId();
   const kind = NEW_TEXTURE_KINDS.find((entry) => entry.id === kindId) ?? NEW_TEXTURE_KINDS[0];
   const start: NewTextureStart =
-    startChoice === 'ai' ? (aiReady ? 'ai' : 'blank') : drawableKind(kind) ? startChoice : 'blank';
+    startChoice === 'ai'
+      ? aiReady
+        ? 'ai'
+        : 'blank'
+      : startChoice === 'minecraft'
+        ? minecraft !== null
+          ? 'minecraft'
+          : 'blank'
+        : drawableKind(kind)
+          ? startChoice
+          : 'blank';
   const shape = shapeForTexture(`${kind.folder}/x.png`, kind.width, kind.height);
   const path = `${kind.folder}/${name}.png`;
+  const pickerFolder = folderOfPath(path);
   const error =
     name === ''
       ? null
@@ -144,12 +174,21 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
         title={`New texture in ${props.namespace}`}
         error={error}
         testId="new-texture-dialog"
-        submitLabel={start === 'drawn' ? 'Draw…' : start === 'ai' ? 'Make with AI…' : 'Paint…'}
-        busy={name === '' || error !== null || drawing || making}
+        submitLabel={
+          start === 'drawn'
+            ? 'Draw…'
+            : start === 'ai'
+              ? 'Make with AI…'
+              : start === 'minecraft'
+                ? 'Pick…'
+                : 'Paint…'
+        }
+        busy={name === '' || error !== null || drawing || making || picking}
         onCancel={props.onClose}
         onSubmit={() => {
           if (start === 'drawn') setDrawing(true);
           else if (start === 'ai') setMaking(true);
+          else if (start === 'minecraft') setPicking(true);
           else props.onPaint({ kind, name, path });
         }}
       >
@@ -221,11 +260,25 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
               Made with AI
             </label>
           )}
+          {minecraft !== null && (
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="radio"
+                name="new-texture-start"
+                data-testid="new-texture-start-minecraft"
+                checked={start === 'minecraft'}
+                onChange={() => setStart('minecraft')}
+              />
+              A Minecraft texture
+            </label>
+          )}
           {!drawableKind(kind) && (
             <span className="text-xs text-muted">
               {aiReady
                 ? 'Paintings are not drawn: start blank or make one with AI.'
-                : 'Paintings start blank.'}
+                : minecraft !== null
+                  ? 'Paintings are not drawn: start blank or from a Minecraft painting.'
+                  : 'Paintings start blank.'}
             </span>
           )}
         </fieldset>
@@ -241,6 +294,19 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
               if (bytes !== undefined) props.onPaint({ kind, name, path, bytes });
             }}
             onClose={() => setDrawing(false)}
+          />
+        </Suspense>
+      )}
+      {picking && minecraft !== null && (
+        <Suspense fallback={null}>
+          <LazyMinecraftTexturePicker
+            host={minecraft}
+            title={`Start ${name} from a Minecraft texture`}
+            {...(pickerFolder === undefined ? {} : { folder: pickerFolder })}
+            onPick={(pick) =>
+              props.onPaint({ kind, name, path, bytes: pick.bytes, mcmeta: pick.mcmeta })
+            }
+            onClose={() => setPicking(false)}
           />
         </Suspense>
       )}

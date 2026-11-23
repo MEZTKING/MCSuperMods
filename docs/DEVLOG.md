@@ -10905,3 +10905,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - `docs/guide/very-easy.md` "More ideas" still says each card is "a mod Surprise me would make"; it should say each card starts from one thing (a mob, a vehicle, a world...) named after it.
 - `pnpm --filter @msm/app dist:dir` was not run (disk at 11 GB with other workers building); the renderer stays 19.5 of 21 MB and first paint 4.8 of 6 MB.
+## 2026-11-23 — executor — Draw on Minecraft's textures
+
+**What**
+- ADR 0129 D4 (the user: "add the option to import and draw on the minecraft textures itself"). New folder `app/src/renderer/src/components/mc-textures/`: `catalogue.ts` (the cache's jar paths as textures with names made from the file names, folders Blocks, Items, Mobs, Particles, GUI, Paintings, search, MSM's own `.png.mcmeta` from the vanilla sidecar's timing), `host.ts` (`MinecraftTexturesContext`, provided by `App` from `minecraft:listAssets` and `minecraft:readAsset`), `MinecraftTexturePicker.tsx` (lazy chunk; folder chips, search, pixelated thumbnails loaded as they come into view, 120 at a time with Show more, ids only in Advanced, the not-set-up line with **Set up Minecraft folder**), `StartFromMinecraftButton.tsx`, `picture-change.ts` (PNG plus sidecar for a strip, the override path in `minecraft`).
+- **Start from a Minecraft texture**: New texture's **Start from** (**A Minecraft texture**, button **Pick…**), the painter (replaces the canvas at the picked size as one painter undo step; Save hands the sidecar to the host while the picture is a strip), the Block and Item Studios' picture rows and slots, the Mob Studio beside Draw a skin, each Particle Studio frame.
+- **Change a Minecraft texture**: Home tile (`components/home/minecraft-texture-tile.ts`, one entry and one action type in `tiles.ts`), palette command `changeMinecraftTexture` with search words, the search's tile entry folds into the command. The painter opens on the pick (or the project's own override) and Save writes `assets/minecraft/<path>` in one undo step; the resource pack export passes it through (`assetOutputFiles`), and the model previews read project textures before vanilla, so they show it.
+- Asset cache schema 8 (`packages/interop`): every `.png`/`.png.mcmeta` below `textures/entity/` and `textures/gui/` is now kept (about 1.4 MB more on 26.3); older caches re-extract by themselves as for schema 6 and 7.
+- Tests: `app/test/components/mc-textures/` (catalogue, picker, New texture, painter undo and sidecar, the tile and its search entry), `app/test/mc-texture-override.test.ts` (override saved, exported, undone, sidecar), golden queries "minecraft texture", "change how dirt looks", "edit stone texture" (first on all eight configs), e2e `minecraft-textures-path` (stand-in jar of MSM PNGs). App 419 files, 4,462 tests; interop and ai packages green; e2e art, very easy, launchers, looks, picture and search paths green.
+
+**Decisions**
+- The ADR's name "Change how Minecraft looks" already labels the mob-skin and resource-pack tile, so the new tile and command are **Change a Minecraft texture** (no duplicate labels; vetoable).
+- There is no "Resource Pack Studio" in the app; the action is the palette command (and search), beside the tile.
+- An animated pick keeps its whole strip (kept size) and gets MSM's own sidecar with the vanilla timing (numbers, not pictures), since the game reads the sidecar from the same pack as the picture.
+- The prompt's app map lists the new tile (pinned hash moved; `ai-prompt-truth` reads the tile's own file).
+
+**Next**
+- The user's look in the app with a real Minecraft; screenshots at scale 2 for D5 with the gallery.
+- `app/CLAUDE.md` could name schema 8 beside the cache line.

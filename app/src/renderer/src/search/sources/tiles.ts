@@ -10,6 +10,7 @@
  */
 
 import type { SearchEntry } from '@msm/search';
+import { MINECRAFT_TEXTURE_COMMAND } from '../../components/home/minecraft-texture-tile';
 import {
   MAKE_BLOCK_PICKS,
   MAKE_ITEM_PICKS,
@@ -57,6 +58,8 @@ function otherAction(action: MakeTileAction): SearchActionDescriptor | undefined
       return { type: 'paint' };
     case 'ai':
       return { type: 'ai' };
+    case 'minecraft-texture':
+      return { type: 'command', command: MINECRAFT_TEXTURE_COMMAND };
     default:
       return undefined;
   }

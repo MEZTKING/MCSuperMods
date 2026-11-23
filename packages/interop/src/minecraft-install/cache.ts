@@ -52,14 +52,15 @@ export interface AssetCacheInfo {
    * folders: loot tables, advancements, predicates, enchantments, dialogs and the other tags
    * (B603, ADR 0120 D11), 6 the looks and sounds views' textures, asset JSON, shaders and data
    * folders with `byteCount` (B621, ADR 0121 D3), 7 the structure templates
-   * (`data/minecraft/structure/**.nbt`, B636, ADR 0122); a cache with any other value is invalid,
+   * (`data/minecraft/structure/**.nbt`, B636, ADR 0122), 8 every mob and GUI texture for Start
+   * from a Minecraft texture (ADR 0129 D4); a cache with any other value is invalid,
    * so it is extracted again.
    */
   schemaVersion: typeof ASSET_CACHE_SCHEMA_VERSION;
 }
 
 /** The current {@link AssetCacheInfo.schemaVersion}. */
-export const ASSET_CACHE_SCHEMA_VERSION = 7;
+export const ASSET_CACHE_SCHEMA_VERSION = 8;
 
 /**
  * What an older or otherwise outdated `cache.json` still tells: the version and jar it came

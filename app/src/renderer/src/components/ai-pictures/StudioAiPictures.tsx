@@ -4,7 +4,8 @@
  * of one texture slot (the Block Studio's Textures section). The picked picture is written
  * through the Studio host's `applyChanges` as one undo step: over the texture's bytes, or as a
  * new texture that the slot then names. Draw needs no AI host, so the rows and Draw are shown
- * whenever the host can write; "Make with AI" only with an AI host.
+ * whenever the host can write; "Make with AI" only with an AI host. **Start from a Minecraft
+ * texture** (ADR 0129 D4) sits beside Draw… and writes the picked picture the same way.
  *
  * @packageDocumentation
  */
@@ -15,6 +16,8 @@ import type { AiPictureStyle } from '../../../../shared/ai-pictures';
 import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import { useBlocksItemsStudioHost } from '../../studios/blocks-items/host';
 import { DrawButton } from '../art/DrawButton';
+import { metaChange, pictureChange } from '../mc-textures/picture-change';
+import { StartFromMinecraftButton } from '../mc-textures/StartFromMinecraftButton';
 import { useAiPictures } from './ai-pictures-host';
 import { MakeWithAiButton } from './MakeWithAiButton';
 import { defaultPrompt, styleForName } from './prompt';
@@ -109,6 +112,25 @@ export function ModelPicturesAi(props: ModelPicturesAiProps) {
               onPick={async (picture) => {
                 const bytes = picture.pngs[0];
                 if (bytes !== undefined) await write(bytes, 'Draw');
+              }}
+            />
+            <StartFromMinecraftButton
+              testId={`${rowId}-minecraft`}
+              target={asset.path.slice(asset.path.lastIndexOf('/') + 1, -'.png'.length)}
+              folder={props.kind === 'block' ? 'block' : 'item'}
+              onPick={async (pick) => {
+                const change = pictureChange(
+                  props.project,
+                  asset.namespace,
+                  asset.path,
+                  pick.bytes,
+                  pick.mcmeta,
+                );
+                await apply(
+                  change.items,
+                  `Start from ${pick.texture.name}: ${asset.path}`,
+                  change.writes,
+                );
               }}
             />
             {ai !== null && (
@@ -220,23 +242,51 @@ export function SlotPictureDraw(props: SlotPictureAiProps) {
   const apply = host.applyChanges;
   const { asset, textureId } = slotTexture(props.element, props.slot, props.value);
   return (
-    <DrawButton
-      testId={`block-texture-${props.slot}-draw`}
-      target={`${asset.namespace}:${asset.path}`}
-      field={{ kinds: ['block'], width: 16, height: 16, name: textureId }}
-      onPick={async (picture) => {
-        const bytes = picture.pngs[0];
-        if (bytes === undefined) return;
-        const change = slotPictureChange(
-          props.project,
-          props.element,
-          props.slot,
-          props.value,
-          bytes,
-        );
-        await apply(change.items, `Draw ${props.label}`, change.writes);
-      }}
-    />
+    <>
+      <DrawButton
+        testId={`block-texture-${props.slot}-draw`}
+        target={`${asset.namespace}:${asset.path}`}
+        field={{ kinds: ['block'], width: 16, height: 16, name: textureId }}
+        onPick={async (picture) => {
+          const bytes = picture.pngs[0];
+          if (bytes === undefined) return;
+          const change = slotPictureChange(
+            props.project,
+            props.element,
+            props.slot,
+            props.value,
+            bytes,
+          );
+          await apply(change.items, `Draw ${props.label}`, change.writes);
+        }}
+      />
+      <StartFromMinecraftButton
+        testId={`block-texture-${props.slot}-minecraft`}
+        target={props.label}
+        folder="block"
+        onPick={async (pick) => {
+          const change = slotPictureChange(
+            props.project,
+            props.element,
+            props.slot,
+            props.value,
+            pick.bytes,
+          );
+          const meta = metaChange(
+            props.project,
+            asset.namespace,
+            asset.path,
+            pick.bytes,
+            pick.mcmeta,
+          );
+          await apply(
+            [...change.items, ...meta.items],
+            `Start ${props.label} from ${pick.texture.name}`,
+            [...change.writes, ...meta.writes],
+          );
+        }}
+      />
+    </>
   );
 }
 
