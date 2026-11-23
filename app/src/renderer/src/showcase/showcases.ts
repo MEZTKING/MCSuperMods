@@ -698,9 +698,9 @@ function mountains(): ShowcaseClip {
     camera: {
       type: 'keys',
       keys: [
-        { tick: 0, eye: v(4, 32, 8), yaw: -45, pitch: 16 },
-        { tick: 110, eye: v(14, 32, 2), yaw: -20, pitch: 18 },
-        { tick: 200, eye: v(32, 32, 1), yaw: 10, pitch: 16 },
+        { tick: 0, eye: v(4, 31, 12), yaw: -50, pitch: 26 },
+        { tick: 110, eye: v(12, 31, 10), yaw: -25, pitch: 28 },
+        { tick: 200, eye: v(28, 31, 10), yaw: 5, pitch: 26 },
       ],
     },
     captions: [

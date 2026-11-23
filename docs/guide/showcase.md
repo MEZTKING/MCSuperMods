@@ -58,7 +58,7 @@ Every card shows a **Preview** tag. A picture is a short clip, about 8 to 12 sec
 - **Reduced motion:** if your computer asks for less motion, no clip moves by itself. Press a card's picture to play it.
 - **Setting:** in **Settings**, the **Showcase** section has **Play showcase clips** ("Moving pictures on Home and in New project. Off shows still pictures."). It is on by default; switch it off for still pictures only.
 - **Without WebGL:** if your computer cannot draw moving pictures, each card shows a drawn still with the line "This computer cannot show moving pictures here." **Make this** and **See the example** still work.
-- A still is drawn first and replaced by a frame of the clip once it has played.
+- A still is drawn first and replaced by a frame of the clip once it has played. Clips and stills are drawn at the card's size on your screen (up to twice as sharp on a high-resolution screen), and pictures are scaled by whole numbers, never blurred.
 
 ## Limits
 
@@ -66,7 +66,7 @@ Every card shows a **Preview** tag. A picture is a short clip, about 8 to 12 sec
 - Mobs only wander or stand in a clip. No merchant or machine screen is shown, and clips are silent. Try it plays sounds.
 - Minecraft's own blocks look plain in clips, for now even when your Minecraft folder is set up ([Getting started](getting-started.md)): terrain and wood are drawn by MCSuperMods and the rest are plain cubes. MCSuperMods never ships Minecraft's pictures. The clips prefer your kind of blocks and terrain.
 - Each clip follows its example: if the example changes, so does the clip.
-- The world cards' land is worked out from their example's own files, as Try it's **My world generation** ground does ([Try it](try-it.md#my-world-generation)), and never from your Minecraft, so every computer shows the same land. Trees, plants and ores are about right, and carved caves show only in the game; the captions say so ("Its jungle trees grow in the game.", "Its caves are carved in the game."). Before a world card's clip has played, its still is a plain colour.
+- The world cards' land is worked out from their example's own files, as Try it's **My world generation** ground does ([Try it](try-it.md#my-world-generation)), and never from your Minecraft, so every computer shows the same land. Trees, plants and ores are about right, and carved caves show only in the game; the captions say so ("Its jungle trees grow in the game.", "Its caves are carved in the game."). Before a world card's clip has played, its still is a drawing of that land from the clip's camera; if the land cannot be worked out on your computer, the card says "This world could not be drawn here."
 - Only the built-in examples have cards; a plugin cannot add one.
 - A card shows only where its example works on your Minecraft version: the open mod's version, or the default one when no mod is open.
 - A slow computer plays a clip more slowly, so it may take longer than 12 seconds.

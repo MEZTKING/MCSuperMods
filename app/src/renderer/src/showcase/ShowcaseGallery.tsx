@@ -5,6 +5,12 @@
  * and every other card shows its still: the frame taken from its clip this session, else its
  * drawn still (`drawn-still.ts`). Without WebGL no `ClipView` is ever mounted.
  *
+ * Stills are drawn at the cards' picture size times the screen's pixel ratio (capped at 2,
+ * `stillSizeFor`; measured with a `ResizeObserver` and again when the window is resized), so the
+ * browser never scales them (ADR 0128 D3). A world card (a clip on a generated ground) has no
+ * pictures, so its drawn still is its land drawn from the clip's camera (`land-still.ts`, loaded
+ * lazily); a land that cannot be made leaves the plain still with the line `LAND_NOT_MADE`.
+ *
  * Not wired into Home or New project here (B569 does that). Test ids: `showcase-gallery`,
  * `showcase-pause`, and the card's (`ShowcaseCard.tsx`).
  *
@@ -29,18 +35,43 @@ import type { VanillaAssetReader } from '../preview/model-chain';
 import { hasWebGL } from '../preview/webgl';
 import type { ClipViewProps } from './ClipView';
 import type { ShowcaseClip } from './clip';
-import { drawnStill, type StillCodec } from './drawn-still';
+import {
+  DEFAULT_STILL_SIZE,
+  drawnStill,
+  type StillCodec,
+  type StillSize,
+  stillSizeFor,
+} from './drawn-still';
 import type { ExampleFilesDeps } from './example-files';
+import type { LandStillOptions } from './land-still';
 import {
   browserLiveEnvironment,
   chooseLiveClip,
   type LiveClipEnvironment,
   playsByItself,
 } from './live-clip';
-import { ShowcaseCard } from './ShowcaseCard';
+import { LAND_NOT_MADE, ShowcaseCard } from './ShowcaseCard';
 import { stillKey, stillsVersion, subscribeStills, takenStill } from './still-cache';
 
 const LazyClipView = lazy(() => import('./ClipView'));
+
+/** Makes a world card's land still (`land-still.ts`'s `landStill`). */
+export type LandStillMaker = (
+  clip: ShowcaseClip,
+  example: ExampleProject,
+  target: Target,
+  options: LandStillOptions,
+) => Promise<string>;
+
+/** The real land still maker, loaded with its module on first use. */
+const lazyLandStill: LandStillMaker = async (clip, example, target, options) => {
+  const module = await import('./land-still');
+  return module.landStill(clip, example, target, options);
+};
+
+/** Two sizes are the same. */
+const sameSize = (a: StillSize, b: StillSize): boolean =>
+  a.width === b.width && a.height === b.height;
 
 /** Props of {@link ShowcaseGallery}. */
 export interface ShowcaseGalleryProps {
@@ -69,6 +100,8 @@ export interface ShowcaseGalleryProps {
   readonly webgl?: boolean;
   readonly clipView?: ComponentType<ClipViewProps>;
   readonly codec?: StillCodec;
+  /** World cards' land stills; `null` draws none (tests). Default the lazy `landStill`. */
+  readonly landStill?: LandStillMaker | null;
 }
 
 const NONE: ReadonlySet<string> = new Set();
@@ -132,36 +165,80 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
     return environment.watchInView(watched, (seen) => setInView(seen));
   }, [environment, idsKey]);
 
-  // Drawn stills, by clip id.
+  // The size stills are drawn at: the first card's picture, in device pixels (ADR 0128 D3).
+  const list = useRef<HTMLUListElement | null>(null);
+  const [size, setSize] = useState<StillSize>(DEFAULT_STILL_SIZE);
+  useEffect(() => {
+    const host = list.current;
+    if (host === null) return;
+    const measure = (): void => {
+      const picture = host.querySelector<HTMLElement>('[data-testid^="showcase-picture-"]');
+      if (picture === null) return;
+      const next = stillSizeFor(
+        picture.clientWidth,
+        picture.clientHeight,
+        typeof window === 'undefined' ? 1 : window.devicePixelRatio,
+      );
+      setSize((before) => (sameSize(before, next) ? before : next));
+    };
+    measure();
+    const observer =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => measure());
+    observer?.observe(host);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
+
+  // Drawn stills, by clip id; world cards' land stills, and the world cards whose land failed.
   const [drawn, setDrawn] = useState<ReadonlyMap<string, string>>(new Map());
+  const [land, setLand] = useState<ReadonlyMap<string, string>>(new Map());
+  const [landFailed, setLandFailed] = useState<ReadonlySet<string>>(NONE);
   const { codec } = props;
+  // The registry and plugins, not the `deps` object, so a host's fresh object redraws nothing.
+  const { registry, plugins } = props.deps;
+  const makeLand = props.landStill === undefined ? lazyLandStill : props.landStill;
   useEffect(() => {
     let live = true;
+    const keep =
+      (set: typeof setDrawn, id: string) =>
+      (url: string): void => {
+        if (!live) return;
+        set((before) => {
+          if (before.get(id) === url) return before;
+          const next = new Map(before);
+          next.set(id, url);
+          return next;
+        });
+      };
     for (const { clip, example } of cards) {
-      drawnStill(example, target, codec).then(
-        (url) => {
-          if (!live) return;
-          setDrawn((before) => {
-            if (before.get(clip.id) === url) return before;
-            const next = new Map(before);
-            next.set(clip.id, url);
-            return next;
-          });
-        },
-        () => {
-          // No pictures: the card keeps its plain ground.
-        },
-      );
+      drawnStill(example, target, codec, size).then(keep(setDrawn, clip.id), () => {
+        // No pictures: the card keeps its plain ground.
+      });
+      if (clip.ground.kind !== 'generated' || makeLand === null) continue;
+      makeLand(clip, example, target, {
+        deps: { registry, plugins },
+        size,
+        ...(codec === undefined ? {} : { codec }),
+      }).then(keep(setLand, clip.id), () => {
+        if (!live) return;
+        setLandFailed((before) => new Set([...before, clip.id]));
+      });
     }
     return () => {
       live = false;
     };
-  }, [cards, target, codec]);
+  }, [cards, target, codec, size, registry, plugins, makeLand]);
 
   useSyncExternalStore(subscribeStills, stillsVersion);
   const withJar = props.vanilla !== null && props.vanilla !== undefined;
   const stillOf = (clip: ShowcaseClip): string | null =>
-    takenStill(stillKey(clip.id, target.id, withJar)) ?? drawn.get(clip.id) ?? null;
+    takenStill(stillKey(clip.id, target.id, withJar)) ??
+    land.get(clip.id) ??
+    drawn.get(clip.id) ??
+    null;
 
   const state = {
     cards: ids,
@@ -219,7 +296,7 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
           </Button>
         )}
       </div>
-      <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+      <ul ref={list} className="m-0 flex list-none flex-wrap gap-2 p-0">
         {cards.map(({ clip, example }) => {
           const still = stillOf(clip);
           const live =
@@ -227,7 +304,11 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
               <Suspense
                 fallback={
                   still === null ? null : (
-                    <img src={still} alt="" className="block size-full object-cover" />
+                    <img
+                      src={still}
+                      alt=""
+                      className="block size-full object-cover [image-rendering:pixelated]"
+                    />
                   )
                 }
               >
@@ -255,6 +336,13 @@ export function ShowcaseGallery(props: ShowcaseGalleryProps) {
               still={still}
               live={live}
               webgl={webgl}
+              note={
+                landFailed.has(clip.id) &&
+                !land.has(clip.id) &&
+                takenStill(stillKey(clip.id, target.id, withJar)) === null
+                  ? LAND_NOT_MADE
+                  : null
+              }
               cardRef={refFor(clip.id)}
               onTogglePlay={() => toggle(clip.id)}
               {...(clip.make.type === 'example' ? {} : { onMake: () => props.onMake(clip) })}

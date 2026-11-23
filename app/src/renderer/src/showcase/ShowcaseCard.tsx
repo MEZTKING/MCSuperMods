@@ -7,8 +7,11 @@
  * Without WebGL it is a plain picture with the line "This computer cannot show moving pictures
  * here." Presentational: the gallery decides which card plays.
  *
+ * Stills are drawn one still pixel per device pixel (the gallery sizes them, ADR 0128 D3) and
+ * shown with `image-rendering: pixelated`, never smoothed.
+ *
  * Test ids: `showcase-card-<id>`, `showcase-picture-<id>`, `showcase-still-<id>`,
- * `showcase-make-<id>`, `showcase-example-<id>`, `showcase-no-webgl-<id>`.
+ * `showcase-make-<id>`, `showcase-example-<id>`, `showcase-no-webgl-<id>`, `showcase-note-<id>`.
  *
  * @packageDocumentation
  */
@@ -21,6 +24,9 @@ import type { ShowcaseClip } from './clip';
 /** The line under a card's still without WebGL (ADR 0118 D9). */
 export const NO_MOVING_PICTURES = 'This computer cannot show moving pictures here.';
 
+/** The line of a world card whose land cannot be made here (ADR 0128 D3). */
+export const LAND_NOT_MADE = 'This world could not be drawn here.';
+
 /** Props of {@link ShowcaseCard}. */
 export interface ShowcaseCardProps {
   readonly clip: ShowcaseClip;
@@ -30,6 +36,8 @@ export interface ShowcaseCardProps {
   readonly live?: ReactNode;
   /** Whether clips can play here at all (WebGL). */
   readonly webgl: boolean;
+  /** A line under the picture, for example {@link LAND_NOT_MADE}. */
+  readonly note?: string | null;
   readonly onTogglePlay?: () => void;
   /** Absent hides **Make this** (the Rules card). */
   readonly onMake?: () => void;
@@ -110,6 +118,11 @@ export function ShowcaseCard(props: ShowcaseCardProps) {
       {!webgl && (
         <p className="text-muted text-xs" data-testid={`showcase-no-webgl-${clip.id}`}>
           {NO_MOVING_PICTURES}
+        </p>
+      )}
+      {props.note !== undefined && props.note !== null && (
+        <p className="text-muted text-xs" data-testid={`showcase-note-${clip.id}`}>
+          {props.note}
         </p>
       )}
       <h3 className="font-semibold text-sm">{clip.title}</h3>

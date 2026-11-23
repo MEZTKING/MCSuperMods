@@ -129,6 +129,8 @@ export class ClipPlayer {
   /** A generated ground with a `bottom` has moved its window there. */
   private moved = false;
   private readonly readyChecks = new Set<() => void>();
+  /** Why a generated ground could not be made, once it is known (ADR 0128 D3). */
+  private landProblem: string | null = null;
 
   constructor(options: ClipPlayerOptions) {
     this.clip = options.clip;
@@ -190,6 +192,37 @@ export class ClipPlayer {
       (state.summary?.unsupported.length ?? 0) === 0 &&
       (ground.bottom === undefined || this.moved)
     );
+  }
+
+  /**
+   * Why the clip's generated ground could not be made (it then never plays), or `null`: always
+   * `null` for the other grounds and while the land is still arriving (ADR 0128 D3).
+   */
+  get groundFailed(): string | null {
+    return this.landProblem;
+  }
+
+  /**
+   * Resolves once the ground is in ({@link groundIn}); rejects with {@link groundFailed}'s words
+   * when a generated ground cannot be made.
+   */
+  whenGround(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const check = (): boolean => {
+        if (this.groundIn) resolve();
+        else if (this.landProblem !== null) reject(new Error(this.landProblem));
+        else return false;
+        return true;
+      };
+      if (check()) return;
+      const once = (): void => {
+        if (!check()) return;
+        stop();
+        this.readyChecks.delete(once);
+      };
+      const stop = this.area.subscribe(once);
+      this.readyChecks.add(once);
+    });
   }
 
   /** Resolves once {@link ready}. */
@@ -358,7 +391,7 @@ export class ClipPlayer {
     };
     const failed = (error: unknown): void => {
       if (this.area.generated === null) return;
-      this.problemsNow.push(
+      this.landFailed(
         `The land could not be made: ${error instanceof Error ? error.message : String(error)}`,
       );
     };
@@ -367,7 +400,7 @@ export class ClipPlayer {
       const window = this.area.generatedWindow;
       const left = controller?.state.summary?.unsupported ?? [];
       if (left.length > 0) {
-        this.problemsNow.push(
+        this.landFailed(
           `The land could not be made in full: ${left.map((part) => part.type).join(', ')}.`,
         );
         return;
@@ -380,6 +413,13 @@ export class ClipPlayer {
       if (window.y0 === ground.bottom) done();
       else void controller.move(ground.bottom - window.y0).then(done, failed);
     }, failed);
+  }
+
+  /** Notes that the generated ground cannot be made, and tells whoever waits for it. */
+  private landFailed(problem: string): void {
+    this.problemsNow.push(problem);
+    this.landProblem ??= problem;
+    for (const check of [...this.readyChecks]) check();
   }
 
   /** Puts the setup in place and the player at its spot, from tick 0. */

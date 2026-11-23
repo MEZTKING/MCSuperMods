@@ -3,7 +3,9 @@
  * Home and in the New project dialog.
  *
  * 1. Under SwiftShader WebGL, a brand-new install (`MSM_E2E_NEW_INSTALL`): Very easy's Home with
- *    no mod shows the cards (the ten, then the world cards). Hovering a card mounts exactly one canvas, in that card, and
+ *    no mod shows the cards (the ten, then the world cards). Each world card's still is its land
+ *    (ADR 0128 D3), never one grey colour, and each world card hovered draws its land with the
+ *    still taken away. Hovering a card mounts exactly one canvas, in that card, and
  *    its picture has more than one colour (WebGL `readPixels`, as `tryit-path` reads it);
  *    hovering another card still leaves one canvas, now in that card. With reduced motion
  *    (`page.emulateMedia`) no canvas is mounted and every card shows its still until a card's
@@ -13,8 +15,8 @@
  * 2. Under SwiftShader WebGL, Advanced (a fresh profile without the launch notice): the New
  *    project dialog's strip shows the cards, and **Make this** on "Plants that grow" goes on to
  *    the Crop wizard's second step.
- * 3. Without the WebGL switches: Home's cards show their drawn stills, their sentences and the
- *    line "This computer cannot show moving pictures here.", no canvas and no **Pause clips**;
+ * 3. Without the WebGL switches: Home's cards show their drawn stills (a world card's is its
+ *    land), their sentences and the line "This computer cannot show moving pictures here.", no canvas and no **Pause clips**;
  *    **Make this** on "A set of wood" still makes the mod and opens the Wood set flow.
  */
 
@@ -155,6 +157,51 @@ async function pictureColours(scope: Locator): Promise<number> {
 }
 
 /**
+ * How many different colours the still picture `still` shows, read from the decoded image on a
+ * 2D canvas at its own size; 0 before it has loaded (ADR 0128 D3: a world card's still was one
+ * plain grey).
+ */
+async function stillColours(still: Locator): Promise<number> {
+  interface Picture {
+    readonly complete: boolean;
+    readonly naturalWidth: number;
+    readonly naturalHeight: number;
+  }
+  interface Context2d {
+    drawImage(image: unknown, x: number, y: number): void;
+    getImageData(x: number, y: number, w: number, h: number): { data: Uint8ClampedArray };
+  }
+  return still.evaluate((element) => {
+    const image = element as unknown as Picture;
+    if (!image.complete || image.naturalWidth === 0) return 0;
+    const page = globalThis as unknown as {
+      document: {
+        createElement(tag: 'canvas'): {
+          width: number;
+          height: number;
+          getContext(type: '2d'): Context2d | null;
+        };
+      };
+    };
+    const canvas = page.document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d');
+    if (context === null) return 0;
+    context.drawImage(image, 0, 0);
+    const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+    const colours = new Set<number>();
+    for (let at = 0; at < data.length; at += 4) {
+      colours.add((data[at] ?? 0) * 0x10000 + (data[at + 1] ?? 0) * 0x100 + (data[at + 2] ?? 0));
+    }
+    return colours.size;
+  });
+}
+
+/** The world cards (B588), whose stills and clips draw their generated land. */
+const WORLD_IDS = ['world-islands', 'world-mountains', 'world-caves'] as const;
+
+/**
  * **Make this** on "A set of wood" with no mod open: the name-only New prefilled "Elm Mod", the
  * mod made under `<MSM_HOME>/Documents/MCSuperMods/`, then the Creator on the Wood set flow.
  */
@@ -174,7 +221,7 @@ async function makeWoodSet(window: Page, showcase: Locator, msmHome: string): Pr
 }
 
 test('showcase: the cards on Home, one clip at a time, reduced motion, the setting and Make this', async () => {
-  test.setTimeout(150_000);
+  test.setTimeout(240_000);
   setEnv('MSM_E2E_NEW_INSTALL', '1');
   const launched = await launch('home', WEBGL_ARGS);
   const { window } = launched;
@@ -190,6 +237,23 @@ test('showcase: the cards on Home, one clip at a time, reduced motion, the setti
     await expect(cards.nth(index)).toHaveAttribute('data-testid', `showcase-card-${id}`);
   }
   await expect(showcase.getByTestId('showcase-pause')).toBeVisible();
+
+  // The world cards' stills are their land, never one plain grey (ADR 0128 D3). ---------------
+  for (const id of WORLD_IDS) {
+    const still = showcase.getByTestId(`showcase-still-${id}`);
+    await expect.poll(() => stillColours(still), { timeout: 60_000 }).toBeGreaterThan(20);
+    await expect(showcase.getByTestId(`showcase-note-${id}`)).toHaveCount(0);
+  }
+
+  // Each world card hovered draws its land, with the still taken away. -------------------------
+  for (const id of WORLD_IDS) {
+    const card = showcase.getByTestId(`showcase-card-${id}`);
+    await card.getByTestId(`showcase-picture-${id}`).hover();
+    await expect(card.locator('canvas')).toHaveCount(1);
+    await expect(card.getByTestId('showcase-clip-cover')).toHaveCount(0, { timeout: 30_000 });
+    await expect.poll(() => pictureColours(card), { timeout: 20_000 }).toBeGreaterThan(1);
+    await expect(card.getByTestId('showcase-land-failed')).toHaveCount(0);
+  }
 
   // Hovering a card mounts exactly one canvas, in that card, with a picture drawn. ------------
   const pet = showcase.getByTestId('showcase-card-pet');
@@ -296,6 +360,12 @@ test('showcase without WebGL: drawn stills, sentences, the line, and Make this s
     await expect(card.getByTestId(`showcase-still-${id}`)).toBeVisible();
     await expect(card.getByTestId(`showcase-no-webgl-${id}`)).toHaveText(NO_MOVING_PICTURES);
   }
+  // A world card's still is its land, drawn without WebGL (ADR 0128 D3).
+  await expect
+    .poll(() => stillColours(showcase.getByTestId('showcase-still-world-islands')), {
+      timeout: 60_000,
+    })
+    .toBeGreaterThan(20);
   const wood = showcase.getByTestId('showcase-card-wood-set');
   await expect(wood).toContainText('A set of wood');
   await expect(wood).toContainText('Logs, planks, stairs, a door and a tree of your own.');

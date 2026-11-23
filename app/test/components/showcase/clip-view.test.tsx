@@ -81,10 +81,12 @@ function frames(props: () => TryItSceneProps, count: number): void {
 }
 
 describe('ClipView', () => {
-  it('draws the player’s area with Smaller picture and the clip’s name', async () => {
+  it('draws the player’s area at full resolution (pixel ratio up to 2) and the clip’s name', async () => {
     view();
     const props = await sceneProps();
-    expect(props.smaller).toBe(true);
+    // ADR 0128 D3: no longer Smaller picture, which looked soft at card size.
+    expect(props.smaller).toBeUndefined();
+    expect(props.maxPixelRatio).toBe(2);
     expect(props.label).toBe('Clip: A set of wood');
     expect(props.files.size).toBeGreaterThan(0);
     expect(props.folders).toEqual(target?.folders.resource);

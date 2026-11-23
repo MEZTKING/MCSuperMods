@@ -1,7 +1,8 @@
 /**
  * One live showcase clip (ADR 0118 D2, D5–D7; B568): the lazy chunk of the showcase. It lowers
  * the example (`example-files.ts`, cached), plays it with a {@link ClipPlayer} and draws it with
- * Try it's `TryItScene`, unchanged, with Smaller picture.
+ * Try it's `TryItScene`, unchanged, at the picture's size times the screen's pixel ratio (capped
+ * at 2; ADR 0128 D3: no longer Smaller picture, which looked soft at card size).
  *
  * - The camera is the player's (`player.camera()`), `partialTick` is `player.alpha`, and the clip
  *   advances by the frame's elapsed time in `onFrame` (whole ticks, never the wall clock).
@@ -12,7 +13,9 @@
  *   the canvas is blank), once per clip per session (`still-cache.ts`).
  * - The still (taken or drawn) covers the picture until the first frame and while the one
  *   rebuild of a loop's restart is drawn (`player.loops` has just grown); for a clip on a
- *   generated ground, until its land is in (`player.groundIn`, B588).
+ *   generated ground, until its land is in (`player.groundIn`, B588). A generated ground that
+ *   cannot be made keeps the still and says so in a line ({@link LAND_NOT_MADE}, ADR 0128 D3),
+ *   never an empty frame.
  * - With `once`, the clip ends at its first restart (`onEnd`), for the play button under
  *   reduced motion or with clips turned off.
  * - The player and its area are disposed on unmount; the canvas then loses its WebGL context.
@@ -29,7 +32,9 @@ import { TryItScene } from '../tryit/render/TryItScene';
 import type { TranspileOutcome, TryItScripts } from '../tryit/session-source';
 import type { ShowcaseClip } from './clip';
 import { ClipPlayer } from './clip-player';
+import { MAX_PIXEL_RATIO } from './drawn-still';
 import { type ExampleFiles, type ExampleFilesDeps, exampleFiles } from './example-files';
+import { LAND_NOT_MADE } from './ShowcaseCard';
 import { hasStill, keepStill } from './still-cache';
 
 /** The part of the scripting service a clip uses (ADR 0031 D2). */
@@ -83,6 +88,7 @@ export function ClipView(props: ClipViewProps) {
   const [playing, setPlaying] = useState<{ player: ClipPlayer; files: ExampleFiles } | null>(null);
   const player = playing?.player ?? null;
   const [failed, setFailed] = useState(false);
+  const [landFailed, setLandFailed] = useState(false);
   const [captions, setCaptions] = useState<readonly string[]>([]);
   const [covered, setCovered] = useState(true);
   const host = useRef<HTMLDivElement | null>(null);
@@ -101,6 +107,7 @@ export function ClipView(props: ClipViewProps) {
     let made: ClipPlayer | null = null;
     setPlaying(null);
     setFailed(false);
+    setLandFailed(false);
     setCovered(true);
     loops.current = 0;
     coverLeft.current = -1;
@@ -142,6 +149,7 @@ export function ClipView(props: ClipViewProps) {
   }, [player]);
 
   const onFrame = (elapsed: number): void => {
+    if (player !== null && player.groundFailed !== null && !landFailed) setLandFailed(true);
     // The clip starts with its first drawn frame (B565: the resources load first).
     if (player === null || ended.current || coverLeft.current < 0) return;
     player.advance(elapsed);
@@ -203,7 +211,7 @@ export function ClipView(props: ClipViewProps) {
           vehicles={vehicles}
           fluids={fluids}
           partialTick={() => player.alpha}
-          smaller
+          maxPixelRatio={MAX_PIXEL_RATIO}
           onFrame={onFrame}
           onFrameDrawn={onFrameDrawn}
           onWebGLUnavailable={() => callbacks.current.onWebGLUnavailable?.()}
@@ -223,6 +231,15 @@ export function ClipView(props: ClipViewProps) {
       {failed && (
         <p className="absolute inset-x-0 bottom-0 bg-bg/80 p-1 text-center text-xs" role="status">
           This clip could not be made.
+        </p>
+      )}
+      {landFailed && !failed && (
+        <p
+          className="absolute inset-x-0 bottom-0 bg-bg/80 p-1 text-center text-xs"
+          role="status"
+          data-testid="showcase-land-failed"
+        >
+          {LAND_NOT_MADE}
         </p>
       )}
       {captions.length > 0 && (

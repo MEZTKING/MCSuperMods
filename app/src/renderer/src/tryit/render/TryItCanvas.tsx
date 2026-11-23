@@ -147,6 +147,11 @@ export interface TryItCanvasProps {
   sky?: PerFrame<readonly [number, number, number] | null>;
   /** "Smaller picture": draws at half the resolution and scales it up. */
   smaller?: boolean;
+  /**
+   * The most device pixels per CSS pixel the picture is drawn at (ADR 0128 D3: the showcase's
+   * clips pass 2). Absent: the screen's own `devicePixelRatio`, however high.
+   */
+  maxPixelRatio?: number;
   /** False stops the render loop (the view is hidden). Default true. */
   active?: boolean;
   /**
@@ -179,6 +184,28 @@ const OUTLINE_GROW = 0.002;
 /** At most 60 frames a second (D11). */
 const FRAME_MS = 1000 / 60;
 const REPREPARE_DELAY_MS = 60;
+
+/**
+ * Device pixels per CSS pixel of the drawing buffer: the screen's ratio (at least 1 when it is
+ * missing), capped at `max` when given, halved for "Smaller picture".
+ */
+export function canvasPixelScale(devicePixelRatio: number, smaller: boolean, max?: number): number {
+  const ratio = devicePixelRatio > 0 ? devicePixelRatio : 1;
+  const capped = max === undefined ? ratio : Math.min(ratio, max);
+  return capped * (smaller ? 0.5 : 1);
+}
+
+/** The drawing buffer's size for a canvas shown at `width` by `height` CSS pixels. */
+export function canvasBufferSize(
+  width: number,
+  height: number,
+  scale: number,
+): { width: number; height: number } {
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}
 
 const read = <T,>(value: PerFrame<T>): T =>
   typeof value === 'function' ? (value as () => T)() : value;
@@ -866,9 +893,12 @@ export default function TryItCanvas(props: TryItCanvasProps) {
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;
         if (width === 0 || height === 0 || scene.renderer === null) return;
-        const scale = (window.devicePixelRatio || 1) * (smallerRef.current ? 0.5 : 1);
-        const pixelWidth = Math.max(1, Math.round(width * scale));
-        const pixelHeight = Math.max(1, Math.round(height * scale));
+        const scale = canvasPixelScale(
+          window.devicePixelRatio || 1,
+          smallerRef.current,
+          current.maxPixelRatio,
+        );
+        const { width: pixelWidth, height: pixelHeight } = canvasBufferSize(width, height, scale);
         if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
           canvas.width = pixelWidth;
           canvas.height = pixelHeight;

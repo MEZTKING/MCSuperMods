@@ -21,12 +21,44 @@ import {
 } from '../components/texture-editor/png-canvas';
 import { SHOWCASE_NAMESPACE } from './clip';
 
-/** The size of a still: the clips' picture, 320 by 180 (ADR 0118 D6). */
+/**
+ * The size of a still where the card's size is not known (tests, search's preview): the clips'
+ * old picture, 320 by 180 (ADR 0118 D6). Cards draw theirs at {@link stillSizeFor}.
+ */
 export const STILL_WIDTH = 320;
 export const STILL_HEIGHT = 180;
+/** The most device pixels per CSS pixel a still or clip is drawn at (ADR 0128 D3). */
+export const MAX_PIXEL_RATIO = 2;
+
+/** A still's size in pixels. */
+export interface StillSize {
+  readonly width: number;
+  readonly height: number;
+}
+
+/** The default still size, {@link STILL_WIDTH} by {@link STILL_HEIGHT}. */
+export const DEFAULT_STILL_SIZE: StillSize = Object.freeze({
+  width: STILL_WIDTH,
+  height: STILL_HEIGHT,
+});
+
+/**
+ * The size a still is drawn at for a picture shown at `width` by `height` CSS pixels on a screen
+ * of `devicePixelRatio` (ADR 0128 D3): one still pixel per device pixel, the ratio capped at
+ * {@link MAX_PIXEL_RATIO} (and at least 1), so the picture is never scaled by the browser. A
+ * picture of no size yet (not laid out) gets {@link DEFAULT_STILL_SIZE}.
+ */
+export function stillSizeFor(width: number, height: number, devicePixelRatio: number): StillSize {
+  if (!(width > 0) || !(height > 0)) return DEFAULT_STILL_SIZE;
+  const ratio = Math.min(MAX_PIXEL_RATIO, Math.max(1, devicePixelRatio || 1));
+  return {
+    width: Math.max(1, Math.round(width * ratio)),
+    height: Math.max(1, Math.round(height * ratio)),
+  };
+}
 /** At most this many pictures in a drawn still. */
 export const STILL_PICTURES = 3;
-/** The space round and between the pictures. */
+/** The space round and between the pictures in a still of {@link STILL_WIDTH}. */
 const GAP = 16;
 /** The tint when the example has no pictures. */
 const PLAIN_TINT: readonly [number, number, number] = [58, 66, 74];
@@ -105,19 +137,21 @@ export function composeStill(
     data[at + 3] = 255;
   }
   if (shown.length === 0) return { width, height, data };
-  const cellWidth = Math.floor((width - GAP * (shown.length + 1)) / shown.length);
-  const cellHeight = height - GAP * 2;
+  // The space grows with the still, so a still twice the size looks the same, only sharper.
+  const gap = Math.max(4, Math.round((GAP * width) / STILL_WIDTH));
+  const cellWidth = Math.floor((width - gap * (shown.length + 1)) / shown.length);
+  const cellHeight = height - gap * 2;
   const scales = shown.map((image) =>
     Math.max(1, Math.floor(Math.min(cellWidth / image.width, cellHeight / image.height))),
   );
   const drawnWidths = shown.map((image, index) => image.width * (scales[index] ?? 1));
-  const total = drawnWidths.reduce((sum, one) => sum + one, 0) + GAP * (shown.length - 1);
+  const total = drawnWidths.reduce((sum, one) => sum + one, 0) + gap * (shown.length - 1);
   let left = Math.floor((width - total) / 2);
   shown.forEach((image, index) => {
     const scale = scales[index] ?? 1;
     const top = Math.floor((height - image.height * scale) / 2);
     blit(image, scale, left, top, { width, height, data });
-    left += (drawnWidths[index] ?? 0) + GAP;
+    left += (drawnWidths[index] ?? 0) + gap;
   });
   return { width, height, data };
 }
@@ -165,15 +199,17 @@ export function clearDrawnStills(): void {
 }
 
 /**
- * The drawn still of `example` on `target`, as a PNG `data:` URL: built once per session (a
- * failed build is not kept). A picture that cannot be decoded is left out.
+ * The drawn still of `example` on `target`, as a PNG `data:` URL `size` pixels big (each picture
+ * scaled by a whole number): built once per session and size (a failed build is not kept). A
+ * picture that cannot be decoded is left out.
  */
 export function drawnStill(
   example: ExampleProject,
   target: Target,
   codec: StillCodec = CANVAS_CODEC,
+  size: StillSize = DEFAULT_STILL_SIZE,
 ): Promise<string> {
-  const key = `${example.id}\u0000${target.id}`;
+  const key = `${example.id}\u0000${target.id}\u0000${size.width}x${size.height}`;
   const hit = cache.get(key);
   if (hit !== undefined) return hit;
   const made = (async () => {
@@ -191,7 +227,7 @@ export function drawnStill(
         // A picture that cannot be read is left out.
       }
     }
-    return imageDataUrl(codec.encode(composeStill(decoded)));
+    return imageDataUrl(codec.encode(composeStill(decoded, size.width, size.height)));
   })();
   cache.set(key, made);
   made.catch(() => {

@@ -241,6 +241,7 @@ export function typedContract(
     fluids: fluidLooks(source.fluids.catalogue.all()),
     partialTick: () => 0,
     smaller: true,
+    maxPixelRatio: 2,
     active: true,
     onFrame: (elapsedMs: number) => void elapsedMs,
     onFrameDrawn: (stats: TryItFrameStats) => void stats.rebuildMs,
