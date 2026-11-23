@@ -33,6 +33,14 @@ export const THING_SLOTS: Readonly<Partial<Record<SlotSpec['type'], ThingSort>>>
   key: 'key',
   vehicle: 'vehicle',
   command: 'command',
+  // Rules 3 for games (ADR 0115 D1; B553).
+  loot_table: 'loot_table',
+  structure: 'structure',
+  team: 'team',
+  objective: 'objective',
+  timer: 'timer',
+  area: 'area',
+  one_block: 'one_block',
 };
 
 /** Names of slots for screen readers ("Item: Ruby"). */
@@ -71,6 +79,9 @@ const SLOT_LABELS: Readonly<Record<string, string>> = {
   value: 'Value',
   name: 'Typed for',
   axis: 'Part',
+  // Rules 3 for games (B553).
+  objective: 'Score',
+  one_block: 'Magic block',
 };
 
 const capitalise = (text: string): string =>
@@ -126,6 +137,20 @@ export function emptyWords(slot: SlotSpec): string {
       return 'pick what the player typed';
     case 'game_rule_value':
       return 'set the value';
+    case 'loot_table':
+      return 'pick a loot table';
+    case 'structure':
+      return 'pick a structure';
+    case 'team':
+      return 'pick a team';
+    case 'objective':
+      return 'pick a score';
+    case 'timer':
+      return 'pick one of your timers';
+    case 'area':
+      return 'pick one of your areas';
+    case 'one_block':
+      return 'pick one of your magic blocks';
     default:
       return `set ${slotLabel(slot).toLowerCase()}`;
   }
@@ -189,7 +214,17 @@ function bareSlotWords(
     case 'game_rule':
     case 'stat':
     case 'advancement':
+    case 'loot_table':
+    case 'structure':
+    case 'timer':
+    case 'area':
+    case 'one_block':
       return typeof raw === 'string' ? (context.names(raw) ?? raw) : undefined;
+    case 'team':
+    case 'objective':
+      // A project team or score by its name; one made elsewhere by its own name (as the plugin).
+      if (typeof raw !== 'string') return undefined;
+      return raw.includes(':') ? (context.names(raw) ?? raw) : `"${raw}"`;
     case 'argument':
       return typeof raw === 'string' ? `"${raw.replace(/_/g, ' ')}"` : undefined;
     case 'game_rule_value':

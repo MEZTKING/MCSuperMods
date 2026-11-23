@@ -1,6 +1,9 @@
 /**
  * The ThingPicker (ADR 0082 D7): a dialog that picks one thing (an item, block, mob, sound,
- * particle, effect, function or dimension) by picture and name. A search box first, then the
+ * particle, effect, function or dimension; the project's keys, vehicles, on-screen elements and
+ * commands; and for games, B553's slot types, a loot table, a structure and the project's teams,
+ * scores, timers, areas and magic blocks) by picture and name, with an optional "Make a new
+ * one" beside Cancel. A search box first, then the
  * project's own things ("Your things"), then the game's by category. Keyboard: the arrow keys
  * move between tiles, Enter picks, Esc closes, and typing on a tile goes to the search box.
  * Shared by the Rule book and, later, the Very easy mode (ADR 0083). A sound's tile has a Play
@@ -12,17 +15,25 @@
 import {
   Box,
   Car,
+  Castle,
   Droplets,
   FileCode,
   Gauge,
+  Gift,
   Globe,
   Keyboard,
   type LucideIcon,
   Music,
   Package,
   PawPrint,
+  Pickaxe,
+  Plus,
   Sparkles,
+  SquareDashed,
   Terminal,
+  Timer,
+  Trophy,
+  Users,
 } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import {
@@ -87,6 +98,11 @@ export interface ThingPickerProps {
   pictures?: ThingPictures | null | undefined;
   /** Offers a first tile that picks "nothing" (`onPick(null)`), with this label ("Any block"). */
   noneLabel?: string | undefined;
+  /**
+   * "Make a new one" (a team, a timer, a loot table...): a button beside Cancel with `label`
+   * ("Make a new team"); the caller makes the thing, picks it and closes the picker.
+   */
+  makeNew?: { readonly label: string; onMake(): void } | undefined;
   /** Picks a thing (or `null` for the {@link noneLabel} tile) and closes. */
   onPick(id: string | null): void;
   onCancel(): void;
@@ -111,6 +127,13 @@ const SORT_ICONS: Readonly<Record<ThingSort, LucideIcon>> = {
   vehicle: Car,
   hud: Gauge,
   command: Terminal,
+  loot_table: Gift,
+  structure: Castle,
+  team: Users,
+  objective: Trophy,
+  timer: Timer,
+  area: SquareDashed,
+  one_block: Pickaxe,
 };
 
 /** Loads a thing's picture as a `data:` URL; `null` while loading or when there is none. */
@@ -441,7 +464,12 @@ export function ThingPicker(props: ThingPickerProps) {
               </p>
             )}
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            {props.makeNew !== undefined && (
+              <Button data-testid="thing-make-new" onClick={props.makeNew.onMake}>
+                <Plus size={14} aria-hidden /> {props.makeNew.label}
+              </Button>
+            )}
             <Dialog.Close asChild>
               <Button>Cancel</Button>
             </Dialog.Close>

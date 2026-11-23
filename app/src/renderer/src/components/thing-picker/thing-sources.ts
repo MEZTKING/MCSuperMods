@@ -27,7 +27,21 @@ export type ThingSort =
   /** A project HUD element (`msm:hud`); only the project has them. */
   | 'hud'
   /** A project command (`msm:command`); only the project has them, shown as `/name`. */
-  | 'command';
+  | 'command'
+  /** A loot table, the project's or Minecraft's (Rules 3, ADR 0115 D1). */
+  | 'loot_table'
+  /** A structure template, the project's or Minecraft's (Rules 3). */
+  | 'structure'
+  /** A project team (`msm:team`); only the project has them. */
+  | 'team'
+  /** A project scoreboard objective (`msm:objective`, "a score"); only the project has them. */
+  | 'objective'
+  /** A project timer (`msm:timer`); only the project has them. */
+  | 'timer'
+  /** A project area (`msm:area`); only the project has them. */
+  | 'area'
+  /** A project one block (`msm:one_block`, "a magic block"); only the project has them. */
+  | 'one_block';
 
 /** The sorts only the project has (no vanilla section, no registry). */
 export const PROJECT_ONLY_SORTS: ReadonlySet<ThingSort> = new Set<ThingSort>([
@@ -35,6 +49,11 @@ export const PROJECT_ONLY_SORTS: ReadonlySet<ThingSort> = new Set<ThingSort>([
   'vehicle',
   'hud',
   'command',
+  'team',
+  'objective',
+  'timer',
+  'area',
+  'one_block',
 ]);
 
 /** Where a thing's picture comes from. */
@@ -99,6 +118,13 @@ export const THING_REGISTRIES: Readonly<Record<ThingSort, string>> = Object.free
   vehicle: 'msm:vehicle',
   hud: 'msm:hud',
   command: 'msm:command',
+  loot_table: 'loot_table',
+  structure: 'structure',
+  team: 'msm:team',
+  objective: 'msm:objective',
+  timer: 'msm:timer',
+  area: 'msm:area',
+  one_block: 'msm:one_block',
 });
 
 /** The element kinds whose elements are things of each sort (for names and pictures). */
@@ -115,6 +141,13 @@ const PROJECT_KINDS: Readonly<Record<ThingSort, readonly string[]>> = Object.fre
   vehicle: ['msm:vehicle'],
   hud: ['msm:hud'],
   command: ['msm:command'],
+  loot_table: ['minecraft:loot_table'],
+  structure: ['minecraft:structure_template'],
+  team: ['msm:team'],
+  objective: ['msm:objective'],
+  timer: ['msm:timer'],
+  area: ['msm:area'],
+  one_block: ['msm:one_block'],
 });
 
 /** Plain words for each sort, singular and plural. */
@@ -132,7 +165,22 @@ export const THING_WORDS: Readonly<Record<ThingSort, { one: string; many: string
     vehicle: { one: 'a vehicle', many: 'vehicles' },
     hud: { one: 'something to show on screen', many: 'things on screen' },
     command: { one: 'a command', many: 'commands' },
+    loot_table: { one: 'a loot table', many: 'loot tables' },
+    structure: { one: 'a structure', many: 'structures' },
+    team: { one: 'a team', many: 'teams' },
+    objective: { one: 'a score', many: 'scores' },
+    timer: { one: 'a timer', many: 'timers' },
+    area: { one: 'an area', many: 'areas' },
+    one_block: { one: 'a magic block', many: 'magic blocks' },
   });
+
+/** The games kinds whose own `name` is the name players see (ADR 0113 D4 to D7). */
+const NAMED_KINDS: ReadonlySet<string> = new Set([
+  'msm:team',
+  'msm:objective',
+  'msm:timer',
+  'msm:area',
+]);
 
 type JsonObject = { [key: string]: Json };
 
@@ -177,7 +225,8 @@ function projectElements(project: Project): Map<string, Element> {
 
 /**
  * The `display_name` of an element's data, when it is a non-empty string; a key bind's own
- * `name` (the words in Controls) when it has no `display_name`; a command is always `/name`.
+ * `name` (the words in Controls) when it has no `display_name`, and so a team's, score's,
+ * timer's or area's; a command is always `/name`.
  */
 function displayNameOf(element: Element | undefined): string | undefined {
   const data = asObject(element?.data);
@@ -187,7 +236,10 @@ function displayNameOf(element: Element | undefined): string | undefined {
     const literal = data?.name;
     return typeof literal === 'string' && literal.trim().length > 0 ? `/${literal}` : undefined;
   }
-  const keyName = element?.kind === 'msm:key_bind' ? data?.name : undefined;
+  const keyName =
+    element?.kind === 'msm:key_bind' || NAMED_KINDS.has(element?.kind ?? '')
+      ? data?.name
+      : undefined;
   return typeof keyName === 'string' && keyName.trim().length > 0 ? keyName : undefined;
 }
 
@@ -297,6 +349,28 @@ function idsOf(registries: ThingRegistries, sort: ThingSort): readonly string[] 
   return ids;
 }
 
+/** Plain words of the first folders of vanilla loot tables (`chests/...`). */
+const FOLDER_WORDS: Readonly<Record<'loot_table' | 'structure', Readonly<Record<string, string>>>> =
+  {
+    loot_table: {
+      chests: 'chests',
+      blocks: "blocks' drops",
+      entities: "mobs' drops",
+      gameplay: 'gameplay loot',
+      archaeology: 'archaeology',
+      equipment: 'equipment',
+      shearing: 'shearing',
+      dispensers: 'dispensers',
+      pots: 'pots',
+      spawners: 'spawners',
+      brush: 'brushing',
+      harvest: 'harvests',
+      charged_creeper: 'charged creeper drops',
+      carve: 'carving',
+    },
+    structure: {},
+  };
+
 /** The vanilla category a vanilla id goes under. */
 function vanillaSection(
   id: string,
@@ -307,6 +381,16 @@ function vanillaSection(
     if (pathOf(id).endsWith('_spawn_egg')) return { id: 'spawn-eggs', label: 'Spawn eggs' };
     if (blocks.has(id)) return { id: 'blocks', label: 'Minecraft blocks' };
     return { id: 'items', label: 'Minecraft items' };
+  }
+  if (sort === 'loot_table' || sort === 'structure') {
+    // Grouped by the first folder ("Minecraft chests", "Minecraft village"), so the many tables
+    // and pieces with the same last name stay apart.
+    const path = pathOf(id);
+    const folder = path.includes('/') ? path.slice(0, path.indexOf('/')) : '';
+    if (folder === '')
+      return { id: sort, label: capitalise(`Minecraft ${THING_WORDS[sort].many}`) };
+    const words = (FOLDER_WORDS[sort][folder] ?? folder).replace(/_/g, ' ');
+    return { id: `${sort}-${folder}`, label: `Minecraft ${words}` };
   }
   const label = `Minecraft ${THING_WORDS[sort].many}`;
   return { id: sort, label: capitalise(label) };
@@ -372,7 +456,7 @@ export function thingSections(input: ThingSourceInput): ThingSection[] {
     });
     vanilla.set(section.id, entry);
   }
-  const order = ['blocks', 'items', 'spawn-eggs'];
+  const order = ['blocks', 'items', 'spawn-eggs', 'loot_table-chests'];
   const keys = [...vanilla.keys()].sort((a, b) => {
     const ia = order.indexOf(a);
     const ib = order.indexOf(b);

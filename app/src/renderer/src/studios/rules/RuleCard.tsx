@@ -47,7 +47,14 @@ import {
 } from './rules-model';
 import { SentenceRow } from './SlotChip';
 import { StepList } from './StepList';
-import { sentenceParts, WHEN_ABSENT_WORDS, WHEN_DEFAULTS } from './slot-words';
+import {
+  emptyWords,
+  sentenceParts,
+  THING_SLOTS,
+  WHEN_ABSENT_WORDS,
+  WHEN_DEFAULTS,
+} from './slot-words';
+import { ThingChip } from './thing-chip';
 
 /** Headings of the When menu's groups. */
 export const TRIGGER_GROUP_LABELS: Readonly<Record<TriggerGroup, string>> = {
@@ -396,7 +403,39 @@ function SubjectChip(props: {
   if (trigger.subject === 'advancement') {
     return <AdvancementSubjectChip pointer={props.pointer} trigger={trigger} />;
   }
+  if (GAME_SUBJECTS.has(trigger.subject)) {
+    return <GameSubjectChip pointer={props.pointer} trigger={trigger} />;
+  }
   return <ThingSubjectChip {...props} />;
+}
+
+/** The subjects of Rules 3's game triggers (B553): one of the project's areas, timers or magic blocks. */
+const GAME_SUBJECTS: ReadonlySet<string> = new Set(['area', 'timer', 'one_block']);
+
+/** The area, timer or magic block a game trigger is about, with "Make a new one". */
+function GameSubjectChip(props: { pointer: string; trigger: TriggerEntry }) {
+  const env = useRulesEnv();
+  const { book } = useBookEdit();
+  const slot = props.trigger.slots.find((entry) => entry.name === 'subject');
+  const sort = slot === undefined ? undefined : THING_SLOTS[slot.type];
+  if (slot === undefined || sort === undefined) return null;
+  const raw = getAt(book, props.pointer);
+  const subject = typeof raw === 'string' ? raw : undefined;
+  const words = subject === undefined ? emptyWords(slot) : env.name(subject, sort);
+  const invalid = (env.problems.get(props.pointer)?.length ?? 0) > 0;
+  return (
+    <ThingChip
+      pointer={props.pointer}
+      label={words}
+      ariaLabel={`Thing: ${words}`}
+      invalid={invalid}
+      describedBy={undefined}
+      testId="rules-chip-subject"
+      className={chipClass({ invalid, empty: subject === undefined })}
+      sort={sort}
+      slot={slot}
+    />
+  );
 }
 
 /** The advancement a trigger is about (ADR 0111 D3), or any advancement when left out. */

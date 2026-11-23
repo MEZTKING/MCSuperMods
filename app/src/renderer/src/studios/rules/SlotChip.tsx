@@ -1,7 +1,8 @@
 /**
  * A chip: one blank of a rule's sentence (ADR 0082 D1). Every chip is a button whose accessible
  * name says what the blank is and what it holds ("Item: Ruby"); it opens the editor its slot
- * type needs: the ThingPicker for things, a menu for choices, who and places, the number and
+ * type needs: the ThingPicker for things (`thing-chip.tsx`; with Rules 3's games slot types, B553:
+ * loot tables, structures and the project's teams, scores, timers, areas and magic blocks), a menu for choices, who and places, the number and
  * reading editor, the text editor or the counter picker, and (batch 2, B538) the id menus of
  * dialogs, game rules, statistics and advancements, the command's arguments and a game rule's
  * value (`id-pickers.tsx`). A chip with a problem is marked and
@@ -12,14 +13,7 @@
 
 import type { Json, Problem } from '@msm/core';
 import type { SlotSpec } from '@msm/plugin-rules';
-import { type ReactNode, useId, useMemo, useState } from 'react';
-import { ThingPicker } from '../../components/thing-picker/ThingPicker';
-import {
-  PROJECT_ONLY_SORTS,
-  THING_WORDS,
-  type ThingSort,
-  thingSections,
-} from '../../components/thing-picker/thing-sources';
+import { type ReactNode, useId } from 'react';
 import { Button } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { useBookEdit, useRulesEnv } from './env';
@@ -44,6 +38,7 @@ import {
   slotWords,
   THING_SLOTS,
 } from './slot-words';
+import { ThingChip } from './thing-chip';
 import { CounterEditor, NumberEditor, TextEditor } from './ValueEditor';
 
 /** Props of {@link SlotChip}. */
@@ -212,82 +207,6 @@ function DefaultButton(props: { pointer: string; label?: string }) {
     >
       {props.label ?? 'Use the default'}
     </Button>
-  );
-}
-
-/** A thing chip: opens the ThingPicker. */
-function ThingChip(props: {
-  pointer: string;
-  label: string;
-  ariaLabel: string;
-  invalid: boolean;
-  describedBy: string | undefined;
-  testId: string;
-  className: string;
-  sort: ThingSort;
-  slot: SlotSpec;
-  /** Offers a first tile with these words that picks "block" (what caused it). */
-  blockLabel?: string;
-}) {
-  const env = useRulesEnv();
-  const { book, change } = useBookEdit();
-  const [open, setOpen] = useState(false);
-  const raw = getAt(book, props.pointer);
-  const value = typeof raw === 'string' ? raw : asObject(raw)?.type;
-  const sections = useMemo(
-    () =>
-      open
-        ? thingSections({
-            project: env.project,
-            registries: env.registries,
-            sort: props.sort,
-            texturesFolder: env.texturesFolder,
-            ...(PROJECT_ONLY_SORTS.has(props.sort) ? { projectOnly: true } : {}),
-          })
-        : [],
-    [open, env.project, env.registries, env.texturesFolder, props.sort],
-  );
-  return (
-    <>
-      <button
-        type="button"
-        className={props.className}
-        aria-label={props.ariaLabel}
-        aria-invalid={props.invalid ? true : undefined}
-        aria-describedby={props.describedBy}
-        data-testid={props.testId}
-        data-pointer={props.pointer}
-        title={env.mode.advanced && typeof value === 'string' ? value : undefined}
-        onClick={() => setOpen(true)}
-      >
-        {props.label}
-      </button>
-      {open && (
-        <ThingPicker
-          title={`Pick ${THING_WORDS[props.sort].one}`}
-          sort={props.sort}
-          sections={sections}
-          value={typeof value === 'string' ? value : undefined}
-          pictures={env.pictures}
-          noneLabel={props.blockLabel}
-          onCancel={() => setOpen(false)}
-          onPick={(id) => {
-            setOpen(false);
-            const picked = id === null && props.blockLabel !== undefined ? 'block' : id;
-            if (picked === null) return;
-            const object = asObject(raw);
-            // A particle with options keeps them (ADR 0080's options objects).
-            change(
-              setAt(
-                book,
-                props.pointer,
-                object === undefined ? picked : { ...object, type: picked },
-              ),
-            );
-          }}
-        />
-      )}
-    </>
   );
 }
 

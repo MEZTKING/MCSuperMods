@@ -1,6 +1,7 @@
 /**
  * The editors inside a chip's popover: a number with words ("2 seconds", "25%") or a reading
- * (ADR 0082 D2: a random number, a counter, the player's health, one level of sums), text made
+ * (ADR 0082 D2: a random number, a counter, the player's health, one level of sums; Rules 3's
+ * score, time left and team size with their pickers), text made
  * of typed pieces and readings, and the counter picker that declares a counter on first use.
  * Every editor reads and writes the book at its pointer; typing coalesces into one undo step.
  *
@@ -37,6 +38,7 @@ import {
   setAt,
   setCounter,
 } from './rules-model';
+import { OwnedThingChip } from './thing-chip';
 
 /** Words after a number of each slot type. */
 const UNITS: Partial<Record<SlotSpec['type'], string>> = { seconds: 'seconds', percent: '%' };
@@ -229,6 +231,20 @@ function ReadingFields(props: { pointer: string; kind: string; scope: RuleScope 
       return <WeaponSelect pointer={at('weapon')} />;
     case 'command_argument':
       return <CommandArgumentFields pointer={props.pointer} />;
+    // Rules 3 (B553): the score, timer or team the reading is of, in the ThingPicker.
+    case 'score':
+    case 'timer_left':
+    case 'team_size': {
+      const slot = entry.slots.find(
+        (candidate) =>
+          candidate.type === 'objective' || candidate.type === 'timer' || candidate.type === 'team',
+      );
+      return slot === undefined ? null : (
+        <span className="flex items-center gap-1.5" data-testid="rules-reading-game">
+          {entry.label} <OwnedThingChip ownerPointer={props.pointer} slot={slot} />
+        </span>
+      );
+    }
     case 'player_position': {
       const axis = asObject(getAt(book, props.pointer))?.axis;
       return (
