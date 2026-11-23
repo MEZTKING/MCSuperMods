@@ -162,6 +162,8 @@ Vanilla parity 3 (planned 2026-11-22, ADRs 0103–0112; the plan was deleted at 
 
 Flows that are data only and can be slotted in at any time (S each): armour trim pattern, banner pattern, glider, mob variant skin, goat horn. All five exist since 2026-11-22: Mob skin and Goat horn (ADR 0064), Banner pattern, Armour trim and Glider with Pot pattern (ADR 0106 D4).
 
+Gaps found by the search spike (B650, recorded 2026-11-23 at the B654 merge; the vanilla parity rule makes each a bug): **set on fire from a rule** (no Rules step lights a mob or block), **an item that starts enchanted** (no flow or field puts enchantments on a made item from the start), **a Frost Walker-like effect** (freezing water under the wearer), and **unbreakable** (no plain answer for an item that never wears out). Search has no line for them until they exist; each wants a brief (S) in the next vanilla parity sweep.
+
 ## 4. Worldgen accuracy against the reference pack
 
 Audit of 2026-11-14 (executor, branch `wgaudit`) of what MSM generates against the user's vanilla worldgen reference pack in `docs/reference/vanilla-worldgen/` (measured on Minecraft 26.3: `docs/VANILLA-WORLDGEN-NOTES.md`, `docs/MEASURED-TABLES.md`, `tools/feature_indices.txt` with 171 entries, `tools/region.py`). The pack is findings only; nothing of the game was copied. Section numbers (§) are the notes'.
