@@ -467,27 +467,32 @@ describe('the ramp maths does not depend on the last bit of the engine (ADR 0092
         finishesOf(info).map((finish) => sha256(artLookPng({ recipe: info.id, colour, finish }))),
       ),
     );
-  it.each([1, -1])('keeps every byte when the functions are one ulp off (%i)', (direction) => {
-    const before = draw();
-    const maths = Math as unknown as Record<string, (...args: number[]) => number>;
-    const saved = names.map((name) => maths[name] as (...args: number[]) => number);
-    try {
-      names.forEach((name, i) => {
-        const original = saved[i] as (...args: number[]) => number;
-        maths[name] = (...args: number[]) => {
-          const value = original(...args);
-          return value === 0 || !Number.isFinite(value)
-            ? value
-            : value * (1 + direction * Number.EPSILON);
-        };
-      });
-      expect(draw()).toEqual(before);
-    } finally {
-      names.forEach((name, i) => {
-        maths[name] = saved[i] as (...args: number[]) => number;
-      });
-    }
-  });
+  it.each([1, -1])(
+    'keeps every byte when the functions are one ulp off (%i)',
+    (direction) => {
+      const before = draw();
+      const maths = Math as unknown as Record<string, (...args: number[]) => number>;
+      const saved = names.map((name) => maths[name] as (...args: number[]) => number);
+      try {
+        names.forEach((name, i) => {
+          const original = saved[i] as (...args: number[]) => number;
+          maths[name] = (...args: number[]) => {
+            const value = original(...args);
+            return value === 0 || !Number.isFinite(value)
+              ? value
+              : value * (1 + direction * Number.EPSILON);
+          };
+        });
+        expect(draw()).toEqual(before);
+      } finally {
+        names.forEach((name, i) => {
+          maths[name] = saved[i] as (...args: number[]) => number;
+        });
+      }
+      // Draws every recipe in every test colour and finish twice: heavy (5.8 s on a loaded CI runner).
+    },
+    60_000,
+  );
 });
 
 describe('the prototype entry points kept for the vanilla parity pictures', () => {

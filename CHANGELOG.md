@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.8.
+
+## [1.5.8] - 2026-11-23
+
 ### Added
 
 - **Everything you can make, on Home.** Home now opens with a header (Start a new mod, Open a mod, Surprise me and a picture), Your mods, then a row for each kind of thing: Featured (the moving showcase cards), then Gear, Blocks, Food, Mobs, Vehicles, Magic, Scripts, Worlds, Games and Whole mods and packs. Every guided flow and starter has a card with a picture, a sentence, **Make this** and, where there is one, **See the example**. Rows scroll sideways; **Show all** shows a whole group, and the buttons at the top jump between the groups. The gallery is on Home, with a mod open or not.
