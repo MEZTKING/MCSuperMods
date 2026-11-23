@@ -118,7 +118,7 @@ export interface JigsawStructureData {
   /** Horizontal and vertical distance limits (J12, J13). */
   readonly maxDistanceFromCenter:
     | number
-    | { readonly horizontal: number; readonly vertical: number };
+    | { readonly horizontal: number; readonly vertical?: number };
   readonly useExpansionHack: boolean;
   readonly terrainAdaptation: 'none' | 'beard_thin' | 'beard_box' | 'bury' | 'encapsulate';
 }

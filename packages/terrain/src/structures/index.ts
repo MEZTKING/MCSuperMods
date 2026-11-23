@@ -1,3 +1,3 @@
 export * from './api';
-export { assemble, assembleSteps } from './assemble';
+export * from './assemble';
 export { processTemplate } from './processors';
