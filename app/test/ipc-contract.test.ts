@@ -214,6 +214,73 @@ const reloadResult = {
   message: 'Reloading 2 changes in Minecraft.',
 };
 
+/** ADR 0133: an instance request, a recipe view and the local server's status. */
+const instanceProject = { namespace: 'ruby', modId: 'ruby', playsWithoutMods: false };
+const instancePlanRequest = {
+  targetId: 'mc-26.3',
+  action: { kind: 'test', join: { host: '127.0.0.1', port: 25565 } },
+  project: instanceProject,
+};
+const recipeView = {
+  purpose: 'test',
+  owner: 'ruby',
+  mcVersion: '26.3',
+  channel: 'release',
+  java: 25,
+  loader: { kind: 'fabric', version: '0.20.1' },
+  place: { kind: 'instance', name: 'MCSuperMods Test (26.3)' },
+  mods: [
+    { role: 'content', fileName: 'ruby.jar' },
+    { role: 'fabric-api', fileName: 'fabric-api-0.1.jar' },
+  ],
+  resourcePacks: [],
+  world: { folder: 'msm-test-ruby', copied: false },
+  join: { host: '127.0.0.1', port: 25565 },
+};
+const instancePlan = {
+  ok: true,
+  recipe: recipeView,
+  kind: 'test',
+  title: 'Make the test instance',
+  sentences: ['A Prism Launcher instance named MCSuperMods Test (26.3).'],
+  launcher: 'prism',
+  existing: null,
+  ask: true,
+};
+const instanceFailure = { ok: false, code: 'not-yet', message: 'Comes later.' };
+const managedThing = {
+  id: 'server:/home/a/.msm/servers/ruby-26.3',
+  kind: 'server',
+  name: 'ruby-26.3',
+  owner: 'ruby',
+  mcVersion: '26.3',
+  loader: { kind: 'fabric', version: '0.20.1' },
+  launcher: null,
+  path: '/home/a/.msm/servers/ruby-26.3',
+  eulaAccepted: false,
+  running: false,
+};
+const localServerStatus = {
+  state: 'running',
+  label: 'Running',
+  server: {
+    folder: 'ruby-26.3',
+    name: 'MCSuperMods Server ruby (26.3)',
+    targetId: 'mc-26.3',
+    mcVersion: '26.3',
+    owner: 'ruby',
+    port: 25565,
+    eulaAccepted: true,
+    path: '/home/a/.msm/servers/ruby-26.3',
+  },
+  java: { ok: true, version: '25.0.1', path: '/usr/lib/jvm/25/bin/java' },
+  progress: null,
+  message: null,
+  addresses: ['192.168.1.20:25565'],
+  logSeq: 12,
+};
+const localServerRequest = { targetId: 'mc-26.3', project: instanceProject, jars: [] };
+
 /** One valid and one invalid request and response per channel. */
 const samples: Record<
   InvokeChannel,
@@ -1093,6 +1160,128 @@ const samples: Record<
     response: [
       { page: 'vehicles', markdown: '# Vehicles\n' },
       { page: 'vehicles', markdown: '# Vehicles\n', path: '/etc' },
+    ],
+  },
+  [InvokeChannels.instancesPlan]: {
+    request: [
+      instancePlanRequest,
+      { ...instancePlanRequest, action: { kind: 'test', join: { host: 'a b', port: 1 } } },
+    ],
+    response: [instancePlan, { ...instancePlan, launcher: 'curseforge' }],
+  },
+  [InvokeChannels.instancesEnsure]: {
+    request: [
+      { ...instancePlanRequest, jars: [{ modId: 'ruby', data: bytes }], remember: true },
+      { ...instancePlanRequest, jars: [{ modId: 'Ruby!', data: bytes }] },
+    ],
+    response: [
+      {
+        ok: true,
+        id: 'instance:/p/instances/MCSuperMods Test (26.3)',
+        name: 'MCSuperMods Test (26.3)',
+        created: true,
+        updated: false,
+        gameDir: '/p/instances/MCSuperMods Test (26.3)/minecraft',
+        mods: ['ruby.jar'],
+      },
+      { ...instanceFailure, code: 'maybe' },
+    ],
+  },
+  [InvokeChannels.instancesList]: {
+    request: [undefined, {}],
+    response: [[managedThing], [{ ...managedThing, kind: 'paper' }]],
+  },
+  [InvokeChannels.instancesRemove]: {
+    request: [{ id: managedThing.id }, { id: '/home/a/.msm/servers/ruby-26.3' }],
+    response: [{ ok: true }, { ok: true, path: '/x' }],
+  },
+  [InvokeChannels.instancesShowInFolder]: {
+    request: [{ id: managedThing.id }, { id: '' }],
+    response: [instanceFailure, { ok: false, code: 'not-yet' }],
+  },
+  [InvokeChannels.instancesLaunch]: {
+    request: [instancePlanRequest, { ...instancePlanRequest, action: { kind: 'flying' } }],
+    response: [
+      { ok: true, name: 'MCSuperMods Test (26.3)', launched: false, note: 'Start Prism.' },
+      { ok: true, name: '', launched: true, note: null },
+    ],
+  },
+  [InvokeChannels.instancesPlayPlain]: {
+    request: [
+      { targetId: 'mc-26.3', project: { ...instanceProject, playsWithoutMods: true } },
+      { targetId: 'mc-26.3', project: instanceProject, world: '../x' },
+    ],
+    response: [instanceFailure, { ...instanceFailure, message: 1 }],
+  },
+  [InvokeChannels.instancesOpenMap]: {
+    request: [
+      {
+        targetId: 'mc-26.3',
+        project: instanceProject,
+        mapName: 'Ruby Sky',
+        sourceId: 'msm-play',
+        worldDir: 'msm-game-ruby',
+        jars: [],
+      },
+      {
+        targetId: 'mc-26.3',
+        project: instanceProject,
+        mapName: 'Ruby Sky',
+        sourceId: 'msm-play',
+        worldDir: 'a/b',
+        jars: [],
+      },
+    ],
+    response: [instanceFailure, { ok: true, name: 'x', launched: 'yes', note: null }],
+  },
+  [InvokeChannels.instancesCurseForgeProfile]: {
+    request: [
+      { targetId: 'mc-26.3', project: instanceProject, jars: [] },
+      { targetId: 'mc-26.3', project: { ...instanceProject, namespace: 'Ruby!' }, jars: [] },
+    ],
+    response: [{ ok: true, path: null }, { ok: true }],
+  },
+  [InvokeChannels.localServerStatus]: {
+    request: [undefined, { folder: 'x' }],
+    response: [localServerStatus, { ...localServerStatus, state: 'flying' }],
+  },
+  [InvokeChannels.localServerPrepare]: {
+    request: [localServerRequest, { ...localServerRequest, jars: [{ modId: 'ruby', data: 1 }] }],
+    response: [{ ok: true, status: localServerStatus }, { ok: true }],
+  },
+  [InvokeChannels.localServerAcceptEula]: {
+    request: [
+      { folder: 'ruby-26.3', acceptance: { accepted: true, at: '2026-11-23T10:00:00Z' } },
+      { folder: 'ruby-26.3', acceptance: { accepted: false, at: '2026-11-23T10:00:00Z' } },
+    ],
+    response: [
+      { ok: true, status: { ...localServerStatus, state: 'stopped', addresses: [] } },
+      { ok: false, code: 'eula-needed' },
+    ],
+  },
+  [InvokeChannels.localServerStart]: {
+    request: [localServerRequest, { ...localServerRequest, targetId: '' }],
+    response: [
+      { ok: false, code: 'running', message: 'Stop it first.' },
+      { ok: true, status: { ...localServerStatus, logSeq: -1 } },
+    ],
+  },
+  [InvokeChannels.localServerStop]: {
+    request: [undefined, localServerRequest],
+    response: [
+      { ok: true, status: { ...localServerStatus, state: 'stopped', addresses: [] } },
+      { ok: false, code: 'not-running' },
+    ],
+  },
+  [InvokeChannels.localServerRestart]: {
+    request: [localServerRequest, { ...localServerRequest, project: undefined }],
+    response: [{ ok: true, status: localServerStatus }, { ok: 'yes' }],
+  },
+  [InvokeChannels.localServerLog]: {
+    request: [{ since: 0 }, { since: -1 }],
+    response: [
+      { from: 0, next: 2, lines: ['a', 'b'] },
+      { from: 0, next: 2, lines: ['x'.repeat(5000)] },
     ],
   },
 };

@@ -28,10 +28,15 @@ import type {
   AppSettingsPatch,
   AppSettingsView,
   GameLocationRef,
+  InstanceAskSetting,
+  InstanceSettings,
   LauncherSettings,
+  LocalServerSettings,
+  ManagedKind,
   RecentProject,
   WorldBackupSettings,
 } from '../../shared/platform';
+import { MANAGED_KINDS } from '../../shared/platform';
 
 /** The settings file name below the MSM home directory. */
 export const SETTINGS_FILE = 'settings.json';
@@ -66,6 +71,12 @@ export interface SettingsStore {
   backupSettings(): Promise<WorldBackupSettings>;
   /** The manually added launcher folders (empty lists by default). */
   launcherSettings(): Promise<LauncherSettings>;
+  /** The offer card's settings (ADR 0133 D3; ask the first time for each kind by default). */
+  instanceSettings(): Promise<InstanceSettings>;
+  /** Adds `kind` to the kinds MSM makes by itself (ADR 0133 D3); a known kind is not added twice. */
+  rememberInstanceKind(kind: ManagedKind): Promise<void>;
+  /** The local server's settings (ADR 0133 D7; white list off, online mode on by default). */
+  localServerSettings(): Promise<LocalServerSettings>;
   /** The recent projects, newest first (normalised absolute roots, deduplicated, capped). */
   recentProjects(): Promise<RecentProject[]>;
   /** The stored entry whose root matches `root` (normalised; case-folded on Windows/macOS). */
@@ -218,6 +229,47 @@ export function cleanAiSettings(value: unknown): AiSettings {
   return result;
 }
 
+const ASK_SETTINGS: readonly InstanceAskSetting[] = ['first-time', 'always', 'never'];
+
+/** The default offer card settings (ADR 0133 D3): ask the first time for each kind. */
+export function defaultInstanceSettings(): InstanceSettings {
+  return { ask: 'first-time', madeByItself: [] };
+}
+
+/**
+ * Cleans stored or sent offer card settings: an unknown `ask` falls back to `first-time`, and
+ * `madeByItself` keeps known kinds once each, in {@link MANAGED_KINDS} order.
+ */
+export function cleanInstanceSettings(value: unknown): InstanceSettings {
+  const result = defaultInstanceSettings();
+  const record = asRecord(value);
+  if (record === null) return result;
+  if ((ASK_SETTINGS as readonly unknown[]).includes(record.ask)) {
+    result.ask = record.ask as InstanceAskSetting;
+  }
+  const made = Array.isArray(record.madeByItself) ? record.madeByItself : [];
+  result.madeByItself = MANAGED_KINDS.filter((kind) => made.includes(kind));
+  return result;
+}
+
+/**
+ * The default local server settings (ADR 0133 D7; vetoable, the user has not answered): white
+ * list off, online mode on.
+ */
+export function defaultLocalServerSettings(): LocalServerSettings {
+  return { whiteList: false, onlineMode: true };
+}
+
+/** Cleans stored or sent local server settings: only an explicit boolean changes a default. */
+export function cleanLocalServerSettings(value: unknown): LocalServerSettings {
+  const result = defaultLocalServerSettings();
+  const record = asRecord(value);
+  if (record === null) return result;
+  if (typeof record.whiteList === 'boolean') result.whiteList = record.whiteList;
+  if (typeof record.onlineMode === 'boolean') result.onlineMode = record.onlineMode;
+  return result;
+}
+
 /** The default world backup settings (ADR 0102 D1). */
 export function defaultBackupSettings(): WorldBackupSettings {
   return { beforeInstall: true, keep: WORLD_BACKUPS_KEEP_DEFAULT };
@@ -246,6 +298,8 @@ const defaults = (): StoredSettings => ({
   updates: { autoCheck: true },
   ai: defaultAiSettings(),
   backups: defaultBackupSettings(),
+  instances: defaultInstanceSettings(),
+  localServers: defaultLocalServerSettings(),
   launchers: emptyLaunchers(),
   installTarget: null,
   recentProjects: [],
@@ -434,6 +488,8 @@ export function createSettingsStore(deps: {
       installTarget: parseInstallTarget(record.installTarget),
       ai: cleanAiSettings(record.ai),
       backups: cleanBackupSettings(record.backups),
+      instances: cleanInstanceSettings(record.instances),
+      localServers: cleanLocalServerSettings(record.localServers),
       recentProjects: cleanRecent(record.recentProjects, caseInsensitive),
       launcherPrograms: cleanPrograms(record.launcherPrograms),
       lastProjectParent: cleanProgram(record.lastProjectParent),
@@ -456,6 +512,8 @@ export function createSettingsStore(deps: {
       modpacks: nextModpacks,
       ai: nextAi,
       backups: nextBackups,
+      instances: nextInstances,
+      localServers: nextServers,
       ...base
     } = next;
     const programs = Object.fromEntries(
@@ -475,6 +533,12 @@ export function createSettingsStore(deps: {
       ...(sortedJson(nextBackups) === sortedJson(defaultBackupSettings())
         ? {}
         : { backups: nextBackups }),
+      ...(sortedJson(nextInstances) === sortedJson(defaultInstanceSettings())
+        ? {}
+        : { instances: nextInstances }),
+      ...(sortedJson(nextServers) === sortedJson(defaultLocalServerSettings())
+        ? {}
+        : { localServers: nextServers }),
       ...(nextRecent.length === 0 ? {} : { recentProjects: nextRecent }),
       ...(Object.keys(programs).length === 0 ? {} : { launcherPrograms: programs }),
       ...(nextParent === null ? {} : { lastProjectParent: nextParent }),
@@ -534,6 +598,14 @@ export function createSettingsStore(deps: {
         ai: settings.ai === undefined ? current.ai : cleanAiSettings(settings.ai),
         backups:
           settings.backups === undefined ? current.backups : cleanBackupSettings(settings.backups),
+        instances:
+          settings.instances === undefined
+            ? current.instances
+            : cleanInstanceSettings(settings.instances),
+        localServers:
+          settings.localServers === undefined
+            ? current.localServers
+            : cleanLocalServerSettings(settings.localServers),
         recentProjects: current.recentProjects,
         launcherPrograms: current.launcherPrograms,
         lastProjectParent: current.lastProjectParent,
@@ -559,6 +631,21 @@ export function createSettingsStore(deps: {
     },
     async launcherSettings() {
       return (await read()).launchers;
+    },
+    async instanceSettings() {
+      return (await read()).instances;
+    },
+    async rememberInstanceKind(kind) {
+      const current = await read();
+      if (current.instances.madeByItself.includes(kind)) return;
+      const instances = cleanInstanceSettings({
+        ...current.instances,
+        madeByItself: [...current.instances.madeByItself, kind],
+      });
+      await write({ ...current, instances });
+    },
+    async localServerSettings() {
+      return (await read()).localServers;
     },
     async recentProjects() {
       return (await read()).recentProjects;

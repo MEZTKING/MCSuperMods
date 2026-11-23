@@ -49,6 +49,43 @@ export interface UpdateSettings {
   autoCheck: boolean;
 }
 
+/**
+ * What MSM makes for a run (ADR 0133 D2): a managed launcher instance by its purpose (the
+ * marker's `purpose`: the test instance, Plain without mods, a modpack's, a map's) or a local
+ * server.
+ */
+export type ManagedKind = 'test' | 'plain' | 'pack' | 'map' | 'server';
+
+/** The kinds in {@link ManagedKind}, in the order Settings lists them. */
+export const MANAGED_KINDS: readonly ManagedKind[] = ['test', 'plain', 'pack', 'map', 'server'];
+
+/**
+ * "Ask before making an instance" (ADR 0133 D3): the first time for each kind (the default),
+ * always, or never.
+ */
+export type InstanceAskSetting = 'first-time' | 'always' | 'never';
+
+/** The offer card's settings (ADR 0133 D3). */
+export interface InstanceSettings {
+  ask: InstanceAskSetting;
+  /**
+   * The kinds MSM now makes by itself: the user ticked "Do this by itself next time", or (with
+   * `first-time`) one of that kind was made after the card.
+   */
+  madeByItself: ManagedKind[];
+}
+
+/**
+ * The local server's settings (ADR 0133 D7; vetoable defaults the user has not answered yet:
+ * white list off, online mode on).
+ */
+export interface LocalServerSettings {
+  /** `white-list` in `server.properties`. Default `false`: anyone who can reach it joins. */
+  whiteList: boolean;
+  /** `online-mode`. Default `true`: players sign in with their Microsoft account. */
+  onlineMode: boolean;
+}
+
 /** World backups before installing into a world (ADR 0102 D1). */
 export interface WorldBackupSettings {
   /** Whether a data pack install into a world first zips the whole world. Default `true`. */
@@ -283,6 +320,16 @@ export interface AppSettings {
    * optional for the same reason as {@link launchers}.
    */
   backups?: WorldBackupSettings;
+  /**
+   * The offer card's settings (ADR 0133 D3). Main always fills it in; optional for the same
+   * reason as {@link launchers}.
+   */
+  instances?: InstanceSettings;
+  /**
+   * The local server's settings (ADR 0133 D7). Main always fills it in; optional for the same
+   * reason as {@link launchers}.
+   */
+  localServers?: LocalServerSettings;
 }
 
 /**
@@ -329,6 +376,10 @@ export interface AppSettingsPatch {
   ai?: AiSettings | undefined;
   /** Replaces the world backup settings. */
   backups?: WorldBackupSettings | undefined;
+  /** Replaces the offer card's settings (main cleans them). */
+  instances?: InstanceSettings | undefined;
+  /** Replaces the local server's settings. */
+  localServers?: LocalServerSettings | undefined;
 }
 
 /** {@link AppSettings} plus what main detected. */
@@ -1041,6 +1092,346 @@ export interface PlayPlatform {
   onStatus(listener: (status: PlayStatus) => void): () => void;
 }
 
+// ---- Instances for anything (ADR 0133). ----
+
+/** A server to join on launch (`--server <host>:<port>`, B760 N3). */
+export interface InstanceServerAddress {
+  host: string;
+  port: number;
+}
+
+/**
+ * What the user asked for, as the renderer names it (ADR 0133 D1). Main makes the run recipe
+ * from it with `recipeFor` in `@msm/interop`; worlds to copy are named by the later briefs'
+ * own requests, never by a path from the renderer.
+ */
+export type InstanceAction =
+  /** Play and Test in Minecraft: the test world in the test instance. */
+  | { kind: 'test'; join?: InstanceServerAddress }
+  /** Play my game: the game world in the test instance. */
+  | { kind: 'game'; join?: InstanceServerAddress }
+  /** A game that plays without mods, in the Plain instance (its world: {@link InstancePlainRequest}). */
+  | { kind: 'plain' }
+  /** Test a modpack in its own instance (its Modrinth mods: B767). */
+  | { kind: 'modpack'; name: string; modIds: string[] }
+  /** Open an exported map (its world: {@link InstanceOpenMapRequest}, B767). */
+  | { kind: 'map'; name: string }
+  /** A local server for the project (`localServer`). */
+  | { kind: 'server' };
+
+/** The project's facts a recipe needs. */
+export interface InstanceProjectFacts {
+  /** The project's first namespace. */
+  namespace: string;
+  /** The content jar's mod id, or `null` when the project has no jar. */
+  modId: string | null;
+  /** Whether the project plays without mods (a data-pack-only game or map). */
+  playsWithoutMods: boolean;
+}
+
+/** What `instances.plan` (and `launch`) take. */
+export interface InstancePlanRequest {
+  targetId: string;
+  action: InstanceAction;
+  project: InstanceProjectFacts;
+}
+
+/** A content jar the renderer built, by its mod id. */
+export interface InstanceJar {
+  modId: string;
+  data: Uint8Array;
+}
+
+/** What `instances.ensure` takes: the plan's request plus the content jars it names. */
+export interface InstanceEnsureRequest extends InstancePlanRequest {
+  jars: InstanceJar[];
+  /** "Do this by itself next time" was ticked on the card (ADR 0133 D3). */
+  remember?: boolean;
+}
+
+/** A run recipe as the renderer sees it: no paths (ADR 0133 D1). */
+export interface InstanceRecipeView {
+  purpose: 'test' | 'game' | 'plain' | 'modpack' | 'map' | 'server';
+  /** The project's namespace, or the modpack's or map's name. */
+  owner: string;
+  mcVersion: string;
+  channel: 'release' | 'snapshot';
+  /** The Java feature release the game needs. */
+  java: number;
+  loader: { kind: 'none' | 'fabric' | 'quilt' | 'neoforge' | 'forge'; version: string | null };
+  /** Where it runs: the instance's or the server's name (before the taken-name rule). */
+  place: { kind: 'instance' | 'server'; name: string };
+  /** The mod files it holds, by role. */
+  mods: { role: 'content' | 'fabric-api' | 'extra'; fileName: string }[];
+  /** The resource pack files it holds. */
+  resourcePacks: string[];
+  /** The world it opens: `copied` when MSM copies it, otherwise the game makes it. */
+  world: { folder: string; copied: boolean } | null;
+  join: InstanceServerAddress | null;
+}
+
+/** Why an instance or local server step did not happen. */
+export type InstanceFailureCode =
+  /** The step belongs to a later brief of ADR 0133's plan. */
+  | 'not-yet'
+  /** No Prism Launcher data folder was found. */
+  | 'no-launcher'
+  /** The project needs its mod for this (a game played without mods). */
+  | 'needs-mod'
+  /** The target has no Fabric versions. */
+  | 'no-fabric'
+  /** The request is not usable. */
+  | 'bad-input'
+  /** Another step on the same launcher folder or server is running. */
+  | 'busy'
+  /** The instance or server is not there (make it first), or the id is not one of MSM's. */
+  | 'not-found'
+  /** A folder of that name is not MSM's, or a file in the way is not MSM's. */
+  | 'not-managed'
+  /** Every name up to `-99` is taken. */
+  | 'no-free-name'
+  /** The local server is running (stop it first). */
+  | 'running'
+  /** The local server is not running. */
+  | 'not-running'
+  /** The Minecraft EULA is not accepted for this server yet. */
+  | 'eula-needed'
+  /** No Java program, or none new enough. */
+  | 'no-java'
+  /** The server's port and the next ones are taken. */
+  | 'port-taken'
+  /** A download failed or was not what was expected. */
+  | 'download-failed'
+  /** The Fabric server launcher in the folder or cache changed since its first download. */
+  | 'launcher-changed'
+  /** Anything else; `message` says what. */
+  | 'failed';
+
+/** A failed instance or local server step, in plain words (never thrown, as Play's). */
+export interface InstanceFailure {
+  ok: false;
+  code: InstanceFailureCode;
+  message: string;
+}
+
+/** Where an action would run, and whether the offer card shows (ADR 0133 D3). */
+export interface InstancePlan {
+  ok: true;
+  recipe: InstanceRecipeView;
+  kind: ManagedKind;
+  /** The card's heading and sentences (`describeRecipe`). */
+  title: string;
+  sentences: string[];
+  /** The launcher the instance is made in, or `null` for a server or when none is found. */
+  launcher: 'prism' | null;
+  /** MSM's existing instance or server for this recipe, or `null` when it must be made. */
+  existing: { id: string; name: string } | null;
+  /** Whether the card shows before anything is made (the ask setting and the kinds made by themselves). */
+  ask: boolean;
+}
+
+/** What `instances.plan` answers. */
+export type InstancePlanResult = InstancePlan | InstanceFailure;
+
+/** What `instances.ensure` did. */
+export type InstanceEnsureResult =
+  | {
+      ok: true;
+      /** The id `list`, `remove` and `showInFolder` know it by. */
+      id: string;
+      /** The instance's folder name (the launcher's instance id, the name shown). */
+      name: string;
+      created: boolean;
+      updated: boolean;
+      /** The instance's game folder (paths only under More options). */
+      gameDir: string;
+      /** Mod files MSM wrote or kept. */
+      mods: string[];
+    }
+  | InstanceFailure;
+
+/** One instance or server MSM made, for Settings' "Instances MSM made" (B764). */
+export interface ManagedThing {
+  /** `instance:<folder path>` or `server:<folder path>`. */
+  id: string;
+  kind: ManagedKind;
+  /** The folder name: the launcher's instance id or the server's folder. */
+  name: string;
+  /** The project's namespace, or the modpack's or map's name, or `null` (test, Plain). */
+  owner: string | null;
+  mcVersion: string;
+  loader: { kind: 'none' | 'fabric' | 'quilt' | 'neoforge' | 'forge'; version: string | null };
+  /** The launcher it is in, or `null` for a server. */
+  launcher: 'prism' | 'multimc' | 'polymc' | null;
+  /** The folder (shown only under More options). */
+  path: string;
+  /** A server: whether the user accepted the Minecraft EULA for it. */
+  eulaAccepted: boolean | null;
+  /** A server: whether it runs now. */
+  running: boolean;
+}
+
+/** What `instances.remove` and `instances.showInFolder` answer. */
+export type InstanceDoneResult = { ok: true } | InstanceFailure;
+
+/** What `instances.launch` (and Play without mods, Open a map) did. */
+export type InstanceLaunchResult =
+  | {
+      ok: true;
+      /** The instance's folder name. */
+      name: string;
+      /** Whether the launcher was started. */
+      launched: boolean;
+      /** How to start the game when the launcher was not started; otherwise `null`. */
+      note: string | null;
+    }
+  | InstanceFailure;
+
+/** Play without mods (B766): the Plain instance on a copy of the project's game world. */
+export interface InstancePlainRequest {
+  targetId: string;
+  project: InstanceProjectFacts;
+  /** The test instance's world to copy (default `msm-game-<namespace>`). */
+  world?: string;
+}
+
+/** Open in my launcher after Export as a map (B767): the map's world from a listed source. */
+export interface InstanceOpenMapRequest {
+  targetId: string;
+  project: InstanceProjectFacts;
+  /** The map's name (its instance's owner). */
+  mapName: string;
+  /** A `maps.listWorlds` source id and one of its world folders. */
+  sourceId: string;
+  worldDir: string;
+  /** The content jars, when the map needs its mod. */
+  jars: InstanceJar[];
+}
+
+/** A CurseForge profile file (B768): the content jars and Fabric API for its app's import. */
+export interface InstanceCurseForgeRequest {
+  targetId: string;
+  project: InstanceProjectFacts;
+  jars: InstanceJar[];
+}
+
+/** What a file-writing step answers: the saved path, or `null` when the save was cancelled. */
+export type InstanceFileResult = { ok: true; path: string | null } | InstanceFailure;
+
+/** Instances for anything (ADR 0133), served by main. */
+export interface InstancesPlatform {
+  /** The recipe for an action, its card sentences, what exists and whether to ask. Never writes. */
+  plan(request: InstancePlanRequest): Promise<InstancePlanResult>;
+  /**
+   * Makes or brings up to date the managed instance of an action (Prism Launcher), one at a
+   * time per launcher folder. Writes only inside folders with MSM's marker (D5).
+   */
+  ensure(request: InstanceEnsureRequest): Promise<InstanceEnsureResult>;
+  /** Every instance and server MSM made, in the known launcher folders and the servers folder. */
+  list(): Promise<ManagedThing[]>;
+  /** Moves one of {@link list}'s folders to the recycle bin (after the renderer's question). */
+  remove(id: string): Promise<InstanceDoneResult>;
+  /** Shows one of {@link list}'s folders in the file manager. */
+  showInFolder(id: string): Promise<InstanceDoneResult>;
+  /** Starts the launcher on the action's instance, joining its server or opening its copied world. */
+  launch(request: InstancePlanRequest): Promise<InstanceLaunchResult>;
+  /** Play without mods (B766); answers `not-yet` until then. */
+  playPlain(request: InstancePlainRequest): Promise<InstanceLaunchResult>;
+  /** A map's own instance (B767); answers `not-yet` until then. */
+  openMap(request: InstanceOpenMapRequest): Promise<InstanceLaunchResult>;
+  /** A CurseForge profile file (B768); answers `not-yet` until then. */
+  curseForgeProfile(request: InstanceCurseForgeRequest): Promise<InstanceFileResult>;
+}
+
+/** The local server's state, read from its log (ADR 0133 D7), never from its exit status. */
+export type LocalServerState =
+  | 'stopped'
+  | 'preparing'
+  | 'starting'
+  | 'downloading'
+  | 'running'
+  | 'stopping'
+  | 'eula-needed'
+  | 'port-taken'
+  | 'crashed';
+
+/** What `localServer.prepare`, `start` and `restart` take. */
+export interface LocalServerRequest {
+  targetId: string;
+  project: InstanceProjectFacts;
+  /** The content jars (none for a game that plays without mods). */
+  jars: InstanceJar[];
+}
+
+/** The user's acceptance of the Minecraft EULA, from their own tick (ADR 0133 D8). */
+export interface LocalServerEulaAcceptance {
+  accepted: true;
+  /** ISO 8601 time of the tick. */
+  at: string;
+}
+
+/** The local server MSM looks after, for the server panel (B769). */
+export interface LocalServerStatus {
+  state: LocalServerState;
+  /** The state in plain words ("Running", "Starting…", "Stopped"). */
+  label: string;
+  /** The server last prepared or started in this run, or `null`. */
+  server: {
+    folder: string;
+    /** The name shown. */
+    name: string;
+    targetId: string;
+    mcVersion: string;
+    owner: string;
+    port: number;
+    eulaAccepted: boolean;
+    /** The folder (shown only under More options). */
+    path: string;
+  } | null;
+  /** The Java found for it, or why none. */
+  java: { ok: true; version: string | null; path: string } | { ok: false; message: string } | null;
+  /** The one progress line while busy ("Downloading the Fabric server launcher…"), else `null`. */
+  progress: string | null;
+  /** What happened last, in plain words, or `null`. */
+  message: string | null;
+  /** Addresses people on the same network join at (`<ip>:<port>`), while it runs. */
+  addresses: string[];
+  /** How many log lines were seen so far (the next line's number). */
+  logSeq: number;
+}
+
+/** What the local server steps answer. */
+export type LocalServerResult = { ok: true; status: LocalServerStatus } | InstanceFailure;
+
+/** Log lines kept in memory: `lines[0]` is line number `from`; `next` is the next number. */
+export interface LocalServerLog {
+  from: number;
+  next: number;
+  lines: string[];
+}
+
+/** The local server (ADR 0133 D7, D8), served by main. One runs at a time. */
+export interface LocalServerPlatform {
+  status(): Promise<LocalServerStatus>;
+  /**
+   * Makes or updates the server folder (downloads the Fabric server launcher once, with
+   * progress in the status) and looks for Java. Only while no server runs.
+   */
+  prepare(request: LocalServerRequest): Promise<LocalServerResult>;
+  /** Records the user's tick on the EULA for one server folder. Only while it is stopped. */
+  acceptEula(folder: string, acceptance: LocalServerEulaAcceptance): Promise<LocalServerResult>;
+  /** Prepares, checks the port and starts the server. A second start while one runs is refused. */
+  start(request: LocalServerRequest): Promise<LocalServerResult>;
+  /** Writes `stop` to the server and ends it after a time-out. */
+  stop(): Promise<LocalServerResult>;
+  /** Stops the running server, prepares it again with the new jars and starts it. */
+  restart(request: LocalServerRequest): Promise<LocalServerResult>;
+  /** The kept log lines from line number `since`. */
+  log(since: number): Promise<LocalServerLog>;
+  /** Subscribes to status changes; returns an unsubscribe function. */
+  onStatus(listener: (status: LocalServerStatus) => void): () => void;
+}
+
 /** One remembered modpack (ADR 0046 D2). */
 export interface ModpackListEntry {
   /** The modpack folder (absolute). */
@@ -1565,6 +1956,16 @@ export interface PlatformAdapter {
    * that test doubles written before it may omit it.
    */
   guide?: GuidePlatform;
+  /**
+   * Instances for anything (ADR 0133). The preload always provides it; optional so that test
+   * doubles written before it may omit it.
+   */
+  instances?: InstancesPlatform;
+  /**
+   * The local server (ADR 0133 D7). The preload always provides it; optional so that test
+   * doubles written before it may omit it.
+   */
+  localServer?: LocalServerPlatform;
 }
 
 /** The renderer's side of the window close round trip ({@link MsmBridge.onCloseRequest}). */

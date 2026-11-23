@@ -11,7 +11,13 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, readdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, normalize } from 'node:path';
 import type { ProjectFileSystem } from '@msm/core';
-import type { Downloader, InstallEnv, InstallFileSystem, LauncherProgramEnv } from '@msm/interop';
+import type {
+  Downloader,
+  InstallEnv,
+  InstallFileSystem,
+  JavaSearchEnv,
+  LauncherProgramEnv,
+} from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import { builtInTargets, targetById } from '@msm/targets';
 import {
@@ -28,6 +34,12 @@ import {
 import { createExportsService } from './exports';
 import { createGeckolibJarService } from './geckolib-jar';
 import { type GradleWrapperLocation, readGradleWrapper } from './gradle-wrapper';
+import { createInstancesService, type InstancesService } from './instances';
+import {
+  createLocalServerService,
+  type LocalServerDeps,
+  type LocalServerService,
+} from './local-server';
 import { createLocationResolver } from './locations';
 import { createMapExportService } from './map-export';
 import { createMcfunctionBroker } from './mcfunction';
@@ -82,6 +94,43 @@ export function withAtomicWrites(fs: InstallFileSystem): InstallFileSystem {
   return {
     ...fs,
     writeFile: (absPath, data) => writeFileAtomic(normalize(absPath), data),
+  };
+}
+
+/** Error codes of a folder rename that Windows gives while another program has it open. */
+const BRIEFLY_REFUSED = new Set(['EPERM', 'EACCES', 'EBUSY']);
+
+/**
+ * Wraps an {@link InstallFileSystem} so a folder rename that Windows briefly refuses (Prism's
+ * folder watcher or an antivirus has the folder open: `EPERM`, `EACCES`, `EBUSY`) is tried
+ * again a few times, a little later each time (B761's note). Any other error, and the last
+ * refusal, is thrown as it came.
+ */
+export function withRenameRetry(
+  fs: InstallFileSystem,
+  options: { tries?: number; delayMs?: number; sleep?: (ms: number) => Promise<void> } = {},
+): InstallFileSystem {
+  const rename = fs.rename;
+  if (rename === undefined) return fs;
+  const tries = options.tries ?? 5;
+  const delayMs = options.delayMs ?? 100;
+  const sleep = options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  return {
+    ...fs,
+    async rename(from, to) {
+      for (let attempt = 1; ; attempt++) {
+        try {
+          await rename(from, to);
+          return;
+        } catch (error) {
+          const code = (error as { code?: unknown } | null)?.code;
+          if (attempt >= tries || typeof code !== 'string' || !BRIEFLY_REFUSED.has(code)) {
+            throw error;
+          }
+          await sleep(delayMs * attempt);
+        }
+      }
+    },
   };
 }
 
@@ -176,6 +225,30 @@ export interface NodePlatformDeps {
     download?: Downloader;
     spawnLauncher?(program: string, args: readonly string[]): Promise<void>;
   };
+  /**
+   * Moves a folder to the recycle bin (Electron's `shell.trashItem`), for removing an instance
+   * or server MSM made (ADR 0133 D5). Without it removal is refused.
+   */
+  trashItem?(path: string): Promise<void>;
+  /**
+   * The local server (ADR 0133 D7): the Java search's host facts (`JAVA_HOME`, `PATH`,
+   * `LOCALAPPDATA`; `nodeEnv` has none of them) and test doubles for the process, the port
+   * check and the Java probe.
+   */
+  localServer?: Partial<
+    Pick<
+      LocalServerDeps,
+      | 'probe'
+      | 'spawnServer'
+      | 'isPortFree'
+      | 'lanAddresses'
+      | 'stopTimeoutMs'
+      | 'quitTimeoutMs'
+      | 'targetFacts'
+    >
+  > & { javaEnv?: Partial<JavaSearchEnv> };
+  /** The recipe facts of a target for the instances service (tests). */
+  instanceTargetFacts?: LocalServerDeps['targetFacts'];
 }
 
 /**
@@ -184,7 +257,10 @@ export interface NodePlatformDeps {
  * platform.
  */
 export interface MainPlatform
-  extends Omit<PlatformAdapter, 'updates' | 'ai' | 'modpacks' | 'play'> {
+  extends Omit<
+    PlatformAdapter,
+    'updates' | 'ai' | 'modpacks' | 'play' | 'instances' | 'localServer'
+  > {
   minecraft: MinecraftService;
   settings: SettingsStore;
   /** The project service, with the recent mods' summaries Home's Your mods reads (ADR 0128 D4). */
@@ -200,6 +276,10 @@ export interface MainPlatform
   worldBackups: NonNullable<PlatformAdapter['worldBackups']>;
   /** Export as a map and builds from the game (ADR 0116 D2, D3); served as `maps:*`. */
   maps: NonNullable<PlatformAdapter['maps']>;
+  /** Instances for anything (ADR 0133); served as `instances:*`. */
+  instances: InstancesService;
+  /** The local server (ADR 0133 D7); served as `localServer:*`, stopped when the app quits. */
+  localServer: LocalServerService;
 }
 
 /**
@@ -264,7 +344,8 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
 
   const settings = createSettingsStore({ msmHome: deps.msmHome, installEnv: deps.installEnv });
   const installFs =
-    deps.installFs ?? withAtomicWrites(createNodeInstallFileSystem({ rename: true }));
+    deps.installFs ??
+    withRenameRetry(withAtomicWrites(createNodeInstallFileSystem({ rename: true })));
   const locations = createLocationResolver({ fs: installFs, env: deps.installEnv, settings });
   // ADR 0102: data pack installs into a world back the world up first.
   const backups = createWorldBackupService({
@@ -364,6 +445,45 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
   });
   const now = deps.now ?? (() => new Date().toISOString());
+  // ADR 0133 D7: one local server at a time, in `<msmHome>/servers/`.
+  const serverOptions = deps.localServer ?? {};
+  const localServer = createLocalServerService({
+    fs: installFs,
+    javaEnv: { ...deps.installEnv, ...serverOptions.javaEnv },
+    settings,
+    msmHome: deps.msmHome,
+    cacheDir: downloadsDir,
+    ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
+    ...(serverOptions.probe === undefined ? {} : { probe: serverOptions.probe }),
+    ...(serverOptions.spawnServer === undefined ? {} : { spawnServer: serverOptions.spawnServer }),
+    ...(serverOptions.isPortFree === undefined ? {} : { isPortFree: serverOptions.isPortFree }),
+    ...(serverOptions.lanAddresses === undefined
+      ? {}
+      : { lanAddresses: serverOptions.lanAddresses }),
+    ...(serverOptions.stopTimeoutMs === undefined
+      ? {}
+      : { stopTimeoutMs: serverOptions.stopTimeoutMs }),
+    ...(serverOptions.quitTimeoutMs === undefined
+      ? {}
+      : { quitTimeoutMs: serverOptions.quitTimeoutMs }),
+    ...(serverOptions.targetFacts === undefined ? {} : { targetFacts: serverOptions.targetFacts }),
+  });
+  // ADR 0133 D1 to D5: the managed instances of every purpose, in Prism Launcher for now.
+  const instances = createInstancesService({
+    fs: installFs,
+    env: { ...deps.installEnv, ...testOptions.env },
+    settings,
+    msmHome: deps.msmHome,
+    cacheDir: downloadsDir,
+    ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
+    ...(testOptions.spawnLauncher === undefined
+      ? {}
+      : { spawnLauncher: testOptions.spawnLauncher }),
+    ...(deps.trashItem === undefined ? {} : { trashItem: deps.trashItem }),
+    ...(deps.instanceTargetFacts === undefined ? {} : { targetFacts: deps.instanceTargetFacts }),
+    showItemInFolder: (path) => deps.showItemInFolder(path),
+    serverRunning: (serverDir) => localServer.runs(serverDir),
+  });
 
   const recentChanged = (recent: readonly RecentProject[]): void => {
     try {
@@ -568,6 +688,8 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     testInMinecraft,
     play,
     tryItWorlds,
+    instances,
+    localServer,
     modpacks,
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {

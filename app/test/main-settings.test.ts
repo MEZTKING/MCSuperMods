@@ -42,6 +42,8 @@ describe('settings store', () => {
       installTarget: null,
       ai: DEFAULT_AI_SETTINGS,
       backups: { beforeInstall: true, keep: 5 },
+      instances: { ask: 'first-time', madeByItself: [] },
+      localServers: { whiteList: false, onlineMode: true },
       detectedMinecraftDir: null,
     });
     expect(await store().minecraftDir()).toBeNull();
@@ -81,6 +83,8 @@ describe('settings store', () => {
       installTarget: null,
       ai: DEFAULT_AI_SETTINGS,
       backups: { beforeInstall: true, keep: 5 },
+      instances: { ask: 'first-time', madeByItself: [] },
+      localServers: { whiteList: false, onlineMode: true },
       detectedMinecraftDir: detected,
     });
     expect(await store().minecraftDir()).toBe(detected);

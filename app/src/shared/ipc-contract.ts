@@ -465,6 +465,17 @@ const worldBackupSettings = z
   })
   .strict();
 
+/** The offer card's settings (ADR 0133 D3). */
+const instanceSettings = z
+  .object({
+    ask: z.enum(['first-time', 'always', 'never']),
+    madeByItself: z.array(z.enum(['test', 'plain', 'pack', 'map', 'server'])).max(5),
+  })
+  .strict();
+
+/** The local server's settings (ADR 0133 D7). */
+const localServerSettings = z.object({ whiteList: z.boolean(), onlineMode: z.boolean() }).strict();
+
 /** A backup folder name under `<msmHome>/backups/`: one safe segment. */
 const backupSegment = worldDir;
 
@@ -1170,6 +1181,190 @@ const structureSaveInfo = z
   })
   .strict();
 
+// ---- Instances for anything and the local server (ADR 0133). ----
+
+/** The most content jars one instance or server call carries. */
+export const INSTANCE_JARS_MAX = 64;
+/** The most managed instances and servers `instances:list` returns. */
+export const MANAGED_THINGS_MAX = 2000;
+/** The most log lines `localServer:log` returns (the service keeps at most this many). */
+export const LOCAL_SERVER_LOG_MAX = 2000;
+/** The longest log line kept (longer lines are cut). */
+export const LOCAL_SERVER_LINE_MAX = 2000;
+
+const managedKind = z.enum(['test', 'plain', 'pack', 'map', 'server']);
+const loaderKind = z.enum(['none', 'fabric', 'quilt', 'neoforge', 'forge']);
+/** A modpack's or map's name as an instance owner (as `isSafeOwner` in `@msm/interop`). */
+const ownerName = z
+  .string()
+  .min(1)
+  .max(256)
+  .refine((value) => value.trim() !== '' && !value.includes('\0'), { message: 'Not a name' });
+const serverAddress = z
+  .object({
+    host: z
+      .string()
+      .min(1)
+      .max(253)
+      .regex(/^[A-Za-z0-9.-]+$/),
+    port: z.number().int().min(1).max(65535),
+  })
+  .strict();
+const instanceAction = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('test'), join: serverAddress.optional() }).strict(),
+  z.object({ kind: z.literal('game'), join: serverAddress.optional() }).strict(),
+  z.object({ kind: z.literal('plain') }).strict(),
+  z
+    .object({
+      kind: z.literal('modpack'),
+      name: ownerName,
+      modIds: z.array(fabricModId).min(1).max(MODPACK_IPC_MAX),
+    })
+    .strict(),
+  z.object({ kind: z.literal('map'), name: ownerName }).strict(),
+  z.object({ kind: z.literal('server') }).strict(),
+]);
+const instanceProject = z
+  .object({
+    namespace: playNamespace,
+    modId: fabricModId.nullable(),
+    playsWithoutMods: z.boolean(),
+  })
+  .strict();
+const instanceJars = z
+  .array(z.object({ modId: fabricModId, data: bytes }).strict())
+  .max(INSTANCE_JARS_MAX);
+const instancePlanRequest = z
+  .object({ targetId, action: instanceAction, project: instanceProject })
+  .strict();
+const instanceEnsureRequest = z
+  .object({
+    targetId,
+    action: instanceAction,
+    project: instanceProject,
+    jars: instanceJars,
+    remember: z.boolean().optional(),
+  })
+  .strict();
+const instanceFailure = z
+  .object({
+    ok: z.literal(false),
+    code: z.enum([
+      'not-yet',
+      'no-launcher',
+      'needs-mod',
+      'no-fabric',
+      'bad-input',
+      'busy',
+      'not-found',
+      'not-managed',
+      'no-free-name',
+      'running',
+      'not-running',
+      'eula-needed',
+      'no-java',
+      'port-taken',
+      'download-failed',
+      'launcher-changed',
+      'failed',
+    ]),
+    message: z.string().max(4096),
+  })
+  .strict();
+const instanceRecipeView = z
+  .object({
+    purpose: z.enum(['test', 'game', 'plain', 'modpack', 'map', 'server']),
+    owner: z.string().min(1).max(256),
+    mcVersion: shortVersion,
+    channel: z.enum(['release', 'snapshot']),
+    java: z.number().int().positive(),
+    loader: z.object({ kind: loaderKind, version: shortVersion.nullable() }).strict(),
+    place: z
+      .object({ kind: z.enum(['instance', 'server']), name: z.string().min(1).max(255) })
+      .strict(),
+    mods: z
+      .array(
+        z
+          .object({
+            role: z.enum(['content', 'fabric-api', 'extra']),
+            fileName: z.string().min(1).max(255),
+          })
+          .strict(),
+      )
+      .max(MODPACK_IPC_MAX * 2),
+    resourcePacks: z.array(z.string().min(1).max(255)).max(64),
+    world: z.object({ folder: worldDir, copied: z.boolean() }).strict().nullable(),
+    join: serverAddress.nullable(),
+  })
+  .strict();
+/** An id of `instances:list`: `instance:` or `server:` and the folder. */
+const managedId = z
+  .string()
+  .max(4200)
+  .regex(/^(?:instance|server):.+$/s);
+const instanceDone = z.union([z.object({ ok: z.literal(true) }).strict(), instanceFailure]);
+const instanceLaunchResult = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      name: z.string().min(1).max(255),
+      launched: z.boolean(),
+      note: z.string().max(1024).nullable(),
+    })
+    .strict(),
+  instanceFailure,
+]);
+const localServerState = z.enum([
+  'stopped',
+  'preparing',
+  'starting',
+  'downloading',
+  'running',
+  'stopping',
+  'eula-needed',
+  'port-taken',
+  'crashed',
+]);
+/** `LocalServerStatus` as a schema. */
+export const localServerStatusSchema = z
+  .object({
+    state: localServerState,
+    label: z.string().max(128),
+    server: z
+      .object({
+        folder: worldDir,
+        name: z.string().min(1).max(255),
+        targetId,
+        mcVersion: shortVersion,
+        owner: z.string().min(1).max(256),
+        port: z.number().int().min(1).max(65535),
+        eulaAccepted: z.boolean(),
+        path: absolutePath,
+      })
+      .strict()
+      .nullable(),
+    java: z
+      .union([
+        z
+          .object({ ok: z.literal(true), version: shortVersion.nullable(), path: absolutePath })
+          .strict(),
+        z.object({ ok: z.literal(false), message: z.string().max(4096) }).strict(),
+      ])
+      .nullable(),
+    progress: z.string().max(256).nullable(),
+    message: z.string().max(4096).nullable(),
+    addresses: z.array(z.string().min(1).max(64)).max(32),
+    logSeq: z.number().int().nonnegative(),
+  })
+  .strict();
+const localServerResult = z.union([
+  z.object({ ok: z.literal(true), status: localServerStatusSchema }).strict(),
+  instanceFailure,
+]);
+const localServerRequest = z
+  .object({ targetId, project: instanceProject, jars: instanceJars })
+  .strict();
+
 // ---- Try it's worlds (ADR 0087), read-only. ----
 
 /** The most worlds `tryit:listWorlds` returns (mirrors the service's cap). */
@@ -1336,6 +1531,8 @@ export const ipcContract = {
         installTarget: gameLocationRefSchema.nullable().optional(),
         ai: aiSettings.optional(),
         backups: worldBackupSettings.optional(),
+        instances: instanceSettings.optional(),
+        localServers: localServerSettings.optional(),
         detectedMinecraftDir: absolutePath.nullable(),
       })
       .strict(),
@@ -1350,6 +1547,8 @@ export const ipcContract = {
         installTarget: gameLocationRefSchema.nullable().optional(),
         ai: aiSettings.optional(),
         backups: worldBackupSettings.optional(),
+        instances: instanceSettings.optional(),
+        localServers: localServerSettings.optional(),
       })
       .strict(),
     response: voidResponse,
@@ -1788,6 +1987,130 @@ export const ipcContract = {
     request: z.object({ page: guidePageName }).strict(),
     response: z
       .object({ page: guidePageName, markdown: z.string().max(GUIDE_PAGE_MAX_CHARS) })
+      .strict(),
+  },
+  [InvokeChannels.instancesPlan]: {
+    request: instancePlanRequest,
+    response: z.union([
+      z
+        .object({
+          ok: z.literal(true),
+          recipe: instanceRecipeView,
+          kind: managedKind,
+          title: z.string().min(1).max(256),
+          sentences: z.array(z.string().max(1024)).max(16),
+          launcher: z.literal('prism').nullable(),
+          existing: z
+            .object({ id: managedId, name: z.string().min(1).max(255) })
+            .strict()
+            .nullable(),
+          ask: z.boolean(),
+        })
+        .strict(),
+      instanceFailure,
+    ]),
+  },
+  [InvokeChannels.instancesEnsure]: {
+    request: instanceEnsureRequest,
+    response: z.union([
+      z
+        .object({
+          ok: z.literal(true),
+          id: managedId,
+          name: z.string().min(1).max(255),
+          created: z.boolean(),
+          updated: z.boolean(),
+          gameDir: absolutePath,
+          mods: z.array(z.string().min(1).max(255)).max(MODPACK_IPC_MAX * 2),
+        })
+        .strict(),
+      instanceFailure,
+    ]),
+  },
+  [InvokeChannels.instancesList]: {
+    request: noRequest,
+    response: z
+      .array(
+        z
+          .object({
+            id: managedId,
+            kind: managedKind,
+            name: z.string().min(1).max(255),
+            owner: z.string().min(1).max(256).nullable(),
+            mcVersion: shortVersion,
+            loader: z.object({ kind: loaderKind, version: shortVersion.nullable() }).strict(),
+            launcher: z.enum(['prism', 'multimc', 'polymc']).nullable(),
+            path: absolutePath,
+            eulaAccepted: z.boolean().nullable(),
+            running: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(MANAGED_THINGS_MAX),
+  },
+  [InvokeChannels.instancesRemove]: {
+    request: z.object({ id: managedId }).strict(),
+    response: instanceDone,
+  },
+  [InvokeChannels.instancesShowInFolder]: {
+    request: z.object({ id: managedId }).strict(),
+    response: instanceDone,
+  },
+  [InvokeChannels.instancesLaunch]: {
+    request: instancePlanRequest,
+    response: instanceLaunchResult,
+  },
+  [InvokeChannels.instancesPlayPlain]: {
+    request: z.object({ targetId, project: instanceProject, world: worldDir.optional() }).strict(),
+    response: instanceLaunchResult,
+  },
+  [InvokeChannels.instancesOpenMap]: {
+    request: z
+      .object({
+        targetId,
+        project: instanceProject,
+        mapName: ownerName,
+        sourceId: mapSourceId,
+        worldDir,
+        jars: instanceJars,
+      })
+      .strict(),
+    response: instanceLaunchResult,
+  },
+  [InvokeChannels.instancesCurseForgeProfile]: {
+    request: z.object({ targetId, project: instanceProject, jars: instanceJars }).strict(),
+    response: z.union([
+      z.object({ ok: z.literal(true), path: absolutePath.nullable() }).strict(),
+      instanceFailure,
+    ]),
+  },
+  [InvokeChannels.localServerStatus]: { request: noRequest, response: localServerStatusSchema },
+  [InvokeChannels.localServerPrepare]: { request: localServerRequest, response: localServerResult },
+  [InvokeChannels.localServerAcceptEula]: {
+    request: z
+      .object({
+        folder: worldDir,
+        acceptance: z
+          .object({
+            accepted: z.literal(true),
+            at: z.iso.datetime({ offset: true }),
+          })
+          .strict(),
+      })
+      .strict(),
+    response: localServerResult,
+  },
+  [InvokeChannels.localServerStart]: { request: localServerRequest, response: localServerResult },
+  [InvokeChannels.localServerStop]: { request: noRequest, response: localServerResult },
+  [InvokeChannels.localServerRestart]: { request: localServerRequest, response: localServerResult },
+  [InvokeChannels.localServerLog]: {
+    request: z.object({ since: z.number().int().nonnegative() }).strict(),
+    response: z
+      .object({
+        from: z.number().int().nonnegative(),
+        next: z.number().int().nonnegative(),
+        lines: z.array(z.string().max(LOCAL_SERVER_LINE_MAX)).max(LOCAL_SERVER_LOG_MAX),
+      })
       .strict(),
   },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;

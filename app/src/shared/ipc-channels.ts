@@ -120,6 +120,25 @@ export const InvokeChannels = {
   mapsReadStructureSave: 'msm:v1:maps:readStructureSave',
   guideIndex: 'msm:v1:guide:index',
   guidePage: 'msm:v1:guide:page',
+  // ADR 0133: instances for anything (B763; `playPlain`, `openMap` and `curseForgeProfile`
+  // answer "not yet" until B766, B767 and B768).
+  instancesPlan: 'msm:v1:instances:plan',
+  instancesEnsure: 'msm:v1:instances:ensure',
+  instancesList: 'msm:v1:instances:list',
+  instancesRemove: 'msm:v1:instances:remove',
+  instancesShowInFolder: 'msm:v1:instances:showInFolder',
+  instancesLaunch: 'msm:v1:instances:launch',
+  instancesPlayPlain: 'msm:v1:instances:playPlain',
+  instancesOpenMap: 'msm:v1:instances:openMap',
+  instancesCurseForgeProfile: 'msm:v1:instances:curseForgeProfile',
+  // ADR 0133 D7, D8: the local server.
+  localServerStatus: 'msm:v1:localServer:status',
+  localServerPrepare: 'msm:v1:localServer:prepare',
+  localServerAcceptEula: 'msm:v1:localServer:acceptEula',
+  localServerStart: 'msm:v1:localServer:start',
+  localServerStop: 'msm:v1:localServer:stop',
+  localServerRestart: 'msm:v1:localServer:restart',
+  localServerLog: 'msm:v1:localServer:log',
 } as const;
 
 /**
@@ -160,6 +179,8 @@ export const EventChannels = {
   aiEvent: 'msm:v1:ai:event',
   /** Main to renderer: the Play status changed (ADR 0084 D7), payload `PlayStatus`. */
   playStatusChanged: 'msm:v1:play:statusChanged',
+  /** Main to renderer: the local server's status changed (ADR 0133 D7), payload `LocalServerStatus`. */
+  localServerStatusChanged: 'msm:v1:localServer:statusChanged',
 } as const;
 
 /** The name of an invoke channel. */
@@ -347,6 +368,41 @@ export function isPlayStatusPayload(value: unknown): value is {
     (PLAY_GAME_STATES as readonly string[]).includes(record.state) &&
     typeof record.canReload === 'boolean' &&
     Array.isArray(record.restartNeeded)
+  );
+}
+
+/** The local server's states (`LocalServerState` in `platform.ts`, ADR 0133 D7). */
+export const LOCAL_SERVER_STATES = [
+  'stopped',
+  'preparing',
+  'starting',
+  'downloading',
+  'running',
+  'stopping',
+  'eula-needed',
+  'port-taken',
+  'crashed',
+] as const;
+
+/**
+ * A cheap shape check of a local server status push for the preload: the fields the panel
+ * reads first. Main builds the status itself, so the full schema is not repeated.
+ */
+export function isLocalServerStatusPayload(value: unknown): value is {
+  state: (typeof LOCAL_SERVER_STATES)[number];
+  label: string;
+  logSeq: number;
+} {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.state === 'string' &&
+    (LOCAL_SERVER_STATES as readonly string[]).includes(record.state) &&
+    typeof record.label === 'string' &&
+    typeof record.logSeq === 'number' &&
+    Number.isInteger(record.logSeq) &&
+    record.logSeq >= 0 &&
+    Array.isArray(record.addresses)
   );
 }
 

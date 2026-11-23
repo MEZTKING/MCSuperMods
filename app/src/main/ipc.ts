@@ -18,7 +18,12 @@ import {
   ipcContract,
   type MinecraftProgress,
 } from '../shared/ipc-contract';
-import type { PlayInput, PlayOutputFile } from '../shared/platform';
+import type {
+  InstancePlanRequest,
+  LocalServerRequest,
+  PlayInput,
+  PlayOutputFile,
+} from '../shared/platform';
 import type { AiSender, AiService } from './ai/ai-service';
 import type { AiPicturesService } from './ai-pictures/ai-pictures-service';
 import { createGuideService, type GuideService, guideDirFor } from './guide';
@@ -278,6 +283,78 @@ export function createIpcHandlers(
     [InvokeChannels.playRestart]: (req) => platform.play.restart(playInput(req)),
     [InvokeChannels.playNewWorld]: (req) =>
       platform.play.newTestWorld(req.targetId, req.namespace, req.kind ?? 'test'),
+    [InvokeChannels.instancesPlan]: (req) => platform.instances.plan(planRequest(req)),
+    [InvokeChannels.instancesEnsure]: (req) =>
+      platform.instances.ensure({
+        ...planRequest(req),
+        jars: req.jars.map((jar) => ({ modId: jar.modId, data: jar.data })),
+        ...(req.remember === undefined ? {} : { remember: req.remember }),
+      }),
+    [InvokeChannels.instancesList]: () => platform.instances.list(),
+    [InvokeChannels.instancesRemove]: (req) => platform.instances.remove(req.id),
+    [InvokeChannels.instancesShowInFolder]: (req) => platform.instances.showInFolder(req.id),
+    [InvokeChannels.instancesLaunch]: (req) => platform.instances.launch(planRequest(req)),
+    [InvokeChannels.instancesPlayPlain]: (req) =>
+      platform.instances.playPlain({
+        targetId: req.targetId,
+        project: { ...req.project },
+        ...(req.world === undefined ? {} : { world: req.world }),
+      }),
+    [InvokeChannels.instancesOpenMap]: (req) =>
+      platform.instances.openMap({
+        targetId: req.targetId,
+        project: { ...req.project },
+        mapName: req.mapName,
+        sourceId: req.sourceId,
+        worldDir: req.worldDir,
+        jars: req.jars.map((jar) => ({ modId: jar.modId, data: jar.data })),
+      }),
+    [InvokeChannels.instancesCurseForgeProfile]: (req) =>
+      platform.instances.curseForgeProfile({
+        targetId: req.targetId,
+        project: { ...req.project },
+        jars: req.jars.map((jar) => ({ modId: jar.modId, data: jar.data })),
+      }),
+    [InvokeChannels.localServerStatus]: () => platform.localServer.status(),
+    [InvokeChannels.localServerPrepare]: (req) => platform.localServer.prepare(serverRequest(req)),
+    [InvokeChannels.localServerAcceptEula]: (req) =>
+      platform.localServer.acceptEula(req.folder, {
+        accepted: req.acceptance.accepted,
+        at: req.acceptance.at,
+      }),
+    [InvokeChannels.localServerStart]: (req) => platform.localServer.start(serverRequest(req)),
+    [InvokeChannels.localServerStop]: () => platform.localServer.stop(),
+    [InvokeChannels.localServerRestart]: (req) => platform.localServer.restart(serverRequest(req)),
+    [InvokeChannels.localServerLog]: (req) => platform.localServer.log(req.since),
+  };
+}
+
+type InstancePlanIpc = z.output<IpcContract[typeof InvokeChannels.instancesPlan]['request']>;
+type LocalServerIpc = z.output<IpcContract[typeof InvokeChannels.localServerStart]['request']>;
+
+/** A validated instance request as the instances service takes it. */
+function planRequest(req: InstancePlanIpc): InstancePlanRequest {
+  const action = req.action;
+  return {
+    targetId: req.targetId,
+    action:
+      (action.kind === 'test' || action.kind === 'game') && action.join !== undefined
+        ? { kind: action.kind, join: { host: action.join.host, port: action.join.port } }
+        : action.kind === 'modpack'
+          ? { kind: 'modpack', name: action.name, modIds: [...action.modIds] }
+          : action.kind === 'map'
+            ? { kind: 'map', name: action.name }
+            : { kind: action.kind },
+    project: { ...req.project },
+  };
+}
+
+/** A validated local server request as the service takes it. */
+function serverRequest(req: LocalServerIpc): LocalServerRequest {
+  return {
+    targetId: req.targetId,
+    project: { ...req.project },
+    jars: req.jars.map((jar) => ({ modId: jar.modId, data: jar.data })),
   };
 }
 
@@ -330,6 +407,37 @@ export function registerPlayEvents(
       if (BrowserWindow.getFocusedWindow() === null) play.setPolling(false);
     }, 0);
   });
+}
+
+/**
+ * Pushes local server status changes to every window, and stops the server when the app quits
+ * (ADR 0133 D7): the quit waits while the server saves and ends (killed after a time-out), and
+ * a process that exits anyway takes the server with it. Call once, after `app.whenReady()`.
+ */
+export function registerLocalServerEvents(
+  localServer: Pick<MainPlatform['localServer'], 'onStatus' | 'isRunning' | 'shutdown' | 'killNow'>,
+  electronApp: Pick<Electron.App, 'on' | 'quit'>,
+  processLike: Pick<NodeJS.Process, 'on'> = process,
+): void {
+  localServer.onStatus((status) => {
+    for (const window of BrowserWindow.getAllWindows()) {
+      if (!window.webContents.isDestroyed()) {
+        window.webContents.send(EventChannels.localServerStatusChanged, status);
+      }
+    }
+  });
+  let stopping = false;
+  electronApp.on('before-quit', (event) => {
+    if (!localServer.isRunning()) return;
+    event.preventDefault();
+    if (stopping) return;
+    stopping = true;
+    void localServer.shutdown().finally(() => {
+      stopping = false;
+      electronApp.quit();
+    });
+  });
+  processLike.on('exit', () => localServer.killNow());
 }
 
 function isTrustedSender(event: IpcMainInvokeEvent): boolean {

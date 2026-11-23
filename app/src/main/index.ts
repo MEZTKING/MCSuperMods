@@ -33,8 +33,9 @@ import {
   readE2eNewInstall,
   readE2eRuntimeDir,
 } from './e2e-hooks';
-import { registerIpc, registerPlayEvents } from './ipc';
+import { registerIpc, registerLocalServerEvents, registerPlayEvents } from './ipc';
 import { installMenu, registerMenuIpc } from './menu';
+import { processJavaEnv } from './platform/local-server';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
 import { createPluginsService } from './platform/plugins';
 import { resolveMsmHome } from './platform/settings';
@@ -157,6 +158,8 @@ const platform = createNodePlatform({
   },
   dialogs: applyE2eHooks(electronDialogs, readE2eHooks(process.env)),
   showItemInFolder: (path) => shell.showItemInFolder(path),
+  // ADR 0133 D5: instances and servers MSM made are removed into the recycle bin.
+  trashItem: (path) => shell.trashItem(path),
   openPath: (path) => shell.openPath(path),
   resizePng,
   msmHome,
@@ -198,6 +201,8 @@ const platform = createNodePlatform({
     cacheDir: join(app.getPath('userData'), 'downloads'),
     env: { localAppData: process.env.LOCALAPPDATA, programFiles: process.env.ProgramFiles },
   },
+  // ADR 0133 D9: the local server's Java search reads JAVA_HOME, PATH and LOCALAPPDATA.
+  localServer: { javaEnv: processJavaEnv(process.env) },
 });
 
 // ADR 0041: the AI helper. The key is encrypted with `safeStorage` in `<msmHome>/ai-key.bin`;
@@ -326,6 +331,7 @@ function runSmoke(window: BrowserWindow): void {
 void app.whenReady().then(() => {
   registerIpc(platform, updater, plugins, aiService, aiPictures);
   registerPlayEvents(platform.play, app);
+  registerLocalServerEvents(platform.localServer, app);
   registerMenuIpc();
   installMenu();
   platform.settings.recentProjects().then(

@@ -11,6 +11,7 @@ import {
   EventChannels,
   InvokeChannels,
   isAiEventPayload,
+  isLocalServerStatusPayload,
   isMenuCommand,
   isMenuOpenRecent,
   isMenuPluginExport,
@@ -18,7 +19,18 @@ import {
   isPlayStatusPayload,
   isUpdateStatus,
 } from '../shared/ipc-channels';
-import type { AiPlatform, MsmBridge, PlayPlatform, PlayStatus } from '../shared/platform';
+import type {
+  AiPlatform,
+  InstanceAction,
+  InstanceJar,
+  InstancePlanRequest,
+  InstanceProjectFacts,
+  LocalServerRequest,
+  LocalServerStatus,
+  MsmBridge,
+  PlayPlatform,
+  PlayStatus,
+} from '../shared/platform';
 
 type PlayInputOf = Parameters<PlayPlatform['play']>[0];
 type PlayOutputOf = PlayInputOf['outputs'][number];
@@ -53,6 +65,51 @@ function playRequest(input: PlayInputOf): PlayInputOf {
             difficulty: input.game.difficulty,
           },
         }),
+  };
+}
+
+/** An instance action as the contract takes it (only the known fields cross). */
+function instanceAction(action: InstanceAction): InstanceAction {
+  switch (action.kind) {
+    case 'test':
+    case 'game':
+      return action.join === undefined
+        ? { kind: action.kind }
+        : { kind: action.kind, join: { host: action.join.host, port: action.join.port } };
+    case 'modpack':
+      return { kind: 'modpack', name: action.name, modIds: [...action.modIds] };
+    case 'map':
+      return { kind: 'map', name: action.name };
+    default:
+      return { kind: action.kind };
+  }
+}
+
+function projectFacts(project: InstanceProjectFacts): InstanceProjectFacts {
+  return {
+    namespace: project.namespace,
+    modId: project.modId,
+    playsWithoutMods: project.playsWithoutMods,
+  };
+}
+
+function jarsOf(jars: readonly InstanceJar[]): InstanceJar[] {
+  return jars.map((jar) => ({ modId: jar.modId, data: jar.data }));
+}
+
+function planRequest(request: InstancePlanRequest): InstancePlanRequest {
+  return {
+    targetId: request.targetId,
+    action: instanceAction(request.action),
+    project: projectFacts(request.project),
+  };
+}
+
+function serverRequest(request: LocalServerRequest): LocalServerRequest {
+  return {
+    targetId: request.targetId,
+    project: projectFacts(request.project),
+    jars: jarsOf(request.jars),
   };
 }
 
@@ -126,6 +183,30 @@ const bridge: MsmBridge = {
                         ? {}
                         : { instance: settings.installTarget.instance }),
                     },
+            }),
+        ...(settings.backups === undefined
+          ? {}
+          : {
+              backups: {
+                beforeInstall: settings.backups.beforeInstall,
+                keep: settings.backups.keep,
+              },
+            }),
+        ...(settings.instances === undefined
+          ? {}
+          : {
+              instances: {
+                ask: settings.instances.ask,
+                madeByItself: [...settings.instances.madeByItself],
+              },
+            }),
+        ...(settings.localServers === undefined
+          ? {}
+          : {
+              localServers: {
+                whiteList: settings.localServers.whiteList,
+                onlineMode: settings.localServers.onlineMode,
+              },
             }),
       }),
   },
@@ -293,6 +374,64 @@ const bridge: MsmBridge = {
   guide: {
     index: () => ipcRenderer.invoke(InvokeChannels.guideIndex),
     page: (page) => ipcRenderer.invoke(InvokeChannels.guidePage, { page }),
+  },
+  instances: {
+    plan: (request) => ipcRenderer.invoke(InvokeChannels.instancesPlan, planRequest(request)),
+    ensure: (request) =>
+      ipcRenderer.invoke(InvokeChannels.instancesEnsure, {
+        ...planRequest(request),
+        jars: jarsOf(request.jars),
+        ...(request.remember === undefined ? {} : { remember: request.remember }),
+      }),
+    list: () => ipcRenderer.invoke(InvokeChannels.instancesList),
+    remove: (id) => ipcRenderer.invoke(InvokeChannels.instancesRemove, { id }),
+    showInFolder: (id) => ipcRenderer.invoke(InvokeChannels.instancesShowInFolder, { id }),
+    launch: (request) => ipcRenderer.invoke(InvokeChannels.instancesLaunch, planRequest(request)),
+    playPlain: (request) =>
+      ipcRenderer.invoke(InvokeChannels.instancesPlayPlain, {
+        targetId: request.targetId,
+        project: projectFacts(request.project),
+        ...(request.world === undefined ? {} : { world: request.world }),
+      }),
+    openMap: (request) =>
+      ipcRenderer.invoke(InvokeChannels.instancesOpenMap, {
+        targetId: request.targetId,
+        project: projectFacts(request.project),
+        mapName: request.mapName,
+        sourceId: request.sourceId,
+        worldDir: request.worldDir,
+        jars: jarsOf(request.jars),
+      }),
+    curseForgeProfile: (request) =>
+      ipcRenderer.invoke(InvokeChannels.instancesCurseForgeProfile, {
+        targetId: request.targetId,
+        project: projectFacts(request.project),
+        jars: jarsOf(request.jars),
+      }),
+  },
+  localServer: {
+    status: () => ipcRenderer.invoke(InvokeChannels.localServerStatus),
+    prepare: (request) =>
+      ipcRenderer.invoke(InvokeChannels.localServerPrepare, serverRequest(request)),
+    acceptEula: (folder, acceptance) =>
+      ipcRenderer.invoke(InvokeChannels.localServerAcceptEula, {
+        folder,
+        acceptance: { accepted: acceptance.accepted, at: acceptance.at },
+      }),
+    start: (request) => ipcRenderer.invoke(InvokeChannels.localServerStart, serverRequest(request)),
+    stop: () => ipcRenderer.invoke(InvokeChannels.localServerStop),
+    restart: (request) =>
+      ipcRenderer.invoke(InvokeChannels.localServerRestart, serverRequest(request)),
+    log: (since) => ipcRenderer.invoke(InvokeChannels.localServerLog, { since }),
+    onStatus(listener) {
+      const handler = (_event: IpcRendererEvent, status: unknown): void => {
+        if (isLocalServerStatusPayload(status)) listener(status as LocalServerStatus);
+      };
+      ipcRenderer.on(EventChannels.localServerStatusChanged, handler);
+      return () => {
+        ipcRenderer.removeListener(EventChannels.localServerStatusChanged, handler);
+      };
+    },
   },
   tryItWorlds: {
     listWorlds: () => ipcRenderer.invoke(InvokeChannels.tryItListWorlds),
