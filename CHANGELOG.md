@@ -12,6 +12,9 @@ Nothing yet since 1.5.5.
 
 ### Added
 
+- **Pick game pieces by name in the Rule book.** A rule's loot table, structure, team, score, timer, area or magic block now opens a picker with your things and Minecraft's, by name; **Make a new one** makes the piece and puts it in the rule in one step you can undo.
+- **Plugins can be found by search.** A plugin's own search words are checked when it loads; Settings > Plugins says whether they passed.
+- **The AI helper's panel says chats are not saved**, and See it names things and renames the way the cards do.
 - **Set on fire** in Rules: a new step in the Mobs group sets a mob on fire for the seconds you give ("set the mob on fire for 5 seconds"). Players are not lit, as no Minecraft command can do that.
 - **Items that start enchanted or never wear out.** The Item Studio's **Tool and durability** section has **Never wears out** and **Starts with enchantments** (any enchantment, Minecraft's or your own, with its level), and shows the item's tooltip as the game will. The Weapon and Gear set flows ask the same: **Never wears out**, **Starts with an enchantment** and **Enchantment level**.
 - **Frost Walker's ice path for your own enchantments.** The Enchantment flow can make boots enchantments (**Goes on: Boots**) and has the effect **Freeze water under the wearer (as Frost Walker)**; the new example **Frost boots enchantment** shows how it is written.

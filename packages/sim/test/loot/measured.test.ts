@@ -61,6 +61,11 @@ const TARGETS = await builtInTargets();
 const ROLLS = Number(process.env.B605_ROLLS ?? 100_000);
 const TOLERANCE = 2;
 const EXPLOSION_TOLERANCE = 3;
+/**
+ * Each case rolls a table 100,000 times: genuinely heavy statistical work (up to 1.6 s here, 5.6 s
+ * on a loaded CI runner for the looting cases), so each case has its own explicit limit.
+ */
+const CASE_TIMEOUT = 30_000;
 const SWORD = 'minecraft:diamond_sword';
 
 function observed(file: string): Record<string, Observed> {
@@ -230,7 +235,7 @@ for (const target of TARGETS) {
         expect(worst.points, worst.at).toBeLessThanOrEqual(
           spec.explosion ? EXPLOSION_TOLERANCE : TOLERANCE,
         );
-      });
+      }, CASE_TIMEOUT);
     }
   });
 
