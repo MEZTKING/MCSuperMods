@@ -1,0 +1,148 @@
+[
+  {
+    "path": "data/sky/worldgen/world_preset/flat.json",
+    "layer": "datapack",
+    "schema": "resource:worldgen/world_preset",
+    "contents": {
+      "dimensions": {
+        "minecraft:overworld": {
+          "type": "minecraft:overworld",
+          "generator": {
+            "type": "minecraft:flat",
+            "settings": {
+              "biome": "minecraft:desert",
+              "layers": [
+                {
+                  "block": "minecraft:bedrock",
+                  "height": 1
+                },
+                {
+                  "block": "minecraft:sandstone",
+                  "height": 3
+                }
+              ],
+              "features": true,
+              "lakes": false,
+              "structure_overrides": []
+            }
+          }
+        },
+        "minecraft:the_nether": {
+          "type": "minecraft:the_nether",
+          "generator": {
+            "type": "minecraft:flat",
+            "settings": {
+              "biome": "minecraft:nether_wastes",
+              "layers": [],
+              "features": false,
+              "lakes": false,
+              "structure_overrides": []
+            }
+          }
+        },
+        "minecraft:the_end": {
+          "type": "minecraft:the_end",
+          "generator": {
+            "type": "minecraft:noise",
+            "settings": "minecraft:end",
+            "biome_source": {
+              "type": "minecraft:the_end"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "data/minecraft/tags/worldgen/world_preset/normal.json",
+    "layer": "datapack",
+    "schema": "tag:worldgen/world_preset",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "sky:flat"
+      ]
+    }
+  },
+  {
+    "path": "assets/sky/lang/en_us.json",
+    "layer": "resourcepack",
+    "schema": "::java::assets::lang::Lang",
+    "merge": "object",
+    "contents": {
+      "generator.sky.flat": "Flat"
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/load.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# Runs the world start once for the world (the flag survives restarts and /reload).",
+      "execute unless data storage sky:msm_games {world_setup:1b} run function sky:msm_games/world_setup/world_start",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/tags/function/msm_games/load.json",
+    "layer": "datapack",
+    "schema": "tag:function",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "sky:msm_games/world_setup/load"
+      ]
+    }
+  },
+  {
+    "path": "data/minecraft/tags/function/load.json",
+    "layer": "datapack",
+    "schema": "tag:function",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "#sky:msm_games/load"
+      ]
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/world_start.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# The world start: difficulty, game mode and game rules, set once.",
+      "difficulty hard",
+      "defaultgamemode adventure",
+      "gamerule respawn_radius 4",
+      "gamerule max_block_modifications 32768",
+      "data modify storage sky:msm_games world_setup set value 1b",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/advancement/msm_games/first_join.json",
+    "layer": "datapack",
+    "schema": "resource:advancement",
+    "contents": {
+      "criteria": {
+        "first_join": {
+          "trigger": "minecraft:tick"
+        }
+      },
+      "rewards": {
+        "function": "sky:msm_games/world_setup/first_join"
+      }
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/first_join.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# A new player's first join: runs once per player, as the player.",
+      "gamemode adventure @s",
+      "loot give @s loot minecraft:chests/simple_dungeon",
+      ""
+    ]
+  }
+]

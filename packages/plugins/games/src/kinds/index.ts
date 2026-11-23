@@ -11,6 +11,7 @@ import { lowerObjective } from '../lowering/objective';
 import { lowerOneBlock } from '../lowering/one-block';
 import { lowerTeam } from '../lowering/team';
 import { lowerTimer } from '../lowering/timer';
+import { lowerWorldSetup } from '../lowering/world-setup';
 
 /** The kind ids this plugin contributes, in order. */
 export const GAMES_KIND_IDS = [
@@ -101,12 +102,10 @@ const gamesKind = (id: GamesKindId, schema: string, folder: string, defaultData:
   ({ id, schema, folder, defaultData, lower: lowerNothing }) satisfies ElementKind;
 
 /** How the game's world starts: at most one per project (ADR 0113 D2). */
-export const worldSetupKind: ElementKind = gamesKind(
-  'msm:world_setup',
-  MSM_SCHEMA_REFS.worldSetup,
-  'world_setup',
-  WORLD_SETUP_DEFAULT,
-);
+export const worldSetupKind: ElementKind = {
+  ...gamesKind('msm:world_setup', MSM_SCHEMA_REFS.worldSetup, 'world_setup', WORLD_SETUP_DEFAULT),
+  lower: lowerWorldSetup,
+};
 /** A one-block position and its phases (ADR 0113 D3). */
 export const oneBlockKind: ElementKind = {
   ...gamesKind('msm:one_block', MSM_SCHEMA_REFS.oneBlock, 'one_block', ONE_BLOCK_DEFAULT),

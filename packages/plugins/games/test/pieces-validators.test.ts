@@ -297,7 +297,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
   'game piece templates on %s',
   (_targetId, bundle: TargetBundle) => {
     it('are registered under Games with unique ids', () => {
-      expect(plugin.contributes.elementTemplates).toEqual([...piecesTemplates]);
+      expect(plugin.contributes.elementTemplates).toEqual(
+        expect.arrayContaining([...piecesTemplates]),
+      );
       expect(new Set(piecesTemplates.map((template) => template.id)).size).toBe(
         piecesTemplates.length,
       );

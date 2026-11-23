@@ -577,6 +577,9 @@ importers:
       '@msm/plugin-entities':
         specifier: workspace:*
         version: link:../plugins/entities
+      '@msm/plugin-games':
+        specifier: workspace:*
+        version: link:../plugins/games
       '@msm/plugin-library':
         specifier: workspace:*
         version: link:../plugins/library

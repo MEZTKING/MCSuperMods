@@ -1,0 +1,260 @@
+[
+  {
+    "path": "data/sky/worldgen/world_preset/skyblock.json",
+    "layer": "datapack",
+    "schema": "resource:worldgen/world_preset",
+    "contents": {
+      "dimensions": {
+        "minecraft:overworld": {
+          "type": "minecraft:overworld",
+          "generator": {
+            "type": "minecraft:flat",
+            "settings": {
+              "biome": "sky:msm_games/sky",
+              "layers": [],
+              "features": false,
+              "lakes": false,
+              "structure_overrides": []
+            }
+          }
+        },
+        "minecraft:the_nether": {
+          "type": "minecraft:the_nether",
+          "generator": {
+            "type": "minecraft:noise",
+            "settings": "minecraft:nether",
+            "biome_source": {
+              "type": "minecraft:multi_noise",
+              "preset": "minecraft:nether"
+            }
+          }
+        },
+        "minecraft:the_end": {
+          "type": "minecraft:the_end",
+          "generator": {
+            "type": "minecraft:flat",
+            "settings": {
+              "biome": "minecraft:the_end",
+              "layers": [],
+              "features": false,
+              "lakes": false,
+              "structure_overrides": []
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "data/sky/worldgen/biome/msm_games/sky.json",
+    "layer": "datapack",
+    "schema": "resource:worldgen/biome",
+    "contents": {
+      "has_precipitation": true,
+      "temperature": 0.8,
+      "downfall": 0.4,
+      "effects": {
+        "water_color": 4159204
+      },
+      "carvers": [],
+      "features": [],
+      "attributes": {
+        "minecraft:gameplay/natural_mob_spawns": {
+          "spawns_by_category": {
+            "creature": [
+              {
+                "type": "minecraft:sheep",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 12
+              },
+              {
+                "type": "minecraft:pig",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 10
+              },
+              {
+                "type": "minecraft:chicken",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 10
+              },
+              {
+                "type": "minecraft:cow",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 8
+              }
+            ],
+            "monster": [
+              {
+                "type": "minecraft:zombie",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 95
+              },
+              {
+                "type": "minecraft:skeleton",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 100
+              },
+              {
+                "type": "minecraft:spider",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 100
+              },
+              {
+                "type": "minecraft:creeper",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "min_inclusive": 4,
+                  "max_inclusive": 4
+                },
+                "weight": 100
+              }
+            ]
+          },
+          "spawn_costs": {}
+        }
+      }
+    }
+  },
+  {
+    "path": "data/minecraft/tags/worldgen/world_preset/normal.json",
+    "layer": "datapack",
+    "schema": "tag:worldgen/world_preset",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "sky:skyblock"
+      ]
+    }
+  },
+  {
+    "path": "assets/sky/lang/en_us.json",
+    "layer": "resourcepack",
+    "schema": "::java::assets::lang::Lang",
+    "merge": "object",
+    "contents": {
+      "generator.sky.skyblock": "Skyblock"
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/load.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# Runs the world start once for the world (the flag survives restarts and /reload).",
+      "execute unless data storage sky:msm_games {world_setup:1b} run function sky:msm_games/world_setup/world_start",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/tags/function/msm_games/load.json",
+    "layer": "datapack",
+    "schema": "tag:function",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "sky:msm_games/world_setup/load"
+      ]
+    }
+  },
+  {
+    "path": "data/minecraft/tags/function/load.json",
+    "layer": "datapack",
+    "schema": "tag:function",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "#sky:msm_games/load"
+      ]
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/world_start.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# The world start: difficulty, game mode and game rules, set once.",
+      "difficulty normal",
+      "defaultgamemode survival",
+      "gamerule respawn_radius 0",
+      "gamerule keep_inventory true",
+      "gamerule spawn_wandering_traders true",
+      "data modify storage sky:msm_games world_setup set value 1b",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/start.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# Places the start structure sky:island once for the world, at the first player's first join.",
+      "forceload add 0 0 47 47",
+      "place template sky:island 0 64 0",
+      "forceload remove 0 0 47 47",
+      "setworldspawn 2 67 2",
+      "data modify storage sky:msm_games start set value 1b",
+      "tp @s 2.5 67 2.5",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/advancement/msm_games/first_join.json",
+    "layer": "datapack",
+    "schema": "resource:advancement",
+    "contents": {
+      "criteria": {
+        "first_join": {
+          "trigger": "minecraft:tick"
+        }
+      },
+      "rewards": {
+        "function": "sky:msm_games/world_setup/first_join"
+      }
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/first_join.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# A new player's first join: runs once per player, as the player.",
+      "execute unless data storage sky:msm_games {start:1b} run function sky:msm_games/world_setup/start",
+      "gamemode survival @s",
+      "give @s minecraft:lava_bucket 1",
+      "item replace entity @s hotbar.1 with minecraft:ice 2",
+      "effect give @s minecraft:slow_falling 30 0 true",
+      "tellraw @s {\"text\":\"Welcome to \\\"Sky\\\" block!\"}",
+      "tellraw @s {text:\"Your goals are on the Advancements screen (\",extra:[{keybind:\"key.advancements\"},\").\"]}",
+      "dialog show @s minecraft:server_links",
+      ""
+    ]
+  }
+]

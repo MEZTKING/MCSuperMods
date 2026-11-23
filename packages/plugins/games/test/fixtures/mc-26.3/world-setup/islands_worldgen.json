@@ -1,0 +1,200 @@
+[
+  {
+    "path": "data/sky/worldgen/world_preset/islands_worldgen.json",
+    "layer": "datapack",
+    "schema": "resource:worldgen/world_preset",
+    "contents": {
+      "dimensions": {
+        "minecraft:overworld": {
+          "type": "minecraft:overworld",
+          "generator": {
+            "type": "minecraft:noise",
+            "settings": "minecraft:floating_islands",
+            "biome_source": {
+              "type": "minecraft:multi_noise",
+              "preset": "minecraft:overworld"
+            }
+          }
+        },
+        "minecraft:the_nether": {
+          "type": "minecraft:the_nether",
+          "generator": {
+            "type": "minecraft:noise",
+            "settings": "minecraft:nether",
+            "biome_source": {
+              "type": "minecraft:multi_noise",
+              "preset": "minecraft:nether"
+            }
+          }
+        },
+        "minecraft:the_end": {
+          "type": "minecraft:the_end",
+          "generator": {
+            "type": "minecraft:noise",
+            "settings": "minecraft:end",
+            "biome_source": {
+              "type": "minecraft:the_end"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "data/minecraft/tags/worldgen/world_preset/normal.json",
+    "layer": "datapack",
+    "schema": "tag:worldgen/world_preset",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "sky:islands_worldgen"
+      ]
+    }
+  },
+  {
+    "path": "assets/sky/lang/en_us.json",
+    "layer": "resourcepack",
+    "schema": "::java::assets::lang::Lang",
+    "merge": "object",
+    "contents": {
+      "generator.sky.islands_worldgen": "Islands Worldgen"
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/load.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# Runs the world start once for the world (the flag survives restarts and /reload).",
+      "execute unless data storage sky:msm_games {world_setup:1b} run function sky:msm_games/world_setup/world_start",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/tags/function/msm_games/load.json",
+    "layer": "datapack",
+    "schema": "tag:function",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "sky:msm_games/world_setup/load"
+      ]
+    }
+  },
+  {
+    "path": "data/minecraft/tags/function/load.json",
+    "layer": "datapack",
+    "schema": "tag:function",
+    "merge": "tag",
+    "contents": {
+      "values": [
+        "#sky:msm_games/load"
+      ]
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/world_start.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# The world start: difficulty, game mode and game rules, set once.",
+      "difficulty easy",
+      "defaultgamemode survival",
+      "gamerule respawn_radius 0",
+      "data modify storage sky:msm_games world_setup set value 1b",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/start.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# The game placed sky:island while the world generated; this sets the spawn on it once.",
+      "setworldspawn 2 67 2",
+      "data modify storage sky:msm_games start set value 1b",
+      "tp @s 2.5 67 2.5",
+      ""
+    ]
+  },
+  {
+    "path": "data/sky/worldgen/structure/msm_games/start.json",
+    "layer": "datapack",
+    "schema": "resource:worldgen/structure",
+    "contents": {
+      "type": "minecraft:jigsaw",
+      "biomes": "#minecraft:is_overworld",
+      "step": "surface_structures",
+      "spawn_overrides": {},
+      "terrain_adaptation": "none",
+      "start_pool": "sky:msm_games/start",
+      "size": 1,
+      "start_height": {
+        "absolute": 65
+      },
+      "max_distance_from_center": 80,
+      "use_expansion_hack": false
+    }
+  },
+  {
+    "path": "data/sky/worldgen/template_pool/msm_games/start.json",
+    "layer": "datapack",
+    "schema": "resource:worldgen/template_pool",
+    "contents": {
+      "fallback": "minecraft:empty",
+      "elements": [
+        {
+          "weight": 1,
+          "element": {
+            "element_type": "minecraft:single_pool_element",
+            "location": "sky:island",
+            "processors": "minecraft:empty",
+            "projection": "rigid"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "data/sky/worldgen/structure_set/msm_games/start.json",
+    "layer": "datapack",
+    "schema": "resource:worldgen/structure_set",
+    "contents": {
+      "structures": [
+        {
+          "structure": "sky:msm_games/start",
+          "weight": 1
+        }
+      ],
+      "placement": {
+        "type": "minecraft:dimension_origin"
+      }
+    }
+  },
+  {
+    "path": "data/sky/advancement/msm_games/first_join.json",
+    "layer": "datapack",
+    "schema": "resource:advancement",
+    "contents": {
+      "criteria": {
+        "first_join": {
+          "trigger": "minecraft:tick"
+        }
+      },
+      "rewards": {
+        "function": "sky:msm_games/world_setup/first_join"
+      }
+    }
+  },
+  {
+    "path": "data/sky/function/msm_games/world_setup/first_join.mcfunction",
+    "layer": "datapack",
+    "language": "mcfunction",
+    "contents": [
+      "# A new player's first join: runs once per player, as the player.",
+      "execute unless data storage sky:msm_games {start:1b} run function sky:msm_games/world_setup/start",
+      "gamemode survival @s",
+      ""
+    ]
+  }
+]

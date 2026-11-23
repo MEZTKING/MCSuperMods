@@ -44,10 +44,10 @@ describe('games kinds (B549)', () => {
     ]);
   });
 
-  it('lowers the world setup to nothing until B551', async () => {
+  it('lowers the default data of every kind to files (B551 and B552)', async () => {
     const [target] = builtInTargets;
     if (target === undefined) throw new Error('no built-in target');
-    for (const kind of gamesKinds.filter((entry) => entry.id === 'msm:world_setup')) {
+    for (const kind of gamesKinds) {
       const element: Element = {
         formatVersion: 1,
         id: 'mygame:thing' as ResourceLocation,
@@ -55,7 +55,7 @@ describe('games kinds (B549)', () => {
         data: kind.defaultData as Json,
         meta: { createdAt: '2026-01-01T00:00:00.000Z' },
       };
-      expect(await kind.lower(element, target.target)).toEqual([]);
+      expect((await kind.lower(element, target.target)).length, kind.id).toBeGreaterThan(0);
     }
   });
 });

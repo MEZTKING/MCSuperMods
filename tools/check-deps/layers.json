@@ -11,6 +11,7 @@
     "@msm/plugin-controls",
     "@msm/plugin-datapack",
     "@msm/plugin-entities",
+    "@msm/plugin-games",
     "@msm/plugin-library",
     "@msm/plugin-models-anim",
     "@msm/plugin-resourcepack",
