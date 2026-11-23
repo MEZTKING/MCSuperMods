@@ -9096,3 +9096,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - The full e2e run (the plan's other exit criterion) was not run here; CI's e2e job covers it.
 - B618: the stub's "no view reads the session store" is left to the unit tests (`imports.test.ts`); an e2e cannot see it.
+## 2026-11-23 — executor — B617 the AI helper's words, the guide and the changelog for the data live views
+
+**What**
+- New topic file `packages/ai/src/prompt/live-views.ts`, placed after Try it in `prompt/index.ts` and exported from `@msm/ai`: two paragraphs, "Live views of data" (the data kinds with a live view, by plain names, and the labels the views, the Function editor, the Creator's Live tab and the review's See it pane show; the helper is told to send the user to the Preview tab or See it and never to say what a view shows) and "Limits of the data views" (2L1 to 2L12 in plain words). Constants `LIVE_VIEW_PROMPT_KINDS` (kind to words), `LIVE_VIEW_PROMPT_TAG_REGISTRIES`, `LIVE_VIEW_PROMPT_LABELS`. 2,081 characters.
+- New sibling truth test `app/test/ai-prompt-truth.live-views.test.ts`: the kinds both ways against `DATA_VIEWS` and `TAG_VIEW_REGISTRIES` of `liveviews/data/index.ts` (read as source), each a plugin kind whose `previewKind` is `live_view`, each kind's words in the paragraph; every quoted label a constant's and in the source of the one component that shows it; the fidelity words equal `FIDELITY_LABELS`; the roll sentence equals `ROLL_DIFFERS`; the limits' words; six mutation cases.
+- The prompt's hash moved in `packages/ai/test/system-prompt.test.ts` (with its line), and the size budget was raised from 96,000 to 98,000 characters: the prompt was at 95,918 before this brief and is at 98,000 now. The raise has its line in ADR 0125 D7, and both budget cases (`system-prompt.test.ts`, `ai-prompt-truth.test.ts`) say 98,000.
+- New guide page `docs/guide/live-views.md` (where the views are, the frame's tag and three words, Roll it, the situations and Advanced, extra drops, enchantment providers, trial spawners, Try it on, enchantments, the Advancement tab, dialogs, death and chat lines, Everything in it, functions, block transformers and Try it here, the limits table 2L1 to 2L12), its row in `docs/guide/README.md` and its sidebar entry in `docs/site/.vitepress/config.ts`. `docs/guide/try-it.md`: the chat box's order no longer says a command's function and its listening scripts run only in Minecraft, a paragraph names the game's own commands the chat box runs (`TRY_IT_PROMPT_COMMANDS`), `/function`, the load and tick tags, `schedule` and the 10,000-command tick cap, and the limits row "Commands and explosions are logged" no longer says functions run only in the game. `CHANGELOG.md` `[Unreleased]` gains nine Added lines.
+- Checks: `@msm/ai` tests (7 files, 144 tests), the app's AI tests with `--maxWorkers=2` (`ai-prompt-truth`, `ai-prompt-truth.live-views`, `ai-rules`, `ai-scenario`, `ai-art-scenario`, `ai-patterns`, `ai-words`: 76 tests), `tsc -b app/tsconfig.node.json`, `@msm/ai` typecheck, `pnpm lint`, the docs site build (`pnpm build` in `docs/site`, no dead links).
+
+**Decisions**
+- The budget raise is a deviation from the brief's owner files, taken because the prompt had 82 characters left and the brief cannot be done in that; it is the smallest raise that fits the compact paragraph, for the orchestrator to confirm or veto at review (reverting it means cutting the topic to under 82 characters).
+- The kinds are named in plain words, not by quoted id, so the main truth test's quoted-kind rule does not need them in `PROMPT_KINDS` (B682's file); the sibling test pins them instead.
+- Recipes are not in the live view registry; the prompt and the guide do not call their crafting picture a live view.
+
+**Next**
+- `docs/CLAUDE.md`'s list of guide pages wants `live-views.md` (not this brief's file).
+- B669 and B672 (the search plan's AI words) will need their own budget line in ADR 0125: the prompt is at the 98,000 limit.
+- B618: `docs/LIVE-VIEW-AUDIT.md` rows and the close.

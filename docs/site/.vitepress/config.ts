@@ -53,6 +53,7 @@ export default defineConfig({
           { text: 'Structures', link: '/structures' },
           { text: 'Worldgen', link: '/worldgen' },
           { text: 'The live world map', link: '/live-world' },
+          { text: 'Live views of your data', link: '/live-views' },
           { text: 'Blocks and items', link: '/blocks-and-items' },
           { text: 'Block types and plants', link: '/block-types-and-plants' },
           { text: 'Commands and creative tabs', link: '/commands-and-tabs' },

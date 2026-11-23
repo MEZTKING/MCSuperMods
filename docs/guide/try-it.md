@@ -139,12 +139,14 @@ Press **T**, or **/** to start a command, or use **Chat** in the **Time and comm
 
 Your project's commands are checked the way the game checks them, with its messages and the `<--[HERE]` pointer where a line goes wrong. A command that reads runs in the game's order:
 
-1. its function (only in Minecraft),
+1. its function, with the command's values as its macro values,
 2. the command's event,
-3. scripts that listen for it (only in Minecraft),
+3. scripts that listen for it (in the sandbox, see [Scripts and logic rules](#scripts-and-logic-rules)),
 4. the feedback.
 
-A Rules command trigger runs its own event first, then says the event it calls, for example "Ran /greet's event "wave" too.". Commands are logged in **What happened**, not shown in the area.
+A Rules command trigger runs its own event first, then says the event it calls, for example "Ran /greet's event "wave" too.". Each command and its answer are logged in **What happened**.
+
+**The game's own commands and your functions.** The chat box also runs these of the game's own commands: `clear`, `clone`, `data`, `dialog`, `effect`, `execute`, `fill`, `function`, `give`, `kill`, `particle`, `playsound`, `return`, `say`, `schedule`, `scoreboard`, `setblock`, `summon`, `tag`, `teleport`, `tellraw`, `time`, `title` and `tp`. Any other command, or a form of one Try it does not know, is said in **What happened** as "Only in Minecraft". `/function` runs your project's functions, macro lines included. Your functions in `#minecraft:load` run when the area starts, after an edit and after **Clear the area**; those in `#minecraft:tick` run every tick, and `schedule` works. At most 10,000 commands run in one tick: a function that goes past that stops with a line. To see which lines of a function run here, or to run one from its editor with **Run in Try it**, see [Live views of your data: Functions](live-views.md#functions).
 
 ## Mobs, particles and portals
 
@@ -227,7 +229,7 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **A pass here is not a pass in the game** | Try it is our own approximation. Always check in Minecraft with **Play** before you share a mod. |
 | **Walking is approximate** | Walking, jumping and flying feel close, not identical. There is no sprinting, no flowing water, no ice and no slime. Ladders, vines and scaffolding can be climbed. |
 | **Mobs only wander** | No attacks, targets, taming, breeding, riding or boss fights. A hit removes a mob; there is no health or death. |
-| **Commands and explosions are logged** | The chat box checks your commands and runs their events, but the result is a line in **What happened**, not something in the area. Functions and scripts that listen for a command run only in the game. An explosion breaks blocks; its damage, pushing, drops, fire, sound and smoke are only in the game. |
+| **Commands and explosions are logged** | The chat box checks your commands and runs their functions, events and the scripts that listen for them, and runs the game's own commands it knows ([The chat box](#the-chat-box)); what they do in the area is drawn, and everything else is a line in **What happened**. A function runs only as far as Try it understands its lines: each other line is said. An explosion breaks blocks; its damage, pushing, drops, fire, sound and smoke are only in the game. |
 | **Vehicles and keys are rough** | Vehicles drive by our own simulation and fire nothing you can see; keys and on-screen elements follow the rules above, with the exceptions listed there. |
 | **Scripts and rules run in a sandbox** | Your scripts and your rules run (see [Scripts and logic rules](#scripts-and-logic-rules)), but what needs the game (health, other worlds, anything outside the area) is said as "Only in Minecraft" and does nothing. A call that runs for more than 2 seconds is stopped. Events the preview never fires (hurt, damage, respawn, leaving, dimension changes, keys on vehicles) do not reach your scripts. Their effects can show a moment after the event's other actions. A chance in a rule follows **Run every time**, or a seeded roll, not the game's random. Use **Play** for the real check. |
 | **No redstone** | **Power** changes one block's own picture; nothing travels along dust, and powering a block runs nothing. |

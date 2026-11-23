@@ -914,8 +914,9 @@ describe('the prompt in topic files (B681)', () => {
   // contradictions of F8 fixed, how to speak and the map of the app added. B683 moved it once
   // more, for three sentences its truth test found false: Try it runs an event's run_function
   // (B613), a script's particle count is capped at 1000 only with motion, and no mob flow
-  // offers the cube_creature preset.
-  const PINNED = '198b06477950d50d25d2ff8fdd45f691245da59d1a4603bfd96d449afb93fbc7';
+  // offers the cube_creature preset. B617 moved it once more, for the data live views topic
+  // (`src/prompt/live-views.ts`: the kinds with a live view, their labels and the limits).
+  const PINNED = '60528e3f394c1311e82e35afb241a29ecf4f0e43441c0e02a369be87c4f65f93';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -956,8 +957,8 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
     expect(text).not.toMatch(/build mode|chat mode|switch to/i);
   });
 
-  it('stays within its size budget of 96,000 characters (ADR 0125 D7)', () => {
-    expect(text.length).toBeLessThanOrEqual(96_000);
+  it('stays within its size budget of 98,000 characters (ADR 0125 D7, raised by B617)', () => {
+    expect(text.length).toBeLessThanOrEqual(98_000);
   });
 
   it('F8 a: boats are the msm:boat component, never "not available"', () => {

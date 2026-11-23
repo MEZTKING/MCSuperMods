@@ -10,6 +10,7 @@ import { BLOCKS } from './blocks';
 import { CONTAINERS, SCRIPT_API_12 } from './containers';
 import { CORE_HEAD, CORE_MIDDLE, CORE_TAIL } from './core';
 import { EFFECTS } from './effects';
+import { LIVE_VIEWS } from './live-views';
 import { MOBS } from './mobs';
 import { MOBS_AND_COMMANDS } from './mobs-commands';
 import { HOW_TO_WORK } from './modes';
@@ -36,6 +37,11 @@ import { WORLDS } from './worlds';
 
 export * from './app-map';
 export * from './facts';
+export {
+  LIVE_VIEW_PROMPT_KINDS,
+  LIVE_VIEW_PROMPT_LABELS,
+  LIVE_VIEW_PROMPT_TAG_REGISTRIES,
+} from './live-views';
 export * from './mobs-commands';
 export { HOW_TO_WORK, PLAN_FIRST_ABOVE } from './modes';
 export * from './not-available';
@@ -95,6 +101,7 @@ const PARAGRAPHS = [
   RULES,
   WORLDS,
   TRY_IT,
+  LIVE_VIEWS,
   APP_MAP,
   CORE_TAIL,
 ].join('\n');
