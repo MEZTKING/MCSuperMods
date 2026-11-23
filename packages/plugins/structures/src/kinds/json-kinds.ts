@@ -19,6 +19,16 @@ export const STRUCTURE_WORLDGEN_REGISTRIES = Object.freeze([
 /** A registry of {@link STRUCTURE_WORLDGEN_REGISTRIES}. */
 export type StructureWorldgenRegistry = (typeof STRUCTURE_WORLDGEN_REGISTRIES)[number];
 
+/**
+ * The registries whose kind has a live view in the preview panel (ADR 0122, Live views 4:
+ * the assembly of pools and structures, processors on a template). Structure sets have none.
+ */
+const LIVE_VIEW_REGISTRIES: readonly StructureWorldgenRegistry[] = [
+  'template_pool',
+  'structure',
+  'processor_list',
+];
+
 /** Minimal valid data per kind; only vanilla ids. */
 const DEFAULTS: Readonly<Record<StructureWorldgenRegistry, Json>> = {
   template_pool: {
@@ -69,6 +79,7 @@ export function structureWorldgenKind(registry: StructureWorldgenRegistry): Elem
     schema,
     folder: name,
     defaultData: structuredClone(DEFAULTS[registry]),
+    ...(LIVE_VIEW_REGISTRIES.includes(registry) ? { previewKind: 'live_view' } : {}),
     lower: (element, target) => lowerWorldgenJson(element, target, registry, schema),
   };
 }

@@ -16,6 +16,7 @@ import type { VanillaAssetReader } from '../preview/model-chain';
 import { DATA_VIEWS } from './data';
 import { EXISTING_VIEWS } from './existing';
 import { LOOKS_VIEWS } from './looks';
+import { STRUCTURES_VIEWS } from './structures';
 import type { VanillaDataReader } from './vanilla-data';
 import type { LiveViewPrefs } from './view-prefs';
 
@@ -66,6 +67,8 @@ export const LIVE_VIEWS: Readonly<Record<string, LiveViewLoader>> = Object.freez
   ...EXISTING_VIEWS,
   // B620: batch 3's looks and sounds (ADR 0121). A kind is in one index only (a test checks).
   ...LOOKS_VIEWS,
+  // B635: batch 4's assembled structures (ADR 0122).
+  ...STRUCTURES_VIEWS,
 });
 
 /** Whether a kind has a live view. */

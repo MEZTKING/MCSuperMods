@@ -10646,3 +10646,22 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - The panel's rest count after an opened section at the cap has nothing to open; a line such as "Type more words to see the rest" could say so (app, B673 or later).
+## 2026-11-23 — executor — B635 structures scaffold
+
+### What
+
+- `packages/terrain/src/structures/`: `api.ts` (the types the engine and the views share: pieces with boxes and rotation, jigsaw blocks, pools and elements, the structure's numbers, assembly steps tried, placed, refused with a reason or stopped, `Assembly`, processor results with fidelity exact, about right or only in the game, `ProcessInput`), stubs `assemble.ts` (`assembleSteps`, `assemble`: an empty assembly) and `processors.ts` (`processTemplate`: the template unchanged), `index.ts`; one export line in `packages/terrain/src/index.ts`.
+- `app/src/renderer/src/liveviews/structures/`: `index.ts` (`STRUCTURES_VIEWS`, `STRUCTURES_PANEL_KINDS`) and three lazy `NotYet` stubs (template pool and jigsaw structure name B640, processor list B641); `registry.ts` spreads `STRUCTURES_VIEWS` (one line and its import).
+- `previewKind: 'live_view'` on `minecraft:worldgen/template_pool`, `structure` and `processor_list` in `packages/plugins/structures/src/kinds/json-kinds.ts` (structure sets keep their map markers).
+- `fixtures/structures-parity/README.md`, the stub `StructuresParityTest.java` (no test, not an entrypoint, as B601's was), the skipped `app/e2e/live-views-structures-path.spec.ts`.
+- Tests: new `structures-index.test.tsx`; the declared-count in `live-views-stubs.test.tsx` is 64; the no-kind-in-two-indexes test includes the new index.
+
+### Decisions
+
+- The spike's `rule_test_type` rename and the newer target's `corner_constraint` are typed slots only (`ProcessorTargetFacts`, `PoolElementData.cornerConstraint`), described without version literals because check-deps forbids them outside `packages/targets`.
+- `docs/LIVE-VIEW-AUDIT.md` left unchanged: batches 2 and 3 did not mark stub rows, and the three rows already say "Needs one ... B640/B641".
+- Sizes: renderer 19.2 MB (budget 21.0, stop line 20.5), first paint 4.8 MB (budget 6.0, stop line 5.5); app.asar not built. `pnpm -p parity compileJava` passes.
+
+### Next
+
+- B636 (jar structure files and IPC), then B637 (assembler from rules J1 to J20) and B638 (processors); B639 fills the fixture and the parity class and adds its `fabric.mod.json` line.

@@ -21,6 +21,7 @@ import {
   type LiveViewProps,
   liveViewComponent,
 } from '../../../src/renderer/src/liveviews/registry';
+import { STRUCTURES_VIEWS } from '../../../src/renderer/src/liveviews/structures';
 import { builtInPlugins } from '../../../src/renderer/src/plugins/built-in';
 
 afterEach(cleanup);
@@ -35,7 +36,12 @@ const THIRTY = [
 
 describe('the looks index (B620)', () => {
   it('puts no kind in two indexes, so no later spread wins silently', () => {
-    const indexes = { data: DATA_VIEWS, existing: EXISTING_VIEWS, looks: LOOKS_VIEWS };
+    const indexes = {
+      data: DATA_VIEWS,
+      existing: EXISTING_VIEWS,
+      looks: LOOKS_VIEWS,
+      structures: STRUCTURES_VIEWS,
+    };
     const seen = new Map<string, string>();
     for (const [name, index] of Object.entries(indexes)) {
       for (const kind of Object.keys(index)) {

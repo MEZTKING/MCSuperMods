@@ -75,8 +75,8 @@ describe('the live view stubs (B601)', () => {
         if (kind.previewKind === 'live_view') declared.push(kind.id);
       }
     }
-    // 34 of batch 2 and the 27 of batch 3's thirty whose view is in the panel (B620).
-    expect(declared).toHaveLength(61);
+    // 34 of batch 2, the 27 of batch 3's thirty whose view is in the panel (B620) and batch 4's 3 (B635).
+    expect(declared).toHaveLength(64);
     const existing = Object.keys(EXISTING_VIEWS);
     expect(existing.filter((kind) => declared.includes(kind))).toEqual([]);
     // The studios' kinds of batch 3 have a view without a panel one (looks/index.ts).
