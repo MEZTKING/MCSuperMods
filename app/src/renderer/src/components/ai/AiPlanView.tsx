@@ -49,8 +49,12 @@ export const PLAN_VIEW_WORDS = Object.freeze({
   portal: 'portal',
 });
 
-/** The primary button's extra classes (one per view; `data-primary` marks it for tests). */
-const PRIMARY_CLASS = 'border-accent bg-accent text-white';
+/**
+ * The primary button's extra classes (one per view; `data-primary` marks it for tests).
+ * Important (Tailwind's `!`): `Button`'s own `bg-panel` comes later in the built CSS and would win
+ * (B690).
+ */
+const PRIMARY_CLASS = 'border-accent! bg-accent! text-white!';
 
 /** One line of the plan as the user reads it. */
 export interface AiPlanLine {

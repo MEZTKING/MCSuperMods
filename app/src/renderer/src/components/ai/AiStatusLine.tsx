@@ -3,8 +3,13 @@ import { Button } from '../ui/Button';
 import { type AiStatus, type AiStatusAction, WORKING_STATES } from './ai-status';
 import { statusWords, type UiMode } from './ai-words';
 
-/** The class a primary button adds: the one button that is the user's next step (ADR 0125 D1). */
-export const PRIMARY_BUTTON_CLASS = 'border-accent bg-accent text-white hover:enabled:opacity-90';
+/**
+ * The class a primary button adds: the one button that is the user's next step (ADR 0125 D1).
+ * Important (Tailwind's `!`): `Button`'s own `bg-panel` comes later in the built CSS and would win
+ * (B690).
+ */
+export const PRIMARY_BUTTON_CLASS =
+  'border-accent! bg-accent! text-white! hover:enabled:opacity-90';
 
 /** The test id of a state line action: `ai-stop` for Stop (as before), else `ai-status-<id>`. */
 export function statusActionTestId(id: AiStatusAction): string {
