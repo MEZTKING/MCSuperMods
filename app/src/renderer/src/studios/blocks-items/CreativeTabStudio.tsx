@@ -2,6 +2,8 @@
  * Creative Tab Studio (ADR 0096 D2, ADR 0101 D1) for `msm:creative_tab` element data, loaded
  * lazily:
  *
+ * - "Preview": the tab as a page of the creative inventory, its icon on the tab and its things in
+ *   their order (the look of ADR 0121 D7, B625), over the title, icon and member summary.
  * - "Tab": the title (`/display_name`), the icon (an item, the project's own offered first) and
  *   the order (`/order`: as the mod adds them, by name, or in your own order).
  * - "Your own order" (ADR 0111 D7, B538), with `order` `by_hand`: the hand order (`/items`), any
@@ -19,11 +21,12 @@
  */
 
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { useId, useState } from 'react';
+import { lazy, Suspense, useId, useState } from 'react';
 import { thingName, thingWords } from '../../components/thing-picker/thing-sources';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
+import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
 import { IdField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
@@ -47,6 +50,13 @@ import {
 import { useBlocksItemsStudioHost } from './host';
 import { ProblemsAt, TextField } from './parts';
 
+/** The tab as a page (B625), a chunk of its own. */
+const CreativeTabPage = lazy(() =>
+  import('../../liveviews/looks/tab/CreativeTabView').then((module) => ({
+    default: module.CreativeTabPage,
+  })),
+);
+
 /** Words for the kind of thing a member is. */
 const KIND_WORDS: Readonly<Record<string, string>> = {
   'msm:item': 'Item',
@@ -58,6 +68,7 @@ const KIND_WORDS: Readonly<Record<string, string>> = {
 export default function CreativeTabStudio(props: StudioProps) {
   const { project, element, problems, suggest, onChange } = props;
   const host = useBlocksItemsStudioHost();
+  const readProject = useHostProjectReader(host);
   const [advanced, setAdvanced] = useState(false);
   const [picked, setPicked] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +127,14 @@ export default function CreativeTabStudio(props: StudioProps) {
 
   const preview = (
     <Section title="Preview" testId="creative-tab-preview">
+      <Suspense fallback={<p className="text-muted text-xs">Loading the page…</p>}>
+        <CreativeTabPage
+          project={project}
+          element={element}
+          vanillaAssets={host?.modelPreview?.vanilla ?? null}
+          readProject={readProject}
+        />
+      </Suspense>
       <div className="flex flex-col gap-1 rounded border border-border bg-bg p-2">
         <p className="font-medium text-sm" data-testid="creative-tab-preview-title">
           {title}

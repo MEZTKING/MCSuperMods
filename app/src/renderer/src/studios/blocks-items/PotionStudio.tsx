@@ -1,8 +1,9 @@
 /**
  * Potion Studio (B253, ADR 0063 D9) for `msm:potion` element data:
  *
- * - Preview: the four item names (potion, splash, lingering, arrow) and the registry ids the
- *   potion adds (its own, `long_` and `strong_`).
+ * - Preview: the bottles and arrow in the potion's colour (the look of ADR 0121 D7, B625,
+ *   loaded when first shown), the four item names (potion, splash, lingering, arrow) and the
+ *   registry ids the potion adds (its own, `long_` and `strong_`).
  * - Potion: display name and the optional name key part.
  * - Effects: one to eight rows of effect, time, level and the ambient, particles and icon
  *   switches; project effects are offered first.
@@ -19,9 +20,10 @@
 
 import type { Json } from '@msm/core';
 import { ArrowRight, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
+import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
 import { IdField, NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { useVeryEasy } from '../very-easy';
@@ -33,6 +35,7 @@ import {
   projectEffects,
   withProjectIds,
 } from './blocks-items-model';
+import { useBlocksItemsStudioHost } from './host';
 import { PotionNames } from './PotionNames';
 import { CheckField, ProblemsAt, TextField } from './parts';
 import {
@@ -48,6 +51,13 @@ import {
   potionItemNames,
   stepSummary,
 } from './potion-model';
+
+/** The bottles in the potion's colour (B625), a chunk of their own. */
+const PotionLookFrame = lazy(() =>
+  import('../../liveviews/looks/potion/PotionLook').then((module) => ({
+    default: module.PotionLookFrame,
+  })),
+);
 
 /** A level field over an amplifier: level = amplifier + 1; level I removes the amplifier. */
 function LevelField(props: {
@@ -103,6 +113,8 @@ export function PotionStudio(props: StudioProps) {
   const { project, element, problems, onChange } = props;
   const [advanced, setAdvanced] = useState(false);
   const veryEasy = useVeryEasy();
+  const host = useBlocksItemsStudioHost();
+  const readProject = useHostProjectReader(host);
   const data = asObject(element.data);
   const set = pathSetter(element.data, onChange);
   const suggest = withProjectIds(props.suggest, 'mob_effect', projectEffects(project));
@@ -132,6 +144,15 @@ export function PotionStudio(props: StudioProps) {
 
   const preview = (
     <Section title="Preview" testId="potion-preview">
+      <Suspense fallback={<p className="text-muted text-xs">Loading the bottles…</p>}>
+        <PotionLookFrame
+          project={project}
+          element={element}
+          vanillaAssets={host?.modelPreview?.vanilla ?? null}
+          readProject={readProject}
+          names={false}
+        />
+      </Suspense>
       <PotionNames element={element} />
       <p className="text-muted text-xs">
         Potions need the Fabric mod export: vanilla data packs leave them and their brewing out.

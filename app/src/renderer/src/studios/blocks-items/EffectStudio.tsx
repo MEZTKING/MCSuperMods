@@ -8,7 +8,9 @@
  * - Behaviour: "When it starts" (`msm:on_start`), "While active" (`msm:on_tick` with its
  *   interval and "Stronger levels act faster") and "When it ends" (`msm:on_end`), each picking
  *   or creating an event of the shared events editor.
- * - A live preview: the icon with the name in its category's colour and a per-level summary.
+ * - A live preview: the icon in the screen's corner frame and the inventory panel, and the swirl
+ *   in the effect's colour (the look of ADR 0121 D7, B625, loaded when first shown), then the
+ *   icon with the name in its category's colour and a per-level summary.
  * - "Make a potion" (ADR 0063 D9): adds an `msm:potion` of this effect in one undo step and
  *   opens it; the potions that already use the effect are listed.
  *
@@ -23,6 +25,7 @@ import { lazy, Suspense, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
+import { useHostProjectReader } from '../../liveviews/looks/particle/host-reader';
 import { projectHudIds } from '../controls/controls-model';
 import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
@@ -60,6 +63,13 @@ import { newPotionFor, POTION_KIND } from './potion-model';
 /** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
 const RulesSection = lazy(() => import('../rules/RulesSection'));
 
+/** The corner frame, panel and swirl (B625), a chunk of their own. */
+const EffectLookFrame = lazy(() =>
+  import('../../liveviews/looks/effect/EffectLook').then((module) => ({
+    default: module.EffectLookFrame,
+  })),
+);
+
 type JsonObject = { [key: string]: Json };
 
 /** The three trigger components and their labels. */
@@ -87,6 +97,7 @@ export function EffectStudio(props: StudioProps) {
   const icon = effectIconPath(element.id);
   const iconPresent = hasEffectIcon(project, element.id);
   const thumbnail = useIconThumbnail(icon.assetPath, iconPresent);
+  const readProject = useHostProjectReader(host);
   const schemaChoices = (path: readonly (string | number)[], fallback: readonly string[]) => {
     const found = choicesAt(
       node,
@@ -375,6 +386,14 @@ export function EffectStudio(props: StudioProps) {
 
   const preview = (
     <Section title="Preview" testId="effect-preview">
+      <Suspense fallback={<p className="text-muted text-xs">Loading the frames…</p>}>
+        <EffectLookFrame
+          project={project}
+          element={element}
+          vanillaAssets={host?.modelPreview?.vanilla ?? null}
+          readProject={readProject}
+        />
+      </Suspense>
       <EffectPreviewCard element={element} iconUrl={thumbnail} />
     </Section>
   );
