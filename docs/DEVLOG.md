@@ -9049,3 +9049,19 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B549 registers the kinds; B550 plugin API; the exporters dependency when the first test needs the plugin.
+
+## 2026-11-23 — executor — B686 the AI helper's plan, cost line and limits
+
+**What**
+- `components/ai/AiPlanView.tsx` (ADR 0125 D1, D2, F6, F17): "Here is my plan", the title, one line per thing in `planLineWords` words ("Ruby Pickaxe, a tool"; Advanced adds the kind and id), named by the proposed element (language entry or own name via `displayName`), else the project's element, else words of the id; what it is from My things' words, `msm:tool` (tool, or weapon for a sword), a portal block, else the sidebar heading in the singular (`planWhat`). **Leave this out** on a line while the plan waits; **Make all of it** as the one primary button (`data-primary="true"`), **One at a time**, **Change the plan** opening "What should be different?" with **Send**; "Pictures" (by purpose, the id in Advanced) in place of "Placeholder textures". Ticks come only from `tickedLines` (never `plan.completed`). A waiting step shows **Keep going** (primary) and **Stop**. With `closed` the plan is one line from `closedPlanWords`. New exported pure helpers `planLines`, `planWhat`, `planPictureWords` and the constant `PLAN_VIEW_WORDS`. `mode`, `conversation` and `project` are optional props that default to the stores, so today's panel keeps compiling.
+- `AiUsageLine.tsx` (D8): renders `costSentence(usage, model, mode)`, nothing before the first request; Advanced keeps the token breakdown as its tooltip (`usageDetail`). `usageText` stays.
+- `AiLimitsPopover.tsx` (D10): renders nothing outside Advanced; says "For the next run only. The defaults are under Default limits in Settings, AI helper." and that a stopped run is simply continued (Keep going, or "continue"); words in `LIMITS_WORDS`. `LimitField` and `LIMIT_BOUNDS` unchanged (Settings' Default limits of B687 imports them).
+- New `app/test/components/ai-plan.test.tsx` (30 cases): the plan in the three modes, no id or forbidden word in Very easy and Easy (text, labels, titles), every decision, Leave this out, Change the plan, honest ticks (proposed, in the project, the model's word alone), the step, the closed line, the cost sentence for a zero, a tiny and a normal usage in each mode, the limits hidden in Very easy and Easy and editable in Advanced.
+
+**Decisions**
+- No kind title exists in the registry (`ElementKind` has none), so "what it is" reads My things' words (`THING_KIND_WORDS`) and then `GROUP_LABELS` of the sidebar.
+- The plan's and the popover's own new words live in their component files (`PLAN_VIEW_WORDS`, `LIMITS_WORDS`), since `ai-words.ts` is not this brief's; B693 may move them.
+- The plan cases of `ai-panel.test.tsx` are left for B685 to delete (its file); on this branch alone they and its usage-line regex fail where they assert the old words ("Build all", the comments box always open, the figures line, ticks on the model's word).
+
+**Next**
+- B685 passes `mode`, `conversation`, `project` and `closed` to `AiPlanView` for each plan entry of the transcript, `mode` to `AiUsageLine` and `AiLimitsPopover`, and deletes the old plan, usage and limits cases of `ai-panel.test.tsx`.

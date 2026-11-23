@@ -2,8 +2,27 @@ import { type AiRunLimits, TASK_BUDGET_MIN } from '@msm/ai';
 import { Gauge } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { useId, useState } from 'react';
+import { usePreferences } from '../../store/preferences';
 import { fieldClass } from '../NewElementDialog';
 import { Button, buttonClass } from '../ui/Button';
+import type { UiMode } from './ai-words';
+
+/**
+ * The popover's words (Advanced only, ADR 0125 D10): the defaults live in Settings, and a run
+ * that stopped at its limit is simply continued, since every run counts from zero.
+ */
+export const LIMITS_WORDS = Object.freeze({
+  title: 'Run limits',
+  forNextRun:
+    'For the next run only. The defaults are under Default limits in Settings, AI helper.',
+  continued:
+    'A run that stops at its limit can simply be continued: press Keep going, or send "continue". Each run counts from zero.',
+  toolTurns: 'Tool turns',
+  outputTokens: 'Output tokens',
+  taskBudget: 'Tell the model its output budget',
+  useDefaults: 'Use defaults',
+  done: 'Done',
+});
 
 /** Bounds of the limit fields (as main clamps them). */
 export const LIMIT_BOUNDS = Object.freeze({
@@ -73,7 +92,9 @@ export function LimitField(props: {
 
 /**
  * "Run limits": the next run's tool turn and output token limits and the task budget switch
- * (ADR 0041 D7). The defaults come from Settings; a change applies to the next run only.
+ * (ADR 0041 D7). The defaults come from Settings; a change applies to the next run only. Shown
+ * only in Advanced (ADR 0125 D10): elsewhere it renders nothing. `mode` defaults to the
+ * preference.
  */
 export function AiLimitsPopover(props: {
   /** The limits the next run uses. */
@@ -84,21 +105,24 @@ export function AiLimitsPopover(props: {
   onChange(limits: AiRunLimits): void;
   /** Back to the mode's defaults. */
   onReset(): void;
+  mode?: UiMode;
 }) {
   const turnsId = useId();
   const tokensId = useId();
   const budgetId = useId();
+  const preferred = usePreferences((state) => state.mode);
   const { limits } = props;
+  if ((props.mode ?? preferred) !== 'advanced') return null;
   return (
     <Popover.Root>
       <Popover.Trigger
         className={buttonClass}
         data-testid="ai-limits"
         disabled={props.disabled}
-        aria-label="Run limits"
+        aria-label={LIMITS_WORDS.title}
       >
         <Gauge size={14} aria-hidden />
-        Run limits
+        {LIMITS_WORDS.title}
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
@@ -107,11 +131,14 @@ export function AiLimitsPopover(props: {
           className="z-50 flex w-72 flex-col gap-2 rounded-md border border-border bg-panel p-3 text-sm text-text shadow-lg"
           data-testid="ai-limits-popover"
         >
-          <p className="font-semibold">Run limits</p>
-          <p className="text-xs text-muted">
-            For this run. The defaults are set per mode in Settings, AI helper.
+          <p className="font-semibold">{LIMITS_WORDS.title}</p>
+          <p className="text-xs text-muted" data-testid="ai-limits-defaults">
+            {LIMITS_WORDS.forNextRun}
           </p>
-          <label htmlFor={turnsId}>Tool turns</label>
+          <p className="text-xs text-muted" data-testid="ai-limits-continue">
+            {LIMITS_WORDS.continued}
+          </p>
+          <label htmlFor={turnsId}>{LIMITS_WORDS.toolTurns}</label>
           <LimitField
             id={turnsId}
             testId="ai-limit-tool-turns"
@@ -119,7 +146,7 @@ export function AiLimitsPopover(props: {
             bounds={LIMIT_BOUNDS.toolTurns}
             onCommit={(maxToolTurns) => props.onChange({ ...limits, maxToolTurns })}
           />
-          <label htmlFor={tokensId}>Output tokens</label>
+          <label htmlFor={tokensId}>{LIMITS_WORDS.outputTokens}</label>
           <LimitField
             id={tokensId}
             testId="ai-limit-output-tokens"
@@ -136,7 +163,7 @@ export function AiLimitsPopover(props: {
               checked={limits.taskBudget}
               onChange={(event) => props.onChange({ ...limits, taskBudget: event.target.checked })}
             />
-            <label htmlFor={budgetId}>Tell the model its output budget</label>
+            <label htmlFor={budgetId}>{LIMITS_WORDS.taskBudget}</label>
           </span>
           <p className="text-xs text-muted">
             With the budget on, the model paces itself to the output token limit (only for limits of
@@ -148,10 +175,10 @@ export function AiLimitsPopover(props: {
               disabled={!props.overridden}
               onClick={props.onReset}
             >
-              Use defaults
+              {LIMITS_WORDS.useDefaults}
             </Button>
             <Popover.Close asChild>
-              <Button>Done</Button>
+              <Button>{LIMITS_WORDS.done}</Button>
             </Popover.Close>
           </div>
         </Popover.Content>
