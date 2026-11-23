@@ -70,6 +70,15 @@ export interface JigsawStructureData {
   readonly terrainAdaptation: 'none' | 'beard_thin' | 'beard_box' | 'bury' | 'encapsulate';
 }
 
+/** Mirrors `PieceMember` in `@msm/terrain`: one template of a list element's piece (B712). */
+export interface PieceMember {
+  readonly template: string;
+  readonly processors: string | null;
+  readonly source: 'project' | 'vanilla' | 'box';
+  /** The member's own box where it stands, at the piece's origin and turn. */
+  readonly box: PieceBox;
+}
+
 /** Mirrors `AssembledPiece` in `@msm/terrain`. */
 export interface AssembledPiece {
   readonly index: number;
@@ -83,6 +92,8 @@ export interface AssembledPiece {
   readonly processors: string | null;
   readonly projection: Projection;
   readonly source: 'project' | 'vanilla' | 'box';
+  /** A list element's templates in the element's order (the first names the piece); else absent. */
+  readonly members?: readonly PieceMember[];
 }
 
 /** Mirrors `RefusalReason` in `@msm/terrain`. */
@@ -123,7 +134,9 @@ export type Cell = readonly [number, number, number];
 /**
  * A placed piece's blocks where they stand, as the worker works them out: a palette of block
  * states (turned with the piece; a jigsaw block already its `final_state`) and the blocks as
- * runs of four numbers `x, y, z, palette index`.
+ * runs of four numbers `x, y, z, palette index`. A list element's piece holds every member's
+ * blocks, member after member in the element's order (a later member's block over an earlier one
+ * where they share a cell).
  */
 export interface PieceCells {
   readonly palette: readonly string[];

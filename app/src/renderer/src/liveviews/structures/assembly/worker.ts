@@ -6,8 +6,8 @@
  *
  * - **Steps in batches.** The assembler is a generator; the worker answers its steps every
  *   {@link BATCH_MS} or {@link BATCH_STEPS}, whichever comes first, and yields between batches so
- *   a `cancel` or a newer request is seen. A placed piece carries its blocks where they stand and
- *   the two jigsaw blocks that met.
+ *   a `cancel` or a newer request is seen. A placed piece carries its blocks where they stand
+ *   (every member of a list element, B712) and the two jigsaw blocks that met.
  * - **Templates kept by key.** A template arrives with a key that changes when it does; the
  *   worker hands the assembler the same object for the same key, so the engine's per-template
  *   work (its jigsaws and boxes for the four turns) is done once.
@@ -15,7 +15,7 @@
 
 import * as terrain from '@msm/terrain';
 import type { PieceTemplate as ReaderPieceTemplate } from '../vanilla-pieces';
-import { jigsawState, pieceCells } from './cells';
+import { jigsawState, type PiecePart, partsCells } from './cells';
 import type {
   AssembledPiece,
   AssemblyAnswer,
@@ -23,6 +23,7 @@ import type {
   AssemblyStep,
   JigsawStructureData,
   MetJigsaws,
+  PieceMember,
   PoolData,
   ViewStep,
 } from './client';
@@ -34,10 +35,11 @@ type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 export const TYPES_MATCH_ENGINE: [
   Same<AssemblyStep, terrain.AssemblyStep>,
   Same<AssembledPiece, terrain.AssembledPiece>,
+  Same<PieceMember, terrain.PieceMember>,
   Same<PoolData, terrain.PoolData>,
   Same<JigsawStructureData, terrain.JigsawStructureData>,
   Same<ReaderPieceTemplate, terrain.PieceTemplate>,
-] = [true, true, true, true, true];
+] = [true, true, true, true, true, true];
 
 /** The engine functions the worker calls (tests pass the real engine). */
 export type AssemblyEngine = Pick<
@@ -118,24 +120,42 @@ export function createAssemblyHost(
       origin: job.origin,
       pieceLimit: job.pieceLimit,
     });
-    const placed: { piece: terrain.AssembledPiece; template: terrain.PieceTemplate | null }[] = [];
+    /** Each placed piece, its first template, and where that template stands (its jigsaws). */
+    const placed: {
+      piece: terrain.AssembledPiece;
+      template: terrain.PieceTemplate | null;
+      lead: Pick<terrain.AssembledPiece, 'box' | 'rotation'>;
+    }[] = [];
     let stoppedAtLimit = false;
 
     const viewStep = (step: terrain.AssemblyStep): ViewStep => {
       if (step.kind !== 'placed') return step;
       const { piece } = step;
       const template = piece.template === null ? null : (templates.get(piece.template) ?? null);
-      placed[piece.index] = { piece, template };
       const turns = TURNS[piece.rotation] ?? 0;
+      // A list element's piece: every member at its own box (B712); else the one template.
+      const parts: PiecePart[] = [];
+      if (piece.members !== undefined) {
+        for (const member of piece.members) {
+          const t = templates.get(member.template);
+          if (t === undefined) continue;
+          const at = { box: member.box, rotation: piece.rotation };
+          parts.push({ template: t, origin: engine.pieceOrigin(at, t.size) });
+        }
+      } else if (template !== null) {
+        parts.push({ template, origin: engine.pieceOrigin(piece, template.size) });
+      }
+      const lead = { box: piece.members?.[0]?.box ?? piece.box, rotation: piece.rotation };
+      placed[piece.index] = { piece, template, lead };
       const cells =
-        template === null
+        parts.length === 0
           ? { palette: [], blocks: [] }
-          : pieceCells(template, engine.pieceOrigin(piece, template.size), turns, engine.rotateVec);
+          : partsCells(parts, turns, engine.rotateVec);
       let met: MetJigsaws | null = null;
       const parent = piece.parent === null ? undefined : placed[piece.parent];
       if (piece.joinedBy !== null && parent?.template && template !== null) {
-        const a = engine.pieceJigsaws(parent.piece, parent.template)[piece.joinedBy.parentJigsaw];
-        const b = engine.pieceJigsaws(piece, template)[piece.joinedBy.jigsaw];
+        const a = engine.pieceJigsaws(parent.lead, parent.template)[piece.joinedBy.parentJigsaw];
+        const b = engine.pieceJigsaws(lead, template)[piece.joinedBy.jigsaw];
         if (a !== undefined && b !== undefined) {
           met = {
             parent: a.pos,

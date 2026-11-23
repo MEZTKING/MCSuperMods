@@ -11021,3 +11021,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B700 alone, then wave 1: B701, B702, B703, B641, B712; I1 and a release.
 - Ask the user: Save by itself or a Save button; a Make something button in the row.
+
+## 2026-11-23 — executor — B712 every member of a list pool element is drawn
+
+**What**
+- `@msm/terrain` `structures/api.ts`: `PieceMember { template, processors, source, box }` and the optional `AssembledPiece.members` (a list element's templates in the element's order, empty members left out; the first is the one `template`, `processors` and `source` name and the one that joins and expands; absent for single, legacy, feature and empty elements, so nothing else changes). `assemble.ts` fills it in `place` (each member's own box at the piece's origin and turn, so `pieceOrigin({ box, rotation }, size)` gives every member the same origin).
+- Assembly view (`liveviews/structures/assembly/`): `client.ts` mirrors `PieceMember` (the worker's type check covers it); `cells.ts` `partsCells` draws every member at the piece's place and turn, member after member, a later member's block over an earlier one's in a shared cell; `worker.ts` draws a list piece's members and finds the two jigsaws that met from the lead member's own box (the union box put them a block off when the members differ in size); `steps.ts` `pieceWords` says "Arm, 3 parts", `hasPartedPiece` and `PARTS_LINE`, shown in the view's notes only when a piece has several parts.
+- Tests: `packages/terrain/test/structures/list-members.test.ts` (a list of three templates of different sizes with an empty member between: three members in order with their processors, one origin, boxes whose union is the piece's, turned with the piece in all four turns; the spike's `misc` names l1 then l2; the lattice and the town have no `members`); `app/test/components/liveviews/structures/assembly-members.test.tsx` (three drawn members over eight seeds, the later member over the earlier where they share a cell, each block in its member's box, the met jigsaws side by side; single elements unchanged; the view lists "Piece 2: Arm, 3 parts, joined to piece 1" and shows the parts line, and not without a list; the 841-piece lattice timed single and as a list of three).
+
+**Measured** (Node, load average about 10 on this machine)
+- The 841-piece lattice through the worker host with each piece's blocks: single pieces 39 to 256 ms (medians 47 and 66 over two runs), flattened (7,569 blocks) 4 to 199 ms; every piece a list of three: 32 to 69 ms (medians 41 and 53), flattened (15,969 blocks) 9 to 31 ms. B640 measured 53 to 110 ms and 13 to 22 ms; members cost no measurable time.
+
+**Decisions**
+- The order members overwrite each other was not measured: the spike's `misc` and B639's fixture have a list element whose members share no cell (J18 says only "the same position and turn"). The view draws them in the element's order, later over earlier, as it does pieces, and says so in plain words (`PARTS_LINE`); "(verify at implementation)" in the code comments.
+- Each member carries its own box rather than the piece carrying an origin, so `AssembledPiece` keeps its fields and B642 can place members with the engine's `pieceOrigin`.
+
+**Next**
+- B642: place every member from `piece.members` (each at `pieceOrigin({ box: member.box, rotation: piece.rotation }, template.size)`), else the piece's one template; apply each member's own `processors`.
+- A fixture with two list members sharing a cell (B639's next run) would settle the overwrite order.

@@ -127,6 +127,51 @@ export function pieceCells(
   return { palette, blocks };
 }
 
+/** One template of a piece and where its 0, 0, 0 stands (a list element's piece has several). */
+export interface PiecePart {
+  readonly template: PieceTemplate;
+  readonly origin: Cell;
+}
+
+/**
+ * The blocks of a piece made of several templates (a list element, J18; B712), all turned the same:
+ * each part's {@link pieceCells}, part after part in the element's order, a later part's block
+ * replacing an earlier one's in the same cell. The game's order where members overlap was not
+ * measured (the spike's list element shares no cell; verify at implementation).
+ */
+export function partsCells(
+  parts: readonly PiecePart[],
+  turns: number,
+  turn: TurnVector,
+): PieceCells {
+  if (parts.length === 1) {
+    const only = parts[0] as PiecePart;
+    return pieceCells(only.template, only.origin, turns, turn);
+  }
+  const palette: string[] = [];
+  const index = new Map<string, number>();
+  const at = new Map<string, readonly [number, number, number, number]>();
+  for (const part of parts) {
+    const cells = pieceCells(part.template, part.origin, turns, turn);
+    for (let i = 0; i + 3 < cells.blocks.length; i += 4) {
+      const state = cells.palette[cells.blocks[i + 3] as number] as string;
+      let p = index.get(state);
+      if (p === undefined) {
+        p = palette.length;
+        palette.push(state);
+        index.set(state, p);
+      }
+      const x = cells.blocks[i] as number;
+      const y = cells.blocks[i + 1] as number;
+      const z = cells.blocks[i + 2] as number;
+      at.set(`${x},${y},${z}`, [x, y, z, p]);
+    }
+  }
+  const blocks: number[] = [];
+  for (const run of at.values()) blocks.push(run[0], run[1], run[2], run[3]);
+  return { palette, blocks };
+}
+
 /** The jigsaw block state a jigsaw is drawn as when it met another (its own block, turned). */
 export function jigsawState(orientation: string, turns: number): string {
   return turnState(`${JIGSAW_BLOCK}[orientation=${orientation}]`, turns);

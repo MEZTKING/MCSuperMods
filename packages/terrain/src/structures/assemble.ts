@@ -29,8 +29,10 @@
  *   its bottom at the start height − 1; with `start_jigsaw_name`, a jigsaw of that name (one drawn
  *   among them) at the start position instead.
  * - J18: a list element places all its templates at one origin and turn: one piece whose box holds
- *   them all, named by its first template, joining and expanding through that template's jigsaws; a
- *   feature element is a one-block piece joined at a jigsaw whose target is `minecraft:bottom`.
+ *   them all, named by its first template, joining and expanding through that template's jigsaws,
+ *   with every template in `members` (B712: each with its processors and its own box, in the
+ *   element's order); a feature element is a one-block piece joined at a jigsaw whose target is
+ *   `minecraft:bottom`.
  * - J19 (limit 4L5): `terrain_matching` is kept on the piece but placed as `rigid` (a flat floor).
  * - 4L9: when a piece past `pieceLimit` fits, the assembly stops instead of placing it ("Stopped at
  *   500 pieces."); an assembly that ends at exactly the limit is done.
@@ -52,6 +54,7 @@ import type {
   AssemblyInput,
   AssemblyStep,
   PieceBox,
+  PieceMember,
   PieceRotation,
   PieceTemplate,
   PoolData,
@@ -139,6 +142,8 @@ type Element =
       readonly members: readonly MemberRef[];
       readonly projection: Projection;
       readonly feature: boolean;
+      /** A list element: its piece names every member (`AssembledPiece.members`). */
+      readonly list: boolean;
     };
 
 interface MemberRef {
@@ -197,6 +202,7 @@ function readElement(data: PoolElementData): Element {
         ],
         projection,
         feature: false,
+        list: false,
       };
     case 'minecraft:feature_pool_element':
       return {
@@ -204,6 +210,7 @@ function readElement(data: PoolElementData): Element {
         members: [{ location: null, processors: null }],
         projection,
         feature: true,
+        list: false,
       };
     case 'minecraft:list_pool_element': {
       const inner = (data as { readonly elements?: unknown }).elements;
@@ -228,7 +235,7 @@ function readElement(data: PoolElementData): Element {
         members.push({ location: namespaced(e.location), processors: processorsId(e.processors) });
       }
       if (members.length === 0) return { kind: 'empty' };
-      return { kind: 'pieces', members, projection, feature: false };
+      return { kind: 'pieces', members, projection, feature: false, list: true };
     }
     default:
       return { kind: 'unsupported', type };
@@ -437,6 +444,7 @@ class Assembler {
         joinedBy: null,
         projection: element.projection,
         priority: 0,
+        list: element.list,
       });
       return;
     }
@@ -510,6 +518,7 @@ class Assembler {
           joinedBy: { parentJigsaw: jigsaw.index, jigsaw: fit.jigsaw },
           projection: element.projection,
           priority: jigsaw.block.placementPriority,
+          list: element.list,
         });
         return;
       }
@@ -576,9 +585,10 @@ class Assembler {
     readonly joinedBy: AssembledPiece['joinedBy'];
     readonly projection: Projection;
     readonly priority: number;
+    readonly list: boolean;
   }): AssemblyStep {
     const lead = p.members[0] as Member;
-    const piece: AssembledPiece = {
+    const base: AssembledPiece = {
       index: this.placed.length,
       parent: p.parent,
       depth: p.depth,
@@ -591,6 +601,9 @@ class Assembler {
       projection: p.projection,
       source: lead.source,
     };
+    const piece: AssembledPiece = p.list
+      ? { ...base, members: p.members.map((m) => pieceMember(m, p.origin, p.turn)) }
+      : base;
     this.placed.push({
       piece,
       origin: p.origin,
@@ -605,6 +618,16 @@ class Assembler {
     this.queue.splice(at, 0, { piece: piece.index, priority: p.priority });
     return { kind: 'placed', piece };
   }
+}
+
+/** A list element's member as the piece names it (B712). */
+function pieceMember(member: Member, origin: Vec3, turn: number): PieceMember {
+  return {
+    template: member.id as string,
+    processors: member.processors,
+    source: member.source,
+    box: boxAt(member.prepared.boxes[turn] as PieceBox, origin),
+  };
 }
 
 function membersBox(members: readonly Member[], origin: Vec3, turn: number): PieceBox {

@@ -71,6 +71,13 @@ export const FLAT_FLOOR_LINE =
 /** The spike's finding on placement priority (B634): the parent jigsaw's value orders growth. */
 export const PRIORITY_LINE =
   'Pieces grow in the order of the jigsaw that placed them: its placement priority, highest first.';
+/**
+ * The line for an assembly with a piece of several parts (a list element, J18; B712). The game's
+ * order where parts overlap was not measured (the spike's list element shares no cell; verify at
+ * implementation), so the view says what it does.
+ */
+export const PARTS_LINE =
+  'A piece of several parts draws all of them in the same place and turn; where parts overlap, a later part in the pool is drawn over an earlier one (the game’s own order there was not measured).';
 /** The line without WebGL: the step list alone. */
 export const NO_WEBGL_LINE = 'Your computer cannot draw 3D here, so only the list of steps shows.';
 
@@ -516,9 +523,19 @@ export function flattenPieces(
   return { size: [maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1], palette, blocks };
 }
 
-/** Whether a piece's template is a feature (a tree or plant the game places) or a template. */
+/**
+ * Whether a piece's template is a feature (a tree or plant the game places) or a template; a list
+ * element's piece of several templates says "N parts" (B712).
+ */
 export function pieceWords(piece: AssembledPiece, advanced: boolean): string {
   if (piece.template === null) return 'A plant or feature (placed by the game)';
   const name = idWords(piece.template, advanced);
-  return piece.source === 'box' ? `${name}, shown as a box of its size` : name;
+  const parts = piece.members?.length ?? 1;
+  const named = parts > 1 ? `${name}, ${parts} parts` : name;
+  return piece.source === 'box' ? `${named}, shown as a box of its size` : named;
+}
+
+/** Whether any placed piece has several parts (a list element). */
+export function hasPartedPiece(placed: readonly Extract<ViewStep, { kind: 'placed' }>[]): boolean {
+  return placed.some(({ piece }) => (piece.members?.length ?? 1) > 1);
 }

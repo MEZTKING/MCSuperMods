@@ -123,6 +123,26 @@ export interface JigsawStructureData {
   readonly terrainAdaptation: 'none' | 'beard_thin' | 'beard_box' | 'bury' | 'encapsulate';
 }
 
+/**
+ * One template of a list element's piece (J18; B712): every member stands at the piece's origin and
+ * turn. The game's order where members overlap was not measured (the spike's and B639's list
+ * element has no shared cell; verify at implementation); the views draw them in this order, later
+ * members over earlier.
+ */
+export interface PieceMember {
+  /** The template id. */
+  readonly template: string;
+  /** The processor list that applies to this member, by id, or `null`. */
+  readonly processors: string | null;
+  /** Where this member's template was read from, as {@link AssembledPiece.source}. */
+  readonly source: 'project' | 'vanilla' | 'box';
+  /**
+   * The member's own box where it stands (a part of the piece's box); with the piece's rotation
+   * and the template's size it gives the member's origin (`pieceOrigin({ box, rotation }, size)`).
+   */
+  readonly box: PieceBox;
+}
+
 /** One placed piece. */
 export interface AssembledPiece {
   /** The piece's number in placing order; the start piece is 0. */
@@ -144,6 +164,12 @@ export interface AssembledPiece {
   readonly projection: Projection;
   /** Whether the template was read from the jar, the project, or is a labelled box (D7). */
   readonly source: 'project' | 'vanilla' | 'box';
+  /**
+   * A list element's templates in the element's order, empty members left out (J18; B712). The
+   * first is the one `template`, `processors` and `source` name, and the one that joins and
+   * expands. Absent for every other element.
+   */
+  readonly members?: readonly PieceMember[];
 }
 
 /** Why a try did not become a piece (rules J1 to J13). */

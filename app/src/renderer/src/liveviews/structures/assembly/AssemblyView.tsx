@@ -50,10 +50,12 @@ import {
   FLAT_FLOOR_LINE,
   flattenPieces,
   gatherAssembly,
+  hasPartedPiece,
   jigsawStructureOf,
   MAX_PIECE_LIMIT,
   NO_WEBGL_LINE,
   NOT_JIGSAW_LINE,
+  PARTS_LINE,
   PIECE_LIMIT_STEP,
   POOL_FOLDER,
   PRIORITY_LINE,
@@ -263,6 +265,7 @@ function Assembly(
   );
 
   const notes = [BUILDING_LINE, FLAT_FLOOR_LINE, PRIORITY_LINE];
+  if (hasPartedPiece(placed)) notes.push(PARTS_LINE);
   if (!webgl) notes.push(NO_WEBGL_LINE);
   if (run.tooMany)
     notes.push('This structure reaches very many building files; only the first 2,000 are used.');
