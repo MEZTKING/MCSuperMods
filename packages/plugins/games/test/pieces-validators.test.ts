@@ -6,7 +6,7 @@
 import type { Element, Json, Problem } from '@msm/plugin-api';
 import { createRegistryIndex, validateJson } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import plugin, {
   MAX_ONE_BLOCKS,
   PIECES_PROBLEM_CODES,
@@ -45,6 +45,12 @@ const TEMPLATE = (size: number[]): Json => ({ size, palette: ['minecraft:stone']
 describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
   'game pieces validator on %s',
   (_targetId, bundle: TargetBundle) => {
+    const registries = new Map<string, ReturnType<typeof createRegistryIndex>>();
+    // The target's vendored data and checkers load once, here, not inside the first case that
+    // validates (that made it slow on a busy runner, 2026-11-23); the default hook timeout.
+    beforeAll(async () => {
+      await toolsFor(bundle);
+    });
     async function validate(elements: Element[], target = bundle.target): Promise<Problem[]> {
       const { vanilla } = await toolsFor(bundle);
       const project: Record<string, string[]> = {
@@ -53,7 +59,14 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       for (const entry of elements) {
         if (entry.kind === 'minecraft:structure_template') project.structure?.push(entry.id);
       }
-      const registry = createRegistryIndex({ vanilla, project });
+      // One index per set of project ids: building it over vanilla's registries for every call
+      // made the samples case slow on a busy runner (2026-11-23).
+      const key = JSON.stringify(project);
+      let registry = registries.get(key);
+      if (registry === undefined) {
+        registry = createRegistryIndex({ vanilla, project });
+        registries.set(key, registry);
+      }
       return piecesValidator.validate({ elements, target, registry }) as Problem[];
     }
     const codes = async (elements: Element[], target = bundle.target): Promise<string[]> =>

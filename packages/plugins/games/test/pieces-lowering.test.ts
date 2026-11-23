@@ -13,7 +13,7 @@ import type { Json, OutputFile, TargetFacts } from '@msm/plugin-api';
 import { validateJson } from '@msm/schemas';
 import { defaultFunctionUri } from '@msm/schemas/mcfunction';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import {
   fillForm,
   GamesLoweringError,
@@ -109,6 +109,11 @@ describe('sharedFunctionFiles', () => {
 describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
   'game pieces lowered for %s',
   (targetId, bundle) => {
+    // The target's vendored data and checkers load once, here, not inside the first case that
+    // checks (2026-11-23).
+    beforeAll(async () => {
+      await toolsFor(bundle);
+    });
     it.each(SAMPLES.map((sample) => [`${sample.folder}/${sample.name}`, sample] as const))(
       '%s matches the golden',
       async (_name, sample) => {
