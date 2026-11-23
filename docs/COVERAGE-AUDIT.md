@@ -11,7 +11,7 @@ How to read the evidence columns:
 
 Custom status effects and throwables/projectiles were designed in ADRs 0055 and 0056 and shipped in 1.4.0. They appear below as **covered by plan** and are not designed here.
 
-A second audit sits beside this one since 2026-11-22: [`LIVE-VIEW-AUDIT.md`](LIVE-VIEW-AUDIT.md) lists, for each of the 118 kinds, whether the app shows what it makes live (the user's rule "Everything should be visible live", ADR 0119 D1). This file says what MSM can make; that one says what it can show while you make it. Since live world generation closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md)) 42 kinds have a live view, among them all 14 worldgen kinds, 67 wait for Live views 2 to 4 ([`PLAN-live-views.md`](PLAN-live-views.md)) and 9 are exempt.
+A second audit sits beside this one since 2026-11-22: [`LIVE-VIEW-AUDIT.md`](LIVE-VIEW-AUDIT.md) lists, for each of the 118 kinds, whether the app shows what it makes live (the user's rule "Everything should be visible live", ADR 0119 D1). This file says what MSM can make; that one says what it can show while you make it. Since live world generation closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md)) 42 kinds have a live view, among them all 14 worldgen kinds; since Live views 2 closed (B618, 2026-11-23; [ADR 0120](adr/0120-live-views-data.md)) 76 do, with all 34 data kinds, 33 wait for Live views 3 and 4 ([`PLAN-live-views.md`](PLAN-live-views.md)) and 9 are exempt.
 
 ## 1. Coverage table
 

@@ -1,6 +1,6 @@
 # Plan: Live views 2 to 4
 
-**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), all Proposed. Live world generation is closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md) accepted with findings), so batch 2 may start with its spike B600. Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
+**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data; accepted with findings at B618, 2026-11-23), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), the last two Proposed. **Batch 2 is closed** (B600–B618); batch 3 is next, with its spike B619. Live world generation is closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md) accepted with findings). Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
 
 Working plan for the rest of the user's standing rule of 2026-11-22, **Everything visible live** ([ADR 0119 D1](adr/0119-live-worldgen-preview.md)). The audit [`docs/LIVE-VIEW-AUDIT.md`](LIVE-VIEW-AUDIT.md) (B575) counted 118 kinds when this plan was written: 28 had a live view, 9 were exempt, 81 needed one. Fourteen of those were live world generation's (B574–B592, closed at B591 into ADR 0119) and now have one, so the audit stands at 42, 9 and 67. This plan closes the other 67 in three batches, plus the two surfaces that are not kinds: the Creator's flows that show nothing of what they make, and the AI helper's proposals, seen only as JSON. Written 2026-11-22 by the orchestrator at 505d7c3 (branch `ccr-d077e76e-4gnbx2`). Every "today" claim was checked against the code at that commit or is the audit's; what was not checked says "(verify at implementation)".
 
@@ -88,62 +88,9 @@ Recorded in ADR 0120 and used by all three batches.
 - **Functions in Try it.** `sim/commands/` gains the game's own commands the simulation can honour (the list is the spike's 2S7; the draft is `give`, `clear`, `setblock`, `fill` and `clone` inside the area, `summon` of project mobs, `kill`, `tp`, `effect`, `say`, `tellraw`, `title`, `playsound`, `particle`, `time`, `function`, `schedule`, `scoreboard players` set, add and remove, and `execute` with `as`, `at`, `if block`, `if score`, `unless` and `run`). Every other command is said, as today. At most 10,000 commands a tick; a function over that stops with a line.
 - **The Creator and the AI helper (B615).** `CreatorPreview` gains a tab **Live** and `AiChangesetReview` a pane **See it**, both drawing `BundleLiveView`: the registry's view of each element the bundle or proposal makes, over `bundlePreviewProject`. B615 also wraps the previews that exist today (the geo renderer for the 9 mob flows, the vehicle preview for the 4 vehicle flows, the Particle and Fluid previews, Try it's merchant screen for the villager flows) as registry entries, so those flows stop showing only an element list. Sounds, looks and patterns join in batch 3 through the same registry.
 
-### Fact table (2F1 to 2F15)
+### Fact table, spike questions and limits
 
-| # | Fact | Source |
-|---|---|---|
-| 2F1 | 118 kinds; has one 28, needs one 81 (live worldgen 14, data 34, looks 30, structures 3), exempt 9 | `docs/LIVE-VIEW-AUDIT.md` |
-| 2F2 | `PREVIEW_KINDS` is `model`, `block_definition`, `item_definition`, `structure`, `climate_map`, `geo_model`, `animation`, `entity`; of the datapack kinds only recipes have a picture | `app/src/renderer/src/preview/PreviewPanel.tsx`; the audit |
-| 2F3 | `@msm/sim` has no loot, predicate or item modifier code; only `commands/catalogue.ts` and `parse.ts` mention loot | `grep -rli loot packages/sim/src` |
-| 2F4 | Try it does not run functions: `commands/run.ts` says a function is "only in the game"; the game's own commands are said out loud | `packages/sim/src/commands/run.ts` |
-| 2F5 | The jar extraction keeps models, block and item definitions, block and item textures with their `.mcmeta`, `lang/en_us.json` and `data/minecraft/worldgen/placed_feature`; live worldgen's B577 adds worldgen folders and moves the cache to schema 4 | `packages/interop/src/minecraft-install/extract.ts`; ADR 0119 D4 |
-| 2F6 | Vendored per target: `mcmeta/registries.json`, `blocks.json`, `commands.json`, the vanilla mcdoc symbols, `worldgen/feature-order.json`. No vanilla tag, loot table or advancement content is vendored, and none may be | `packages/targets/mc-26.3/vendor/` |
-| 2F7 | The Creator previews a bundle from memory through `bundlePreviewProject` and `bundleAssetReader`, 150 ms after an answer | `app/src/renderer/src/preview/bundle-source.ts`; the audit |
-| 2F8 | The AI helper's proposal is shown as a line diff per element and placeholder pictures | `app/src/renderer/src/components/ai/AiChangesetReview.tsx`; the audit |
-| 2F9 | Try it lowers the project again 300 ms after an edit and reads the block tags `climbable` and `wooden_fences` only | the audit |
-| 2F10 | `app.asar` 30.5 of 32 MB, renderer 17.2 of 18 MB; budgets in `tools/check-size/index.ts` (`asarBytes`, `rendererBytes`); the gzip reserve is worth about 4.9 MB of `app.asar` | root `CLAUDE.md`; ADR 0079 D4 |
-| 2F11 | The game modes plan adds Rules steps for loot table rolls, chests with loot tables in the Structure Studio (B555), a Goals flow that makes an advancement tab, and keeps "Try it does not run functions" as its limit M15 | `docs/PLAN-game-modes.md` |
-| 2F12 | The datapack plugin's kind files: `advancement.ts`, `function.ts`, `generic.ts` (35 generic kinds, schema form only), `item-modifier.ts`, `loot-table.ts`, `predicate.ts`, `recipe.ts`, `tag.ts` | `packages/plugins/datapack/src/kinds/` |
-| 2F13 | The Tag Studio shows the list as typed; the Function editor has live Spyglass problems | `app/src/renderer/src/studios/TagStudio.tsx`, `FunctionEditor.tsx` |
-| 2F14 | Measured by B575 (SwiftShader, one run): recipe picture 16 ms, particle 9 ms, potion 34–105 ms, block model 68–146 ms, climate map 0.20–0.25 s after Apply; Try it opens in 0.76 s | the audit |
-| 2F15 | `@msm/sim` may depend only on `@msm/plugin-api` and `@msm/core`, is pure and seeded, and holds no version name | `packages/sim/CLAUDE.md` |
-
-### Spike questions (2S1 to 2S15), answered by B600 on both targets
-
-| # | Question |
-|---|---|
-| 2S1 | Which pool entry, condition, function and number provider types does each target have (vendored registries), and which self-written fixture table isolates each? |
-| 2S2 | How are the odds measured on the real server: 10,000 rolls per table through the game's own `loot` command into a counted container, in a GameTest; how long does that take in CI? |
-| 2S3 | Do the bonus formulas (`apply_bonus`'s three formulas, looting, explosion decay, `set_count` with `add`, enchant with levels) come out of the measured distributions, type by type? Which do not (they become "only in the game")? |
-| 2S4 | The jar's data folders this batch needs (tags, loot tables, advancements, enchantments, damage types, chat types, dialogs and the rest), their file counts and sizes, the extraction time and the cache size; whether advancements are read in bulk or on demand |
-| 2S5 | Tag resolution: order across packs, `replace`, optional entries, tags naming tags, what the game does with a missing entry (observed) |
-| 2S6 | Speed in a worker: 1,000 rolls of the largest vanilla table; the tree of the largest vanilla advancement tab; resolving the largest vanilla tag |
-| 2S7 | Which of the game's commands can the simulation honour today, which with small additions, and what share of the lines of the library's and the fixtures' functions is then understood? Macro lines? |
-| 2S8 | The advancement screen by client GameTest screenshots: tab rules (a root with a display), frames, hidden entries, connectors; how far MSM's own tidy tree is from it |
-| 2S9 | Dialogs by client GameTest screenshots on both targets: the types, bodies, inputs and button layouts, for the mock-up's proportions |
-| 2S10 | Death lines (the language keys a damage type's `message_id` selects, the player and item forms) and chat type decorations, observed |
-| 2S11 | Enchantments: the tooltip, the level names, the cost fields and how the enchanting table's offered levels follow from them (observed with a fixture enchantment), the list of effect components per target |
-| 2S12 | `trial_spawner` and `block_transformer`: the fields per target, and whether both targets have both (verify at implementation) |
-| 2S13 | Size: where 1 MB of the renderer output can be saved; the measured saving of the gzip reserve; the chunk sizes of a first view |
-| 2S14 | Which existing previews (geo renderer, vehicle, particle, fluid, the merchant screen, the effect and potion previews) can be mounted over a bundle project without the session store, and what each needs changed |
-| 2S15 | Item slots with tooltips: what can be reused (the recipe picture, Try it's hotbar) |
-
-### Limits (2L1 to 2L12)
-
-| # | Limit | Why | What users see | Mitigation |
-|---|---|---|---|---|
-| 2L1 | **The odds are checked; a single roll is MSM's own.** | The order in which the game draws random numbers is its code. | "Your roll in the game will differ; the odds are the same." Odds within the spike's tolerance (draft: two percentage points over 10,000 rolls). | Play. |
-| 2L2 | **Some loot parts are only in the game.** | Types the spike could not measure (2S3), `dynamic` contents, NBT-deep checks. | The part is named and marked. | Added type by type. |
-| 2L3 | **Vanilla tables, tags and parents need your Minecraft jar.** | Mojang's files are never shipped. | The set-up banner on views that name a vanilla file. | Project-only data draws without it. |
-| 2L4 | **A situation is a sample, not a world.** | No world around it. | Conditions about structures, light, nearby entities or scores answer "only the game knows". | Try it for what the simulation holds. |
-| 2L5 | **The advancement tree's layout is about right.** | The game's layout is its code. | Same parents and children; positions may differ. | — |
-| 2L6 | **Criteria are listed, not triggered.** | Triggers need the game. | A checklist; none ticks by itself. | Play. |
-| 2L7 | **A dialog's buttons run nothing.** | Commands and links belong to the game. | "This button would run …" | Try it's chat box for commands it understands. |
-| 2L8 | **Functions run as far as Try it understands them.** | Try it is a small simulation (ADR 0085). | Each line marked; the rest said in "What happened". | Reserve B647 widens the list. |
-| 2L9 | **Selectors see one player and Try it's mobs.** | Single player, 48 by 48 by 32. | `@a` is the one player; positions outside the area are said. | Play. |
-| 2L10 | **An enchantment's effects are described, not played.** | Combat and movement are not simulated. | A list in plain words. | Play. |
-| 2L11 | **Vanilla blocks in Try it are props.** | ADR 0085 L10. | A transformer or a vanilla block rule changes the prop; the block's other behaviour is not there. | Play. |
-| 2L12 | **Third-party kinds have no live view.** | No plugin API in this plan. | The schema form, as today. | ROADMAP idea. |
+Batch 2 is closed (B618, 2026-11-23): its fact table 2F1–2F15, the spike's answers 2S1–2S15 and the limits 2L1–2L12 with their outcome are in [ADR 0120](adr/0120-live-views-data.md), accepted with findings.
 
 ### Briefs
 

@@ -113,7 +113,7 @@ The guide's limits table (`docs/guide/try-it.md#limits`) says these in plain wor
 | L1 | A pass in Try it is not a pass in the game. | MSM's own simulation (D1). | Holds: the strip, Play, shared scenarios and "Only in Minecraft" lines. |
 | L2 | Movement is approximate. | Our own collision and movement code. | Holds; no sprinting, ice or slime, sneaking without edge safety. Climbing and still water added (B463). |
 | L3 | Mobs only wander. | Mob behaviour is vanilla goals (ADR 0070). | Holds; about 2.5 blocks a second at speed 0.25, at most 24, a hit removes at once. |
-| L4 | No commands or functions. | No command engine outside the game. | Narrowed: commands are parsed and run their events and scripts (B463); functions and the game's own commands stay only in Minecraft. |
+| L4 | No commands or functions. | No command engine outside the game. | Narrowed: commands are parsed and run their events and scripts (B463); functions and the game's own commands stay only in Minecraft. Narrowed again by [ADR 0120](0120-live-views-data.md) D8 (B606, B613): functions and most of the game's own commands run in Try it, the rest are said. |
 | L5 | Scripts and logic Rules until slice 4, then a subset of the Script API. | Scripts run on Rhino in the game. | Narrowed: they run in the worker (slice 4); members that need the game are said; events never fired as D9 above. |
 | L6 | No redstone. | Vanilla's signal rules are not rebuilt. | Holds; Power toggles `powered` then `lit`. |
 | L7 | No light, shadows or liquids. | deepslate draws none (T3); flow is game code. | Narrowed: still water and project fluids are drawn without flow (B463, B483); light levels are said, not drawn. |
