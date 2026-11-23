@@ -4,7 +4,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Element, Project } from '@msm/plugin-api';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   LiveViewClient,
   type LiveViewWorkerLike,
@@ -38,6 +38,12 @@ const project = {
 } as unknown as Project;
 
 describe('the live view stubs (B601)', () => {
+  // The view is a lazy chunk: load it once here, not inside the case's one-second waitFor, which
+  // a cold import on a busy machine outran (2026-11-23).
+  beforeAll(async () => {
+    await import('../../../src/renderer/src/liveviews/data/block-rules/BlockRules');
+  });
+
   it('shows a selected block transformer in the frame through the live view route', async () => {
     render(
       <PreviewPanel
