@@ -1,0 +1,26 @@
+{
+ "mob/wolf/angry/bark1.ogg": {
+  "bytes": 9484,
+  "firstMs": 34.1,
+  "medianMs": 0.7
+ },
+ "records/pigstep.ogg": {
+  "bytes": 1457471,
+  "firstMs": 24.1,
+  "medianMs": 11.2
+ },
+ "music/game/end/the_end.ogg": {
+  "bytes": 11284337,
+  "firstMs": 53.5,
+  "medianMs": 30.8
+ },
+ "": {
+  "bytes": 635867,
+  "firstMs": 3.7,
+  "medianMs": 2
+ },
+ "taskMs": 617,
+ "electron": "45.2.2",
+ "chrome": "156.0.8078.80",
+ "wallMs": 618
+}

@@ -9529,3 +9529,37 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - Give the two runtime GameTests above the same wait (the light engine's future, a budget sized in wall time).
+
+## 2026-11-23 — executor — B619 spike: looks and sounds
+
+**What**
+- Answered 3S1–3S12 of `docs/PLAN-live-views.md` (batch 3) on 26.3 and 26.4-snapshot-7. The evidence, the answers, the go or no-go per body, shaders and post effects, the interface for B620 and the path lists for B621 are in `docs/reference/spikes/b619/README.md`, the numbers in its `results/`, the throwaway code in its `spike-src/`. The plan gained a "B619" block under "Notes from implementation"; `docs/reference/spikes/README.md` a `b619/` line.
+- Client GameTest (throwaway, the runtime's GameTest source set with its `fabric.mod.json` replaced for the run):
+  - 28 bodies: MSM's coded pictures registered in place of the mob textures, each mob shot from six sides and each pixel decoded to its texel; on 26.4 through `TextureResources.from2dImage`, since 26.4 has no `DynamicTexture`.
+  - MSM's trims on a clear equipment asset, banners and shields with MSM's patterns.
+  - Widths of MSM's fonts, MSM's waypoint style at 12 distances, effect frames, inventory and creative screens.
+- Electron (SwiftShader): every vanilla sound decoded, a long track streamed, IPC reads, every jar shader and 14 of MSM's compiled after the mechanical translation, the jar's post effects and MSM's chain run on a still frame, TrueType widths.
+- Node and Python: asset index times, unifont parsing, jar folder counts and extraction time, timelines, the body reconstruction and its re-drawing against the game's decode.
+- `pnpm build` for the renderer size.
+- Signatures by `javap` only; vanilla files read at run time and deleted; no screenshot of the game kept (the body sheets show MSM's decoded codes). Spike code, fixture and the replaced `fabric.mod.json` removed from `engine-mod/`; `engine-mod/build`, `engine-mod/.gradle` and `app/out` deleted (no `app/dist` was made).
+
+**Decisions**
+- **Bodies.** Go for wolf, cat, pig, cow, chicken, frog, villager and sulfur cube: eighteen bodies with babies and model names. The zombie nautilus is no-go and shows the flat sheet (it never stands still; reserve B646). The bodies are boxes with the standard texture layout and are the same on both targets. The automatic re-drawing matches 66–84 % of the game's texels for the simple bodies; the rest (ears, shared legs, parts at an angle) is measured and needs B623's assembly.
+- **Shaders and post effects.**
+  - Go for post shaders and self-written shaders (compile and run).
+  - Core shaders get a compile check only.
+  - Go for post effects on one still frame.
+  - 26.x shaders use `#include`, the separate-shader-objects extension and `gl_VertexIndex`, so the translation is seven mechanical rules, not the plan's `#moj_import`.
+- **Sounds.** Short sounds decode whole. Music and records stream through a media element, which needs CSP `media-src 'self' blob:`. Budgets: 200 ms for a project sound, 300 ms for the first vanilla press.
+- **Facts the plan did not have.**
+  - World clocks have no fields (B626's criterion changes).
+  - Trim patterns name their key palette in `.png.mcmeta` since 26.3.
+  - 26.4 has no dye colour accessor; the values are unchanged and the app needs them from somewhere.
+  - The post vertex shader's name differs by target.
+
+**Next**
+- Main session: B620 and B621 from the README's interface and path lists. Before B620's app work: the lazy Java project generator (ADR 0123 D4 follow-up), because the renderer is at 18.23 MiB with 0.27 MiB to the stop line and batch 3 needs about 0.35. Also decide where the dye values live (a plugin API minor or an app table).
+- Follow-ups outside this brief:
+  - `msm_test:chiming`'s effect icon draws as the missing texture in the client GameTest (a fixture or runtime icon path to check);
+  - `/summon`'s `variant` NBT is not applied to pig, cow and chicken variants on 26.x (the component works; worth checking MSM's own commands and docs);
+  - shields not measured.

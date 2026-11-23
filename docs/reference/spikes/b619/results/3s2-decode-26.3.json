@@ -1,0 +1,225 @@
+{
+ "files": 4961,
+ "ok": 4961,
+ "failed": [],
+ "byFolder": {
+  "ambient": {
+   "files": 196,
+   "bytes": 18194423,
+   "seconds": 1587.1888958333318,
+   "failed": 0
+  },
+  "block": {
+   "files": 1717,
+   "bytes": 26595707,
+   "seconds": 2762.106479166662,
+   "failed": 0
+  },
+  "damage": {
+   "files": 5,
+   "bytes": 35533,
+   "seconds": 2.0919166666666666,
+   "failed": 0
+  },
+  "dig": {
+   "files": 36,
+   "bytes": 260505,
+   "seconds": 15.699083333333338,
+   "failed": 0
+  },
+  "enchant": {
+   "files": 17,
+   "bytes": 377811,
+   "seconds": 43.397416666666665,
+   "failed": 0
+  },
+  "entity": {
+   "files": 200,
+   "bytes": 1697566,
+   "seconds": 107.86916666666674,
+   "failed": 0
+  },
+  "event": {
+   "files": 7,
+   "bytes": 256011,
+   "seconds": 36.50422916666667,
+   "failed": 0
+  },
+  "fire": {
+   "files": 2,
+   "bytes": 32389,
+   "seconds": 2.2661041666666666,
+   "failed": 0
+  },
+  "fireworks": {
+   "files": 7,
+   "bytes": 128238,
+   "seconds": 12.455958333333331,
+   "failed": 0
+  },
+  "item": {
+   "files": 265,
+   "bytes": 3286221,
+   "seconds": 281.24110416666645,
+   "failed": 0
+  },
+  "liquid": {
+   "files": 24,
+   "bytes": 486286,
+   "seconds": 43.39533333333333,
+   "failed": 0
+  },
+  "minecart": {
+   "files": 5,
+   "bytes": 394868,
+   "seconds": 25.01620833333333,
+   "failed": 0
+  },
+  "mob": {
+   "files": 2249,
+   "bytes": 30124432,
+   "seconds": 2788.5543124999995,
+   "failed": 0
+  },
+  "music": {
+   "files": 70,
+   "bytes": 258924965,
+   "seconds": 20288.881520833344,
+   "failed": 0
+  },
+  "note": {
+   "files": 22,
+   "bytes": 144191,
+   "seconds": 9.009770833333334,
+   "failed": 0
+  },
+  "portal": {
+   "files": 3,
+   "bytes": 217505,
+   "seconds": 18.470937499999998,
+   "failed": 0
+  },
+  "random": {
+   "files": 37,
+   "bytes": 449161,
+   "seconds": 37.81260416666666,
+   "failed": 0
+  },
+  "records": {
+   "files": 22,
+   "bytes": 34303911,
+   "seconds": 4096.352354166667,
+   "failed": 0
+  },
+  "step": {
+   "files": 59,
+   "bytes": 458916,
+   "seconds": 26.570708333333336,
+   "failed": 0
+  },
+  "tile": {
+   "files": 2,
+   "bytes": 16009,
+   "seconds": 1.0999583333333334,
+   "failed": 0
+  },
+  "ui": {
+   "files": 16,
+   "bytes": 279598,
+   "seconds": 18.541291666666666,
+   "failed": 0
+  }
+ },
+ "channels": {
+  "1": 4717,
+  "2": 244
+ },
+ "rates": {
+  "11025": 1,
+  "44100": 696,
+  "48000": 4262,
+  "192000": 2
+ },
+ "readMs": 418,
+ "decodeMs": 95392,
+ "totalBytes": 376664246,
+ "totalSeconds": 32205,
+ "decodedBytesAt48k": 10335946300,
+ "longest": [
+  {
+   "folder": "music/game",
+   "seconds": 904.5,
+   "bytes": 11284337,
+   "decodeMs": 3391,
+   "channels": 2,
+   "decodedMB": 347.3
+  },
+  {
+   "folder": "music/game",
+   "seconds": 603,
+   "bytes": 7082786,
+   "decodeMs": 2273,
+   "channels": 2,
+   "decodedMB": 231.6
+  },
+  {
+   "folder": "music/game",
+   "seconds": 515,
+   "bytes": 5897513,
+   "decodeMs": 2048,
+   "channels": 2,
+   "decodedMB": 197.8
+  },
+  {
+   "folder": "music/game",
+   "seconds": 497,
+   "bytes": 6395784,
+   "decodeMs": 2077,
+   "channels": 2,
+   "decodedMB": 190.8
+  },
+  {
+   "folder": "music/game",
+   "seconds": 402.1,
+   "bytes": 5323546,
+   "decodeMs": 959,
+   "channels": 2,
+   "decodedMB": 154.4
+  },
+  {
+   "folder": "music/game",
+   "seconds": 382.9,
+   "bytes": 4601385,
+   "decodeMs": 1458,
+   "channels": 2,
+   "decodedMB": 147.1
+  },
+  {
+   "folder": "music/game",
+   "seconds": 380.2,
+   "bytes": 4718595,
+   "decodeMs": 903,
+   "channels": 2,
+   "decodedMB": 146
+  },
+  {
+   "folder": "music/game",
+   "seconds": 372.2,
+   "bytes": 4938753,
+   "decodeMs": 981,
+   "channels": 2,
+   "decodedMB": 142.9
+  }
+ ],
+ "slowest": [],
+ "shortUnder10s": {
+  "count": 4784,
+  "decodeMsMedian": 3.5,
+  "decodeMsP95": 10.3,
+  "decodeMsMax": 36.2
+ },
+ "taskMs": 95920,
+ "electron": "45.2.2",
+ "chrome": "156.0.8078.80",
+ "wallMs": 95923
+}

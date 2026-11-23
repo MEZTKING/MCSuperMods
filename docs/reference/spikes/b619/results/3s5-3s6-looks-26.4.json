@@ -1,0 +1,451 @@
+{
+ "trims": {
+  "k0/msm_b619:m": {
+   "measured": [
+    188,
+    3,
+    4
+   ],
+   "predicted": [
+    255,
+    0,
+    0
+   ],
+   "chromaError": 0.021
+  },
+  "k1/msm_b619:m": {
+   "measured": [
+    2,
+    189,
+    3
+   ],
+   "predicted": [
+    0,
+    255,
+    0
+   ],
+   "chromaError": 0.016
+  },
+  "k2/msm_b619:m": {
+   "measured": [
+    2,
+    3,
+    189
+   ],
+   "predicted": [
+    0,
+    0,
+    255
+   ],
+   "chromaError": 0.016
+  },
+  "k3/msm_b619:m": {
+   "measured": [
+    188,
+    189,
+    3
+   ],
+   "predicted": [
+    255,
+    255,
+    0
+   ],
+   "chromaError": 0.016
+  },
+  "k4/msm_b619:m": {
+   "measured": [
+    188,
+    3,
+    189
+   ],
+   "predicted": [
+    255,
+    0,
+    255
+   ],
+   "chromaError": 0.016
+  },
+  "k5/msm_b619:m": {
+   "measured": [
+    2,
+    189,
+    189
+   ],
+   "predicted": [
+    0,
+    255,
+    255
+   ],
+   "chromaError": 0.011
+  },
+  "k6/msm_b619:m": {
+   "measured": [
+    188,
+    96,
+    4
+   ],
+   "predicted": [
+    255,
+    128,
+    0
+   ],
+   "chromaError": 0.021
+  },
+  "k7/msm_b619:m": {
+   "measured": [
+    96,
+    3,
+    190
+   ],
+   "predicted": [
+    128,
+    0,
+    255
+   ],
+   "chromaError": 0.016
+  },
+  "xred/msm_b619:m": {
+   "measured": [
+    188,
+    3,
+    4
+   ]
+  },
+  "xgrey/msm_b619:m": {
+   "measured": [
+    84,
+    84,
+    85
+   ]
+  },
+  "khalf/msm_b619:m": {
+   "measured": [
+    188,
+    3,
+    189
+   ]
+  },
+  "knometa/msm_b619:m": {
+   "measured": [
+    96,
+    96,
+    97
+   ]
+  },
+  "k3/minecraft:gold": {
+   "measured": [
+    132,
+    78,
+    17
+   ]
+  }
+ },
+ "banners": {
+  "full_white": {
+   "measured": [
+    186,
+    191,
+    191
+   ],
+   "predicted": [
+    186,
+    191,
+    191
+   ],
+   "maxError": 0.0
+  },
+  "full_orange": {
+   "measured": [
+    184,
+    97,
+    26
+   ],
+   "predicted": [
+    186,
+    96,
+    22
+   ],
+   "maxError": 4.2
+  },
+  "full_magenta": {
+   "measured": [
+    148,
+    60,
+    142
+   ],
+   "predicted": [
+    149,
+    58,
+    142
+   ],
+   "maxError": 1.6
+  },
+  "full_light_blue": {
+   "measured": [
+    45,
+    134,
+    163
+   ],
+   "predicted": [
+    43,
+    134,
+    164
+   ],
+   "maxError": 1.7
+  },
+  "full_yellow": {
+   "measured": [
+    188,
+    161,
+    49
+   ],
+   "predicted": [
+    190,
+    162,
+    46
+   ],
+   "maxError": 3.1
+  },
+  "full_lime": {
+   "measured": [
+    97,
+    150,
+    27
+   ],
+   "predicted": [
+    96,
+    149,
+    23
+   ],
+   "maxError": 3.7
+  },
+  "full_pink": {
+   "measured": [
+    183,
+    106,
+    130
+   ],
+   "predicted": [
+    182,
+    104,
+    128
+   ],
+   "maxError": 2.2
+  },
+  "full_gray": {
+   "measured": [
+    56,
+    62,
+    66
+   ],
+   "predicted": [
+    53,
+    59,
+    62
+   ],
+   "maxError": 4.3
+  },
+  "full_light_gray": {
+   "measured": [
+    121,
+    121,
+    118
+   ],
+   "predicted": [
+    117,
+    118,
+    114
+   ],
+   "maxError": 4.5
+  },
+  "full_cyan": {
+   "measured": [
+    20,
+    121,
+    122
+   ],
+   "predicted": [
+    16,
+    117,
+    117
+   ],
+   "maxError": 4.7
+  },
+  "full_purple": {
+   "measured": [
+    106,
+    41,
+    143
+   ],
+   "predicted": [
+    102,
+    37,
+    138
+   ],
+   "maxError": 4.6
+  },
+  "full_blue": {
+   "measured": [
+    48,
+    55,
+    133
+   ],
+   "predicted": [
+    45,
+    51,
+    128
+   ],
+   "maxError": 5.2
+  },
+  "full_brown": {
+   "measured": [
+    102,
+    67,
+    42
+   ],
+   "predicted": [
+    98,
+    63,
+    38
+   ],
+   "maxError": 4.4
+  },
+  "full_green": {
+   "measured": [
+    74,
+    97,
+    21
+   ],
+   "predicted": [
+    70,
+    93,
+    17
+   ],
+   "maxError": 4.5
+  },
+  "full_red": {
+   "measured": [
+    134,
+    38,
+    33
+   ],
+   "predicted": [
+    131,
+    34,
+    29
+   ],
+   "maxError": 4.4
+  },
+  "full_black": {
+   "measured": [
+    24,
+    25,
+    29
+   ],
+   "predicted": [
+    22,
+    22,
+    25
+   ],
+   "maxError": 4.2
+  },
+  "base_white": {
+   "measured": [
+    178,
+    182,
+    182
+   ]
+  },
+  "base_red": {
+   "measured": [
+    125,
+    35,
+    31
+   ]
+  },
+  "grey_white": {
+   "measured": [
+    94,
+    97,
+    97
+   ],
+   "predicted": [
+    93,
+    96,
+    96
+   ],
+   "maxError": 1.1
+  },
+  "grey_yellow": {
+   "measured": [
+    96,
+    82,
+    27
+   ],
+   "predicted": [
+    94,
+    81,
+    25
+   ],
+   "maxError": 2.4
+  },
+  "blue_then_halfa_lime": {
+   "measured": [
+    71,
+    100,
+    78
+   ],
+   "predicted": [
+    73,
+    103,
+    80
+   ],
+   "maxError": 2.7
+  },
+  "blue_then_yellow": {
+   "measured": [
+    190,
+    162,
+    49
+   ],
+   "predicted": [
+    188,
+    161,
+    49
+   ],
+   "maxError": 2.0
+  },
+  "red_halfa_white": {
+   "measured": [
+    157,
+    114,
+    111
+   ],
+   "predicted": [
+    156,
+    113,
+    111
+   ],
+   "maxError": 1.4
+  }
+ },
+ "dyes": {
+  "white": "#F9FFFE",
+  "orange": "#F9801D",
+  "magenta": "#C74EBD",
+  "light_blue": "#3AB3DA",
+  "yellow": "#FED83D",
+  "lime": "#80C71F",
+  "pink": "#F38BAA",
+  "gray": "#474F52",
+  "light_gray": "#9D9D97",
+  "cyan": "#169C9C",
+  "purple": "#8932B8",
+  "blue": "#3C44AA",
+  "brown": "#835432",
+  "green": "#5E7C16",
+  "red": "#B02E26",
+  "black": "#1D1D21"
+ },
+ "dyesFrom": "the 26.3 accessor (26.4 has none)"
+}

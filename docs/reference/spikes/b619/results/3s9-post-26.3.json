@@ -1,0 +1,180 @@
+{
+ "size": "854x480",
+ "renderer": "WebKit WebGL",
+ "effects": {
+  "jar:blur": {
+   "passes": 6,
+   "targets": 1,
+   "fields": {
+    "pass.vertex_shader": true,
+    "pass.fragment_shader": true,
+    "pass.inputs": true,
+    "pass.output": true,
+    "pass.uniforms": true,
+    "input.sampler_name": true,
+    "input.target": true,
+    "input.bilinear": true
+   },
+   "passResults": [
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok"
+   ],
+   "msPerFrame": 253.55,
+   "unknownUniforms": 1,
+   "gameTargets": [],
+   "changedPicture": false
+  },
+  "jar:creeper": {
+   "passes": 2,
+   "targets": 1,
+   "fields": {
+    "pass.vertex_shader": true,
+    "pass.fragment_shader": true,
+    "pass.inputs": true,
+    "pass.output": true,
+    "pass.uniforms": true,
+    "input.sampler_name": true,
+    "input.target": true
+   },
+   "passResults": [
+    "ok",
+    "ok"
+   ],
+   "msPerFrame": 56.16,
+   "unknownUniforms": 0,
+   "gameTargets": [],
+   "changedPicture": true
+  },
+  "jar:entity_outline": {
+   "passes": 4,
+   "targets": 1,
+   "fields": {
+    "pass.vertex_shader": true,
+    "pass.fragment_shader": true,
+    "pass.inputs": true,
+    "pass.output": true,
+    "input.sampler_name": true,
+    "input.target": true,
+    "pass.uniforms": true,
+    "input.bilinear": true
+   },
+   "passResults": [
+    "ok",
+    "ok",
+    "ok",
+    "ok"
+   ],
+   "msPerFrame": 132.46,
+   "unknownUniforms": 0,
+   "gameTargets": [
+    "game:entity_outline"
+   ],
+   "changedPicture": true
+  },
+  "jar:invert": {
+   "passes": 2,
+   "targets": 1,
+   "fields": {
+    "pass.vertex_shader": true,
+    "pass.fragment_shader": true,
+    "pass.inputs": true,
+    "pass.output": true,
+    "pass.uniforms": true,
+    "input.sampler_name": true,
+    "input.target": true
+   },
+   "passResults": [
+    "ok",
+    "ok"
+   ],
+   "msPerFrame": 22.86,
+   "unknownUniforms": 0,
+   "gameTargets": [],
+   "changedPicture": true
+  },
+  "jar:spider": {
+   "passes": 10,
+   "targets": 4,
+   "fields": {
+    "pass.vertex_shader": true,
+    "pass.fragment_shader": true,
+    "pass.inputs": true,
+    "pass.output": true,
+    "pass.uniforms": true,
+    "input.sampler_name": true,
+    "input.target": true,
+    "input.bilinear": true
+   },
+   "passResults": [
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok",
+    "ok"
+   ],
+   "msPerFrame": 553.56,
+   "unknownUniforms": 1,
+   "gameTargets": [],
+   "changedPicture": true
+  },
+  "self:chain": {
+   "passes": 3,
+   "targets": 2,
+   "fields": {
+    "target.width": true,
+    "target.height": true,
+    "pass.vertex_shader": true,
+    "pass.fragment_shader": true,
+    "pass.inputs": true,
+    "pass.output": true,
+    "pass.uniforms": true,
+    "input.sampler_name": true,
+    "input.target": true,
+    "input.bilinear": true
+   },
+   "passResults": [
+    "ok",
+    "ok",
+    "ok"
+   ],
+   "msPerFrame": 61.52,
+   "unknownUniforms": 0,
+   "gameTargets": [],
+   "changedPicture": true
+  },
+  "self:chain_264": {
+   "passes": 3,
+   "targets": 2,
+   "fields": {
+    "target.width": true,
+    "target.height": true,
+    "pass.vertex_shader": true,
+    "pass.fragment_shader": true,
+    "pass.inputs": true,
+    "pass.output": true,
+    "pass.uniforms": true,
+    "input.sampler_name": true,
+    "input.target": true,
+    "input.bilinear": true
+   },
+   "passResults": [
+    "missing: ",
+    "missing: ",
+    "missing: "
+   ]
+  }
+ },
+ "taskMs": 22247,
+ "electron": "45.2.2",
+ "chrome": "156.0.8078.80",
+ "wallMs": 22249
+}

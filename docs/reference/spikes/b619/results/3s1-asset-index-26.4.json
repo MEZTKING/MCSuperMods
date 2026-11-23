@@ -1,0 +1,16 @@
+{
+ "assetIndexId": "36",
+ "assets": "36",
+ "indexObjects": 5404,
+ "soundEvents": 2049,
+ "ms": {
+  "versionJson": 0.33,
+  "indexParse": 4.02,
+  "soundsJsonParse": 4.29,
+  "first": 3.21
+ },
+ "oneFileMs": {
+  "mob/wolf/angry/bark1.ogg": 0.07,
+  "records/pigstep.ogg": 0.57
+ }
+}

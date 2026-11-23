@@ -1,0 +1,43 @@
+{
+ "unifont.zip": {
+  "zipBytes": 1559654,
+  "inflatedBytes": 7746450,
+  "entries": 2,
+  "glyphs": 114432,
+  "wide": 101850,
+  "widths": {
+   "8": 12582,
+   "16": 101850
+  },
+  "inflateMs": 140,
+  "parseMs": 112,
+  "mapEntries": 114432
+ },
+ "unifont_jp.zip": {
+  "zipBytes": 234900,
+  "inflatedBytes": 711120,
+  "entries": 2,
+  "glyphs": 9813,
+  "wide": 9813,
+  "widths": {
+   "16": 9813
+  },
+  "inflateMs": 8,
+  "parseMs": 10,
+  "mapEntries": 9813
+ },
+ "unifont_pua.zip": {
+  "zipBytes": 100360,
+  "inflatedBytes": 593630,
+  "entries": 2,
+  "glyphs": 11688,
+  "wide": 3401,
+  "widths": {
+   "8": 8287,
+   "16": 3401
+  },
+  "inflateMs": 5,
+  "parseMs": 12,
+  "mapEntries": 11688
+ }
+}

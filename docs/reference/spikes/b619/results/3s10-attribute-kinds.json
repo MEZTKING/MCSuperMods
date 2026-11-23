@@ -1,0 +1,64 @@
+{
+ "structured": [
+  "audio/ambient_sounds",
+  "audio/background_music",
+  "gameplay/bed_rule",
+  "gameplay/natural_mob_spawns",
+  "gameplay/straw_bed_rule",
+  "visual/ambient_particles",
+  "visual/default_dripstone_particle"
+ ],
+ "boolean": [
+  "audio/firefly_bush_sounds",
+  "gameplay/bees_stay_in_hive",
+  "gameplay/can_pillager_patrol_spawn",
+  "gameplay/can_start_raid",
+  "gameplay/creaking_active",
+  "gameplay/fast_lava",
+  "gameplay/increased_fire_burnout",
+  "gameplay/monsters_burn",
+  "gameplay/nether_portal_spawns_piglin",
+  "gameplay/piglins_zombify",
+  "gameplay/respawn_anchor_works",
+  "gameplay/snow_golem_melts",
+  "gameplay/water_evaporates",
+  "visual/has_sky_occluder"
+ ],
+ "number": [
+  "audio/music_volume",
+  "gameplay/cat_waking_up_gift_chance",
+  "gameplay/creature_world_gen_spawn_probability",
+  "gameplay/sky_light_level",
+  "gameplay/surface_slime_spawn_chance",
+  "gameplay/turtle_egg_hatch_chance",
+  "visual/cloud_fog_end_distance",
+  "visual/cloud_height",
+  "visual/fog_end_distance",
+  "visual/fog_start_distance",
+  "visual/moon_angle",
+  "visual/sky_fog_end_distance",
+  "visual/sky_light_factor",
+  "visual/star_angle",
+  "visual/star_brightness",
+  "visual/sun_angle",
+  "visual/water_fog_end_distance",
+  "visual/water_fog_start_distance"
+ ],
+ "choice": [
+  "gameplay/baby_villager_activity",
+  "gameplay/eyeblossom_open",
+  "gameplay/villager_activity",
+  "visual/moon_phase"
+ ],
+ "colour": [
+  "visual/ambient_light_color",
+  "visual/block_light_tint",
+  "visual/cloud_color",
+  "visual/fog_color",
+  "visual/night_vision_color",
+  "visual/sky_color",
+  "visual/sky_light_color",
+  "visual/sunrise_sunset_color",
+  "visual/water_fog_color"
+ ]
+}

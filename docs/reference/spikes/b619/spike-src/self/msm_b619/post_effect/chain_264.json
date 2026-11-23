@@ -1,0 +1,8 @@
+{
+  "targets": { "swap": {}, "half": { "width": 427, "height": 240 } },
+  "passes": [
+    { "vertex_shader": "minecraft:core/screentriangle", "fragment_shader": "msm_b619:post/sepia", "inputs": [{ "sampler_name": "In", "target": "minecraft:main" }], "output": "swap", "uniforms": { "SepiaConfig": [{ "name": "Amount", "type": "float", "value": 0.8 }] } },
+    { "vertex_shader": "minecraft:core/screentriangle", "fragment_shader": "msm_b619:post/blur9", "inputs": [{ "sampler_name": "In", "target": "swap", "bilinear": true }], "output": "half" },
+    { "vertex_shader": "minecraft:core/screentriangle", "fragment_shader": "msm_b619:post/vignette", "inputs": [{ "sampler_name": "In", "target": "half", "bilinear": true }], "output": "minecraft:main" }
+  ]
+}

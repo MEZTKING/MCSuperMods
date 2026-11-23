@@ -1,0 +1,1936 @@
+{
+ "26.3": {
+  "atlases": {
+   "bytes": 3111,
+   "files": 12,
+   "zipped": 1411
+  },
+  "blockstates": {
+   "bytes": 1420228,
+   "files": 1288,
+   "zipped": 184143
+  },
+  "data:advancement": {
+   "bytes": 1313029,
+   "files": 1866,
+   "zipped": 420400
+  },
+  "data:banner_pattern": {
+   "bytes": 4340,
+   "files": 43,
+   "zipped": 3437
+  },
+  "data:block_transformer": {
+   "bytes": 62923,
+   "files": 3,
+   "zipped": 2515
+  },
+  "data:cat_sound_variant": {
+   "bytes": 2118,
+   "files": 2,
+   "zipped": 383
+  },
+  "data:cat_variant": {
+   "bytes": 2185,
+   "files": 11,
+   "zipped": 1253
+  },
+  "data:chat_type": {
+   "bytes": 1943,
+   "files": 7,
+   "zipped": 883
+  },
+  "data:chicken_sound_variant": {
+   "bytes": 1004,
+   "files": 2,
+   "zipped": 259
+  },
+  "data:chicken_variant": {
+   "bytes": 836,
+   "files": 3,
+   "zipped": 435
+  },
+  "data:context_float_provider": {
+   "bytes": 208,
+   "files": 4,
+   "zipped": 122
+  },
+  "data:context_int_provider": {
+   "bytes": 6974,
+   "files": 26,
+   "zipped": 3338
+  },
+  "data:cow_sound_variant": {
+   "bytes": 404,
+   "files": 2,
+   "zipped": 169
+  },
+  "data:cow_variant": {
+   "bytes": 807,
+   "files": 3,
+   "zipped": 431
+  },
+  "data:damage_type": {
+   "bytes": 5411,
+   "files": 51,
+   "zipped": 4615
+  },
+  "data:datapacks": {
+   "bytes": 108849,
+   "files": 106,
+   "zipped": 30935
+  },
+  "data:decorated_pot_pattern": {
+   "bytes": 1192,
+   "files": 23,
+   "zipped": 1163
+  },
+  "data:dialog": {
+   "bytes": 980,
+   "files": 3,
+   "zipped": 495
+  },
+  "data:dimension_type": {
+   "bytes": 6420,
+   "files": 4,
+   "zipped": 2148
+  },
+  "data:enchantment": {
+   "bytes": 51148,
+   "files": 43,
+   "zipped": 15682
+  },
+  "data:enchantment_provider": {
+   "bytes": 666,
+   "files": 7,
+   "zipped": 520
+  },
+  "data:frog_variant": {
+   "bytes": 585,
+   "files": 3,
+   "zipped": 373
+  },
+  "data:instrument": {
+   "bytes": 1406,
+   "files": 8,
+   "zipped": 998
+  },
+  "data:jukebox_song": {
+   "bytes": 3936,
+   "files": 22,
+   "zipped": 2914
+  },
+  "data:loot_table": {
+   "bytes": 1056224,
+   "files": 1447,
+   "zipped": 286242
+  },
+  "data:painting_variant": {
+   "bytes": 12344,
+   "files": 51,
+   "zipped": 6481
+  },
+  "data:pig_sound_variant": {
+   "bytes": 1704,
+   "files": 3,
+   "zipped": 406
+  },
+  "data:pig_variant": {
+   "bytes": 788,
+   "files": 3,
+   "zipped": 427
+  },
+  "data:predicate": {
+   "bytes": 451,
+   "files": 3,
+   "zipped": 272
+  },
+  "data:recipe": {
+   "bytes": 553819,
+   "files": 2042,
+   "zipped": 276419
+  },
+  "data:structure": {
+   "bytes": 4236847,
+   "files": 1511,
+   "zipped": 2782235
+  },
+  "data:sulfur_cube_archetype": {
+   "bytes": 16512,
+   "files": 12,
+   "zipped": 4654
+  },
+  "data:tags/banner_pattern": {
+   "bytes": 1465,
+   "files": 11,
+   "zipped": 647
+  },
+  "data:tags/block": {
+   "bytes": 98216,
+   "files": 300,
+   "zipped": 30365
+  },
+  "data:tags/damage_type": {
+   "bytes": 6051,
+   "files": 36,
+   "zipped": 2983
+  },
+  "data:tags/dialog": {
+   "bytes": 36,
+   "files": 2,
+   "zipped": 40
+  },
+  "data:tags/enchantment": {
+   "bytes": 4035,
+   "files": 22,
+   "zipped": 1860
+  },
+  "data:tags/entity_type": {
+   "bytes": 7899,
+   "files": 49,
+   "zipped": 3799
+  },
+  "data:tags/fluid": {
+   "bytes": 492,
+   "files": 10,
+   "zipped": 437
+  },
+  "data:tags/game_event": {
+   "bytes": 3622,
+   "files": 5,
+   "zipped": 930
+  },
+  "data:tags/instrument": {
+   "bytes": 398,
+   "files": 3,
+   "zipped": 216
+  },
+  "data:tags/item": {
+   "bytes": 57714,
+   "files": 236,
+   "zipped": 20637
+  },
+  "data:tags/painting_variant": {
+   "bytes": 1187,
+   "files": 1,
+   "zipped": 304
+  },
+  "data:tags/point_of_interest_type": {
+   "bytes": 540,
+   "files": 3,
+   "zipped": 256
+  },
+  "data:tags/potion": {
+   "bytes": 1456,
+   "files": 5,
+   "zipped": 413
+  },
+  "data:tags/timeline": {
+   "bytes": 270,
+   "files": 4,
+   "zipped": 218
+  },
+  "data:tags/villager_trade": {
+   "bytes": 22100,
+   "files": 73,
+   "zipped": 7544
+  },
+  "data:tags/worldgen": {
+   "bytes": 17788,
+   "files": 123,
+   "zipped": 8806
+  },
+  "data:test_environment": {
+   "bytes": 53,
+   "files": 1,
+   "zipped": 52
+  },
+  "data:test_instance": {
+   "bytes": 204,
+   "files": 1,
+   "zipped": 120
+  },
+  "data:timeline": {
+   "bytes": 12152,
+   "files": 4,
+   "zipped": 1841
+  },
+  "data:trade_set": {
+   "bytes": 8334,
+   "files": 68,
+   "zipped": 5956
+  },
+  "data:trial_spawner": {
+   "bytes": 11992,
+   "files": 28,
+   "zipped": 5686
+  },
+  "data:trim_material": {
+   "bytes": 1557,
+   "files": 11,
+   "zipped": 1173
+  },
+  "data:trim_pattern": {
+   "bytes": 2242,
+   "files": 18,
+   "zipped": 1680
+  },
+  "data:villager_trade": {
+   "bytes": 96297,
+   "files": 391,
+   "zipped": 53856
+  },
+  "data:wolf_sound_variant": {
+   "bytes": 5658,
+   "files": 7,
+   "zipped": 1137
+  },
+  "data:wolf_variant": {
+   "bytes": 4752,
+   "files": 9,
+   "zipped": 1566
+  },
+  "data:world_clock": {
+   "bytes": 4,
+   "files": 2,
+   "zipped": 8
+  },
+  "data:worldgen/biome": {
+   "bytes": 288500,
+   "files": 67,
+   "zipped": 57140
+  },
+  "data:worldgen/block_state_provider": {
+   "bytes": 3306,
+   "files": 8,
+   "zipped": 1510
+  },
+  "data:worldgen/carver": {
+   "bytes": 3336,
+   "files": 4,
+   "zipped": 1105
+  },
+  "data:worldgen/density_function": {
+   "bytes": 328221,
+   "files": 55,
+   "zipped": 19860
+  },
+  "data:worldgen/feature": {
+   "bytes": 321555,
+   "files": 240,
+   "zipped": 60311
+  },
+  "data:worldgen/flat_level_generator_preset": {
+   "bytes": 4709,
+   "files": 9,
+   "zipped": 1745
+  },
+  "data:worldgen/material_condition": {
+   "bytes": 1051,
+   "files": 8,
+   "zipped": 774
+  },
+  "data:worldgen/material_rule": {
+   "bytes": 58834,
+   "files": 42,
+   "zipped": 9119
+  },
+  "data:worldgen/multi_noise_biome_source_parameter_list": {
+   "bytes": 71,
+   "files": 2,
+   "zipped": 75
+  },
+  "data:worldgen/noise": {
+   "bytes": 6392,
+   "files": 64,
+   "zipped": 4586
+  },
+  "data:worldgen/noise_settings": {
+   "bytes": 26207,
+   "files": 7,
+   "zipped": 5014
+  },
+  "data:worldgen/placed_feature": {
+   "bytes": 179255,
+   "files": 273,
+   "zipped": 58327
+  },
+  "data:worldgen/processor_list": {
+   "bytes": 68898,
+   "files": 40,
+   "zipped": 10351
+  },
+  "data:worldgen/structure": {
+   "bytes": 24104,
+   "files": 52,
+   "zipped": 11546
+  },
+  "data:worldgen/structure_set": {
+   "bytes": 7882,
+   "files": 21,
+   "zipped": 3467
+  },
+  "data:worldgen/template_pool": {
+   "bytes": 669927,
+   "files": 245,
+   "zipped": 54669
+  },
+  "data:worldgen/world_preset": {
+   "bytes": 6947,
+   "files": 7,
+   "zipped": 1435
+  },
+  "data:zombie_nautilus_variant": {
+   "bytes": 402,
+   "files": 2,
+   "zipped": 258
+  },
+  "equipment": {
+   "bytes": 9179,
+   "files": 45,
+   "zipped": 4281
+  },
+  "font": {
+   "bytes": 22959,
+   "files": 7,
+   "zipped": 7033
+  },
+  "items": {
+   "bytes": 349009,
+   "files": 1658,
+   "zipped": 143049
+  },
+  "lang": {
+   "bytes": 576129,
+   "files": 2,
+   "zipped": 114958
+  },
+  "models": {
+   "bytes": 1181152,
+   "files": 4192,
+   "zipped": 477265
+  },
+  "particles": {
+   "bytes": 16601,
+   "files": 115,
+   "zipped": 6804
+  },
+  "post_effect": {
+   "bytes": 21942,
+   "files": 5,
+   "zipped": 2082
+  },
+  "shaders/core": {
+   "bytes": 54817,
+   "files": 63,
+   "zipped": 24451
+  },
+  "shaders/include": {
+   "bytes": 17355,
+   "files": 17,
+   "zipped": 6676
+  },
+  "shaders/post": {
+   "bytes": 7934,
+   "files": 9,
+   "zipped": 3431
+  },
+  "texts": {
+   "bytes": 253437,
+   "files": 4,
+   "zipped": 45044
+  },
+  "textures/block": {
+   "bytes": 352456,
+   "files": 1405,
+   "zipped": 349251
+  },
+  "textures/colormap": {
+   "bytes": 29063,
+   "files": 3,
+   "zipped": 28784
+  },
+  "textures/effect": {
+   "bytes": 77,
+   "files": 1,
+   "zipped": 70
+  },
+  "textures/entity/allay": {
+   "bytes": 408,
+   "files": 1,
+   "zipped": 413
+  },
+  "textures/entity/armadillo": {
+   "bytes": 1449,
+   "files": 2,
+   "zipped": 1459
+  },
+  "textures/entity/armorstand": {
+   "bytes": 809,
+   "files": 1,
+   "zipped": 814
+  },
+  "textures/entity/axolotl": {
+   "bytes": 3786,
+   "files": 10,
+   "zipped": 3820
+  },
+  "textures/entity/banner": {
+   "bytes": 23748,
+   "files": 44,
+   "zipped": 23880
+  },
+  "textures/entity/bat": {
+   "bytes": 329,
+   "files": 1,
+   "zipped": 329
+  },
+  "textures/entity/beacon": {
+   "bytes": 153,
+   "files": 1,
+   "zipped": 150
+  },
+  "textures/entity/bear": {
+   "bytes": 1051,
+   "files": 2,
+   "zipped": 1061
+  },
+  "textures/entity/bee": {
+   "bytes": 2885,
+   "files": 9,
+   "zipped": 2900
+  },
+  "textures/entity/bell": {
+   "bytes": 261,
+   "files": 1,
+   "zipped": 263
+  },
+  "textures/entity/blaze": {
+   "bytes": 370,
+   "files": 1,
+   "zipped": 375
+  },
+  "textures/entity/boat": {
+   "bytes": 11315,
+   "files": 11,
+   "zipped": 11370
+  },
+  "textures/entity/breeze": {
+   "bytes": 981,
+   "files": 3,
+   "zipped": 974
+  },
+  "textures/entity/camel": {
+   "bytes": 4304,
+   "files": 3,
+   "zipped": 4319
+  },
+  "textures/entity/cat": {
+   "bytes": 9384,
+   "files": 26,
+   "zipped": 9479
+  },
+  "textures/entity/chest": {
+   "bytes": 18796,
+   "files": 22,
+   "zipped": 18906
+  },
+  "textures/entity/chest_boat": {
+   "bytes": 20029,
+   "files": 11,
+   "zipped": 20084
+  },
+  "textures/entity/chicken": {
+   "bytes": 1833,
+   "files": 6,
+   "zipped": 1835
+  },
+  "textures/entity/conduit": {
+   "bytes": 1682,
+   "files": 9,
+   "zipped": 1655
+  },
+  "textures/entity/copper_golem": {
+   "bytes": 3122,
+   "files": 8,
+   "zipped": 3113
+  },
+  "textures/entity/cow": {
+   "bytes": 6734,
+   "files": 10,
+   "zipped": 6784
+  },
+  "textures/entity/creaking": {
+   "bytes": 1284,
+   "files": 2,
+   "zipped": 1281
+  },
+  "textures/entity/creeper": {
+   "bytes": 4127,
+   "files": 2,
+   "zipped": 4096
+  },
+  "textures/entity/cushion": {
+   "bytes": 5871,
+   "files": 16,
+   "zipped": 5940
+  },
+  "textures/entity/decorated_pot": {
+   "bytes": 5913,
+   "files": 25,
+   "zipped": 5829
+  },
+  "textures/entity/dolphin": {
+   "bytes": 991,
+   "files": 2,
+   "zipped": 1001
+  },
+  "textures/entity/enchantment": {
+   "bytes": 305,
+   "files": 1,
+   "zipped": 310
+  },
+  "textures/entity/end_crystal": {
+   "bytes": 2190,
+   "files": 2,
+   "zipped": 2126
+  },
+  "textures/entity/end_portal": {
+   "bytes": 9185,
+   "files": 2,
+   "zipped": 9192
+  },
+  "textures/entity/enderdragon": {
+   "bytes": 29421,
+   "files": 4,
+   "zipped": 28634
+  },
+  "textures/entity/enderman": {
+   "bytes": 440,
+   "files": 2,
+   "zipped": 442
+  },
+  "textures/entity/endermite": {
+   "bytes": 505,
+   "files": 1,
+   "zipped": 510
+  },
+  "textures/entity/equipment": {
+   "bytes": 50613,
+   "files": 85,
+   "zipped": 50871
+  },
+  "textures/entity/experience": {
+   "bytes": 415,
+   "files": 1,
+   "zipped": 420
+  },
+  "textures/entity/fish": {
+   "bytes": 3469,
+   "files": 17,
+   "zipped": 3454
+  },
+  "textures/entity/fishing": {
+   "bytes": 107,
+   "files": 1,
+   "zipped": 103
+  },
+  "textures/entity/fox": {
+   "bytes": 3267,
+   "files": 8,
+   "zipped": 3307
+  },
+  "textures/entity/frog": {
+   "bytes": 1662,
+   "files": 3,
+   "zipped": 1677
+  },
+  "textures/entity/ghast": {
+   "bytes": 4669,
+   "files": 5,
+   "zipped": 4694
+  },
+  "textures/entity/goat": {
+   "bytes": 1349,
+   "files": 2,
+   "zipped": 1359
+  },
+  "textures/entity/guardian": {
+   "bytes": 2227,
+   "files": 3,
+   "zipped": 2235
+  },
+  "textures/entity/hoglin": {
+   "bytes": 5542,
+   "files": 4,
+   "zipped": 5562
+  },
+  "textures/entity/horse": {
+   "bytes": 20929,
+   "files": 30,
+   "zipped": 21036
+  },
+  "textures/entity/illager": {
+   "bytes": 6819,
+   "files": 8,
+   "zipped": 6857
+  },
+  "textures/entity/iron_golem": {
+   "bytes": 4995,
+   "files": 4,
+   "zipped": 5010
+  },
+  "textures/entity/lead_knot": {
+   "bytes": 286,
+   "files": 1,
+   "zipped": 287
+  },
+  "textures/entity/llama": {
+   "bytes": 6583,
+   "files": 9,
+   "zipped": 6618
+  },
+  "textures/entity/minecart": {
+   "bytes": 438,
+   "files": 1,
+   "zipped": 443
+  },
+  "textures/entity/nautilus": {
+   "bytes": 4733,
+   "files": 4,
+   "zipped": 4753
+  },
+  "textures/entity/panda": {
+   "bytes": 9020,
+   "files": 14,
+   "zipped": 9090
+  },
+  "textures/entity/parrot": {
+   "bytes": 2576,
+   "files": 5,
+   "zipped": 2601
+  },
+  "textures/entity/phantom": {
+   "bytes": 751,
+   "files": 2,
+   "zipped": 741
+  },
+  "textures/entity/pig": {
+   "bytes": 2950,
+   "files": 6,
+   "zipped": 2980
+  },
+  "textures/entity/piglin": {
+   "bytes": 4265,
+   "files": 5,
+   "zipped": 4290
+  },
+  "textures/entity/player": {
+   "bytes": 16899,
+   "files": 18,
+   "zipped": 16989
+  },
+  "textures/entity/projectiles": {
+   "bytes": 746,
+   "files": 4,
+   "zipped": 723
+  },
+  "textures/entity/rabbit": {
+   "bytes": 6038,
+   "files": 16,
+   "zipped": 6105
+  },
+  "textures/entity/sheep": {
+   "bytes": 2129,
+   "files": 5,
+   "zipped": 2154
+  },
+  "textures/entity/shield": {
+   "bytes": 7050,
+   "files": 45,
+   "zipped": 6819
+  },
+  "textures/entity/shulker": {
+   "bytes": 19136,
+   "files": 18,
+   "zipped": 19226
+  },
+  "textures/entity/silverfish": {
+   "bytes": 730,
+   "files": 1,
+   "zipped": 735
+  },
+  "textures/entity/skeleton": {
+   "bytes": 4660,
+   "files": 7,
+   "zipped": 4695
+  },
+  "textures/entity/slime": {
+   "bytes": 1042,
+   "files": 2,
+   "zipped": 1046
+  },
+  "textures/entity/sniffer": {
+   "bytes": 5018,
+   "files": 2,
+   "zipped": 5028
+  },
+  "textures/entity/snow_golem": {
+   "bytes": 477,
+   "files": 1,
+   "zipped": 480
+  },
+  "textures/entity/spider": {
+   "bytes": 1424,
+   "files": 3,
+   "zipped": 1428
+  },
+  "textures/entity/squid": {
+   "bytes": 1644,
+   "files": 4,
+   "zipped": 1660
+  },
+  "textures/entity/strider": {
+   "bytes": 3002,
+   "files": 4,
+   "zipped": 3022
+  },
+  "textures/entity/sulfur_cube": {
+   "bytes": 1715,
+   "files": 4,
+   "zipped": 1731
+  },
+  "textures/entity/tadpole": {
+   "bytes": 158,
+   "files": 1,
+   "zipped": 151
+  },
+  "textures/entity/trident": {
+   "bytes": 440,
+   "files": 2,
+   "zipped": 437
+  },
+  "textures/entity/turtle": {
+   "bytes": 1340,
+   "files": 2,
+   "zipped": 1342
+  },
+  "textures/entity/villager": {
+   "bytes": 17301,
+   "files": 43,
+   "zipped": 17291
+  },
+  "textures/entity/wandering_trader": {
+   "bytes": 890,
+   "files": 1,
+   "zipped": 895
+  },
+  "textures/entity/warden": {
+   "bytes": 2804,
+   "files": 5,
+   "zipped": 2775
+  },
+  "textures/entity/witch": {
+   "bytes": 994,
+   "files": 1,
+   "zipped": 999
+  },
+  "textures/entity/wither": {
+   "bytes": 1873,
+   "files": 3,
+   "zipped": 1888
+  },
+  "textures/entity/wolf": {
+   "bytes": 31290,
+   "files": 59,
+   "zipped": 31557
+  },
+  "textures/entity/zombie": {
+   "bytes": 4315,
+   "files": 8,
+   "zipped": 4346
+  },
+  "textures/entity/zombie_villager": {
+   "bytes": 17613,
+   "files": 41,
+   "zipped": 17628
+  },
+  "textures/environment": {
+   "bytes": 24027,
+   "files": 14,
+   "zipped": 24092
+  },
+  "textures/font": {
+   "bytes": 13971,
+   "files": 5,
+   "zipped": 13978
+  },
+  "textures/gui": {
+   "bytes": 6317,
+   "files": 11,
+   "zipped": 6143
+  },
+  "textures/gui/advancements": {
+   "bytes": 1673,
+   "files": 6,
+   "zipped": 1515
+  },
+  "textures/gui/container": {
+   "bytes": 11357,
+   "files": 26,
+   "zipped": 10034
+  },
+  "textures/gui/hanging_signs": {
+   "bytes": 2824,
+   "files": 13,
+   "zipped": 2790
+  },
+  "textures/gui/presets": {
+   "bytes": 91528,
+   "files": 1,
+   "zipped": 91558
+  },
+  "textures/gui/realms": {
+   "bytes": 585983,
+   "files": 12,
+   "zipped": 586194
+  },
+  "textures/gui/signs": {
+   "bytes": 3360,
+   "files": 13,
+   "zipped": 3371
+  },
+  "textures/gui/sprites": {
+   "bytes": 101224,
+   "files": 522,
+   "zipped": 94939
+  },
+  "textures/gui/title": {
+   "bytes": 114410,
+   "files": 12,
+   "zipped": 112564
+  },
+  "textures/item": {
+   "bytes": 169751,
+   "files": 831,
+   "zipped": 167471
+  },
+  "textures/map": {
+   "bytes": 4790,
+   "files": 42,
+   "zipped": 4655
+  },
+  "textures/misc": {
+   "bytes": 73199,
+   "files": 20,
+   "zipped": 71665
+  },
+  "textures/mob_effect": {
+   "bytes": 8359,
+   "files": 40,
+   "zipped": 8235
+  },
+  "textures/painting": {
+   "bytes": 160954,
+   "files": 52,
+   "zipped": 161206
+  },
+  "textures/palettes": {
+   "bytes": 1508,
+   "files": 17,
+   "zipped": 1450
+  },
+  "textures/particle": {
+   "bytes": 33362,
+   "files": 301,
+   "zipped": 32119
+  },
+  "textures/trims/entity": {
+   "bytes": 8398,
+   "files": 72,
+   "zipped": 7849
+  },
+  "textures/trims/items": {
+   "bytes": 401,
+   "files": 4,
+   "zipped": 381
+  },
+  "waypoint_style": {
+   "bytes": 305,
+   "files": 2,
+   "zipped": 143
+  }
+ },
+ "26.4-snapshot-7": {
+  "atlases": {
+   "bytes": 3111,
+   "files": 12,
+   "zipped": 1411
+  },
+  "blockstates": {
+   "bytes": 1465344,
+   "files": 1313,
+   "zipped": 188806
+  },
+  "data:advancement": {
+   "bytes": 1348464,
+   "files": 1919,
+   "zipped": 432315
+  },
+  "data:banner_pattern": {
+   "bytes": 4340,
+   "files": 43,
+   "zipped": 3437
+  },
+  "data:block_sound_set": {
+   "bytes": 35331,
+   "files": 137,
+   "zipped": 12664
+  },
+  "data:block_transformer": {
+   "bytes": 62923,
+   "files": 3,
+   "zipped": 2515
+  },
+  "data:cat_sound_variant": {
+   "bytes": 2118,
+   "files": 2,
+   "zipped": 383
+  },
+  "data:cat_variant": {
+   "bytes": 2185,
+   "files": 11,
+   "zipped": 1253
+  },
+  "data:chat_type": {
+   "bytes": 1943,
+   "files": 7,
+   "zipped": 883
+  },
+  "data:chicken_sound_variant": {
+   "bytes": 1010,
+   "files": 2,
+   "zipped": 260
+  },
+  "data:chicken_variant": {
+   "bytes": 836,
+   "files": 3,
+   "zipped": 435
+  },
+  "data:context_float_provider": {
+   "bytes": 208,
+   "files": 4,
+   "zipped": 122
+  },
+  "data:context_int_provider": {
+   "bytes": 6974,
+   "files": 26,
+   "zipped": 3338
+  },
+  "data:cow_sound_variant": {
+   "bytes": 404,
+   "files": 2,
+   "zipped": 169
+  },
+  "data:cow_variant": {
+   "bytes": 807,
+   "files": 3,
+   "zipped": 431
+  },
+  "data:damage_type": {
+   "bytes": 5411,
+   "files": 51,
+   "zipped": 4615
+  },
+  "data:datapacks": {
+   "bytes": 108849,
+   "files": 106,
+   "zipped": 30939
+  },
+  "data:decorated_pot_pattern": {
+   "bytes": 1192,
+   "files": 23,
+   "zipped": 1163
+  },
+  "data:dialog": {
+   "bytes": 980,
+   "files": 3,
+   "zipped": 495
+  },
+  "data:dimension_type": {
+   "bytes": 6514,
+   "files": 4,
+   "zipped": 2172
+  },
+  "data:enchantment": {
+   "bytes": 51229,
+   "files": 43,
+   "zipped": 15697
+  },
+  "data:enchantment_provider": {
+   "bytes": 666,
+   "files": 7,
+   "zipped": 520
+  },
+  "data:frog_variant": {
+   "bytes": 585,
+   "files": 3,
+   "zipped": 373
+  },
+  "data:instrument": {
+   "bytes": 1406,
+   "files": 8,
+   "zipped": 998
+  },
+  "data:jukebox_song": {
+   "bytes": 4115,
+   "files": 23,
+   "zipped": 3047
+  },
+  "data:loot_table": {
+   "bytes": 1068595,
+   "files": 1473,
+   "zipped": 290916
+  },
+  "data:painting_variant": {
+   "bytes": 12344,
+   "files": 51,
+   "zipped": 6481
+  },
+  "data:pig_sound_variant": {
+   "bytes": 1704,
+   "files": 3,
+   "zipped": 406
+  },
+  "data:pig_variant": {
+   "bytes": 788,
+   "files": 3,
+   "zipped": 427
+  },
+  "data:predicate": {
+   "bytes": 451,
+   "files": 3,
+   "zipped": 272
+  },
+  "data:recipe": {
+   "bytes": 568145,
+   "files": 2107,
+   "zipped": 284143
+  },
+  "data:structure": {
+   "bytes": 4233493,
+   "files": 1511,
+   "zipped": 2779065
+  },
+  "data:sulfur_cube_archetype": {
+   "bytes": 19539,
+   "files": 13,
+   "zipped": 5401
+  },
+  "data:tags/banner_pattern": {
+   "bytes": 1465,
+   "files": 11,
+   "zipped": 647
+  },
+  "data:tags/block": {
+   "bytes": 102305,
+   "files": 315,
+   "zipped": 31589
+  },
+  "data:tags/block_sound_set": {
+   "bytes": 151,
+   "files": 1,
+   "zipped": 73
+  },
+  "data:tags/damage_type": {
+   "bytes": 6069,
+   "files": 37,
+   "zipped": 3003
+  },
+  "data:tags/dialog": {
+   "bytes": 36,
+   "files": 2,
+   "zipped": 40
+  },
+  "data:tags/enchantment": {
+   "bytes": 4035,
+   "files": 22,
+   "zipped": 1860
+  },
+  "data:tags/entity_type": {
+   "bytes": 8480,
+   "files": 53,
+   "zipped": 4101
+  },
+  "data:tags/fluid": {
+   "bytes": 474,
+   "files": 11,
+   "zipped": 452
+  },
+  "data:tags/game_event": {
+   "bytes": 3622,
+   "files": 5,
+   "zipped": 930
+  },
+  "data:tags/instrument": {
+   "bytes": 398,
+   "files": 3,
+   "zipped": 216
+  },
+  "data:tags/item": {
+   "bytes": 59118,
+   "files": 241,
+   "zipped": 21019
+  },
+  "data:tags/painting_variant": {
+   "bytes": 1187,
+   "files": 1,
+   "zipped": 304
+  },
+  "data:tags/point_of_interest_type": {
+   "bytes": 540,
+   "files": 3,
+   "zipped": 256
+  },
+  "data:tags/potion": {
+   "bytes": 1513,
+   "files": 5,
+   "zipped": 422
+  },
+  "data:tags/timeline": {
+   "bytes": 270,
+   "files": 4,
+   "zipped": 218
+  },
+  "data:tags/villager_trade": {
+   "bytes": 22203,
+   "files": 73,
+   "zipped": 7555
+  },
+  "data:tags/worldgen": {
+   "bytes": 18289,
+   "files": 126,
+   "zipped": 9012
+  },
+  "data:test_environment": {
+   "bytes": 53,
+   "files": 1,
+   "zipped": 52
+  },
+  "data:test_instance": {
+   "bytes": 204,
+   "files": 1,
+   "zipped": 120
+  },
+  "data:timeline": {
+   "bytes": 12152,
+   "files": 4,
+   "zipped": 1841
+  },
+  "data:trade_set": {
+   "bytes": 8334,
+   "files": 68,
+   "zipped": 5956
+  },
+  "data:trial_spawner": {
+   "bytes": 11992,
+   "files": 28,
+   "zipped": 5686
+  },
+  "data:trim_material": {
+   "bytes": 1557,
+   "files": 11,
+   "zipped": 1173
+  },
+  "data:trim_pattern": {
+   "bytes": 2242,
+   "files": 18,
+   "zipped": 1680
+  },
+  "data:villager_trade": {
+   "bytes": 96607,
+   "files": 393,
+   "zipped": 54069
+  },
+  "data:wolf_sound_variant": {
+   "bytes": 5658,
+   "files": 7,
+   "zipped": 1137
+  },
+  "data:wolf_variant": {
+   "bytes": 4752,
+   "files": 9,
+   "zipped": 1566
+  },
+  "data:world_clock": {
+   "bytes": 4,
+   "files": 2,
+   "zipped": 8
+  },
+  "data:worldgen/biome": {
+   "bytes": 294959,
+   "files": 68,
+   "zipped": 58272
+  },
+  "data:worldgen/block_state_provider": {
+   "bytes": 3306,
+   "files": 8,
+   "zipped": 1510
+  },
+  "data:worldgen/carver": {
+   "bytes": 3336,
+   "files": 4,
+   "zipped": 1105
+  },
+  "data:worldgen/density_function": {
+   "bytes": 330899,
+   "files": 55,
+   "zipped": 20120
+  },
+  "data:worldgen/feature": {
+   "bytes": 351296,
+   "files": 261,
+   "zipped": 66518
+  },
+  "data:worldgen/flat_level_generator_preset": {
+   "bytes": 4709,
+   "files": 9,
+   "zipped": 1745
+  },
+  "data:worldgen/material_condition": {
+   "bytes": 1051,
+   "files": 8,
+   "zipped": 774
+  },
+  "data:worldgen/material_rule": {
+   "bytes": 61942,
+   "files": 44,
+   "zipped": 9616
+  },
+  "data:worldgen/multi_noise_biome_source_parameter_list": {
+   "bytes": 71,
+   "files": 2,
+   "zipped": 75
+  },
+  "data:worldgen/noise": {
+   "bytes": 6534,
+   "files": 65,
+   "zipped": 4687
+  },
+  "data:worldgen/noise_settings": {
+   "bytes": 28126,
+   "files": 7,
+   "zipped": 5159
+  },
+  "data:worldgen/placed_feature": {
+   "bytes": 197912,
+   "files": 299,
+   "zipped": 64609
+  },
+  "data:worldgen/processor_list": {
+   "bytes": 68898,
+   "files": 40,
+   "zipped": 10351
+  },
+  "data:worldgen/structure": {
+   "bytes": 24104,
+   "files": 52,
+   "zipped": 11546
+  },
+  "data:worldgen/structure_set": {
+   "bytes": 7882,
+   "files": 21,
+   "zipped": 3467
+  },
+  "data:worldgen/template_pool": {
+   "bytes": 669927,
+   "files": 245,
+   "zipped": 54669
+  },
+  "data:worldgen/world_preset": {
+   "bytes": 6947,
+   "files": 7,
+   "zipped": 1435
+  },
+  "data:zombie_nautilus_variant": {
+   "bytes": 402,
+   "files": 2,
+   "zipped": 258
+  },
+  "equipment": {
+   "bytes": 9179,
+   "files": 45,
+   "zipped": 4281
+  },
+  "font": {
+   "bytes": 22959,
+   "files": 7,
+   "zipped": 7033
+  },
+  "items": {
+   "bytes": 351868,
+   "files": 1686,
+   "zipped": 145167
+  },
+  "lang": {
+   "bytes": 594668,
+   "files": 2,
+   "zipped": 118003
+  },
+  "models": {
+   "bytes": 1195942,
+   "files": 4267,
+   "zipped": 484848
+  },
+  "particles": {
+   "bytes": 16792,
+   "files": 116,
+   "zipped": 6871
+  },
+  "post_effect": {
+   "bytes": 22018,
+   "files": 5,
+   "zipped": 2095
+  },
+  "shaders/core": {
+   "bytes": 56760,
+   "files": 66,
+   "zipped": 25322
+  },
+  "shaders/include": {
+   "bytes": 14493,
+   "files": 18,
+   "zipped": 5823
+  },
+  "shaders/post": {
+   "bytes": 7897,
+   "files": 9,
+   "zipped": 3422
+  },
+  "texts": {
+   "bytes": 253437,
+   "files": 4,
+   "zipped": 45044
+  },
+  "textures/block": {
+   "bytes": 356923,
+   "files": 1427,
+   "zipped": 353673
+  },
+  "textures/colormap": {
+   "bytes": 29063,
+   "files": 3,
+   "zipped": 28784
+  },
+  "textures/effect": {
+   "bytes": 77,
+   "files": 1,
+   "zipped": 70
+  },
+  "textures/entity/allay": {
+   "bytes": 408,
+   "files": 1,
+   "zipped": 413
+  },
+  "textures/entity/armadillo": {
+   "bytes": 1449,
+   "files": 2,
+   "zipped": 1459
+  },
+  "textures/entity/armorstand": {
+   "bytes": 809,
+   "files": 1,
+   "zipped": 814
+  },
+  "textures/entity/axolotl": {
+   "bytes": 3786,
+   "files": 10,
+   "zipped": 3820
+  },
+  "textures/entity/banner": {
+   "bytes": 23748,
+   "files": 44,
+   "zipped": 23880
+  },
+  "textures/entity/bat": {
+   "bytes": 329,
+   "files": 1,
+   "zipped": 329
+  },
+  "textures/entity/beacon": {
+   "bytes": 153,
+   "files": 1,
+   "zipped": 150
+  },
+  "textures/entity/bear": {
+   "bytes": 1051,
+   "files": 2,
+   "zipped": 1061
+  },
+  "textures/entity/bee": {
+   "bytes": 2885,
+   "files": 9,
+   "zipped": 2900
+  },
+  "textures/entity/bell": {
+   "bytes": 261,
+   "files": 1,
+   "zipped": 263
+  },
+  "textures/entity/blaze": {
+   "bytes": 370,
+   "files": 1,
+   "zipped": 375
+  },
+  "textures/entity/boat": {
+   "bytes": 11315,
+   "files": 11,
+   "zipped": 11370
+  },
+  "textures/entity/breeze": {
+   "bytes": 981,
+   "files": 3,
+   "zipped": 974
+  },
+  "textures/entity/camel": {
+   "bytes": 4304,
+   "files": 3,
+   "zipped": 4319
+  },
+  "textures/entity/cat": {
+   "bytes": 9384,
+   "files": 26,
+   "zipped": 9479
+  },
+  "textures/entity/chest": {
+   "bytes": 18796,
+   "files": 22,
+   "zipped": 18906
+  },
+  "textures/entity/chest_boat": {
+   "bytes": 20029,
+   "files": 11,
+   "zipped": 20084
+  },
+  "textures/entity/chicken": {
+   "bytes": 1833,
+   "files": 6,
+   "zipped": 1835
+  },
+  "textures/entity/conduit": {
+   "bytes": 1682,
+   "files": 9,
+   "zipped": 1655
+  },
+  "textures/entity/copper_golem": {
+   "bytes": 3122,
+   "files": 8,
+   "zipped": 3113
+  },
+  "textures/entity/cow": {
+   "bytes": 6734,
+   "files": 10,
+   "zipped": 6784
+  },
+  "textures/entity/creaking": {
+   "bytes": 1284,
+   "files": 2,
+   "zipped": 1281
+  },
+  "textures/entity/creeper": {
+   "bytes": 4127,
+   "files": 2,
+   "zipped": 4096
+  },
+  "textures/entity/cushion": {
+   "bytes": 5871,
+   "files": 16,
+   "zipped": 5940
+  },
+  "textures/entity/decorated_pot": {
+   "bytes": 5913,
+   "files": 25,
+   "zipped": 5829
+  },
+  "textures/entity/dolphin": {
+   "bytes": 991,
+   "files": 2,
+   "zipped": 1001
+  },
+  "textures/entity/enchantment": {
+   "bytes": 305,
+   "files": 1,
+   "zipped": 310
+  },
+  "textures/entity/end_crystal": {
+   "bytes": 2190,
+   "files": 2,
+   "zipped": 2126
+  },
+  "textures/entity/end_portal": {
+   "bytes": 9185,
+   "files": 2,
+   "zipped": 9192
+  },
+  "textures/entity/enderdragon": {
+   "bytes": 29421,
+   "files": 4,
+   "zipped": 28634
+  },
+  "textures/entity/enderman": {
+   "bytes": 440,
+   "files": 2,
+   "zipped": 442
+  },
+  "textures/entity/endermite": {
+   "bytes": 505,
+   "files": 1,
+   "zipped": 510
+  },
+  "textures/entity/equipment": {
+   "bytes": 50613,
+   "files": 85,
+   "zipped": 50871
+  },
+  "textures/entity/experience": {
+   "bytes": 415,
+   "files": 1,
+   "zipped": 420
+  },
+  "textures/entity/fish": {
+   "bytes": 3469,
+   "files": 17,
+   "zipped": 3454
+  },
+  "textures/entity/fishing": {
+   "bytes": 107,
+   "files": 1,
+   "zipped": 103
+  },
+  "textures/entity/fox": {
+   "bytes": 3267,
+   "files": 8,
+   "zipped": 3307
+  },
+  "textures/entity/frog": {
+   "bytes": 1662,
+   "files": 3,
+   "zipped": 1677
+  },
+  "textures/entity/ghast": {
+   "bytes": 4669,
+   "files": 5,
+   "zipped": 4694
+  },
+  "textures/entity/goat": {
+   "bytes": 1349,
+   "files": 2,
+   "zipped": 1359
+  },
+  "textures/entity/guardian": {
+   "bytes": 2227,
+   "files": 3,
+   "zipped": 2235
+  },
+  "textures/entity/hoglin": {
+   "bytes": 5542,
+   "files": 4,
+   "zipped": 5562
+  },
+  "textures/entity/horse": {
+   "bytes": 20929,
+   "files": 30,
+   "zipped": 21036
+  },
+  "textures/entity/illager": {
+   "bytes": 6819,
+   "files": 8,
+   "zipped": 6857
+  },
+  "textures/entity/iron_golem": {
+   "bytes": 4995,
+   "files": 4,
+   "zipped": 5010
+  },
+  "textures/entity/lead_knot": {
+   "bytes": 286,
+   "files": 1,
+   "zipped": 287
+  },
+  "textures/entity/llama": {
+   "bytes": 6583,
+   "files": 9,
+   "zipped": 6618
+  },
+  "textures/entity/minecart": {
+   "bytes": 438,
+   "files": 1,
+   "zipped": 443
+  },
+  "textures/entity/nautilus": {
+   "bytes": 4733,
+   "files": 4,
+   "zipped": 4753
+  },
+  "textures/entity/panda": {
+   "bytes": 9020,
+   "files": 14,
+   "zipped": 9090
+  },
+  "textures/entity/parrot": {
+   "bytes": 2576,
+   "files": 5,
+   "zipped": 2601
+  },
+  "textures/entity/phantom": {
+   "bytes": 751,
+   "files": 2,
+   "zipped": 741
+  },
+  "textures/entity/pig": {
+   "bytes": 2950,
+   "files": 6,
+   "zipped": 2980
+  },
+  "textures/entity/piglin": {
+   "bytes": 4265,
+   "files": 5,
+   "zipped": 4290
+  },
+  "textures/entity/player": {
+   "bytes": 16899,
+   "files": 18,
+   "zipped": 16989
+  },
+  "textures/entity/projectiles": {
+   "bytes": 746,
+   "files": 4,
+   "zipped": 723
+  },
+  "textures/entity/rabbit": {
+   "bytes": 6038,
+   "files": 16,
+   "zipped": 6105
+  },
+  "textures/entity/sheep": {
+   "bytes": 2129,
+   "files": 5,
+   "zipped": 2154
+  },
+  "textures/entity/shield": {
+   "bytes": 7050,
+   "files": 45,
+   "zipped": 6819
+  },
+  "textures/entity/shulker": {
+   "bytes": 19136,
+   "files": 18,
+   "zipped": 19226
+  },
+  "textures/entity/silverfish": {
+   "bytes": 730,
+   "files": 1,
+   "zipped": 735
+  },
+  "textures/entity/skeleton": {
+   "bytes": 4660,
+   "files": 7,
+   "zipped": 4695
+  },
+  "textures/entity/slime": {
+   "bytes": 1042,
+   "files": 2,
+   "zipped": 1046
+  },
+  "textures/entity/sniffer": {
+   "bytes": 5018,
+   "files": 2,
+   "zipped": 5028
+  },
+  "textures/entity/snow_golem": {
+   "bytes": 477,
+   "files": 1,
+   "zipped": 480
+  },
+  "textures/entity/spider": {
+   "bytes": 1424,
+   "files": 3,
+   "zipped": 1428
+  },
+  "textures/entity/squid": {
+   "bytes": 1644,
+   "files": 4,
+   "zipped": 1660
+  },
+  "textures/entity/strider": {
+   "bytes": 3002,
+   "files": 4,
+   "zipped": 3022
+  },
+  "textures/entity/sulfur_cube": {
+   "bytes": 1715,
+   "files": 4,
+   "zipped": 1731
+  },
+  "textures/entity/tadpole": {
+   "bytes": 158,
+   "files": 1,
+   "zipped": 151
+  },
+  "textures/entity/trident": {
+   "bytes": 440,
+   "files": 2,
+   "zipped": 437
+  },
+  "textures/entity/turtle": {
+   "bytes": 1340,
+   "files": 2,
+   "zipped": 1342
+  },
+  "textures/entity/villager": {
+   "bytes": 17301,
+   "files": 43,
+   "zipped": 17291
+  },
+  "textures/entity/wandering_trader": {
+   "bytes": 890,
+   "files": 1,
+   "zipped": 895
+  },
+  "textures/entity/warden": {
+   "bytes": 2804,
+   "files": 5,
+   "zipped": 2775
+  },
+  "textures/entity/witch": {
+   "bytes": 994,
+   "files": 1,
+   "zipped": 999
+  },
+  "textures/entity/wither": {
+   "bytes": 1873,
+   "files": 3,
+   "zipped": 1888
+  },
+  "textures/entity/wolf": {
+   "bytes": 31290,
+   "files": 59,
+   "zipped": 31557
+  },
+  "textures/entity/zombie": {
+   "bytes": 6067,
+   "files": 11,
+   "zipped": 6113
+  },
+  "textures/entity/zombie_villager": {
+   "bytes": 17613,
+   "files": 41,
+   "zipped": 17628
+  },
+  "textures/environment": {
+   "bytes": 24027,
+   "files": 14,
+   "zipped": 24092
+  },
+  "textures/font": {
+   "bytes": 13971,
+   "files": 5,
+   "zipped": 13978
+  },
+  "textures/gui": {
+   "bytes": 6317,
+   "files": 11,
+   "zipped": 6143
+  },
+  "textures/gui/advancements": {
+   "bytes": 1673,
+   "files": 6,
+   "zipped": 1515
+  },
+  "textures/gui/container": {
+   "bytes": 11357,
+   "files": 26,
+   "zipped": 10034
+  },
+  "textures/gui/hanging_signs": {
+   "bytes": 2824,
+   "files": 13,
+   "zipped": 2790
+  },
+  "textures/gui/presets": {
+   "bytes": 91528,
+   "files": 1,
+   "zipped": 91558
+  },
+  "textures/gui/realms": {
+   "bytes": 585983,
+   "files": 12,
+   "zipped": 586194
+  },
+  "textures/gui/signs": {
+   "bytes": 3360,
+   "files": 13,
+   "zipped": 3371
+  },
+  "textures/gui/sprites": {
+   "bytes": 100708,
+   "files": 528,
+   "zipped": 94389
+  },
+  "textures/gui/title": {
+   "bytes": 114410,
+   "files": 12,
+   "zipped": 112564
+  },
+  "textures/item": {
+   "bytes": 170780,
+   "files": 836,
+   "zipped": 168483
+  },
+  "textures/map": {
+   "bytes": 4790,
+   "files": 42,
+   "zipped": 4655
+  },
+  "textures/misc": {
+   "bytes": 73199,
+   "files": 20,
+   "zipped": 71665
+  },
+  "textures/mob_effect": {
+   "bytes": 8592,
+   "files": 41,
+   "zipped": 8465
+  },
+  "textures/painting": {
+   "bytes": 160954,
+   "files": 52,
+   "zipped": 161206
+  },
+  "textures/palettes": {
+   "bytes": 1508,
+   "files": 17,
+   "zipped": 1450
+  },
+  "textures/particle": {
+   "bytes": 33937,
+   "files": 307,
+   "zipped": 32672
+  },
+  "textures/trims/entity": {
+   "bytes": 8398,
+   "files": 72,
+   "zipped": 7849
+  },
+  "textures/trims/items": {
+   "bytes": 401,
+   "files": 4,
+   "zipped": 381
+  },
+  "waypoint_style": {
+   "bytes": 305,
+   "files": 2,
+   "zipped": 143
+  }
+ }
+}

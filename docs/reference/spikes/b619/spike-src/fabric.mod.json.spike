@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_runtime_gametest",
+  "version": "0.0.0",
+  "name": "MSM Runtime GameTests",
+  "description": "B619 spike (throwaway): only the spike client GameTest.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.mcsupermods.runtime.gametest.ScriptLogs"
+    ],
+    "fabric-gametest": [],
+    "fabric-client-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike619.B619ClientGameTest"
+    ]
+  },
+  "depends": {
+    "msm_runtime": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

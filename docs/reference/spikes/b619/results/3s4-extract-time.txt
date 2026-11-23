@@ -1,0 +1,2 @@
+26.3 {"today":{"ms":103,"files":9375,"bytes":4019173},"withBatch3":{"ms":276,"files":10798,"bytes":4648896}}
+26.4-snapshot-7 {"today":{"ms":101,"files":9530,"bytes":4102545},"withBatch3":{"ms":169,"files":11104,"bytes":4770930}}

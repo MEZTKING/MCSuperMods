@@ -1,0 +1,17 @@
+{
+ "assetIndexId": "34",
+ "assets": "34",
+ "indexObjects": 5149,
+ "soundEvents": 1991,
+ "ms": {
+  "versionJson": 0.29,
+  "indexParse": 4.33,
+  "soundsJsonParse": 3.8,
+  "first": 3.09
+ },
+ "oneFileMs": {
+  "mob/wolf/angry/bark1.ogg": 0.08,
+  "records/pigstep.ogg": 0.46,
+  "music/game/end/the_end.ogg": 6.06
+ }
+}

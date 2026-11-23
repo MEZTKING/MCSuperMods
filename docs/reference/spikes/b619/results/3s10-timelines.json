@@ -1,0 +1,524 @@
+{
+ "26.3": {
+  "timelines": {
+   "day": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "period_ticks",
+     "time_markers",
+     "tracks"
+    ],
+    "period_ticks": 24000,
+    "time_markers": 6,
+    "tracks": {
+     "minecraft:audio/firefly_bush_sounds": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/bees_stay_in_hive": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/cat_waking_up_gift_chance": {
+      "ease": "constant",
+      "fields": [
+       "ease",
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:gameplay/creaking_active": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/eyeblossom_open": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/monsters_burn": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/sky_light_level": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "float"
+     },
+     "minecraft:gameplay/turtle_egg_hatch_chance": {
+      "ease": "constant",
+      "fields": [
+       "ease",
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/cloud_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/fog_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/moon_angle": {
+      "ease": "cubic_bezier",
+      "fields": [
+       "ease",
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/sky_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/sky_light_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/sky_light_factor": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "float"
+     },
+     "minecraft:visual/star_angle": {
+      "ease": "cubic_bezier",
+      "fields": [
+       "ease",
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/star_brightness": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 12,
+      "valueKind": "float"
+     },
+     "minecraft:visual/sun_angle": {
+      "ease": "cubic_bezier",
+      "fields": [
+       "ease",
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/sunrise_sunset_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 32,
+      "valueKind": "str"
+     }
+    }
+   },
+   "early_game": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "tracks"
+    ],
+    "period_ticks": null,
+    "time_markers": 0,
+    "tracks": {
+     "minecraft:gameplay/can_pillager_patrol_spawn": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     }
+    }
+   },
+   "moon": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "period_ticks",
+     "tracks"
+    ],
+    "period_ticks": 192000,
+    "time_markers": 0,
+    "tracks": {
+     "minecraft:gameplay/surface_slime_spawn_chance": {
+      "ease": "constant",
+      "fields": [
+       "ease",
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 8,
+      "valueKind": "float"
+     },
+     "minecraft:visual/moon_phase": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 8,
+      "valueKind": "str"
+     }
+    }
+   },
+   "villager_schedule": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "period_ticks",
+     "tracks"
+    ],
+    "period_ticks": 24000,
+    "time_markers": 0,
+    "tracks": {
+     "minecraft:gameplay/baby_villager_activity": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 5,
+      "valueKind": "str"
+     },
+     "minecraft:gameplay/villager_activity": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 5,
+      "valueKind": "str"
+     }
+    }
+   }
+  },
+  "world_clocks": {
+   "overworld": [],
+   "the_end": []
+  }
+ },
+ "26.4-snapshot-7": {
+  "timelines": {
+   "day": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "period_ticks",
+     "time_markers",
+     "tracks"
+    ],
+    "period_ticks": 24000,
+    "time_markers": 6,
+    "tracks": {
+     "minecraft:audio/firefly_bush_sounds": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/bees_stay_in_hive": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/cat_waking_up_gift_chance": {
+      "ease": "constant",
+      "fields": [
+       "ease",
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:gameplay/creaking_active": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/eyeblossom_open": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/monsters_burn": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     },
+     "minecraft:gameplay/sky_light_level": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "float"
+     },
+     "minecraft:gameplay/turtle_egg_hatch_chance": {
+      "ease": "constant",
+      "fields": [
+       "ease",
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/cloud_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/fog_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/moon_angle": {
+      "ease": "cubic_bezier",
+      "fields": [
+       "ease",
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/sky_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/sky_light_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "str"
+     },
+     "minecraft:visual/sky_light_factor": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 4,
+      "valueKind": "float"
+     },
+     "minecraft:visual/star_angle": {
+      "ease": "cubic_bezier",
+      "fields": [
+       "ease",
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/star_brightness": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 12,
+      "valueKind": "float"
+     },
+     "minecraft:visual/sun_angle": {
+      "ease": "cubic_bezier",
+      "fields": [
+       "ease",
+       "keyframes"
+      ],
+      "keyframes": 2,
+      "valueKind": "float"
+     },
+     "minecraft:visual/sunrise_sunset_color": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 32,
+      "valueKind": "str"
+     }
+    }
+   },
+   "early_game": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "tracks"
+    ],
+    "period_ticks": null,
+    "time_markers": 0,
+    "tracks": {
+     "minecraft:gameplay/can_pillager_patrol_spawn": {
+      "ease": "linear",
+      "fields": [
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 2,
+      "valueKind": "bool"
+     }
+    }
+   },
+   "moon": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "period_ticks",
+     "tracks"
+    ],
+    "period_ticks": 192000,
+    "time_markers": 0,
+    "tracks": {
+     "minecraft:gameplay/surface_slime_spawn_chance": {
+      "ease": "constant",
+      "fields": [
+       "ease",
+       "keyframes",
+       "modifier"
+      ],
+      "keyframes": 8,
+      "valueKind": "float"
+     },
+     "minecraft:visual/moon_phase": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 8,
+      "valueKind": "str"
+     }
+    }
+   },
+   "villager_schedule": {
+    "clock": "minecraft:overworld",
+    "fields": [
+     "clock",
+     "period_ticks",
+     "tracks"
+    ],
+    "period_ticks": 24000,
+    "time_markers": 0,
+    "tracks": {
+     "minecraft:gameplay/baby_villager_activity": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 5,
+      "valueKind": "str"
+     },
+     "minecraft:gameplay/villager_activity": {
+      "ease": "linear",
+      "fields": [
+       "keyframes"
+      ],
+      "keyframes": 5,
+      "valueKind": "str"
+     }
+    }
+   }
+  },
+  "world_clocks": {
+   "overworld": [],
+   "the_end": []
+  }
+ }
+}

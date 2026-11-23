@@ -1,0 +1,498 @@
+{
+ "26.3": {
+  "textures": {
+   "entity/wolf/": [
+    59,
+    31290
+   ],
+   "entity/cat/": [
+    26,
+    9384
+   ],
+   "entity/pig/": [
+    6,
+    2950
+   ],
+   "entity/cow/": [
+    10,
+    6734
+   ],
+   "entity/chicken/": [
+    6,
+    1833
+   ],
+   "entity/frog/": [
+    3,
+    1662
+   ],
+   "entity/nautilus/": [
+    4,
+    4733
+   ],
+   "entity/villager/": [
+    43,
+    17301
+   ],
+   "entity/sulfur_cube/": [
+    4,
+    1715
+   ],
+   "entity/banner/": [
+    44,
+    23748
+   ],
+   "entity/shield/": [
+    45,
+    7050
+   ],
+   "entity/decorated_pot/": [
+    25,
+    5913
+   ],
+   "entity/equipment/": [
+    85,
+    50613
+   ],
+   "painting/": [
+    52,
+    160954
+   ],
+   "trims/": [
+    76,
+    8799
+   ],
+   "palettes/": [
+    17,
+    1508
+   ],
+   "mob_effect/": [
+    40,
+    8359
+   ],
+   "particle/": [
+    301,
+    33362
+   ],
+   "font/": [
+    5,
+    13971
+   ],
+   "gui/sprites/hud/locator_bar_dot": [
+    5,
+    487
+   ],
+   "gui/sprites/hud/effect_background": [
+    2,
+    229
+   ],
+   "gui/sprites/container/inventory/effect_background": [
+    4,
+    585
+   ],
+   "gui/sprites/container/creative_inventory": [
+    30,
+    3249
+   ],
+   "gui/container/creative_inventory": [
+    3,
+    1106
+   ],
+   "gui/sprites/hud/locator_bar_": [
+    11,
+    1605
+   ]
+  },
+  "assetFiles": {
+   "font": [
+    7,
+    22959
+   ],
+   "particles": [
+    115,
+    16601
+   ],
+   "waypoint_style": [
+    2,
+    305
+   ],
+   "equipment": [
+    45,
+    9179
+   ],
+   "post_effect": [
+    5,
+    21942
+   ],
+   "shaders": [
+    89,
+    80106
+   ]
+  },
+  "data": {
+   "wolf_variant": [
+    9,
+    4752
+   ],
+   "cat_variant": [
+    11,
+    2185
+   ],
+   "pig_variant": [
+    3,
+    788
+   ],
+   "cow_variant": [
+    3,
+    807
+   ],
+   "chicken_variant": [
+    3,
+    836
+   ],
+   "frog_variant": [
+    3,
+    585
+   ],
+   "zombie_nautilus_variant": [
+    2,
+    402
+   ],
+   "wolf_sound_variant": [
+    7,
+    5658
+   ],
+   "cat_sound_variant": [
+    2,
+    2118
+   ],
+   "pig_sound_variant": [
+    3,
+    1704
+   ],
+   "cow_sound_variant": [
+    2,
+    404
+   ],
+   "chicken_sound_variant": [
+    2,
+    1004
+   ],
+   "sulfur_cube_archetype": [
+    12,
+    16512
+   ],
+   "painting_variant": [
+    51,
+    12344
+   ],
+   "banner_pattern": [
+    43,
+    4340
+   ],
+   "trim_pattern": [
+    18,
+    2242
+   ],
+   "trim_material": [
+    11,
+    1557
+   ],
+   "decorated_pot_pattern": [
+    23,
+    1192
+   ],
+   "jukebox_song": [
+    22,
+    3936
+   ],
+   "instrument": [
+    8,
+    1406
+   ],
+   "timeline": [
+    4,
+    12152
+   ],
+   "world_clock": [
+    2,
+    4
+   ],
+   "tags/painting_variant": [
+    1,
+    1187
+   ],
+   "tags/banner_pattern": [
+    11,
+    1465
+   ],
+   "tags/instrument": [
+    3,
+    398
+   ],
+   "block_sound_set": [
+    0,
+    0
+   ]
+  },
+  "texturesTotal": [
+   906,
+   399140
+  ],
+  "assetFilesTotal": [
+   263,
+   151092
+  ],
+  "dataTotal": [
+   259,
+   79978
+  ]
+ },
+ "26.4-snapshot-7": {
+  "textures": {
+   "entity/wolf/": [
+    59,
+    31290
+   ],
+   "entity/cat/": [
+    26,
+    9384
+   ],
+   "entity/pig/": [
+    6,
+    2950
+   ],
+   "entity/cow/": [
+    10,
+    6734
+   ],
+   "entity/chicken/": [
+    6,
+    1833
+   ],
+   "entity/frog/": [
+    3,
+    1662
+   ],
+   "entity/nautilus/": [
+    4,
+    4733
+   ],
+   "entity/villager/": [
+    43,
+    17301
+   ],
+   "entity/sulfur_cube/": [
+    4,
+    1715
+   ],
+   "entity/banner/": [
+    44,
+    23748
+   ],
+   "entity/shield/": [
+    45,
+    7050
+   ],
+   "entity/decorated_pot/": [
+    25,
+    5913
+   ],
+   "entity/equipment/": [
+    85,
+    50613
+   ],
+   "painting/": [
+    52,
+    160954
+   ],
+   "trims/": [
+    76,
+    8799
+   ],
+   "palettes/": [
+    17,
+    1508
+   ],
+   "mob_effect/": [
+    41,
+    8592
+   ],
+   "particle/": [
+    307,
+    33937
+   ],
+   "font/": [
+    5,
+    13971
+   ],
+   "gui/sprites/hud/locator_bar_dot": [
+    5,
+    487
+   ],
+   "gui/sprites/hud/effect_background": [
+    2,
+    229
+   ],
+   "gui/sprites/container/inventory/effect_background": [
+    4,
+    585
+   ],
+   "gui/sprites/container/creative_inventory": [
+    30,
+    3249
+   ],
+   "gui/container/creative_inventory": [
+    3,
+    1106
+   ],
+   "gui/sprites/hud/locator_bar_": [
+    11,
+    1605
+   ]
+  },
+  "assetFiles": {
+   "font": [
+    7,
+    22959
+   ],
+   "particles": [
+    116,
+    16792
+   ],
+   "waypoint_style": [
+    2,
+    305
+   ],
+   "equipment": [
+    45,
+    9179
+   ],
+   "post_effect": [
+    5,
+    22018
+   ],
+   "shaders": [
+    93,
+    79150
+   ]
+  },
+  "data": {
+   "wolf_variant": [
+    9,
+    4752
+   ],
+   "cat_variant": [
+    11,
+    2185
+   ],
+   "pig_variant": [
+    3,
+    788
+   ],
+   "cow_variant": [
+    3,
+    807
+   ],
+   "chicken_variant": [
+    3,
+    836
+   ],
+   "frog_variant": [
+    3,
+    585
+   ],
+   "zombie_nautilus_variant": [
+    2,
+    402
+   ],
+   "wolf_sound_variant": [
+    7,
+    5658
+   ],
+   "cat_sound_variant": [
+    2,
+    2118
+   ],
+   "pig_sound_variant": [
+    3,
+    1704
+   ],
+   "cow_sound_variant": [
+    2,
+    404
+   ],
+   "chicken_sound_variant": [
+    2,
+    1010
+   ],
+   "sulfur_cube_archetype": [
+    13,
+    19539
+   ],
+   "painting_variant": [
+    51,
+    12344
+   ],
+   "banner_pattern": [
+    43,
+    4340
+   ],
+   "trim_pattern": [
+    18,
+    2242
+   ],
+   "trim_material": [
+    11,
+    1557
+   ],
+   "decorated_pot_pattern": [
+    23,
+    1192
+   ],
+   "jukebox_song": [
+    23,
+    4115
+   ],
+   "instrument": [
+    8,
+    1406
+   ],
+   "timeline": [
+    4,
+    12152
+   ],
+   "world_clock": [
+    2,
+    4
+   ],
+   "tags/painting_variant": [
+    1,
+    1187
+   ],
+   "tags/banner_pattern": [
+    11,
+    1465
+   ],
+   "tags/instrument": [
+    3,
+    398
+   ],
+   "block_sound_set": [
+    137,
+    35331
+   ]
+  },
+  "texturesTotal": [
+   913,
+   399948
+  ],
+  "assetFilesTotal": [
+   268,
+   150403
+  ],
+  "dataTotal": [
+   398,
+   118521
+  ]
+ }
+}

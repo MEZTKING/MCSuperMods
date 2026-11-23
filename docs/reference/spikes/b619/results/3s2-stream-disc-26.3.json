@@ -1,0 +1,17 @@
+{
+ "bytes": 1457471,
+ "decodeMs": 515,
+ "seconds": 148.2,
+ "contextRate": 44100,
+ "decodedMB": 26.1,
+ "privateKBGrowthAfterDecode": 29296,
+ "elementMetadataMs": 17,
+ "elementCanPlayThroughMs": 19,
+ "elementDuration": 148.2,
+ "elementCanPlayOgg": "probably",
+ "privateKBAfterElement": 32328,
+ "taskMs": 615,
+ "electron": "45.2.2",
+ "chrome": "156.0.8078.80",
+ "wallMs": 617
+}
