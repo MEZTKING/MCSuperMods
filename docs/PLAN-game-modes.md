@@ -119,7 +119,7 @@ Answered by B547 on both versions (26.3 and 26.4-snapshot-7) by observation: Gam
 | M12 | **A map that needs the jar ships as a modpack.** | Vanilla worlds cannot carry mods. | One `.mrpack` with the world inside. | ADR 0046's modpack export. |
 | M13 | **Play my game is one world per project and target.** | As the test world (ADR 0084). | Start over renames the old one. | As New test world. |
 | M14 | **Try it is single player and 48 x 32 x 48.** | ADR 0085. | Teams and scores shown for the one player; larger islands cut at the edge. | Play. |
-| M15 | **Try it shows functions' effects through the kinds, not by running functions.** | Try it does not run functions (G18). | The games kinds are drawn and played by the sim; hand-written functions are still only logged. | Play. |
+| M15 | **Try it runs the games' functions through the sim's function engine.** | Since Live views 2 (ADR 0120, B613) Try it runs functions and the event action `run_function`; commands it cannot run are said in What happened (G18 updated at B618). | The games kinds' functions run in Try it like any project function; a command the engine does not know is named as "only in the game". | Play. |
 | M16 | **Builds come from the game.** | No block editor in the app. | Build, save with a structure block, bring it in. | ADR 0116 D3. |
 
 ## Rules for every brief
