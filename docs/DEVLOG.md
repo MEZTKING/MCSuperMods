@@ -10023,3 +10023,28 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B694 (reserve) would replace this list with a command in the app.
+
+## 2026-11-23 — executor — B628 paintings, banners, trims and pots
+
+**What**
+- `liveviews/looks/banner/`: `pixels.ts` (RGBA work without a canvas: B624's PNG reader, `drawOver` with a tint, crop, nearest scaling, a small PNG writer, a pixel key), `compose.ts` (`composeBannerPicture`: the jar's `banner_base`/`shield_base`, then the base colour layer, then the pattern, each layer mask times dye alpha-blended in order, 3S6; `WOOD_TEXEL` painted MSM's own wood; `dyeNames`, `dyeRgb` from `TargetFacts.dyes`), `look-parts.tsx` (shared by the four views: `useSettled` 150 ms, `useLookBytes` over `readLookAsset`, `FlatPicture`, `ShapeCanvas` over the geo renderer, `idWords`), `BannerView.tsx` (Pattern colour and Banner colour pickers, the flag's and the plate's fronts flat, B623's banner and shield shapes with WebGL).
+- `looks/trim/`: `palette.ts` (`applyTrimPalette`: key colour i becomes palette colour i, other colours unchanged, cut-out alpha; `keyPaletteOf` from the layer's `.png.mcmeta`; `trimPaletteId` with the equipment's `trim_overrides`; paths), `TrimView.tsx` (one view for `trim_pattern` and `trim_material`: Material or Pattern picker over the project's and Minecraft's, Armour picker over the project's humanoid equipment and the target's `items.armorMaterials` that have a humanoid layer in the jar; swatches key to colour, both coloured layers flat, the armour figure wearing the trim).
+- `preview/armour-preview.ts`: `ArmourTrimLayers`, `armourPreviewOfEquipment` (an equipment asset worn whole). `preview/ArmourPreviewView.tsx`: optional `trim` (coloured layers drawn over the armour layers of the same name on the figure's texture; the texture id changes with the trim) and `equipmentName` (words in place of ids, Very easy). Without either prop the view is as before.
+- `looks/pot/`: `compose.ts` (`composePotPicture` on `POT_ATLAS`: pattern on the ticked sides, the jar's `decorated_pot_side.png` or MSM's clay on the rest and along the clay strip), `PotPatternView.tsx` (four sides flat with a tick each, the pot shape with WebGL).
+- `looks/painting/`: `compose.ts` (`paintingGeo`: `frameShape` given the picture's real size and `wallShape` merged into one geometry on one atlas, MSM's wall texture beside the picture; MSM's blank canvas when there is no picture), `PaintingView.tsx` (an SVG elevation: a wall of blocks, the painting at its width by height one block up, MSM's own player figure 1.8 blocks tall beside it; a note when the picture's pixels do not fit its blocks evenly; the 3D scene with WebGL).
+- Test `app/test/components/liveviews/looks/pattern-looks.test.tsx` (17): the registry; PNG round trip; the 16 dyes from 26.3's facts; a layer's colour follows its dye (red, blue, lime), grey multiplies, half alpha blends half, a later layer covers; the wood texel; the Banner view follows the picked dye on banner and shield; a trim pixel at key level i takes palette colour i, other colours pass, half alpha shows fully, no key draws as is; the `.mcmeta` key; `trim_overrides` swap the palette (iron armour wears `iron_darker` for iron, not for gold); the Trim view with the override then the project's armour without it; a material on Minecraft's Coast in Very easy with no ids drawn; the whole armour; pot sides and the side ticks; the painting's geometry, its size following an edit, the player's height, the stretch note, the blank canvas. All pictures are made by the test.
+
+**Fidelity**
+- Banner: About right (3S6 measured within 5.4 of 255 on MSM's patterns, no fixture case for Checked). Shield: About right, said in the notes (not measured). Trim: About right (3S5 within 0.021 chroma; the figure is MSM's). Pot and painting: About right (MSM's shapes; the sizes are the data's).
+
+**Checks**
+- App suite `--maxWorkers=2`: 3,767 passed, 1 skipped; the armour preview's tests (`armour-preview.test.ts`) unchanged and green. `pnpm lint` (Biome and check-deps), `pnpm typecheck`, `pnpm build`, `tools/check-size`: renderer 18.7 MB (stop 20.5), first paint 4.7 MB (stop 5.5); lazy chunks BannerView 4.5 kB, TrimView 8.3 kB, PaintingView 4.7 kB, PotPatternView 3.2 kB, shared look-parts 6.7 kB. No `dist:dir` (disk at the stop line), so `app.asar` not measured; `app/out` deleted.
+
+**Decisions**
+- The shared pixel and view helpers live in `looks/banner/` (an owner folder) and the other three folders import them.
+- The pattern is drawn on all four pot sides at first; the plain side from the jar fills the rest.
+- The painting's main drawing is a flat SVG front view (exact for a flat painting, and testable); the 3D scene is extra with WebGL. The player figure is MSM's own.
+- A trim layer's pixel at least 26 of 255 opaque is drawn fully (the game's cut-out); the armour list is the target's armour materials whose jar equipment JSON has a humanoid layer (all of them without the jar).
+
+**Next**
+- B630: the Banner pattern, Armour trim and Pot pattern flows show these views through the registry; test ids `live-banner-*`, `live-trim-swatch` (`data-colour`), `live-trim-armour`, `live-pot-face-*`, `live-painting-picture` (`data-width`, `data-height`) for B631's e2e.

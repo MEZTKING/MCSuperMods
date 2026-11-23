@@ -9,10 +9,12 @@
 import { ChevronDown, ChevronRight, PencilLine } from 'lucide-react';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { equipmentTexturePath } from '../components/creator/creator-model';
-import type { ArmourPart, ArmourPreview } from './armour-preview';
+import type { ArmourPart, ArmourPreview, ArmourTrimLayers } from './armour-preview';
 import { pngDataUrl } from './bundle-source';
 import {
   ARMOUR_GEOMETRY_ID,
+  ARMOUR_LAYER_HEIGHT,
+  ARMOUR_LAYER_WIDTH,
   type ArmourPiece,
   armourGeometry,
   composeArmourTexture,
@@ -30,6 +32,13 @@ export interface ArmourPreviewViewProps {
   webgl: boolean;
   /** Moves the form to a part's field (RFC 6901 pointer). */
   onJumpTo?(pointer: string): void;
+  /** A trim worn over the armour (B628's trim view), or none. */
+  trim?: ArmourTrimLayers | null;
+  /**
+   * The armour's name in words, shown in place of its id, and texture ids left out of the
+   * parts (Very easy draws no ids). Absent: the ids as before.
+   */
+  equipmentName?: string;
 }
 
 const HUMANOID_PIECES: ReadonlySet<string> = new Set(['helmet', 'chestplate', 'leggings', 'boots']);
@@ -49,6 +58,55 @@ async function readLayer(
     return (await props.vanilla?.readAsset(`assets/minecraft/${path}`).catch(() => null)) ?? null;
   }
   return props.readProjectAsset(namespace, path);
+}
+
+/**
+ * The figure's texture with a trim over it: the armour layers (as `composeArmourTexture`), then
+ * each trim layer over the armour layer of its name. Needs a 2D canvas, as that does.
+ */
+async function composeWithTrim(
+  layer1: Uint8Array | null,
+  layer2: Uint8Array | null,
+  trim: ArmourTrimLayers,
+): Promise<Uint8Array> {
+  const canvas = document.createElement('canvas');
+  canvas.width = ARMOUR_LAYER_WIDTH;
+  canvas.height = ARMOUR_LAYER_HEIGHT * 2;
+  const context = canvas.getContext('2d');
+  if (context === null) throw new Error('No 2D canvas context.');
+  context.imageSmoothingEnabled = false;
+  const draw = async (bytes: Uint8Array | null, y: number): Promise<void> => {
+    if (bytes === null) return;
+    try {
+      const bitmap = await createImageBitmap(new Blob([bytes.slice()], { type: 'image/png' }));
+      context.drawImage(bitmap, 0, y, ARMOUR_LAYER_WIDTH, ARMOUR_LAYER_HEIGHT);
+      bitmap.close();
+    } catch {
+      // A layer that does not decode stays as it is.
+    }
+  };
+  await draw(layer1, 0);
+  await draw(layer2, ARMOUR_LAYER_HEIGHT);
+  await draw(trim.humanoid, 0);
+  await draw(trim.humanoid_leggings, ARMOUR_LAYER_HEIGHT);
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (result) =>
+        result === null ? reject(new Error('Could not encode the texture.')) : resolve(result),
+      'image/png',
+    );
+  });
+  return new Uint8Array(await blob.arrayBuffer());
+}
+
+/** A short key of a trim's pictures, so the figure reloads its texture when they change. */
+function trimKey(trim: ArmourTrimLayers | null | undefined): string {
+  if (trim === null || trim === undefined) return '';
+  let hash = 0x811c9dc5;
+  for (const bytes of [trim.humanoid, trim.humanoid_leggings]) {
+    for (const byte of bytes ?? []) hash = Math.imul(hash ^ byte, 0x01000193);
+  }
+  return `_${(hash >>> 0).toString(36)}`;
 }
 
 export function ArmourPreviewView(props: ArmourPreviewViewProps) {
@@ -88,18 +146,20 @@ export function ArmourPreviewView(props: ArmourPreviewViewProps) {
   const layer1 = layerBytes('humanoid');
   const layer2 = layerBytes('humanoid_leggings');
   const pieceKey = pieces.join(',');
+  const trim = props.trim ?? null;
+  const trimRevision = trimKey(trim);
   const scene = useMemo<Extract<GeoScene, { ok: true }>>(
     () => ({
       ok: true,
       modelId: ARMOUR_GEOMETRY_ID,
       model: armourGeometry(pieceKey === '' ? [] : (pieceKey.split(',') as ArmourPiece[])),
-      textureId: `msm:editor/armour_${revision}`,
+      textureId: `msm:editor/armour_${revision}${trimRevision}`,
       animations: null,
       initialAnimation: null,
       scale: 1,
       notices: [],
     }),
-    [pieceKey, revision],
+    [pieceKey, revision, trimRevision],
   );
 
   return (
@@ -109,9 +169,14 @@ export function ArmourPreviewView(props: ArmourPreviewViewProps) {
       className="flex flex-col gap-2"
     >
       <p className="text-xs text-muted">
-        Worn look from {preview.equipmentId}
+        Worn look from {props.equipmentName ?? preview.equipmentId}
         {preview.vanilla ? ' (a vanilla armour material)' : ''}. Tick parts to show them.
       </p>
+      {trim !== null && (
+        <p className="text-xs text-muted" data-testid="armour-preview-trim">
+          {`Trim: ${trim.label}.`}
+        </p>
+      )}
       {humanoid.length > 0 &&
         (!props.webgl ? (
           <p role="status" className="text-xs text-muted">
@@ -124,7 +189,11 @@ export function ArmourPreviewView(props: ArmourPreviewViewProps) {
                 scene={scene}
                 subjectId="Armour"
                 folders={props.folders}
-                readProjectAsset={() => composeArmourTexture(layer1, layer2)}
+                readProjectAsset={() =>
+                  trim === null
+                    ? composeArmourTexture(layer1, layer2)
+                    : composeWithTrim(layer1, layer2, trim)
+                }
               />
             </Suspense>
           </div>
@@ -185,11 +254,17 @@ export function ArmourPreviewView(props: ArmourPreviewViewProps) {
                     />
                   ) : null}
                   <span>
-                    {part.texture === null
-                      ? `No ${part.layer} layer yet.`
-                      : data === null || data === undefined
-                        ? `Texture ${part.texture} (${part.layer}) not found${part.texture.startsWith('minecraft:') ? ': extract the vanilla assets in Settings' : ''}.`
-                        : `${part.texture}, ${part.layer} layer`}
+                    {props.equipmentName !== undefined
+                      ? part.texture === null
+                        ? 'No picture for this part yet.'
+                        : data === null || data === undefined
+                          ? 'Its picture is not found.'
+                          : `${part.label} picture`
+                      : part.texture === null
+                        ? `No ${part.layer} layer yet.`
+                        : data === null || data === undefined
+                          ? `Texture ${part.texture} (${part.layer}) not found${part.texture.startsWith('minecraft:') ? ': extract the vanilla assets in Settings' : ''}.`
+                          : `${part.texture}, ${part.layer} layer`}
                   </span>
                 </div>
               )}

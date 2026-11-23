@@ -157,3 +157,44 @@ export function armourPreviewOf(element: Element, project: Project | null): Armo
       : partsOf({}, () => assetPointer, shown, null),
   };
 }
+
+/**
+ * A trim worn over the armour (ADR 0121 D5, B628): each layer's picture already coloured by the
+ * trim view (`liveviews/looks/trim/`), drawn over the armour layer of the same name on the
+ * figure. `null` for a layer the trim has no picture for.
+ */
+export interface ArmourTrimLayers {
+  /** What the trim is, in words ("Coast in iron"). */
+  label: string;
+  /** PNG bytes over the `humanoid` layer (helmet, chestplate, boots). */
+  humanoid: Uint8Array | null;
+  /** PNG bytes over the `humanoid_leggings` layer. */
+  humanoid_leggings: Uint8Array | null;
+}
+
+/**
+ * The preview of an equipment asset worn whole (every humanoid piece shown): a project
+ * `minecraft:equipment` element, else the asset's own JSON (`data`, read from the jar for a
+ * vanilla one), else a vanilla asset by name with its humanoid layers named after it.
+ */
+export function armourPreviewOfEquipment(
+  equipmentId: string,
+  data: Json | null,
+  project: Project | null,
+): ArmourPreview {
+  const own = project?.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .find((entry) => entry.kind === EQUIPMENT_KIND && entry.id === equipmentId);
+  const vanilla = equipmentId.startsWith('minecraft:');
+  const shown = (id: ArmourPart['id']) => id !== 'horse' && id !== 'wolf';
+  const pointer = (layer: ArmourLayerName) => `/layers/${layer}/0/texture`;
+  if (own !== undefined) {
+    return { equipmentId, vanilla: false, parts: partsOf(own.data, pointer, shown, null) };
+  }
+  if (data !== null) return { equipmentId, vanilla, parts: partsOf(data, pointer, shown, null) };
+  return {
+    equipmentId,
+    vanilla,
+    parts: partsOf(null, pointer, shown, vanilla ? equipmentId : null),
+  };
+}
