@@ -12,7 +12,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { builtInPlugins } from '../../../src/renderer/src/plugins/built-in';
 import { ClipView } from '../../../src/renderer/src/showcase/ClipView';
 import type { ShowcaseClip } from '../../../src/renderer/src/showcase/clip';
-import { ClipPlayer, TICK_MS } from '../../../src/renderer/src/showcase/clip-player';
+import {
+  CLIP_FRAME_WINDOW,
+  ClipPlayer,
+  clearClipRatios,
+  TICK_MS,
+} from '../../../src/renderer/src/showcase/clip-player';
 import { SHOWCASES } from '../../../src/renderer/src/showcase/showcases';
 import { clearStills, stillKey, takenStill } from '../../../src/renderer/src/showcase/still-cache';
 import type { TryItSceneProps } from '../../../src/renderer/src/tryit/render/TryItScene';
@@ -37,6 +42,7 @@ const STILL = 'data:image/png;base64,c3RpbGw=';
 beforeEach(async () => {
   scene.props = null;
   clearStills();
+  clearClipRatios();
   vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(
     'data:image/png;base64,dGFrZW4=',
   );
@@ -99,6 +105,42 @@ describe('ClipView', () => {
     expect(typeof props.partialTick === 'function' ? props.partialTick() : 0).toBe(0);
     // The still covers the picture until the first frame is drawn.
     expect(screen.getByTestId('showcase-clip-cover').getAttribute('src')).toBe(STILL);
+  });
+
+  it('steps its sharpness down on slow frames and never up again for that card', async () => {
+    view();
+    await sceneProps();
+    const props = () => scene.props as TryItSceneProps;
+    const host = screen.getByTestId(`showcase-clip-${woodSet.id}`);
+    expect(host.dataset.pixelRatio).toBe('2');
+    // Fast frames (60 a second) keep it sharp.
+    act(() => props().onFrameDrawn?.({} as never));
+    act(() => {
+      for (let one = 0; one < 2 * CLIP_FRAME_WINDOW; one += 1) {
+        props().onFrame?.(1000 / 60);
+        props().onFrameDrawn?.({} as never);
+      }
+    });
+    expect(props().maxPixelRatio).toBe(2);
+    expect(host.dataset.frameMs).toBe('17');
+    // Slow frames (20 a second): 1.5, then 1.
+    const slow = (count: number): void =>
+      act(() => {
+        for (let one = 0; one < count; one += 1) {
+          props().onFrame?.(TICK_MS);
+          props().onFrameDrawn?.({} as never);
+        }
+      });
+    slow(CLIP_FRAME_WINDOW);
+    expect(props().maxPixelRatio).toBe(1.5);
+    expect(host.dataset.pixelRatio).toBe('1.5');
+    slow(CLIP_FRAME_WINDOW);
+    expect(props().maxPixelRatio).toBe(1);
+    // The same card again starts where it came down to.
+    cleanup();
+    scene.props = null;
+    view();
+    expect((await sceneProps()).maxPixelRatio).toBe(1);
   });
 
   it('starts with the first drawn frame, shows captions and takes the still once', async () => {

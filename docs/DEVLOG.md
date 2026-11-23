@@ -11274,3 +11274,20 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - Old menu words left in renderer text outside this brief: `WelcomeDialog.tsx` ("Help → Your First Mod…"), `StarterWizard.tsx` ("File > Upgrade Project Target"), `EntityStudio.tsx` ("File, Import Blockbench Model"), `modpacks/build.ts` ("Upgrade Project Target"); `FluidStudio.tsx` still says "under Advanced" (the guide quotes it as shipped).
+## 2026-11-23 — executor — B713 Showcase and gallery polish
+
+**What**
+- Idea cards are the gallery's cards (D7): `IdeaCard.tsx` uses `card-style.ts`' frame, picture box, tag ("Idea"), title, sentence and the accent **Make this**; the names of the idea's things are the sentence's tip. The idea picture is 240 by 150 (was 256 by 144), still drawn at exact device pixels with one texel size. `card-style.ts` now exports `STORE_CARD_WIDTH` 242, `STORE_CARD_HEIGHT` 272.25 and `STORE_CARD_GAP` 12; `idea-seeds.ts` takes its sizes from them (`IDEA_ROW` rounded to 284 so grid rows start on whole pixels). The More ideas grid is no longer centred, so it lines up with the gallery's Show all.
+- The rows' columns are `auto-cols-[242px]` and the rows' and grids' gap `gap-[12px]`: the old `15.125rem` and `gap-3` were 211.75 and 10.5 pixels in the app's 14-pixel root, so a gallery picture box was fractional (209.75 by 131.1) and could not be drawn at exact device pixels. Gallery cards are 30 pixels wider than before.
+- One arbiter: `ideaLive` and `onLiveChange` are gone (App.tsx, `IdeaList.tsx`); `showcase/home-live.ts` alone stops Featured when an idea card plays, in the row and in Show all's grid (both already inside `HomeLiveContext`; App's fallback path without the gallery has no target, so no ideas either).
+- Calm stills: `drawn-still.ts` `stillPictures` leaves out skin sheets (under `textures/entity/`, an `entity/` folder below `textures/`, or named as `texture`/`skin` by an `msm:entity`, `msm:vehicle`, `msm:geo_model` or `msm:boat` element, but not under `spawn_egg` or `item`). Vehicles show their items (the tank its shell too), mobs their spawn egg; the cat coat card, all skin, shows its drawn look.
+- Clips choose their sharpness (D6): `clip-player.ts` `nextPixelRatio(current, medianFrameMs)` (2, 1.5, 1 while the median of 30 frames is over 1000/24 ms) and `ClipSharpness` (per card, never up again in the session); `ClipView` passes its ratio as `maxPixelRatio` and carries `data-pixel-ratio` and `data-frame-ms`. `TryItCanvas` needed no change (it reads `maxPixelRatio` each frame).
+- Tests: `idea-cards.test.tsx` (card look, sizes, the arbiter), `calm-stills.test.ts` (Ember kart, tank, plane, boat; every Vehicles and Mobs card), `clip-sharpness.test.ts`, a step-down case in `clip-view.test.tsx`; `home-gallery-path` checks an idea card's width and height against a gallery card's and saves the Vehicles, Mobs, More ideas and Show all ideas shots.
+
+**Decisions**
+- The plan's 242 by 150 card numbers were for a 16-pixel rem; the gallery was made to match them in whole pixels rather than the idea cards made fractional.
+- Frame rates on this machine (load 15 to 26, SwiftShader) are 4 to 20 frames a second at every ratio, so every clip stepped down to 1 within a few seconds; the numbers say nothing about the user's machine, which is why the clip measures itself.
+
+**Next**
+- Guide sentence for `showcase.md`: "On a slow computer a clip draws a little less sharply so it stays smooth."
+- `showcase/land-still.ts` keeps queueing after Home unmounts (not in this brief's files).

@@ -6,6 +6,20 @@
  * @packageDocumentation
  */
 
+/**
+ * The card's size in CSS pixels: 242 wide (the rows' columns: the 240 by 150 picture box and the
+ * 1-pixel border; whole pixels, so a picture is drawn at exact device pixels, where the old
+ * `15.125rem` of the app's 14-pixel root was 211.75) and {@link STORE_CARD_HEIGHT} high (the
+ * picture box, the words and the actions, as laid out). The More ideas row places its cards by
+ * these (`ideas/idea-seeds.ts`); `home-gallery-path` holds both to the gallery's own cards.
+ */
+export const STORE_CARD_WIDTH = 242;
+// The border, the picture box, the words and the actions in the app's 14-pixel rem (their line
+// heights are set by the classes, not the font), as `home-gallery-path` measures it.
+export const STORE_CARD_HEIGHT = 272.25;
+/** The gap between cards (`gap-[12px]` in the rows and grids). */
+export const STORE_CARD_GAP = 12;
+
 /** The card's frame. */
 export const storeCardClass =
   'group/card flex min-w-0 snap-start flex-col overflow-hidden rounded-lg border border-border bg-panel ' +
@@ -44,12 +58,12 @@ export const secondaryButtonClass =
 
 /** A row of cards: one sideways-scrolling line that snaps to cards and shows part of the next. */
 export const railClass =
-  'm-0 grid list-none auto-cols-[15.125rem] grid-flow-col gap-3 overflow-x-auto scroll-smooth p-0 pt-1 pb-2 ' +
+  'm-0 grid list-none auto-cols-[242px] grid-flow-col gap-[12px] overflow-x-auto scroll-smooth p-0 pt-1 pb-2 ' +
   'snap-x snap-mandatory [scrollbar-width:thin] motion-reduce:scroll-auto';
 
 /** A whole group as a grid (Show all). */
 export const gridClass =
-  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3 p-0';
+  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-[12px] p-0';
 
 /** The picture of a card, drawn pixel for pixel. */
 export const pixelImageClass = 'block size-full object-cover [image-rendering:pixelated]';

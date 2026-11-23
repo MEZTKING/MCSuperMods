@@ -14,10 +14,11 @@
  * 6. **Make this** on the last card of the Games row asks for the mod's name, makes the mod and
  *    opens that flow in the Creator.
  *
- * Every card in a row has the same height; at 900, 1280 and 1920 pixels wide the page does not
- * scroll sideways. With `GALLERY_SHOTS=<folder>` the window is drawn at device scale 2 and
- * screenshots of Home's top, a middle row, the More ideas row and a Show all are saved there at
- * widths 1280 and 1920.
+ * Every card in a row has the same height, and a More ideas card the gallery cards' width and
+ * height (B713); at 900, 1280 and 1920 pixels wide the page does not scroll sideways. With
+ * `GALLERY_SHOTS=<folder>` the window is drawn at device scale 2 and screenshots of Home's top,
+ * the Vehicles and Mobs rows, the More ideas row under the row before it, a Show all and More
+ * ideas' Show all are saved there at widths 1280 and 1920.
  */
 
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
@@ -86,11 +87,32 @@ async function checkLayout(launched: LaunchedApp, home: Locator, width: number):
         ]),
     );
   for (const one of heights) expect(one.length).toBe(1);
+  // A More ideas card is a gallery card: the same width and height (B713, D7).
+  const ideaCard = home.getByTestId('gallery-group-ideas').getByTestId('idea-card-0');
+  await ideaCard.scrollIntoViewIfNeeded();
+  await expect(ideaCard).toBeVisible({ timeout: 30_000 });
+  const sizes = await home.evaluate((element) => {
+    const box = (selector: string) => {
+      const one = element.querySelector(selector)?.getBoundingClientRect();
+      return one === undefined ? null : [one.width, one.height];
+    };
+    return {
+      gallery: box('[data-testid="gallery-row-blocks"] > li'),
+      idea: box('[data-testid="gallery-group-ideas"] [data-testid="idea-card-0"]'),
+    };
+  });
+  expect(sizes.gallery).not.toBeNull();
+  expect(sizes.idea).not.toBeNull();
+  const [galleryWidth, galleryHeight] = sizes.gallery ?? [0, 0];
+  const [ideaWidth, ideaHeight] = sizes.idea ?? [0, 0];
+  const said = JSON.stringify(sizes);
+  expect(Math.abs(ideaWidth - galleryWidth), said).toBeLessThanOrEqual(0.5);
+  expect(Math.abs(ideaHeight - galleryHeight), said).toBeLessThanOrEqual(0.5);
   const sideways = await home.evaluate((element) => element.scrollWidth - element.clientWidth);
   expect(sideways).toBeLessThanOrEqual(0);
 }
 
-/** Saves Home's top, a middle row, the More ideas row and a Show all at `width`. */
+/** Saves Home's top, the Vehicles and Mobs rows, More ideas and two Show alls at `width`. */
 async function shots(launched: LaunchedApp, home: Locator, width: number): Promise<void> {
   if (SHOTS === undefined) return;
   const window: Page = launched.window;
@@ -101,18 +123,43 @@ async function shots(launched: LaunchedApp, home: Locator, width: number): Promi
   await window.mouse.move(2, 2);
   await window.waitForTimeout(2500);
   await window.screenshot({ path: join(SHOTS, `home-top-${width}.png`) });
-  await home.getByTestId('gallery-chip-mobs').click();
-  await window.waitForTimeout(3000);
-  await window.screenshot({ path: join(SHOTS, `home-middle-${width}.png`) });
+  for (const group of ['vehicles', 'mobs']) {
+    await home.getByTestId(`gallery-chip-${group}`).click();
+    await expect(
+      home.getByTestId(`gallery-row-${group}`).locator('[data-testid^="gallery-picture-"]').first(),
+    ).toHaveAttribute('data-loaded', 'true', { timeout: 30_000 });
+    await window.mouse.move(2, 2);
+    await window.waitForTimeout(3000);
+    await window.screenshot({ path: join(SHOTS, `home-${group}-${width}.png`) });
+  }
   await home.getByTestId('gallery-chip-ideas').click();
   await expect(home.getByTestId('idea-still-0')).toBeVisible({ timeout: 30_000 });
+  // The More ideas row at the bottom of the view, under the gallery row before it.
+  await home.getByTestId('gallery-group-ideas').evaluate((element) => {
+    (element as unknown as { scrollIntoView(options: unknown): void }).scrollIntoView({
+      block: 'end',
+    });
+  });
   await window.waitForTimeout(3000);
   await window.mouse.move(2, 2);
   await window.screenshot({ path: join(SHOTS, `home-more-ideas-${width}.png`), timeout: 90_000 });
+  await home.getByTestId('gallery-chip-blocks').click();
   await home.getByTestId('gallery-show-all-blocks').click();
   await window.mouse.move(2, 2);
   await window.waitForTimeout(4000);
   await window.screenshot({ path: join(SHOTS, `home-show-all-${width}.png`), timeout: 90_000 });
+  await home.getByTestId('gallery-back').click();
+  await home.getByTestId('gallery-chip-ideas').click();
+  await home.getByTestId('gallery-show-all-ideas').click();
+  await expect(home.getByTestId('gallery-all').getByTestId('idea-still-0')).toBeVisible({
+    timeout: 30_000,
+  });
+  await window.mouse.move(2, 2);
+  await window.waitForTimeout(4000);
+  await window.screenshot({
+    path: join(SHOTS, `home-show-all-ideas-${width}.png`),
+    timeout: 90_000,
+  });
   await home.getByTestId('gallery-back').click();
 }
 

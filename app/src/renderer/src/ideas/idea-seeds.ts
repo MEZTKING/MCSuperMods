@@ -10,6 +10,12 @@
  * @packageDocumentation
  */
 
+import {
+  STORE_CARD_GAP,
+  STORE_CARD_HEIGHT,
+  STORE_CARD_WIDTH,
+} from '../components/home/gallery/card-style';
+
 /** The largest seed (Surprise me's `MAX_SEED`). */
 export const IDEA_MAX_SEED = 999_999;
 
@@ -28,14 +34,17 @@ export function ideaSeed(base: number, index: number): number {
 }
 
 /**
- * The size of an idea card and the gap between cards, in CSS pixels: the 256 by 144 picture
- * with the card's padding (8) and border (1) round it.
+ * The size of an idea card and the gap between cards, in CSS pixels: the gallery's card (D7 of
+ * the plan after 1.5.8), its 240 by 150 picture box with the words and actions under it.
  */
-export const IDEA_CARD_WIDTH = 274;
-export const IDEA_CARD_HEIGHT = 300;
-export const IDEA_GAP = 12;
-/** A row's height: a card and the gap under it. */
-export const IDEA_ROW = IDEA_CARD_HEIGHT + IDEA_GAP;
+export const IDEA_CARD_WIDTH = STORE_CARD_WIDTH;
+export const IDEA_CARD_HEIGHT = STORE_CARD_HEIGHT;
+export const IDEA_GAP = STORE_CARD_GAP;
+/**
+ * A row's height: a card and the gap under it, rounded to whole pixels so every row of the grid
+ * (and its pictures) starts on a whole pixel.
+ */
+export const IDEA_ROW = Math.round(IDEA_CARD_HEIGHT + IDEA_GAP);
 /** How far past the view cards are kept made (above and below), in CSS pixels. */
 export const IDEA_OVERSCAN = 600;
 /** Rows the list starts with. */

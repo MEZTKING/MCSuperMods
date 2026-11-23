@@ -1,7 +1,12 @@
 /**
  * One card of **More ideas** (ADR 0128 D1, D2): the drawn picture (or the live clip), the mod's
- * name, its line in words, the names of its things and **Make this**. While the idea is being
- * rolled the card shows a plain frame and "Thinking of an idea…".
+ * name, its line in words and **Make this**; the names of its things are the line's tip. While
+ * the idea is being rolled the card shows a plain frame and "Thinking of an idea…".
+ *
+ * The card is the gallery's card (D7 of the plan after 1.5.8, `card-style.ts`): the same frame,
+ * 240 by 150 picture box, tag, title and sentence type and the accent **Make this**, so a More
+ * ideas row lines up with the gallery's rows; {@link IDEA_CARD_WIDTH} by
+ * {@link IDEA_CARD_HEIGHT} is that card's size.
  *
  * The picture is a button named "Clip: <name>" when the idea has a clip and clips can play
  * (WebGL): a click, Space or Enter plays or pauses it. The card's **Make this** carries the
@@ -16,12 +21,24 @@
 
 import { Pause, Play } from 'lucide-react';
 import type { CSSProperties, FocusEvent, KeyboardEvent, ReactNode } from 'react';
-import { Button } from '../components/ui/Button';
+import {
+  pixelImageClass,
+  primaryButtonClass,
+  storeActionsClass,
+  storeBodyClass,
+  storeCardClass,
+  storePictureClass,
+  storeSentenceClass,
+  storeTagClass,
+  storeTitleClass,
+} from '../components/home/gallery/card-style';
 import { IDEA_CARD_HEIGHT, IDEA_CARD_WIDTH } from './idea-seeds';
 import { IDEA_PICTURE_HEIGHT, IDEA_PICTURE_WIDTH, type Idea, listInWords } from './ideas';
 
 /** The words of a card still being rolled. */
 export const IDEA_THINKING = 'Thinking of an idea…';
+/** The tag above an idea's name. */
+export const IDEA_TAG = 'Idea';
 /** At most this many thing names on a card. */
 const MAX_NAMES = 4;
 
@@ -66,14 +83,14 @@ export function IdeaCard(props: IdeaCardProps) {
       {playing ? (
         live
       ) : picture === null ? (
-        <span className="block size-full bg-bg" />
+        <span aria-hidden className="block size-full bg-border/40" />
       ) : (
         <img
           src={picture}
           alt=""
           width={IDEA_PICTURE_WIDTH}
           height={IDEA_PICTURE_HEIGHT}
-          className="block size-full [image-rendering:pixelated]"
+          className={pixelImageClass}
           data-testid={`idea-still-${index}`}
         />
       )}
@@ -85,12 +102,10 @@ export function IdeaCard(props: IdeaCardProps) {
       )}
     </>
   );
-  // A ring, not a border, so the picture is shown at its own size (one CSS pixel per pixel).
-  const frameClass = 'relative block shrink-0 overflow-hidden rounded bg-bg p-0 ring-1 ring-border';
-  const frameStyle = { width: IDEA_PICTURE_WIDTH, height: IDEA_PICTURE_HEIGHT };
+  const makes = idea === null || idea.makes.length === 0 ? null : `Makes ${namesLine(idea.makes)}.`;
   return (
     <li
-      className="absolute flex flex-col gap-1.5 overflow-hidden rounded-md border border-border bg-panel p-2"
+      className={`${storeCardClass} absolute`}
       style={{ width: IDEA_CARD_WIDTH, height: IDEA_CARD_HEIGHT, ...props.style }}
       data-testid={`idea-card-${index}`}
       aria-busy={idea === null}
@@ -104,8 +119,7 @@ export function IdeaCard(props: IdeaCardProps) {
           type="button"
           aria-label={`Clip: ${idea.name}`}
           aria-pressed={playing}
-          className={`${frameClass} cursor-pointer focus-visible:outline-2 focus-visible:outline-accent`}
-          style={frameStyle}
+          className={`${storePictureClass} shrink-0 cursor-pointer p-0 focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2`}
           data-testid={`idea-picture-${index}`}
           onClick={() => props.onTogglePlay?.()}
           onKeyDown={props.onKeyDown}
@@ -116,42 +130,44 @@ export function IdeaCard(props: IdeaCardProps) {
         <div
           role="img"
           aria-label={idea === null ? IDEA_THINKING : `Picture: ${idea.name}`}
-          className={frameClass}
-          style={frameStyle}
+          className={`${storePictureClass} shrink-0`}
           data-testid={`idea-picture-${index}`}
         >
           {frame}
         </div>
       )}
-      {idea === null ? (
-        <p className="text-muted text-sm">{IDEA_THINKING}</p>
-      ) : (
-        <>
-          <h3 className="truncate font-semibold text-sm" data-testid={`idea-name-${index}`}>
-            {idea.name}
-          </h3>
-          <p className="line-clamp-2 text-sm" data-testid={`idea-line-${index}`}>
-            {idea.line}
-          </p>
-          {idea.makes.length > 0 && (
-            <p className="line-clamp-2 text-muted text-xs">Makes {namesLine(idea.makes)}.</p>
-          )}
-        </>
-      )}
-      <div className="mt-auto flex">
-        <Button
-          className="border-accent"
-          aria-disabled={idea === null}
-          aria-label={idea === null ? 'Make this (still thinking)' : `Make this: ${idea.name}`}
-          data-testid={`idea-make-${index}`}
-          data-idea-index={index}
-          onClick={() => {
-            if (idea !== null) props.onMake(idea);
-          }}
-          onKeyDown={props.onKeyDown}
+      <div className={storeBodyClass}>
+        <span className={storeTagClass}>{IDEA_TAG}</span>
+        <h3
+          className={storeTitleClass}
+          title={idea?.name}
+          {...(idea === null ? {} : { 'data-testid': `idea-name-${index}` })}
         >
-          Make this
-        </Button>
+          {idea === null ? IDEA_THINKING : idea.name}
+        </h3>
+        <p
+          className={storeSentenceClass}
+          {...(makes === null ? {} : { title: makes })}
+          {...(idea === null ? {} : { 'data-testid': `idea-line-${index}` })}
+        >
+          {idea === null ? '' : idea.line}
+        </p>
+        <div className={storeActionsClass}>
+          <button
+            type="button"
+            className={`${primaryButtonClass} aria-disabled:cursor-default aria-disabled:opacity-60`}
+            aria-disabled={idea === null}
+            aria-label={idea === null ? 'Make this (still thinking)' : `Make this: ${idea.name}`}
+            data-testid={`idea-make-${index}`}
+            data-idea-index={index}
+            onClick={() => {
+              if (idea !== null) props.onMake(idea);
+            }}
+            onKeyDown={props.onKeyDown}
+          >
+            Make this
+          </button>
+        </div>
       </div>
     </li>
   );

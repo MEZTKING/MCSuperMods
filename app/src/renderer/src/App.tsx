@@ -2435,8 +2435,6 @@ export function App({
           },
     [session, target],
   );
-  // The idea card playing a clip, so the Showcase stops: one clip on Home (ADR 0128 D2).
-  const [ideaLive, setIdeaLive] = useState<string | null>(null);
   /** Makes the mod of an idea card in the open mod (just made for it). */
   const makeIdeaIn = async (spec: IdeaSpec): Promise<void> => {
     try {
@@ -2494,7 +2492,6 @@ export function App({
         playClips={showcaseClips}
         visible={visible}
         onMake={makeIdea}
-        onLiveChange={setIdeaLive}
         onShuffle={() => usePreferences.getState().shuffleIdeas()}
       />
     );
@@ -3698,7 +3695,7 @@ export function App({
                     Promise.reject(new Error('No summary.')),
                 })}
             search={startSearchBar('home-search-field')}
-            showcase={homeGallery(homeClipsVisible && ideaLive === null, homeClipsVisible)}
+            showcase={homeGallery(homeClipsVisible, homeClipsVisible)}
             {...(heroExample === null || target === null
               ? {}
               : {

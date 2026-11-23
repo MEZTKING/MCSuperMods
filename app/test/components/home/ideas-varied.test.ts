@@ -281,8 +281,8 @@ describe('the pictures of a card', () => {
       if (image === null) continue;
       const size = ideaPictureSize(ratio);
       expect([image.width, image.height]).toEqual([size.width, size.height]);
-      expect(image.width).toBe(Math.round(256 * ratio));
-      expect(image.height).toBe(Math.round(144 * ratio));
+      expect(image.width).toBe(Math.round(240 * ratio));
+      expect(image.height).toBe(Math.round(150 * ratio));
       // A row through the middle: every texel the same whole width, in every picture.
       const lengths = runs(image, Math.floor(image.height / 2));
       expect(lengths.length).toBeGreaterThan(0);
@@ -306,8 +306,8 @@ describe('the pictures of a card', () => {
     );
     const still = screen.getByTestId('idea-still-0');
     expect(still.className).toContain('[image-rendering:pixelated]');
-    expect(still.getAttribute('width')).toBe('256');
-    expect(still.getAttribute('height')).toBe('144');
+    expect(still.getAttribute('width')).toBe('240');
+    expect(still.getAttribute('height')).toBe('150');
   });
 });
 

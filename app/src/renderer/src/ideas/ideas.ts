@@ -386,9 +386,9 @@ export function queueIdea(
 
 // The drawn picture ------------------------------------------------------------------------
 
-/** The picture area of a card, in CSS pixels (the Showcase's 16 by 9). */
-export const IDEA_PICTURE_WIDTH = 256;
-export const IDEA_PICTURE_HEIGHT = 144;
+/** The picture area of a card, in CSS pixels: the gallery card's 240 by 150 (16 by 10). */
+export const IDEA_PICTURE_WIDTH = 240;
+export const IDEA_PICTURE_HEIGHT = 150;
 
 /**
  * The pictures of one card on one texel size: each smaller picture (an 8 by 8 particle beside

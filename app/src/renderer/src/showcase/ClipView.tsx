@@ -4,6 +4,11 @@
  * Try it's `TryItScene`, unchanged, at the picture's size times the screen's pixel ratio (capped
  * at 2; ADR 0128 D3: no longer Smaller picture, which looked soft at card size).
  *
+ * - The clip chooses its own sharpness (D6 of the plan after 1.5.8): it measures its frame times
+ *   ({@link ClipSharpness}) and steps the cap down, 2, then 1.5, then 1, while the median of its
+ *   last 30 frames is under 24 frames a second, never up again for that card in the session.
+ *   The host carries `data-pixel-ratio` and `data-frame-ms` (that median, rounded).
+ *
  * - The camera is the player's (`player.camera()`), `partialTick` is `player.alpha`, and the clip
  *   advances by the frame's elapsed time in `onFrame` (whole ticks, never the wall clock).
  * - The grid, particles, mobs and vehicles are the player's area's; the fluids are
@@ -31,7 +36,7 @@ import { fluidLooks } from '../tryit/fluids/fluid-pass';
 import { TryItScene } from '../tryit/render/TryItScene';
 import type { TranspileOutcome, TryItScripts } from '../tryit/session-source';
 import type { ShowcaseClip } from './clip';
-import { ClipPlayer } from './clip-player';
+import { ClipPlayer, ClipSharpness } from './clip-player';
 import { MAX_PIXEL_RATIO } from './drawn-still';
 import { type ExampleFiles, type ExampleFilesDeps, exampleFiles } from './example-files';
 import { LAND_NOT_MADE } from './ShowcaseCard';
@@ -101,6 +106,10 @@ export function ClipView(props: ClipViewProps) {
   scriptingRef.current = scripting;
   const callbacks = useRef(props);
   callbacks.current = props;
+  // The clip's sharpness: one per card, stepping down on a slow machine.
+  const sharpness = useMemo(() => new ClipSharpness(clip.id, MAX_PIXEL_RATIO), [clip.id]);
+  const [pixelRatio, setPixelRatio] = useState(sharpness.ratio);
+  useEffect(() => setPixelRatio(sharpness.ratio), [sharpness]);
 
   useEffect(() => {
     let live = true;
@@ -152,6 +161,9 @@ export function ClipView(props: ClipViewProps) {
     if (player !== null && player.groundFailed !== null && !landFailed) setLandFailed(true);
     // The clip starts with its first drawn frame (B565: the resources load first).
     if (player === null || ended.current || coverLeft.current < 0) return;
+    if (sharpness.frame(elapsed)) setPixelRatio(sharpness.ratio);
+    const frames = Math.round(sharpness.medianFrameMs);
+    if (host.current !== null && frames > 0) host.current.dataset.frameMs = String(frames);
     player.advance(elapsed);
     if (player.loops > loops.current) {
       loops.current = player.loops;
@@ -197,7 +209,12 @@ export function ClipView(props: ClipViewProps) {
 
   const label = `Clip: ${clip.title}`;
   return (
-    <div ref={host} className="relative size-full" data-testid={`showcase-clip-${clip.id}`}>
+    <div
+      ref={host}
+      className="relative size-full"
+      data-testid={`showcase-clip-${clip.id}`}
+      data-pixel-ratio={pixelRatio}
+    >
       {playing !== null && player !== null && vehicles !== null && (
         <TryItScene
           grid={player.area.source.world}
@@ -211,7 +228,7 @@ export function ClipView(props: ClipViewProps) {
           vehicles={vehicles}
           fluids={fluids}
           partialTick={() => player.alpha}
-          maxPixelRatio={MAX_PIXEL_RATIO}
+          maxPixelRatio={pixelRatio}
           onFrame={onFrame}
           onFrameDrawn={onFrameDrawn}
           onWebGLUnavailable={() => callbacks.current.onWebGLUnavailable?.()}

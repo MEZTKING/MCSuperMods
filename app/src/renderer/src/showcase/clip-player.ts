@@ -686,3 +686,82 @@ function groundOf(clip: ShowcaseClip): GroundBlocks | undefined {
       return quickWorld(clip.ground.options);
   }
 }
+
+// The clip's sharpness (ADR 0128 D3 as amended by D6 of the plan after 1.5.8) ---------------
+
+/** The pixel ratios a clip steps through, sharpest first. */
+export const CLIP_PIXEL_RATIOS: readonly number[] = [2, 1.5, 1];
+/** The frames a clip's frame time is the median of. */
+export const CLIP_FRAME_WINDOW = 30;
+/** The slowest frame time a clip keeps its sharpness at: 24 frames a second. */
+export const CLIP_SLOW_FRAME_MS = 1000 / 24;
+
+/**
+ * The pixel ratio a clip draws at next, from the ratio it draws at now and the median of its
+ * last frame times: one step down ({@link CLIP_PIXEL_RATIOS}: 2, then 1.5, then 1) while the
+ * median is over {@link CLIP_SLOW_FRAME_MS}, else the same. Never below 1 and never up. Pure.
+ */
+export function nextPixelRatio(current: number, medianFrameMs: number): number {
+  const now = Number.isFinite(current) ? Math.max(1, current) : 1;
+  if (!(medianFrameMs > CLIP_SLOW_FRAME_MS)) return now;
+  for (const ratio of CLIP_PIXEL_RATIOS) if (ratio < now) return ratio;
+  return 1;
+}
+
+/** The median of `values` (0 for none). Pure. */
+export function medianOf(values: readonly number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1
+    ? (sorted[middle] ?? 0)
+    : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
+}
+
+/** The ratio each card's clip came down to this session, so it never goes up again. */
+const sessionRatios = new Map<string, number>();
+
+/** Forgets every card's ratio (tests). */
+export function clearClipRatios(): void {
+  sessionRatios.clear();
+}
+
+/**
+ * One card's clip sharpness: starts at the ratio the card came down to this session (else
+ * `start`), takes each frame's time and steps down by {@link nextPixelRatio} once it has
+ * {@link CLIP_FRAME_WINDOW} frames at the ratio it draws at (the frames start again after a step).
+ */
+export class ClipSharpness {
+  private readonly frames: number[] = [];
+  private readonly card: string;
+  private current: number;
+
+  constructor(card: string, start: number = CLIP_PIXEL_RATIOS[0] ?? 2) {
+    this.card = card;
+    this.current = Math.min(start, sessionRatios.get(card) ?? start);
+  }
+
+  /** The pixel ratio to draw at. */
+  get ratio(): number {
+    return this.current;
+  }
+
+  /** The median of the frames kept (0 before the first). */
+  get medianFrameMs(): number {
+    return medianOf(this.frames);
+  }
+
+  /** Takes one frame's time; returns whether the ratio changed. */
+  frame(elapsedMs: number): boolean {
+    if (!(elapsedMs > 0)) return false;
+    this.frames.push(elapsedMs);
+    if (this.frames.length > CLIP_FRAME_WINDOW) this.frames.shift();
+    if (this.frames.length < CLIP_FRAME_WINDOW) return false;
+    const next = nextPixelRatio(this.current, this.medianFrameMs);
+    if (next === this.current) return false;
+    this.current = next;
+    this.frames.length = 0;
+    sessionRatios.set(this.card, next);
+    return true;
+  }
+}

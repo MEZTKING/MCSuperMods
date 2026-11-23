@@ -74,7 +74,6 @@ import {
   type Idea,
   type IdeaInput,
   type IdeaSpec,
-  ideaClipId,
   ideaPicture,
   ideaPlan,
   queueIdea,
@@ -178,8 +177,6 @@ export interface IdeaListProps {
   readonly visible?: boolean;
   /** **Make this**. */
   readonly onMake: (idea: Idea) => void;
-  /** Says which card plays (its clip id) or `null`, so the host keeps one clip on Home. */
-  readonly onLiveChange?: (clipId: string | null) => void;
   /** Test hooks. */
   readonly environment?: IdeasEnvironment;
   readonly liveEnvironment?: LiveClipEnvironment;
@@ -403,13 +400,6 @@ export function IdeaList(props: IdeaListProps) {
   const mayPlay = useHomeLive(wanted === null ? null : { id: `idea-${wanted}`, by: 'user' });
   const liveKey = mayPlay ? wanted : null;
   const once = !playsByItself(state);
-  const liveIdea = liveKey === null ? undefined : ready.get(Number(liveKey));
-  const liveClipId = liveIdea === undefined ? null : ideaClipId(liveIdea);
-  const { onLiveChange } = props;
-  useEffect(() => {
-    onLiveChange?.(liveClipId);
-  }, [liveClipId, onLiveChange]);
-  useEffect(() => () => onLiveChange?.(null), [onLiveChange]);
 
   const toggle = useCallback(
     (index: number) => {
@@ -584,7 +574,7 @@ export function IdeaList(props: IdeaListProps) {
       <ul
         ref={list}
         aria-label="More ideas"
-        className="relative m-0 mx-auto list-none p-0"
+        className="relative m-0 list-none p-0"
         style={{
           width: columns * (IDEA_CARD_WIDTH + IDEA_GAP) - IDEA_GAP,
           height: total * IDEA_ROW - IDEA_GAP,

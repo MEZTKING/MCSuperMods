@@ -14,7 +14,13 @@ import { useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MoreIdeas } from '../../../src/renderer/src/components/home/MoreIdeas';
 import type { IdeasEnvironment } from '../../../src/renderer/src/ideas/IdeaList';
-import { type IdeasView, ideaSeed } from '../../../src/renderer/src/ideas/idea-seeds';
+import {
+  IDEA_OVERSCAN,
+  IDEA_ROW,
+  type IdeasView,
+  ideaColumns,
+  ideaSeed,
+} from '../../../src/renderer/src/ideas/idea-seeds';
 import { clearIdeas, type Idea } from '../../../src/renderer/src/ideas/ideas';
 import { builtInPlugins } from '../../../src/renderer/src/plugins/built-in';
 import type { ClipViewProps } from '../../../src/renderer/src/showcase/ClipView';
@@ -100,14 +106,12 @@ function ideas(
   const scroller = view(start);
   const onMake = vi.fn<(idea: Idea) => void>();
   const onShuffle = vi.fn();
-  const onLiveChange = vi.fn();
   const props = {
     baseSeed: base,
     input,
     deps,
     onMake,
     onShuffle,
-    onLiveChange,
     environment: scroller.env,
     liveEnvironment: liveEnv(),
     webgl: false,
@@ -117,7 +121,7 @@ function ideas(
     ...extra,
   };
   const utils = render(<MoreIdeas {...props} />);
-  return { ...utils, props, scroller, onMake, onShuffle, onLiveChange };
+  return { ...utils, props, scroller, onMake, onShuffle };
 }
 
 /** Waits until card `index`'s idea is in, and returns its Make this. */
@@ -148,6 +152,8 @@ describe('More ideas', () => {
   }, 60_000);
 
   it('mounts new cards as the view scrolls and unmounts the far ones', async () => {
+    // The cards of the rows within the overscan of a 900-high view, one cut at each end.
+    const most = ideaColumns(1200) * (Math.ceil((900 + 2 * IDEA_OVERSCAN) / IDEA_ROW) + 1);
     const { scroller } = ideas({ top: 0, height: 900, width: 1200 });
     const first = indices();
     expect(first[0]).toBe(0);
@@ -155,7 +161,7 @@ describe('More ideas', () => {
     scroller.scroll({ top: -40_000, height: 900, width: 1200 });
     const far = indices();
     expect(far[0]).toBeGreaterThan(400);
-    expect(far.length).toBeLessThanOrEqual(32);
+    expect(far.length).toBeLessThanOrEqual(most);
     expect(screen.queryByTestId('idea-card-0')).toBeNull();
     await waitFor(() =>
       expect(screen.getByTestId('ideas-status').textContent).toMatch(/more ideas below/),
@@ -163,7 +169,7 @@ describe('More ideas', () => {
     scroller.scroll({ top: -200_000, height: 900, width: 1200 });
     const further = indices();
     expect(further[0]).toBeGreaterThan(2400);
-    expect(further.length).toBeLessThanOrEqual(32);
+    expect(further.length).toBeLessThanOrEqual(most);
     // The list keeps its height for the cards scrolled past.
     const list = screen.getByRole('list', { name: 'More ideas' });
     expect(Number.parseInt(list.style.height, 10)).toBeGreaterThan(200_000);
@@ -207,18 +213,13 @@ describe('More ideas', () => {
   }
 
   it('plays one clip on hover, through the Showcase’s rule', async () => {
-    const { onLiveChange } = ideas(
-      { top: 0, height: 2000, width: 300 },
-      { webgl: true, clipView: FakeClipView },
-    );
+    ideas({ top: 0, height: 2000, width: 300 }, { webgl: true, clipView: FakeClipView });
     const index = await cardWithClip(6);
     expect(mounted.size).toBe(0);
     fireEvent.pointerEnter(screen.getByTestId(`idea-card-${index}`));
     expect(mounted.size).toBe(1);
-    expect(onLiveChange).toHaveBeenLastCalledWith([...mounted][0]);
     fireEvent.pointerLeave(screen.getByTestId(`idea-card-${index}`));
     expect(mounted.size).toBe(0);
-    expect(onLiveChange).toHaveBeenLastCalledWith(null);
   }, 90_000);
 
   it('plays nothing by itself with the setting off or reduced motion, until the play button', async () => {

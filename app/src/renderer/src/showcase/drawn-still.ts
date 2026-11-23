@@ -1,7 +1,7 @@
 /**
  * The showcase's drawn still (ADR 0118 D7, D9; B568): what a card shows before its clip has
  * played once, and always without WebGL. Up to three of the example's own pictures (its block
- * pictures first, then its items', then the rest), each scaled by a whole number without
+ * pictures first, then its items', then the rest; never a model's skin sheet), each scaled by a whole number without
  * smoothing, side by side on a tint taken from the first picture.
  *
  * - {@link stillPictures} and {@link composeStill} are pure: the same pictures give the same
@@ -66,12 +66,73 @@ const PLAIN_TINT: readonly [number, number, number] = [58, 66, 74];
 const ORDER = ['textures/block/', 'textures/item/'];
 
 /**
- * The pictures a drawn still shows: the bundle's PNGs under `textures/`, block pictures first,
- * then items', then the rest, each group in bundle order; at most {@link STILL_PICTURES}.
+ * The kinds whose `texture` (or `skin`) is a model's skin sheet: a flat unfolded body that reads
+ * as noise on a card (the user's look at 1.5.8: a vehicle's still was busy).
+ */
+const SKIN_KINDS: ReadonlySet<string> = new Set([
+  'msm:entity',
+  'msm:vehicle',
+  'msm:geo_model',
+  'msm:boat',
+]);
+/** The keys under which a skin kind names its sheet. */
+const SKIN_KEYS: ReadonlySet<string> = new Set(['texture', 'textures', 'skin']);
+/** The keys of a skin kind's own item pictures (a spawn egg, a vehicle's item): not skins. */
+const ITEM_KEYS: ReadonlySet<string> = new Set(['spawn_egg', 'item']);
+
+/** Every string under a skin key of `value`, at any depth, but under an item key. */
+function skinIds(value: unknown, under: boolean, into: Set<string>): void {
+  if (typeof value === 'string') {
+    if (under) into.add(value);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const one of value) skinIds(one, under, into);
+    return;
+  }
+  if (value === null || typeof value !== 'object') return;
+  for (const [key, one] of Object.entries(value)) {
+    if (!ITEM_KEYS.has(key)) skinIds(one, under || SKIN_KEYS.has(key), into);
+  }
+}
+
+/**
+ * The asset paths of the bundle's skin sheets: every texture a mob, vehicle, boat or geo model
+ * names as its `texture` or `skin` (`ns:entity/kart` is `textures/entity/kart.png`).
+ */
+export function skinSheetPaths(bundle: ContentBundle): Set<string> {
+  const ids = new Set<string>();
+  for (const element of bundle.elements) {
+    if (SKIN_KINDS.has(element.kind)) skinIds(element.data, false, ids);
+  }
+  const paths = new Set<string>();
+  for (const id of ids) {
+    const path = id.includes(':') ? id.slice(id.indexOf(':') + 1) : id;
+    paths.add(`textures/${path.replace(/^textures\//, '').replace(/\.png$/, '')}.png`);
+  }
+  return paths;
+}
+
+/** Whether `path` is a skin sheet by its folder: `textures/entity/` or an `entity/` below it. */
+function inEntityFolder(path: string): boolean {
+  return path.startsWith('textures/entity/') || path.slice('textures/'.length).includes('/entity/');
+}
+
+/**
+ * The pictures a drawn still shows: the bundle's PNGs under `textures/` but a model's skin
+ * sheets (under `textures/entity/`, or named by a mob, vehicle, boat or geo model,
+ * {@link skinSheetPaths}), block pictures first, then items', then the rest, each group in
+ * bundle order; at most {@link STILL_PICTURES}. A mob or vehicle with nothing else shows none,
+ * and its card shows its own drawn look (`card-picture.ts`).
  */
 export function stillPictures(bundle: ContentBundle): ContentBundleAsset[] {
+  const skins = skinSheetPaths(bundle);
   const pngs = bundle.assets.filter(
-    (asset) => asset.path.startsWith('textures/') && asset.path.endsWith('.png'),
+    (asset) =>
+      asset.path.startsWith('textures/') &&
+      asset.path.endsWith('.png') &&
+      !inEntityFolder(asset.path) &&
+      !skins.has(asset.path),
   );
   const rank = (asset: ContentBundleAsset): number => {
     const at = ORDER.findIndex((prefix) => asset.path.startsWith(prefix));

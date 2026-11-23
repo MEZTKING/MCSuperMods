@@ -54,7 +54,7 @@ function RowSkeleton() {
       {[0, 1, 2, 3, 4, 5, 6].map((index) => (
         <span
           key={index}
-          className="block shrink-0 animate-pulse rounded-md border border-border bg-border/30 motion-reduce:animate-none"
+          className="block shrink-0 animate-pulse rounded-lg border border-border bg-border/30 motion-reduce:animate-none"
           style={{ width: IDEA_CARD_WIDTH, height: IDEA_CARD_HEIGHT }}
         />
       ))}

@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   IDEA_FIRST_ROWS,
   IDEA_MAX_SEED,
+  IDEA_OVERSCAN,
   IDEA_ROW,
   ideaColumns,
   ideaSeed,
@@ -82,7 +83,10 @@ describe('the window of the grid', () => {
     for (let top = 0; top > -200_000; top -= 5_000) {
       const window_ = ideasWindow({ top, height: 900, width }, rows);
       expect(window_.rows).toBeGreaterThanOrEqual(rows);
-      expect(window_.last - window_.first + 1).toBeLessThanOrEqual(8);
+      // The rows within the overscan of the view, and one cut at each end: 9 at 299 a row.
+      expect(window_.last - window_.first + 1).toBeLessThanOrEqual(
+        Math.ceil((900 + 2 * IDEA_OVERSCAN) / IDEA_ROW) + 1,
+      );
       expect((window_.last + 1) * IDEA_ROW).toBeGreaterThan(-top + 900);
       rows = window_.rows;
     }
@@ -152,9 +156,9 @@ describe('an idea', () => {
     await ideaPicture(idea, 1.5, codec);
     await ideaPicture(idea, 2, codec);
     expect(sizes).toEqual([
-      [256, 144],
-      [384, 216],
-      [512, 288],
+      [240, 150],
+      [360, 225],
+      [480, 300],
     ]);
   }, 60_000);
 
