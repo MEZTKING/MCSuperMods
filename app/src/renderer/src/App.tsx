@@ -4252,11 +4252,19 @@ export function App({
                     data-door={searchDoor.door}
                     className="fixed top-[6vh] left-1/2 z-50 flex max-h-[88vh] w-[min(96vw,1040px)] -translate-x-1/2 flex-col overflow-auto rounded-md border border-border bg-panel p-3 text-text shadow-lg"
                     onCloseAutoFocus={(event) => {
-                      // Focus goes back where it was when the search opened (ADR 0124 D11).
+                      // Focus goes back where it was when the search opened (ADR 0124 D11),
+                      // unless a result's action already moved it into what it opened (the
+                      // mod's name, the Creator): taking it back would leave that dialog
+                      // without the focus, and Enter would reopen the search.
                       event.preventDefault();
                       const back = searchReturn.current;
                       searchReturn.current = null;
-                      if (back?.isConnected === true) back.focus();
+                      const active = document.activeElement;
+                      const moved =
+                        active instanceof HTMLElement &&
+                        active !== document.body &&
+                        active.closest('[data-testid="search-dialog"]') === null;
+                      if (back?.isConnected === true && !moved) back.focus();
                     }}
                   >
                     <Dialog.Title className="sr-only">{searchText.fieldLabel}</Dialog.Title>
