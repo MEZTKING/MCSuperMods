@@ -10240,3 +10240,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - The B560 e2e could now drop its explicit namespace choice and its "either chip" allowance (not done: e2e not run here).
+## 2026-11-23 — executor — B632 the AI helper's words, the guide and the changelog for looks and sounds
+
+**What**
+- New topic file `packages/ai/src/prompt/looks.ts`, placed after the data live views in `prompt/index.ts` and exported from `@msm/ai`: "Live views of looks and sounds" (the kinds of the looks registry in plain words, Play beside every sound picker, the Studios that draw theirs, My things' "Particles and sounds"; the helper sends the user to "Preview" or "See it" and never says what a view shows) and "Limits of the looks" (3L1 to 3L12 in plain words, with B629's wording for 3L7: MSM's own test picture with stand-in values, the game's core shaders a compile check only; B625, B627 and B628's notes: vanilla effect colours, hats, babies and collars, shields not measured). Constants `LOOKS_PROMPT_KINDS` (all 32 kinds of `LOOKS_VIEWS`, to their words) and `LOOKS_PROMPT_LABELS`. 1,630 characters with its line break.
+- New sibling truth test `app/test/ai-prompt-truth.looks.test.ts`: the kinds both ways against `LOOKS_VIEWS` (read as source), `LOOKS_PANEL_KINDS` each a plugin kind with a live Preview, `LOOKS_STUDIO_KINDS` each a plugin kind, each kind's words in the paragraph; every quoted label a constant's and in its component's source; `SOUND_PICKERS` not empty; the limits' words; six mutation cases.
+- Budget: rebased onto the branch with the Try it commands (prompt 102,025, budget 103,000); the topic takes it to 103,655, so the budget is 104,000 in both tests, with a B632 line in ADR 0125 D7; the hash re-pinned with its line. `PROMPT_PREFIX_CHARS` in `packages/ai/src/models.ts` set to the measured 126,090 (was 118,324), because `models.test.ts` failed at 6.1 % off after this topic.
+- Guide: `docs/guide/live-views.md` gains **Looks and sounds** (sounds and Play, fonts, particles and waypoint styles, the day strip, variants, villagers and sulfur cubes, paintings, banners, trims and pots, potions, effects and tabs, shaders and post effects, songs and horn calls, the Creator and My things) and **Limits of looks and sounds** (3L1 to 3L12 and the views' own notes); `sounds.md` gains **Hear a sound** and a limit line; `very-easy.md`'s My things paragraph names **Particles and sounds**. `CHANGELOG.md` `[Unreleased]` gains eight Added lines.
+- Checks: `@msm/ai` tests (7 files, 144), the app's AI tests and AI settings with `--maxWorkers=2` (15 files, 194), `pnpm lint`, `pnpm typecheck`, the docs site build (`pnpm build` in `docs/site`; its output deleted).
+
+**Decisions**
+- Kinds that share one view share one phrase ("the seven mob variants", "their four sound sets", "armour trims", "timelines and world clocks"), to keep the topic short; the test still pins each kind.
+- No kind ids are quoted in the topic, so the main truth test's quoted-kind rule does not need them.
+- The `models.ts` change is outside the brief's owner list; it is the measured value the test asks for, and it moves the typical first-question cost on Opus from about $0.28 to about $0.29.
+
+**Next**
+- `docs/guide/ai-helper.md` still says a first question costs about $0.27 (it was $0.28 before this brief); the README row of `live-views.md` and the sidebar title could name looks and sounds (not this brief's files).
+- The plan's 3L7 still reads "a still frame of Try it"; B633 may change it to MSM's test picture.
+- B633: the audit rows and the close.

@@ -12,6 +12,7 @@ import { CORE_HEAD, CORE_MIDDLE, CORE_TAIL } from './core';
 import { EFFECTS } from './effects';
 import { GAMES } from './games';
 import { LIVE_VIEWS } from './live-views';
+import { LOOKS } from './looks';
 import { MOBS } from './mobs';
 import { MOBS_AND_COMMANDS } from './mobs-commands';
 import { HOW_TO_WORK } from './modes';
@@ -50,6 +51,7 @@ export {
   LIVE_VIEW_PROMPT_LABELS,
   LIVE_VIEW_PROMPT_TAG_REGISTRIES,
 } from './live-views';
+export { LOOKS_PROMPT_KINDS, LOOKS_PROMPT_LABELS } from './looks';
 export * from './mobs-commands';
 export { HOW_TO_WORK, PLAN_FIRST_ABOVE } from './modes';
 export * from './not-available';
@@ -111,6 +113,7 @@ const PARAGRAPHS = [
   GAMES,
   TRY_IT,
   LIVE_VIEWS,
+  LOOKS,
   APP_MAP,
   CORE_TAIL,
 ].join('\n');

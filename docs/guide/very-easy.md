@@ -97,7 +97,7 @@ Everything a surprise makes is one step, so **Undo** takes all of it back. Each 
 
 ## My things
 
-Below the tiles, **My things** has a card for each thing you made: a set from the Creator (a gear set is one card), or a loose block, item, mob, effect, potion, portal, **Village job**, **Liquid** or rule book, with its picture. A **Village job** card (its profession, workbench block and trades are one card) opens at the job, and a **Liquid** card opens the liquid, not its block or bucket. Choose a card to open it in its editor; the editor shows the parts that matter and keeps the rest away. A **Rules** section comes first in the block, item, mob and effect editors, so the quickest way to make a thing do something is to open it and add a rule ([Rules](rules.md)).
+Below the tiles, **My things** has a card for each thing you made: a set from the Creator (a gear set is one card), or a loose block, item, mob, effect, potion, portal, **Village job**, **Liquid** or rule book, with its picture. A **Village job** card (its profession, workbench block and trades are one card) opens at the job, and a **Liquid** card opens the liquid, not its block or bucket. Choose a card to open it in its editor; the editor shows the parts that matter and keeps the rest away. Under the cards, **Particles and sounds** has a card for each particle and each sound of your mod, with **Play** on a sound's card; choose one to see it or hear it ([Live views](live-views.md#looks-and-sounds)). A **Rules** section comes first in the block, item, mob and effect editors, so the quickest way to make a thing do something is to open it and add a rule ([Rules](rules.md)).
 
 A card's menu has:
 

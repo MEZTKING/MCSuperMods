@@ -34,6 +34,12 @@ Anything left empty is the set type's. So an iron door that opens by hand, or a 
 
 The Creator's **Wood set** flow ([The Creator](creator.md)) asks **Door and trapdoor sounds**: **As the kind of wood**, **Heavy metal, as an iron door**, **Light metal, as a copper door** or **A soft thud, as a barrel**. **Own door sound** takes an Ogg Vorbis file of your own (at most 4 MB): it plays as they open, and a little lower as they close. A fence gate keeps the sounds of its **Wood type**.
 
+## Hear a sound
+
+Every line of **How it sounds** has a **Play** button once it names a sound: it plays the sound at the block's own volume and pitch, and for an event with several files it picks one by their weights, as the game does. Press it again (**Stop**) to stop; one sound plays at a time. **Play** is also beside every other sound you pick (the Studios' sound fields, the sound slots of Rules, the Creator's song field) and on every event and file of the **Sounds** element's **Preview** ([Live views](live-views.md#hear-every-sound)); in Very easy mode, **My things** lists your sounds under **Particles and sounds**.
+
+Your own sounds always play. Minecraft's own sounds are read from your Minecraft folder when you press **Play**, never copied into your project; without your Minecraft folder set up, their button is off and offers **Find my Minecraft**. A sound here is heard flat: no distance, no echo and no sound category volume. Walking, landing and mining sounds are heard in the game.
+
 ## Templates and examples
 
 **Add element** (Ctrl+N), category **Blocks**: **Block with its own sounds** (a block that sounds like amethyst, a little higher) and **Door with its own sounds** (a wooden door that opens by hand but sounds like an iron door). The sample project `fixtures/sample-plants-and-storage` has a chiming stone and a creaky door ([Templates, starters and examples](templates-and-examples.md)).
@@ -62,6 +68,7 @@ On 26.3 the sounds are part of the block. On 26.4 a block's sounds are a data en
 - **Restart needed** for a new block. On 26.4 a change of sounds needs the world opened again; on 26.3 a restart.
 - **Signs sound like their wood type**, and a fence gate like its **Wood type**.
 - **Try it** shows own sounds as captions when you place, break and open things; walking, mining and landing sounds are only in the game ([Try it](try-it.md)).
+- **Heard flat in the app.** **Play** has no distance, echo or sound category volume, and Minecraft's own sounds need your Minecraft folder set up.
 - **Hear it in the game.** How a sound feels is an in-game check: Play, walk on the block, break it and open the door.
 
 The other chapters are listed in the [user guide](/).

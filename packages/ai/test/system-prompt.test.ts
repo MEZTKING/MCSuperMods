@@ -922,7 +922,9 @@ describe('the prompt in topic files (B681)', () => {
   // B561 moved it for the games topic (`src/prompt/games.ts`: the games kinds, the game flows,
   // Play my game, maps, builds from the game, Try it's games grounds and the limits).
   // Try it's commands moved it for advancement, spawnpoint and team in the Try it commands list.
-  const PINNED = '3ac85726280b82e4387026345e010f21c2b76e5966591c09eca97422561b3424';
+  // B632 moved it for the looks and sounds topic (`src/prompt/looks.ts`: the kinds with a look or
+  // Play, their labels and the limits 3L1 to 3L12).
+  const PINNED = '11614bd4dbc52e01e5e7e16e37a54f10d57c7417d93fce6663327cc5bd2c89c1';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -963,8 +965,8 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
     expect(text).not.toMatch(/build mode|chat mode|switch to/i);
   });
 
-  it('stays within its size budget of 103,000 characters (ADR 0125 D7, raised by B617, B553, B561 and the Try it commands)', () => {
-    expect(text.length).toBeLessThanOrEqual(103_000);
+  it('stays within its size budget of 104,000 characters (ADR 0125 D7, raised by B617, B553, B561 the Try it commands and B632)', () => {
+    expect(text.length).toBeLessThanOrEqual(104_000);
   });
 
   it('F8 a: boats are the msm:boat component, never "not available"', () => {
