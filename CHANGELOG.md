@@ -6,14 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-### Added
-
-- **Play in more places.** A damage type's live view plays the hurt sound it gives a player, and a sound picked in a rule has a small Play button beside it.
+Nothing yet since 1.5.5.
 
 ## [1.5.5] - 2026-11-23
 
 ### Added
 
+- **Play in more places.** A damage type's live view plays the hurt sound it gives a player, and a sound picked in a rule has a small Play button beside it.
 - **Search everything.** A bar headed "What do you want to make?" on Home and in the empty editor, a "Search or make anything" field on the toolbar, and Edit > Search… (Ctrl+K, Cmd+K on a Mac) find flows, starters, examples, your own things, Minecraft's things, settings, commands and guide pages, even misspelt or in American spelling. A result can be made at once (**Make this**), added to your mod, opened or shown in the guide; the palette (Ctrl+Shift+P) is ranked by the same search.
 - **The AI helper searches the library first.** It finds the starter or flow that fits your words, with the answers your words gave, before it builds; **Ask the helper** in search opens it with your words ready to send.
 - **Adventure mode lists for items.** The Item Studio has an **Adventure mode** section with **Can break** and **Can place on**: pick the blocks (your own or Minecraft's) or whole groups of blocks a player in Adventure mode may break with the item or use it on, for adventure maps. The item's tooltip shows the lines the game adds.

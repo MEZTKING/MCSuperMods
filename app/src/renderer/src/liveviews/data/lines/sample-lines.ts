@@ -26,7 +26,7 @@ export const SAMPLE = Object.freeze({
 
 /**
  * The sound a player makes when hurt by a damage type, by its `effects` (`hurt` when absent): the
- * game's damage effects, the same on 26.3 and 26.4-snapshot-7 (both targets' sound event
+ * game's damage effects, the same on every target (both targets' sound event
  * registries name all six). A mob hurt by it makes its own hurt sound instead.
  */
 export const DAMAGE_EFFECT_SOUNDS: Readonly<Record<string, string>> = Object.freeze({
