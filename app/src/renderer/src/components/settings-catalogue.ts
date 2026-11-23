@@ -49,6 +49,39 @@ export const SETTINGS_CATALOGUE: readonly SettingsCatalogueEntry[] = [
     words: ['prism', 'multimc', 'polymc', 'curseforge', 'launcher folder', 'instances'],
   },
   {
+    id: 'instances-list',
+    title: 'Instances MSM made',
+    sentence:
+      'See, open or remove the launcher instances and servers MCSuperMods made for playing and testing.',
+    section: 'Game locations',
+    words: [
+      'instance',
+      'instances',
+      'test instance',
+      'managed instance',
+      'server',
+      'remove instance',
+      'delete instance',
+      'recycle bin',
+      'show in folder',
+    ],
+  },
+  {
+    id: 'instances-ask',
+    title: 'Ask before making an instance',
+    sentence: 'Choose whether MCSuperMods asks before it makes a launcher instance or a server.',
+    section: 'Game locations',
+    words: [
+      'make an instance',
+      'new instance',
+      'ask',
+      'confirm',
+      'offer',
+      'by itself',
+      'automatic',
+    ],
+  },
+  {
     id: 'vanilla-assets',
     title: 'Vanilla assets',
     sentence:

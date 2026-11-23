@@ -18,6 +18,7 @@ import { EMPTY_HISTORY } from '../../src/renderer/src/search/history';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
 import type {
   AppSettingsView,
+  InstancesPlatform,
   WorldBackupList,
   WorldBackupsPlatform,
 } from '../../src/shared/platform';
@@ -71,6 +72,25 @@ const backups = (): WorldBackupsPlatform => ({
   openFolder: vi.fn(async () => {}),
 });
 
+const instances = {
+  list: vi.fn(async () => [
+    {
+      id: 'instance:/prism/instances/MCSuperMods Test (26.3)',
+      kind: 'test' as const,
+      name: 'MCSuperMods Test (26.3)',
+      owner: null,
+      mcVersion: '26.3',
+      loader: { kind: 'fabric' as const, version: '0.20.1' },
+      launcher: 'prism' as const,
+      path: '/prism/instances/MCSuperMods Test (26.3)',
+      eulaAccepted: null,
+      running: false,
+    },
+  ]),
+  remove: vi.fn(async () => ({ ok: true as const })),
+  showInFolder: vi.fn(async () => ({ ok: true as const })),
+} as unknown as InstancesPlatform;
+
 /** The dialog with every section and every line a control can sit in. */
 function renderFull(extra: Partial<SettingsDialogProps> = {}) {
   return render(
@@ -94,6 +114,7 @@ function renderFull(extra: Partial<SettingsDialogProps> = {}) {
       ai={fakeAi()}
       aiPictures={fakePictures()}
       worldBackups={backups()}
+      instances={instances}
       {...extra}
     />,
   );
@@ -104,6 +125,10 @@ async function loaded(): Promise<HTMLElement> {
   const dialog = screen.getByTestId('settings-dialog');
   await waitFor(() => {
     expect(dialog.querySelector('[data-setting="backups-restore"]')).not.toBeNull();
+    expect(dialog.querySelector('[data-testid="settings-instance-0"]')).not.toBeNull();
+    expect((screen.getByTestId('settings-instances-ask') as HTMLSelectElement).disabled).toBe(
+      false,
+    );
     expect((screen.getByTestId('settings-ai-model') as HTMLSelectElement).disabled).toBe(false);
     expect(screen.getByTestId('settings-ai-pictures-status').textContent).not.toBe('Checking…');
     expect((screen.getByTestId('settings-auto-update') as HTMLInputElement).disabled).toBe(false);

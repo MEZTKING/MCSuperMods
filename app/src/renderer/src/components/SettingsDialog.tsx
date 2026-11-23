@@ -7,6 +7,7 @@ import type {
   AiPlatform,
   AppSettingsPatch,
   AppSettingsView,
+  InstancesPlatform,
   MinecraftStatus,
   WorldBackupsPlatform,
 } from '../../../shared/platform';
@@ -22,6 +23,7 @@ import {
   type ManualLauncher,
   type ManualLauncherRoot,
 } from './install-target';
+import { InstanceList } from './instances/InstanceList';
 import { fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
 import { WorldBackupsSection } from './WorldBackupsSection';
@@ -83,6 +85,11 @@ export interface SettingsDialogProps {
   onAiPicturesChanged?: (() => void) | undefined;
   /** Main's world backups (ADR 0102 D3); the "World backups" section is shown only with them. */
   worldBackups?: WorldBackupsPlatform | undefined;
+  /**
+   * Main's instances (ADR 0133); "Instances MSM made" is shown only with them. Defaults to the
+   * preload's `window.msm.instances` when the host passes none.
+   */
+  instances?: InstancesPlatform | undefined;
   /**
    * `'ai'`: opened from the AI helper (ADR 0125 D5): the dialog opens scrolled to the helper's
    * section with its key field focused, and keeps it in view while the sections above load,
@@ -630,6 +637,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
     status !== null &&
     ((status.chosen !== null && status.minecraftDir !== null) || jarSource !== null);
   const heldBy = overrideInstance(view?.minecraftDir ?? null, props.locations);
+  const instances =
+    props.instances ?? (globalThis as { msm?: { instances?: InstancesPlatform } }).msm?.instances;
 
   return (
     <Dialog.Root
@@ -791,6 +800,10 @@ export function SettingsDialog(props: SettingsDialogProps) {
                   </ul>
                 )}
               </div>
+            )}
+
+            {instances !== undefined && (
+              <InstanceList instances={instances} load={load} save={saveSettings} />
             )}
 
             <div className="flex min-w-0 flex-col gap-1.5" data-setting="vanilla-assets">
