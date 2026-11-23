@@ -11071,3 +11071,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - The Try it view gets about 560 px between the element list and the dock at 1200 px and 260 px at 900 px, and the toolbar wraps to two rows (three at 900 px): ADR 0131's one row (B700) gives Try it back some height; the first-run card and the hold picker are still inside the picture.
+
+## 2026-11-23 — orchestrator — Plans for the Game and map Studio, instances and Paper
+
+**What**
+- Checked the games plugin, its Studios and flows, Rules for games, command handling, Try it, Play and Test in Minecraft, modpacks and the launcher readers against the code at b0c0ae9, and wrote three plans with draft ADRs: `docs/PLAN-game-studio.md` (ADR 0132, B720 to B759), `docs/PLAN-instances.md` (ADR 0133, B760 to B779) and `docs/PLAN-paper.md` (ADR 0134, B780 to B799). No code changed.
+- Found: no kind holds a whole game and flows lose their answers; Rules have no trigger for a player's death and need the jar; Try it runs 29 commands (not `attribute`, `gamemode`, `bossbar`, `worldborder`) and has one player; no command block or signal support; managed instances are Prism only, one per Minecraft version, always Fabric; no local server; no loader seam beside Fabric.
+
+**Decisions** (vetoable defaults; the hub, its tabs and the catalogue are the user's choice)
+- A game is one element (`msm:game`) made of mechanics, lowered to data pack files; `msm:kit`; practice players in Try it; the pill computed.
+- Instances are made from recipes and offered, never taken; a vanilla instance and a local server join the Fabric test instance.
+- Paper by one self-contained plugin jar built from a prebuilt runtime, API only, after a spike.
+
+**Next**
+- B720 and B760 in the two free slots; B780 when a slot frees; then wave A1.
+- Ask the user: the marks of Hide and seek and Prison; PaperMC's download service as a new source and what the app names itself to it; Java for a local server.

@@ -1063,3 +1063,62 @@ To be planned by the orchestrator with an ADR before any code; one target at a t
 - [ ] **Quilt**: check that Fabric jars load (they should); document, no separate exporter unless a gap is found.
 - [ ] **Forge (legacy)**: only for older Minecraft versions if a target for them is ever added; not for 26.x.
 - [ ] Per loader: what Fabric cannot do that it can (to be listed in the ADR from evidence), the Studios that change (export dialog, Play/Test in Minecraft, modpacks), and the coverage audit's new column.
+
+### Game and map Studio (ADR 0132, `docs/PLAN-game-studio.md`, 2026-11-23)
+
+- [ ] B720 Spike: community games on a data pack (wave A0; Opus, high)
+- [ ] B721 Scaffold and stubs (wave A1; Opus, medium)
+- [ ] B722 Format: `msm:game` and `msm:kit` (wave A1; Opus, medium)
+- [ ] B723 Plugin API 1.27.0 and the facts (wave A1; Opus, medium)
+- [ ] B724 The round engine and kits (wave A2; Opus, high)
+- [ ] B725 Mechanics: hearts, the tracker and the head start (wave A2; Opus, high)
+- [ ] B726 Mechanics: the floor, falling out, team bases, generators and shops (wave A2; Opus, high)
+- [ ] B727 Try it runs the commands games use (wave A2; Opus, medium)
+- [ ] B728 Practice players and round scripts (wave A3; Opus, high; after B727)
+- [ ] B729 Rules 4 for games (wave A2; Opus, medium)
+- [ ] B730 The hub's shell (wave A3; Opus, high)
+- [ ] B731 The catalogue (wave A3; Opus, medium)
+- [ ] B732 The Game Studio and the Kit Studio (wave A3; Opus, high)
+- [ ] B733 Four types: starters, examples, arenas and art (wave A3; Opus, high; art recipes by Sonnet from a designer brief)
+- [ ] B734 The Map tab and the Test and share tab (wave A4; Opus, medium)
+- [ ] B735 Wiring: the app, Home, More, the palette and search (wave A4; Opus, medium)
+- [ ] B736 Fixture, parity tests and CI (wave A4; Opus, high; after B733)
+- [ ] B737 e2e (wave A5; Opus, medium)
+- [ ] B738 AI helper topic, guide and changelog lines (wave A5; Opus for the prompt, Sonnet for the guide)
+- [ ] B739 Close of batch 1 (wave A6; main session)
+- [ ] Batch 2: stories, the command builder and Command blocks tab, Lobby 2, eight more types
+- [ ] Modpack Studio (B750–B752)
+- [ ] Batch 3: the last types, several games behind one lobby
+- [ ] Batch 4: a signal engine in the sim, then the Redstone showroom
+
+### Instances for anything (ADR 0133, `docs/PLAN-instances.md`, 2026-11-23)
+
+- [ ] B760 Spike: launchers, instances and a local server (wave B0; Opus, high)
+- [ ] B761 Recipes and managed instances (wave B1; Opus, high)
+- [ ] B762 The local server in interop (wave B1; Opus, high; after B761's first commit)
+- [ ] B763 The main-process services and channels (wave B2; Opus, high)
+- [ ] B764 The offer card and the Settings list (wave B3; Opus, medium)
+- [ ] B765 Play and Test in Minecraft through recipes (wave B3; Opus, medium)
+- [ ] B766 Play without mods (wave B3; Opus, medium)
+- [ ] B767 A modpack's and a map's own instance (wave B4; Opus, medium; dialog lines after the running plan's B716)
+- [ ] B768 MultiMC and CurseForge (wave B4; Opus, medium)
+- [ ] B769 Play with friends (wave B4; Opus, medium)
+- [ ] B770 e2e (wave B5; Opus, medium)
+- [ ] B771 Guide, AI helper lines and changelog (wave B5; Sonnet for the guide, Opus for the prompt)
+- [ ] B772 Close (wave B5; main session)
+
+### Paper server plugins (ADR 0134, `docs/PLAN-paper.md`, 2026-11-23)
+
+- [ ] B780 Spike: Paper for game modes (wave C0; Opus, high)
+- [ ] B781 Scaffold (wave C1; Opus, medium)
+- [ ] B782 Plugin API 1.28.0 and the Paper facts (wave C1; Opus, medium)
+- [ ] B783 Paper runtime 1: the pack and the commands (wave C2; Opus, high)
+- [ ] B786 The exporter (wave C2; Opus, high)
+- [ ] B787 `tools/run-paper-server` and CI (wave C2; Opus, high)
+- [ ] B785 Format: the Paper settings of mechanics (wave C3; Opus, medium)
+- [ ] B784 Paper runtime 2: the games extras (wave C3; Opus, high)
+- [ ] B788 Export as a Paper plugin in the app (wave C4; Opus, medium)
+- [ ] B789 Play my game on a local Paper server (wave C4; Opus, medium)
+- [ ] B790 The games' parity on Paper (wave C4; Opus, high)
+- [ ] B791 e2e, guide, AI helper lines and changelog (wave C5)
+- [ ] B792 Close (wave C5; main session)
