@@ -24,4 +24,4 @@ MCSuperMods has three modes (`UiMode` `'very-easy' | 'easy' | 'advanced'`): Easy
 
 ## Status
 
-Accepted (2026-11-23, the user's choice). Supersedes ADR 0083's three-mode switch; amends ADR 0047.
+Proposed, revised before any code (2026-11-23): asked what I thought, the user then chose **one mode** that "explain[s] everything properly and easy", with extra settings for advanced users "if you look for it and need it", and asked to see examples first. Three ways of tucking the extras away were shown (per-section More options, one Show technical details switch, an Expert menu); this ADR is rewritten for the one-mode design once the user picks. No code changes before that.
