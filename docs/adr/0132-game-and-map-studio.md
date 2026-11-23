@@ -16,3 +16,5 @@ Drafted by the orchestrator (Fable) on 2026-11-23 in its plan; filed by the main
 - *D9.* No server's name, branding, map or art is used; genre names only.
 - *Consequences.* Three new kinds (`msm:game`, `msm:kit`, later `msm:story`) with Studios and live views; the audits grow; the renderer gains a lazy hub chunk; game flows written as function text (Arena game, Race) can later be re-made as types. Rules gain a death trigger and health steps. The spike's answers K1 to K21 and the limits join this ADR at the close of batch 1.
 - *Status.* Proposed. D1 and D9 are the user's; D2 to D8 are vetoable defaults.
+
+**Spike answers (B720, 2026-11-23):** all four batch 1 types play as a plain data pack on both targets; see `docs/PLAN-game-studio.md` "B720's answers" and `docs/reference/spikes/b720/README.md`. D5 gains the 26.x data pack forms; Hide and seek is "Plays without mods" in a simpler form (D1 mark follows the evidence); limits: "kept out" is server running time, adventure mode does not stop thrown things, displays cannot ride players, movement freezes and cross-dimension compasses are in-game checks.
