@@ -8,6 +8,8 @@ import {
   DATA_FILES_MAX,
   EventChannels,
   EXPORT_TREE_MAX_FILES,
+  GUIDE_INDEX_SECTIONS_MAX,
+  GUIDE_PAGE_MAX_CHARS,
   type InvokeChannel,
   InvokeChannels,
   ipcContract,
@@ -23,6 +25,8 @@ import {
   UPDATE_NOTES_MAX,
   type UpdateStatus,
   updateStatusSchema,
+  VANILLA_NAME_MAX,
+  VANILLA_NAMES_MAX,
   WORLDGEN_FILES_MAX,
 } from '../src/shared/ipc-contract';
 
@@ -952,6 +956,50 @@ const samples: Record<
     request: [undefined, { path: '/etc' }],
     response: [undefined, 'done'],
   },
+  [InvokeChannels.minecraftNames]: {
+    request: [{ targetId: 'mc-26.3' }, { targetId: '../mc-26.3' }],
+    response: [
+      {
+        version: '1.0',
+        blocks: { 'minecraft:made_up_rock': 'Made-up Rock' },
+        items: {},
+        entityTypes: {},
+        biomes: {},
+        effects: {},
+        enchantments: {},
+        potions: {},
+        subtitles: { 'entity.made_up.ambient': 'Made-up hums' },
+      },
+      { version: '1.0', blocks: { 'minecraft:made_up_rock': 'Made-up Rock' } },
+    ],
+  },
+  [InvokeChannels.guideIndex]: {
+    request: [undefined, { page: 'x' }],
+    response: [
+      {
+        pages: [{ page: 'made-up', title: 'Made-up' }],
+        sections: [
+          { page: 'made-up', level: 2, heading: 'A', anchor: 'a', sentence: 'A.' },
+          {
+            page: 'made-up',
+            level: 3,
+            heading: 'B 1.6',
+            anchor: 'b-1-6',
+            alias: 'b-16',
+            sentence: '',
+          },
+        ],
+      },
+      { pages: [{ page: '../x', title: 'X' }], sections: [] },
+    ],
+  },
+  [InvokeChannels.guidePage]: {
+    request: [{ page: 'vehicles' }, { page: '../secret' }],
+    response: [
+      { page: 'vehicles', markdown: '# Vehicles\n' },
+      { page: 'vehicles', markdown: '# Vehicles\n', path: '/etc' },
+    ],
+  },
 };
 
 describe('IPC contract', () => {
@@ -1064,6 +1112,56 @@ describe('IPC contract', () => {
     expect(answer({ loot_table: {} })).toBe(true);
     expect(answer({ loot_table: many })).toBe(false);
     expect(answer({ '../x': {} })).toBe(false);
+  });
+
+  it('bounds the vanilla names answer (ADR 0124 D3, B656)', () => {
+    const { response } = ipcContract[InvokeChannels.minecraftNames];
+    const empty = {
+      version: '1.0',
+      blocks: {},
+      items: {},
+      entityTypes: {},
+      biomes: {},
+      effects: {},
+      enchantments: {},
+      potions: {},
+      subtitles: {},
+    };
+    expect(response.safeParse(null).success).toBe(true);
+    expect(response.safeParse(empty).success).toBe(true);
+    const names = (blocks: unknown) => response.safeParse({ ...empty, blocks }).success;
+    expect(names({ 'minecraft:a': 'x'.repeat(VANILLA_NAME_MAX) })).toBe(true);
+    expect(names({ 'minecraft:a': 'x'.repeat(VANILLA_NAME_MAX + 1) })).toBe(false);
+    expect(names({ 'minecraft:a': '' })).toBe(false);
+    expect(names({ 'minecraft:a': 1 })).toBe(false);
+    for (const id of ['stone', 'minecraft:a/b', 'minecraft:a.b', 'other:a', 'minecraft:A']) {
+      expect(names({ [id]: 'A' }), id).toBe(false);
+    }
+    const many = Object.fromEntries(
+      Array.from({ length: VANILLA_NAMES_MAX + 1 }, (_, i) => [`minecraft:n${i}`, 'N']),
+    );
+    expect(names(many)).toBe(false);
+    expect(response.safeParse({ ...empty, subtitles: { '../x': 'A' } }).success).toBe(false);
+  });
+
+  it('bounds the guide index and pages (ADR 0124 D14, B656)', () => {
+    const index = ipcContract[InvokeChannels.guideIndex].response;
+    const section = { page: 'p', level: 2, heading: 'H', anchor: 'h', sentence: '' };
+    const ok = (sections: unknown[]) => index.safeParse({ pages: [], sections }).success;
+    expect(ok([section])).toBe(true);
+    expect(ok([{ ...section, level: 5 }])).toBe(false);
+    expect(ok([{ ...section, heading: '' }])).toBe(false);
+    expect(ok([{ ...section, sentence: 'x'.repeat(301) }])).toBe(false);
+    expect(ok(Array.from({ length: GUIDE_INDEX_SECTIONS_MAX + 1 }, () => section))).toBe(false);
+    const page = ipcContract[InvokeChannels.guidePage];
+    for (const name of ['README', 'live-world', 'a_b']) {
+      expect(page.request.safeParse({ page: name }).success, name).toBe(true);
+    }
+    for (const name of ['', '.', '..', 'a/b', 'a\\b', '-x', 'a.md', 'x'.repeat(65)]) {
+      expect(page.request.safeParse({ page: name }).success, name).toBe(false);
+    }
+    const big = 'x'.repeat(GUIDE_PAGE_MAX_CHARS + 1);
+    expect(page.response.safeParse({ page: 'p', markdown: big }).success).toBe(false);
   });
 
   it('bounds Try it world ids, centres and areas', () => {

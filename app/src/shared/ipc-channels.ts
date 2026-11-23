@@ -42,6 +42,7 @@ export const InvokeChannels = {
   minecraftListAssets: 'msm:v1:minecraft:listAssets',
   minecraftWorldgenFiles: 'msm:v1:minecraft:worldgenFiles',
   minecraftDataFiles: 'msm:v1:minecraft:dataFiles',
+  minecraftNames: 'msm:v1:minecraft:names',
   minecraftInstallResourcePack: 'msm:v1:minecraft:installResourcePack',
   minecraftListWorlds: 'msm:v1:minecraft:listWorlds',
   minecraftInstallDataPack: 'msm:v1:minecraft:installDataPack',
@@ -108,6 +109,8 @@ export const InvokeChannels = {
   worldBackupsList: 'msm:v1:worldBackups:list',
   worldBackupsRestore: 'msm:v1:worldBackups:restore',
   worldBackupsOpenFolder: 'msm:v1:worldBackups:openFolder',
+  guideIndex: 'msm:v1:guide:index',
+  guidePage: 'msm:v1:guide:page',
 } as const;
 
 /**

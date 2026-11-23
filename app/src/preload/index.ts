@@ -142,6 +142,7 @@ const bridge: MsmBridge = {
       ipcRenderer.invoke(InvokeChannels.minecraftWorldgenFiles, { mcVersion }),
     readDataFiles: (mcVersion, folders) =>
       ipcRenderer.invoke(InvokeChannels.minecraftDataFiles, { mcVersion, folders: [...folders] }),
+    readNames: (targetId) => ipcRenderer.invoke(InvokeChannels.minecraftNames, { targetId }),
     installResourcePack: (fileName, data) =>
       ipcRenderer.invoke(InvokeChannels.minecraftInstallResourcePack, { fileName, data }),
     listWorlds: () => ipcRenderer.invoke(InvokeChannels.minecraftListWorlds),
@@ -254,6 +255,10 @@ const bridge: MsmBridge = {
         fileName: request.fileName,
       }),
     openFolder: () => ipcRenderer.invoke(InvokeChannels.worldBackupsOpenFolder),
+  },
+  guide: {
+    index: () => ipcRenderer.invoke(InvokeChannels.guideIndex),
+    page: (page) => ipcRenderer.invoke(InvokeChannels.guidePage, { page }),
   },
   tryItWorlds: {
     listWorlds: () => ipcRenderer.invoke(InvokeChannels.tryItListWorlds),

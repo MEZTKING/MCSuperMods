@@ -311,6 +311,80 @@ export interface VanillaWorldgenFiles {
 }
 
 /**
+ * The sorts of vanilla thing {@link VanillaNames} names (ADR 0124 D3, B656): blocks, items,
+ * entity types, biomes, effects, enchantments, potions and sound subtitles.
+ */
+export const VANILLA_NAME_SORTS = [
+  'blocks',
+  'items',
+  'entityTypes',
+  'biomes',
+  'effects',
+  'enchantments',
+  'potions',
+  'subtitles',
+] as const;
+
+/** One sort of {@link VANILLA_NAME_SORTS}. */
+export type VanillaNameSort = (typeof VANILLA_NAME_SORTS)[number];
+
+/**
+ * The English names of a target's vanilla things from the `en_us.json` of the user's own client
+ * jar in the local asset cache (ADR 0124 D3, B656; `minecraft:names`), for the search's vanilla
+ * layer and, later, the ThingPicker. Nothing of it is bundled, stored beyond the cache, exported
+ * or written into a project. The text is raw: the search tokenises and folds it.
+ *
+ * Each sort maps an id (`minecraft:stone`) to its name; `potions` maps a potion id to the name
+ * of its bottle (`item.minecraft.potion.effect.<id>`); `subtitles` maps the tail of a subtitle
+ * key (`entity.zombie.ambient` of `subtitles.entity.zombie.ambient`), which for most sounds is
+ * the sound event's path, to the subtitle (the jar has no names of sound events or particles).
+ */
+export type VanillaNames = { version: string } & Record<
+  VanillaNameSort,
+  Readonly<Record<string, string>>
+>;
+
+/** One heading of a guide page in {@link GuideIndex} (ADR 0124 D14). */
+export interface GuideSection {
+  /** The page name (the file name without `.md`, such as `vehicles`). */
+  page: string;
+  /** 1 for the page title, 2 for `##`, 3 for `###`, 4 for `####`. */
+  level: 1 | 2 | 3 | 4;
+  /** The heading's text without Markdown marks. */
+  heading: string;
+  /** The heading's anchor as the docs site writes it (`change-a-block-s-type`, no `#`). */
+  anchor: string;
+  /**
+   * The anchor GitHub gives the heading, when it differs (`script-api-16` beside
+   * `script-api-1-6`): some of the guide's links are written this way.
+   */
+  alias?: string;
+  /** The first sentence under the heading, or empty when it opens with a table or code. */
+  sentence: string;
+}
+
+/** The guide's pages and headings (ADR 0124 D14, B656; `guide:index`), built by main once. */
+export interface GuideIndex {
+  /** Every page, sorted by name, with its `#` title (the page name when it has none). */
+  pages: { page: string; title: string }[];
+  sections: GuideSection[];
+}
+
+/** One guide page's Markdown (`guide:page`). */
+export interface GuidePage {
+  page: string;
+  markdown: string;
+}
+
+/** The user guide inside the app (ADR 0124 D14), served by main. */
+export interface GuidePlatform {
+  /** The headings and first sentences of every page. */
+  index(): Promise<GuideIndex>;
+  /** One page's Markdown; rejects for a name that is not a page of the guide. */
+  page(page: string): Promise<GuidePage>;
+}
+
+/**
  * The `data/minecraft/` folders of the client jar the live views read (ADR 0120 D11; the jar path
  * list of the spike B600, 2S4), kept in the local cache beside the target's world generation
  * folders: loot tables, advancements, predicates, enchantments and their providers, damage and
@@ -1057,6 +1131,12 @@ export interface PlatformAdapter {
      * set up for the version. Throws for a folder the cache does not keep.
      */
     readDataFiles(mcVersion: string, folders: readonly string[]): Promise<VanillaDataFiles | null>;
+    /**
+     * The English names of `targetId`'s vanilla things from the cached `en_us.json` (ADR 0124
+     * D3, B656), or `null` when the cache is not set up for the target's version. The preload
+     * always provides it; optional so that test doubles written before it may omit it.
+     */
+    readNames?(targetId: string): Promise<VanillaNames | null>;
     /** Writes a resource pack zip into `<gameDir>/resourcepacks/` of the selected location. */
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
     /** Lists worlds in `<gameDir>/saves/` of the selected location, most recently played first. */
@@ -1284,6 +1364,11 @@ export interface PlatformAdapter {
    * written before it may omit it.
    */
   worldBackups?: WorldBackupsPlatform;
+  /**
+   * The user guide inside the app (ADR 0124 D14). The preload always provides it; optional so
+   * that test doubles written before it may omit it.
+   */
+  guide?: GuidePlatform;
 }
 
 /** The renderer's side of the window close round trip ({@link MsmBridge.onCloseRequest}). */

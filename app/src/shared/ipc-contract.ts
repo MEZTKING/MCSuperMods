@@ -164,6 +164,69 @@ const vanillaDataFiles = z
     fileCount: z.number().int().nonnegative().max(DATA_FILES_MAX),
   })
   .strict();
+/** A built-in target id (main looks it up; an unknown one is refused there). */
+const knownTargetId = z
+  .string()
+  .min(1)
+  .max(64)
+  .regex(/^[a-z0-9][a-z0-9._-]*$/);
+/** The longest vanilla name `minecraft:names` carries (B656). */
+export const VANILLA_NAME_MAX = 200;
+/** The most names of one sort `minecraft:names` carries (about 1,500 items today). */
+export const VANILLA_NAMES_MAX = 10_000;
+const vanillaNameMap = (key: RegExp) =>
+  z
+    .record(z.string().max(160).regex(key), z.string().min(1).max(VANILLA_NAME_MAX))
+    .refine((names) => Object.keys(names).length <= VANILLA_NAMES_MAX, {
+      message: 'Too many names',
+    });
+const vanillaIdNames = vanillaNameMap(/^minecraft:[a-z0-9_]+$/);
+/** The English names of a target's vanilla things (ADR 0124 D3, B656). */
+const vanillaNames = z
+  .object({
+    version: z.string().max(64),
+    blocks: vanillaIdNames,
+    items: vanillaIdNames,
+    entityTypes: vanillaIdNames,
+    biomes: vanillaIdNames,
+    effects: vanillaIdNames,
+    enchantments: vanillaIdNames,
+    potions: vanillaIdNames,
+    subtitles: vanillaNameMap(/^[a-z0-9_]+(?:\.[a-z0-9_]+)*$/),
+  })
+  .strict();
+/** A guide page name: a file of the guide folder without `.md` (ADR 0124 D14). */
+const guidePageName = z
+  .string()
+  .min(1)
+  .max(64)
+  .regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/);
+/** The largest guide page served (main refuses larger files). */
+export const GUIDE_PAGE_MAX_CHARS = 1024 * 1024;
+/** The most guide pages and sections an index carries. */
+export const GUIDE_INDEX_PAGES_MAX = 200;
+export const GUIDE_INDEX_SECTIONS_MAX = 5000;
+const guideIndex = z
+  .object({
+    pages: z
+      .array(z.object({ page: guidePageName, title: z.string().max(200) }).strict())
+      .max(GUIDE_INDEX_PAGES_MAX),
+    sections: z
+      .array(
+        z
+          .object({
+            page: guidePageName,
+            level: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
+            heading: z.string().min(1).max(200),
+            anchor: z.string().max(256),
+            alias: z.string().min(1).max(256).optional(),
+            sentence: z.string().max(300),
+          })
+          .strict(),
+      )
+      .max(GUIDE_INDEX_SECTIONS_MAX),
+  })
+  .strict();
 /** A pack zip file name, as written by installs and combined exports. */
 export const PACK_FILE_NAME = /^[A-Za-z0-9._ -]+\.zip$/;
 const packFileName = z.string().max(255).regex(PACK_FILE_NAME);
@@ -1150,6 +1213,10 @@ export const ipcContract = {
     request: z.object({ mcVersion, folders: z.array(dataFolderKey).min(1).max(64) }).strict(),
     response: vanillaDataFiles.nullable(),
   },
+  [InvokeChannels.minecraftNames]: {
+    request: z.object({ targetId: knownTargetId }).strict(),
+    response: vanillaNames.nullable(),
+  },
   [InvokeChannels.minecraftInstallResourcePack]: {
     request: z
       .object({
@@ -1496,6 +1563,13 @@ export const ipcContract = {
     response: z.object({ dir: backupSegment, path: absolutePath }).strict(),
   },
   [InvokeChannels.worldBackupsOpenFolder]: { request: noRequest, response: voidResponse },
+  [InvokeChannels.guideIndex]: { request: noRequest, response: guideIndex },
+  [InvokeChannels.guidePage]: {
+    request: z.object({ page: guidePageName }).strict(),
+    response: z
+      .object({ page: guidePageName, markdown: z.string().max(GUIDE_PAGE_MAX_CHARS) })
+      .strict(),
+  },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 
 /** The contract as a whole. */

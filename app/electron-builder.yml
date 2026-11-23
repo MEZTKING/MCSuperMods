@@ -22,6 +22,12 @@ artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 extraResources:
   - from: build/runtime
     to: runtime
+  # The user guide inside the app (ADR 0124 D14): the Markdown pages of `docs/guide/`, read by
+  # main from `resources/guide/` (`src/main/guide.ts`); never in `app.asar` or the renderer.
+  - from: ../docs/guide
+    to: guide
+    filter:
+      - "*.md"
 
 # Release target: Windows installer, unsigned until the user supplies signing credentials.
 win:

@@ -47,6 +47,7 @@ import type {
   MinecraftStatus,
   ResolvedBiomeListsView,
   VanillaDataFiles,
+  VanillaNames,
   VanillaWorldgenFiles,
   WorldBackupList,
   WorldBackupRef,
@@ -54,6 +55,7 @@ import type {
   WorldInfo,
 } from '../../shared/platform';
 import { type LocationResolver, targetWarnings, toLocationView } from './locations';
+import { LANG_FILE_PATH, parseLangNames } from './vanilla-names';
 import { locationSlug, type WorldBackupService } from './world-backups';
 
 /** Resource pack file names accepted by {@link MinecraftService.installResourcePack}. */
@@ -116,6 +118,14 @@ export interface MinecraftService {
    * @throws Error When a folder is not one the cache keeps for the version.
    */
   readDataFiles(mcVersion: string, folders: readonly string[]): Promise<VanillaDataFiles | null>;
+  /**
+   * The English names of `mcVersion`'s vanilla things from the cached `en_us.json` (ADR 0124
+   * D3, B656; `vanilla-names.ts`), or `null` when the cache is not set up or holds no lang file.
+   *
+   * @throws Error When the lang file's real path is outside the cache folder, or the file is too
+   * large or not a JSON object.
+   */
+  readLangNames(mcVersion: string): Promise<VanillaNames | null>;
   installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
   /**
    * Worlds in `<gameDir>/saves/` of the selected location that contain `level.dat`, most
@@ -505,6 +515,19 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
         owners: cache.info.dataFolders,
       });
       return { version: cache.info.version, folders: read.folders, fileCount: read.fileCount };
+    },
+
+    async readLangNames(mcVersion) {
+      const cache = await validCache(mcVersion);
+      if (cache === null) return null;
+      const file = joinInstallPath(cache.dir, ...LANG_FILE_PATH.split('/'));
+      if (!(await fs.exists(file))) return null;
+      // Real-path containment: a lang file linked out of the cache folder is refused.
+      const [realDir, realFile] = await Promise.all([realOrNull(cache.dir), realOrNull(file)]);
+      if (realDir === null || realFile === null || !isPathInside(realDir, realFile)) {
+        throw new Error('The cached en_us.json is outside the asset cache.');
+      }
+      return parseLangNames(await fs.readFile(realFile), cache.info.version);
     },
 
     async installResourcePack(fileName, data) {

@@ -6,7 +6,8 @@
  * @packageDocumentation
  */
 
-import { BrowserWindow, type IpcMainInvokeEvent, ipcMain } from 'electron';
+import { join } from 'node:path';
+import { app, BrowserWindow, type IpcMainInvokeEvent, ipcMain } from 'electron';
 import type { z } from 'zod';
 import {
   EventChannels,
@@ -20,8 +21,10 @@ import {
 import type { PlayInput, PlayOutputFile } from '../shared/platform';
 import type { AiSender, AiService } from './ai/ai-service';
 import type { AiPicturesService } from './ai-pictures/ai-pictures-service';
+import { createGuideService, type GuideService, guideDirFor } from './guide';
 import type { MainPlatform } from './platform/node-platform';
 import type { PluginsService } from './platform/plugins';
+import { readTargetNames } from './platform/vanilla-names';
 import type { Updater } from './updater';
 
 /** The updater operations the IPC layer serves. */
@@ -59,6 +62,12 @@ const NO_AI_PICTURES: IpcAiPictures = {
   cancel: async () => {},
 };
 
+/** Without a guide (older tests): every call fails plainly. */
+const NO_GUIDE: GuideService = {
+  index: () => Promise.reject(new Error('The guide is not available.')),
+  page: () => Promise.reject(new Error('The guide is not available.')),
+};
+
 /** Per-call services a handler may use. */
 export interface HandlerContext {
   /** Sends extraction progress to the calling renderer. */
@@ -82,6 +91,7 @@ export function createIpcHandlers(
   plugins: IpcPlugins,
   ai: IpcAi,
   aiPictures: IpcAiPictures = NO_AI_PICTURES,
+  guide: GuideService = NO_GUIDE,
 ): MainHandlers {
   return {
     [InvokeChannels.projectPickDirectory]: (req) =>
@@ -129,6 +139,8 @@ export function createIpcHandlers(
       platform.minecraft.readWorldgenFiles(req.mcVersion),
     [InvokeChannels.minecraftDataFiles]: (req) =>
       platform.minecraft.readDataFiles(req.mcVersion, req.folders),
+    [InvokeChannels.minecraftNames]: (req) =>
+      readTargetNames((mcVersion) => platform.minecraft.readLangNames(mcVersion), req.targetId),
     [InvokeChannels.minecraftInstallResourcePack]: (req) =>
       platform.minecraft.installResourcePack(req.fileName, req.data),
     [InvokeChannels.minecraftListWorlds]: () => platform.minecraft.listWorlds(),
@@ -230,6 +242,8 @@ export function createIpcHandlers(
     [InvokeChannels.worldBackupsList]: () => platform.worldBackups.list(),
     [InvokeChannels.worldBackupsRestore]: (req) => platform.worldBackups.restore(req),
     [InvokeChannels.worldBackupsOpenFolder]: () => platform.worldBackups.openFolder(),
+    [InvokeChannels.guideIndex]: () => guide.index(),
+    [InvokeChannels.guidePage]: (req) => guide.page(req.page),
     [InvokeChannels.playStatus]: (req) => platform.play.status(req.targetId),
     [InvokeChannels.playPlay]: (req) => platform.play.play(playInput(req)),
     [InvokeChannels.playReload]: (req) =>
@@ -310,7 +324,16 @@ export function registerIpc(
   ai: IpcAi,
   aiPictures?: IpcAiPictures,
 ): void {
-  const handlers = createIpcHandlers(platform, updates, plugins, ai, aiPictures);
+  // ADR 0124 D14: packaged, `resources/guide/`; from source, the repository's `docs/guide/`
+  // next to `app/` (the app path is `app/` under electron-vite).
+  const guide = createGuideService({
+    dir: guideDirFor({
+      isPackaged: app.isPackaged,
+      resourcesPath: process.resourcesPath,
+      devGuideDir: join(app.getAppPath(), '..', 'docs', 'guide'),
+    }),
+  });
+  const handlers = createIpcHandlers(platform, updates, plugins, ai, aiPictures, guide);
   for (const channel of Object.values(InvokeChannels) as InvokeChannel[]) {
     const { request } = ipcContract[channel];
     const handler = handlers[channel] as (
