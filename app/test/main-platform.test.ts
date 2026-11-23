@@ -293,4 +293,47 @@ describe('main platform recent projects', () => {
     const text = await readFile(join(temp, 'msm-home', 'settings.json'), 'utf8');
     expect(text).not.toContain('recentProjects');
   });
+
+  it('reads a listed mod’s picture and things for Your mods (ADR 0128 D4), and may show it', async () => {
+    const events = { changed: [] as string[][], documents: [] as string[], cleared: 0 };
+    const p = recentPlatform(events);
+    const root = join(temp, 'ruby');
+    await p.project.createRoot(root);
+    const json = (value: unknown) => new TextEncoder().encode(JSON.stringify(value));
+    const png = (tag: number) =>
+      new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, tag]);
+    await p.fs.writeFile(
+      'msm.project.json',
+      json({ name: 'Ruby', namespaces: ['minecraft', 'ruby'] }),
+    );
+    const set = { meta: { creator: { setId: 'set-1' } } };
+    await p.fs.writeFile('content/ruby/item/ruby_sword.json', json(set));
+    await p.fs.writeFile('content/ruby/block/ruby_ore.json', json(set));
+    await p.fs.writeFile('content/ruby/block/lamp.json', json({ meta: {} }));
+    await p.fs.writeFile('content/ruby/entity/fox.json', json({ meta: {} }));
+    await p.fs.writeFile('content/ruby/recipe/r.json', json({ meta: {} }));
+    // Nothing of its own to show yet.
+    expect(await p.project.recentSummary(root)).toEqual({
+      things: 3,
+      picture: null,
+      pictureFrom: null,
+    });
+    await p.fs.writeFile('assets/ruby/textures/block/lamp.png', png(2));
+    await p.fs.writeFile('assets/ruby/textures/item/ruby_sword.png', png(1));
+    const texture = await p.project.recentSummary(root);
+    expect(texture.pictureFrom).toBe('texture');
+    expect(texture.picture?.[8]).toBe(1);
+    await p.fs.writeFile('pack.png', png(9));
+    const pack = await p.project.recentSummary(root);
+    expect(pack.pictureFrom).toBe('pack');
+    expect(pack.picture?.[8]).toBe(9);
+    // A folder not in the list is never read.
+    await expect(p.project.recentSummary(join(temp, 'elsewhere'))).rejects.toThrow(
+      /not in the recent projects list/,
+    );
+    // Show in folder may reveal a listed mod even when it is not the open one.
+    await p.project.closeRoot();
+    await p.shell.showItemInFolder(root);
+    expect(revealed).toContain(root);
+  });
 });

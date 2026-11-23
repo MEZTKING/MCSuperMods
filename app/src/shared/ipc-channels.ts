@@ -20,6 +20,8 @@ export const InvokeChannels = {
   projectRecent: 'msm:v1:project:recent',
   projectOpenRecent: 'msm:v1:project:openRecent',
   projectRemoveRecent: 'msm:v1:project:removeRecent',
+  /** A recent mod's picture and thing count for Home's Your mods (ADR 0128 D4). */
+  projectRecentSummary: 'msm:v1:project:recentSummary',
   projectClearRecent: 'msm:v1:project:clearRecent',
   fsReadFile: 'msm:v1:fs:readFile',
   fsWriteFile: 'msm:v1:fs:writeFile',

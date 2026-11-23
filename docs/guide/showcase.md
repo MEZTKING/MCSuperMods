@@ -29,6 +29,7 @@ A card whose flow your Minecraft version does not offer shows only **See the exa
 - **Very easy:** **See what you can make** on Home. With no mod open it sits under the three buttons. With a mod open it sits between the Make tiles and **My things**: open while the mod has no things, and folded to a link after that. The link reads **Show what you can make**; once open, **Hide what you can make** folds it again, and your choice is remembered.
 - **New project:** the same strip, **See what you can make**, above the starter list. It scrolls sideways.
 - **Examples:** a showcased example's detail pane shows its card under **What it looks like**.
+- **Very easy, under the cards:** **More ideas**, an endless list of mods Surprise me would make, one card each, with **Make this** and **Shuffle**; and above the cards, **Your mods**, your recent mods as cards ([Very easy mode](very-easy.md#more-ideas)). At most one clip moves on Home at a time, whether from these cards or from More ideas.
 - **Any mode:** the command palette has "Showcase: see what you can make". In Very easy it opens Home with the cards showing; in Easy and Advanced it opens New project.
 
 ## Make this

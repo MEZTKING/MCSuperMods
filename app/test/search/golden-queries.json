@@ -516,6 +516,21 @@
       "top3": ["command:surpriseMe"]
     },
     {
+      "q": "more ideas",
+      "class": "command",
+      "mode": "very-easy",
+      "expect": "command:moreIdeas",
+      "reason": "ADR 0128 D6: Home's More ideas is findable."
+    },
+    {
+      "q": "all my mods",
+      "class": "command",
+      "mode": "very-easy",
+      "expect": "command:yourMods",
+      "top3": ["command:openRecent"],
+      "reason": "ADR 0128 D6: Home's Your mods is findable."
+    },
+    {
       "q": "blue sword that sets mobs on fire",
       "class": "behaviour",
       "mode": "very-easy",

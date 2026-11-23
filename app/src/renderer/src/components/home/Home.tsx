@@ -12,19 +12,24 @@
  * The search's large bar (ADR 0124 D10; B667), built by the host, heads Home with and without a
  * mod (`home-search`).
  *
+ * Without a mod (ADR 0128 D5): the start buttons, **Your mods** as cards when there are any
+ * (`YourMods.tsx`), the showcase, then **More ideas**, the endless idea cards (built by the host,
+ * `MoreIdeas.tsx`).
+ *
  * @packageDocumentation
  */
 
 import type { Project } from '@msm/core';
 import { Dices, FilePlus, FolderOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { RecentProjectView } from '../../../../shared/platform';
+import type { RecentProjectSummary, RecentProjectView } from '../../../../shared/platform';
 import type { ThingPictures } from '../thing-picker/ThingPicker';
 import { Button } from '../ui/Button';
 import { MakeTiles } from './MakeTiles';
 import { MyThings } from './MyThings';
 import type { ThingCard } from './things';
 import type { ShownTile } from './tiles';
+import { YourMods } from './YourMods';
 
 /** Props of {@link Home}. */
 export interface HomeProps {
@@ -47,6 +52,14 @@ export interface HomeProps {
   onOpenProject(): void;
   recentProjects?: readonly RecentProjectView[];
   onOpenRecent?(root: string): void;
+  /** Your mods' **Remove from this list** (ADR 0128 D4). */
+  onRemoveRecent?(root: string): void;
+  /** Your mods' **Show in folder**. */
+  onShowRecentInFolder?(root: string): void;
+  /** Reads a recent mod's picture and thing count for its card. */
+  recentSummary?(root: string): Promise<RecentProjectSummary>;
+  /** **More ideas** (ADR 0128 D1), under the showcase without a mod; absent shows none. */
+  moreIdeas?: ReactNode;
   /** The showcase gallery (**See what you can make**); absent shows none. */
   showcase?: ReactNode;
   /** Whether the showcase stays open for a mod that has things (default folded). */
@@ -101,7 +114,7 @@ function ModShowcase(props: HomeProps) {
 /** Home. */
 export function Home(props: HomeProps) {
   if (props.project === null) {
-    const recent = (props.recentProjects ?? []).filter((entry) => entry.exists).slice(0, 6);
+    const recent = props.recentProjects ?? [];
     return (
       <section
         aria-label="Home"
@@ -139,32 +152,24 @@ export function Home(props: HomeProps) {
             Not sure what to make? Surprise me makes a random mod to start from.
           </p>
         )}
+        {props.onOpenRecent !== undefined && (
+          <YourMods
+            recent={recent}
+            onOpen={props.onOpenRecent}
+            {...(props.onRemoveRecent === undefined ? {} : { onRemove: props.onRemoveRecent })}
+            {...(props.onShowRecentInFolder === undefined
+              ? {}
+              : { onShowInFolder: props.onShowRecentInFolder })}
+            {...(props.recentSummary === undefined ? {} : { summary: props.recentSummary })}
+          />
+        )}
         {props.showcase !== undefined && props.showcase !== null && (
           <div className="w-full max-w-5xl" data-testid="home-showcase">
             {props.showcase}
           </div>
         )}
-        {recent.length > 0 && props.onOpenRecent !== undefined && (
-          <section aria-labelledby="home-recent-heading" className="flex flex-col gap-1">
-            <h2 id="home-recent-heading" className="text-center font-medium text-sm">
-              Your mods
-            </h2>
-            <ul className="flex flex-col gap-1">
-              {recent.map((entry, index) => (
-                <li key={entry.root}>
-                  <button
-                    type="button"
-                    data-testid={`home-recent-${index}`}
-                    title={entry.root}
-                    className="w-full cursor-pointer rounded px-2 py-1 text-left text-sm hover:bg-panel"
-                    onClick={() => props.onOpenRecent?.(entry.root)}
-                  >
-                    {entry.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
+        {props.moreIdeas !== undefined && props.moreIdeas !== null && (
+          <div className="w-full max-w-5xl">{props.moreIdeas}</div>
         )}
       </section>
     );

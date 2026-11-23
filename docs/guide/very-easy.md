@@ -26,6 +26,14 @@ The large bar at the top of Home, **What do you want to make?**, is there with a
 
 On Home, **Start a new mod** asks one question: **What is your mod called?** Press **Start** and the mod is saved in a folder of that name in `Documents/MCSuperMods`. Under the question it says where: "It is saved in …". **Change folder** picks another place. You never see a namespace or an id; MCSuperMods makes them from the name. **Open a mod** opens one you made before, **Surprise me** makes a random mod for you ([Surprise me](#surprise-me)), and **Your mods** lists the recent ones.
 
+## Your mods
+
+With no mod open, **Your mods** sits under the three buttons, above **See what you can make**. Each mod you opened lately is a card with its picture (its `pack.png` if it has one, else its first item or block picture, else its initials), its name, how many things it has and when you last opened it ("Opened 2 hours ago"). **Open** opens it; the **…** menu has **Show in folder** and **Remove from this list** (the mod itself stays on your computer). The eight most recent show; **See all my mods** lists the rest. A mod whose folder was moved or deleted says "This mod's folder is not there any more." with **Remove**. The arrow keys move between the cards.
+
+## More ideas
+
+Under **See what you can make**, **More ideas** goes on for ever: each card is a mod Surprise me would make, with its name, a line on what is in it, the names of its things and a picture of them. Scroll and more keep coming. **Make this** asks **What is your mod called?** (filled in with the card's name) and makes exactly that mod, as **Surprise me** would. **Shuffle** shows other ideas; without it the list is the same each time you come back. Hover a card to see a short clip of its blocks and mobs; the setting **Play showcase clips** and reduced motion work as they do for the cards above. The search finds both sections ("more ideas", "all my mods").
+
 ## See what you can make
 
 Under the three buttons on Home, **See what you can make** shows thirteen cards of things to make: a set of wood, a pet, a crop, a machine, a vehicle, a portal, sparkles, a trader, a liquid, a lucky block and three worlds of your own (islands, tall mountains, caves). Hover a card to see a short clip. **Make this** starts the card's flow, asking only **What is your mod called?** when no mod is open, and **See the example** opens or copies the finished example. With a mod open, the cards sit between the tiles and **My things**, then fold to **Show what you can make** once your mod has things; **Hide what you can make** folds them again. **Settings > Showcase > Play showcase clips** turns the moving pictures off. See [See what you can make](showcase.md).

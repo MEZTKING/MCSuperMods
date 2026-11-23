@@ -6,7 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.6.
+### Added
+
+- Home (Very easy): **More ideas**, an endless, windowed list of mod ideas under the Showcase (each a Surprise me seed, with a drawn picture, a clip on hover, **Make this** and **Shuffle**), and **Your mods** as cards above it (picture, things, last opened, **Open**, **Show in folder**, **Remove from this list**, **See all my mods**, a line for a missing folder); both findable by search (ADR 0128 D1, D2, D4–D6).
 
 ## [1.5.6] - 2026-11-23
 

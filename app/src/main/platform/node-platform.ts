@@ -21,6 +21,7 @@ import {
   LOOKS_DATA_FOLDERS,
   type PlatformAdapter,
   type RecentProject,
+  type RecentProjectSummary,
   type RecentProjectView,
   type RootResult,
 } from '../../shared/platform';
@@ -33,6 +34,7 @@ import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { createModpackService, type ModpackService } from './modpacks';
 import { createPlayService, type PlayService } from './play';
+import { readRecentSummary } from './recent-summary';
 import { type RuntimeJarLocation, readRuntimeJar, runtimeVersionKey } from './runtime-jar';
 import { createScopedFileSystem, isWithin, type ScopedFileSystem } from './scoped-fs';
 import { createScriptingService, type ScriptingService } from './scripting';
@@ -185,6 +187,10 @@ export interface MainPlatform
   extends Omit<PlatformAdapter, 'updates' | 'ai' | 'modpacks' | 'play'> {
   minecraft: MinecraftService;
   settings: SettingsStore;
+  /** The project service, with the recent mods' summaries Home's Your mods reads (ADR 0128 D4). */
+  project: PlatformAdapter['project'] & {
+    recentSummary(root: string): Promise<RecentProjectSummary>;
+  };
   modpacks: ModpackService;
   /** One-click Play and Reload (ADR 0084); the IPC layer serves `play:*` from it. */
   play: PlayService;
@@ -431,6 +437,12 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     if (lastSavePath !== null) roots.push(dirname(lastSavePath));
     if (lastExportFolder !== null) roots.push(lastExportFolder);
     if (playGameDir !== null) roots.push(normalize(playGameDir));
+    // The recent mods, for Your mods' Show in folder (ADR 0128 D4).
+    try {
+      for (const entry of await settings.recentProjects()) roots.push(normalize(entry.root));
+    } catch {
+      // Unreadable settings: reveal only the other roots.
+    }
     return Promise.all(roots.map(realpathOrSelf));
   };
 
@@ -610,6 +622,12 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       },
       async removeRecent(root) {
         recentChanged(await settings.removeRecentProject(root));
+      },
+      async recentSummary(root) {
+        // Only roots already in the list: the renderer never reads an arbitrary folder here.
+        const entry = await settings.findRecentProject(root);
+        if (entry === null) throw new Error(`${root} is not in the recent projects list.`);
+        return readRecentSummary(entry.root);
       },
       async clearRecent() {
         await settings.clearRecentProjects();

@@ -63,6 +63,8 @@ export const BUILT_IN_COMMAND_IDS = [
   'tryIt',
   'home',
   'showcase',
+  'moreIdeas',
+  'yourMods',
   'veryEasyMode',
   'easyMode',
   'advancedMode',
@@ -347,6 +349,16 @@ export const BUILT_IN_COMMANDS: Readonly<
     title: 'Showcase: see what you can make',
     sentence: 'See moving examples of what you can make.',
     words: ['showcase', 'ideas', 'inspiration', 'gallery', 'what can i make'],
+  },
+  moreIdeas: {
+    title: 'More ideas: endless mods you could make',
+    sentence: 'Scroll through mod ideas one after another and make the one you like.',
+    words: ['more ideas', 'ideas', 'endless', 'inspiration', 'random mod', 'browse', 'scroll'],
+  },
+  yourMods: {
+    title: 'Your mods: open a mod you made',
+    sentence: 'See the mods you made lately with their pictures, and open one.',
+    words: ['your mods', 'my mods', 'all my mods', 'mod list', 'mods i made', 'recent'],
   },
   veryEasyMode: {
     title: 'Very easy mode',

@@ -304,6 +304,19 @@ export interface RecentProjectView extends RecentProject {
   exists: boolean;
 }
 
+/**
+ * What a Your mods card shows of a recent mod (ADR 0128 D4), read from its folder without
+ * opening it (`main/platform/recent-summary.ts`).
+ */
+export interface RecentProjectSummary {
+  /** How many things it has, counted as Home's My things counts them. */
+  things: number;
+  /** Its `pack.png`, else its first item or block texture (PNG bytes), else `null`. */
+  picture: Uint8Array | null;
+  /** Where the picture came from. */
+  pictureFrom: 'pack' | 'texture' | null;
+}
+
 /** A partial settings update: fields left out keep their stored value. */
 export interface AppSettingsPatch {
   minecraftDir?: string | null | undefined;
@@ -1492,6 +1505,11 @@ export interface PlatformAdapter {
     openRecent(root: string): Promise<RootResult>;
     /** Removes one entry from the recent list (matching by normalised path). */
     removeRecent(root: string): Promise<void>;
+    /**
+     * The picture and thing count of a mod in the recent list (ADR 0128 D4). Main refuses a
+     * root that is not in the list. Optional so that test doubles may omit it.
+     */
+    recentSummary?(root: string): Promise<RecentProjectSummary>;
     /** Empties the recent list. */
     clearRecent(): Promise<void>;
   };

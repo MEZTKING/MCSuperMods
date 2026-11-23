@@ -258,6 +258,13 @@ const samples: Record<
     request: [{ root: '/tmp/p' }, { path: '/tmp/p' }],
     response: [undefined, true],
   },
+  [InvokeChannels.projectRecentSummary]: {
+    request: [{ root: '/tmp/p' }, { root: 'relative' }],
+    response: [
+      { things: 3, picture: new Uint8Array([1]), pictureFrom: 'pack' },
+      { things: -1, picture: null, pictureFrom: null },
+    ],
+  },
   [InvokeChannels.projectClearRecent]: {
     request: [undefined, { root: '/tmp/p' }],
     response: [undefined, 0],

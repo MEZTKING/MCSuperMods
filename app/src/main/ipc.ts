@@ -109,6 +109,7 @@ export function createIpcHandlers(
     [InvokeChannels.projectRecent]: () => platform.project.recent(),
     [InvokeChannels.projectOpenRecent]: (req) => platform.project.openRecent(req.root),
     [InvokeChannels.projectRemoveRecent]: (req) => platform.project.removeRecent(req.root),
+    [InvokeChannels.projectRecentSummary]: (req) => platform.project.recentSummary(req.root),
     [InvokeChannels.projectClearRecent]: () => platform.project.clearRecent(),
     [InvokeChannels.fsReadFile]: (req) => platform.fs.readFile(req.path),
     [InvokeChannels.fsWriteFile]: (req) => platform.fs.writeFile(req.path, req.data),

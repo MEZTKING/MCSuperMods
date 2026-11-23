@@ -325,6 +325,7 @@ const bridge: MsmBridge = {
     recent: () => ipcRenderer.invoke(InvokeChannels.projectRecent),
     openRecent: (root) => ipcRenderer.invoke(InvokeChannels.projectOpenRecent, { root }),
     removeRecent: (root) => ipcRenderer.invoke(InvokeChannels.projectRemoveRecent, { root }),
+    recentSummary: (root) => ipcRenderer.invoke(InvokeChannels.projectRecentSummary, { root }),
     clearRecent: () => ipcRenderer.invoke(InvokeChannels.projectClearRecent),
   },
   plugins: {

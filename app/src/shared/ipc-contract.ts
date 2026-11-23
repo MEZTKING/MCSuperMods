@@ -1268,6 +1268,16 @@ export const ipcContract = {
   },
   [InvokeChannels.projectOpenRecent]: { request: recentRootRequest, response: rootResult },
   [InvokeChannels.projectRemoveRecent]: { request: recentRootRequest, response: voidResponse },
+  [InvokeChannels.projectRecentSummary]: {
+    request: recentRootRequest,
+    response: z
+      .object({
+        things: z.number().int().min(0),
+        picture: bytes.nullable(),
+        pictureFrom: z.enum(['pack', 'texture']).nullable(),
+      })
+      .strict(),
+  },
   [InvokeChannels.projectClearRecent]: { request: noRequest, response: voidResponse },
   [InvokeChannels.fsReadFile]: { request: pathRequest, response: bytes },
   [InvokeChannels.fsWriteFile]: {

@@ -85,6 +85,7 @@ import {
 import { lineOffset } from './components/function-editor/source-text';
 import { Home } from './components/home/Home';
 import { type MakeChoice, MakeChooser } from './components/home/MakeChooser';
+import { MoreIdeas } from './components/home/MoreIdeas';
 import { RenameThingDialog } from './components/home/MyThings';
 import { copyData, copyId, type ThingCard, thingCards } from './components/home/things';
 import { type MakeTile, type ShownTile, shownTiles } from './components/home/tiles';
@@ -130,6 +131,7 @@ import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WishlistDialog } from './components/WishlistDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
+import type { Idea, IdeaInput } from './ideas/ideas';
 import { builtInPlugins } from './plugins/built-in';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
 import type { SearchActionHost, SearchStartMod } from './search/actions';
@@ -370,6 +372,8 @@ type DialogState =
       name?: string;
       /** What to open once the mod is made (a showcase card's **Make this**, ADR 0118 D10). */
       afterwards?: ShownTile;
+      /** The Surprise me seed to make in the new mod (an idea card's **Make this**, ADR 0128 D1). */
+      surpriseSeed?: number;
       /** The search's new mod (ADR 0124 D9): what it is made from, and the answer. */
       search?: {
         options(folder: string): NewProjectOptions;
@@ -2292,6 +2296,95 @@ export function App({
     setDialog({ type: 'new-project' });
   };
 
+  // More ideas (ADR 0128 D1, D2) -----------------------------------------------------------
+
+  const ideasSeed = usePreferences((state) => state.ideasSeed);
+  const ideaInput = useMemo<IdeaInput | null>(
+    () =>
+      target === null
+        ? null
+        : {
+            starters: session.library.starters,
+            target,
+            isKnownKind: (kind) => session.registry.get(kind) !== undefined,
+            rules: session.registry.get(RULES_KIND) !== undefined,
+          },
+    [session, target],
+  );
+  // The idea card playing a clip, so the Showcase stops: one clip on Home (ADR 0128 D2).
+  const [ideaLive, setIdeaLive] = useState<string | null>(null);
+  /** Makes the Surprise me mod of `seed` in the open mod (just made for an idea card). */
+  const makeIdeaIn = async (seed: number): Promise<void> => {
+    try {
+      await makeSurprise(await rollSurpriseFor(seed, null));
+    } catch (error) {
+      setMessage({ kind: 'error', text: `Make this: ${messageOf(error)}` });
+    }
+  };
+  /**
+   * An idea card's **Make this** (ADR 0128 D1): the name-only New prefilled with the idea's name,
+   * then the mod of exactly that seed in it, as Surprise me makes it.
+   */
+  const makeIdea = (idea: Idea): void => {
+    const fallback = (): void => {
+      setDialog(null);
+      void rollSurpriseFor(idea.seed, null)
+        .then((made) => makeSurprise(made))
+        .catch((error: unknown) =>
+          setMessage({ kind: 'error', text: `Make this: ${messageOf(error)}` }),
+        );
+    };
+    const ask = bridge.project.defaultParent;
+    if (ask === undefined || project !== null) {
+      fallback();
+      return;
+    }
+    ask().then(
+      (parent) =>
+        parent === ''
+          ? fallback()
+          : setDialog({ type: 'new-mod', parent, name: idea.name, surpriseSeed: idea.seed }),
+      fallback,
+    );
+  };
+  /** Home's **More ideas**, or nothing without a target. */
+  const moreIdeas = (visible: boolean) =>
+    ideaInput === null ? null : (
+      <MoreIdeas
+        baseSeed={ideasSeed}
+        input={ideaInput}
+        deps={showcaseDeps}
+        vanilla={vanilla}
+        playClips={showcaseClips}
+        visible={visible}
+        onMake={makeIdea}
+        onLiveChange={setIdeaLive}
+        onShuffle={() => usePreferences.getState().shuffleIdeas()}
+      />
+    );
+  /** Goes to Home in Very easy and scrolls to one of its sections (the palette, ADR 0128 D6). */
+  const showHomeSection = (id: 'home-more-ideas' | 'home-your-mods'): void => {
+    goHome();
+    window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }, 50);
+  };
+  const showMoreIdeas = (): void => {
+    if (usePreferences.getState().mode === 'very-easy' && project === null) {
+      showHomeSection('home-more-ideas');
+      return;
+    }
+    setDialog({ type: 'surprise' });
+  };
+  const showYourMods = (): void => {
+    if (usePreferences.getState().mode === 'very-easy' && project === null) {
+      showHomeSection('home-your-mods');
+      return;
+    }
+    void refreshRecent();
+    setRecentPickerOpen(true);
+  };
+
   const renameThing = (card: ThingCard): void => {
     if (card.main.kind === RULES_KIND) {
       // A rule book has no shown name of its own: the id rename.
@@ -2573,6 +2666,8 @@ export function App({
     tryIt: project === null ? null : () => handlers.tryIt(),
     home: goHome,
     showcase: showShowcase,
+    moreIdeas: target === null ? null : showMoreIdeas,
+    yourMods: showYourMods,
     veryEasyMode: uiMode === 'very-easy' ? null : handlers.modeVeryEasy,
     easyMode: uiMode === 'easy' ? null : handlers.modeEasy,
     advancedMode: uiMode === 'advanced' ? null : handlers.modeAdvanced,
@@ -3406,12 +3501,34 @@ export function App({
                 onOpenProject={handlers.open}
                 recentProjects={recentProjects}
                 onOpenRecent={openRecent}
+                onRemoveRecent={removeRecent}
+                onShowRecentInFolder={(root) => {
+                  bridge.shell
+                    .showItemInFolder(root)
+                    .catch((error: unknown) =>
+                      setMessage({ kind: 'error', text: `Show in folder: ${messageOf(error)}` }),
+                    );
+                }}
+                {...(bridge.project.recentSummary === undefined
+                  ? {}
+                  : {
+                      recentSummary: (root: string) =>
+                        bridge.project.recentSummary?.(root) ??
+                        Promise.reject(new Error('No summary.')),
+                    })}
                 search={startSearchBar('home-search-field')}
                 showcase={showcaseGallery(
                   showcaseList,
-                  dialog === null && !tryItOpen && !paletteOpen && searchDoor === null,
+                  dialog === null &&
+                    !tryItOpen &&
+                    !paletteOpen &&
+                    searchDoor === null &&
+                    ideaLive === null,
                   makeShowcase,
                   seeShowcaseExample,
+                )}
+                moreIdeas={moreIdeas(
+                  dialog === null && !tryItOpen && !paletteOpen && searchDoor === null,
                 )}
                 showcaseOpen={showcaseOpen}
                 onShowcaseOpenChange={(open) => usePreferences.getState().setShowcaseOpen(open)}
@@ -4048,9 +4165,11 @@ export function App({
                   );
                   if (outcome.ok) {
                     const afterwards = dialog.afterwards;
+                    const surpriseSeed = dialog.surpriseSeed;
                     setDialog(null);
                     await openWith('New mod', async () => outcome);
                     if (afterwards !== undefined) setPendingTile(afterwards);
+                    if (surpriseSeed !== undefined) void makeIdeaIn(surpriseSeed);
                     search?.resolve(true);
                     return null;
                   }

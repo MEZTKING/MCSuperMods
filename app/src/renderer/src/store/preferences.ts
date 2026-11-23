@@ -79,6 +79,13 @@ export interface PreferencesState {
    */
   showcaseOpen: boolean;
   /**
+   * The base seed of Home's **More ideas** (ADR 0128 D1): idea card *n* is made from a seed
+   * derived from it and *n*, so the list is the same each time; **Shuffle** picks a new one.
+   * One per install, made on the first run and kept under its own storage key (so keeping it
+   * never marks a mode as chosen).
+   */
+  ideasSeed: number;
+  /**
    * **Remember my searches** (ADR 0124 D11): the search keeps the last chosen results and
    * searches on this computer. Default on; off forgets them and keeps nothing more.
    */
@@ -94,6 +101,8 @@ export interface PreferencesState {
   rememberSearchText(text: string): void;
   setShowcaseClips(on: boolean): void;
   setShowcaseOpen(open: boolean): void;
+  /** **Shuffle**: a new base seed for More ideas. */
+  shuffleIdeas(): void;
   toggleCentrePreview(): void;
   setMode(mode: UiMode): void;
   toggleCollapsed(key: string): void;
@@ -135,6 +144,41 @@ function writeStored(
 
 const stored = readStored();
 
+const IDEAS_KEY = 'msm.ideas.v1';
+/** The largest base seed of More ideas (as Surprise me's seeds). */
+const MAX_IDEAS_SEED = 999_999;
+
+/** A new base seed for More ideas, from 1 to {@link MAX_IDEAS_SEED}. */
+function newIdeasSeed(): number {
+  return 1 + Math.floor(Math.random() * MAX_IDEAS_SEED);
+}
+
+function writeIdeasSeed(seed: number): void {
+  try {
+    globalThis.localStorage?.setItem(IDEAS_KEY, JSON.stringify({ seed }));
+  } catch {
+    // Storage is unavailable: the seed lasts for this run only.
+  }
+}
+
+/** The stored base seed, or a new one (stored at once, so it stays the same next time). */
+function readIdeasSeed(): number {
+  try {
+    const text = globalThis.localStorage?.getItem(IDEAS_KEY);
+    if (text !== null && text !== undefined) {
+      const seed = (JSON.parse(text) as { seed?: unknown }).seed;
+      if (typeof seed === 'number' && Number.isInteger(seed) && seed >= 1) {
+        if (seed <= MAX_IDEAS_SEED) return seed;
+      }
+    }
+  } catch {
+    // Unreadable: a new seed.
+  }
+  const seed = newIdeasSeed();
+  writeIdeasSeed(seed);
+  return seed;
+}
+
 export const usePreferences = create<PreferencesState>((set, get) => ({
   mode: isUiMode(stored.mode) ? stored.mode : 'advanced',
   modeChosen: isUiMode(stored.mode),
@@ -147,6 +191,7 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
   showcaseClips: stored.showcaseClips !== false,
   showcaseOpen: stored.showcaseOpen === true,
   rememberSearches: stored.rememberSearches !== false,
+  ideasSeed: readIdeasSeed(),
   searchHistory: stored.rememberSearches !== false ? readHistory() : EMPTY_HISTORY,
   setRememberSearches(on) {
     set(
@@ -179,6 +224,12 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
   setShowcaseOpen(open) {
     set({ showcaseOpen: open });
     writeStored(get());
+  },
+  shuffleIdeas() {
+    let next = newIdeasSeed();
+    if (next === get().ideasSeed) next = (next % MAX_IDEAS_SEED) + 1;
+    set({ ideasSeed: next });
+    writeIdeasSeed(next);
   },
   toggleCentrePreview() {
     set({ centrePreview: !get().centrePreview });
