@@ -1,6 +1,7 @@
 /**
- * View preferences (ADR 0047, ADR 0083 D1, ADR 0118 D1, D8): the Very easy, Easy or Advanced
- * mode, the collapsed sidebar groups and the showcase's setting and fold. Kept in the renderer's local storage: they change no file, and a
+ * View preferences (ADR 0047, ADR 0083 D1, ADR 0118 D1, D8, ADR 0124 D11): the Very easy, Easy or
+ * Advanced mode, the collapsed sidebar groups, the showcase's setting and fold, and the search's
+ * **Remember my searches** with its local history (`search/history.ts`, its own storage key). Kept in the renderer's local storage: they change no file, and a
  * fresh profile (test runs) starts in Advanced mode, today's interface; a brand-new install is
  * moved to Very easy by the Welcome (`App.tsx`). Storage failures are ignored.
  *
@@ -8,6 +9,14 @@
  */
 
 import { create } from 'zustand';
+import {
+  EMPTY_HISTORY,
+  readHistory,
+  type SearchHistory,
+  withChoice,
+  withSearch,
+  writeHistory,
+} from '../search/history';
 
 /**
  * Very easy shows Home, Play and plain words only (ADR 0083); Easy hides technical content and
@@ -47,6 +56,7 @@ interface StoredPreferences {
   centrePreview?: boolean;
   showcaseClips?: boolean;
   showcaseOpen?: boolean;
+  rememberSearches?: boolean;
 }
 
 /** The preferences store's shape. */
@@ -68,6 +78,20 @@ export interface PreferencesState {
    * D1): folded to a **Show what you can make** link by default, remembered once opened.
    */
   showcaseOpen: boolean;
+  /**
+   * **Remember my searches** (ADR 0124 D11): the search keeps the last chosen results and
+   * searches on this computer. Default on; off forgets them and keeps nothing more.
+   */
+  rememberSearches: boolean;
+  /** The local search history (empty while {@link rememberSearches} is off). */
+  searchHistory: SearchHistory;
+  setRememberSearches(on: boolean): void;
+  /** **Clear my searches**: forgets the history (the setting stays as it is). */
+  clearSearchHistory(): void;
+  /** Notes a chosen result (by entry id), when searches are remembered. */
+  rememberSearchChoice(id: string): void;
+  /** Notes a search, when searches are remembered. */
+  rememberSearchText(text: string): void;
   setShowcaseClips(on: boolean): void;
   setShowcaseOpen(open: boolean): void;
   toggleCentrePreview(): void;
@@ -89,7 +113,7 @@ function readStored(): StoredPreferences {
 function writeStored(
   state: Pick<
     PreferencesState,
-    'mode' | 'collapsed' | 'centrePreview' | 'showcaseClips' | 'showcaseOpen'
+    'mode' | 'collapsed' | 'centrePreview' | 'showcaseClips' | 'showcaseOpen' | 'rememberSearches'
   >,
 ): void {
   try {
@@ -101,6 +125,7 @@ function writeStored(
         centrePreview: state.centrePreview,
         showcaseClips: state.showcaseClips,
         showcaseOpen: state.showcaseOpen,
+        rememberSearches: state.rememberSearches,
       }),
     );
   } catch {
@@ -121,6 +146,32 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
   centrePreview: stored.centrePreview !== false,
   showcaseClips: stored.showcaseClips !== false,
   showcaseOpen: stored.showcaseOpen === true,
+  rememberSearches: stored.rememberSearches !== false,
+  searchHistory: stored.rememberSearches !== false ? readHistory() : EMPTY_HISTORY,
+  setRememberSearches(on) {
+    set(
+      on ? { rememberSearches: true } : { rememberSearches: false, searchHistory: EMPTY_HISTORY },
+    );
+    if (!on) writeHistory(EMPTY_HISTORY);
+    writeStored(get());
+  },
+  clearSearchHistory() {
+    set({ searchHistory: EMPTY_HISTORY });
+    writeHistory(EMPTY_HISTORY);
+  },
+  rememberSearchChoice(id) {
+    if (!get().rememberSearches) return;
+    const searchHistory = withChoice(get().searchHistory, id);
+    set({ searchHistory });
+    writeHistory(searchHistory);
+  },
+  rememberSearchText(text) {
+    if (!get().rememberSearches) return;
+    const searchHistory = withSearch(get().searchHistory, text);
+    if (searchHistory === get().searchHistory) return;
+    set({ searchHistory });
+    writeHistory(searchHistory);
+  },
   setShowcaseClips(on) {
     set({ showcaseClips: on });
     writeStored(get());
