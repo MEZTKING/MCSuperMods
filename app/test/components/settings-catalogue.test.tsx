@@ -314,7 +314,7 @@ describe('SettingsDialog focusSetting', () => {
 
 describe('built-in command words (B662)', () => {
   it('gives every command one sentence and extra words', () => {
-    expect(BUILT_IN_COMMAND_IDS).toHaveLength(51);
+    expect(BUILT_IN_COMMAND_IDS).toHaveLength(52);
     for (const id of BUILT_IN_COMMAND_IDS) {
       const command = BUILT_IN_COMMANDS[id];
       expect(command.sentence, id).toMatch(/^[A-Z].*\.$/);
