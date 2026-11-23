@@ -103,7 +103,7 @@ describe('the looks index (B620)', () => {
   });
 
   it('has safe interface stubs', () => {
-    expect(bodyFor('minecraft:wolf_variant', undefined, false)).toBe('flat_sheet');
+    expect(bodyFor('minecraft:zombie_nautilus_variant', undefined, false)).toBe('flat_sheet');
     expect(resolveSoundEvent('x:y', {}, null)).toEqual({
       event: 'x:y',
       origin: 'missing',

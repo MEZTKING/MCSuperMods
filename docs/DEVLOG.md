@@ -9931,3 +9931,20 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - B667: hand `SETTINGS_CATALOGUE` and `BUILT_IN_COMMANDS`' `sentence`/`words` to the feed; the host's "open Settings at a line" passes the hit's setting id as `focusSetting`.
 - B664: the setting action carries the catalogue id as is.
 - Guide: `docs/guide/` does not yet name the Search section or the relabelled lines (Image service key, Your Anthropic key); a docs brief should add them.
+## 2026-11-23 — executor — B623 stand-in bodies and shapes
+
+**What**
+- Eighteen stand-in bodies in `app/src/renderer/src/liveviews/looks/bodies/` (one lazy module per body, 1.1 to 3 kB each): wolf and pup, cat and kitten, pig (`normal`, `cold`) and piglet, cow (`normal`, `cold`, `warm`) and calf, chicken (`normal`, `cold`) and chick, frog, villager and baby villager, sulfur cube. Bedrock geo for the existing geo renderer, every part a bone named for it (`head`, `leg_fr`, `tail`, ...). Written from the spike B619's face lists and its decoded views of MSM's own coded pictures (`docs/reference/spikes/b619/`), never from a Mojang model or texture.
+- `index.ts`: `bodyFor(kind, model, baby)` now returns a loader (the zombie nautilus and kinds without a body stay `'flat_sheet'`); `bodyIdFor`, `loadBody`, `BODY_IDS`; the table of model names keyed by the data's own strings (`normal`, `cold`, `warm`, `minecraft:` prefix accepted, unknown names fall back to `normal`; sound-variant kinds, `msm:villager_type` and `msm:villager_profession` included); `BODY_SCALE` (cat 0.8, villager 0.9375, both measured), `scaleBody(geo, factor)` (box UV rewritten as per-face UV so the texels stay put), `sulfurCubeScale(size)` (0.5, 1, 1.5; Size 1 not measured) and `SULFUR_CUBE_LAYERS` (the `outer` and `inner` bones sample two pictures whose rectangles do not overlap).
+- `shapes.ts`: MSM's own wall, painting frame, banner (flag on the banner mask layout, bar, pole), shield (plate on the shield mask layout, handle) and pot (one picture per side in `POT_ATLAS`, neck, lip); pole, bar and handle sample `WOOD_TEXEL`.
+- Test `app/test/components/liveviews/looks/bodies.test.ts`: every body bakes without problems; drawn from twelve sides with a marked texture, every part shows only its own colour (parts sharing texels, such as a pair of legs, share one) and every part shows from outside (but the sulfur cube's inner box and the villager's head and body under the hat and robe); 1035 measured faces over both targets land within half a model pixel; the model table; the shapes' layouts. `looks-index.test.tsx` asserts the flat sheet on the zombie nautilus instead of the wolf.
+
+**Decisions**
+- How the spike's lists are read (in the test's header): faces seen square on whose texel scale is off by more than 5 % are moved along their camera's ray (cameras from `client-*.json`) until one texel is one model pixel, which puts the pig's and cow's legs exactly on whole pixels; faces off by 3 to 5 %, or triangulated faces stretched by more than 8 %, are not used; inflated layers keep their size. 37 faces the spike placed against its own neighbours are listed by view and texel rectangle with the reason (mostly side faces between legs).
+- The villager is drawn at 0.9375 (all its faces measure 15/16; the README lists only the cat). Its hat and robe are inflated 0.5, arms crossed at 43 degrees; the baby's arms at 62 degrees, its brim a 14 by 1 by 12 box.
+- Parts missing from the lists (snouts, horns, ears, tails, the kitten's legs, the chick's beak and feet, the frog's arms) were placed from the decoded views (`bodies-sheet-*.png`), so they are About right to about half a pixel; not in the face test.
+- Not drawn: the cold chicken's tail tuft and the frog's tongue (seen, not resolvable at the sheet's resolution); the chick's wings (they flap).
+
+**Next**
+- B627 dresses the bodies: `bodyFor` for the panel, `scaleBody(geo, sulfurCubeScale(size))`, one picture for the cube from `SULFUR_CUBE_LAYERS`; the villager's four layers share one body.
+- B628 paints `WOOD_TEXEL` and composes banner layers into the 64 by 64 picture; paintings pass the picture's size to `frameShape`.
