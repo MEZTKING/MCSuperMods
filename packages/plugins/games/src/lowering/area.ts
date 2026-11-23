@@ -70,16 +70,40 @@ export function lowerArea(element: Element, target: TargetFacts): OutputFile[] {
   const [x, y, z] = min as [number, number, number];
   const [dx, dy, dz] = max.map((n, i) => n - (min[i] as number));
 
+  const runFunction = (name: string): string =>
+    fillForm(target, 'run_function', { function: fn(name) });
   const tick = [
-    `execute as @a at @s if predicate ${predicate} run tag @s add ${now}`,
-    `execute as @a[tag=${now},tag=!${inside}] run function ${fn('entered')}`,
-    `execute as @a[tag=!${now},tag=${inside}] run function ${fn('left')}`,
-    `tag @a[tag=${now}] remove ${now}`,
+    fillForm(target, 'as_at_if_predicate_run', {
+      entities: '@a',
+      anchor: '@s',
+      predicate,
+      command: fillForm(target, 'tag_add', { entities: '@s', tag: now }),
+    }),
+    fillForm(target, 'as_run', {
+      entities: `@a[tag=${now},tag=!${inside}]`,
+      command: runFunction('entered'),
+    }),
+    fillForm(target, 'as_run', {
+      entities: `@a[tag=!${now},tag=${inside}]`,
+      command: runFunction('left'),
+    }),
+    fillForm(target, 'tag_remove', { entities: `@a[tag=${now}]`, tag: now }),
   ];
-  const entered = [`tag @s add ${inside}`, runHook(namespace, `area/${path}/entered`)];
-  const left = [`tag @s remove ${inside}`, runHook(namespace, `area/${path}/left`)];
+  const entered = [
+    fillForm(target, 'tag_add', { entities: '@s', tag: inside }),
+    runHook(target, namespace, `area/${path}/entered`),
+  ];
+  const left = [
+    fillForm(target, 'tag_remove', { entities: '@s', tag: inside }),
+    runHook(target, namespace, `area/${path}/left`),
+  ];
   const clear = [
-    `execute in ${dimension} run kill @e[type=!minecraft:player,x=${x},y=${y},z=${z},dx=${dx},dy=${dy},dz=${dz}]`,
+    fillForm(target, 'in_run', {
+      dimension,
+      command: fillForm(target, 'kill', {
+        entities: `@e[type=!minecraft:player,x=${x},y=${y},z=${z},dx=${dx},dy=${dy},dz=${dz}]`,
+      }),
+    }),
   ];
 
   const contributions: SharedContribution[] = [
@@ -102,7 +126,7 @@ export function lowerArea(element: Element, target: TargetFacts): OutputFile[] {
 
   const reset = isRecord(data.reset) ? data.reset : undefined;
   if (reset !== undefined) {
-    const lines = [`function ${fn('clear')}`];
+    const lines = [runFunction('clear')];
     const structures = Array.isArray(reset.structures) ? reset.structures : [];
     for (const entry of structures) {
       if (!isRecord(entry) || typeof entry.structure !== 'string') continue;
@@ -113,7 +137,7 @@ export function lowerArea(element: Element, target: TargetFacts): OutputFile[] {
         y: sy,
         z: sz,
       });
-      lines.push(`execute in ${dimension} run ${place}`);
+      lines.push(fillForm(target, 'in_run', { dimension, command: place }));
     }
     files.push(functionFile(target, namespace, `area/${path}/reset`, lines));
   }

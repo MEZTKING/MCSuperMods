@@ -10577,3 +10577,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Decisions:** Counts match the root `CLAUDE.md` figures (309 templates, 82 starters, 215 examples), so the headline numbers on the page stayed as they were. The five flows sit after Dimension in the starters table, under the Worlds group, with the labels the code uses. Template, starter and example ids were checked by grep against the plugin sources; ids built by helpers (`example_popular_*`, `example_tag_*`, the `msm_block_*` family) were matched by their generator, not a literal string.
 
 **Next:** The per-plugin template split in the root `CLAUDE.md` was not re-derived beyond the totals; a test that fails when the page's table rows drift from the registered templates would stop this recurring.
+
+## 2026-11-23 — executor — Command forms in TargetFacts
+
+**What**
+- Plugin API 1.26.0 (additive): `CommandFormName` gains 31 names. Rules' five former fallbacks (`if_entity`, `if_score_run`, `set_world_spawn`, `spawn_point`, `set_fire`) and 26 lines the games plugin wrote as plain text: `run_function`, `tag_add`, `tag_remove`, `kill`, `in_run`, `as_run`, `as_at_if_predicate_run`, `unless_storage_run`, `storage_set_value`, `unless_score_run`, `if_score_if_score_run`, `in_if_block_run`, `store_result_score_run`, `score_remove`, `setblock`, `summon`, `teleport` (`tp`), `game_mode`, `default_game_mode`, `difficulty`, `game_rule`, `give`, `item_replace_entity`, `effect_give`, `tellraw`, `dialog_show`. CHANGELOG, `packages/plugin-api/CLAUDE.md`, `API_VERSION` and the version tests updated.
+- Both targets list all 80 forms in `commands.forms`, with the same text; `CHANGES.md` has a row for them.
+- `@msm/plugin-games`: every command line now goes through `fillForm` (area, one block, timer, start, first join, world start; `runHook` takes the target); only `#` comment lines stay plain. `@msm/plugin-rules`: `RULES_FALLBACK_FORMS` and `RulesFallbackFormName` are gone, and `commandForm` reads the target only.
+- `packages/targets/all/test/games.test.ts`: samples for the new placeholders; the walk down the command tree follows a redirect (`tp` to `teleport`) and accepts a placeholder whose sample is one of the literal children (`difficulty`, `gamerule`). The target tests now count 80 forms.
+- `tools/check-deps`: the version-fact pattern no longer matches the tail of a longer dotted version (`1.26.0`), with a test case.
+- Checked: the targets' form tests on both targets, games (225) and rules (523) with goldens unchanged and no `UPDATE_GOLDENS`, the sim games tests, plugin-api, core's registry test, the app's AI tool executor test (`target_facts` still leaves out `commands.forms`), `pnpm lint`, `pnpm typecheck`.
+
+**Decisions**
+- The forms are whole lines, so each walks down the vendored command tree from the root. Nested `execute` chains (`if score ... if score`, `in ... if block`, `as ... at ... if predicate`) got their own forms rather than fragments, to keep the output byte-identical.
+- `tp` stays `tp`, not `teleport`, so the goldens do not change.
+- The new forms other than B547's four Rules forms were not run on a server by this change: they are the text the lowering already wrote, checked offline. `CHANGES.md` marks them (verify at implementation).
+
+**Next**
+- Root `CLAUDE.md` still says plugin API 1.25.0. ADRs 0113 (D8 and its findings) and 0115 (D1 and its findings) still describe the plain text and fallback forms. The orchestrator can update both.

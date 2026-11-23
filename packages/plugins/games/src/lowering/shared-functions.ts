@@ -12,10 +12,9 @@
  * {@link sharedFunctionFiles}; helper functions that run from those go through
  * {@link functionFile}, and the points Rules (B553) attach to through {@link hookTagFile}.
  *
- * Commands come from `target.commands.forms` (plugin API 1.22.0) through {@link fillForm}; the
- * plain lines with no form (`execute`, `function`, `tag`, `kill`, `setblock`, `summon`,
- * `tellraw`, `scoreboard players remove`) are checked by `@msm/schemas/mcfunction` on both
- * targets in the tests.
+ * Every command comes from `target.commands.forms` (plugin API 1.22.0; the `execute`,
+ * `function`, `tag`, `kill`, `setblock`, `summon`, `tellraw` and other line forms since 1.26.0)
+ * through {@link fillForm}; only `#` comment lines are written as they are.
  */
 import type {
   CommandFormName,
@@ -271,8 +270,8 @@ export function hookTagFile(
 }
 
 /** The line that runs a hook tag. */
-export const runHook = (namespace: string, path: string): string =>
-  `function #${gamesFunctionId(namespace, path)}`;
+export const runHook = (target: TargetFacts, namespace: string, path: string): string =>
+  fillForm(target, 'run_function', { function: `#${gamesFunctionId(namespace, path)}` });
 
 /**
  * The files of a list of contributions: each contribution's function, its entry in the plugin's

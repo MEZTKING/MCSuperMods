@@ -54,6 +54,11 @@ export function lowerTimer(element: Element, target: TargetFacts): OutputFile[] 
   const title = str(data.name, titleOf(path));
   const fn = (name: string): string => gamesFunctionId(namespace, `timer/${path}/${name}`);
   const getValue = fillForm(target, 'score_get', { holder: value, objective });
+  const runFunction = (name: string): string =>
+    fillForm(target, 'run_function', { function: fn(name) });
+  /** `command` when `holder` on the timers objective matches `range`. */
+  const ifScore = (holder: string, range: string, command: string): string =>
+    fillForm(target, 'if_score_run', { holder, objective, range, command });
   const storeBar = fillForm(target, 'bossbar_store_value', { bossbar, command: getValue });
 
   const load = [fillForm(target, 'objective_add', { objective, criterion: 'dummy' })];
@@ -66,23 +71,35 @@ export function lowerTimer(element: Element, target: TargetFacts): OutputFile[] 
     );
   }
   if (str(data.starts, 'manual') === 'world_start') {
-    load.push(`execute unless score ${on} ${objective} matches 0..1 run function ${fn('start')}`);
+    load.push(
+      fillForm(target, 'unless_score_run', {
+        holder: on,
+        objective,
+        range: '0..1',
+        command: runFunction('start'),
+      }),
+    );
   }
   load.push(
-    `execute unless score ${on} ${objective} matches 0..1 run ${fillForm(target, 'score_set', {
-      holders: on,
+    fillForm(target, 'unless_score_run', {
+      holder: on,
       objective,
-      score: 0,
-    })}`,
+      range: '0..1',
+      command: fillForm(target, 'score_set', { holders: on, objective, score: 0 }),
+    }),
   );
 
   const tick = [
-    `execute if score ${on} ${objective} matches 1 run ${fillForm(target, 'score_add', {
-      holders: ticks,
+    ifScore(on, '1', fillForm(target, 'score_add', { holders: ticks, objective, score: 1 })),
+    fillForm(target, 'if_score_if_score_run', {
+      holder: on,
       objective,
-      score: 1,
-    })}`,
-    `execute if score ${on} ${objective} matches 1 if score ${ticks} ${objective} matches 20.. run function ${fn('second')}`,
+      range: '1',
+      holder_2: ticks,
+      objective_2: objective,
+      range_2: '20..',
+      command: runFunction('second'),
+    }),
   ];
 
   const start = [
@@ -100,12 +117,11 @@ export function lowerTimer(element: Element, target: TargetFacts): OutputFile[] 
     stop.push(fillForm(target, 'bossbar_visible', { bossbar, boolean: false }));
   }
 
-  // `scoreboard players add` takes no negative number and the forms have no `remove`, so the
-  // count down is the one plain `scoreboard players remove` line.
+  // `scoreboard players add` takes no negative number, so the count down is `remove`.
   const second = [
     fillForm(target, 'score_set', { holders: ticks, objective, score: 0 }),
     down
-      ? `scoreboard players remove ${value} ${objective} 1`
+      ? fillForm(target, 'score_remove', { holders: value, objective, score: 1 })
       : fillForm(target, 'score_add', { holders: value, objective, score: 1 }),
   ];
   if (show === 'boss_bar') {
@@ -118,15 +134,13 @@ export function lowerTimer(element: Element, target: TargetFacts): OutputFile[] 
     ];
     second.push(fillForm(target, 'actionbar', { players: '@a', text: JSON.stringify(parts) }));
   }
-  second.push(
-    down
-      ? `execute if score ${value} ${objective} matches ..0 run function ${fn('end')}`
-      : `execute if score ${value} ${objective} matches ${seconds}.. run function ${fn('end')}`,
-  );
+  second.push(ifScore(value, down ? '..0' : `${seconds}..`, runFunction('end')));
 
-  const end = [`function ${fn(repeat ? 'start' : 'stop')}`];
-  if (typeof data.on_end === 'string' && data.on_end !== '') end.push(`function ${data.on_end}`);
-  end.push(runHook(namespace, `timer/${path}/ended`));
+  const end = [runFunction(repeat ? 'start' : 'stop')];
+  if (typeof data.on_end === 'string' && data.on_end !== '') {
+    end.push(fillForm(target, 'run_function', { function: data.on_end }));
+  }
+  end.push(runHook(target, namespace, `timer/${path}/ended`));
 
   const contributions: SharedContribution[] = [
     { phase: 'load', path: `timer/${path}/load`, lines: load },

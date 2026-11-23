@@ -585,6 +585,15 @@ export interface CommandFacts {
  * The names of the command forms in {@link CommandFacts.forms} (ADR 0113 D8): the `team`,
  * `scoreboard`, `bossbar`, `title` (action bar), `worldborder`, `place`, `forceload`, `loot` and
  * `random` lines the game kits write. Since 1.22.0.
+ *
+ * Since 1.26.0 also the forms Rules writes for games (`if_entity`, `if_score_run`,
+ * `set_world_spawn`, `spawn_point`, `set_fire`; ADR 0115) and every other line the game kits
+ * write: `function`, `tag`, `kill`, `execute` (`in`, `as`, `as ... at ... if predicate`,
+ * `unless data storage`, `unless score`, `if score ... if score`, `in ... if block`, `store
+ * result score`, each ending `run <command>`), `data modify storage`, `scoreboard players
+ * remove`, `setblock`, `summon`, `tp`, `gamemode`, `defaultgamemode`, `difficulty`, `gamerule`,
+ * `give`, `item replace entity`, `effect give`, `tellraw` and `dialog show`. A target that lists
+ * forms lists every name.
  */
 export type CommandFormName =
   | 'team_add'
@@ -635,7 +644,38 @@ export type CommandFormName =
   | 'loot_give'
   | 'loot_insert'
   | 'random_value'
-  | 'random_roll';
+  | 'random_roll'
+  | 'if_entity'
+  | 'if_score_run'
+  | 'set_world_spawn'
+  | 'spawn_point'
+  | 'set_fire'
+  | 'run_function'
+  | 'tag_add'
+  | 'tag_remove'
+  | 'kill'
+  | 'in_run'
+  | 'as_run'
+  | 'as_at_if_predicate_run'
+  | 'unless_storage_run'
+  | 'storage_set_value'
+  | 'unless_score_run'
+  | 'if_score_if_score_run'
+  | 'in_if_block_run'
+  | 'store_result_score_run'
+  | 'score_remove'
+  | 'setblock'
+  | 'summon'
+  | 'teleport'
+  | 'game_mode'
+  | 'default_game_mode'
+  | 'difficulty'
+  | 'game_rule'
+  | 'give'
+  | 'item_replace_entity'
+  | 'effect_give'
+  | 'tellraw'
+  | 'dialog_show';
 
 /**
  * The kind of value a game rule holds: vanilla's two. Since 1.20.0 (ADR 0111 D5).

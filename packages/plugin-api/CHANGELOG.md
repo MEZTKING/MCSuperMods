@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.26.0 — 2026-11-23
+
+Every command line of the game kits and of Rules for games as a target fact (ADR 0113 D8, the follow-up its findings named). `API_VERSION` is `1.26.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `CommandFormName` gains 31 names. Five are the forms Rules wrote from its own fallbacks: `if_entity`, `if_score_run`, `set_world_spawn`, `spawn_point` and `set_fire`. The rest are the lines the game kits wrote as plain text: `run_function`, `tag_add`, `tag_remove`, `kill`, `in_run`, `as_run`, `as_at_if_predicate_run`, `unless_storage_run`, `storage_set_value`, `unless_score_run`, `if_score_if_score_run`, `in_if_block_run`, `store_result_score_run`, `score_remove`, `setblock`, `summon`, `teleport`, `game_mode`, `default_game_mode`, `difficulty`, `game_rule`, `give`, `item_replace_entity`, `effect_give`, `tellraw` and `dialog_show`.
+- Both built-in targets list every name in `CommandFacts.forms`, with the same text on both.
+
+### Migration from 1.25.0
+
+None for plugins: `forms` stays optional and a plugin that reads a form handles its absence. A target typed against 1.26.0 that lists `forms` lists the new names too.
+
 ## 1.25.0 — 2026-11-23
 
 The dye colour values (ADR 0121 D5, measured by the B619 spike). `API_VERSION` is `1.25.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

@@ -26,11 +26,9 @@
  * `execute if score` the one block is in that phase. The word is `<event><phase>+<ns>+<path>`
  * with each `/` of the path written as `+`.
  *
- * Command text comes from `TargetFacts.commands.forms` (plugin API 1.22.0). Five forms the
- * targets do not list yet (`execute if entity`, `execute if score ... matches ... run`,
- * `setworldspawn`, `spawnpoint`, each run by B547 on both versions, and ADR 0127's
- * `data merge entity ... {Fire:...}`) are {@link RULES_FALLBACK_FORMS}, used only when the
- * target has no form of that name.
+ * Command text comes from `TargetFacts.commands.forms` (plugin API 1.22.0), the five forms
+ * Rules once kept as its own fallbacks (`if_entity`, `if_score_run`, `set_world_spawn`,
+ * `spawn_point`, `set_fire`) included since plugin API 1.26.0.
  */
 import type { CommandFormName, TargetFacts } from '@msm/plugin-api';
 import type { SignalName } from '../catalogue';
@@ -120,40 +118,12 @@ export function signalFunctionId(signal: Signal): string {
 export const signalWord = (signal: Signal): string =>
   `${signal.on}${signal.phase ?? ''}+${namespaceOf(signal.subject)}+${pathOf(signal.subject).replaceAll('/', '+')}`;
 
-/** The forms Rules writes that `TargetFacts.commands.forms` does not list (yet). */
-export type RulesFallbackFormName =
-  | 'if_entity'
-  | 'if_score_run'
-  | 'set_world_spawn'
-  | 'spawn_point'
-  | 'set_fire';
-
 /** Every form name Rules writes. */
-export type RulesFormName = CommandFormName | RulesFallbackFormName;
-
-/**
- * Forms Rules needs that the targets do not list, the first four run on both versions'
- * dedicated servers by B547 (`docs/reference/spikes/b547/README.md`, "Other findings"), and
- * every one checked by the offline checker on both targets in the rules tests (`set_fire`
- * waits for the in-game check of ADR 0127). They belong in `TargetFacts.commands.forms`; a
- * target that lists a form of the same name wins.
- */
-export const RULES_FALLBACK_FORMS: Readonly<Record<RulesFallbackFormName, string>> = Object.freeze({
-  if_entity: 'execute if entity <entities>',
-  if_score_run: 'execute if score <holder> <objective> matches <range> run <command>',
-  set_world_spawn: 'setworldspawn <x> <y> <z>',
-  spawn_point: 'spawnpoint <players> <x> <y> <z>',
-  // ADR 0127 D1: `Fire` is the entity's ticks of fire (a short; vanilla-mcdoc `EntityBase`).
-  set_fire: 'data merge entity <entities> {Fire:<ticks>s}',
-});
+export type RulesFormName = CommandFormName;
 
 /** The template of `name` on `target`, or undefined when the target has no game kit forms. */
 export function commandForm(target: TargetFacts, name: RulesFormName): string | undefined {
-  const forms = target.commands?.forms as Readonly<Record<string, string>> | undefined;
-  const own = forms?.[name];
-  if (own !== undefined) return own;
-  if (forms === undefined) return undefined;
-  return (RULES_FALLBACK_FORMS as Readonly<Record<string, string>>)[name];
+  return target.commands?.forms?.[name];
 }
 
 /**

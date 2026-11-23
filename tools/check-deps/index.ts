@@ -92,8 +92,11 @@ export function checkLayers(packages: readonly WorkspacePackage[], layers: Layer
   return violations;
 }
 
-/** A Minecraft version literal such as `26.3` or `26.3.1`. */
-export const VERSION_FACT = /\b26\.[0-9]+(\.[0-9]+)?\b/;
+/**
+ * A Minecraft version literal such as `26.3` or `26.3.1`; not the tail of a longer dotted
+ * version such as the plugin API's `1.26.0`.
+ */
+export const VERSION_FACT = /(?<![0-9.])\b26\.[0-9]+(\.[0-9]+)?\b/;
 export const ALLOW_MARKER = 'msm-allow-version';
 
 /** Whether a file path is subject to the version-fact grep. */

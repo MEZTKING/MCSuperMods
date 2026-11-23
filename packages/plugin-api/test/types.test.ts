@@ -1134,4 +1134,26 @@ describe('1.0.0 additions', () => {
     const older: TargetFacts = { ...testTarget };
     expect(older.dyes).toBeUndefined();
   });
+  it('names the Rules and game kit line forms (1.26.0)', () => {
+    const names: CommandFormName[] = [
+      'if_entity',
+      'if_score_run',
+      'set_world_spawn',
+      'spawn_point',
+      'set_fire',
+      'run_function',
+      'in_run',
+      'as_at_if_predicate_run',
+      'if_score_if_score_run',
+      'score_remove',
+      'teleport',
+      'dialog_show',
+    ];
+    const forms: Partial<Record<CommandFormName, string>> = {
+      if_entity: 'execute if entity <entities>',
+      teleport: 'tp <entities> <x> <y> <z>',
+    };
+    expect(names).toHaveLength(12);
+    expect(forms.teleport).toBe('tp <entities> <x> <y> <z>');
+  });
 });

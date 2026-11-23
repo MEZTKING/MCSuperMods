@@ -29,7 +29,9 @@ and limits M1–M16 are in ADR 0117). Six kinds lowered only to data pack files 
   Rules line, never a games kind line.
 - Imports only `@msm/plugin-api` and `@msm/schemas` in `src/`; tests may use `@msm/targets`.
 - Version facts come from `target.*` (`worlds`, `scoreboard`, `commands.forms`, plugin API 1.22.0), never
-  hard-coded; a command with no form is plain text checked on both targets (moving them into forms is a follow-up).
+  hard-coded; every command line goes through `fillForm` over a named form (the `execute`, `function`, `tag`,
+  `kill`, `setblock`, `summon`, `tellraw` and other line forms since plugin API 1.26.0), and only `#` comment lines
+  are plain text; a new command adds its form to both targets, checked by `packages/targets/all/test/games.test.ts`.
 - Rules may not import this plugin: `packages/plugins/rules/src/compile/games.ts` repeats the generated names, and
   `test/generated-ids.test.ts` and the rules tests keep them in step.
 - A new kind, Studio or flow names its live view (`docs/LIVE-VIEW-AUDIT.md`, section Games).

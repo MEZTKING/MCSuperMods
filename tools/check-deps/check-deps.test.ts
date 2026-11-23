@@ -159,7 +159,7 @@ describe('findVersionFacts', () => {
     const violations = findVersionFacts([
       {
         path: 'packages/core/src/a.ts',
-        content: "const a = '1.21.9'; const b = 126.3; const c = 2.6;",
+        content: "const a = '1.21.9'; const b = 126.3; const c = 2.6; const d = '1.26.0';",
       },
     ]);
     expect(violations).toEqual([]);

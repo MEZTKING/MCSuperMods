@@ -1641,6 +1641,46 @@ export const target: Target = {
       loot_insert: 'loot insert <x> <y> <z> loot <loot_table>',
       random_value: 'random value <min>..<max> [sequence]',
       random_roll: 'random roll <min>..<max>',
+      // The Rules forms (ADR 0115 D1 to D3; plugin API 1.26.0), Rules' own fallbacks until then:
+      // the first four run on this version's dedicated server by B547 ("Other findings"), and
+      // `set_fire` (ADR 0127 D1: `Fire` is the entity's ticks of fire, a short) waits for its
+      // in-game check.
+      if_entity: 'execute if entity <entities>',
+      if_score_run: 'execute if score <holder> <objective> matches <range> run <command>',
+      set_world_spawn: 'setworldspawn <x> <y> <z>',
+      spawn_point: 'spawnpoint <players> <x> <y> <z>',
+      set_fire: 'data merge entity <entities> {Fire:<ticks>s}',
+      // The game kits' other lines (plugin API 1.26.0), written as plain text from B551 to B562
+      // and checked on both targets by the offline function checker; their words are walked down
+      // this version's vendored command tree (`tp` through its redirect to `teleport`).
+      run_function: 'function <function>',
+      tag_add: 'tag <entities> add <tag>',
+      tag_remove: 'tag <entities> remove <tag>',
+      kill: 'kill <entities>',
+      in_run: 'execute in <dimension> run <command>',
+      as_run: 'execute as <entities> run <command>',
+      as_at_if_predicate_run:
+        'execute as <entities> at <anchor> if predicate <predicate> run <command>',
+      unless_storage_run: 'execute unless data storage <storage> <nbt_path> run <command>',
+      storage_set_value: 'data modify storage <storage> <nbt_path> set value <nbt>',
+      unless_score_run: 'execute unless score <holder> <objective> matches <range> run <command>',
+      if_score_if_score_run:
+        'execute if score <holder> <objective> matches <range> if score <holder_2> <objective_2> matches <range_2> run <command>',
+      in_if_block_run: 'execute in <dimension> if block <x> <y> <z> <block> run <command>',
+      store_result_score_run: 'execute store result score <holder> <objective> run <command>',
+      score_remove: 'scoreboard players remove <holders> <objective> <score>',
+      setblock: 'setblock <x> <y> <z> <block>',
+      summon: 'summon <entity_type> <x> <y> <z>',
+      teleport: 'tp <entities> <x> <y> <z>',
+      game_mode: 'gamemode <game_mode> <players>',
+      default_game_mode: 'defaultgamemode <game_mode>',
+      difficulty: 'difficulty <difficulty>',
+      game_rule: 'gamerule <rule> <rule_value>',
+      give: 'give <players> <item> <count>',
+      item_replace_entity: 'item replace entity <entities> <item_slot> with <item> <count>',
+      effect_give: 'effect give <entities> <effect> <seconds> <amplifier> <hide_particles>',
+      tellraw: 'tellraw <players> <text>',
+      dialog_show: 'dialog show <players> <dialog>',
     },
   },
   // gameRules (ADR 0111 D5, D8, as amended after B525; plugin API 1.20.0): vanilla's two kinds of

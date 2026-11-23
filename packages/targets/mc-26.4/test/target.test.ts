@@ -925,7 +925,10 @@ describe('target mc-26.4', () => {
     expect(target.scoreboard?.renderTypes).toEqual(['integer', 'hearts']);
     expect(target.scoreboard?.numberFormats).toEqual(['blank', 'fixed', 'styled']);
     const forms = target.commands?.forms;
-    expect(Object.keys(forms ?? {})).toHaveLength(49);
+    // 49 game kit forms of 1.22.0, then the five Rules forms and 26 game kit lines of 1.26.0.
+    expect(Object.keys(forms ?? {})).toHaveLength(80);
+    expect(forms?.set_fire).toBe('data merge entity <entities> {Fire:<ticks>s}');
+    expect(forms?.teleport).toBe('tp <entities> <x> <y> <z>');
     expect(forms?.place_template).toBe(
       'place template <template> <x> <y> <z> [rotation] [mirror] [integrity] [seed]',
     );

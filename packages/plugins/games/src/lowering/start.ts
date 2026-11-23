@@ -19,7 +19,6 @@ import type { JsonObject, OutputFile, TargetFacts } from '@msm/plugin-api';
 import { fillForm, functionFile, GamesLoweringError } from './shared-functions';
 import {
   addPos,
-  posText,
   type Start,
   type WorldSetup,
   type WorldSetupNames,
@@ -64,9 +63,18 @@ function startLines(start: Start, names: WorldSetupNames, target: TargetFacts): 
     );
   }
   lines.push(
-    `setworldspawn ${posText(spawn)}`,
-    `data modify storage ${names.storage} ${START_FLAG} set value 1b`,
-    `tp @s ${spawn[0] + 0.5} ${spawn[1]} ${spawn[2] + 0.5}`,
+    fillForm(target, 'set_world_spawn', { x: spawn[0], y: spawn[1], z: spawn[2] }),
+    fillForm(target, 'storage_set_value', {
+      storage: names.storage,
+      nbt_path: START_FLAG,
+      nbt: '1b',
+    }),
+    fillForm(target, 'teleport', {
+      entities: '@s',
+      x: spawn[0] + 0.5,
+      y: spawn[1],
+      z: spawn[2] + 0.5,
+    }),
   );
   return lines;
 }

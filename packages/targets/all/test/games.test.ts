@@ -16,6 +16,7 @@ interface CommandNode {
   type: string;
   parser?: string;
   children?: Record<string, CommandNode>;
+  redirect?: string[];
 }
 
 /** Sample text for each placeholder, as the lowering would write it. */
@@ -64,6 +65,34 @@ const SAMPLES: Readonly<Record<string, string>> = {
   min: '1',
   max_roll: '6',
   sequence: 'msm:one_block',
+  // The Rules forms and the game kits' other lines (plugin API 1.26.0).
+  entities: '@s[tag=msm.area.arena]',
+  range: '0..',
+  ticks: '100',
+  function: 'msm:msm_games/start',
+  tag: 'msm.area.arena',
+  dimension: 'minecraft:overworld',
+  anchor: '@s',
+  predicate: 'msm:msm_games/area/arena',
+  storage: 'msm:msm_games',
+  nbt_path: 'world_setup',
+  nbt: '1b',
+  holder_2: '#arena.ticks',
+  objective_2: 'msm.score',
+  range_2: '20..',
+  block: 'minecraft:chest{LootTable:"minecraft:chests/simple_dungeon"}',
+  entity_type: 'minecraft:zombie',
+  game_mode: 'survival',
+  difficulty: 'normal',
+  rule: 'keep_inventory',
+  rule_value: 'true',
+  item: 'minecraft:stone',
+  count: '1',
+  item_slot: 'hotbar.0',
+  effect: 'minecraft:speed',
+  amplifier: '0',
+  hide_particles: 'false',
+  dialog: 'minecraft:server_links',
 };
 
 /** Fills every placeholder of `form` with its sample, optional ones included. */
@@ -163,13 +192,27 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       const forms = target.commands?.forms;
       expect(forms).toBeDefined();
       for (const [name, form] of Object.entries(forms ?? {})) {
-        // Walk the leading literal words down the tree; the first placeholder must be an
-        // argument there.
+        // Walk the leading literal words down the tree (through a redirect such as `tp`'s);
+        // the first placeholder must be an argument there, or, where the game lists only
+        // literals (`difficulty`, `gamerule`), its sample must be one of them.
         let node: CommandNode | undefined = commands;
         for (const word of form.split(' ')) {
+          const redirect: readonly string[] | undefined = node?.redirect;
+          if (redirect !== undefined && node?.children === undefined) {
+            node = redirect.reduce<CommandNode | undefined>(
+              (at, step) => at?.children?.[step],
+              commands,
+            );
+          }
           if (/[<[]/.test(word)) {
-            const kinds = Object.values(node?.children ?? {}).map((child) => child.type);
-            expect(kinds, `${name}: ${word}`).toContain('argument');
+            const children = Object.entries(node?.children ?? {});
+            const kinds = children.map(([, child]) => child.type);
+            if (kinds.includes('argument')) break;
+            const placeholder = /[<[]([a-z0-9_]+)[>\]]/.exec(word)?.[1] ?? '';
+            expect(
+              children.map(([literal]) => literal),
+              `${name}: ${word}`,
+            ).toContain(SAMPLES[placeholder]);
             break;
           }
           node = node?.children?.[word];
@@ -195,6 +238,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         objective: ['msm.score'],
         team: ['msm_red'],
         structure: ['msm:island'],
+        function: ['msm:msm_games/start'],
+        predicate: ['msm:msm_games/area/arena'],
       };
       const forms = (target.commands?.forms ?? {}) as Readonly<Record<CommandFormName, string>>;
       for (const [name, form] of Object.entries(forms)) {
@@ -207,6 +252,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       }
       // The seconds form keeps its unit: a bare number would be ticks (B547 Y10).
       expect(fill(forms.worldborder_set_over_seconds)).toBe('worldborder set 2000 5s');
+      // The redirect is walked: `tp` stays the word the game kits always wrote.
+      expect(fill(forms.teleport)).toBe('tp @s[tag=msm.area.arena] 0 64 0');
     }, 120_000);
   },
 );

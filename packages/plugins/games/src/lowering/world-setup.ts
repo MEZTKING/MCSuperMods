@@ -18,7 +18,7 @@
  */
 import type { Element, OutputFile, TargetFacts } from '@msm/plugin-api';
 import { lowerFirstJoin } from './first-join';
-import { functionFile, sharedFunctionFiles } from './shared-functions';
+import { fillForm, functionFile, sharedFunctionFiles } from './shared-functions';
 import { lowerStart, startStructureSets } from './start';
 import {
   bareVanilla,
@@ -46,9 +46,13 @@ function gameRuleLines(setup: WorldSetup, target: TargetFacts): string[] {
   const vanilla = target.gameRules?.vanillaNames;
   const named = new Set(rules.map(([name]) => bareVanilla(name)));
   if (!named.has(RESPAWN_RADIUS_RULE) && (vanilla?.includes(RESPAWN_RADIUS_RULE) ?? true)) {
-    lines.push(`gamerule ${RESPAWN_RADIUS_RULE} ${setup.spawnRadius}`);
+    lines.push(
+      fillForm(target, 'game_rule', { rule: RESPAWN_RADIUS_RULE, rule_value: setup.spawnRadius }),
+    );
   }
-  for (const [name, value] of rules) lines.push(`gamerule ${bareVanilla(name)} ${value}`);
+  for (const [name, value] of rules) {
+    lines.push(fillForm(target, 'game_rule', { rule: bareVanilla(name), rule_value: value }));
+  }
   return lines;
 }
 
@@ -68,16 +72,24 @@ function worldStartFiles(
         path: names.fnPath('load'),
         lines: [
           '# Runs the world start once for the world (the flag survives restarts and /reload).',
-          `execute unless data storage ${names.storage} {${WORLD_FLAG}:1b} run function ${names.fn('world_start')}`,
+          fillForm(target, 'unless_storage_run', {
+            storage: names.storage,
+            nbt_path: `{${WORLD_FLAG}:1b}`,
+            command: fillForm(target, 'run_function', { function: names.fn('world_start') }),
+          }),
         ],
       },
     ]),
     functionFile(target, names.namespace, names.fnPath('world_start'), [
       '# The world start: difficulty, game mode and game rules, set once.',
-      `difficulty ${setup.difficulty}`,
-      `defaultgamemode ${setup.gameMode}`,
+      fillForm(target, 'difficulty', { difficulty: setup.difficulty }),
+      fillForm(target, 'default_game_mode', { game_mode: setup.gameMode }),
       ...gameRuleLines(setup, target),
-      `data modify storage ${names.storage} ${WORLD_FLAG} set value 1b`,
+      fillForm(target, 'storage_set_value', {
+        storage: names.storage,
+        nbt_path: WORLD_FLAG,
+        nbt: '1b',
+      }),
     ]),
   ];
 }

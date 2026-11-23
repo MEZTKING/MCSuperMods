@@ -94,7 +94,6 @@ export function lowerOneBlock(element: Element, target: TargetFacts): OutputFile
   const roll = holderOf(path, 'roll');
   const dimension = str(data.dimension, 'minecraft:overworld');
   const [x, y, z] = blockPos(data.at, [0, 64, 0]);
-  const at = `${x} ${y} ${z}`;
   const phases = (Array.isArray(data.phases) ? data.phases : []).map(dataOf);
   const loop = bool(data.loop, true);
   const announce = bool(data.announce, true);
@@ -102,21 +101,49 @@ export function lowerOneBlock(element: Element, target: TargetFacts): OutputFile
   const set = (holders: string, score: number): string =>
     fillForm(target, 'score_set', { holders, objective, score });
   const drawInto = (max: number): string =>
-    `execute store result score ${roll} ${objective} run ${fillForm(target, 'random_value', {
-      min: 1,
-      max,
-    })}`;
+    fillForm(target, 'store_result_score_run', {
+      holder: roll,
+      objective,
+      command: fillForm(target, 'random_value', { min: 1, max }),
+    });
+  const runFunction = (name: string): string =>
+    fillForm(target, 'run_function', { function: fn(name) });
+  /** `command` when `holder` on the objective matches `range`. */
+  const ifScore = (holder: string, range: string, command: string): string =>
+    fillForm(target, 'if_score_run', { holder, objective, range, command });
+  /** `command` when the roll matches `range`. */
+  const ifRoll = (range: string, command: string): string => ifScore(roll, range, command);
+  const setblock = (block: string): string => fillForm(target, 'setblock', { x, y, z, block });
 
   const load = [
     fillForm(target, 'objective_add', { objective, criterion: 'dummy' }),
-    `execute unless score ${phaseHolder} ${objective} matches 0.. run ${set(breaks, -1)}`,
-    `execute unless score ${phaseHolder} ${objective} matches 0.. run ${set(phaseHolder, 0)}`,
-    `execute if score ${phaseHolder} ${objective} matches ${Math.max(phases.length, 1)}.. run ${set(phaseHolder, 0)}`,
+    fillForm(target, 'unless_score_run', {
+      holder: phaseHolder,
+      objective,
+      range: '0..',
+      command: set(breaks, -1),
+    }),
+    fillForm(target, 'unless_score_run', {
+      holder: phaseHolder,
+      objective,
+      range: '0..',
+      command: set(phaseHolder, 0),
+    }),
+    ifScore(phaseHolder, `${Math.max(phases.length, 1)}..`, set(phaseHolder, 0)),
   ];
-  const tick = [`execute in ${dimension} if block ${at} minecraft:air run function ${fn('next')}`];
+  const tick = [
+    fillForm(target, 'in_if_block_run', {
+      dimension,
+      x,
+      y,
+      z,
+      block: 'minecraft:air',
+      command: runFunction('next'),
+    }),
+  ];
 
   const next = [
-    `execute if score ${breaks} ${objective} matches 0.. run ${runHook(namespace, `one_block/${path}/broken`)}`,
+    ifScore(breaks, '0..', runHook(target, namespace, `one_block/${path}/broken`)),
     fillForm(target, 'score_add', { holders: breaks, objective, score: 1 }),
   ];
   const extra: OutputFile[] = [];
@@ -125,34 +152,45 @@ export function lowerOneBlock(element: Element, target: TargetFacts): OutputFile
     if (following === undefined) return;
     const count = Math.max(1, Math.trunc(num(phase.breaks, 1)));
     next.push(
-      `execute if score ${phaseHolder} ${objective} matches ${index} if score ${breaks} ${objective} matches ${count}.. run function ${fn(`phase_${following}`)}`,
+      fillForm(target, 'if_score_if_score_run', {
+        holder: phaseHolder,
+        objective,
+        range: index,
+        holder_2: breaks,
+        objective_2: objective,
+        range_2: `${count}..`,
+        command: runFunction(`phase_${following}`),
+      }),
     );
   });
   phases.forEach((_phase, index) => {
-    next.push(
-      `execute if score ${phaseHolder} ${objective} matches ${index} run function ${fn(`fill_${index}`)}`,
-    );
+    next.push(ifScore(phaseHolder, `${index}`, runFunction(`fill_${index}`)));
   });
 
   phases.forEach((phase, index) => {
     // Entering a phase.
     const enter = [set(phaseHolder, index), set(breaks, 0)];
-    if (announce) enter.push(`tellraw @a ${textComponent(str(phase.name, `Phase ${index + 1}`))}`);
+    if (announce) {
+      enter.push(
+        fillForm(target, 'tellraw', {
+          players: '@a',
+          text: textComponent(str(phase.name, `Phase ${index + 1}`)),
+        }),
+      );
+    }
     extra.push(functionFile(target, namespace, `one_block/${path}/phase_${index}`, enter));
 
     // The block (by weight).
     const blocks = weightedList(phase.blocks, 'block');
     const blockLines: string[] = [];
     if (blocks.length === 1) {
-      blockLines.push(`setblock ${at} ${(blocks[0] as Weighted).id}`);
+      blockLines.push(setblock((blocks[0] as Weighted).id));
     } else if (blocks.length > 1) {
       blockLines.push(drawInto(blocks.reduce((sum, entry) => sum + entry.weight, 0)));
       let low = 1;
       for (const entry of blocks) {
         const high = low + entry.weight - 1;
-        blockLines.push(
-          `execute if score ${roll} ${objective} matches ${low}..${high} run setblock ${at} ${entry.id}`,
-        );
+        blockLines.push(ifRoll(`${low}..${high}`, setblock(entry.id)));
         low = high + 1;
       }
     }
@@ -164,42 +202,39 @@ export function lowerOneBlock(element: Element, target: TargetFacts): OutputFile
     if (chest > 0) {
       fill.push(
         drawInto(CHANCE_DRAWS),
-        `execute if score ${roll} ${objective} matches 1..${chest} run setblock ${at} minecraft:chest{LootTable:${JSON.stringify(phase.chest_loot)}}`,
+        ifRoll(
+          `1..${chest}`,
+          setblock(`minecraft:chest{LootTable:${JSON.stringify(phase.chest_loot)}}`),
+        ),
       );
       if (chest < CHANCE_DRAWS) {
-        fill.push(
-          `execute if score ${roll} ${objective} matches ${chest + 1}.. run function ${fn(`blocks_${index}`)}`,
-        );
+        fill.push(ifRoll(`${chest + 1}..`, runFunction(`blocks_${index}`)));
       }
     } else {
-      fill.push(`function ${fn(`blocks_${index}`)}`);
+      fill.push(runFunction(`blocks_${index}`));
     }
     const mobs = weightedList(phase.mobs, 'mob');
     const mob = mobs.length === 0 ? 0 : draws(num(phase.mob_chance, 0));
     if (mob > 0) {
-      const summonAt = `${x + 0.5} ${y + 1} ${z + 0.5}`;
+      const summon = (entityType: string): string =>
+        fillForm(target, 'summon', { entity_type: entityType, x: x + 0.5, y: y + 1, z: z + 0.5 });
       const mobLines: string[] = [];
       if (mobs.length === 1) {
-        mobLines.push(`summon ${(mobs[0] as Weighted).id} ${summonAt}`);
+        mobLines.push(summon((mobs[0] as Weighted).id));
       } else {
         mobLines.push(drawInto(mobs.reduce((sum, entry) => sum + entry.weight, 0)));
         let low = 1;
         for (const entry of mobs) {
           const high = low + entry.weight - 1;
-          mobLines.push(
-            `execute if score ${roll} ${objective} matches ${low}..${high} run summon ${entry.id} ${summonAt}`,
-          );
+          mobLines.push(ifRoll(`${low}..${high}`, summon(entry.id)));
           low = high + 1;
         }
       }
       extra.push(functionFile(target, namespace, `one_block/${path}/mobs_${index}`, mobLines));
       if (mob >= CHANCE_DRAWS) {
-        fill.push(`function ${fn(`mobs_${index}`)}`);
+        fill.push(runFunction(`mobs_${index}`));
       } else {
-        fill.push(
-          drawInto(CHANCE_DRAWS),
-          `execute if score ${roll} ${objective} matches 1..${mob} run function ${fn(`mobs_${index}`)}`,
-        );
+        fill.push(drawInto(CHANCE_DRAWS), ifRoll(`1..${mob}`, runFunction(`mobs_${index}`)));
       }
     }
     extra.push(functionFile(target, namespace, `one_block/${path}/fill_${index}`, fill));

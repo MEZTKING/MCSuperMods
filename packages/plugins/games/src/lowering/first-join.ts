@@ -16,26 +16,35 @@ import { fillForm, functionFile, textComponent } from './shared-functions';
 import { START_FLAG } from './start';
 import { dataFile, type WorldSetup, type WorldSetupNames, worldFacts } from './world-setup-files';
 
-/** The line naming the goals: the advancements key, as the player has bound it. */
-const GOALS_LINE =
-  'tellraw @s {text:"Your goals are on the Advancements screen (",extra:[{keybind:"key.advancements"},")."]}';
+/** The text naming the goals: the advancements key, as the player has bound it. */
+const GOALS_TEXT =
+  '{text:"Your goals are on the Advancements screen (",extra:[{keybind:"key.advancements"},")."]}';
 
 /** The lines of the first-join function. */
 function firstJoinLines(setup: WorldSetup, names: WorldSetupNames, target: TargetFacts): string[] {
   const lines = ["# A new player's first join: runs once per player, as the player."];
   if (setup.start !== undefined) {
     lines.push(
-      `execute unless data storage ${names.storage} {${START_FLAG}:1b} run function ${names.fn('start')}`,
+      fillForm(target, 'unless_storage_run', {
+        storage: names.storage,
+        nbt_path: `{${START_FLAG}:1b}`,
+        command: fillForm(target, 'run_function', { function: names.fn('start') }),
+      }),
     );
   }
-  lines.push(`gamemode ${setup.gameMode} @s`);
+  lines.push(fillForm(target, 'game_mode', { game_mode: setup.gameMode, players: '@s' }));
   const kit = setup.newPlayer;
   if (kit !== undefined) {
     for (const entry of kit.items ?? []) {
       lines.push(
         entry.slot === undefined || entry.slot === ''
-          ? `give @s ${entry.item} ${entry.count}`
-          : `item replace entity @s ${entry.slot} with ${entry.item} ${entry.count}`,
+          ? fillForm(target, 'give', { players: '@s', item: entry.item, count: entry.count })
+          : fillForm(target, 'item_replace_entity', {
+              entities: '@s',
+              item_slot: entry.slot,
+              item: entry.item,
+              count: entry.count,
+            }),
       );
     }
     if (kit.loot_table !== undefined && (kit.items ?? []).length === 0) {
@@ -43,15 +52,25 @@ function firstJoinLines(setup: WorldSetup, names: WorldSetupNames, target: Targe
     }
     for (const effect of kit.effects ?? []) {
       lines.push(
-        `effect give @s ${effect.effect} ${effect.seconds} ${effect.amplifier ?? 0} ${effect.hide_particles === true}`,
+        fillForm(target, 'effect_give', {
+          entities: '@s',
+          effect: effect.effect,
+          seconds: effect.seconds,
+          amplifier: effect.amplifier ?? 0,
+          hide_particles: effect.hide_particles === true,
+        }),
       );
     }
     if (kit.message !== undefined && kit.message !== '') {
-      lines.push(`tellraw @s ${textComponent(kit.message)}`);
+      lines.push(fillForm(target, 'tellraw', { players: '@s', text: textComponent(kit.message) }));
     }
   }
-  if (setup.goals !== undefined) lines.push(GOALS_LINE);
-  if (kit?.dialog !== undefined) lines.push(`dialog show @s ${kit.dialog}`);
+  if (setup.goals !== undefined) {
+    lines.push(fillForm(target, 'tellraw', { players: '@s', text: GOALS_TEXT }));
+  }
+  if (kit?.dialog !== undefined) {
+    lines.push(fillForm(target, 'dialog_show', { players: '@s', dialog: kit.dialog }));
+  }
   return lines;
 }
 
