@@ -179,7 +179,8 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
 
   // Save, then the Fabric mod jar holds the rule event and the script. -------------------------
   await window.keyboard.press('ControlOrMeta+S');
-  await expect(window.locator('footer')).not.toContainText('Unsaved');
+  // The status bar says "Not saved yet" until the save lands, then "Saved" (B703's words).
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
   const book = savedData(folders.projectDir, 'rules', 'rules');
   expect((book.rules as unknown[]).length).toBe(3);
 
