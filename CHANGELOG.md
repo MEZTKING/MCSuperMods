@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.9.
+
+## [1.5.9] - 2026-11-24
+
 - **Richer drawn blocks.** Stone, ores, dirt, grass, sand, wood, leaves and more are now drawn by Blockloom's recipes, built in and offline, and **Draw it for me** has **Describe it** for words such as "mossy cobblestone with cyan crystals"; **Settings > Pictures > Block picture style** brings back the Classic look.
 - The toolbar is one row: Home, Undo, Redo, Save, Try it, Play, Share my mod, search, AI helper, Help and More; the menu bar uses the same words.
 - The lists of things in your mod and the status bar speak plain words.
