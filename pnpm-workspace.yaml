@@ -6,6 +6,7 @@ packages:
   - tools
   - docs/site
   - fixtures/sample-plugin
+  - vendor/*
 
 catalog:
   "@anthropic-ai/sdk": 1.1.0

@@ -5,7 +5,9 @@
  * **Finish**, **Detail** (Smooth, Normal, Rough) and six variations, with **New looks** for six
  * more and **Use this picture**. Plain by default (ADR 0130; title "Draw it for me"): Colour and
  * the variations, drawing what the field's name points at; What is it?, Second colour, Finish,
- * Detail and where the picture is saved are under **More options**. Everything is drawn on this
+ * Detail and where the picture is saved are under **More options**. Block pictures that
+ * Blockloom draws (ADR 0135) add **Describe it** in the Blockloom style and the block picture
+ * style under More options; the variations follow both live. Everything is drawn on this
  * machine by MSM's own generator: no key, no internet. The picked picture goes to the field's
  * `onPick`, which writes it as one undo step; nothing but the PNG is kept.
  *
@@ -14,14 +16,22 @@
  * Test ids: `draw-dialog`, `draw-option-<id>`, `draw-colour`, `draw-swatch-<word>`,
  * `draw-swatch-thing`, `draw-accent`, `draw-accent-reset`, `draw-finish`,
  * `draw-detail-<level>`, `draw-variation-<n>`, `draw-new-looks`, `draw-use`, `draw-cancel`,
+ * `draw-description`, `draw-style-<style>`,
  * `draw-empty`, `draw-error`.
  *
  * @packageDocumentation
  */
 
-import type { ArtDetail } from '@msm/plugin-library';
+import {
+  type ArtDetail,
+  BLOCK_PICTURE_STYLE_LABELS,
+  BLOCK_PICTURE_STYLES,
+  type BlockPictureStyle,
+  blockloomDraws,
+} from '@msm/plugin-library';
 import { Dialog } from 'radix-ui';
 import { useId, useMemo, useReducer, useState } from 'react';
+import { usePreferences } from '../../store/preferences';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
 import { MoreOptions } from '../ui/MoreOptions';
@@ -31,6 +41,7 @@ import {
   type DrawnPicture,
   type DrawOption,
   type DrawState,
+  describes,
   drawOptions,
   drawPicture,
   drawReducer,
@@ -83,18 +94,22 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
   const colourId = useId();
   const accentId = useId();
   const finishId = useId();
+  const describeId = useId();
+  const blockStyle = usePreferences((preferences) => preferences.blockStyle);
   const option = options.find((entry) => entry.id === state.option) ?? options[0];
   const { colour, detail } = state;
+  const describing = describes(option, blockStyle);
 
+  // The variations follow the colour, the words and the block style as they change (ADR 0135 D6).
   const variations = useMemo(
     () =>
       option === undefined
         ? []
         : pageSeeds(state.page).map((seed) => {
-            const picture = drawPicture(option, state, seed);
+            const picture = drawPicture(option, state, seed, blockStyle);
             return { seed, picture, url: pngUrl(picture.pngs[0] as Uint8Array) };
           }),
-    [option, state],
+    [option, state, blockStyle],
   );
 
   const use = async (): Promise<void> => {
@@ -102,7 +117,7 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
     setSaving(true);
     setError(null);
     try {
-      await props.onPick(drawPicture(option, state, selectedSeed(state)));
+      await props.onPick(drawPicture(option, state, selectedSeed(state), blockStyle));
       props.onClose();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
@@ -184,6 +199,30 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
                   />
                 ))}
               </div>
+              {describing && (
+                <div className="flex flex-col gap-0.5">
+                  <label htmlFor={describeId} className="text-sm font-medium">
+                    Describe it
+                  </label>
+                  <input
+                    id={describeId}
+                    type="text"
+                    data-testid="draw-description"
+                    className={fieldClass}
+                    maxLength={360}
+                    value={state.description}
+                    placeholder="For example: mossy cobblestone with cyan crystals"
+                    onChange={(event) =>
+                      dispatch({ type: 'description', description: event.target.value })
+                    }
+                  />
+                  <span className="text-xs text-muted">
+                    Name a block such as netherrack, deepslate or gold ore, and add words like
+                    mossy, cracked, glowing, frosted, ancient, charred, wet or flowers. A colour
+                    next to crystals or veins colours them; any other colour tints the block.
+                  </span>
+                </div>
+              )}
               <div
                 className="grid grid-cols-3 gap-2 sm:grid-cols-6"
                 role="listbox"
@@ -222,8 +261,28 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
                 option={option}
                 colour={colour}
                 detail={detail}
+                style={blockStyle}
                 onPick={(id) => dispatch({ type: 'option', option: id })}
               />
+              {blockloomDraws(option.id) && (
+                <fieldset className="flex flex-wrap items-center gap-3">
+                  <legend className="text-sm font-medium">Block picture style</legend>
+                  {BLOCK_PICTURE_STYLES.map((style) => (
+                    <label key={style} className="flex items-center gap-1 text-sm">
+                      <input
+                        type="radio"
+                        name="draw-block-style"
+                        aria-label={BLOCK_PICTURE_STYLE_LABELS[style]}
+                        data-testid={`draw-style-${style}`}
+                        checked={blockStyle === style}
+                        onChange={() => usePreferences.getState().setBlockStyle(style)}
+                      />
+                      {BLOCK_PICTURE_STYLE_LABELS[style]}
+                    </label>
+                  ))}
+                  <span className="text-xs text-muted">The same choice as in Settings.</span>
+                </fieldset>
+              )}
               {option.colours === 2 && (
                 <div className="flex flex-wrap items-center gap-1.5">
                   <label htmlFor={accentId} className="text-sm font-medium">
@@ -343,20 +402,22 @@ function WhatIsIt(props: {
   option: DrawOption;
   colour: DrawState['colour'];
   detail: DrawState['detail'];
+  style: BlockPictureStyle;
   onPick(id: string): void;
 }) {
-  const { options, colour, detail } = props;
-  // Tiles follow the colour and detail only (seed 0, each recipe's own finish and second colour).
+  const { options, colour, detail, style } = props;
+  // Tiles follow the colour, detail and block style only (seed 0, each recipe's own finish and
+  // second colour, no words).
   const tiles = useMemo(
     () =>
       options.map((entry) => {
         const look = { ...initialDrawState([entry]), colour, detail };
         return {
           option: entry,
-          url: pngUrl(drawPicture(entry, look, 0).pngs[0] as Uint8Array),
+          url: pngUrl(drawPicture(entry, look, 0, style).pngs[0] as Uint8Array),
         };
       }),
-    [options, colour, detail],
+    [options, colour, detail, style],
   );
   const option = props.option;
   return (

@@ -31,6 +31,7 @@ import { libraryExamples } from './examples/index';
 import { libraryStarters } from './starters/index';
 
 export { type ArtPngOptions, artPng, PATTERN_RECIPES } from './art/artpng';
+export * from './art/blockloom/index';
 export { artFramePngs, artLookPng, artPixels } from './art/draw';
 export * as minecraftArt from './art/index';
 export {

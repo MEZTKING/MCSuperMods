@@ -11399,3 +11399,24 @@ What: 1.5.8 published (commit 2834ec6, main moved after green CI; release publis
 Decisions: AI target_facts leaves out command fragments as it does forms; App.test's target-upgrade toast waits 10 s (heavy step); the kill pair uses the killer's advancement plus death scores (ADR 0132 finding).
 
 Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game commands) and B729 (Rules 4 for games) were stopped mid-way at the user's request; their worktrees under the scratchpad are not kept, so rerun them from their briefs. Then B765 (mount OfferCardHost, Play through recipes), B728, B730 onward, plan C after its spike, one-mode waves 3-5 (B705-B710, B715, B716 with B711's leftovers in PLAN-one-mode-rest.md). Unmeasured: the four e2e specs after B711; the full app suite after B724-B726 and B764 (local-server.test "taken port" flaked once under load). Next release cut: CHANGELOG [Unreleased] holds the toolbar, plain words and gallery lines; add games, instances and server lines when they are visible.
+
+## 2026-11-24 — executor — B800 Blockloom draws blocks; Classic in Settings
+
+**What**
+- ADR 0135 (Accepted, the user 2026-11-24: "go ahead with the recommended, keep classic in settings") and a ROADMAP section.
+- `vendor/blockloom-core/`: `@blockloom/core` 1.1.0 copied unchanged from the tag `core-v1.1.0` (commit 31abd25; engine version 1.0.0; MIT, Copyright (c) 2026 Lelouch), a workspace package (`vendor/*` in `pnpm-workspace.yaml`) and a dependency of `@msm/plugin-library`; `vendor/README.md` names the tag and commit; Biome already skips `**/vendor`; check-deps passes. README Licence line.
+- `packages/plugins/library/src/art/blockloom/style.ts`: thin adapters over the core: the recipe mapping (15 recipes, ADR 0135 D3), `blockloomOptions` (colour to `promptColor`, greys and grass sides untinted, the nearest ore by vein colour, deepslate with crystals and flecks in the colour for a deepslate ore, `leaves_cutout`, detail to finish, seed `s + 1`, the description as the prompt), `blockloomDrawing`, `blockloomPictureNote`, `setBlockPictureStyle`/`blockPictureStyle`, `blockPictureCacheKey`, `BLOCKLOOM_ENGINE_VERSION`.
+- `ArtLook.style` and `.description`, `ArtPngOptions.style`, `ArtPixels.note`; `encodePng` takes optional sorted `tEXt` entries; Blockloom pictures carry `tEXt` `blockloom` (engine version, words, material, effects, seed, face, finish, tint).
+- App: preferences `blockStyle` calling `setBlockPictureStyle` at start-up and on change; Settings **Pictures > Block picture style** with its catalogue line `block-style`; the Draw dialog's **Describe it** and the style under More options, the variations following both live; the Home gallery's and the showcase's still caches key on `blockPictureCacheKey()`.
+- Tests: `art-blockloom.test.ts` (the core's 20 golden cases byte for byte, six pinned MSM looks, options, the style, alpha, the PNG note); Classic tests (`art.test.ts`, `art-blocks.test.ts`, the contact sheet) pin the Classic style; the AI art scenario test and e2e `art-path` check Blockloom faces for size and hard alpha instead of `checkArtRules`; two Draw dialog tests. Regenerated: the `examples/` mirror, `fixtures/sample-mod` and its jar and Java tree hashes.
+- Guide `pictures.md` (Blocks drawn by Blockloom, Block picture style), CHANGELOG [Unreleased] line.
+
+**Decisions**
+- First a hand port of `js/engine.js` (checked byte for byte against it over 936 requests); replaced the same day, on the orchestrator's word, by the vendored core and adapters.
+- The core has no base-colour input, so the look's colour is a `promptColor` tint; the core's `tint` option is not used: in 1.1.0 it hands `hexToHsl`'s `{h, s, l}` to a palette that reads `{hue, sat, light}`, which gives NaN colours (worth fixing in Blockloom).
+- The style is a library-wide default the host sets: bundles are built in the renderer, so one setter covers the Creator, flows, starters, examples, Try it, Home's stills and the AI helper without a plugin API change.
+- `checkArtRules` stays Classic's rule set.
+
+**Next**
+- Blockloom: the `tint` bug above; a base-colour input and a deepslate ore would let MSM's colours map exactly.
+- The AI helper's `create_texture` could take a description; Try it's drawn texture ids could carry `blockPictureCacheKey()` if Try it ever caches across opens.

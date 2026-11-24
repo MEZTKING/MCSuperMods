@@ -18,6 +18,7 @@ import type { DrawnPicture } from '../../../src/renderer/src/components/art/draw
 import { CreatorImageField } from '../../../src/renderer/src/components/creator/CreatorImageField';
 import { NewTextureDialog } from '../../../src/renderer/src/components/texture-editor/NewTextureDialog';
 import { TextureEditorDialog } from '../../../src/renderer/src/components/texture-editor/TextureEditorDialog';
+import { usePreferences } from '../../../src/renderer/src/store/preferences';
 
 // The painter's PNG codec needs a canvas: here a PNG is its RGBA bytes after 8 bytes of size.
 vi.mock('../../../src/renderer/src/components/texture-editor/png-canvas', () => ({
@@ -42,6 +43,7 @@ vi.mock('../../../src/renderer/src/components/texture-editor/png-canvas', () => 
 
 afterEach(() => {
   cleanup();
+  usePreferences.getState().setBlockStyle('blockloom');
 });
 
 const RUBY = [196, 28, 52] as const;
@@ -137,6 +139,74 @@ describe('the Draw dialog', () => {
     fireEvent.click(screen.getByTestId('more-options-draw-picture'));
     expect(screen.getByText('What is it?')).toBeTruthy();
     window.msmMoreOptionsOpen = true;
+  });
+
+  it('describes a block in words and follows the block style live (ADR 0135 D6)', () => {
+    const onPick = vi.fn<(picture: DrawnPicture) => void>();
+    render(
+      <DrawPictureDialog
+        field={{ kinds: ['block'], width: 16, height: 16, name: 'ruby_bricks', colour: RUBY }}
+        target="demo:textures/block/ruby_bricks.png"
+        onPick={onPick}
+        onClose={() => {}}
+      />,
+    );
+    const first = () =>
+      screen.getByTestId('draw-variation-0').querySelector('img')?.getAttribute('src');
+    const blockloom = first();
+    expect(blockloom).toBe(
+      `data:image/png;base64,${Buffer.from(
+        artLookPng({
+          recipe: 'bricks',
+          colour: RUBY,
+          detail: 'normal',
+          seed: 0,
+          style: 'blockloom',
+        }),
+      ).toString('base64')}`,
+    );
+    fireEvent.change(screen.getByTestId('draw-description'), {
+      target: { value: 'mossy netherrack with cyan crystals' },
+    });
+    const described = first();
+    expect(described).not.toBe(blockloom);
+    expect(described).toBe(
+      `data:image/png;base64,${Buffer.from(
+        artLookPng({
+          recipe: 'bricks',
+          colour: RUBY,
+          detail: 'normal',
+          seed: 0,
+          style: 'blockloom',
+          description: 'mossy netherrack with cyan crystals',
+        }),
+      ).toString('base64')}`,
+    );
+    // The style under More options is Settings' choice: Classic draws MSM's own bricks, no words.
+    // More options remembers being opened by an earlier test.
+    if (screen.queryByTestId('draw-style-classic') === null) click('more-options-draw-picture');
+    click('draw-style-classic');
+    expect(usePreferences.getState().blockStyle).toBe('classic');
+    expect(screen.queryByTestId('draw-description')).toBeNull();
+    expect(first()).toBe(
+      `data:image/png;base64,${Buffer.from(
+        artLookPng({ recipe: 'bricks', colour: RUBY, detail: 'normal', seed: 0, style: 'classic' }),
+      ).toString('base64')}`,
+    );
+    click('draw-style-blockloom');
+    expect(first()).toBe(described);
+  });
+
+  it('offers no words for pictures Blockloom does not draw', () => {
+    render(
+      <DrawPictureDialog
+        field={{ kinds: ['item'], width: 16, height: 16, name: 'ruby_sword' }}
+        target="demo:textures/item/ruby_sword.png"
+        onPick={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.queryByTestId('draw-description')).toBeNull();
   });
 
   it('says when nothing can be drawn at the size', () => {

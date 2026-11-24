@@ -1,0 +1,42 @@
+{
+  "name": "@blockloom/core",
+  "version": "1.1.0",
+  "description": "Deterministic, DOM-free Minecraft texture generation core for Blockloom and other apps.",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./data": {
+      "types": "./index.d.ts",
+      "import": "./data.js"
+    },
+    "./golden.json": {
+      "default": "./golden.json"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "engine.js",
+    "data.js",
+    "golden.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "author": "Lelouch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MEZTKING/blockloom.git"
+  },
+  "keywords": [
+    "minecraft",
+    "texture",
+    "procedural",
+    "generator"
+  ]
+}

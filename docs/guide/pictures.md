@@ -31,11 +31,27 @@ Each pick is one undo step: **Edit > Undo** puts the old picture back, or remove
 
 Without opening **More options**, the thing being drawn is chosen from where you are, so you only pick the **Colour** and one of the six variations. **More options** also says where the picture is saved.
 
+## Blocks drawn by Blockloom
+
+Stone, cobblestone, bricks, ores (on stone or deepslate), dirt, grass (top and side), sand, gravel, planks, logs (bark and the cut end), leaves and the plain block are drawn by **Blockloom**: the recipes of Blockloom, a texture maker made alongside MCSuperMods, built into MCSuperMods so they work offline, without Blockloom itself and without a key. Every other picture (items, tools, armour, skins, plants, crops, doors, pillars, particles, patterns) is drawn as described above, whichever style you choose.
+
+For those blocks the **Draw it for me** window adds **Describe it**, a box for a few words about the block. The six variations follow your words as you type:
+
+- **Name a block** to draw that block instead: stone, cobblestone, deepslate, gravel, bricks, stone bricks, nether bricks, mud bricks, obsidian, dirt, grass, sand, snow, ice, moss, planks, log, leaves, netherrack, end stone, prismarine, terracotta, glass or stained glass, wool and concrete in the sixteen colours, iron, gold, diamond, emerald, redstone, lapis, netherite or copper blocks (copper also exposed, weathered or oxidized), or a gold, diamond, redstone, emerald, copper or lapis ore. A named block brings its own colours.
+- **Add effects**: mossy (or overgrown), cracked, glowing, frosted (or icy), ancient (or weathered), charred (or burnt), gilded, flecks (or veins), crystals (or gems), wet and flowers. Several can go together.
+- **Name a colour**: a colour next to crystals, gems, veins, flecks or glow colours them ("tiny cyan crystals"); any other colour tints the whole block ("blue stone").
+
+For example "mossy cobblestone with cyan crystals", "cracked deepslate with glowing amber veins" or "frosted oak planks". Words that name nothing leave the picture as it is. **Detail** picks Blockloom's finish: **Smooth**, **Normal** (balanced) or **Rough** (rugged). **Colour** tints the block; a grey keeps the block's own colours, a grass side keeps its own green and dirt, an ore's colour chooses which ore is drawn (cyan a diamond-like ore, red a redstone-like one), and a deepslate ore gets crystals and flecks in the colour. Each picture keeps a note of the words, block, seed and Blockloom's version inside its PNG file, so it can be drawn again; Minecraft ignores the note.
+
+### Block picture style
+
+**Settings > Pictures > Block picture style** chooses who draws those blocks: **Blockloom** (the default) or **Classic**, the earlier, simpler look of MCSuperMods' own recipes. The same choice sits under the Draw window's **More options**, and the variations change at once. It applies everywhere MCSuperMods draws a block for you: the Draw window, the Creator and every flow, starter and example you make, the gallery's pictures, Try it's drawn ground and the AI helper's pictures. Pictures already in your project keep their look until you draw them again. Classic draws exactly what it drew before; it has no **Describe it** box.
+
 ## Where the pictures come from
 
 The recipes are grouped in families:
 
-- **Blocks**: stone, polished stone, cobblestone, bricks, pillars, ores (stone or deepslate), storage blocks, planks, logs and bark, leaves, doors and trapdoors, saplings and crops, portals, dirt, grass, sand and gravel, the growing plants (a kelp- or vine-like strand with its berries, a cane, cactus or bamboo stalk, a lichen over a face, a dripleaf's leaf and stem) and a flower pot's clay, and a plain tile. They tile, so a wall of them has no seams, and they have no outline.
+- **Blocks** (some drawn by Blockloom, see [Blocks drawn by Blockloom](#blocks-drawn-by-blockloom)): stone, polished stone, cobblestone, bricks, pillars, ores (stone or deepslate), storage blocks, planks, logs and bark, leaves, doors and trapdoors, saplings and crops, portals, dirt, grass, sand and gravel, the growing plants (a kelp- or vine-like strand with its berries, a cane, cactus or bamboo stalk, a lichen over a face, a dripleaf's leaf and stem) and a flower pot's clay, and a plain tile. They tile, so a wall of them has no seams, and they have no outline.
 - **Items**: gems, ingots, discs, spawn eggs, tools, weapons, bows and crossbows with their pulling pictures, shields, bottles, totems, fruit, seeds and produce, a banner pattern item, a pottery sherd and a glider. Items have a dark outline.
 - **Worn and mob pictures**: the armour layers, horse and wolf armour, a banner pattern on banners and shields (drawn pale, since the game dyes it), armour trim layers (in eight greys the game recolours with each trim material), glider wings, a decorated pot face, and skins painted on a model's boxes.
 - **Icons and particles**: the effect icon and the four particle looks (spark, orb, puff and leaf).

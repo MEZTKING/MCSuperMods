@@ -294,4 +294,6 @@ Fabric mod jars exported with mobs nest [GeckoLib](https://modrinth.com/mod/geck
 
 Fabric mod jars exported with scripts carry `msm_runtime`, which nests [Rhino](https://github.com/mozilla/rhino) 1.9.2, Mozilla's JavaScript engine, unmodified. Rhino is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/); its licence text is kept in the runtime jar as `META-INF/licenses/rhino-LICENSE.txt` (ADR 0031). Rhino remains under its own licence.
 
+Block pictures in the Blockloom style are drawn by `@blockloom/core` 1.1.0, the texture engine of [Blockloom](https://github.com/MEZTKING/blockloom) (MIT Licence, Copyright (c) 2026 Lelouch; ADR 0135), vendored unchanged with its licence in `vendor/blockloom-core/` (tag `core-v1.1.0`).
+
 The app transpiles scripts with [TypeScript](https://github.com/microsoft/TypeScript) (Apache License 2.0), which is bundled into the app; the script editor uses the TypeScript service that ships with the Monaco editor.

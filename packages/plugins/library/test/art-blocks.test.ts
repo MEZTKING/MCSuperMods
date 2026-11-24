@@ -26,11 +26,16 @@ import {
   PLACEHOLDER_PATTERNS,
   placeholderPng,
   type Rgb,
+  setBlockPictureStyle,
 } from '../src/index';
 
 // Heavy property tests (B539, plan "Watch" under B537): each draws a recipe at 12 colours, 4 seeds,
 // every finish and 3 details (hundreds of pictures, the boat bodies 128 pixels wide), which takes
 // a few seconds alone and more than vitest's 5 s default when every package's tests run at once.
+// These tests (and their goldens and the contact sheet) are of MSM's own recipes: the Classic
+// block style (ADR 0135 D7). Blockloom's block pictures are tested in `art-blockloom.test.ts`.
+setBlockPictureStyle('classic');
+
 const HEAVY_TIMEOUT = 60_000;
 
 const here = dirname(fileURLToPath(import.meta.url));

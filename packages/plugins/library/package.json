@@ -14,6 +14,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@blockloom/core": "workspace:*",
     "@msm/plugin-api": "workspace:*",
     "@msm/schemas": "workspace:*"
   },

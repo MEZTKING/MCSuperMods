@@ -12,7 +12,7 @@
  */
 
 import type { ExampleProject, Target } from '@msm/plugin-api';
-import type { ArtLook } from '@msm/plugin-library';
+import { type ArtLook, blockPictureCacheKey } from '@msm/plugin-library';
 import {
   CANVAS_CODEC,
   composeStill,
@@ -56,7 +56,8 @@ export function lookStill(
   codec: StillCodec = CANVAS_CODEC,
   draw: LookDrawer = libraryLookDrawer,
 ): Promise<string> {
-  const key = `${JSON.stringify(look)}\u0000${size.width}x${size.height}`;
+  // Who draws block faces is part of the key (ADR 0135 D5): a style or engine change redraws.
+  const key = `${JSON.stringify(look)}\u0000${blockPictureCacheKey()}\u0000${size.width}x${size.height}`;
   const hit = looks.get(key);
   if (hit !== undefined) return hit;
   const made = (async () => {

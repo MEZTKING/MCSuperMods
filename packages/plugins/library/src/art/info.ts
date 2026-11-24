@@ -8,6 +8,7 @@
  */
 
 import type { PlaceholderPattern, Rgb } from '../assets/png';
+import type { BlockPictureStyle } from './blockloom/style';
 import type { ArtImage } from './colour';
 
 /**
@@ -187,6 +188,18 @@ export interface ArtLook {
   readonly detail?: ArtDetail | undefined;
   /** The variation; the same look always gives the same bytes. Defaults to 0. */
   readonly seed?: number | undefined;
+  /**
+   * Which generator draws a block face (ADR 0135 D5): Blockloom's recipes or MSM's own
+   * (`classic`); defaults to the library's `blockPictureStyle()`. Only the recipes Blockloom
+   * draws (`blockloomDraws`) differ between the styles.
+   */
+  readonly style?: BlockPictureStyle | undefined;
+  /**
+   * A description in words for the Blockloom style ("mossy cobblestone with cyan crystals",
+   * ADR 0135 D4): a named material, effects and colour words. Ignored by the Classic style and
+   * by recipes Blockloom does not draw.
+   */
+  readonly description?: string | undefined;
 }
 
 /**
@@ -198,6 +211,12 @@ export interface ArtPixels {
   readonly height: number;
   readonly frames: number;
   readonly data: Uint8Array;
+  /**
+   * What is stored with the picture: for a Blockloom drawing, the engine version, words,
+   * material, seed, face and finish as JSON (ADR 0135 D8), written into its PNG as the `tEXt`
+   * entry `blockloom`. Undefined for MSM's own drawings.
+   */
+  readonly note?: string;
 }
 
 /** What a recipe's drawing function gets: the look resolved to numbers. */

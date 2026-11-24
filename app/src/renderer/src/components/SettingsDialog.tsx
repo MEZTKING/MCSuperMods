@@ -1,4 +1,5 @@
 import { type AiModelId, type AiSettings, DEFAULT_AI_SETTINGS } from '@msm/ai';
+import { BLOCK_PICTURE_STYLE_LABELS, BLOCK_PICTURE_STYLES } from '@msm/plugin-library';
 import { Dialog } from 'radix-ui';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { AiPicturesPlatform } from '../../../shared/ai-pictures';
@@ -453,6 +454,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
   const autoCheckId = useId();
   const showcaseClipsId = useId();
   const showcaseClips = usePreferences((state) => state.showcaseClips);
+  const blockStyle = usePreferences((state) => state.blockStyle);
   const jarSource = props.jarSource ?? null;
   const manualRoots = props.manualRoots ?? [];
   const saveSettings = props.save;
@@ -876,6 +878,30 @@ export function SettingsDialog(props: SettingsDialogProps) {
             </div>
             <p className="text-xs text-muted">
               Moving pictures on Home and in New project. Off shows still pictures.
+            </p>
+
+            <h3 className="mt-3 font-semibold">Pictures</h3>
+            <fieldset className="flex flex-wrap items-center gap-3" data-setting="block-style">
+              <legend className="mb-1">Block picture style</legend>
+              {BLOCK_PICTURE_STYLES.map((style) => (
+                <label key={style} className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="block-style"
+                    aria-label={BLOCK_PICTURE_STYLE_LABELS[style]}
+                    data-testid={`settings-block-style-${style}`}
+                    checked={blockStyle === style}
+                    onChange={() => usePreferences.getState().setBlockStyle(style)}
+                  />
+                  {BLOCK_PICTURE_STYLE_LABELS[style]}
+                </label>
+              ))}
+            </fieldset>
+            <p className="text-xs text-muted">
+              How MCSuperMods draws stone, dirt, grass, sand, wood, leaves and ores for you.
+              Blockloom draws richer blocks and reads a description such as "mossy cobblestone with
+              cyan crystals". Classic is the earlier, simpler look. Items, mobs and everything else
+              look the same either way.
             </p>
 
             <h3 className="mt-3 font-semibold">Search</h3>

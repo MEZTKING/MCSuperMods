@@ -1122,3 +1122,7 @@ To be planned by the orchestrator with an ADR before any code; one target at a t
 - [ ] B790 The games' parity on Paper (wave C4; Opus, high)
 - [ ] B791 e2e, guide, AI helper lines and changelog (wave C5)
 - [ ] B792 Close (wave C5; main session)
+
+### Blockloom block pictures (ADR 0135, 2026-11-24)
+
+- [x] B800 Blockloom draws block pictures (its recipes ported into the library's `art/blockloom/`), **Describe it** in the Draw dialog, Settings' **Block picture style** with Classic kept (user, 2026-11-24: "go ahead with the recommended, keep classic in settings")

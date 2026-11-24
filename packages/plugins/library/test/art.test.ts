@@ -10,6 +10,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { setBlockPictureStyle } from '../src/art/blockloom/style';
 import { renderSprite } from '../src/art/canvas';
 import { type ArtImage, hueDelta, packRgb, rgbToOklab, rgbToOklch } from '../src/art/colour';
 import { generateArt, generateArtPng } from '../src/art/generator';
@@ -47,6 +48,10 @@ import {
 // Heavy property tests (B539, plan "Watch" under B537): each draws a recipe at 12 colours, 4 seeds,
 // every finish and 3 details (hundreds of pictures, the boat bodies 128 pixels wide), which takes
 // a few seconds alone and more than vitest's 5 s default when every package's tests run at once.
+// These tests (and their goldens and the contact sheet) are of MSM's own recipes: the Classic
+// block style (ADR 0135 D7). Blockloom's block pictures are tested in `art-blockloom.test.ts`.
+setBlockPictureStyle('classic');
+
 const HEAVY_TIMEOUT = 60_000;
 
 const here = dirname(fileURLToPath(import.meta.url));

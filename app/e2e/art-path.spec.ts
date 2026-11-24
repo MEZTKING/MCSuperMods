@@ -18,7 +18,7 @@
  * 3. Very easy: from Home, "Make a block" and the Stone set, **Draw it for me** on the stone's
  *    picture shows only Colour and the variations; the picked picture becomes the field's
  *    thumbnail, and after Create the stone's texture on disk is that picture, byte for byte,
- *    and passes `checkArtRules` for the `stone` recipe.
+ *    drawn by Blockloom (ADR 0135), the default block style.
  *
  * The expected bytes come from `@msm/plugin-library` on the Node side, with the colour read
  * from the dialog's colour well and the seed from the variation's `data-seed`.
@@ -89,6 +89,13 @@ async function blankProject(prefix: string, moreOptions: 'open' | 'closed' = 'op
 /** A file under the project's `assets/<namespace>/`. */
 function assetFile(projectDir: string, ...path: string[]): string {
   return join(projectDir, 'assets', NAMESPACE, ...path);
+}
+
+/** A Blockloom block face (ADR 0135 D7): 16 by 16, every pixel opaque. */
+function expectBlockloomFace(bytes: Uint8Array): void {
+  const image = rgbaOf(bytes);
+  expect([image.width, image.height]).toEqual([16, 16]);
+  for (let i = 3; i < image.data.length; i += 4) expect(image.data[i]).toBe(255);
 }
 
 /** The RGBA pixels of a PNG file's bytes, as `checkArtRules` reads them. */
@@ -196,7 +203,8 @@ test('art: drawn Gear set, Draw on a Block Studio row with Undo, New texture fro
 
   const bricks = artLookPng({ recipe: 'bricks', colour, detail: 'normal', seed });
   await expect.poll(() => readFileSync(tileFile).equals(Buffer.from(bricks))).toBe(true);
-  expect(checkArtRules(rgbaOf(bricks), artRecipeInfo('bricks'))).toEqual([]);
+  // Blockloom draws the bricks (ADR 0135): its pictures are checked for size and hard alpha.
+  expectBlockloomFace(bricks);
   // One Undo puts the old picture back.
   await window.getByTestId('toolbar-undo').click();
   await expect.poll(() => readFileSync(tileFile).equals(before)).toBe(true);
@@ -357,7 +365,7 @@ test('art: "Draw it for me" on a Creator picture field, More options closed', as
   const picked = Buffer.from(src.slice('data:image/png;base64,'.length), 'base64');
   const stone = artLookPng({ recipe: 'stone', colour, detail: 'normal', seed });
   expect(picked.equals(Buffer.from(stone))).toBe(true);
-  expect(checkArtRules(rgbaOf(picked), artRecipeInfo('stone'))).toEqual([]);
+  expectBlockloomFace(picked);
 
   await create(window, creator, 'Stone set');
   // The stone's texture on disk is the picked picture, byte for byte.

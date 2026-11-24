@@ -2251,7 +2251,12 @@ function zlibDeflate(raw: Uint8Array): number[] {
  * @param height - Image height in pixels.
  * @throws Error If `rgba` has the wrong length.
  */
-export function encodePng(rgba: Uint8Array, width: number, height: number): Uint8Array {
+export function encodePng(
+  rgba: Uint8Array,
+  width: number,
+  height: number,
+  text?: Readonly<Record<string, string>>,
+): Uint8Array {
   if (rgba.length !== width * height * 4) {
     throw new Error(`Expected ${width * height * 4} RGBA bytes, got ${rgba.length}.`);
   }
@@ -2272,6 +2277,16 @@ export function encodePng(rgba: Uint8Array, width: number, height: number): Uint
     0x1a,
     0x0a,
     ...chunk('IHDR', ihdr),
+    // Optional `tEXt` entries (keyword, NUL, Latin-1 text), sorted by keyword so the bytes are stable.
+    ...Object.keys(text ?? {})
+      .sort()
+      .flatMap((keyword) =>
+        chunk('tEXt', [
+          ...[...keyword].map((ch) => ch.charCodeAt(0) & 0xff),
+          0,
+          ...[...(text?.[keyword] ?? '')].map((ch) => ch.charCodeAt(0) & 0xff),
+        ]),
+      ),
     ...chunk('IDAT', zlibDeflate(raw)),
     ...chunk('IEND', []),
   ]);

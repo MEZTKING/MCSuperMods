@@ -1,6 +1,7 @@
 /**
- * View preferences (ADR 0047, ADR 0118 D1, D8, ADR 0124 D11, ADR 0130 D1): the collapsed sidebar
- * groups, the live preview beside the form, the showcase's setting and fold, and the search's
+ * View preferences (ADR 0047, ADR 0118 D1, D8, ADR 0124 D11, ADR 0130 D1, ADR 0135 D5): the
+ * collapsed sidebar groups, the live preview beside the form, the showcase's setting and fold,
+ * the block picture style, and the search's
  * **Remember my searches** with its local history (`search/history.ts`, its own storage key).
  * Kept in the renderer's local storage: they change no file. Storage failures are ignored.
  *
@@ -11,6 +12,7 @@
  * @packageDocumentation
  */
 
+import { type BlockPictureStyle, setBlockPictureStyle } from '@msm/plugin-library';
 import { create } from 'zustand';
 import {
   EMPTY_HISTORY,
@@ -31,6 +33,7 @@ interface StoredPreferences {
   showcaseClips?: boolean;
   showcaseOpen?: boolean;
   rememberSearches?: boolean;
+  blockStyle?: unknown;
 }
 
 /** The preferences store's shape. */
@@ -60,6 +63,13 @@ export interface PreferencesState {
    * searches on this computer. Default on; off forgets them and keeps nothing more.
    */
   rememberSearches: boolean;
+  /**
+   * **Block picture style** (ADR 0135 D5): which generator draws block faces everywhere in the
+   * app, Blockloom's recipes (the default) or MSM's own (`classic`). Kept in the library too
+   * (`setBlockPictureStyle`), so every drawing that names no style follows it.
+   */
+  blockStyle: BlockPictureStyle;
+  setBlockStyle(style: BlockPictureStyle): void;
   /** The local search history (empty while {@link rememberSearches} is off). */
   searchHistory: SearchHistory;
   setRememberSearches(on: boolean): void;
@@ -91,7 +101,12 @@ function readStored(): StoredPreferences {
 function writeStored(
   state: Pick<
     PreferencesState,
-    'collapsed' | 'centrePreview' | 'showcaseClips' | 'showcaseOpen' | 'rememberSearches'
+    | 'collapsed'
+    | 'centrePreview'
+    | 'showcaseClips'
+    | 'showcaseOpen'
+    | 'rememberSearches'
+    | 'blockStyle'
   >,
 ): void {
   try {
@@ -103,6 +118,7 @@ function writeStored(
         showcaseClips: state.showcaseClips,
         showcaseOpen: state.showcaseOpen,
         rememberSearches: state.rememberSearches,
+        blockStyle: state.blockStyle,
       }),
     );
   } catch {
@@ -120,6 +136,11 @@ if (stored.mode !== undefined) {
     // Storage is unavailable: it is dropped at the next write.
   }
 }
+
+/** The stored block picture style: `classic` when chosen, else Blockloom (ADR 0135 D5). */
+const storedBlockStyle: BlockPictureStyle =
+  stored.blockStyle === 'classic' ? 'classic' : 'blockloom';
+setBlockPictureStyle(storedBlockStyle);
 
 const IDEAS_KEY = 'msm.ideas.v1';
 /** The largest base seed of More ideas (as Surprise me's seeds). */
@@ -166,6 +187,7 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
   showcaseClips: stored.showcaseClips !== false,
   showcaseOpen: stored.showcaseOpen === true,
   rememberSearches: stored.rememberSearches !== false,
+  blockStyle: storedBlockStyle,
   ideasSeed: readIdeasSeed(),
   searchHistory: stored.rememberSearches !== false ? readHistory() : EMPTY_HISTORY,
   setRememberSearches(on) {
@@ -191,6 +213,12 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
     if (searchHistory === get().searchHistory) return;
     set({ searchHistory });
     writeHistory(searchHistory);
+  },
+  setBlockStyle(style) {
+    const next: BlockPictureStyle = style === 'classic' ? 'classic' : 'blockloom';
+    setBlockPictureStyle(next);
+    set({ blockStyle: next });
+    writeStored(get());
   },
   setShowcaseClips(on) {
     set({ showcaseClips: on });

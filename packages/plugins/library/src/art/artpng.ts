@@ -14,7 +14,8 @@ import {
   type PlaceholderPattern,
   placeholderPng,
 } from '../assets/png';
-import { artPixels } from './draw';
+import type { BlockPictureStyle } from './blockloom/style';
+import { artPixels, textOf } from './draw';
 import type { ArtDetail, ArtRecipeId } from './info';
 import { artRecipeInfo } from './table';
 
@@ -100,6 +101,8 @@ export type ArtPngOptions = PlaceholderOptions & {
   finish?: string | undefined;
   /** How much shade noise; defaults to `normal`. */
   detail?: ArtDetail | undefined;
+  /** Which generator draws a block face (ADR 0135); defaults to `blockPictureStyle()`. */
+  style?: BlockPictureStyle | undefined;
 };
 
 /**
@@ -120,6 +123,7 @@ export function artPng(pattern: PlaceholderPattern, options: ArtPngOptions = {})
     finish: options.finish,
     detail: options.detail,
     seed: options.seed,
+    style: options.style,
   });
   const frame =
     (((Math.trunc(options.frame ?? 0) % pixels.frames) + pixels.frames) % pixels.frames) | 0;
@@ -128,5 +132,6 @@ export function artPng(pattern: PlaceholderPattern, options: ArtPngOptions = {})
     pixels.data.subarray(frame * size, (frame + 1) * size),
     pixels.width,
     pixels.height,
+    textOf(pixels),
   );
 }

@@ -19,6 +19,8 @@ import {
   type ArtRecipeInfo,
   artFramePngs,
   artPixels,
+  type BlockPictureStyle,
+  blockloomDraws,
   boxSkinArtPixels,
   boxSkinArtPng,
   type Rgb,
@@ -237,6 +239,11 @@ export interface DrawState {
   readonly page: number;
   /** The chosen variation on the page (0 to 5). */
   readonly selected: number;
+  /**
+   * **Describe it** (ADR 0135 D4, D6): words such as "mossy cobblestone with cyan crystals",
+   * read by Blockloom for the block pictures it draws; empty for none.
+   */
+  readonly description: string;
 }
 
 /** The ten Surprise me theme colours (ADR 0086 D2): each theme's main colour, with its word. */
@@ -253,6 +260,7 @@ export function initialDrawState(options: readonly DrawOption[], colour?: Rgb): 
     detail: 'normal',
     page: 0,
     selected: 0,
+    description: '',
   };
 }
 
@@ -263,6 +271,7 @@ export type DrawAction =
   | { type: 'accent'; accent: Rgb | undefined }
   | { type: 'finish'; finish: string }
   | { type: 'detail'; detail: ArtDetail }
+  | { type: 'description'; description: string }
   | { type: 'new-looks' }
   | { type: 'select'; index: number };
 
@@ -279,6 +288,8 @@ export function drawReducer(state: DrawState, action: DrawAction): DrawState {
       return { ...state, finish: action.finish };
     case 'detail':
       return { ...state, detail: action.detail };
+    case 'description':
+      return { ...state, description: action.description };
     case 'new-looks':
       return { ...state, page: state.page + 1, selected: 0 };
     case 'select':
@@ -300,11 +311,25 @@ export function selectedSeed(state: DrawState): number {
 }
 
 /**
+ * Whether the dialog offers **Describe it** for `option` (ADR 0135 D6): a block picture that
+ * Blockloom draws, in the Blockloom style.
+ */
+export function describes(option: DrawOption | undefined, style: BlockPictureStyle): boolean {
+  return option !== undefined && style === 'blockloom' && blockloomDraws(option.id);
+}
+
+/**
  * Draws `option` in the look with `seed`: every frame's PNG and RGBA pixels. A recipe draws
- * through `artFramePngs` and `artPixels`, the skin through `boxSkinArtPng` over the option's
+ * through `artFramePngs` and `artPixels` in `style` (the library's style when left out, ADR
+ * 0135 D5) with the look's description, the skin through `boxSkinArtPng` over the option's
  * boxes or {@link HUMANOID_SKIN_BOXES}; the same look and seed always give the same bytes.
  */
-export function drawPicture(option: DrawOption, state: DrawState, seed: number): DrawnPicture {
+export function drawPicture(
+  option: DrawOption,
+  state: DrawState,
+  seed: number,
+  style?: BlockPictureStyle,
+): DrawnPicture {
   const base = {
     colour: state.colour,
     ...(state.accent === undefined ? {} : { accent: state.accent }),
@@ -325,10 +350,13 @@ export function drawPicture(option: DrawOption, state: DrawState, seed: number):
       rgba: [boxSkinArtPixels(boxes, width, height, look)],
     };
   }
+  const description = state.description.trim();
   const look = {
     ...base,
     recipe: option.id as ArtRecipeId,
     ...(state.finish === undefined ? {} : { finish: state.finish }),
+    ...(style === undefined ? {} : { style }),
+    ...(description === '' ? {} : { description }),
   };
   const pixels = artPixels(look);
   const size = pixels.width * pixels.height * 4;

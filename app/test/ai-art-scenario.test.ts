@@ -27,6 +27,7 @@ import {
   type ArtRulesImage,
   artFramePngs,
   artRecipeInfo,
+  blockloomDraws,
   checkArtRules,
 } from '@msm/plugin-library';
 import { describe, expect, it } from 'vitest';
@@ -299,7 +300,10 @@ describe('AI helper scenario: frost tools and a frost ore (build mode, drawn tex
         artFramePngs({ recipe, colour: [127, 212, 240], seed: texture.seed })[0],
       );
       const image = decodePng(asset.bytes);
-      expect(checkArtRules(image, artRecipeInfo(recipe)), `${texture.file}`).toEqual([]);
+      // The pixel rules are the Classic style's; Blockloom's block faces blend freely (ADR 0135 D7).
+      if (!blockloomDraws(recipe)) {
+        expect(checkArtRules(image, artRecipeInfo(recipe)), `${texture.file}`).toEqual([]);
+      }
     }
     // Two frost tools of different kinds never share a picture, nor do two seeds of one.
     expect(

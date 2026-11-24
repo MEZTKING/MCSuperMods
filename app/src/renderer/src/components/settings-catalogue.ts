@@ -104,6 +104,23 @@ export const SETTINGS_CATALOGUE: readonly SettingsCatalogueEntry[] = [
     words: ['animation', 'animations', 'moving pictures', 'video', 'autoplay', 'motion'],
   },
   {
+    id: 'block-style',
+    title: 'Block picture style',
+    sentence:
+      'Choose how blocks MCSuperMods draws for you look: Blockloom, richer and described in words, or Classic.',
+    section: 'Pictures',
+    words: [
+      'blockloom',
+      'classic',
+      'texture style',
+      'art style',
+      'drawn blocks',
+      'draw it for me',
+      'textures',
+      'pixel art',
+    ],
+  },
+  {
     id: 'remember-searches',
     title: 'Remember my searches',
     sentence: 'Keep your recent searches and chosen results on this computer so they come first.',

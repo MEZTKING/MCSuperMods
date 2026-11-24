@@ -13,6 +13,7 @@
  */
 
 import type { ContentBundle, ContentBundleAsset, ExampleProject, Target } from '@msm/plugin-api';
+import { blockPictureCacheKey } from '@msm/plugin-library';
 import type { RgbaImage } from '../components/texture-editor/pixels';
 import {
   decodePicture,
@@ -274,7 +275,8 @@ function drawn(
   codec: StillCodec,
   size: StillSize,
 ): Promise<Drawn> {
-  const key = `${example.id}\u0000${target.id}\u0000${size.width}x${size.height}`;
+  // Who draws block faces is part of the key (ADR 0135 D5): a style or engine change redraws.
+  const key = `${example.id}\u0000${target.id}\u0000${blockPictureCacheKey()}\u0000${size.width}x${size.height}`;
   const hit = cache.get(key);
   if (hit !== undefined) return hit;
   const made = (async () => {
