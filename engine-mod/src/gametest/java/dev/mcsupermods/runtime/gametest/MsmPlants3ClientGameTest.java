@@ -88,6 +88,8 @@ public class MsmPlants3ClientGameTest implements FabricClientGameTest {
             TestServerContext server = world.getServer();
             server.runCommand("time set noon");
             server.runCommand("weather clear");
+            // No random ticks: the kelp-like tip would grow on into its tank while the client is checked.
+            server.runCommand("gamerule random_tick_speed 0");
             server.runOnServer(s -> player(s.getPlayerList().getPlayers()).setGameMode(GameType.CREATIVE));
             build(server);
             stand(context, world, 8.5, Y, 9.5, 180f, 15f);
