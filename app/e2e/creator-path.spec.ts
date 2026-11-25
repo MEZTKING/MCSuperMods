@@ -171,9 +171,16 @@ async function openFlowFrom(dialog: Locator, groupTestId: string, flowId: string
   return dialog;
 }
 
+/**
+ * Saves the project, which must have changes: the status bar's Saved is then the end of this
+ * save. (A save of a project with none shows Saved before it starts, so nothing tells when its
+ * files are written: the `blank` listing once caught a `.<file>.<hash>.tmp` of such a save.)
+ */
 async function save(window: Page): Promise<void> {
+  const footer = window.locator('footer');
+  await expect(footer.getByText('Not saved yet', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
-  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
 }
 
 /** The `data` of a saved element file in the project folder. */
@@ -191,13 +198,31 @@ async function applyRawJson(window: Page, data: unknown): Promise<void> {
   const panel = window.getByRole('region', { name: 'Raw JSON' });
   const view = panel.locator('.monaco-editor .view-lines');
   await expect(view).toBeVisible();
-  // Near the top left: the lines can be wider than the editor, their middle under the ruler.
-  await view.click({ position: { x: 8, y: 8 } });
+  // A click near the top left of the editor's frame, beside the line numbers: a click at a spot
+  // of the lines themselves missed now and then, since scrolling the tall lines into view moved
+  // them inside the editor, away from the point (B714). The frame does not move.
+  await panel.locator('.monaco-editor').click({ position: { x: 80, y: 10 } });
   await window.keyboard.press('ControlOrMeta+A');
   await window.keyboard.press('Delete');
   await window.keyboard.insertText(JSON.stringify(data));
   await panel.getByRole('button', { name: 'Apply' }).click();
   await expect(panel.getByRole('button', { name: 'Apply' })).toBeDisabled();
+  // The Studio's column never scrolls sideways (B714): the form was wider than a narrow column,
+  // so scrolling the editor into view slid the form out of reach and the click above missed.
+  const sideways = await window.getByTestId('editor-form').evaluate((form) => {
+    const view = (form as unknown as { parentElement: { parentElement: Sized } }).parentElement
+      .parentElement;
+    return { scroll: view.scrollWidth, client: view.clientWidth, left: view.scrollLeft };
+  });
+  expect(sideways.scroll).toBeLessThanOrEqual(sideways.client);
+  expect(sideways.left).toBe(0);
+}
+
+/** The few element members the sideways check reads (the e2e project has no DOM types). */
+interface Sized {
+  scrollWidth: number;
+  clientWidth: number;
+  scrollLeft: number;
 }
 
 /** Clicks the toolbar's Undo once. */
@@ -220,11 +245,13 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   await window.waitForLoadState('domcontentloaded');
   await newProjectInFolder(window);
   await expect(window.getByTestId(`element-row-${id('pack')}`)).toBeVisible();
-  await save(window);
-  // A save's temporary file can be there for a moment: the listing leaves it out.
-  const blank = readdirSync(join(folders.projectDir, 'content', NAMESPACE), { recursive: true })
+  // A new mod is written whole before its list shows (`ProjectSession.newProject` saves, then
+  // adopts the project), so the listing needs no save first.
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+  const blank = readdirSync(join(folders.projectDir, 'content', NAMESPACE), {
+    recursive: true,
+  })
     .map(String)
-    .filter((name) => !name.endsWith('.tmp'))
     .sort();
 
   // The Gear set flow, named Sapphire.
@@ -349,7 +376,6 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
     .poll(() =>
       readdirSync(join(folders.projectDir, 'content', NAMESPACE), { recursive: true })
         .map(String)
-        .filter((name) => !name.endsWith('.tmp'))
         .sort(),
     )
     .toEqual(blank);

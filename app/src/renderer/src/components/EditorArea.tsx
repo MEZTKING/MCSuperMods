@@ -180,8 +180,13 @@ export function EditorArea({
         }
       >
         <ScrollArea.Root className="size-full min-h-0 overflow-hidden">
-          <ScrollArea.Viewport className="size-full">
-            <div className="flex flex-col gap-3 p-2" data-testid="editor-form">
+          {/* Radix wraps the content in a `display: table` box, which grows to the content's
+              widest line: in a narrow column the form was wider than the view (no sideways
+              scroll bar), and anything scrolled into view (the raw text editor) slid the whole
+              form sideways out of reach (B714). A block box keeps it the column's width, and
+              the form clips a row still too wide rather than letting the view scroll. */}
+          <ScrollArea.Viewport className="size-full [&>div]:block!">
+            <div className="flex flex-col gap-3 overflow-x-clip p-2" data-testid="editor-form">
               <NewHereTip kind={element.kind} />
               {((notes !== undefined && notes.trim() !== '') || fullNotes !== undefined) && (
                 <details
@@ -398,8 +403,8 @@ function WhereItGoes(props: {
           {users.length > 0 && (
             <ul className="flex flex-col gap-0.5 text-xs" data-testid="where-used-by">
               {users.map((entry) => (
-                <li key={entry.id} className="flex items-center gap-2">
-                  <code className="font-mono">{entry.id}</code>
+                <li key={entry.id} className="flex flex-wrap items-center gap-x-2">
+                  <code className="font-mono [overflow-wrap:anywhere]">{entry.id}</code>
                   <span className="text-muted">{entry.name}</span>
                   {props.onOpenElement !== undefined && (
                     <button
