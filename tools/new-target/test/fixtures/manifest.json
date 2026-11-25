@@ -1,0 +1,11 @@
+{
+  "latest": { "release": "99.0", "snapshot": "99.1-pre-1" },
+  "versions": [
+    { "id": "99.1-pre-1", "type": "snapshot", "url": "https://piston-meta.mojang.com/v1/packages/fixture/99.1-pre-1.json", "time": "2099-03-01T10:00:00+00:00", "releaseTime": "2099-03-01T10:00:00+00:00" },
+    { "id": "99w07a", "type": "snapshot", "url": "https://piston-meta.mojang.com/v1/packages/fixture/99w07a.json", "time": "2099-02-15T10:00:00+00:00", "releaseTime": "2099-02-15T10:00:00+00:00" },
+    { "id": "99.0", "type": "release", "url": "https://piston-meta.mojang.com/v1/packages/fixture/99.0.json", "time": "2099-02-01T10:00:00+00:00", "releaseTime": "2099-02-01T10:00:00+00:00" },
+    { "id": "99.0-pre-1", "type": "snapshot", "url": "https://piston-meta.mojang.com/v1/packages/fixture/99.0-pre-1.json", "time": "2099-01-20T10:00:00+00:00", "releaseTime": "2099-01-20T10:00:00+00:00" },
+    { "id": "98.0", "type": "release", "url": "https://piston-meta.mojang.com/v1/packages/fixture/98.0.json", "time": "2098-12-01T10:00:00+00:00", "releaseTime": "2098-12-01T10:00:00+00:00" },
+    { "id": "1.0", "type": "old_beta", "url": "https://piston-meta.mojang.com/v1/packages/fixture/1.0.json", "time": "2010-12-20T17:28:00+00:00", "releaseTime": "2010-12-20T17:28:00+00:00" }
+  ]
+}

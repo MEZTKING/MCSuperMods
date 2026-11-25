@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>net.fabricmc.fabric-api</groupId>
+  <artifactId>fabric-api</artifactId>
+  <versioning>
+    <latest>0.201.0+99.1</latest>
+    <release>0.201.0+99.1</release>
+    <versions>
+      <version>0.199.2+98.0</version>
+      <version>0.200.9+99.0</version>
+      <version>0.200.10+99.0</version>
+      <version>0.200.11-beta+99.0</version>
+      <version>0.201.0+99.1</version>
+    </versions>
+  </versioning>
+</metadata>
