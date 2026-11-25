@@ -42,6 +42,7 @@ One mode (ADR 0130): `components/ui/MoreOptions.tsx` (`MoreOptions`, `PlainConte
 - Don't hard-code version facts (recipe categories, ids); read them from the schema.
 - Don't touch Minecraft assets outside the extraction cache (`~/.msm/cache/assets/<version>/`, ADR 0011).
 - Known gaps: F2 in Monaco on Windows (unchecked); the live world map draws no carved caves or structure pieces and its Height view takes 3.4 to 3.9 s (ADR 0119 limits WL1–WL18); the data views' limits are ADR 0120's 2L1–2L12 (one roll is MSM's own, the advancement layout and dialogs about right, functions run as far as Try it understands them) and the looks' ADR 0121's 3L1–3L12 (Minecraft's sounds need the Minecraft folder, bodies are MSM's stand-ins, core shaders a compile check); structure blocks are not editable in-app; only the first random palette is read.
+- New dialogs use `DialogRoot` and `DialogContent` from `components/ui/DialogContent.tsx` (Escape closes them even under a toast, B714), never `Dialog.Root` and `Dialog.Content` directly.
 - UI labels named in `docs/guide/` must match the code; update the guide when one changes.
 
 ## Commands
