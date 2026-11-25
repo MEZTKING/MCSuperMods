@@ -53,7 +53,7 @@ describe('the function view', () => {
   });
 
   it('marks each line in the frame and names what Try it runs by itself', async () => {
-    const element = fn(['say hi', 'spreadplayers ~ ~ 0 64 false @a', '# a comment']);
+    const element = fn(['say hi', 'locate structure minecraft:village_plains', '# a comment']);
     render(<FunctionLines {...props(element, projectWith(element, load))} />);
     await waitFor(() =>
       expect(screen.getByTestId('function-view-summary').textContent).toBe(
@@ -64,7 +64,7 @@ describe('the function view', () => {
     expect(screen.getByTestId('live-view-fidelity').dataset.fidelity).toBe('about_right');
     const rows = screen.getAllByTestId('function-view-line');
     expect(rows.map((row) => row.dataset.runs)).toEqual(['true', 'false', undefined]);
-    expect(rows[1]?.textContent).toContain('Only in the game: Try it does not run /spreadplayers.');
+    expect(rows[1]?.textContent).toContain('Only in the game: Try it does not run /locate.');
     expect(screen.getByTestId('function-view-self-run').textContent).toBe(
       'Try it runs it by itself when Try it starts and after you change a function (#minecraft:load).',
     );
@@ -79,7 +79,11 @@ describe('the function view', () => {
         'Runs in Try it: every line (1).',
       ),
     );
-    view.rerender(<FunctionLines {...props(fn(['say hi', 'weather rain']), project)} />);
+    view.rerender(
+      <FunctionLines
+        {...props(fn(['say hi', 'locate structure minecraft:village_plains']), project)}
+      />,
+    );
     await waitFor(
       () =>
         expect(screen.getByTestId('function-view-summary').textContent).toBe(

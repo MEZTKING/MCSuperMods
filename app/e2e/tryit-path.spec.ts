@@ -524,7 +524,7 @@ const CHIME_ID = `${RULES_NAMESPACE}:chime_block`;
 /**
  * The sample rules project with its rule books taken out and one rule added: when the Chime Block
  * is used, play the chime, give a Ruby and run the function `noted`, which Try it runs (B613) and
- * whose one line, `/spreadplayers`, is only in Minecraft.
+ * whose one line, `/locate`, is only in Minecraft.
  */
 function makeRulesProject(projectDir: string): void {
   cpSync(join(appDir, '..', 'fixtures', 'sample-rules'), projectDir, { recursive: true });
@@ -537,7 +537,7 @@ function makeRulesProject(projectDir: string): void {
     writeFileSync(file, `${JSON.stringify(element, null, 2)}\n`);
   };
   write('function', 'noted', {
-    data: { lines: ['# Run by the chime rule.', 'spreadplayers ~ ~ 0 64 false @s'] },
+    data: { lines: ['# Run by the chime rule.', 'locate structure minecraft:village_plains'] },
     formatVersion: 1,
     id: `${RULES_NAMESPACE}:noted`,
     kind: 'minecraft:function',
@@ -567,7 +567,7 @@ function makeRulesProject(projectDir: string): void {
   });
 }
 
-test('Try it: a rule gives an item, plays a sound and runs a function, whose /spreadplayers is only in Minecraft', async () => {
+test('Try it: a rule gives an item, plays a sound and runs a function, whose /locate is only in Minecraft', async () => {
   base = mkdtempSync(join(tmpdir(), 'msm-tryit-rules-'));
   const folders = {
     projectDir: join(base, RULES_NAMESPACE),
@@ -612,7 +612,7 @@ test('Try it: a rule gives an item, plays a sound and runs a function, whose /sp
   await expect(
     lines.filter({ hasText: `Ran function ${RULES_NAMESPACE}:noted as you.` }),
   ).toHaveCount(1);
-  const only = log.getByTestId('tryit-log-only').filter({ hasText: '/spreadplayers' });
+  const only = log.getByTestId('tryit-log-only').filter({ hasText: '/locate' });
   await expect(only).toHaveCount(1);
   await expect(only).toHaveAttribute('data-kind', 'onlyInMinecraft');
   await expect(only).toContainText('Only in Minecraft:');
@@ -1230,7 +1230,7 @@ test('Try it: the Function editor marks each line and Run in Try it runs the fun
     'Runs in Try it: 0 of 1 lines. The rest are said in What happened.',
   );
   await expect(window.getByTestId('function-not-run')).toContainText(
-    'Line 2: Only in the game: Try it does not run /spreadplayers.',
+    'Line 2: Only in the game: Try it does not run /locate.',
   );
 
   // Run in Try it opens Try it and runs the function at the player.
@@ -1245,6 +1245,6 @@ test('Try it: the Function editor marks each line and Run in Try it runs the fun
     window
       .getByTestId('tryit-log')
       .getByTestId('tryit-log-only')
-      .filter({ hasText: '/spreadplayers' }),
+      .filter({ hasText: '/locate' }),
   ).toHaveCount(1);
 });
