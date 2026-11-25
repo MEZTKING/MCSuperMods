@@ -17,7 +17,7 @@ import {
   mergeChangeSet,
 } from '@msm/target-migrate';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { changeSet, curated, generatedChangeSet } from '../src/changes/index';
+import { changeSet, curated, generatedChangeSet, vanillaFiles } from '../src/changes/index';
 import { target, vendored } from '../src/index';
 import { KNOWN_RENAMES } from '../src/removed-ids';
 
@@ -98,7 +98,8 @@ describe('the generated change set', () => {
       'packages/targets/mc-26.4/src/changes/generated.json',
       '--check',
     ];
-    // Throws (exit 1) when generated.json or its additions list differs from a fresh run.
+    // Throws (exit 1) when generated.json, its additions list or its vanilla files list
+    // differs from a fresh run.
     const out = execFileSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8' });
     expect(out).toContain('Up to date.');
   }, 60_000);
@@ -193,11 +194,109 @@ describe('the curated change set', () => {
 describe('the target', () => {
   it('carries the merged change set as its changes fact', () => {
     expect(target.changes).toBe(changeSet);
-    expect(changeSet).toEqual(mergeChangeSet(generatedChangeSet, curated));
+    expect(changeSet).toEqual({
+      ...mergeChangeSet(generatedChangeSet, curated),
+      vanillaFiles,
+    });
     const ids = changeSet.changes.map((c) => c.id);
     expect(ids).toEqual([...ids].sort());
     expect(new Set(ids).size).toBe(ids.length);
     // Plain data: a host can clone it and send it to a worker.
     expect(structuredClone(changeSet as TargetChangeSet)).toEqual(changeSet);
+  });
+});
+
+/** The vanilla files list (ADR 0136 D11, B823), as `tools/diff-targets` writes it. */
+const VANILLA_FILES_LIST = new URL('../src/changes/generated.vanilla-files.json', import.meta.url);
+/** A path of a pack file in the vanilla files list: lowercase folders and names under `data/` or `assets/`. */
+const PACK_PATH = /^(assets|data)\/[a-z0-9_.-]+(\/[a-z0-9_.-]+)+$/;
+
+describe('the vanilla files list', () => {
+  // Written by the same run as generated.json, so the --check above rebuilds it too; it holds
+  // nothing of Mojang's but paths and the kind of change.
+  it('is the change set fact, from the previous target to this one', () => {
+    expect(changeSet.vanillaFiles).toBe(vanillaFiles);
+    expect(vanillaFiles.from).toBe(target.previous);
+    expect(vanillaFiles.to).toBe(target.id);
+    expect(vanillaFiles.refs.to).toBe(target.mcVersion);
+    expect(vanillaFiles.leftOut).toEqual(['data/<namespace>/structure/<path>.nbt']);
+  });
+
+  it('holds only paths and the kind of change: no contents, hashes or other text', async () => {
+    const raw = JSON.parse(await readFile(VANILLA_FILES_LIST, 'utf8')) as Record<string, unknown>;
+    expect(Object.keys(raw).sort()).toEqual(
+      ['added', 'changed', 'from', 'leftOut', 'moved', 'refs', 'removed', 'to'].sort(),
+    );
+    const paths = [
+      ...vanillaFiles.added,
+      ...vanillaFiles.removed,
+      ...vanillaFiles.changed,
+      ...Object.keys(vanillaFiles.moved),
+      ...Object.values(vanillaFiles.moved),
+    ];
+    for (const path of paths) expect(path, path).toMatch(PACK_PATH);
+    // Every string in the file is a path, a target id, a version or the left-out pattern.
+    const strings: string[] = [];
+    const walk = (value: unknown): void => {
+      if (typeof value === 'string') strings.push(value);
+      else if (Array.isArray(value)) value.forEach(walk);
+      else if (value !== null && typeof value === 'object') {
+        for (const [key, item] of Object.entries(value)) {
+          strings.push(key);
+          walk(item);
+        }
+      }
+    };
+    walk(raw);
+    const known = new Set([
+      'added',
+      'changed',
+      'from',
+      'leftOut',
+      'moved',
+      'refs',
+      'removed',
+      'to',
+      vanillaFiles.from,
+      vanillaFiles.to,
+      vanillaFiles.refs.from,
+      vanillaFiles.refs.to,
+      ...vanillaFiles.leftOut,
+    ]);
+    for (const value of strings) {
+      if (!known.has(value)) expect(value, value).toMatch(PACK_PATH);
+    }
+    // No blob hash survives into the fact.
+    expect(JSON.stringify(raw)).not.toMatch(/[0-9a-f]{12}/);
+  });
+
+  it('is sorted, without repeats, and leaves structure templates out', () => {
+    for (const list of [vanillaFiles.added, vanillaFiles.removed, vanillaFiles.changed]) {
+      expect(list).toEqual([...list].sort());
+      expect(new Set(list).size).toBe(list.length);
+    }
+    const all = [...vanillaFiles.added, ...vanillaFiles.removed, ...vanillaFiles.changed];
+    expect(all.filter((path) => /^data\/[^/]+\/structure\/.+\.nbt$/.test(path))).toEqual([]);
+    // A moved file is in neither added nor removed.
+    for (const [from, to] of Object.entries(vanillaFiles.moved)) {
+      expect(vanillaFiles.removed).not.toContain(from);
+      expect(vanillaFiles.added).not.toContain(to);
+    }
+  });
+
+  it('finds what B810 V8 found on this step', () => {
+    // 1,182 entries in the spike's list, which also held the root pack.mcmeta and version.json
+    // of both tags and counted each exact rename twice.
+    expect(vanillaFiles.added.length).toBe(823);
+    expect(vanillaFiles.removed.length).toBe(26);
+    expect(Object.keys(vanillaFiles.moved).length).toBe(5);
+    expect(vanillaFiles.changed.length).toBe(319);
+    expect(vanillaFiles.changed).toContain('data/minecraft/loot_table/chests/igloo_chest.json');
+    expect(
+      vanillaFiles.moved['data/minecraft/tags/entity_type/ignores_poison_and_regen.json'],
+    ).toBe('data/minecraft/tags/entity_type/immune_to_regeneration.json');
+    expect(vanillaFiles.removed).toContain(
+      'data/minecraft/tags/entity_type/freeze_immune_entity_types.json',
+    );
   });
 });

@@ -19,6 +19,14 @@ import {
   type TargetDiff,
 } from './diff.ts';
 import { draftText } from './draft.ts';
+import {
+  diffVanillaFiles,
+  readFileIndex,
+  type VanillaFileChanges,
+  vanillaFilesCounts,
+  vanillaFilesPath,
+  vanillaFilesText,
+} from './vanilla-files.ts';
 
 /** Parsed arguments. */
 export interface CliArgs {
@@ -79,12 +87,22 @@ export function additionsPath(out: string): string {
   return out.endsWith('.json') ? `${out.slice(0, -5)}.additions.json` : `${out}.additions.json`;
 }
 
-/** The files a run writes, by path. */
-export function outputs(args: CliArgs, diff: TargetDiff): Map<string, string> {
+/**
+ * The files a run writes, by path. The vanilla files list (B823) is written beside the change
+ * set only when both targets have a file index; without one it is neither written nor checked.
+ */
+export function outputs(
+  args: CliArgs,
+  diff: TargetDiff,
+  vanillaFiles?: VanillaFileChanges,
+): Map<string, string> {
   const files = new Map<string, string>();
   if (args.out !== undefined) {
     files.set(resolve(args.out), changeSetText(diff));
     files.set(resolve(additionsPath(args.out)), additionsText(diff));
+    if (vanillaFiles !== undefined) {
+      files.set(resolve(vanillaFilesPath(args.out)), vanillaFilesText(vanillaFiles));
+    }
   }
   if (args.draft !== undefined) files.set(resolve(args.draft), draftText(diff));
   return files;
@@ -111,15 +129,28 @@ export async function main(
     return 2;
   }
   let diff: TargetDiff;
+  let vanillaFiles: VanillaFileChanges | undefined;
   try {
     const before = await readTarget(resolve(args.from));
     const after = await readTarget(resolve(args.to));
     diff = diffTargets(before, after, args.mcdoc === undefined ? {} : { mcdoc: args.mcdoc });
+    const beforeIndex = await readFileIndex(resolve(args.from), before.version);
+    const afterIndex = await readFileIndex(resolve(args.to), after.version);
+    if (beforeIndex !== undefined && afterIndex !== undefined) {
+      vanillaFiles = diffVanillaFiles(
+        diff.changeSet.from,
+        diff.changeSet.to,
+        beforeIndex,
+        afterIndex,
+      );
+    } else if (args.out !== undefined) {
+      log('No file index for both targets (vendor/mcmeta/files.json): vanilla files not compared.');
+    }
   } catch (error) {
     log(`Could not diff the targets: ${(error as Error).message}`);
     return 2;
   }
-  const files = outputs(args, diff);
+  const files = outputs(args, diff, vanillaFiles);
   if (args.check) {
     let stale = 0;
     for (const [path, text] of files) {
@@ -145,6 +176,12 @@ export async function main(
   log(
     `${set.from} to ${set.to} (formats ${diff.mcdocMode}): ${set.changes.length} changes, ${added} additions.`,
   );
+  if (vanillaFiles !== undefined && args.out !== undefined) {
+    const counts = vanillaFilesCounts(vanillaFiles);
+    log(
+      `Vanilla files: ${counts.added} added, ${counts.removed} removed, ${counts.moved} moved, ${counts.changed} changed.`,
+    );
+  }
   for (const path of files.keys()) log(`wrote ${path}`);
   return 0;
 }

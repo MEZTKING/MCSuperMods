@@ -1,0 +1,18 @@
+{
+  "files": {
+    "assets/minecraft/lang/xx_xx.json": "333333333333",
+    "assets/minecraft/models/block/cube_top.json": "aaaaaaaaaaaa",
+    "assets/minecraft/textures/gui/old_button.png": "bbbbbbbbbbbb",
+    "data/minecraft/loot_table/chests/igloo_chest.json": "cccccccccccc",
+    "data/minecraft/recipe/stone.json": "eeeeeeeeeeee",
+    "data/minecraft/tags/block/mineable/pickaxe.json": "ffffffffffff"
+  },
+  "leftOut": [
+    "data/<namespace>/structure/<path>.nbt"
+  ],
+  "refs": {
+    "assets": "98.0-assets",
+    "data": "98.0-data"
+  },
+  "version": "98.0"
+}

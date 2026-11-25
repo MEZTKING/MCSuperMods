@@ -10,7 +10,8 @@
     "test",
     "vitest.config.ts",
     "vendor/worldgen/feature-order.json",
-    "src/changes/generated.json"
+    "src/changes/generated.json",
+    "src/changes/generated.vanilla-files.json"
   ],
   "references": [
     { "path": "../../plugin-api" },

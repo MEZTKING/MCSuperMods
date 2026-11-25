@@ -1,0 +1,28 @@
+{
+  "added": [
+    "assets/minecraft/lang/yy_yy.json",
+    "assets/minecraft/lang/zz_zz.json",
+    "data/minecraft/loot_table/blocks/new_block.json",
+    "data/minecraft/recipe/new_block.json"
+  ],
+  "changed": [
+    "data/minecraft/loot_table/chests/igloo_chest.json",
+    "data/minecraft/tags/block/mineable/pickaxe.json"
+  ],
+  "from": "mc-98.0",
+  "leftOut": [
+    "data/<namespace>/structure/<path>.nbt"
+  ],
+  "moved": {
+    "assets/minecraft/textures/gui/old_button.png": "assets/minecraft/textures/gui/new_button.png"
+  },
+  "refs": {
+    "from": "98.0",
+    "to": "99.0"
+  },
+  "removed": [
+    "assets/minecraft/lang/xx_xx.json",
+    "assets/minecraft/models/block/cube_top.json"
+  ],
+  "to": "mc-99.0"
+}

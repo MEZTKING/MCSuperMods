@@ -10,6 +10,11 @@
  * writes `version.json`, `registries.json`, `commands.json`, `blocks.json` and
  * `SOURCE.json` into `<dir>` with sorted keys and 2-space indent, atomically.
  *
+ * It also writes `files.json`, the index of the version's own data and resource pack files
+ * (paths and blob hashes from the trees of the tags `<version>-data` and `<version>-assets`, no
+ * contents; `files.ts`), which `tools/diff-targets` compares between two targets. With
+ * `--only files` it writes that index alone and leaves the summary files as they are.
+ *
  * Everything downloaded is untrusted data: it is parsed, validated and
  * written, never executed.
  */
@@ -25,6 +30,16 @@ import {
   stringifySorted,
   writeFileAtomic,
 } from '../shared/download.ts';
+import {
+  FILE_INDEX_NAME,
+  gitReadTree,
+  type ReadTree,
+  readFileIndex,
+  type VanillaFileIndex,
+  writeFileIndex,
+} from './files.ts';
+
+export { FILE_INDEX_NAME, type ReadTree, type VanillaFileIndex } from './files.ts';
 
 export const REPOSITORY: GitHubRepository = 'misode/mcmeta';
 export const REPOSITORY_URL = `https://github.com/${REPOSITORY}`;
@@ -145,16 +160,55 @@ export interface SyncMcmetaOptions {
   log?: (message: string) => void;
   /** Defaults to `fetchGitHubFile` (raw.githubusercontent.com, then jsDelivr). */
   fetchFile?: FetchFile;
+  /**
+   * Reads a tag's file tree for `files.json`. Defaults to `gitReadTree` when `fetchFile` is not
+   * given either (a real run); when only `fetchFile` is given (a test or a fixture upstream) the
+   * index is skipped unless a reader is given too. `false` always skips it.
+   */
+  readTree?: ReadTree | false;
+}
+
+/** The tree reader a run uses, or `undefined` to skip `files.json`. */
+function treeReaderOf(options: SyncMcmetaOptions): ReadTree | undefined {
+  if (options.readTree === false) return undefined;
+  if (options.readTree !== undefined) return options.readTree;
+  return options.fetchFile === undefined ? gitReadTree : undefined;
+}
+
+const VERSION_PATTERN = /^[0-9]+(\.[0-9]+)*(-(snapshot|pre|rc)-[0-9]+)?$/;
+
+function checkVersion(version: string): void {
+  // Releases (26.3, 26.3.1) and development versions (26.4-snapshot-7, 26.4-pre-1, 26.4-rc-1).
+  if (!VERSION_PATTERN.test(version)) {
+    throw new Error(`--version must look like 26.3, 26.3.1 or 26.4-snapshot-7, got ${version}`);
+  }
+}
+
+/**
+ * Writes only `files.json` (the vanilla file index) into `options.out`, leaving the summary
+ * files alone: for a target vendored before the index existed.
+ */
+export async function syncFileIndex(options: {
+  version: string;
+  out: string;
+  log?: (message: string) => void;
+  readTree?: ReadTree;
+}): Promise<VanillaFileIndex> {
+  checkVersion(options.version);
+  const log = options.log ?? (() => {});
+  const index = await readFileIndex({
+    repository: REPOSITORY,
+    version: options.version,
+    readTree: options.readTree ?? gitReadTree,
+    log,
+  });
+  await writeFileIndex(options.out, index);
+  return index;
 }
 
 export async function syncMcmeta(options: SyncMcmetaOptions): Promise<McmetaSource> {
   const log = options.log ?? (() => {});
-  // Releases (26.3, 26.3.1) and development versions (26.4-snapshot-7, 26.4-pre-1, 26.4-rc-1).
-  if (!/^[0-9]+(\.[0-9]+)*(-(snapshot|pre|rc)-[0-9]+)?$/.test(options.version)) {
-    throw new Error(
-      `--version must look like 26.3, 26.3.1 or 26.4-snapshot-7, got ${options.version}`,
-    );
-  }
+  checkVersion(options.version);
   const refs = mcmetaRefs(options.version);
   const fetchFile = options.fetchFile ?? fetchGitHubFile;
 
@@ -173,6 +227,13 @@ export async function syncMcmeta(options: SyncMcmetaOptions): Promise<McmetaSour
   ];
   if (problems.length > 0) throw new Error(`invalid mcmeta data:\n  ${problems.join('\n  ')}`);
 
+  const readTree = treeReaderOf(options);
+  const index =
+    readTree === undefined
+      ? undefined
+      : await readFileIndex({ repository: REPOSITORY, version: options.version, readTree, log });
+  if (index === undefined) log(`${FILE_INDEX_NAME} not read (no tree reader)`);
+
   const source: McmetaSource = {
     repository: REPOSITORY_URL,
     refs,
@@ -182,23 +243,38 @@ export async function syncMcmeta(options: SyncMcmetaOptions): Promise<McmetaSour
   for (const file of MCMETA_FILES) {
     await writeFileAtomic(resolve(options.out, file.name), stringifySorted(parsed.get(file.name)));
   }
+  if (index !== undefined) await writeFileIndex(options.out, index);
   await writeFileAtomic(resolve(options.out, 'SOURCE.json'), stringifySorted(source));
   return source;
 }
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
-    options: { version: { type: 'string' }, out: { type: 'string' } },
+    options: { version: { type: 'string' }, out: { type: 'string' }, only: { type: 'string' } },
     strict: true,
   });
-  if (values.version === undefined || values.out === undefined) {
-    throw new Error('usage: node tools/sync-mcmeta/index.ts --version <mc-version> --out <dir>');
+  if (
+    values.version === undefined ||
+    values.out === undefined ||
+    (values.only !== undefined && values.only !== 'files')
+  ) {
+    throw new Error(
+      'usage: node tools/sync-mcmeta/index.ts --version <mc-version> --out <dir> [--only files]',
+    );
   }
   const out = resolve(values.out);
+  const log = (message: string) => console.log(`sync-mcmeta: ${message}`);
+  if (values.only === 'files') {
+    const index = await syncFileIndex({ version: values.version, out, log });
+    console.log(
+      `sync-mcmeta: wrote ${resolve(out, FILE_INDEX_NAME)} (${Object.keys(index.files).length} files)`,
+    );
+    return;
+  }
   const source = await syncMcmeta({
     version: values.version,
     out,
-    log: (message) => console.log(`sync-mcmeta: ${message}`),
+    log,
   });
   console.log(`sync-mcmeta: wrote ${out} (ref ${source.refs.summary})`);
 }

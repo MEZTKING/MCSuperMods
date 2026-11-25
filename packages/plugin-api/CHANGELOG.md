@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.30.0 — 2026-11-25
+
+The vanilla files that changed (ADR 0136 D11; Plan D brief B823). `API_VERSION` is `1.30.0`. 1.28.0 stays reserved for Plan C's brief B782. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `TargetChangeSet.vanillaFiles?: VanillaFileChanges` (`from`, `to`, `refs` with the Minecraft version of each end, `leftOut`, `added`, `removed`, `moved` from the older path to the newer, `changed`): Minecraft's own data and resource pack files that changed since the previous target, paths and the kind of change only, never contents. Structure templates are left out (`leftOut`), since every one changes with the data version in every release. A host compares a mod's lowered `OutputFile.path`s with the lists to say "Minecraft changed this one too".
+- `mc-26.4`'s change set carries the list from `mc-26.3` (written by `tools/diff-targets` from the file indexes `tools/sync-mcmeta` now vendors as `vendor/mcmeta/files.json`).
+
+### Migration from 1.29.0
+
+None for plugins: the new member is optional.
+
 ## 1.29.0 — 2026-11-25
 
 Change sets and migration detail (ADR 0136 D2, D3 and D7; Plan D brief B812), shaped by the B810 spike (`docs/reference/spikes/b810/README.md`, "Shapes for B811 and B812", V11, V13 and V19). `API_VERSION` is `1.29.0`. **1.28.0 is skipped here**: it is reserved for Plan C's brief B782, which has not run; B782 takes the next free minor when it runs. Additive: plugins declaring `^1.0.0` load unchanged, built-in plugins keep declaring `^1.0.0`, and the `Target.migrateFrom` contract is unchanged.

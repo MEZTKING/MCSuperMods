@@ -47,6 +47,12 @@ The handling is the generated default; the curated file (B813) overrides it, for
 - **Commands** are normalised to one shape before the diff. Every vendored report (to `26.4-snapshot-7`) has `parser` and `properties`; mcmeta's report from `26.4-snapshot-8` nests them as `argument: { type, ... }` and adds `permissions`, which are flattened and left out. The new format also renamed the argument types (`brigadier:*` to `minecraft:bool` and the rest, the string types split, `resource_key` to `resource`) and some properties; those renames are not mapped, as no vendored report has that format yet (verify at implementation, with the `sync-mcmeta` adapter B810 asks for). The draft names both reports' formats.
 - **Blocks** added and removed are members of the `block` registry, so they are in the registry part, not repeated under block states.
 
+## Vanilla files
+
+When both target folders have a file index (`vendor/mcmeta/files.json`, written by `tools/sync-mcmeta` from mcmeta's `<version>-data` and `<version>-assets` file trees: every path under `data/` and `assets/` with the first 12 hex digits of its git blob hash, no contents), `--out` also writes the list of Minecraft's own files that changed beside the change set (`generated.json` gives `generated.vanilla-files.json`, `vanilla-files.ts`), and `--check` rebuilds it. Its shape is the plugin API's `VanillaFileChanges` (1.30.0, B823): `from`, `to`, `refs` (each end's version), `leftOut`, then `added`, `removed`, `changed` (sorted paths) and `moved` (a removed path whose contents are exactly one added path's, and no other removed path's, older path to newer; listed in neither `added` nor `removed`). Paths and kinds only: no hash or contents reach the list. Structure templates (`data/<namespace>/structure/<path>.nbt`) are left out of the index, since every one changes with the data version in every release (B810 V8). A folder without an index, or with an index for another version than its `version.json` (a copied folder not re-synced), gives no list, says so, and is not checked.
+
+On 26.3 to 26.4-snapshot-7: 823 added, 26 removed, 5 moved, 319 changed (1,173 paths, 71 KB, 7 KB gzipped). B810 V8 counted 1,182, with the tags' root `pack.mcmeta` and `version.json` and each exact rename as two entries. The target's change set carries the list as `vanillaFiles` (`mc-26.4/src/changes/index.ts`).
+
 ## Candidates
 
 Never applied: a person confirms one in the target's curated file and the shape test passes (ADR 0136 D3).
@@ -74,7 +80,6 @@ Where the data and the hand-written records differ (the test follows the data):
 ## Not covered
 
 - Facts typed by hand in `target.ts`, the key names, Java's API, behaviour and meaning: not in this data (B810 V1, V20). `tools/new-target` (B814) recomputes the derived facts.
-- Mojang's changed vanilla files (B823).
 - A dispatcher spread replaced by another inside one struct, and changes deeper than the comparison follows (seven levels).
 
 ## Tests

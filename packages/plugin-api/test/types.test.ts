@@ -77,6 +77,7 @@ import type {
   TradeSoundFacts,
   ValidationInput,
   ValidationRegistry,
+  VanillaFileChanges,
   VanillaPairFacts,
   VanillaTradeSetFacts,
   VehicleFacts,
@@ -1334,5 +1335,33 @@ describe('1.0.0 additions', () => {
     // The test target has neither a previous target nor a change set.
     expect((testTarget as Target).previous).toBeUndefined();
     expect(testTarget.changes).toBeUndefined();
+  });
+
+  it('adds the vanilla files that changed (1.30.0)', () => {
+    expectTypeOf<TargetChangeSet['vanillaFiles']>().toEqualTypeOf<VanillaFileChanges | undefined>();
+    expectTypeOf<VanillaFileChanges['moved']>().toEqualTypeOf<Record<string, string>>();
+    const files: VanillaFileChanges = {
+      from: 'mc-1.0',
+      to: 'mc-2.0',
+      refs: { from: '1.0', to: '2.0' },
+      leftOut: ['data/<namespace>/structure/<path>.nbt'],
+      added: ['data/minecraft/recipe/new_block.json'],
+      removed: [],
+      moved: { 'assets/minecraft/textures/gui/a.png': 'assets/minecraft/textures/gui/b.png' },
+      changed: ['data/minecraft/loot_table/chests/simple_dungeon.json'],
+    };
+    const set: TargetChangeSet = {
+      from: 'mc-1.0',
+      to: 'mc-2.0',
+      refs: { from: { mcdoc: 'a', mcmeta: '1.0' }, to: { mcdoc: 'b', mcmeta: '2.0' } },
+      changes: [],
+      additions: {},
+      vanillaFiles: files,
+    };
+    expect(set.vanillaFiles?.changed).toHaveLength(1);
+    // A set written against 1.29.0 has no file list.
+    const older: TargetChangeSet = { ...set };
+    delete older.vanillaFiles;
+    expect(older.vanillaFiles).toBeUndefined();
   });
 });

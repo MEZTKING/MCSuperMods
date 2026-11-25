@@ -140,6 +140,7 @@ export type {
   TerrainPreviewApproximatePart,
   TerrainPreviewFacts,
   TradeSoundFacts,
+  VanillaFileChanges,
   VanillaPairFacts,
   VanillaToolStats,
   VanillaTradeSetFacts,

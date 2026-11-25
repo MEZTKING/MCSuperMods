@@ -179,6 +179,65 @@ export interface TargetChangeSet {
    * itself is kept outside the set and read when needed. Since 1.29.0.
    */
   additions: Record<string, number>;
+  /**
+   * Minecraft's own data and resource pack files that were added, removed, moved or changed
+   * since {@link from} (ADR 0136 D11): paths and the kind of change only, never a file's
+   * contents. A host tells a mod that replaces or adds to one of them "Minecraft changed this
+   * one too". Absent when the target tools had no file index for both ends. Since 1.30.0.
+   */
+  vanillaFiles?: VanillaFileChanges;
+}
+
+/**
+ * The vanilla files that changed between two targets (ADR 0136 D11, B823): every path under
+ * `data/` and `assets/` of the game's own packs, as the target tools compared them from the
+ * file trees of both versions (`source` `mcmeta-trees`). Each list is sorted by code point. A
+ * path is the file's path in the game's jar and in a pack, so a lowered
+ * {@link OutputFile.path} (`data/minecraft/loot_table/chests/simple_dungeon.json`) is compared
+ * with it as it is. Since 1.30.0.
+ *
+ * @example
+ * ```ts
+ * const files: VanillaFileChanges = {
+ *   from: 'mc-<older>',
+ *   to: 'mc-<newer>',
+ *   refs: { from: '<older version>', to: '<newer version>' },
+ *   leftOut: ['data/*​/structure/**​/*.nbt'],
+ *   added: ['data/minecraft/recipe/new_block.json'],
+ *   removed: [],
+ *   moved: { 'assets/minecraft/textures/gui/old.png': 'assets/minecraft/textures/gui/new.png' },
+ *   changed: ['data/minecraft/loot_table/chests/simple_dungeon.json'],
+ * };
+ * ```
+ */
+export interface VanillaFileChanges {
+  /** The older target's id. Since 1.30.0. */
+  from: string;
+  /** The newer target's id. Since 1.30.0. */
+  to: string;
+  /** The Minecraft version each end's file list was read for. Since 1.30.0. */
+  refs: {
+    /** The older end's version. */
+    from: string;
+    /** The newer end's version. */
+    to: string;
+  };
+  /**
+   * The paths never compared, as patterns in which `<name>` stands for any text: structure
+   * templates, which change with the data version in every release. Since 1.30.0.
+   */
+  leftOut: string[];
+  /** Files only the newer version has (not counting {@link moved} ones). Since 1.30.0. */
+  added: string[];
+  /** Files only the older version had (not counting {@link moved} ones). Since 1.30.0. */
+  removed: string[];
+  /**
+   * Files the newer version keeps unchanged under another path: the older path to the newer.
+   * Since 1.30.0.
+   */
+  moved: Record<string, string>;
+  /** Files at the same path whose contents changed. Since 1.30.0. */
+  changed: string[];
 }
 
 /**
