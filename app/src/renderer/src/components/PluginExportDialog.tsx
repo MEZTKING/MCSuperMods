@@ -12,6 +12,11 @@ import { useState } from 'react';
 import { defaultOptionValues, ExporterOptionFields } from './ExportFabricJarDialog';
 import { Modal } from './NewElementDialog';
 
+/** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
+export function pluginExportIntro(displayName: string): string {
+  return `Saves your mod as “${displayName}”, made by a plugin. The files go into a folder you choose next.`;
+}
+
 export interface PluginExportDialogProps {
   /** The exporter's display name, for the title. */
   displayName: string;
@@ -38,7 +43,9 @@ export function PluginExportDialog({
       onCancel={onClose}
       onSubmit={() => onExport({ ...defaultOptionValues(options), ...values })}
     >
-      <p className="text-muted text-sm">The files are written into a folder you choose next.</p>
+      <p className="text-sm" data-testid="plugin-export-dialog-intro">
+        {pluginExportIntro(displayName)}
+      </p>
       <ExporterOptionFields
         options={options}
         values={values}

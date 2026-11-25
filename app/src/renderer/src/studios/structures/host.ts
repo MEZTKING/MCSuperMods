@@ -13,7 +13,7 @@ import { createContext, useContext } from 'react';
 export interface StructureStudioHost {
   /** Picks a `.nbt` or `.schem` file and replaces the element's data with it (one undo step). */
   replaceFromFile(elementId: ResourceLocation): void;
-  /** Runs File > More Exports for every structure template: `.nbt` or Sponge `.schem`. */
+  /** Runs File > Export's structure entries for every structure template: `.nbt` or Sponge `.schem`. */
   exportStructures(format: 'nbt' | 'schem'): void;
   /** Selects another element (go to definition). */
   openElement(id: ResourceLocation): void;

@@ -75,7 +75,7 @@ describe('export availability', () => {
       'Fix 2 errors first (see Problems).',
     );
     expect(exportDisabledReason(true, [error])).toBe('Fix 1 error first (see Problems).');
-    expect(exportDisabledReason(false, [])).toBe('No project is open.');
+    expect(exportDisabledReason(false, [])).toBe('No mod is open.');
     expect(installDisabledReason(true, [error], withFolder)).toMatch(/Fix 1 error/);
   });
 

@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import type { StructureSaveInfo } from '../../../shared/platform';
 import { fieldClass, Modal } from './NewElementDialog';
+import { MoreOptions } from './ui/MoreOptions';
 
 /** One importer as the dialog lists it. */
 export interface ImportFilesDialogImporter {
@@ -17,11 +18,24 @@ export function extensionList(extensions: readonly string[]): string {
 
 /** The explanation the Blockbench import dialog shows. */
 export const BLOCKBENCH_IMPORT_NOTE =
-  'Only Blockbench projects (.bbmodel) and Blockbench’s own exports (.geo.json and .animation.json) are accepted; other .json files are refused. A .bbmodel becomes a geo model, an animation set when it has animations, and its embedded textures under textures/entity/. Elements that already exist are skipped; one undo removes the whole import.';
+  'Only Blockbench models (.bbmodel) and Blockbench’s own exports (.geo.json and .animation.json) are taken; other files are refused. A .bbmodel becomes a model, a set of animations when it has some, and its pictures. Things already in your mod are skipped; one Undo takes the whole import back.';
 
 /** The explanation shown when no {@link ImportFilesDialog} `note` is given. */
 export const DEFAULT_IMPORT_NOTE =
-  'Each file becomes a new element named after the file. Files whose element already exists are skipped; one undo removes the whole import.';
+  'Each file becomes a new thing in your mod, named after the file. Things already in your mod are skipped; one Undo takes the whole import back.';
+
+/** The plain line of the Blockbench import (its file names are in {@link BLOCKBENCH_IMPORT_NOTE}). */
+export const BLOCKBENCH_IMPORT_SUMMARY =
+  'Each Blockbench model becomes a model, its animations and its pictures in your mod. Things already in your mod are skipped; one Undo takes the whole import back.';
+
+/** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
+export const IMPORT_FILES_INTRO = 'Brings files made in other programs into your mod.';
+
+/** A save's name without its namespace: `houses/tower` for `demo:houses/tower`. */
+export function saveName(id: string): string {
+  const colon = id.indexOf(':');
+  return colon < 0 ? id : id.slice(colon + 1);
+}
 
 /** The note of the "From my test worlds" tab (ADR 0116 D3). */
 export const TEST_WORLDS_IMPORT_NOTE =
@@ -53,7 +67,9 @@ export function ImportFilesDialog(props: {
   namespaces: readonly string[];
   initialNamespace?: string | undefined;
   importers: readonly ImportFilesDialogImporter[];
-  /** What the import does and which files it accepts; a generic explanation when absent. */
+  /** What the import does, in plain words; {@link DEFAULT_IMPORT_NOTE} when absent. */
+  summary?: string | undefined;
+  /** Which files it accepts, by their file names (under More options). */
   note?: string | undefined;
   /** Picks files and imports them; resolves to an error message, or `null` on success. */
   onImport(namespace: string): Promise<string | null>;
@@ -171,39 +187,14 @@ export function ImportFilesDialog(props: {
           ))}
         </div>
       )}
-      <label htmlFor={namespaceId}>Namespace</label>
-      <select
-        id={namespaceId}
-        data-testid="import-files-namespace"
-        className={fieldClass}
-        value={namespace}
-        onChange={(event) => setNamespace(event.target.value)}
-      >
-        {props.namespaces.map((entry) => (
-          <option key={entry} value={entry}>
-            {entry}
-          </option>
-        ))}
-      </select>
+      <p className="text-sm" data-testid="import-files-intro">
+        {IMPORT_FILES_INTRO}
+      </p>
       {tab === 'files' ? (
         <>
-          <p id={listId} className="mb-0">
-            Supported files
-          </p>
-          {none ? (
-            <p className="text-muted">No plugin can import files.</p>
-          ) : (
-            <ul aria-labelledby={listId} data-testid="import-files-importers" className="m-0 pl-5">
-              {props.importers.map((importer) => (
-                <li key={importer.id}>
-                  {importer.displayName}{' '}
-                  <span className="text-muted">({extensionList(importer.extensions)})</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="text-xs text-muted" data-testid="import-files-note">
-            {props.note ?? DEFAULT_IMPORT_NOTE}
+          {none && <p className="text-muted">No plugin can import files.</p>}
+          <p className="text-xs text-muted" data-testid="import-files-summary">
+            {props.summary ?? DEFAULT_IMPORT_NOTE}
           </p>
         </>
       ) : (
@@ -220,6 +211,51 @@ export function ImportFilesDialog(props: {
           }
         />
       )}
+      <MoreOptions storageKey="dialog-import-files">
+        {tab === 'files' && !none && (
+          <>
+            <p id={listId} className="mb-0">
+              Supported files
+            </p>
+            <ul aria-labelledby={listId} data-testid="import-files-importers" className="m-0 pl-5">
+              {props.importers.map((importer) => (
+                <li key={importer.id}>
+                  {importer.displayName}{' '}
+                  <span className="text-muted">({extensionList(importer.extensions)})</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {tab === 'files' && props.note !== undefined && (
+          <p className="text-xs text-muted" data-testid="import-files-note">
+            {props.note}
+          </p>
+        )}
+        <label htmlFor={namespaceId}>Namespace</label>
+        <select
+          id={namespaceId}
+          data-testid="import-files-namespace"
+          className={fieldClass}
+          value={namespace}
+          onChange={(event) => setNamespace(event.target.value)}
+        >
+          {props.namespaces.map((entry) => (
+            <option key={entry} value={entry}>
+              {entry}
+            </option>
+          ))}
+        </select>
+        {tab === 'test-worlds' && saves !== null && saves.length > 0 && (
+          <ul className="m-0 pl-5 text-muted text-xs" data-testid="import-test-worlds-ids">
+            {saves.map((save) => (
+              <li key={saveKey(save)}>
+                {save.id} in {save.world}
+              </li>
+            ))}
+          </ul>
+        )}
+      </MoreOptions>
     </Modal>
   );
 }
@@ -258,7 +294,7 @@ function TestWorldSaves(props: {
                   checked={props.chosen.has(key)}
                   onChange={() => props.onToggle(key)}
                 />
-                <span className="font-mono">{save.id}</span>
+                <span>{saveName(save.id)}</span>
                 <span className="text-muted text-xs">in {save.world}</span>
               </label>
             );

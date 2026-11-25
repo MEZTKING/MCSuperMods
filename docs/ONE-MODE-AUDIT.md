@@ -64,5 +64,22 @@ The Studios' default views are swept; these other surfaces keep words that can n
 - **Add** (the New element dialog): kind ids and the id field are in its default view.
 - The sidebar's asset list (picture and sound paths under each namespace).
 - The **Problems** tab (problem messages with ids and paths; **Things to fix** is the plain list).
-- The export, install, Java project, map, plugin and modpack dialogs; the Change id (rename) and Find usages dialogs; Upgrade project target.
 - The search engine (`@msm/search`) still has its three modes inside; the app always asks it in the plainest one (`SEARCH_MODE`), and the prefixes `@`, `#`, `>` and `?` work for everyone.
+
+## Dialogs swept (B716)
+
+Each opens with one line saying what it does; its default view passes `expectPlain` (`app/test/components/dialogs-plain.test.tsx`), and ids, versions, paths and raw names are in the dialog's own **More options** (`dialog-<name>`, remembered per dialog).
+
+| Dialog | Title | Under More options |
+|---|---|---|
+| Fabric mod (.jar) | Save the mod as a file | Fabric Loader and Fabric API, the exporter's options (Separate runtime and GeckoLib) |
+| Java project | Export Java project (the output's name; the e2e pins it) | the eject note, the scripts left out by id, the rule books |
+| Export as a map | Export as a map | nothing (no ids in it) |
+| A plugin's export | Export <name> | nothing (the plugin's own options are its settings) |
+| Modpacks | Modpacks | Version, Summary, the folder, each mod's folder and version id, each Modrinth file name |
+| Test in Minecraft | Test in Minecraft | the game's versions, what the mod needs, Choose launcher program… |
+| Move to another Minecraft version | Move to another Minecraft version | the version ids and the ids of the report's things (shown in its lists while open) |
+| Bring in pictures or sounds | Bring in pictures or sounds | Namespace, Other textures folder, Shaders |
+| Import structure, Import Blockbench model | (the caller's) | Namespace, Supported files with their file names, the Blockbench file note, the saves' ids |
+| Change id (Rename…) | Change id | expert body: the id itself; its first line says what changing an id means |
+| Find usages | Where this is used | expert body: the ids of the things that use it |

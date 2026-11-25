@@ -25,6 +25,9 @@ export function usageLocation(reference: Reference): string {
   return reference.path === '' ? '(root)' : reference.path;
 }
 
+/** The dialog's title: a plain title over an expert body (plan B716). */
+export const USAGES_TITLE = 'Where this is used';
+
 /** The "Find usages" result list. */
 export function UsagesDialog({ id, usages, onNavigate, onClose }: UsagesDialogProps) {
   return (
@@ -41,11 +44,13 @@ export function UsagesDialog({ id, usages, onNavigate, onClose }: UsagesDialogPr
           data-testid="usages-dialog"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[80vh] w-[min(94vw,560px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
-          <Dialog.Title className="text-base font-semibold">
-            Usages of <code className="font-mono">{id}</code>
-          </Dialog.Title>
+          <Dialog.Title className="text-base font-semibold">{USAGES_TITLE}</Dialog.Title>
+          <p className="text-sm" data-testid="usages-intro">
+            The things in your mod that use <code className="font-mono">{id}</code>. Choose one to
+            go to the place.
+          </p>
           {usages.length === 0 ? (
-            <p className="text-muted">Nothing in the project refers to {id}.</p>
+            <p className="text-muted">Nothing in your mod uses {id}.</p>
           ) : (
             <ul className="flex flex-col gap-0.5">
               {usages.map((reference, index) => (

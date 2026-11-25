@@ -80,7 +80,7 @@ Try a few edits (the steps below assume the starter's names, so undo the first e
 
 Select `ruby_ore:block/ruby_ore`: the live preview beside the form shows the block turning in 3D with the ruby ore texture, and it redraws as you edit. Items and blocks preview their model, armour looks and armour pieces show on a figure (tick parts to show them, expand a part to see its texture, **Edit** jumps to its field), recipes show their crafting grid. **Preview** in the editor's header hides the pane or shows it again; while it is hidden the **Preview** tab on the right shows the same view. If the preview says "Vanilla assets not found — set your Minecraft folder.", go back to step 2 and extract the vanilla assets.
 
-To use your own texture, paint a 16×16 PNG named `ruby_ore.png`, choose **More → Bring in pictures or sounds…** on the toolbar, pick the namespace `ruby_ore` and **Block textures (textures/block)**, then the file. It replaces the drawn picture and the preview updates. `ruby.png` goes into **Item textures (textures/item)** the same way. See [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders).
+To use your own texture, paint a 16×16 PNG named `ruby_ore.png`, choose **More → Bring in pictures or sounds…** on the toolbar, choose **Block pictures**, then the file (with more than one part of your mod, choose `ruby_ore` under **More options**, **Namespace**). It replaces the drawn picture and the preview updates. `ruby.png` goes into **Item pictures** the same way. See [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders).
 
 ## 6. Problems
 
@@ -103,7 +103,7 @@ Press **Save** on the toolbar or Ctrl+S (it is highlighted while there are chang
 New blocks and items need the mod jar; the resource and data pack exports leave them out.
 
 1. Choose **More → Export → Fabric mod (.jar)…** on the toolbar (or **Share my mod** for the usual settings, or **File → Export → Fabric mod (.jar)…**, or "Export Fabric mod jar…" in the command palette).
-2. The **Export Fabric mod jar** dialog has one option, **Separate runtime and GeckoLib (for modpacks)**. Leave it off: the jar then carries the small `msm_runtime` mod inside it, which reads your blocks and items when the game starts (and, for a project with mobs, GeckoLib too). See [Export a Fabric mod jar](blocks-and-items.md#export-a-fabric-mod-jar).
+2. The **Save the mod as a file** dialog says what the file holds. Its one option, **Separate runtime and GeckoLib (for modpacks)**, is under **More options**. Leave it off: the jar then carries the small `msm_runtime` mod inside it, which reads your blocks and items when the game starts (and, for a project with mobs, GeckoLib too). See [Export a Fabric mod jar](blocks-and-items.md#export-a-fabric-mod-jar).
 3. Choose **Export…** and save the file. It is named after the mod id: `ruby_ore.jar`.
 
 Any error in **Problems** blocks the export, as for packs.

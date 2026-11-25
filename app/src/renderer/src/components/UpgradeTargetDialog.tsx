@@ -12,6 +12,7 @@ import type { MigrationReport, Problem, ProblemSeverity, TargetFacts } from '@ms
 import { useEffect, useState } from 'react';
 import { Modal } from './NewElementDialog';
 import { Button } from './ui/Button';
+import { MoreOptions, rememberedMoreOptions } from './ui/MoreOptions';
 import { targetLabel } from './wizard/wizard-model';
 
 /** The problem severities in the order the preview groups them. */
@@ -20,6 +21,20 @@ const SEVERITIES: readonly { severity: ProblemSeverity; heading: string }[] = [
   { severity: 'warning', heading: 'Warnings' },
   { severity: 'info', heading: 'Notes' },
 ];
+
+/** The dialog's title: the File menu's words (ADR 0130 D2). */
+export const UPGRADE_TARGET_TITLE = 'Move to another Minecraft version';
+
+/** The key the dialog's More options is remembered by. */
+const MORE_KEY = 'dialog-upgrade-target';
+
+/** Whether the dialog's More options starts open (as `MoreOptions` decides it). */
+function moreStartsOpen(): boolean {
+  return (
+    rememberedMoreOptions(MORE_KEY) ??
+    (typeof window !== 'undefined' && window.msmMoreOptionsOpen === true)
+  );
+}
 
 /** The preview's summary line. */
 export function upgradeSummary(report: MigrationReport): string {
@@ -84,10 +99,12 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
 
   const current = targets.find((target) => target.id === currentTargetId);
   const ready = state.state === 'ready' && state.targetId === chosen ? state : null;
+  // The ids (versions and things) show only while More options is open (ADR 0130 D3).
+  const [more, setMore] = useState(moreStartsOpen);
 
   return (
     <Modal
-      title="Upgrade project target"
+      title={UPGRADE_TARGET_TITLE}
       error={state.state === 'failed' ? `Could not preview the upgrade: ${state.message}` : null}
       wide
       testId="upgrade-target-dialog"
@@ -98,20 +115,21 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
         if (ready !== null) props.onUpgrade(ready.targetId, ready.report);
       }}
     >
-      <p className="text-muted text-sm">
-        The project exports for{' '}
+      <p className="text-sm" data-testid="upgrade-target-intro">
+        Your mod is made for{' '}
         <span data-testid="upgrade-target-current">
-          {current === undefined ? currentTargetId : targetLabel(current)}
+          {current === undefined ? 'another Minecraft version' : targetLabel(current)}
         </span>
-        . Choose the target to move it to; Undo reverts the upgrade.
+        . Choose the version to move it to: MCSuperMods changes what that version needs and lists
+        what you must check. Undo moves it back.
       </p>
       {offered.length === 0 ? (
         <p className="text-muted text-sm" data-testid="upgrade-target-none">
-          There is no other target to move this project to.
+          There is no other Minecraft version to move this mod to.
         </p>
       ) : (
         <fieldset className="flex flex-col gap-1">
-          <legend className="mb-1 text-sm">Target</legend>
+          <legend className="mb-1 text-sm">Minecraft version</legend>
           {offered.map((target) => (
             <Button
               key={target.id}
@@ -122,7 +140,8 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
               onClick={() => setChosen(target.id)}
             >
               <span>
-                {targetLabel(target)} <span className="text-muted">({target.id})</span>
+                {targetLabel(target)}
+                {more && <span className="text-muted"> ({target.id})</span>}
               </span>
               {target.channel === 'snapshot' && (
                 <span
@@ -138,15 +157,21 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
       )}
       {chosen !== null && state.state === 'loading' && (
         <p className="text-muted text-sm" data-testid="upgrade-target-loading">
-          Checking the project…
+          Checking your mod…
         </p>
       )}
-      {ready !== null && <UpgradePreview report={ready.report} />}
+      {ready !== null && <UpgradePreview report={ready.report} ids={more} />}
+      <MoreOptions storageKey={MORE_KEY} open={more} onOpenChange={setMore}>
+        <p className="text-muted text-xs" data-testid="upgrade-target-ids">
+          {`The lists above show the ids of the things they name. This mod's version id: ${currentTargetId}.`}
+        </p>
+      </MoreOptions>
     </Modal>
   );
 }
 
-function UpgradePreview({ report }: { report: MigrationReport }) {
+/** The preview: a summary, then the changes and the problems (with ids when `ids`). */
+function UpgradePreview({ report, ids }: { report: MigrationReport; ids: boolean }) {
   return (
     <section className="flex flex-col gap-1.5 text-sm" data-testid="upgrade-target-preview">
       <p data-testid="upgrade-target-summary">{upgradeSummary(report)}</p>
@@ -157,7 +182,8 @@ function UpgradePreview({ report }: { report: MigrationReport }) {
             {report.changes.map((change, index) => (
               // Changes have no id of their own; the order is fixed for one report.
               <li key={index}>
-                <span className="font-mono">{change.elementId}</span>: {change.description}
+                {ids && <span className="font-mono">{change.elementId}: </span>}
+                {change.description}
                 {change.kind === 'remove' ? ' (removed)' : ''}
               </li>
             ))}
@@ -173,7 +199,7 @@ function UpgradePreview({ report }: { report: MigrationReport }) {
             <ul className="list-disc pl-5" data-testid={`upgrade-target-problems-${severity}`}>
               {problems.map((problem, index) => (
                 <li key={index}>
-                  {problem.elementId === undefined ? (
+                  {!ids || problem.elementId === undefined ? (
                     ''
                   ) : (
                     <span className="font-mono">{problem.elementId}: </span>

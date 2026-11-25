@@ -327,7 +327,8 @@ export default function FluidStudio(props: StudioProps) {
       />
       {at(['on_entity_inside'])}
       <p className="text-muted text-xs">
-        Runs at most twice a second for each mob or player. Add the event under Advanced.
+        Runs at most twice a second for each mob or player. Make the event in Every setting, at the
+        bottom.
       </p>
     </Section>
   );
@@ -497,7 +498,7 @@ export default function FluidStudio(props: StudioProps) {
             testId="fluid-bottle-on-drink"
             onChange={(value) => set(['bottle', 'on_drink'], value)}
           />
-          <p className="text-muted text-xs">Effects to give are under Advanced.</p>
+          <p className="text-muted text-xs">Effects to give are in Every setting, at the bottom.</p>
         </>
       )}
       {at(['bottle'])}

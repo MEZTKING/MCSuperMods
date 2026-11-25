@@ -10,6 +10,18 @@
 
 import { bookRuleEntries, type RulesView } from '../session/rules-view';
 import { Modal } from './NewElementDialog';
+import { MoreOptions } from './ui/MoreOptions';
+
+/** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
+export const JAVA_PROJECT_DIALOG_INTRO =
+  'Turns your mod into Java code in a new folder, for a programmer to keep working on. It is one way: changes made there do not come back into MCSuperMods.';
+
+/** The plain line when the mod has scripts: how many the Java code leaves out (names below). */
+export function javaProjectScriptsCount(count: number): string {
+  return count === 1
+    ? '1 script is left out: the Java code does not run scripts.'
+    : `${count} scripts are left out: the Java code does not run scripts.`;
+}
 
 /** What the eject writes and that it is one-way. */
 export const JAVA_PROJECT_DIALOG_NOTE =
@@ -89,12 +101,12 @@ export function ExportJavaProjectDialog({
       onCancel={onClose}
       onSubmit={onExport}
     >
-      <p className="text-muted text-sm" data-testid="java-project-note">
-        {JAVA_PROJECT_DIALOG_NOTE}
+      <p className="text-sm" data-testid="java-project-dialog-intro">
+        {JAVA_PROJECT_DIALOG_INTRO}
       </p>
       {scripts.length > 0 && (
-        <p className="text-muted text-sm" data-testid="java-project-scripts-note">
-          {javaProjectScriptsNote(scripts)}
+        <p className="text-muted text-sm" data-testid="java-project-scripts-count">
+          {javaProjectScriptsCount(scripts.length)}
         </p>
       )}
       {rules.length > 0 && (
@@ -103,12 +115,27 @@ export function ExportJavaProjectDialog({
           <ul className="list-disc pl-5">
             {rules.map((rule) => (
               <li key={`${rule.bookId}#${rule.key}`} data-testid={`java-project-rule-${rule.key}`}>
-                {rule.label} <span className="text-muted">({rule.bookId})</span>
+                {rule.label}
               </li>
             ))}
           </ul>
         </div>
       )}
+      <MoreOptions storageKey="dialog-java-project">
+        <p className="text-muted text-sm" data-testid="java-project-note">
+          {JAVA_PROJECT_DIALOG_NOTE}
+        </p>
+        {scripts.length > 0 && (
+          <p className="text-muted text-sm" data-testid="java-project-scripts-note">
+            {javaProjectScriptsNote(scripts)}
+          </p>
+        )}
+        {rules.length > 0 && (
+          <p className="text-muted text-sm" data-testid="java-project-rule-books">
+            {`Rule books: ${[...new Set(rules.map((rule) => rule.bookId))].join(', ')}.`}
+          </p>
+        )}
+      </MoreOptions>
     </Modal>
   );
 }

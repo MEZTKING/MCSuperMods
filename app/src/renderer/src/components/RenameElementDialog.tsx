@@ -28,6 +28,13 @@ export interface RenameElementDialogProps {
   warning?(newId: ResourceLocation | undefined): string | null;
 }
 
+/** The dialog's title: a plain title over an expert body (plan B716). */
+export const RENAME_TITLE = 'Change id';
+
+/** What changing an id means and what follows, said before the field (plan B716). */
+export const RENAME_INTRO =
+  'The id is the name Minecraft knows this thing by: in commands, recipes, tags and saved worlds. Everything in this mod that uses it changes with it, but worlds and packs made earlier still use the old id and lose the thing.';
+
 /** The submit button's text when the rename changes exported ids. */
 export const RENAME_ANYWAY_LABEL = 'Rename anyway';
 
@@ -54,7 +61,7 @@ export function parseNewId(text: string, current: ResourceLocation): ResourceLoc
   return trimmed as ResourceLocation;
 }
 
-/** The "Rename element" dialog. */
+/** The "Change id" dialog (Rename… in the Edit menu, F2). */
 export function RenameElementDialog(props: RenameElementDialogProps) {
   const [text, setText] = useState<string>(props.id);
   const [error, setError] = useState<string | null>(null);
@@ -64,13 +71,16 @@ export function RenameElementDialog(props: RenameElementDialogProps) {
   const warning = props.warning?.(typedId(text, props.id)) ?? null;
   return (
     <Modal
-      title="Rename element"
+      title={RENAME_TITLE}
       error={error}
       testId="rename-dialog"
       submitLabel={warning === null ? 'Rename' : RENAME_ANYWAY_LABEL}
       onCancel={props.onCancel}
       onSubmit={() => attempt(() => props.onSubmit(parseNewId(text, props.id)), setError)}
     >
+      <p className="text-sm" data-testid="rename-intro">
+        {RENAME_INTRO}
+      </p>
       <label htmlFor={inputId}>New id</label>
       <input
         id={inputId}

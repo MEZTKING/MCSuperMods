@@ -1124,7 +1124,7 @@ Copy a folder somewhere else before opening it, so your edits do not change the 
 
 **The music disc sound.** Export your track as Ogg Vorbis (`.ogg`; Audacity can do this), then:
 
-1. **Bring in pictures or sounds…** → **Sounds (sounds, Ogg Vorbis)** → pick the file, for example `my_song.ogg`. It is stored as `sounds/my_song.ogg` in the namespace.
+1. **Bring in pictures or sounds…** → **Sounds (Ogg Vorbis files)** → pick the file, for example `my_song.ogg`. It is stored as `sounds/my_song.ogg` in the namespace.
 2. Select the `sounds` element. In the event `music_disc.my_song`, change the sound's `name` from `minecraft:records/cat` to `<namespace>:my_song` (the file path under `sounds/`, without `.ogg`). Keep `stream` on: long music streams instead of loading all at once.
 3. Select the jukebox song `my_song` and set `length_in_seconds` to the length of your track in seconds. The "Now playing" text is in the `en_us` language element (`Your Name - My Song`); change it there.
 

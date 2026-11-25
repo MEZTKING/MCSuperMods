@@ -21,10 +21,10 @@ The left side lists the modpacks MCSuperMods knows about. Select one to see its 
 
 Changes are saved when you leave a field.
 
-## Projects
+## Your mods in it
 
-- **Add open project** adds the project you have open.
-- **Add project folder…** adds any project folder.
+- **Add the open mod** adds the mod you have open.
+- **Add a mod's folder…** adds any mod's folder.
 - **Open** opens a project in the window (it asks first if your open project has unsaved changes).
 - **Remove** takes a project out of the modpack; the project itself is not changed.
 

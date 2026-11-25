@@ -24,8 +24,8 @@ Some templates start a link pointing at the new element's own id (a structure se
 ## Import a structure
 
 1. Build the piece in a Minecraft world and save it with a structure block (see [Jigsaw blocks in the game](#jigsaw-blocks-in-the-game) below). The game writes it to `saves/<world>/generated/<namespace>/structure/<name>.nbt`.
-2. In MCSuperMods choose **File → Bring in a building…**. The **Import structure** dialog lists the **Supported files**: structure templates (`.nbt`) and Sponge schematics (`.schem`, as written by WorldEdit and other tools).
-3. Choose the **Namespace**, then **Choose files…** and pick one or more files.
+2. In MCSuperMods choose **File → Bring in a building…**. Its **More options** in the **Import structure** dialog lists the **Supported files**: structure templates (`.nbt`) and Sponge schematics (`.schem`, as written by WorldEdit and other tools).
+3. With more than one part of your mod, choose the **Namespace** under **More options**. Then **Choose files…** and pick one or more files.
 
 Each file becomes a structure template named after the file (lower case, spaces as `_`), listed under **Structures**. A file whose element already exists is skipped; one undo removes the whole import. A file saved by a newer game than the project's target gets the `structures.newer-data-version` note in **Problems**.
 

@@ -104,6 +104,7 @@ import {
 } from './components/ImportAssetsDialog';
 import {
   BLOCKBENCH_IMPORT_NOTE,
+  BLOCKBENCH_IMPORT_SUMMARY,
   ImportFilesDialog,
   type TestWorldBuilds,
 } from './components/ImportFilesDialog';
@@ -139,7 +140,11 @@ import { StatusBar } from './components/StatusBar';
 import { StatusToast } from './components/StatusToast';
 import { SETTINGS_CATALOGUE } from './components/settings-catalogue';
 import { SurpriseDialog, type SurprisePrepare } from './components/surprise/SurpriseDialog';
-import { TestInMinecraftDialog, testInMinecraftMessage } from './components/TestInMinecraftDialog';
+import {
+  offerTestInstance,
+  TestInMinecraftDialog,
+  testInMinecraftMessage,
+} from './components/TestInMinecraftDialog';
 import { ThingsToFix } from './components/ThingsToFix';
 import { modKey, SearchDoorField, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
 import { NewTextureDialog } from './components/texture-editor/NewTextureDialog';
@@ -204,6 +209,7 @@ import type { ShowcaseClip } from './showcase/clip';
 import { ShowcaseGallery } from './showcase/ShowcaseGallery';
 import { showcaseModName, showcasesFor } from './showcase/showcases';
 import type { AiAppliedStep } from './store/ai-store';
+import { useInstancesStore } from './store/instances-store';
 import { connectPlay, usePlayStore } from './store/play-store';
 import { usePreferences } from './store/preferences';
 import { useUiStore } from './store/ui-store';
@@ -1532,12 +1538,6 @@ export function App({
 
   const loadSettings = useCallback(() => session.getSettings(), [session]);
   const loadTestStatus = useCallback(() => session.testInMinecraftStatus(), [session]);
-  const createTestInstance = useCallback(async () => {
-    const status = await session.createTestInstance();
-    // The managed instance is now the install target; the toolbar shows it.
-    void refreshMinecraftStatus();
-    return status;
-  }, [session, refreshMinecraftStatus]);
   const pickLauncherProgram = useCallback(
     (launcher: LaunchableLauncher) => bridge.testInMinecraft.pickLauncherProgram(launcher),
     [bridge],
@@ -1596,6 +1596,37 @@ export function App({
     },
     [session, setMessage, refreshMinecraftStatus],
   );
+
+  /**
+   * Test in Minecraft's **Create test instance**: the instance offer card first (ADR 0133 D3),
+   * then main finds the instance made (or makes it, without the card) and selects it. One of the
+   * user's own games chosen on the card becomes the install target instead.
+   */
+  const createTestInstance = useCallback(async () => {
+    const offered = await offerTestInstance({
+      instances: bridge.instances,
+      targetId: session.target.id,
+      project: session.snapshot.project,
+      build: () => session.buildContentJar(),
+      locations: installTargets,
+      prepare: (input) => useInstancesStore.getState().prepare(input),
+    });
+    switch (offered.kind) {
+      case 'mine':
+        await chooseInstallTarget(offered.locationId);
+        return session.testInMinecraftStatus();
+      case 'cancelled':
+        return session.testInMinecraftStatus();
+      case 'failed':
+        throw new Error(offered.message);
+      case 'create':
+        break;
+    }
+    const status = await session.createTestInstance();
+    // The managed instance is now the install target; the toolbar shows it.
+    void refreshMinecraftStatus();
+    return status;
+  }, [bridge, session, installTargets, chooseInstallTarget, refreshMinecraftStatus]);
 
   /** Replaces one launcher's list of added folders; errors reach the Settings dialog. */
   const updateLauncherRoots = useCallback(
@@ -1745,7 +1776,7 @@ export function App({
     (action: Action): Action =>
     () => {
       if (canAddElement) action();
-      else setMessage({ kind: 'error', text: 'Open a project with a namespace first.' });
+      else setMessage({ kind: 'error', text: 'Open a mod first.' });
     };
 
   /** Change id (the Name section's More options, F2): the id rename, rewriting what uses it. */
@@ -1976,7 +2007,7 @@ export function App({
       return;
     }
     if (project === null) {
-      setMessage({ kind: 'error', text: 'Open a project to play it.' });
+      setMessage({ kind: 'error', text: 'Open a mod to play it.' });
       return;
     }
     void usePlayStore.getState().play();
@@ -2675,7 +2706,7 @@ export function App({
     exportJavaProject,
     exportMap: () => {
       if (project === null) {
-        setMessage({ kind: 'error', text: 'Open a project to export it as a map.' });
+        setMessage({ kind: 'error', text: 'Open a mod to export it as a map.' });
         return;
       }
       if (bridge.maps === undefined) {
@@ -2695,7 +2726,7 @@ export function App({
     newWithAi: buildWithAi,
     wishlist: () => {
       if (project === null) {
-        setMessage({ kind: 'error', text: 'Open a project to see its Wishlist.' });
+        setMessage({ kind: 'error', text: 'Open a mod to see its Wishlist.' });
         return;
       }
       setDialog({ type: 'wishlist' });
@@ -2714,7 +2745,7 @@ export function App({
     clearRecentProjects: clearRecent,
     upgradeTarget: () => {
       if (project === null) {
-        setMessage({ kind: 'error', text: 'Open a project first.' });
+        setMessage({ kind: 'error', text: 'Open a mod first.' });
         return;
       }
       setDialog({ type: 'upgrade-target' });
@@ -2722,7 +2753,7 @@ export function App({
     toggleAiHelper,
     creator: () => {
       if (project === null) {
-        setMessage({ kind: 'error', text: 'Open a project to use the Creator.' });
+        setMessage({ kind: 'error', text: 'Open a mod to make something in it.' });
         return;
       }
       setDialog({ type: 'creator' });
@@ -2732,7 +2763,7 @@ export function App({
     reloadGame,
     tryIt: () => {
       if (project === null) {
-        setMessage({ kind: 'error', text: 'Open a project to try it.' });
+        setMessage({ kind: 'error', text: 'Open a mod to try it.' });
         return;
       }
       if (useTryItStore.getState().open) {
@@ -2743,6 +2774,13 @@ export function App({
       useTryItStore.getState().openView();
     },
     home: goHome,
+    guide: () => {
+      if (bridge.guide === undefined) {
+        setMessage({ kind: 'error', text: 'The guide is not available here.' });
+        return;
+      }
+      setDialog({ type: 'guide', page: 'README' });
+    },
   };
 
   const commandHandlers: CommandHandlers = {
@@ -3040,7 +3078,7 @@ export function App({
     },
     newElement: ({ kind, template }) => {
       if ((session.snapshot.project?.namespaces.length ?? 0) === 0) {
-        setMessage({ kind: 'error', text: 'Open a project with a namespace first.' });
+        setMessage({ kind: 'error', text: 'Open a mod first.' });
         return;
       }
       setDialog({ type: 'element', kind, ...(template === undefined ? {} : { template }) });
@@ -3240,7 +3278,7 @@ export function App({
     };
   }, []);
 
-  // File > More Exports lists the plugin exporters too (the toolbar's "More exports").
+  // File > Export lists the plugin exporters too, as the More menu's Export does.
   const menuPluginExports = JSON.stringify(
     pluginExports.map((entry) => ({
       id: entry.id,
@@ -4316,6 +4354,7 @@ export function App({
                   }
                   namespaces={namespaces}
                   importers={importersFor(dialog.mode).map((entry) => entry.importer)}
+                  summary={dialog.mode === 'blockbench' ? BLOCKBENCH_IMPORT_SUMMARY : undefined}
                   note={dialog.mode === 'blockbench' ? BLOCKBENCH_IMPORT_NOTE : undefined}
                   onImport={(namespace) => importFiles(namespace, dialog.mode)}
                   onCancel={() => setDialog(null)}

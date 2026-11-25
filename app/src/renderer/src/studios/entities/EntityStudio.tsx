@@ -446,14 +446,14 @@ export function EntityStudio(props: StudioProps) {
         />
       </div>
       <p className="text-muted text-xs">
-        Models come from File, Import Blockbench Model; the skin is one of your pictures. Animation
-        names come from the chosen animation set. Sit plays while sitting, fly and swim while moving
-        in the air or water, shoot on each ranged shot.
+        Models come from File, Bring in a Blockbench model…; the skin is one of your pictures.
+        Animation names come from the chosen animation set. Sit plays while sitting, fly and swim
+        while moving in the air or water, shoot on each ranged shot.
       </p>
       <InMore>
         <p className="text-muted text-xs">
-          Models and animation sets come from File, Import Blockbench Model, or Add. Textures are
-          the project’s PNGs under textures/.
+          Models and animation sets come from File, Bring in a Blockbench model…, or Add. Textures
+          are the project’s PNGs under textures/.
         </p>
       </InMore>
       <div className="flex flex-wrap items-end gap-2">

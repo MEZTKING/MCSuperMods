@@ -111,6 +111,7 @@ describe("The menu bar speaks the toolbar's words (ADR 0131 D1, B711)", () => {
       'Your first mod…',
       'Examples…',
       'What’s new…',
+      'Guide…',
       'Wishlist…',
       '—',
       'Check for updates…',
@@ -207,6 +208,7 @@ describe("The menu bar speaks the toolbar's words (ADR 0131 D1, B711)", () => {
       'Your first mod…': 'firstMod',
       'Examples…': 'examples',
       'What’s new…': 'whatsNew',
+      'Guide…': 'guide',
       'Wishlist…': 'wishlist',
       'Check for updates…': 'checkForUpdates',
     };

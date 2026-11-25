@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { fieldClass, Modal } from './NewElementDialog';
+import { MoreOptions } from './ui/MoreOptions';
 
 /** Where imported files go, under `assets/<namespace>/`. */
 export type ImportFolderChoice = 'block' | 'item' | 'custom' | 'sounds' | 'shaders';
@@ -69,13 +70,25 @@ export function importFileFilters(subfolder: string): ImportFileFilter[] {
   ];
 }
 
+/** The choices most people need, in plain words (ADR 0130 D2). */
 const CHOICES: { id: ImportFolderChoice; label: string }[] = [
-  { id: 'block', label: 'Block textures (textures/block)' },
-  { id: 'item', label: 'Item textures (textures/item)' },
+  { id: 'block', label: 'Block pictures' },
+  { id: 'item', label: 'Item pictures' },
+  { id: 'sounds', label: 'Sounds (Ogg Vorbis files)' },
+];
+
+/** The choices that name folders by hand, under More options. */
+const MORE_CHOICES: { id: ImportFolderChoice; label: string }[] = [
   { id: 'custom', label: 'Other textures folder' },
-  { id: 'sounds', label: 'Sounds (sounds, Ogg Vorbis)' },
   { id: 'shaders', label: 'Shaders (shaders, .vsh, .fsh and .glsl)' },
 ];
+
+/** The dialog's title: the File menu's words. */
+export const IMPORT_ASSETS_TITLE = 'Bring in pictures or sounds';
+
+/** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
+export const IMPORT_ASSETS_INTRO =
+  'Copies pictures or sounds from your computer into your mod. Choose what they are for, then the files.';
 
 /** Asks where to import, then lets the host show the file picker and import. */
 export function ImportAssetsDialog(props: {
@@ -111,9 +124,27 @@ export function ImportAssetsDialog(props: {
     }
   };
 
+  const choiceRow = (entry: { id: ImportFolderChoice; label: string }) => (
+    <label key={entry.id} className="flex items-center gap-2">
+      <input
+        type="radio"
+        name="import-folder"
+        value={entry.id}
+        data-testid={`import-assets-folder-${entry.id}`}
+        checked={choice === entry.id}
+        onChange={() => {
+          setChoice(entry.id);
+          // The textures and shaders folder fields are one field: start it empty.
+          setCustom('');
+        }}
+      />
+      {entry.label}
+    </label>
+  );
+
   return (
     <Modal
-      title="Import assets"
+      title={IMPORT_ASSETS_TITLE}
       error={error}
       testId="import-assets-dialog"
       submitLabel={busy ? 'Importing…' : 'Choose files…'}
@@ -121,74 +152,70 @@ export function ImportAssetsDialog(props: {
       onCancel={props.onCancel}
       onSubmit={() => void submit()}
     >
-      <label htmlFor={namespaceId}>Namespace</label>
-      <select
-        id={namespaceId}
-        data-testid="import-assets-namespace"
-        className={fieldClass}
-        value={namespace}
-        onChange={(event) => setNamespace(event.target.value)}
-      >
-        {props.namespaces.map((entry) => (
-          <option key={entry} value={entry}>
-            {entry}
-          </option>
-        ))}
-      </select>
-      <fieldset className="m-0 flex flex-col gap-1 border-0 p-0">
-        <legend className="mb-1">Folder</legend>
-        {CHOICES.map((entry) => (
-          <label key={entry.id} className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="import-folder"
-              value={entry.id}
-              data-testid={`import-assets-folder-${entry.id}`}
-              checked={choice === entry.id}
-              onChange={() => {
-                setChoice(entry.id);
-                // The textures and shaders folder fields are one field: start it empty.
-                setCustom('');
-              }}
-            />
-            {entry.label}
-          </label>
-        ))}
-      </fieldset>
-      {choice === 'shaders' && (
-        <>
-          <label htmlFor={customId}>Folder under shaders/ (empty: shaders)</label>
-          <input
-            id={customId}
-            data-testid="import-assets-shader-folder"
-            className={fieldClass}
-            value={custom}
-            placeholder="post"
-            spellCheck={false}
-            onChange={(event) => setCustom(event.target.value)}
-          />
-        </>
-      )}
-      {choice === 'custom' && (
-        <>
-          <label htmlFor={customId}>Folder under textures/</label>
-          <input
-            id={customId}
-            data-testid="import-assets-custom-folder"
-            className={fieldClass}
-            value={custom}
-            placeholder="entity"
-            spellCheck={false}
-            onChange={(event) => setCustom(event.target.value)}
-          />
-        </>
-      )}
-      <p className="text-xs text-muted">
-        Files with the same name replace the existing ones. Textures must be PNG files; pick an
-        animated texture together with its <code>.png.mcmeta</code> file to keep them side by side.
-        Shader files are copied as they are: MCSuperMods does not check them, so a mistake shows
-        only in the game.
+      <p className="text-sm" data-testid="import-assets-intro">
+        {IMPORT_ASSETS_INTRO}
       </p>
+      <fieldset className="m-0 flex flex-col gap-1 border-0 p-0">
+        <legend className="mb-1">They are</legend>
+        {CHOICES.map(choiceRow)}
+      </fieldset>
+      <p className="text-xs text-muted">
+        Files with the same name replace the ones already there. Pictures must be PNG files; pick a
+        moving picture together with its <code>.png.mcmeta</code> file to keep them side by side.
+      </p>
+      <MoreOptions storageKey="dialog-import-assets">
+        <label htmlFor={namespaceId}>Namespace</label>
+        <select
+          id={namespaceId}
+          data-testid="import-assets-namespace"
+          className={fieldClass}
+          value={namespace}
+          onChange={(event) => setNamespace(event.target.value)}
+        >
+          {props.namespaces.map((entry) => (
+            <option key={entry} value={entry}>
+              {entry}
+            </option>
+          ))}
+        </select>
+        <fieldset className="m-0 flex flex-col gap-1 border-0 p-0">
+          <legend className="mb-1">Other folders</legend>
+          {MORE_CHOICES.map(choiceRow)}
+        </fieldset>
+        {choice === 'shaders' && (
+          <>
+            <label htmlFor={customId}>Folder under shaders/ (empty: shaders)</label>
+            <input
+              id={customId}
+              data-testid="import-assets-shader-folder"
+              className={fieldClass}
+              value={custom}
+              placeholder="post"
+              spellCheck={false}
+              onChange={(event) => setCustom(event.target.value)}
+            />
+          </>
+        )}
+        {choice === 'custom' && (
+          <>
+            <label htmlFor={customId}>Folder under textures/</label>
+            <input
+              id={customId}
+              data-testid="import-assets-custom-folder"
+              className={fieldClass}
+              value={custom}
+              placeholder="entity"
+              spellCheck={false}
+              onChange={(event) => setCustom(event.target.value)}
+            />
+          </>
+        )}
+        <p className="text-xs text-muted">
+          Block and item pictures go to textures/block and textures/item, sounds to sounds. Shader
+          files are copied as they are: MCSuperMods does not check them, so a mistake shows only in
+          the game.
+        </p>
+      </MoreOptions>
     </Modal>
   );
 }

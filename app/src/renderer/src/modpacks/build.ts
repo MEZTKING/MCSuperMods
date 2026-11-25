@@ -84,7 +84,7 @@ export async function buildModpackJars(
       problems.push(
         error(
           ModpackProblemCodes.targetMismatch,
-          `${label} is made for ${member.targetId ?? 'an unknown Minecraft version'}, but the modpack is for ${modpack.targetId}. Open it and use Upgrade Project Target, or change the modpack's Minecraft version.`,
+          `${label} is made for ${member.targetId ?? 'an unknown Minecraft version'}, but the modpack is for ${modpack.targetId}. Open it and use File, Move to another Minecraft version…, or change the modpack's Minecraft version.`,
         ),
       );
       continue;

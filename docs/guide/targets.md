@@ -30,7 +30,7 @@ The **Install** menu (under **More** on the toolbar) and its **Change target** s
 ## Move a project to another target
 
 1. Choose **File → Move to another Minecraft version…** (or "Upgrade project target…" in the command palette, Ctrl+Shift+P).
-2. The **Upgrade project target** dialog says which version the project exports for now and lists every other target; snapshot targets carry a **snapshot** badge. Choose one.
+2. The **Move to another Minecraft version** dialog says which version your mod is made for now and lists every other version; snapshots carry a **snapshot** badge. Choose one. The version ids, and the ids of the things in the report, show under **More options**.
 3. MCSuperMods checks the project against the chosen target and shows a report. Nothing has changed yet.
 4. Choose **Upgrade** to move the project, or **Cancel** to leave it.
 

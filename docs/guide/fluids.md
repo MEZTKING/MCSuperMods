@@ -33,7 +33,7 @@ Selecting a fluid opens the Fluid Studio. In My things a fluid's card is a **Liq
 - **Pictures**: **Still surface**, **Flowing surface**, **Overlay, beside glass (optional)** and **Bucket**. A picture with an animation file beside it moves, as water does.
 - **Something inside**: **While a mob or player is in it** picks an event.
 - **Mixing**: one row a rule, **Mixes with** (water, lava or a liquid), **Source becomes** and **Flowing becomes**; **Add a mixing rule** adds one. With no rules it does not mix (a lava-like liquid keeps the game's own lava behaviour, which differs between the Minecraft versions).
-- **Cauldron and bottle**: **Has a cauldron**, with **Fills in levels (a bottle takes or adds one, as water does)** and **Cauldron name** (a lava-like liquid's cauldron is always full: a bucket fills or empties it); **Has a bottle**, with **Bottle name**, **Bottle picture (empty: a potion bottle in its colour)**, **Fills hunger when drunk** (**Hunger restored**, **Saturation**) and **When drunk** (an event). Effects to give are under Advanced.
+- **Cauldron and bottle**: **Has a cauldron**, with **Fills in levels (a bottle takes or adds one, as water does)** and **Cauldron name** (a lava-like liquid's cauldron is always full: a bucket fills or empties it); **Has a bottle**, with **Bottle name**, **Bottle picture (empty: a potion bottle in its colour)**, **Fills hunger when drunk** (**Hunger restored**, **Saturation**) and **When drunk** (an event). Effects to give are in **Every setting**, at the bottom.
 
 ## How it behaves
 

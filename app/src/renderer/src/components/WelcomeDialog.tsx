@@ -1,7 +1,7 @@
 /**
  * The Welcome dialog: the short version of the "Your first mod" guide page
  * (`docs/guide/first-mod.md`). Shown by itself once on a brand-new install (main's
- * `app.launchNotice()`), and from Help > Your First Mod… and the palette. Presentational: the
+ * `app.launchNotice()`), and from Help > Your first mod… and the palette. Presentational: the
  * host opens Settings, starts a project or opens the Creator.
  *
  * @packageDocumentation
@@ -119,7 +119,7 @@ export function WelcomeDialog({
         >
           Your first mod
         </a>
-        . Open this again with Help → Your First Mod….
+        . Open this again with Help, Your first mod….
       </p>
     </Modal>
   );

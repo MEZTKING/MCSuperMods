@@ -77,7 +77,7 @@ export function TargetSelect({ targets, targetId, onChange }: TargetSelectProps)
       <p id={hintId} className="text-xs text-muted">
         {chosen?.channel === 'snapshot'
           ? 'A snapshot target follows a Minecraft version that is not released yet; its facts may change when it is re-pinned.'
-          : 'The project exports for this version. You can upgrade it later with File > Upgrade Project Target.'}
+          : 'Your mod is made for this version. You can move it to another one later with File, Move to another Minecraft version….'}
       </p>
     </div>
   );

@@ -22,7 +22,7 @@ export function exportDisabledReason(
   hasProject: boolean,
   problems: readonly Problem[],
 ): string | null {
-  if (!hasProject) return 'No project is open.';
+  if (!hasProject) return 'No mod is open.';
   const errors = errorCount(problems);
   if (errors > 0) {
     return `Fix ${errors} error${errors === 1 ? '' : 's'} first (see Problems).`;
@@ -188,7 +188,7 @@ export function userFacingExportProblems(problems: readonly Problem[]): Problem[
 
 /** Shown when a data pack export or install has nothing to package. */
 export const NO_DATA_PACK_CONTENT =
-  'The project has no data pack content yet. Add a recipe, function, tag or other data element.';
+  'Your mod has nothing for a data pack yet. Make a recipe, a loot table, a tag or a function first.';
 
 /** Why "Export data pack (.zip)" and "Export both" are disabled, or `null` when enabled. */
 export function dataExportDisabledReason(
@@ -229,7 +229,7 @@ export function fabricJarExportDisabledReason(
  * items, the mod element): packs cannot carry it.
  */
 export const MSM_CONTENT_NOTE =
-  'Blocks and items are not part of resource or data packs; use Export Fabric mod jar for them.';
+  'Blocks and items do not fit in resource or data packs; use Export Fabric mod jar for them.';
 
 /**
  * Whether any element of `project` lowers to an `msm` layer file (blocks, items, the mod

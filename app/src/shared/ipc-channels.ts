@@ -237,6 +237,8 @@ export const MENU_COMMANDS = [
   'tryIt',
   // ADR 0083 D2: View > "Home".
   'home',
+  // ADR 0124 D14: Help > "Guide…", the user guide read in the app (as the toolbar's Help).
+  'guide',
 ] as const;
 
 /** A command the application menu sends to the renderer. */

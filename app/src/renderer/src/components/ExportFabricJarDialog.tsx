@@ -11,6 +11,7 @@ import type { Json } from '@msm/core';
 import type { ExporterOption, Project } from '@msm/plugin-api';
 import { useId, useState } from 'react';
 import { Modal } from './NewElementDialog';
+import { MoreOptions } from './ui/MoreOptions';
 
 /** Each option's default value, keyed by option id. */
 export function defaultOptionValues(options: readonly ExporterOption[]): Record<string, Json> {
@@ -81,17 +82,28 @@ export interface ExportFabricJarDialogProps {
   onClose(): void;
 }
 
-/** Explains what the jar needs in game. */
+/** The dialog's title. */
+export const FABRIC_JAR_DIALOG_TITLE = 'Save the mod as a file';
+
+/** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
+export const FABRIC_JAR_DIALOG_INTRO =
+  'Saves your whole mod as one file (a .jar). Put it in the mods folder of a Minecraft that has Fabric, or give it to friends.';
+
+/** Explains what the jar holds and needs in game, in plain words. */
 export const FABRIC_JAR_DIALOG_NOTE =
-  'The jar holds the project’s blocks, items, resources and data. Players need Fabric Loader and Fabric API.';
+  'The file holds your mod’s blocks, items, mobs, pictures and rules. Players need Minecraft with Fabric to use it.';
 
-/** Shown when the project has entities (ADR 0029 D4). */
+/** The same, by the mods' own names (under More options). */
+export const FABRIC_JAR_REQUIREMENTS =
+  'Players need Fabric Loader and Fabric API in their mods folder.';
+
+/** Shown when the mod has mobs (ADR 0029 D4). */
 export const FABRIC_JAR_GECKOLIB_NOTE =
-  'This project has entities, so the jar also nests GeckoLib, which draws their models and animations. MCSuperMods downloads GeckoLib once from Modrinth and keeps it for later exports.';
+  'Your mod has mobs, so the file also holds GeckoLib, which draws their models and animations. MCSuperMods downloads GeckoLib once from Modrinth and keeps it for later.';
 
-/** Shown when the project has entities but none needs GeckoLib on the target (ADR 0072 D5). */
+/** Shown when the mod has mobs but none needs GeckoLib on this version (ADR 0072 D5). */
 export const FABRIC_JAR_VANILLA_RENDERER_NOTE =
-  'This project’s entities are drawn by the runtime’s built-in renderer on this target, so the jar needs no GeckoLib.';
+  'Your mod’s mobs are drawn by MCSuperMods’ own renderer on this Minecraft version, so the file needs no GeckoLib.';
 
 /**
  * Whether exporting `project` for a target nests GeckoLib, from the entity elements'
@@ -147,7 +159,7 @@ export function ExportFabricJarDialog({
   const [values, setValues] = useState<Record<string, Json>>(() => defaultOptionValues(options));
   return (
     <Modal
-      title="Export Fabric mod jar"
+      title={FABRIC_JAR_DIALOG_TITLE}
       error={null}
       wide
       testId="fabric-jar-dialog"
@@ -155,6 +167,9 @@ export function ExportFabricJarDialog({
       onCancel={onClose}
       onSubmit={() => onExport({ ...defaultOptionValues(options), ...values })}
     >
+      <p className="text-sm" data-testid="fabric-jar-dialog-intro">
+        {FABRIC_JAR_DIALOG_INTRO}
+      </p>
       <p className="text-muted text-sm">{FABRIC_JAR_DIALOG_NOTE}</p>
       {hasEntities === true && needsGeckolib !== false && (
         <p className="text-muted text-sm" data-testid="fabric-jar-geckolib-note">
@@ -166,13 +181,18 @@ export function ExportFabricJarDialog({
           {FABRIC_JAR_VANILLA_RENDERER_NOTE}
         </p>
       )}
-      {options.length > 0 && (
-        <ExporterOptionFields
-          options={options}
-          values={values}
-          onChange={(id, value) => setValues((current) => ({ ...current, [id]: value }))}
-        />
-      )}
+      <MoreOptions storageKey="dialog-fabric-jar">
+        <p className="text-muted text-sm" data-testid="fabric-jar-requirements">
+          {FABRIC_JAR_REQUIREMENTS}
+        </p>
+        {options.length > 0 && (
+          <ExporterOptionFields
+            options={options}
+            values={values}
+            onChange={(id, value) => setValues((current) => ({ ...current, [id]: value }))}
+          />
+        )}
+      </MoreOptions>
     </Modal>
   );
 }

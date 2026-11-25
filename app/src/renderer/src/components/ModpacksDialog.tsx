@@ -17,7 +17,12 @@ import type { ProjectSession } from '../session/project-session';
 import { fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
 import { DialogContent, DialogRoot } from './ui/DialogContent';
+import { MoreOptions } from './ui/MoreOptions';
 import { targetLabel } from './wizard/wizard-model';
+
+/** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
+export const MODPACKS_DIALOG_INTRO =
+  'A modpack puts several of your mods together. Each mod stays in its own folder; save the modpack as one Modrinth file (.mrpack) or test all its mods together in Minecraft.';
 
 export interface ModpacksDialogProps {
   session: ProjectSession;
@@ -33,6 +38,14 @@ export interface ModpacksDialogProps {
   /** Opens a member project in the window (closing this dialog). */
   onOpenProject(root: string): void;
   onClose(): void;
+}
+
+/** "made for Minecraft <version>", or for another version when the target is not known. */
+export function madeForText(targets: readonly TargetFacts[], targetId: string | null): string {
+  const target = targets.find((entry) => entry.id === targetId);
+  return target === undefined
+    ? 'made for another Minecraft version'
+    : `made for ${targetLabel(target)}`;
 }
 
 function messageOf(error: unknown): string {
@@ -251,7 +264,7 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
       });
     });
 
-  const labelOf = (entry: ModpackListEntry): string => entry.name ?? `${entry.root} (not found)`;
+  const labelOf = (entry: ModpackListEntry): string => entry.name ?? 'A modpack that was moved';
 
   return (
     <DialogRoot
@@ -268,9 +281,8 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[min(94vw,900px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-x-hidden overflow-y-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
           <Dialog.Title className="text-base font-semibold">Modpacks</Dialog.Title>
-          <p className="text-muted text-sm">
-            A modpack groups your projects. Each project stays in its own folder; export the modpack
-            as a Modrinth .mrpack or test all its mods together in Minecraft.
+          <p className="text-sm" data-testid="modpacks-dialog-intro">
+            {MODPACKS_DIALOG_INTRO}
           </p>
           <div className="flex min-h-0 flex-col gap-3 sm:flex-row">
             <div className="flex flex-col gap-2 sm:w-56 sm:shrink-0">
@@ -348,22 +360,6 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                     onChange={(event) => setDraft({ ...draft, name: event.target.value })}
                     onBlur={saveDetails}
                   />
-                  <label htmlFor={ids.version}>Version</label>
-                  <input
-                    id={ids.version}
-                    className={fieldClass}
-                    value={draft.version}
-                    onChange={(event) => setDraft({ ...draft, version: event.target.value })}
-                    onBlur={saveDetails}
-                  />
-                  <label htmlFor={ids.summary}>Summary</label>
-                  <input
-                    id={ids.summary}
-                    className={fieldClass}
-                    value={draft.summary ?? ''}
-                    onChange={(event) => setDraft({ ...draft, summary: event.target.value })}
-                    onBlur={saveDetails}
-                  />
                   <label htmlFor={ids.target}>Minecraft version</label>
                   <select
                     id={ids.target}
@@ -379,14 +375,13 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                     ))}
                   </select>
                 </div>
-                <p className="text-muted text-xs">Folder: {view.root}</p>
 
                 <section className="flex flex-col gap-1">
-                  <h3 className="text-sm font-semibold">Projects</h3>
+                  <h3 className="text-sm font-semibold">Your mods in it</h3>
                   <ul className="flex flex-col gap-1" data-testid="modpack-members">
                     {view.members.length === 0 && (
                       <li className="text-muted text-sm">
-                        No projects yet. Each project becomes one mod.
+                        None yet. Add the open mod, or another mod's folder.
                       </li>
                     )}
                     {view.members.map((member) => (
@@ -395,12 +390,11 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                         data-testid="modpack-member"
                         className="flex flex-wrap items-center gap-2 text-sm"
                       >
-                        <span className="font-medium">{member.name ?? member.path}</span>
-                        <span className="text-muted text-xs">{member.path}</span>
+                        <span className="font-medium">{member.name ?? 'A mod that was moved'}</span>
                         {!member.found && <span className="text-xs text-red-500">not found</span>}
                         {member.found && member.targetId !== view.modpack.targetId && (
                           <span className="text-xs text-red-500">
-                            made for {member.targetId ?? 'another version'}
+                            {madeForText(props.targets, member.targetId)}
                           </span>
                         )}
                         <span className="flex-1" />
@@ -441,7 +435,7 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                           })
                         }
                       >
-                        Add open project
+                        Add the open mod
                       </Button>
                     )}
                     <Button
@@ -454,7 +448,7 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                         })
                       }
                     >
-                      Add project folder…
+                      Add a mod's folder…
                     </Button>
                   </div>
                 </section>
@@ -463,12 +457,13 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                   <h3 className="text-sm font-semibold">Mods from Modrinth</h3>
                   <ul className="flex flex-col gap-1" data-testid="modpack-mods">
                     {view.modpack.mods.length === 0 && (
-                      <li className="text-muted text-sm">None. Fabric API is always included.</li>
+                      <li className="text-muted text-sm">
+                        None yet. The Fabric mods every pack needs are always in it.
+                      </li>
                     )}
                     {view.modpack.mods.map((mod) => (
                       <li key={mod.projectId} className="flex items-center gap-2 text-sm">
                         <span className="font-medium">{mod.title}</span>
-                        <span className="text-muted text-xs">{mod.fileName}</span>
                         <span className="flex-1" />
                         <Button
                           disabled={busy !== null}
@@ -488,7 +483,7 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                   </ul>
                   <div className="flex flex-wrap items-center gap-2">
                     <label htmlFor={ids.mod} className="text-sm">
-                      Modrinth project name or link
+                      Modrinth mod name or link
                     </label>
                     <input
                       id={ids.mod}
@@ -516,6 +511,51 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
                     )}
                   </div>
                 </section>
+
+                <MoreOptions storageKey="dialog-modpacks">
+                  <div className="grid grid-cols-[auto_1fr] items-center gap-x-2 gap-y-1 text-sm">
+                    <label htmlFor={ids.version}>Version</label>
+                    <input
+                      id={ids.version}
+                      className={fieldClass}
+                      data-testid="modpack-version"
+                      value={draft.version}
+                      onChange={(event) => setDraft({ ...draft, version: event.target.value })}
+                      onBlur={saveDetails}
+                    />
+                    <label htmlFor={ids.summary}>Summary</label>
+                    <input
+                      id={ids.summary}
+                      className={fieldClass}
+                      data-testid="modpack-summary"
+                      value={draft.summary ?? ''}
+                      onChange={(event) => setDraft({ ...draft, summary: event.target.value })}
+                      onBlur={saveDetails}
+                    />
+                  </div>
+                  <p className="text-muted text-xs" data-testid="modpack-folder">
+                    Folder: {view.root}
+                  </p>
+                  {view.members.length > 0 && (
+                    <ul className="text-muted text-xs" data-testid="modpack-member-paths">
+                      {view.members.map((member) => (
+                        <li key={member.path}>
+                          {member.name ?? member.path}: {member.path}
+                          {member.targetId === null ? '' : ` (${member.targetId})`}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {view.modpack.mods.length > 0 && (
+                    <ul className="text-muted text-xs" data-testid="modpack-mod-files">
+                      {view.modpack.mods.map((mod) => (
+                        <li key={mod.projectId}>
+                          {mod.title}: {mod.fileName}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </MoreOptions>
 
                 <div className="flex flex-wrap gap-2">
                   <Button

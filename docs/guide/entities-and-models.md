@@ -18,7 +18,7 @@ What you get from a file called `ruby_golem.bbmodel`:
 - the texture as `textures/entity/ruby_golem.png` (several textures are numbered: `ruby_golem_0.png`, `ruby_golem_1.png`);
 - the original file, kept as `blockbench/ruby_golem.bbmodel` in the project and never exported.
 
-A `.geo.json` gives only the geo model and an `.animation.json` only the animation set; import the texture PNG with **Bring in pictures or sounds…**, choosing **Other textures folder** and `entity` as the folder under `textures/`. Elements that already exist are skipped, and one undo removes the whole import.
+A `.geo.json` gives only the geo model and an `.animation.json` only the animation set; import the texture PNG with **Bring in pictures or sounds…**, choosing **Other textures folder** under **More options** and `entity` as the folder under `textures/`. Things already in your mod are skipped, and one undo removes the whole import.
 
 Only `.bbmodel`, `.geo.json` and `.animation.json` files are accepted. Blockbench's **Java Block/Item** projects are refused: they are block or item models, not mobs, and Blockbench exports them as Java models itself. A texture that is not embedded, or not a PNG, is reported in the dialog; import it separately. If a converted model looks wrong in the preview, export the `.geo.json` and `.animation.json` from Blockbench and import those instead: they are used unchanged.
 
@@ -122,7 +122,7 @@ A mob is drawn by **GeckoLib**, a free mod (MIT licence) for animated models, or
 - `fabric.mod.json`, which depends on `msm_runtime` and `geckolib` as well as Fabric Loader, Fabric API and Minecraft;
 - by default, both `msm_runtime` and GeckoLib nested inside it (`META-INF/jars/`), so one file plus Fabric API is all a player needs.
 
-When every mob is drawn by the built-in renderer, as on the 26.4 snapshot or with **Built-in renderer**, the dialog says: "This project’s entities are drawn by the runtime’s built-in renderer on this target, so the jar needs no GeckoLib." The jar then carries no GeckoLib, depends only on `msm_runtime`, and needs no download. The built-in renderer plays fewer animation features than GeckoLib (Molang, easings and sound or particle keyframes are left out), so a mob can look slightly different between the two.
+When every mob is drawn by the built-in renderer, as on the 26.4 snapshot or with **Built-in renderer**, the dialog says: "Your mod’s mobs are drawn by MCSuperMods’ own renderer on this Minecraft version, so the file needs no GeckoLib." The jar then carries no GeckoLib, depends only on `msm_runtime`, and needs no download. The built-in renderer plays fewer animation features than GeckoLib (Molang, easings and sound or particle keyframes are left out), so a mob can look slightly different between the two.
 
 The first export of a GeckoLib mob downloads GeckoLib, checks it and keeps it in the app's download cache. Without an internet connection the export stops with: "GeckoLib could not be downloaded. A mod with entities needs a one-off download of GeckoLib: connect to the internet and try again, or choose "Separate runtime and GeckoLib (for modpacks)"." After one successful download it works offline.
 

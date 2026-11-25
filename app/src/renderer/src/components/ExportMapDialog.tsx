@@ -18,6 +18,10 @@ import type { MapContent } from '../session/project-session';
 import { fieldClass, Modal } from './NewElementDialog';
 import { WorldPickerDialog } from './WorldPickerDialog';
 
+/** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
+export const EXPORT_MAP_DIALOG_INTRO =
+  'Saves one of your worlds with your mod in it as one file, so other players can open the same map.';
+
 /** Play my game's world folder (ADR 0116 D1), the natural first pick. */
 export function gameWorldOf(namespace: string | null): string | undefined {
   return namespace === null ? undefined : `msm-game-${namespace}`;
@@ -77,8 +81,8 @@ export interface ExportMapDialogProps {
 /** The first error of a blocked build, in a sentence. */
 function blockedText(content: MapContent): string {
   const errors = content.report.problems.filter((problem) => problem.severity === 'error');
-  const first = errors[0]?.message ?? 'The project has problems.';
-  return `The map was not saved: the project has ${errors.length} error(s). ${first}`;
+  const first = errors[0]?.message ?? 'Your mod has problems.';
+  return `The map was not saved: your mod has ${errors.length} error(s). ${first}`;
 }
 
 export default function ExportMapDialog(props: ExportMapDialogProps) {
@@ -208,6 +212,9 @@ export default function ExportMapDialog(props: ExportMapDialogProps) {
         setStep('world');
       }}
     >
+      <p className="text-sm" data-testid="export-map-dialog-intro">
+        {EXPORT_MAP_DIALOG_INTRO}
+      </p>
       {sources === null ? (
         <p className="text-muted text-sm">Looking for worlds…</p>
       ) : noWorlds ? (
@@ -253,10 +260,11 @@ export default function ExportMapDialog(props: ExportMapDialogProps) {
         Keep my player data
       </label>
       <p className="text-xs text-muted" data-testid="export-map-note">
-        The map gets this project's data pack and resource pack. A project that needs the mod is
-        saved as a Modrinth modpack (.mrpack) with the mod and the world. Without "Keep my player
-        data", inventories, advancements and statistics are left out, so every player starts fresh.
-        The world's settings (cheats, seed) stay as they are.
+        The map gets your mod's data pack and resource pack. When your mod needs Fabric (its own
+        blocks, items or mobs), the map is saved as a Modrinth modpack (.mrpack) with the mod file
+        and the world. Unless you tick Keep my player data, inventories, advancements and statistics
+        are left out, so every player starts fresh. The world's settings (cheats, seed) stay as they
+        are.
       </p>
     </Modal>
   );

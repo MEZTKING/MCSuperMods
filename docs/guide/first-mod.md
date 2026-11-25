@@ -51,7 +51,7 @@ A quick look first: **Try it** in the toolbar (or F6) opens a small test area in
 1. Open **More** on the toolbar and choose **Test in Minecraft…**.
 2. The dialog says which game it will use:
    - With a Prism Launcher instance that has Fabric for Minecraft 26.3, choose **Install and launch**. MCSuperMods copies your mod and Fabric API into the instance and starts it.
-   - If no game fits, choose **Create test instance**. MCSuperMods makes the Prism instance **MCSuperMods Test (26.3)** with Fabric; then choose **Install and launch**. Prism downloads the game the first time, which takes a few minutes.
+   - If no game fits, choose **Create test instance**. A card says what MCSuperMods will make (the Prism instance **MCSuperMods Test (26.3)** with Fabric) and offers one of your own games instead; make it, then choose **Install and launch**. Prism downloads the game the first time, which takes a few minutes.
    - With the official launcher, choose **Install**, then start the Fabric profile for 26.3 yourself.
 3. In the game, make a new Creative world and search the inventory for "ruby". Mine the ruby ore underground in a Survival world, and craft a ruby pickaxe from the recipes.
 
