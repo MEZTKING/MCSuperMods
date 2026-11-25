@@ -52,3 +52,4 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 - [DESIGN §9 Targets and Exporters](../../docs/DESIGN.md#9-targets-and-exporters)
 - [DESIGN §17 Risks and Mitigations](../../docs/DESIGN.md#17-risks-and-mitigations)
 - [ADR 0005](../../docs/adr/0005-vanilla-mcdoc-pinning-and-loading.md), [ADR 0006](../../docs/adr/0006-mcmeta-refs.md), [ADR 0136](../../docs/adr/0136-version-upgrades-noticed-moved-and-explained.md), [ROADMAP](../../docs/ROADMAP.md)
+- Vanilla file index (B823): `vendor/mcmeta/files.json` holds the paths and 12 hex digits of each git blob hash (structure `.nbt` left out), written by `tools/sync-mcmeta` (`--only files` alone), read only by `tools/diff-targets`, never bundled; `mc-26.4/src/changes/generated.vanilla-files.json` is the set's `vanillaFiles`, covered by `diff-targets --check`.
