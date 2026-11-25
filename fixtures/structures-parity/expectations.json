@@ -2913,15 +2913,15 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "minecraft:chiseled_stone_bricks": 35,
-                "minecraft:cracked_stone_bricks": 19,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 2
+                "minecraft:chiseled_stone_bricks": 30,
+                "minecraft:cracked_stone_bricks": 17,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 3
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -2933,9 +2933,9 @@
                 "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 64
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 33,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 19,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 12
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 36,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 13,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 15
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 64
@@ -2983,8 +2983,8 @@
                 "minecraft:oak_planks": 64
               },
               "minecraft:obsidian": {
-                "minecraft:crying_obsidian": 5,
-                "minecraft:obsidian": 27
+                "minecraft:crying_obsidian": 6,
+                "minecraft:obsidian": 26
               },
               "minecraft:polished_andesite": {
                 "minecraft:polished_andesite": 32
@@ -3011,36 +3011,37 @@
                 "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:cracked_stone_bricks": 521,
-                "minecraft:stone": 1059,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 59,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 62,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 60,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 52,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 76,
-                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 59,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 79,
-                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 53
+                "minecraft:cracked_stone_bricks": 539,
+                "minecraft:stone": 1043,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 60,
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 67,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 55,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 58,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 72,
+                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 60,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 70,
+                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 56
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 7,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 19,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 6
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 9,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 8
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
               },
               "minecraft:stone_bricks": {
-                "minecraft:cracked_stone_bricks": 8,
+                "minecraft:cracked_stone_bricks": 6,
                 "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 4,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_bricks": 18
+                "minecraft:stone_bricks": 17
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -3052,9 +3053,9 @@
                 "minecraft:stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 11,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 5,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 16
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 12,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 7,
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 13
               },
               "minecraft:yellow_wool": {
                 "minecraft:yellow_wool": 32
@@ -3062,29 +3063,25 @@
             },
             "changed": {
               "histogram": {
-                "26": 1,
-                "28": 1,
-                "29": 2,
-                "30": 2,
-                "31": 1,
+                "24": 1,
+                "30": 1,
                 "32": 1,
-                "33": 1,
-                "34": 4,
-                "35": 3,
+                "33": 4,
+                "34": 3,
+                "35": 4,
                 "36": 3,
-                "37": 4,
-                "38": 3,
-                "39": 1,
-                "40": 1,
-                "41": 1,
-                "43": 2,
+                "37": 2,
+                "38": 6,
+                "39": 2,
+                "40": 2,
+                "42": 2,
                 "44": 1
               },
               "max": 44,
-              "mean": 35.2813,
-              "min": 26,
+              "mean": 36.125,
+              "min": 24,
               "n": 32,
-              "sd": 4.4521
+              "sd": 3.85
             },
             "random": true
           },
@@ -3113,14 +3110,16 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "minecraft:chiseled_stone_bricks": 35,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:chiseled_stone_bricks": 30,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 3,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
                 "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 2,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 2,
-                "minecraft:mossy_stone_bricks": 19
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 3,
+                "minecraft:mossy_stone_bricks": 17
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -3132,9 +3131,9 @@
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 64
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 33,
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 19,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 12
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 13,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 64
@@ -3182,8 +3181,8 @@
                 "minecraft:oak_planks": 64
               },
               "minecraft:obsidian": {
-                "minecraft:crying_obsidian": 5,
-                "minecraft:obsidian": 27
+                "minecraft:crying_obsidian": 6,
+                "minecraft:obsidian": 26
               },
               "minecraft:polished_andesite": {
                 "minecraft:polished_andesite": 32
@@ -3210,35 +3209,38 @@
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 70,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 51,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 62,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 57,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 62,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 60,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 62,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 76,
-                "minecraft:mossy_stone_bricks": 521,
-                "minecraft:stone": 1059
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 64,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 72,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 58,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 58,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 58,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 70,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 57,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 61,
+                "minecraft:mossy_stone_bricks": 539,
+                "minecraft:stone": 1043
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 7,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 6,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 19
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 9,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 8,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
               },
               "minecraft:stone_bricks": {
                 "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 2,
-                "minecraft:mossy_stone_bricks": 8,
-                "minecraft:stone_bricks": 18
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_bricks": 6,
+                "minecraft:stone_bricks": 17
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -3250,9 +3252,9 @@
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 11,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 5,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 16
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 12,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 7,
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 13
               },
               "minecraft:yellow_wool": {
                 "minecraft:yellow_wool": 32
@@ -3260,29 +3262,25 @@
             },
             "changed": {
               "histogram": {
-                "34": 1,
-                "36": 1,
-                "37": 2,
-                "38": 2,
-                "39": 1,
+                "32": 1,
+                "38": 1,
                 "40": 1,
-                "41": 1,
-                "42": 4,
-                "43": 3,
+                "41": 4,
+                "42": 3,
+                "43": 4,
                 "44": 3,
-                "45": 4,
-                "46": 3,
-                "47": 1,
-                "48": 1,
-                "49": 1,
-                "51": 2,
+                "45": 2,
+                "46": 6,
+                "47": 2,
+                "48": 2,
+                "50": 2,
                 "52": 1
               },
               "max": 52,
-              "mean": 43.2813,
-              "min": 34,
+              "mean": 44.125,
+              "min": 32,
               "n": 32,
-              "sd": 4.4521
+              "sd": 3.85
             },
             "random": true
           },
@@ -3311,18 +3309,22 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "minecraft:chiseled_stone_bricks": 35,
-                "minecraft:cracked_stone_bricks": 9,
+                "minecraft:chiseled_stone_bricks": 30,
+                "minecraft:cracked_stone_bricks": 6,
                 "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 2,
                 "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_bricks": 10,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_bricks": 11,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -3331,19 +3333,19 @@
                 "minecraft:cobblestone": 64
               },
               "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": {
-                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 31,
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 33
+                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 28
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 33,
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 8,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 8,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 11,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 4
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 7,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 10,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 6,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 5
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 34,
-                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 30
+                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 36,
+                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 28
               },
               "minecraft:cracked_deepslate_bricks": {
                 "minecraft:cracked_deepslate_bricks": 64
@@ -3388,8 +3390,8 @@
                 "minecraft:oak_planks": 64
               },
               "minecraft:obsidian": {
-                "minecraft:crying_obsidian": 5,
-                "minecraft:obsidian": 27
+                "minecraft:crying_obsidian": 6,
+                "minecraft:obsidian": 26
               },
               "minecraft:polished_andesite": {
                 "minecraft:polished_andesite": 32
@@ -3413,55 +3415,56 @@
                 "minecraft:smooth_stone": 32
               },
               "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 14,
-                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 18
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 18,
+                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 14
               },
               "minecraft:stone": {
-                "minecraft:cracked_stone_bricks": 265,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 25,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 27,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 30,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 25,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 23,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 33,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 31,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 44,
-                "minecraft:mossy_stone_bricks": 256,
-                "minecraft:stone": 1059,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 29,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 26,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 33,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 28,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 41,
-                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 31,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 49,
-                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 25
+                "minecraft:cracked_stone_bricks": 249,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 37,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 32,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 31,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 29,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 31,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 35,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 27,
+                "minecraft:mossy_stone_bricks": 290,
+                "minecraft:stone": 1043,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 27,
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 29,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 25,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 31,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 37,
+                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 27,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 34,
+                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 30
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 20,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 12
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 16,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 6,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 19,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 4
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 4,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 5,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 5,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 3
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 18,
-                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 14
+                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 16,
+                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 16
               },
               "minecraft:stone_bricks": {
                 "minecraft:cracked_stone_bricks": 4,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_bricks": 4,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_bricks": 2,
                 "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_bricks": 18
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_bricks": 17
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -3470,15 +3473,15 @@
                 "minecraft:stone_pressure_plate[powered=false]": 32
               },
               "minecraft:stone_slab[type=bottom,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 18,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 14
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 16,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 7,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 4,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 6,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 5,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 6,
                 "minecraft:stone_slab[type=bottom,waterlogged=false]": 2,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 16
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 13
               },
               "minecraft:yellow_wool": {
                 "minecraft:yellow_wool": 32
@@ -3486,27 +3489,26 @@
             },
             "changed": {
               "histogram": {
-                "29": 1,
-                "30": 2,
-                "33": 2,
-                "35": 1,
-                "36": 2,
-                "38": 2,
-                "39": 6,
-                "40": 2,
-                "41": 3,
-                "42": 3,
-                "43": 3,
+                "28": 1,
+                "35": 2,
+                "36": 3,
+                "37": 3,
+                "38": 1,
+                "39": 5,
+                "40": 5,
+                "41": 2,
+                "42": 2,
+                "43": 1,
                 "44": 1,
+                "45": 3,
                 "46": 1,
-                "47": 2,
-                "48": 1
+                "47": 2
               },
-              "max": 48,
-              "mean": 39.4375,
-              "min": 29,
+              "max": 47,
+              "mean": 39.9375,
+              "min": 28,
               "n": 32,
-              "sd": 4.8722
+              "sd": 4.103
             },
             "random": true
           },
@@ -4189,8 +4191,8 @@
                 "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:iron_block": 130,
-                "minecraft:stone": 1950
+                "minecraft:iron_block": 135,
+                "minecraft:stone": 1945
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
@@ -4222,17 +4224,17 @@
             },
             "changed": {
               "histogram": {
-                "2": 7,
-                "3": 3,
-                "4": 9,
-                "5": 7,
+                "2": 4,
+                "3": 6,
+                "4": 7,
+                "5": 9,
                 "6": 6
               },
               "max": 6,
-              "mean": 4.0625,
+              "mean": 4.2188,
               "min": 2,
               "n": 32,
-              "sd": 1.4128
+              "sd": 1.3133
             },
             "random": true
           },
@@ -7961,215 +7963,218 @@
                 "(background)": 960
               },
               "minecraft:air": {
-                "(background)": 1442,
-                "minecraft:air": 1566
+                "(background)": 1509,
+                "minecraft:air": 1499
               },
               "minecraft:andesite": {
-                "(background)": 29,
-                "minecraft:andesite": 35
+                "(background)": 31,
+                "minecraft:andesite": 33
               },
               "minecraft:blackstone": {
-                "(background)": 29,
-                "minecraft:blackstone": 35
+                "(background)": 34,
+                "minecraft:blackstone": 30
               },
               "minecraft:blue_wool": {
-                "(background)": 8,
-                "minecraft:blue_wool": 24
+                "(background)": 15,
+                "minecraft:blue_wool": 17
               },
               "minecraft:bricks": {
-                "(background)": 28,
-                "minecraft:bricks": 36
+                "(background)": 36,
+                "minecraft:bricks": 28
               },
               "minecraft:chest[facing=north,type=single,waterlogged=false]": {
                 "(background)": 31,
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 33
               },
               "minecraft:chiseled_stone_bricks": {
-                "(background)": 35,
-                "minecraft:chiseled_stone_bricks": 29
+                "(background)": 30,
+                "minecraft:chiseled_stone_bricks": 34
               },
               "minecraft:cobbled_deepslate": {
-                "(background)": 33,
-                "minecraft:cobbled_deepslate": 31
+                "(background)": 31,
+                "minecraft:cobbled_deepslate": 33
               },
               "minecraft:cobblestone": {
-                "(background)": 33,
-                "minecraft:cobblestone": 31
+                "(background)": 35,
+                "minecraft:cobblestone": 29
               },
               "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": {
-                "(background)": 31,
-                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 33
+                "(background)": 36,
+                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 28
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "(background)": 33,
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 31
+                "(background)": 36,
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 28
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "(background)": 34,
-                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 30
+                "(background)": 36,
+                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 28
               },
               "minecraft:cracked_deepslate_bricks": {
-                "(background)": 27,
-                "minecraft:cracked_deepslate_bricks": 37
+                "(background)": 34,
+                "minecraft:cracked_deepslate_bricks": 30
               },
               "minecraft:cracked_stone_bricks": {
-                "(background)": 35,
-                "minecraft:cracked_stone_bricks": 29
+                "(background)": 30,
+                "minecraft:cracked_stone_bricks": 34
               },
               "minecraft:deepslate_bricks": {
-                "(background)": 39,
-                "minecraft:deepslate_bricks": 25
+                "(background)": 36,
+                "minecraft:deepslate_bricks": 28
               },
               "minecraft:diamond_block": {
-                "(background)": 40,
-                "minecraft:diamond_block": 24
+                "(background)": 28,
+                "minecraft:diamond_block": 36
               },
               "minecraft:dirt": {
-                "(background)": 29,
-                "minecraft:dirt": 35
+                "(background)": 26,
+                "minecraft:dirt": 38
               },
               "minecraft:emerald_block": {
-                "(background)": 33,
-                "minecraft:emerald_block": 31
+                "(background)": 30,
+                "minecraft:emerald_block": 34
               },
               "minecraft:gold_block": {
-                "(background)": 33,
-                "minecraft:gold_block": 31
+                "(background)": 37,
+                "minecraft:gold_block": 27
               },
               "minecraft:granite": {
-                "(background)": 36,
-                "minecraft:granite": 28
+                "(background)": 29,
+                "minecraft:granite": 35
               },
               "minecraft:gravel": {
-                "(background)": 25,
-                "minecraft:gravel": 39
+                "(background)": 36,
+                "minecraft:gravel": 28
               },
               "minecraft:iron_bars[east=false,north=false,south=false,waterlogged=false,west=false]": {
-                "(background)": 31,
-                "minecraft:iron_bars[east=false,north=false,south=false,waterlogged=false,west=false]": 33
+                "(background)": 36,
+                "minecraft:iron_bars[east=false,north=false,south=false,waterlogged=false,west=false]": 28
               },
               "minecraft:mossy_cobblestone": {
-                "(background)": 36,
-                "minecraft:mossy_cobblestone": 28
+                "(background)": 27,
+                "minecraft:mossy_cobblestone": 37
               },
               "minecraft:mossy_stone_bricks": {
                 "(background)": 33,
                 "minecraft:mossy_stone_bricks": 31
               },
               "minecraft:oak_log[axis=y]": {
-                "(background)": 27,
-                "minecraft:oak_log[axis=y]": 37
+                "(background)": 29,
+                "minecraft:oak_log[axis=y]": 35
               },
               "minecraft:oak_planks": {
-                "(background)": 28,
-                "minecraft:oak_planks": 36
+                "(background)": 31,
+                "minecraft:oak_planks": 33
               },
               "minecraft:obsidian": {
                 "(background)": 13,
                 "minecraft:obsidian": 19
               },
               "minecraft:polished_andesite": {
-                "(background)": 14,
-                "minecraft:polished_andesite": 18
+                "(background)": 15,
+                "minecraft:polished_andesite": 17
               },
               "minecraft:polished_blackstone_bricks": {
-                "(background)": 12,
-                "minecraft:polished_blackstone_bricks": 20
+                "(background)": 14,
+                "minecraft:polished_blackstone_bricks": 18
               },
               "minecraft:red_wool": {
-                "(background)": 15,
-                "minecraft:red_wool": 17
+                "(background)": 14,
+                "minecraft:red_wool": 18
               },
               "minecraft:sand": {
-                "(background)": 17,
-                "minecraft:sand": 15
+                "(background)": 15,
+                "minecraft:sand": 17
               },
               "minecraft:sandstone": {
-                "(background)": 12,
-                "minecraft:sandstone": 20
+                "(background)": 16,
+                "minecraft:sandstone": 16
               },
               "minecraft:sea_lantern": {
-                "(background)": 15,
-                "minecraft:sea_lantern": 17
+                "(background)": 19,
+                "minecraft:sea_lantern": 13
               },
               "minecraft:smooth_stone": {
-                "(background)": 15,
-                "minecraft:smooth_stone": 17
+                "(background)": 21,
+                "minecraft:smooth_stone": 11
               },
               "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": {
-                "(background)": 18,
-                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 14
+                "(background)": 14,
+                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 18
               },
               "minecraft:stone": {
-                "(background)": 1059,
-                "minecraft:stone": 1021
+                "(background)": 1043,
+                "minecraft:stone": 1037
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
-                "(background)": 12,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 20
+                "(background)": 16,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "(background)": 19,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 13
+                "(background)": 15,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 17
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "(background)": 14,
-                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 18
+                "(background)": 16,
+                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 16
               },
               "minecraft:stone_bricks": {
-                "(background)": 18,
-                "minecraft:stone_bricks": 14
+                "(background)": 17,
+                "minecraft:stone_bricks": 15
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
-                "(background)": 16,
-                "minecraft:stone_button[face=floor,facing=north,powered=false]": 16
+                "(background)": 19,
+                "minecraft:stone_button[face=floor,facing=north,powered=false]": 13
               },
               "minecraft:stone_pressure_plate[powered=false]": {
-                "(background)": 20,
-                "minecraft:stone_pressure_plate[powered=false]": 12
+                "(background)": 16,
+                "minecraft:stone_pressure_plate[powered=false]": 16
               },
               "minecraft:stone_slab[type=bottom,waterlogged=false]": {
-                "(background)": 14,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 18
+                "(background)": 16,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "(background)": 16,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 16
+                "(background)": 13,
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 19
               },
               "minecraft:yellow_wool": {
-                "(background)": 18,
-                "minecraft:yellow_wool": 14
+                "(background)": 17,
+                "minecraft:yellow_wool": 15
               }
             },
             "changed": {
               "histogram": {
-                "102": 2,
-                "104": 2,
-                "105": 3,
+                "100": 1,
+                "101": 1,
+                "102": 1,
+                "105": 1,
                 "106": 1,
-                "107": 3,
-                "108": 2,
-                "109": 2,
-                "111": 2,
+                "107": 1,
+                "108": 1,
+                "109": 1,
+                "110": 2,
                 "112": 2,
-                "113": 2,
+                "113": 1,
+                "114": 1,
                 "115": 1,
                 "116": 1,
-                "118": 1,
+                "117": 2,
+                "118": 4,
+                "120": 2,
                 "121": 1,
-                "122": 1,
-                "124": 1,
+                "122": 2,
                 "125": 1,
-                "127": 1,
-                "130": 1,
-                "98": 1,
+                "128": 1,
+                "134": 1,
+                "94": 1,
                 "99": 1
               },
-              "max": 130,
-              "mean": 111.0938,
-              "min": 98,
+              "max": 134,
+              "mean": 113.4688,
+              "min": 94,
               "n": 32,
-              "sd": 8.1966
+              "sd": 8.9334
             },
             "random": true
           },
@@ -8198,8 +8203,8 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "(background)": 35,
-                "minecraft:chiseled_stone_bricks": 29
+                "(background)": 30,
+                "minecraft:chiseled_stone_bricks": 34
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -8220,8 +8225,8 @@
                 "minecraft:cracked_deepslate_bricks": 64
               },
               "minecraft:cracked_stone_bricks": {
-                "(background)": 35,
-                "minecraft:cracked_stone_bricks": 29
+                "(background)": 30,
+                "minecraft:cracked_stone_bricks": 34
               },
               "minecraft:deepslate_bricks": {
                 "minecraft:deepslate_bricks": 64
@@ -8300,8 +8305,8 @@
                 "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
               },
               "minecraft:stone_bricks": {
-                "(background)": 18,
-                "minecraft:stone_bricks": 14
+                "(background)": 17,
+                "minecraft:stone_bricks": 15
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -8321,17 +8326,17 @@
             },
             "changed": {
               "histogram": {
-                "2": 4,
-                "3": 11,
-                "4": 9,
-                "5": 6,
-                "7": 2
+                "2": 8,
+                "3": 10,
+                "4": 8,
+                "5": 4,
+                "6": 2
               },
-              "max": 7,
-              "mean": 3.7813,
+              "max": 6,
+              "mean": 3.4375,
               "min": 2,
               "n": 32,
-              "sd": 1.2632
+              "sd": 1.1897
             },
             "random": true
           },
@@ -10508,8 +10513,8 @@
                 "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:iron_block": 586,
-                "minecraft:stone": 1494
+                "minecraft:iron_block": 604,
+                "minecraft:stone": 1476
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
@@ -10541,23 +10546,24 @@
             },
             "changed": {
               "histogram": {
-                "13": 1,
-                "14": 5,
-                "15": 4,
-                "16": 1,
-                "17": 3,
-                "18": 2,
-                "19": 3,
-                "20": 5,
+                "13": 2,
+                "14": 1,
+                "15": 1,
+                "16": 2,
+                "17": 2,
+                "18": 6,
+                "19": 4,
+                "20": 7,
+                "21": 1,
                 "22": 3,
-                "23": 4,
-                "25": 1
+                "23": 2,
+                "26": 1
               },
-              "max": 25,
-              "mean": 18.3125,
+              "max": 26,
+              "mean": 18.875,
               "min": 13,
               "n": 32,
-              "sd": 3.4308
+              "sd": 2.9155
             },
             "random": true
           },
@@ -10706,27 +10712,24 @@
             },
             "changed": {
               "histogram": {
-                "10": 1,
-                "12": 1,
                 "13": 1,
                 "15": 3,
-                "16": 2,
+                "16": 1,
                 "17": 2,
-                "18": 4,
-                "19": 2,
-                "20": 3,
-                "21": 2,
-                "22": 2,
-                "23": 2,
-                "24": 2,
-                "25": 3,
-                "26": 2
+                "18": 2,
+                "19": 8,
+                "20": 4,
+                "21": 4,
+                "22": 4,
+                "24": 1,
+                "25": 1,
+                "26": 1
               },
               "max": 26,
               "mean": 19.4688,
-              "min": 10,
+              "min": 13,
               "n": 32,
-              "sd": 4.2273
+              "sd": 2.907
             },
             "random": true
           },
@@ -10848,8 +10851,8 @@
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:gold_block": 13,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 19
+                "minecraft:gold_block": 17,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
@@ -10875,14 +10878,14 @@
             },
             "changed": {
               "histogram": {
-                "0": 19,
-                "1": 13
+                "0": 15,
+                "1": 17
               },
               "max": 1,
-              "mean": 0.4063,
+              "mean": 0.5313,
               "min": 0,
               "n": 32,
-              "sd": 0.499
+              "sd": 0.507
             },
             "random": true
           },
@@ -15871,16 +15874,15 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "minecraft:chiseled_stone_bricks": 31,
-                "minecraft:cracked_stone_bricks": 22,
+                "minecraft:chiseled_stone_bricks": 30,
+                "minecraft:cracked_stone_bricks": 17,
                 "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 3,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 3
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -15892,9 +15894,9 @@
                 "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 64
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 33,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 17,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 14
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 36,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 13,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 15
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 64
@@ -15942,8 +15944,8 @@
                 "minecraft:oak_planks": 64
               },
               "minecraft:obsidian": {
-                "minecraft:crying_obsidian": 7,
-                "minecraft:obsidian": 25
+                "minecraft:crying_obsidian": 6,
+                "minecraft:obsidian": 26
               },
               "minecraft:polished_andesite": {
                 "minecraft:polished_andesite": 32
@@ -15970,37 +15972,37 @@
                 "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:cracked_stone_bricks": 503,
-                "minecraft:stone": 1058,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 63,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 64,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 62,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 70,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 64,
+                "minecraft:cracked_stone_bricks": 539,
+                "minecraft:stone": 1043,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 60,
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 67,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 55,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 58,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 72,
                 "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 60,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 72,
-                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 64
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 70,
+                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 56
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 3,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 21,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 9,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15,
                 "minecraft:stone_slab[type=bottom,waterlogged=false]": 8
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
               },
               "minecraft:stone_bricks": {
-                "minecraft:cracked_stone_bricks": 5,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_bricks": 15
+                "minecraft:cracked_stone_bricks": 6,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 4,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_bricks": 17
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -16012,9 +16014,9 @@
                 "minecraft:stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 8,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 15,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 9
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 12,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 7,
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 13
               },
               "minecraft:yellow_wool": {
                 "minecraft:yellow_wool": 32
@@ -16022,25 +16024,25 @@
             },
             "changed": {
               "histogram": {
-                "29": 1,
-                "31": 3,
-                "33": 6,
-                "34": 2,
-                "35": 6,
-                "36": 2,
-                "37": 3,
-                "38": 1,
-                "39": 3,
+                "24": 1,
+                "30": 1,
+                "32": 1,
+                "33": 4,
+                "34": 3,
+                "35": 4,
+                "36": 3,
+                "37": 2,
+                "38": 6,
+                "39": 2,
                 "40": 2,
-                "41": 1,
-                "43": 1,
+                "42": 2,
                 "44": 1
               },
               "max": 44,
-              "mean": 35.75,
-              "min": 29,
+              "mean": 36.125,
+              "min": 24,
               "n": 32,
-              "sd": 3.5651
+              "sd": 3.85
             },
             "random": true
           },
@@ -16069,13 +16071,16 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "minecraft:chiseled_stone_bricks": 31,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 2,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 2,
-                "minecraft:mossy_stone_bricks": 22
+                "minecraft:chiseled_stone_bricks": 30,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 3,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 3,
+                "minecraft:mossy_stone_bricks": 17
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -16087,9 +16092,9 @@
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 64
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 33,
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 17,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 14
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 13,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 64
@@ -16137,8 +16142,8 @@
                 "minecraft:oak_planks": 64
               },
               "minecraft:obsidian": {
-                "minecraft:crying_obsidian": 7,
-                "minecraft:obsidian": 25
+                "minecraft:crying_obsidian": 6,
+                "minecraft:obsidian": 26
               },
               "minecraft:polished_andesite": {
                 "minecraft:polished_andesite": 32
@@ -16165,37 +16170,38 @@
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 72,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 65,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 59,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 80,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 56,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 75,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 56,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 56,
-                "minecraft:mossy_stone_bricks": 503,
-                "minecraft:stone": 1058
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 64,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 72,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 58,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 58,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 58,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 70,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 57,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 61,
+                "minecraft:mossy_stone_bricks": 539,
+                "minecraft:stone": 1043
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 3,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 9,
                 "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 8,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 21
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
               },
               "minecraft:stone_bricks": {
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
                 "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 3,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_bricks": 5,
-                "minecraft:stone_bricks": 15
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_bricks": 6,
+                "minecraft:stone_bricks": 17
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -16207,9 +16213,9 @@
                 "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 8,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 9
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 12,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 7,
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 13
               },
               "minecraft:yellow_wool": {
                 "minecraft:yellow_wool": 32
@@ -16217,25 +16223,25 @@
             },
             "changed": {
               "histogram": {
-                "37": 1,
-                "39": 3,
-                "41": 6,
-                "42": 2,
-                "43": 6,
-                "44": 2,
-                "45": 3,
-                "46": 1,
-                "47": 3,
+                "32": 1,
+                "38": 1,
+                "40": 1,
+                "41": 4,
+                "42": 3,
+                "43": 4,
+                "44": 3,
+                "45": 2,
+                "46": 6,
+                "47": 2,
                 "48": 2,
-                "49": 1,
-                "51": 1,
+                "50": 2,
                 "52": 1
               },
               "max": 52,
-              "mean": 43.75,
-              "min": 37,
+              "mean": 44.125,
+              "min": 32,
               "n": 32,
-              "sd": 3.5651
+              "sd": 3.85
             },
             "random": true
           },
@@ -16264,16 +16270,22 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "minecraft:chiseled_stone_bricks": 31,
-                "minecraft:cracked_stone_bricks": 16,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:chiseled_stone_bricks": 30,
+                "minecraft:cracked_stone_bricks": 6,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:mossy_stone_bricks": 6,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 2
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_bricks": 11,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -16282,19 +16294,19 @@
                 "minecraft:cobblestone": 64
               },
               "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": {
-                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 25,
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 39
+                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 28
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 33,
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 8,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 7,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 9,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 7
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 7,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 10,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 6,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 5
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 30,
-                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 34
+                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 36,
+                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 28
               },
               "minecraft:cracked_deepslate_bricks": {
                 "minecraft:cracked_deepslate_bricks": 64
@@ -16339,8 +16351,8 @@
                 "minecraft:oak_planks": 64
               },
               "minecraft:obsidian": {
-                "minecraft:crying_obsidian": 7,
-                "minecraft:obsidian": 25
+                "minecraft:crying_obsidian": 6,
+                "minecraft:obsidian": 26
               },
               "minecraft:polished_andesite": {
                 "minecraft:polished_andesite": 32
@@ -16364,58 +16376,56 @@
                 "minecraft:smooth_stone": 32
               },
               "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 17,
-                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 15
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 18,
+                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 14
               },
               "minecraft:stone": {
-                "minecraft:cracked_stone_bricks": 241,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 35,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 31,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 29,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 42,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 25,
-                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 35,
-                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 27,
+                "minecraft:cracked_stone_bricks": 249,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 37,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 32,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 31,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 29,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 31,
+                "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 36,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 35,
                 "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 27,
-                "minecraft:mossy_stone_bricks": 262,
-                "minecraft:stone": 1058,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 30,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 36,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 31,
-                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 40,
-                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 35,
-                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 29,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 37,
+                "minecraft:mossy_stone_bricks": 290,
+                "minecraft:stone": 1043,
+                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 27,
+                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 29,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 25,
+                "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 31,
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 37,
+                "minecraft:stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 27,
+                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 34,
                 "minecraft:stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 30
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 21,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 11
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 16,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 3,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 2,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 21,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 5
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 4,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 5,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 5,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 3
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 20,
-                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 12
+                "minecraft:mossy_stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 16,
+                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 16
               },
               "minecraft:stone_bricks": {
                 "minecraft:cracked_stone_bricks": 4,
-                "minecraft:mossy_stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:mossy_stone_brick_stairs[facing=south,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:mossy_stone_bricks": 1,
-                "minecraft:stone_brick_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]": 2,
-                "minecraft:stone_brick_stairs[facing=east,half=top,shape=straight,waterlogged=false]": 2,
+                "minecraft:mossy_stone_brick_stairs[facing=west,half=top,shape=straight,waterlogged=false]": 1,
+                "minecraft:mossy_stone_bricks": 2,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 1,
                 "minecraft:stone_brick_stairs[facing=north,half=top,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_brick_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]": 1,
-                "minecraft:stone_bricks": 15
+                "minecraft:stone_brick_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 3,
+                "minecraft:stone_bricks": 17
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -16424,15 +16434,15 @@
                 "minecraft:stone_pressure_plate[powered=false]": 32
               },
               "minecraft:stone_slab[type=bottom,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 15,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 17
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 16,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 5,
-                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 9,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 3,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 6,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 9
+                "minecraft:mossy_stone_brick_slab[type=bottom,waterlogged=false]": 6,
+                "minecraft:mossy_stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 5,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 6,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 2,
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 13
               },
               "minecraft:yellow_wool": {
                 "minecraft:yellow_wool": 32
@@ -16440,28 +16450,26 @@
             },
             "changed": {
               "histogram": {
-                "33": 2,
-                "34": 1,
-                "35": 1,
-                "36": 1,
-                "37": 1,
-                "38": 3,
-                "39": 4,
+                "28": 1,
+                "35": 2,
+                "36": 3,
+                "37": 3,
+                "38": 1,
+                "39": 5,
                 "40": 5,
-                "41": 5,
+                "41": 2,
                 "42": 2,
                 "43": 1,
                 "44": 1,
-                "45": 1,
-                "46": 2,
-                "49": 1,
-                "50": 1
+                "45": 3,
+                "46": 1,
+                "47": 2
               },
-              "max": 50,
-              "mean": 40.3125,
-              "min": 33,
+              "max": 47,
+              "mean": 39.9375,
+              "min": 28,
               "n": 32,
-              "sd": 4.0675
+              "sd": 4.103
             },
             "random": true
           },
@@ -17144,8 +17152,8 @@
                 "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:iron_block": 117,
-                "minecraft:stone": 1963
+                "minecraft:iron_block": 135,
+                "minecraft:stone": 1945
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
@@ -17177,17 +17185,17 @@
             },
             "changed": {
               "histogram": {
-                "2": 9,
-                "3": 10,
-                "4": 3,
-                "5": 3,
-                "6": 7
+                "2": 4,
+                "3": 6,
+                "4": 7,
+                "5": 9,
+                "6": 6
               },
               "max": 6,
-              "mean": 3.6563,
+              "mean": 4.2188,
               "min": 2,
               "n": 32,
-              "sd": 1.5368
+              "sd": 1.3133
             },
             "random": true
           },
@@ -20916,212 +20924,218 @@
                 "(background)": 960
               },
               "minecraft:air": {
-                "(background)": 1543,
-                "minecraft:air": 1465
+                "(background)": 1509,
+                "minecraft:air": 1499
               },
               "minecraft:andesite": {
-                "(background)": 25,
-                "minecraft:andesite": 39
+                "(background)": 31,
+                "minecraft:andesite": 33
               },
               "minecraft:blackstone": {
-                "(background)": 38,
-                "minecraft:blackstone": 26
+                "(background)": 34,
+                "minecraft:blackstone": 30
               },
               "minecraft:blue_wool": {
-                "(background)": 16,
-                "minecraft:blue_wool": 16
+                "(background)": 15,
+                "minecraft:blue_wool": 17
               },
               "minecraft:bricks": {
-                "(background)": 39,
-                "minecraft:bricks": 25
+                "(background)": 36,
+                "minecraft:bricks": 28
               },
               "minecraft:chest[facing=north,type=single,waterlogged=false]": {
-                "(background)": 34,
-                "minecraft:chest[facing=north,type=single,waterlogged=false]": 30
+                "(background)": 31,
+                "minecraft:chest[facing=north,type=single,waterlogged=false]": 33
               },
               "minecraft:chiseled_stone_bricks": {
-                "(background)": 31,
-                "minecraft:chiseled_stone_bricks": 33
+                "(background)": 30,
+                "minecraft:chiseled_stone_bricks": 34
               },
               "minecraft:cobbled_deepslate": {
-                "(background)": 32,
-                "minecraft:cobbled_deepslate": 32
+                "(background)": 31,
+                "minecraft:cobbled_deepslate": 33
               },
               "minecraft:cobblestone": {
-                "(background)": 33,
-                "minecraft:cobblestone": 31
+                "(background)": 35,
+                "minecraft:cobblestone": 29
               },
               "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": {
-                "(background)": 25,
-                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 39
+                "(background)": 36,
+                "minecraft:cobblestone_slab[type=bottom,waterlogged=false]": 28
               },
               "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "(background)": 33,
-                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 31
+                "(background)": 36,
+                "minecraft:cobblestone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 28
               },
               "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "(background)": 30,
-                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 34
+                "(background)": 36,
+                "minecraft:cobblestone_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 28
               },
               "minecraft:cracked_deepslate_bricks": {
-                "(background)": 23,
-                "minecraft:cracked_deepslate_bricks": 41
+                "(background)": 34,
+                "minecraft:cracked_deepslate_bricks": 30
               },
               "minecraft:cracked_stone_bricks": {
-                "(background)": 29,
-                "minecraft:cracked_stone_bricks": 35
+                "(background)": 30,
+                "minecraft:cracked_stone_bricks": 34
               },
               "minecraft:deepslate_bricks": {
-                "(background)": 26,
-                "minecraft:deepslate_bricks": 38
+                "(background)": 36,
+                "minecraft:deepslate_bricks": 28
               },
               "minecraft:diamond_block": {
                 "(background)": 28,
                 "minecraft:diamond_block": 36
               },
               "minecraft:dirt": {
-                "(background)": 31,
-                "minecraft:dirt": 33
+                "(background)": 26,
+                "minecraft:dirt": 38
               },
               "minecraft:emerald_block": {
-                "(background)": 22,
-                "minecraft:emerald_block": 42
+                "(background)": 30,
+                "minecraft:emerald_block": 34
               },
               "minecraft:gold_block": {
-                "(background)": 23,
-                "minecraft:gold_block": 41
+                "(background)": 37,
+                "minecraft:gold_block": 27
               },
               "minecraft:granite": {
-                "(background)": 37,
-                "minecraft:granite": 27
+                "(background)": 29,
+                "minecraft:granite": 35
               },
               "minecraft:gravel": {
-                "(background)": 33,
-                "minecraft:gravel": 31
+                "(background)": 36,
+                "minecraft:gravel": 28
               },
               "minecraft:iron_bars[east=false,north=false,south=false,waterlogged=false,west=false]": {
-                "(background)": 23,
-                "minecraft:iron_bars[east=false,north=false,south=false,waterlogged=false,west=false]": 41
+                "(background)": 36,
+                "minecraft:iron_bars[east=false,north=false,south=false,waterlogged=false,west=false]": 28
               },
               "minecraft:mossy_cobblestone": {
-                "(background)": 32,
-                "minecraft:mossy_cobblestone": 32
+                "(background)": 27,
+                "minecraft:mossy_cobblestone": 37
               },
               "minecraft:mossy_stone_bricks": {
-                "(background)": 34,
-                "minecraft:mossy_stone_bricks": 30
+                "(background)": 33,
+                "minecraft:mossy_stone_bricks": 31
               },
               "minecraft:oak_log[axis=y]": {
-                "(background)": 27,
-                "minecraft:oak_log[axis=y]": 37
+                "(background)": 29,
+                "minecraft:oak_log[axis=y]": 35
               },
               "minecraft:oak_planks": {
                 "(background)": 31,
                 "minecraft:oak_planks": 33
               },
               "minecraft:obsidian": {
-                "(background)": 15,
-                "minecraft:obsidian": 17
+                "(background)": 13,
+                "minecraft:obsidian": 19
               },
               "minecraft:polished_andesite": {
-                "(background)": 18,
-                "minecraft:polished_andesite": 14
+                "(background)": 15,
+                "minecraft:polished_andesite": 17
               },
               "minecraft:polished_blackstone_bricks": {
-                "(background)": 19,
-                "minecraft:polished_blackstone_bricks": 13
+                "(background)": 14,
+                "minecraft:polished_blackstone_bricks": 18
               },
               "minecraft:red_wool": {
-                "(background)": 20,
-                "minecraft:red_wool": 12
+                "(background)": 14,
+                "minecraft:red_wool": 18
               },
               "minecraft:sand": {
-                "(background)": 19,
-                "minecraft:sand": 13
+                "(background)": 15,
+                "minecraft:sand": 17
               },
               "minecraft:sandstone": {
-                "(background)": 20,
-                "minecraft:sandstone": 12
+                "(background)": 16,
+                "minecraft:sandstone": 16
               },
               "minecraft:sea_lantern": {
-                "(background)": 18,
-                "minecraft:sea_lantern": 14
+                "(background)": 19,
+                "minecraft:sea_lantern": 13
               },
               "minecraft:smooth_stone": {
-                "(background)": 15,
-                "minecraft:smooth_stone": 17
+                "(background)": 21,
+                "minecraft:smooth_stone": 11
               },
               "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": {
-                "(background)": 15,
-                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 17
+                "(background)": 14,
+                "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 18
               },
               "minecraft:stone": {
-                "(background)": 1058,
-                "minecraft:stone": 1022
+                "(background)": 1043,
+                "minecraft:stone": 1037
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
-                "(background)": 11,
-                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 21
+                "(background)": 16,
+                "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "(background)": 21,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 11
+                "(background)": 15,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 17
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
-                "(background)": 12,
-                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 20
+                "(background)": 16,
+                "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 16
               },
               "minecraft:stone_bricks": {
-                "(background)": 15,
-                "minecraft:stone_bricks": 17
+                "(background)": 17,
+                "minecraft:stone_bricks": 15
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
-                "(background)": 15,
-                "minecraft:stone_button[face=floor,facing=north,powered=false]": 17
+                "(background)": 19,
+                "minecraft:stone_button[face=floor,facing=north,powered=false]": 13
               },
               "minecraft:stone_pressure_plate[powered=false]": {
-                "(background)": 15,
-                "minecraft:stone_pressure_plate[powered=false]": 17
+                "(background)": 16,
+                "minecraft:stone_pressure_plate[powered=false]": 16
               },
               "minecraft:stone_slab[type=bottom,waterlogged=false]": {
-                "(background)": 17,
-                "minecraft:stone_slab[type=bottom,waterlogged=false]": 15
+                "(background)": 16,
+                "minecraft:stone_slab[type=bottom,waterlogged=false]": 16
               },
               "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "(background)": 9,
-                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 23
+                "(background)": 13,
+                "minecraft:stone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 19
               },
               "minecraft:yellow_wool": {
-                "(background)": 15,
-                "minecraft:yellow_wool": 17
+                "(background)": 17,
+                "minecraft:yellow_wool": 15
               }
             },
             "changed": {
               "histogram": {
+                "100": 1,
                 "101": 1,
-                "106": 2,
-                "107": 3,
-                "108": 3,
+                "102": 1,
+                "105": 1,
+                "106": 1,
+                "107": 1,
+                "108": 1,
                 "109": 1,
-                "110": 1,
+                "110": 2,
                 "112": 2,
-                "114": 3,
-                "115": 3,
-                "116": 3,
-                "117": 3,
-                "118": 1,
+                "113": 1,
+                "114": 1,
+                "115": 1,
+                "116": 1,
+                "117": 2,
+                "118": 4,
+                "120": 2,
                 "121": 1,
-                "122": 1,
-                "124": 1,
-                "127": 1,
-                "129": 1,
-                "97": 1
+                "122": 2,
+                "125": 1,
+                "128": 1,
+                "134": 1,
+                "94": 1,
+                "99": 1
               },
-              "max": 129,
-              "mean": 113.2813,
-              "min": 97,
+              "max": 134,
+              "mean": 113.4688,
+              "min": 94,
               "n": 32,
-              "sd": 7.0447
+              "sd": 8.9334
             },
             "random": true
           },
@@ -21150,8 +21164,8 @@
                 "minecraft:chest[facing=north,type=single,waterlogged=false]": 64
               },
               "minecraft:chiseled_stone_bricks": {
-                "(background)": 31,
-                "minecraft:chiseled_stone_bricks": 33
+                "(background)": 30,
+                "minecraft:chiseled_stone_bricks": 34
               },
               "minecraft:cobbled_deepslate": {
                 "minecraft:cobbled_deepslate": 64
@@ -21172,8 +21186,8 @@
                 "minecraft:cracked_deepslate_bricks": 64
               },
               "minecraft:cracked_stone_bricks": {
-                "(background)": 29,
-                "minecraft:cracked_stone_bricks": 35
+                "(background)": 30,
+                "minecraft:cracked_stone_bricks": 34
               },
               "minecraft:deepslate_bricks": {
                 "minecraft:deepslate_bricks": 64
@@ -21203,8 +21217,8 @@
                 "minecraft:mossy_cobblestone": 64
               },
               "minecraft:mossy_stone_bricks": {
-                "(background)": 34,
-                "minecraft:mossy_stone_bricks": 30
+                "(background)": 33,
+                "minecraft:mossy_stone_bricks": 31
               },
               "minecraft:oak_log[axis=y]": {
                 "minecraft:oak_log[axis=y]": 64
@@ -21252,8 +21266,8 @@
                 "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
               },
               "minecraft:stone_bricks": {
-                "(background)": 15,
-                "minecraft:stone_bricks": 17
+                "(background)": 17,
+                "minecraft:stone_bricks": 15
               },
               "minecraft:stone_button[face=floor,facing=north,powered=false]": {
                 "minecraft:stone_button[face=floor,facing=north,powered=false]": 32
@@ -21273,18 +21287,17 @@
             },
             "changed": {
               "histogram": {
-                "2": 9,
+                "2": 8,
                 "3": 10,
                 "4": 8,
-                "5": 2,
-                "6": 2,
-                "7": 1
+                "5": 4,
+                "6": 2
               },
-              "max": 7,
-              "mean": 3.4063,
+              "max": 6,
+              "mean": 3.4375,
               "min": 2,
               "n": 32,
-              "sd": 1.3164
+              "sd": 1.1897
             },
             "random": true
           },
@@ -23461,8 +23474,8 @@
                 "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:iron_block": 595,
-                "minecraft:stone": 1485
+                "minecraft:iron_block": 604,
+                "minecraft:stone": 1476
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
@@ -23494,23 +23507,24 @@
             },
             "changed": {
               "histogram": {
-                "14": 2,
+                "13": 2,
+                "14": 1,
                 "15": 1,
-                "16": 4,
-                "17": 6,
+                "16": 2,
+                "17": 2,
                 "18": 6,
-                "19": 3,
-                "20": 1,
-                "21": 2,
-                "22": 5,
-                "24": 1,
-                "25": 1
+                "19": 4,
+                "20": 7,
+                "21": 1,
+                "22": 3,
+                "23": 2,
+                "26": 1
               },
-              "max": 25,
-              "mean": 18.5938,
-              "min": 14,
+              "max": 26,
+              "mean": 18.875,
+              "min": 13,
               "n": 32,
-              "sd": 2.7924
+              "sd": 2.9155
             },
             "random": true
           },
@@ -23626,8 +23640,8 @@
                 "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone": {
-                "minecraft:iron_block": 609,
-                "minecraft:stone": 1471
+                "minecraft:iron_block": 623,
+                "minecraft:stone": 1457
               },
               "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": {
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
@@ -23659,23 +23673,24 @@
             },
             "changed": {
               "histogram": {
-                "11": 1,
-                "14": 1,
-                "15": 2,
-                "16": 2,
-                "17": 7,
-                "19": 4,
+                "13": 1,
+                "15": 3,
+                "16": 1,
+                "17": 2,
+                "18": 2,
+                "19": 8,
                 "20": 4,
-                "21": 2,
-                "22": 3,
-                "23": 5,
-                "24": 1
+                "21": 4,
+                "22": 4,
+                "24": 1,
+                "25": 1,
+                "26": 1
               },
-              "max": 24,
-              "mean": 19.0313,
-              "min": 11,
+              "max": 26,
+              "mean": 19.4688,
+              "min": 13,
               "n": 32,
-              "sd": 3.1672
+              "sd": 2.907
             },
             "random": true
           },
@@ -23797,8 +23812,8 @@
                 "minecraft:stone_brick_slab[type=bottom,waterlogged=false]": 32
               },
               "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": {
-                "minecraft:gold_block": 11,
-                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 21
+                "minecraft:gold_block": 17,
+                "minecraft:stone_brick_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 15
               },
               "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": {
                 "minecraft:stone_brick_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]": 32
@@ -23824,14 +23839,14 @@
             },
             "changed": {
               "histogram": {
-                "0": 21,
-                "1": 11
+                "0": 15,
+                "1": 17
               },
               "max": 1,
-              "mean": 0.3438,
+              "mean": 0.5313,
               "min": 0,
               "n": 32,
-              "sd": 0.4826
+              "sd": 0.507
             },
             "random": true
           },

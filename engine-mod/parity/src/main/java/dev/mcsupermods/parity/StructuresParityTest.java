@@ -98,6 +98,11 @@ public class StructuresParityTest {
     /** The lattices of 113, 841 and 341 pieces always assemble the same; fewer starts. */
     static final int LATTICE_GRID = 3;
     static final int PLACEMENTS = 32;
+
+    /** The first chunk of the processor placements, fixed so random processors draw the same every run. */
+    static final int PROCESSOR_CHUNK_X = 64;
+
+    static final int PROCESSOR_CHUNK_Z = 64;
     static final int FLOOR = 199;
     static final double Z = 4.0;
     private static final String ARENA = "msm_parity_tests:arena";
@@ -406,12 +411,13 @@ public class StructuresParityTest {
     public void placesProcessors(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         MinecraftServer server = level.getServer();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
         // Placement k uses world seed 1000 + k at chunk (x + 2k, z) for every list, so each list meets the same
         // starts. The game's processors draw from a random of the block's world position, so the placements are
-        // spread over chunks rather than repeated at one.
-        int baseX = origin.getX() >> 4;
-        int baseZ = origin.getZ() >> 4;
+        // spread over chunks rather than repeated at one. The chunks are fixed, never the test's own place: the
+        // GameTest server puts a test anywhere, and a random processor's draws then changed from run to run,
+        // which once moved rot50's shares past the bar on 26.4 (2026-11-25).
+        int baseX = PROCESSOR_CHUNK_X;
+        int baseZ = PROCESSOR_CHUNK_Z;
         for (int k = 0; k < PLACEMENTS; k++) {
             for (int dx = -1; dx <= 0; dx++) {
                 for (int dz = -1; dz <= 0; dz++) level.getChunk(baseX + 2 * k + dx, baseZ + dz);

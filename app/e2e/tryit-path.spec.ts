@@ -1242,9 +1242,6 @@ test('Try it: the Function editor marks each line and Run in Try it runs the fun
     lines.filter({ hasText: /from function \S*noted\./i }).first(),
   ).toBeVisible();
   await expect(
-    window
-      .getByTestId('tryit-log')
-      .getByTestId('tryit-log-only')
-      .filter({ hasText: '/locate' }),
+    window.getByTestId('tryit-log').getByTestId('tryit-log-only').filter({ hasText: '/locate' }),
   ).toHaveCount(1);
 });
