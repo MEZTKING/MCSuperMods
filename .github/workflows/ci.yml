@@ -33,7 +33,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
+      # The tests in two steps with a bounded number of Vitest workers (B714): `pnpm test` ran every
+      # package's suite at once (Turborepo's 10 tasks, each with a worker per CPU but one), so the
+      # heavy tests on this 4-CPU runner took 2 to 8 times as long as alone and passed their time
+      # limits now and then. The packages run two at a time with two workers each, then the app's
+      # suite on its own.
+      - run: pnpm exec turbo run test --filter=!@msm/app --concurrency=2 -- --maxWorkers=2
+      - run: pnpm --filter @msm/app test
       - run: pnpm build
       - run: node app/node_modules/electron/install.js
       - run: xvfb-run -a pnpm --filter @msm/app smoke
