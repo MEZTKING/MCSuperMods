@@ -65,6 +65,8 @@ export function todoItemText(
   mcVersion: string,
 ): string {
   const problem = item.problem;
+  // The modpack items (B821) carry their own plain sentence: a pack and a mod, no thing.
+  if (problem.code.startsWith('modpack.')) return problem.message;
   const thing = problemThingName(project, problem);
   const known = plainProblem(problem, thing);
   if (known.known) return known.text;

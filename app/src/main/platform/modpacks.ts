@@ -1,7 +1,9 @@
 /**
  * Modpacks in the main process (ADR 0046): the remembered list, reading and writing
  * `msm.modpack.json`, adding member projects, read-only member snapshots for builds, and
- * Modrinth lookups. The file format lives in `@msm/core`; Modrinth parsing in `@msm/interop`.
+ * Modrinth lookups, and the one batched check of which pinned mods have a build for another
+ * Minecraft version (ADR 0136 D9). The file format lives in `@msm/core`; Modrinth parsing in
+ * `@msm/interop`. The network is used only when the renderer asks (a click).
  *
  * Only modpacks in the remembered list are read or written, and only members a remembered
  * modpack lists are snapshotted, so the renderer cannot read arbitrary folders through it.
@@ -20,9 +22,12 @@ import {
   serialiseModpack,
 } from '@msm/core';
 import {
+  checkModrinthUpdates,
   type Downloader,
   fetchDownloader,
+  fetchJsonPoster,
   ModrinthLookupError,
+  type Poster,
   resolveModrinthMod,
 } from '@msm/interop';
 import type {
@@ -30,6 +35,7 @@ import type {
   ModpackMemberView,
   ModpackView,
   ModrinthModLookup,
+  ModrinthModUpdate,
   ProjectSnapshotFile,
 } from '../../shared/platform';
 import type { SettingsStore } from './settings';
@@ -53,6 +59,7 @@ export interface ModpackService {
   addProject(root: string, projectRoot: string | null): Promise<ModpackView | null>;
   readProject(root: string, path: string): Promise<ProjectSnapshotFile[]>;
   lookupMod(input: string, gameVersion: string): Promise<ModrinthModLookup>;
+  checkMods(sha1s: string[], gameVersion: string): Promise<ModrinthModUpdate[]>;
 }
 
 /** What the service needs from its host. */
@@ -66,6 +73,8 @@ export interface ModpackDeps {
   caseInsensitive: boolean;
   /** Defaults to `fetch` over HTTPS. */
   download?: Downloader;
+  /** Defaults to a JSON `POST` over HTTPS with MCSuperMods' User-Agent. */
+  post?: Poster;
 }
 
 /** `path` with `/` separators, for member paths written to the modpack file. */
@@ -113,6 +122,7 @@ async function projectFacts(
 /** Creates the service. */
 export function createModpackService(deps: ModpackDeps): ModpackService {
   const download = deps.download ?? fetchDownloader;
+  const post = deps.post ?? fetchJsonPoster;
   const key = (path: string) => {
     const folder = normalize(path).replace(/[\\/]+$/, '');
     return deps.caseInsensitive ? folder.toLowerCase() : folder;
@@ -283,6 +293,15 @@ export function createModpackService(deps: ModpackDeps): ModpackService {
     async lookupMod(input, gameVersion) {
       try {
         return await resolveModrinthMod(download, input, gameVersion);
+      } catch (error) {
+        if (error instanceof ModrinthLookupError) throw new Error(error.message);
+        throw error;
+      }
+    },
+
+    async checkMods(sha1s, gameVersion) {
+      try {
+        return await checkModrinthUpdates(post, sha1s, gameVersion);
       } catch (error) {
         if (error instanceof ModrinthLookupError) throw new Error(error.message);
         throw error;

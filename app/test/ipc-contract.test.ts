@@ -141,6 +141,7 @@ const sampleMod = {
   sha512: 'b'.repeat(128),
   size: 42,
 };
+const { title: _title, ...updatedFile } = sampleMod;
 const sampleView = {
   root: '/m/pack',
   modpack: {
@@ -737,6 +738,17 @@ const samples: Record<
     response: [
       { file: sampleMod, versionNumber: '0.6.2', requiredProjects: ['P7dR8mSH'] },
       { file: { ...sampleMod, sha512: 'x' }, versionNumber: '0.6.2', requiredProjects: [] },
+    ],
+  },
+  [InvokeChannels.modpacksCheckMods]: {
+    request: [
+      { sha1s: ['a'.repeat(40)], gameVersion: '99.2' },
+      { sha1s: ['A'.repeat(40)], gameVersion: '99.2' },
+    ],
+    response: [
+      [{ from: 'a'.repeat(40), file: updatedFile, versionNumber: '0.7.0' }],
+      // A title is the pinned entry's own; the answer carries none.
+      [{ from: 'a'.repeat(40), file: sampleMod, versionNumber: '0.7.0' }],
     ],
   },
   [InvokeChannels.testInMinecraftRun]: {

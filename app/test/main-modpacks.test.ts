@@ -9,7 +9,10 @@ let temp: string;
 let roots: string[];
 let picks: (string | null)[];
 
-function service(download?: (url: string) => Promise<Uint8Array>) {
+function service(
+  download?: (url: string) => Promise<Uint8Array>,
+  post?: (url: string, body: string) => Promise<Uint8Array>,
+) {
   return createModpackService({
     settings: {
       modpackRoots: async () => roots,
@@ -26,6 +29,7 @@ function service(download?: (url: string) => Promise<Uint8Array>) {
     writeFileAtomic,
     caseInsensitive: false,
     ...(download === undefined ? {} : { download }),
+    ...(post === undefined ? {} : { post }),
   });
 }
 
@@ -117,5 +121,41 @@ describe('modpack service', () => {
       throw new Error(`GET ${url} returned HTTP 404.`);
     });
     await expect(s.lookupMod('nope', '26.3')).rejects.toThrow('Modrinth has no such project.');
+  });
+
+  it('checks pinned mods for another version in one call, with plain errors (ADR 0136 D9)', async () => {
+    const posted: string[] = [];
+    const s = service(undefined, async (url) => {
+      posted.push(url);
+      return new TextEncoder().encode(
+        JSON.stringify({
+          ['a'.repeat(40)]: {
+            id: 'NEWVER01',
+            project_id: 'AANobbMI',
+            version_number: '0.7.0',
+            files: [
+              {
+                primary: true,
+                filename: 'sodium-0.7.0.jar',
+                url: 'https://cdn.modrinth.com/data/AANobbMI/versions/NEWVER01/sodium-0.7.0.jar',
+                hashes: { sha1: 'c'.repeat(40), sha512: 'd'.repeat(128) },
+                size: 7,
+              },
+            ],
+          },
+        }),
+      );
+    });
+    const updates = await s.checkMods(['a'.repeat(40), 'b'.repeat(40)], '99.2');
+    expect(posted).toEqual(['https://api.modrinth.com/v2/version_files/update']);
+    expect(updates.map((update) => [update.from, update.file.versionId])).toEqual([
+      ['a'.repeat(40), 'NEWVER01'],
+    ]);
+    const offline = service(undefined, async () => {
+      throw new Error('fetch failed');
+    });
+    await expect(offline.checkMods(['a'.repeat(40)], '99.2')).rejects.toThrow(
+      'Modrinth could not be reached: fetch failed',
+    );
   });
 });

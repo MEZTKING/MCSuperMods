@@ -74,6 +74,7 @@ export const InvokeChannels = {
   modpacksAddProject: 'msm:v1:modpacks:addProject',
   modpacksReadProject: 'msm:v1:modpacks:readProject',
   modpacksLookupMod: 'msm:v1:modpacks:lookupMod',
+  modpacksCheckMods: 'msm:v1:modpacks:checkMods',
   testInMinecraftPickLauncherProgram: 'msm:v1:testInMinecraft:pickLauncherProgram',
   thumbnailsGet: 'msm:v1:thumbnails:get',
   updatesCheck: 'msm:v1:updates:check',

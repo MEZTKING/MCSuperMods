@@ -1,0 +1,45 @@
+{
+  "_note": "Recorded shape of Modrinth's POST /v2/version_files/update answer (B810 V17, 2026-11-25: Fabric API answered, GeckoLib absent). Hashes, ids and versions are invented stand-ins.",
+  "answer": {
+    "1111111111111111111111111111111111111111": {
+      "dependencies": [],
+      "files": [
+        {
+          "file_type": null,
+          "filename": "fabric-api-0.200.1+99.2.jar",
+          "hashes": {
+            "sha1": "3333333333333333333333333333333333333333",
+            "sha512": "44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "primary": true,
+          "size": 2100000,
+          "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/APIV0002/fabric-api-0.200.1+99.2.jar"
+        }
+      ],
+      "game_versions": [
+        "99.2"
+      ],
+      "id": "APIV0002",
+      "loaders": [
+        "fabric"
+      ],
+      "name": "Fabric API",
+      "project_id": "P7dR8mSH",
+      "version_number": "0.200.1+99.2",
+      "version_type": "release"
+    }
+  },
+  "request": {
+    "algorithm": "sha1",
+    "game_versions": [
+      "99.2"
+    ],
+    "hashes": [
+      "1111111111111111111111111111111111111111",
+      "2222222222222222222222222222222222222222"
+    ],
+    "loaders": [
+      "fabric"
+    ]
+  }
+}

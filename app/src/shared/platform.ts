@@ -1496,6 +1496,17 @@ export interface ModrinthModLookup {
   requiredProjects: string[];
 }
 
+/**
+ * A pinned mod that has a Fabric build for the version asked (ADR 0136 D9): the SHA-1 of the
+ * pinned file it answers for and the newest build's file (a modpack `mods` entry without its
+ * title, which the pinned entry keeps).
+ */
+export interface ModrinthModUpdate {
+  from: string;
+  file: Omit<ModpackMod, 'title'>;
+  versionNumber: string;
+}
+
 /** One file of a member project's read-only snapshot (project-relative POSIX path). */
 export interface ProjectSnapshotFile {
   path: string;
@@ -1861,6 +1872,12 @@ export interface PlatformAdapter {
     readProject(root: string, path: string): Promise<ProjectSnapshotFile[]>;
     /** Looks a mod up on Modrinth for `gameVersion` and pins its newest Fabric file. */
     lookupMod(input: string, gameVersion: string): Promise<ModrinthModLookup>;
+    /**
+     * Asks Modrinth once (`POST /v2/version_files/update`) which pinned files, by SHA-1, have a
+     * Fabric build for `gameVersion` (ADR 0136 D9). Only on the user's click (**Check my
+     * mods**). Files without a build are absent from the answer.
+     */
+    checkMods(sha1s: string[], gameVersion: string): Promise<ModrinthModUpdate[]>;
   };
   testInMinecraft: {
     /** What a run would do with the selected location. */

@@ -209,6 +209,8 @@ export function createIpcHandlers(
       platform.modpacks.readProject(req.root, req.path),
     [InvokeChannels.modpacksLookupMod]: (req) =>
       platform.modpacks.lookupMod(req.input, req.gameVersion),
+    [InvokeChannels.modpacksCheckMods]: (req) =>
+      platform.modpacks.checkMods(req.sha1s, req.gameVersion),
     [InvokeChannels.testInMinecraftPickLauncherProgram]: (req) =>
       platform.testInMinecraft.pickLauncherProgram(req.launcher),
     [InvokeChannels.thumbnailsGet]: (req) => platform.thumbnails.get(req.assetPath, req.size),

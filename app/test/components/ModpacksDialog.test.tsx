@@ -46,6 +46,7 @@ function fakeModpacks() {
       stored = null;
     },
     read: async () => view(),
+    checkMods: async () => [],
     write: async (_root, modpack) => {
       stored = modpack;
       return view();

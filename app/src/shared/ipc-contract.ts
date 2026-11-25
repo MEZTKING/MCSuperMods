@@ -1854,6 +1854,25 @@ export const ipcContract = {
       })
       .strict(),
   },
+  [InvokeChannels.modpacksCheckMods]: {
+    request: z
+      .object({
+        sha1s: z.array(z.string().regex(/^[0-9a-f]{40}$/)).max(MODPACK_IPC_MAX),
+        gameVersion: z.string().min(1).max(64),
+      })
+      .strict(),
+    response: z
+      .array(
+        z
+          .object({
+            from: z.string().regex(/^[0-9a-f]{40}$/),
+            file: modpackMod.omit({ title: true }),
+            versionNumber: z.string().max(256),
+          })
+          .strict(),
+      )
+      .max(MODPACK_IPC_MAX),
+  },
   [InvokeChannels.testInMinecraftPickLauncherProgram]: {
     request: z.object({ launcher: z.enum(['prism', 'multimc']) }).strict(),
     response: absolutePath.nullable(),

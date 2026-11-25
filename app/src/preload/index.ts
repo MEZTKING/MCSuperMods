@@ -306,6 +306,8 @@ const bridge: MsmBridge = {
       ipcRenderer.invoke(InvokeChannels.modpacksReadProject, { root, path }),
     lookupMod: (input, gameVersion) =>
       ipcRenderer.invoke(InvokeChannels.modpacksLookupMod, { input, gameVersion }),
+    checkMods: (sha1s, gameVersion) =>
+      ipcRenderer.invoke(InvokeChannels.modpacksCheckMods, { sha1s, gameVersion }),
   },
   testInMinecraft: {
     runModpack: (targetId, jars, mods) =>

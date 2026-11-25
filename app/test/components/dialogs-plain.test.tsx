@@ -124,6 +124,7 @@ const modpackView: ModpackView = {
 const modpacks = {
   list: async () => [{ root: modpackView.root, name: modpack.name, found: true }],
   read: async () => modpackView,
+  checkMods: async () => [],
   create: async () => null,
   addExisting: async () => null,
   forget: async () => {},
