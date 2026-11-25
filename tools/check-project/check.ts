@@ -9,7 +9,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { createMemoryFileSystem, type Problem } from '@msm/core';
+import { createMemoryFileSystem, type Problem, UpgradeProblemCodes } from '@msm/core';
 import type { OutputLayer } from '@msm/plugin-api';
 import { builtInTargets, targetById } from '@msm/targets';
 import { unzipSync } from 'fflate';
@@ -211,9 +211,16 @@ async function checkTarget(
     return finish();
   }
   if (upgraded) {
-    const report = await session.upgradeTargetPreview(targetId);
-    add(plain(report.problems, `Upgrade project target to ${targetId}`));
-    await session.upgradeTarget(targetId, report);
+    // The app's own dry run (ADR 0136 D4): the chain on a copy, validated and lowered on the
+    // new target, then the report it would show is applied as the dialog applies it.
+    const dryRun = await session.upgradeReport(targetId);
+    // Moving back without a saved move up (a project made on the newer target) has nothing
+    // to put back; that is no problem of the project.
+    const problems = dryRun.migration.problems.filter(
+      (problem) => problem.code !== UpgradeProblemCodes.noSavedReport,
+    );
+    add(plain(problems, `Upgrade project target to ${targetId}`));
+    await session.upgradeTarget(targetId, dryRun.migration, { keepCopy: false });
   }
   await session.flushValidation();
   add(plain(session.snapshot.problems, 'project'));

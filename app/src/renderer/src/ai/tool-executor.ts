@@ -783,6 +783,9 @@ export function createToolExecutor(
         const { forms: _forms, fragments: _fragments, ...commands } = target.commands;
         facts.commands = commands;
       }
+      // The change set against the previous version (`changes`, about 45 kB per target, ADR
+      // 0136 D2) is for the move report, not the model: like the other large facts it is not
+      // copied. The helper reads a move through the report (ADR 0136 D15).
       return { value: JSON.parse(JSON.stringify(facts)) as unknown };
     },
 

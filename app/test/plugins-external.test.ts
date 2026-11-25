@@ -350,6 +350,18 @@ describe('loadExternalPlugins', () => {
     expect(facts.controls).toEqual(target.controls);
     expect(facts.vehicles).toEqual(target.vehicles);
     expect(facts.controls?.runtimeKeys.second).toBe('key.keyboard.v');
+    // The change set and the target it follows travel too (ADR 0136 D2, B816).
+    const ref = { mcdoc: 'a', mcmeta: 'b' };
+    const changes = {
+      from: 'mc-old',
+      to: target.id,
+      refs: { from: ref, to: ref },
+      changes: [],
+      additions: {},
+    };
+    const linked = toTargetFacts({ ...withHooks, previous: 'mc-old', changes } as Target);
+    expect(linked.changes).toEqual(changes);
+    expect((linked as Target).previous).toBe('mc-old');
   });
 });
 

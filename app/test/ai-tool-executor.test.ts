@@ -338,6 +338,8 @@ describe('createToolExecutor: read tools', () => {
     expect(value.packFormats).toEqual(fixture.session.target.packFormats);
     expect(value.registries).toContain('item');
     expect(value.mcdocRef).toBeUndefined();
+    // Nor the change set against the previous version (ADR 0136 D2, B816).
+    expect(value.changes).toBeUndefined();
     // Control facts without the code tables, and the vehicle facts (plugin API 1.16.0).
     expect(value.controls.runtimeKeys).toEqual(fixture.session.target.controls?.runtimeKeys);
     expect(value.controls.keyboardNamesByCode).toBeUndefined();

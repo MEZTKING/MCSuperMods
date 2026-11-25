@@ -178,7 +178,8 @@ const facts = new WeakMap<object, TargetFacts>();
 
 /**
  * The data fields of a target, without its hook functions (`javaProject`, `loadJavaProject`,
- * `migrateFrom`), which cannot be structured-cloned (ADR 0036 D3). Memoised per target object.
+ * `migrateFrom`), which cannot be structured-cloned (ADR 0036 D3), with its change set and
+ * `previous` (ADR 0136 D2). Memoised per target object.
  */
 export function toTargetFacts(target: TargetFacts | Target): TargetFacts {
   const cached = facts.get(target);
@@ -208,6 +209,11 @@ export function toTargetFacts(target: TargetFacts | Target): TargetFacts {
       ...(target.dev === undefined ? {} : { dev: target.dev }),
       ...(target.controls === undefined ? {} : { controls: target.controls }),
       ...(target.vehicles === undefined ? {} : { vehicles: target.vehicles }),
+      // ADR 0136 D2 (plugin API 1.29.0): the change set and the target it follows.
+      ...(target.changes === undefined ? {} : { changes: target.changes }),
+      ...('previous' in target && target.previous !== undefined
+        ? { previous: target.previous }
+        : {}),
     });
   facts.set(target, out);
   return out;

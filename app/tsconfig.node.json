@@ -28,6 +28,8 @@
     "src/renderer/src/session/sign-gui-pictures.ts",
     "src/renderer/src/session/pending-edits.ts",
     "src/renderer/src/session/close-requests.ts",
+    "src/renderer/src/session/upgrade/dry-run.ts",
+    "src/renderer/src/session/upgrade/saved-report.ts",
     "src/renderer/src/plugins",
     "src/renderer/src/changeset",
     "src/renderer/src/modpacks",

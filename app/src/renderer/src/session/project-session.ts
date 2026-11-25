@@ -48,6 +48,8 @@ import {
   type SaveManifest,
   saveProject,
   stableStringify,
+  type UpgradeReport,
+  type UpgradeTodoItem,
 } from '@msm/core';
 import {
   combinedFileNames,
@@ -205,6 +207,8 @@ import {
   TextureLayerCache,
   transparentTextureProblems,
 } from './texture-layers';
+import type { DryRunFileSystem, DryRunSide, UpgradeDryRun } from './upgrade/dry-run';
+import type { SavedUpgrade } from './upgrade/saved-report';
 import {
   blockingValidatorErrors,
   changedKinds,
@@ -690,6 +694,29 @@ function bundleCommand(prepared: PreparedBundle, label: string): ProjectCommand 
   };
 }
 
+type UpgradeModules = [typeof import('./upgrade/dry-run'), typeof import('./upgrade/saved-report')];
+let upgradeModules: Promise<UpgradeModules> | null = null;
+
+/**
+ * The dry run and the saved reports (ADR 0136 D4, D6), loaded with the first move or report
+ * (a lazy chunk with the upgrade code of `@msm/core`, not part of first paint).
+ */
+function loadUpgradeModules(): Promise<UpgradeModules> {
+  upgradeModules ??= Promise.all([import('./upgrade/dry-run'), import('./upgrade/saved-report')]);
+  return upgradeModules;
+}
+
+/** One upgrade dry run the session keeps (ADR 0136 D4, B816). */
+interface DryRunEntry {
+  /** The project state it ran on. */
+  state: Project;
+  /** Aborts it (an edit, a newer state, the session closing). */
+  controller: AbortController;
+  promise: Promise<UpgradeDryRun>;
+  /** Its result, once it finished. */
+  settled?: UpgradeDryRun;
+}
+
 /** Problem codes the session itself reports. */
 export const SessionProblemCodes = {
   unknownTarget: 'project.unknown-target',
@@ -950,6 +977,16 @@ export class ProjectSession {
    */
   /** The options this session was made with, for {@link createScratch}. */
   readonly #options: ProjectSessionOptions;
+  /** Upgrade dry runs by target id, for one project state each (ADR 0136 D4, B816). */
+  readonly #dryRuns = new Map<string, DryRunEntry>();
+  /** The dry run's scratch session over the moved copy, kept warm once made. */
+  #dryRunScratch: { session: ProjectSession; files: DryRunFileSystem } | null = null;
+  /** One scratch run at a time. */
+  #dryRunQueue: Promise<unknown> = Promise.resolve();
+  /** The saved moves of the open project, newest first, once read. */
+  #savedUpgrades: { root: string | null; list: SavedUpgrade[] } | null = null;
+  /** `openUpgradeItemsOf` of the saved-report module, once it is loaded. */
+  #openUpgradeItemsOf: typeof import('./upgrade/saved-report')['openUpgradeItemsOf'] | null = null;
 
   constructor(platform: PlatformAdapter, options: ProjectSessionOptions = {}) {
     this.#options = options;
@@ -1294,11 +1331,31 @@ export class ProjectSession {
     this.#kindDefaults.set(target.id, defaults);
   }
 
+  // Moving to another Minecraft version (ADR 0037 D4, ADR 0136 D3, D4, D6, D7) -------------
+
+  /** Every target the session knows, for the chain. */
+  #allTargets(): Target[] {
+    return this.#targets.map((entry) => entry.target);
+  }
+
   /**
-   * What upgrading the open project to `targetId` would do (ADR 0037 D4): the target's
-   * `migrateFrom(current target, project)` report, applied by nothing yet. A target without
-   * the hook yields no changes and one info problem "No migration needed"; the project's own
-   * target yields an empty report.
+   * The newest saved move from `toId` to the open project's target: the record moving back
+   * puts dropped values back from (ADR 0136 D7). `undefined` when there is none.
+   */
+  async #savedMoveUp(fromId: string, toId: string): Promise<SavedUpgrade | undefined> {
+    const saved = await this.savedUpgradeReports();
+    return saved.find((entry) => entry.from.targetId === toId && entry.to.targetId === fromId);
+  }
+
+  /**
+   * What moving the open project to `targetId` would apply (ADR 0037 D4, ADR 0136 D3): the
+   * targets' migrations run in order on an in-memory copy (`migrationChain` and `runChain` of
+   * `@msm/core`, so two hops work); when moving back, the inverse of the saved move up
+   * (`invert`), which puts back what it dropped. Applied by nothing yet. A single hop gives the
+   * hop's own changes (with the chain's in-game checks and reverses); a move where no target
+   * has a hook gives no change and one info problem "No migration needed"; the project's own
+   * target gives an empty report. Targets whose `previous` links give no path run the new
+   * target's own hook, as before.
    *
    * @throws Error If no project is open or `targetId` is not a built-in target.
    */
@@ -1310,37 +1367,186 @@ export class ProjectSession {
     if (previous.id === next.id && stack.state.targets[0] === next.id) {
       return { changes: [], problems: [] };
     }
-    if (next.migrateFrom === undefined) {
-      return {
-        changes: [],
-        problems: [
-          {
-            severity: 'info',
-            code: SessionProblemCodes.noMigrationNeeded,
-            message: 'No migration needed',
-          },
-        ],
-      };
-    }
-    const report = next.migrateFrom(previous, stack.state);
-    return structuredClone({ changes: report.changes, problems: report.problems });
+    const [dryRun] = await loadUpgradeModules();
+    const targets = this.#allTargets();
+    const saved = dryRun.isMoveBack(targets, previous.id, next.id)
+      ? await this.#savedMoveUp(previous.id, next.id)
+      : undefined;
+    return dryRun.previewMove(targets, previous, next, stack.state, saved?.migration);
   }
 
   /**
-   * Upgrades (or downgrades) the open project to `targetId` as one undo step (ADR 0037 D4):
-   * the project's targets become `[targetId]`, every `update` change with `data` replaces its
-   * element's data and every `remove` change deletes its element (changes for elements the
-   * project no longer has are skipped). Then the schema context of the new target loads and
-   * every element is validated again. Undo reverts the target and the data together.
+   * The upgrade report of moving the open project to `targetId` (ADR 0136 D4): the dry run on
+   * an in-memory copy (the chain, or the inverse when moving back), validated and lowered on
+   * the new target by a scratch session over the copy (its own schema context and function
+   * checks for that target; the project's `assets/` read in place; nothing written), compared
+   * with the open project's own live problems and lowering (problem identity: code, element,
+   * path and file, paths mapped through the migration's details), and made into the report.
+   * The report, the report to apply and both sides' problems and lowered files come back.
    *
-   * @param report - The report {@link upgradeTargetPreview} returned for `targetId`.
+   * One dry run per target and project state is kept until the project changes; an edit
+   * cancels a dry run still running (it rejects with {@link DryRunCancelled}, reason `stale`).
+   * `options.signal` stops waiting for it (the run itself goes on for other callers).
+   *
    * @throws Error If no project is open or `targetId` is not a built-in target.
    */
-  async upgradeTarget(targetId: string, report: MigrationReport): Promise<void> {
+  async upgradeReport(
+    targetId: string,
+    options: { signal?: AbortSignal } = {},
+  ): Promise<UpgradeDryRun> {
+    const stack = this.#requireStack();
+    if (this.#targetById(targetId) === undefined) {
+      throw new Error(`Unknown target ${JSON.stringify(targetId)}.`);
+    }
+    const state = stack.state;
+    // Runs for an older project state are of no use any more.
+    for (const [id, entry] of this.#dryRuns) {
+      if (entry.state === state) continue;
+      entry.controller.abort('stale');
+      this.#dryRuns.delete(id);
+    }
+    let entry = this.#dryRuns.get(targetId);
+    if (entry === undefined) {
+      const controller = new AbortController();
+      const promise = this.#runDryRun(state, targetId, controller);
+      const made: DryRunEntry = { state, controller, promise };
+      entry = made;
+      this.#dryRuns.set(targetId, made);
+      promise.then(
+        (result) => {
+          made.settled = result;
+        },
+        () => {
+          if (this.#dryRuns.get(targetId) === made) this.#dryRuns.delete(targetId);
+        },
+      );
+    }
+    const signal = options.signal;
+    if (signal === undefined) return entry.promise;
+    const [{ DryRunCancelled }] = await loadUpgradeModules();
+    if (signal.aborted) throw new DryRunCancelled('cancelled');
+    return new Promise<UpgradeDryRun>((resolve, reject) => {
+      const stop = () => reject(new DryRunCancelled('cancelled'));
+      signal.addEventListener('abort', stop, { once: true });
+      (entry as DryRunEntry).promise.then(
+        (result) => {
+          signal.removeEventListener('abort', stop);
+          resolve(result);
+        },
+        (error: unknown) => {
+          signal.removeEventListener('abort', stop);
+          reject(error);
+        },
+      );
+    });
+  }
+
+  /** The dry run itself, for {@link upgradeReport}; an edit meanwhile aborts `controller`. */
+  async #runDryRun(
+    state: Project,
+    targetId: string,
+    controller: AbortController,
+  ): Promise<UpgradeDryRun> {
+    const from = this.target;
+    const signal = controller.signal;
+    const stale = (): void => {
+      if (this.#stack?.state !== state && !signal.aborted) controller.abort('stale');
+    };
+    const [dryRun] = await loadUpgradeModules();
+    const saved = dryRun.isMoveBack(this.#allTargets(), from.id, targetId)
+      ? await this.#savedMoveUp(from.id, targetId)
+      : undefined;
+    return dryRun.dryRunUpgrade({
+      project: state,
+      targets: this.#allTargets(),
+      fromId: from.id,
+      toId: targetId,
+      ...(saved === undefined ? {} : { savedReport: saved.migration }),
+      signal,
+      host: {
+        before: async (): Promise<DryRunSide> => {
+          await this.flushValidation();
+          stale();
+          const problems = [...this.#snapshot.problems];
+          const lowered = await this.lowerExpandedProject();
+          stale();
+          return { problems: [...problems, ...lowered.problems], files: lowered.files };
+        },
+        after: (moved) => this.#dryRunAfter(moved, signal),
+      },
+    });
+  }
+
+  /**
+   * Validates and lowers the moved copy in the dry run's scratch session (made once, then kept
+   * so the new target's schema context stays loaded): the copy's project file and content are
+   * put in its file system, it opens them as a snapshot, runs its full live pass and lowers.
+   * One copy at a time.
+   */
+  #dryRunAfter(moved: Project, signal: AbortSignal): Promise<DryRunSide> {
+    const run = async (): Promise<DryRunSide> => {
+      const [{ createDryRunFileSystem, DryRunCancelled }, { projectFileBytes }] =
+        await loadUpgradeModules();
+      if (signal.aborted) throw new DryRunCancelled(String(signal.reason ?? 'cancelled'));
+      if (this.#dryRunScratch === null) {
+        const files = createDryRunFileSystem(this.#fs);
+        this.#dryRunScratch = { session: this.createScratch(files.fs), files };
+      }
+      const { session, files } = this.#dryRunScratch;
+      const bytes = await projectFileBytes(moved, this.registry);
+      files.replace(Object.fromEntries(bytes));
+      const opened = await session.loadSnapshot('upgrade dry run');
+      if (!opened.ok) {
+        throw new Error(
+          `The moved copy could not be opened: ${'reason' in opened ? opened.reason : 'cancelled'}`,
+        );
+      }
+      await session.flushValidation();
+      if (signal.aborted) throw new DryRunCancelled(String(signal.reason ?? 'cancelled'));
+      const problems = [...session.snapshot.problems];
+      const lowered = await session.lowerExpandedProject();
+      return { problems: [...problems, ...lowered.problems], files: lowered.files };
+    };
+    const next = this.#dryRunQueue.then(run, run);
+    this.#dryRunQueue = next.catch(() => undefined);
+    return next;
+  }
+
+  /** Cancels every dry run and lets the scratch session go. */
+  #disposeDryRuns(): void {
+    for (const entry of this.#dryRuns.values()) entry.controller.abort('closed');
+    this.#dryRuns.clear();
+    this.#dryRunScratch?.session.dispose();
+    this.#dryRunScratch = null;
+  }
+
+  /**
+   * Moves the open project to `targetId` as one undo step (ADR 0037 D4, ADR 0136 D6): the
+   * project's targets become `[targetId]`, every `update` change with `data` replaces its
+   * element's data and every `remove` change deletes its element (changes for elements the
+   * project no longer has are skipped). Then, unless `options.keepCopy` is false, the project
+   * as it was is copied into `.msm/upgrades/<from>-to-<to>-<date>/` with `report` (its
+   * reverses are what moving back puts back) and the upgrade report (`options.upgradeReport`,
+   * else the finished dry run of this move for the same project state, if any); the three
+   * newest moves are kept. Then the new target's schema context loads and every element is
+   * validated again. Undo reverts the target and the data together; the copy stays.
+   *
+   * @param report - The report {@link upgradeTargetPreview} (or {@link upgradeReport}'s
+   *   `migration`) returned for `targetId`.
+   * @returns Where the copy was saved, or why it was not.
+   * @throws Error If no project is open or `targetId` is not a built-in target.
+   */
+  async upgradeTarget(
+    targetId: string,
+    report: MigrationReport,
+    options: { keepCopy?: boolean; upgradeReport?: UpgradeReport } = {},
+  ): Promise<{ saved?: SavedUpgrade; saveError?: string }> {
     const stack = this.#requireStack();
     const next = this.#targetById(targetId);
     if (next === undefined) throw new Error(`Unknown target ${JSON.stringify(targetId)}.`);
-    const existing = elementsById(stack.state);
+    const before = stack.state;
+    const from = this.target;
+    const existing = elementsById(before);
     const parts: ProjectCommand[] = [commands.setTargets([targetId])];
     for (const change of report.changes) {
       if (!existing.has(change.elementId)) continue;
@@ -1350,6 +1556,9 @@ export class ProjectSession {
         parts.push(commands.setElementData(change.elementId, structuredClone(change.data)));
       }
     }
+    const dryRun = this.#dryRuns.get(targetId);
+    const upgradeReport =
+      options.upgradeReport ?? (dryRun?.state === before ? dryRun.settled?.report : undefined);
     stack.execute({
       id: 'app.upgrade-target',
       label: `Upgrade target to ${targetId}`,
@@ -1357,6 +1566,24 @@ export class ProjectSession {
         for (const part of parts) part.apply(draft);
       },
     });
+    const outcome: { saved?: SavedUpgrade; saveError?: string } = {};
+    if (options.keepCopy !== false && from.id !== next.id) {
+      try {
+        const [, { saveUpgrade }] = await loadUpgradeModules();
+        outcome.saved = await saveUpgrade(this.#fs, {
+          project: before,
+          registry: this.registry,
+          from: { targetId: from.id, mcVersion: from.mcVersion },
+          to: { targetId: next.id, mcVersion: next.mcVersion },
+          migration: report,
+          ...(upgradeReport === undefined ? {} : { report: upgradeReport }),
+          movedAt: this.#now?.() ?? new Date().toISOString(),
+        });
+        await this.savedUpgradeReports();
+      } catch (error) {
+        outcome.saveError = messageOf(error);
+      }
+    }
     await this.#fillKindDefaults(next);
     try {
       await this.schemas();
@@ -1364,6 +1591,65 @@ export class ProjectSession {
       // Reported by the validation pass as `schema.unavailable`.
     }
     await this.flushValidation();
+    return outcome;
+  }
+
+  /**
+   * The saved moves of the open project (ADR 0136 D6), newest first: each with the copy's
+   * folder, the migration report that was applied and the upgrade report, for **What changed
+   * when I moved** and moving back. Also refreshes what {@link openUpgradeItems} reads.
+   *
+   * @throws Error If no project is open.
+   */
+  async savedUpgradeReports(): Promise<SavedUpgrade[]> {
+    this.#requireStack();
+    const root = this.#root;
+    const [, saved] = await loadUpgradeModules();
+    const list = await saved.readSavedUpgrades(this.#fs);
+    this.#openUpgradeItemsOf = saved.openUpgradeItemsOf;
+    if (this.#root === root) this.#savedUpgrades = { root, list };
+    return list;
+  }
+
+  /**
+   * The After moving list (ADR 0136 D6, B810 V12), live: the items of part 3 of the newest
+   * saved move to the open project's target that are still open in the project as it is now
+   * (a problem item while its problem is still reported by the live pass, a value item while
+   * the value is still at its place, a manual item until ticked). `null` when the project is
+   * not on the target of its newest saved move, or the saved moves have not been read yet
+   * ({@link savedUpgradeReports}, which {@link upgradeTarget} also calls).
+   */
+  openUpgradeItems(): { upgrade: SavedUpgrade; items: UpgradeTodoItem[] } | null {
+    const stack = this.#stack;
+    const saved = this.#savedUpgrades;
+    if (stack === null || saved === null || saved.root !== this.#root) return null;
+    const newest = saved.list[0];
+    if (newest?.report === undefined) return null;
+    if (newest.to.targetId !== stack.state.targets[0]) return null;
+    const items = this.#openUpgradeItemsOf;
+    if (items === null) return null;
+    return { upgrade: newest, items: items(newest, this.#snapshot.problems, stack.state) };
+  }
+
+  /**
+   * Ticks (or unticks) a manual After moving item of a saved move, kept in its folder.
+   *
+   * @param folder - The move's folder ({@link SavedUpgrade.folder}).
+   * @param itemId - The item's id.
+   * @param ticked - Whether it is done.
+   * @throws Error If no project is open.
+   */
+  async setUpgradeItemTicked(folder: string, itemId: string, ticked: boolean): Promise<void> {
+    this.#requireStack();
+    const saved = (await this.savedUpgradeReports()).find((entry) => entry.folder === folder);
+    if (saved === undefined) return;
+    const set = new Set(saved.ticked);
+    if (ticked) set.add(itemId);
+    else set.delete(itemId);
+    const [, { writeTicked }] = await loadUpgradeModules();
+    await writeTicked(this.#fs, folder, [...set]);
+    await this.savedUpgradeReports();
+    this.#publish();
   }
 
   /**
@@ -2605,6 +2891,7 @@ export class ProjectSession {
 
   /** Closes the project without touching main (for scratch sessions); timers stop. */
   dispose(): void {
+    this.#disposeDryRuns();
     this.#close();
   }
 
