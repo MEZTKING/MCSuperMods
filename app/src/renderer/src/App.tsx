@@ -307,6 +307,18 @@ const UpgradeJavaProject = lazy(() =>
   })),
 );
 
+/** Check on other versions and what moving back cannot put back (ADR 0136 D7; B820). */
+const UpgradeOtherVersions = lazy(() =>
+  import('./components/upgrade/OtherVersions').then((module) => ({
+    default: module.OtherVersions,
+  })),
+);
+const UpgradeMoveBackLead = lazy(() =>
+  import('./components/upgrade/OtherVersions').then((module) => ({
+    default: module.MoveBackLead,
+  })),
+);
+
 /** The app's own lists the search reads (ADR 0124 D3; B660, B662). */
 const SEARCH_LISTS: AppLists = {
   commands: BUILT_IN_COMMAND_IDS.map((id) => {
@@ -4150,7 +4162,19 @@ export function App({
                     navigateTo(elementId as ResourceLocation, path ?? null, null);
                   }}
                   onFix={fixProblem}
-                  extras={(_targetId, move) => ({
+                  extras={(targetId, move, { choose }) => ({
+                    ...(move.inverted === undefined
+                      ? {}
+                      : {
+                          lead: (
+                            <Suspense fallback={null}>
+                              <UpgradeMoveBackLead
+                                inverted={move.inverted}
+                                fromVersion={target.mcVersion}
+                              />
+                            </Suspense>
+                          ),
+                        }),
                     after: (
                       <Suspense fallback={null}>
                         <UpgradeVanillaFiles
@@ -4163,6 +4187,14 @@ export function App({
                           move={move}
                           scanJavaProject={bridge.exports.scanJavaProject}
                           saveFile={bridge.dialogs.saveFile}
+                        />
+                        <UpgradeOtherVersions
+                          currentTargetId={target.id}
+                          targets={session.availableTargets}
+                          chosenId={targetId}
+                          project={project}
+                          report={upgradeReportOf}
+                          onOpen={choose}
                         />
                       </Suspense>
                     ),
@@ -4698,6 +4730,7 @@ export function App({
                     setDialog(null);
                     void runFabricJarExport(values);
                   }}
+                  onCheckOtherVersions={() => setDialog({ type: 'upgrade-target' })}
                 />
               )}
               {dialog?.type === 'java-project' && (
@@ -4709,6 +4742,7 @@ export function App({
                     setDialog(null);
                     void runJavaProjectExport();
                   }}
+                  onCheckOtherVersions={() => setDialog({ type: 'upgrade-target' })}
                 />
               )}
               {dialog?.type === 'test-in-minecraft' && (

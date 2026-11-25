@@ -29,6 +29,7 @@
     "src/renderer/src/session/pending-edits.ts",
     "src/renderer/src/session/close-requests.ts",
     "src/renderer/src/session/upgrade/dry-run.ts",
+    "src/renderer/src/session/upgrade/move-back.ts",
     "src/renderer/src/session/upgrade/saved-report.ts",
     "src/renderer/src/plugins",
     "src/renderer/src/changeset",

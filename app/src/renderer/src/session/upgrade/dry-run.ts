@@ -1,7 +1,7 @@
 /**
  * The upgrade dry run (ADR 0136 D4, B816): before anything changes, the project is moved on an
- * in-memory copy (`migrationChain` and `runChain` of `@msm/core`, or `invert` with the saved
- * report when moving back), the copy is validated and lowered on the new target, the result is
+ * in-memory copy (`migrationChain` and `runChain` of `@msm/core`, or, moving back, `invert`
+ * over the saved moves up, `move-back.ts`), the copy is validated and lowered on the new target, the result is
  * compared with the same pass on the project as it is, and `buildUpgradeReport` makes the
  * report. The validation and lowering are injected ({@link DryRunHost}): the session passes
  * its own live pass for "before" and a scratch session over the moved copy for "after", and
@@ -20,8 +20,6 @@ import {
   type ChangeTouch,
   createMemoryFileSystem,
   type DirEntry,
-  type InvertResult,
-  invert,
   type MemoryFileSystem,
   migrationChain,
   type ProjectFileSystem,
@@ -39,6 +37,14 @@ import type {
   Target,
   TargetChangeSet,
 } from '@msm/plugin-api';
+import { type MoveBackResult, moveBack, type SavedMoveRecord } from './move-back';
+
+export type {
+  MoveBackResult,
+  MoveBackSegment,
+  SavedMoveRecord,
+  UnrecordedChange,
+} from './move-back';
 
 /** Problem code of a dry run's own outcome (not a problem of the project). */
 export const DryRunProblemCodes = Object.freeze({
@@ -74,8 +80,16 @@ export interface DryRunInput {
   toId: string;
   /** Validation and lowering. */
   host: DryRunHost;
-  /** The saved report of the move up, for moving back ({@link invert}). */
+  /**
+   * The saved report of the move up, for moving back (`invert`), when only the one move
+   * whose two ends match is known; {@link DryRunInput.savedMoves} wins.
+   */
   savedReport?: MigrationReport;
+  /**
+   * Every saved move, newest first, for moving back over more than one saved move
+   * ({@link moveBack}, B820).
+   */
+  savedMoves?: readonly SavedMoveRecord[];
   /** Cancels the run between its phases. */
   signal?: AbortSignal;
   /** Milliseconds for the timings; `performance.now` by default. */
@@ -110,8 +124,8 @@ export interface UpgradeDryRun {
   migration: MigrationReport;
   /** The chain's merged report (its reverses' hashes are core's `elementDataHash`). */
   chain: MigrationReport;
-  /** When moving back: what was and was not put back. */
-  inverted?: InvertResult;
+  /** When moving back: what was and was not put back, part by part (B820). */
+  inverted?: MoveBackResult;
   /** The moved copy. */
   moved: Project;
   /** The report (ADR 0136 D4). */
@@ -205,28 +219,46 @@ export function isMoveBack(targets: readonly Target[], fromId: string, toId: str
 /**
  * The report to apply for a move, without validating anything (what `upgradeTargetPreview`
  * answers): the chain up ({@link reportToApply}), or, moving back, the inverse of the saved
- * move up (`invert`), which puts back what it dropped.
+ * moves up ({@link moveBack}), which puts back what they dropped.
  *
  * @param targets - Every target the host knows.
  * @param from - The project's target.
  * @param to - The target to move to.
  * @param project - The project; not changed.
- * @param savedReport - The saved report of the move up, when moving back.
+ * @param saved - When moving back: the saved moves, newest first ({@link moveBack}), or the
+ *   saved report of the one move up whose ends match.
  */
 export function previewMove(
   targets: readonly Target[],
   from: Target,
   to: Target,
   project: Project,
-  savedReport?: MigrationReport,
+  saved?: MigrationReport | readonly SavedMoveRecord[],
 ): MigrationReport {
   const { steps, direction } = upgradeSteps(targets, from, to);
-  const run = runChain(project, steps);
   if (direction === 'down') {
-    return structuredClone(invert(run.report, savedReport, project).report);
+    const records = recordsOf(saved, from.id, to.id);
+    return structuredClone(moveBack(project, targets, steps, records).report);
   }
+  const run = runChain(project, steps);
   if (direction === 'same') return { changes: [], problems: [] };
   return reportToApply(run, steps);
+}
+
+/**
+ * The saved moves to move back over: the list as given, or the one saved report wrapped as the
+ * move from `toId` up to `fromId`.
+ */
+function recordsOf(
+  saved: MigrationReport | readonly SavedMoveRecord[] | undefined,
+  fromId: string,
+  toId: string,
+): readonly SavedMoveRecord[] {
+  if (saved === undefined) return [];
+  if (Array.isArray(saved)) return saved;
+  return [
+    { from: { targetId: toId }, to: { targetId: fromId }, migration: saved as MigrationReport },
+  ];
 }
 
 /** The change sets of a chain's up hops, in order. */
@@ -365,9 +397,10 @@ export async function dryRunUpgrade(input: DryRunInput): Promise<UpgradeDryRun> 
   const { steps, direction } = upgradeSteps(input.targets, from, to);
   const run = runChain(input.project, steps);
   let migration: MigrationReport;
-  let inverted: InvertResult | undefined;
+  let inverted: MoveBackResult | undefined;
   if (direction === 'down') {
-    inverted = invert(run.report, input.savedReport, input.project);
+    const records = input.savedMoves ?? recordsOf(input.savedReport, from.id, to.id);
+    inverted = moveBack(input.project, input.targets, steps, records);
     migration = structuredClone(inverted.report);
   } else if (direction === 'same') {
     migration = { changes: [], problems: [] };

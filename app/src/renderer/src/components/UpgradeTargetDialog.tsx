@@ -24,6 +24,7 @@ import type { MigrationReport, OutputFile, ProblemSeverity, TargetFacts } from '
 import { Dialog } from 'radix-ui';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import type { PlainFix } from '../session/plain-problems';
+import type { MoveBackResult } from '../session/upgrade/move-back';
 import { Button } from './ui/Button';
 import { DialogContent, DialogRoot } from './ui/DialogContent';
 import { MoreOptions, rememberedMoreOptions } from './ui/MoreOptions';
@@ -98,6 +99,14 @@ export interface MoveReport {
   filesAfter?: readonly OutputFile[];
   /** The hops of the move, in order (whose change sets the report's parts read). */
   hops?: readonly { from: string; to: string; direction: 'up' | 'down' }[];
+  /** Moving back: what is and is not put back (B820). */
+  inverted?: MoveBackResult;
+}
+
+/** What the dialog gives {@link UpgradeTargetDialogProps.extras} besides the move. */
+export interface UpgradeExtrasContext {
+  /** Opens another version's report in the dialog (Check on other versions, B820). */
+  choose(targetId: string): void;
 }
 
 /** What the dialog needs of a saved move (`SavedUpgrade` of `session/upgrade/saved-report`). */
@@ -144,11 +153,12 @@ export interface UpgradeTargetDialogProps {
   /**
    * More for a move's report: `lead` before its parts, `after` after them, `doneExtra` under
    * each thing MCSuperMods changes (the slots of B819's before and after views and B820's other
-   * versions and moving back).
+   * versions and moving back); `context.choose` opens another version's report.
    */
   extras?(
     targetId: string,
     move: MoveReport,
+    context: UpgradeExtrasContext,
   ): Pick<UpgradeReportViewProps, 'lead' | 'after' | 'doneExtra'>;
 }
 
@@ -375,7 +385,8 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
                           report={ready.move.report}
                           made={false}
                           testVersion={chosenTarget?.channel === 'snapshot'}
-                          {...(props.extras?.(ready.targetId, ready.move) ?? {})}
+                          {...(props.extras?.(ready.targetId, ready.move, { choose: setChosen }) ??
+                            {})}
                         />
                       </Suspense>
                     </section>

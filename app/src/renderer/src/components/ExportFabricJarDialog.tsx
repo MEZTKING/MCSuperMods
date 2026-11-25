@@ -12,6 +12,7 @@ import type { ExporterOption, Project } from '@msm/plugin-api';
 import { useId, useState } from 'react';
 import { Modal } from './NewElementDialog';
 import { MoreOptions } from './ui/MoreOptions';
+import { CheckOtherVersionsLine } from './upgrade/CheckOtherVersionsLine';
 
 /** Each option's default value, keyed by option id. */
 export function defaultOptionValues(options: readonly ExporterOption[]): Record<string, Json> {
@@ -80,6 +81,8 @@ export interface ExportFabricJarDialogProps {
   /** Runs the export with the chosen values (every declared option is present). */
   onExport(values: Record<string, Json>): void;
   onClose(): void;
+  /** Opens **Move to another Minecraft version** at its other versions (ADR 0136 D7). */
+  onCheckOtherVersions?(): void;
 }
 
 /** The dialog's title. */
@@ -155,6 +158,7 @@ export function ExportFabricJarDialog({
   needsGeckolib,
   onExport,
   onClose,
+  onCheckOtherVersions,
 }: ExportFabricJarDialogProps) {
   const [values, setValues] = useState<Record<string, Json>>(() => defaultOptionValues(options));
   return (
@@ -190,6 +194,12 @@ export function ExportFabricJarDialog({
             options={options}
             values={values}
             onChange={(id, value) => setValues((current) => ({ ...current, [id]: value }))}
+          />
+        )}
+        {onCheckOtherVersions && (
+          <CheckOtherVersionsLine
+            onOpen={onCheckOtherVersions}
+            testId="fabric-jar-other-versions"
           />
         )}
       </MoreOptions>

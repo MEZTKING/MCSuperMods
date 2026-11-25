@@ -1392,12 +1392,14 @@ export class ProjectSession {
   }
 
   /**
-   * The newest saved move from `toId` to the open project's target: the record moving back
-   * puts dropped values back from (ADR 0136 D7). `undefined` when there is none.
+   * The saved moves, newest first, when moving from `fromId` to `toId` goes back: the records
+   * moving back puts dropped values back from, one saved move after another (ADR 0136 D7, B820).
+   * `undefined` when the move goes up.
    */
-  async #savedMoveUp(fromId: string, toId: string): Promise<SavedUpgrade | undefined> {
-    const saved = await this.savedUpgradeReports();
-    return saved.find((entry) => entry.from.targetId === toId && entry.to.targetId === fromId);
+  async #savedMovesBack(fromId: string, toId: string): Promise<SavedUpgrade[] | undefined> {
+    const [dryRun] = await loadUpgradeModules();
+    if (!dryRun.isMoveBack(this.#allTargets(), fromId, toId)) return undefined;
+    return this.savedUpgradeReports();
   }
 
   /**
@@ -1422,10 +1424,8 @@ export class ProjectSession {
     }
     const [dryRun] = await loadUpgradeModules();
     const targets = this.#allTargets();
-    const saved = dryRun.isMoveBack(targets, previous.id, next.id)
-      ? await this.#savedMoveUp(previous.id, next.id)
-      : undefined;
-    return dryRun.previewMove(targets, previous, next, stack.state, saved?.migration);
+    const saved = await this.#savedMovesBack(previous.id, next.id);
+    return dryRun.previewMove(targets, previous, next, stack.state, saved);
   }
 
   /**
@@ -1506,15 +1506,13 @@ export class ProjectSession {
       if (this.#stack?.state !== state && !signal.aborted) controller.abort('stale');
     };
     const [dryRun] = await loadUpgradeModules();
-    const saved = dryRun.isMoveBack(this.#allTargets(), from.id, targetId)
-      ? await this.#savedMoveUp(from.id, targetId)
-      : undefined;
+    const saved = await this.#savedMovesBack(from.id, targetId);
     return dryRun.dryRunUpgrade({
       project: state,
       targets: this.#allTargets(),
       fromId: from.id,
       toId: targetId,
-      ...(saved === undefined ? {} : { savedReport: saved.migration }),
+      ...(saved === undefined ? {} : { savedMoves: saved }),
       signal,
       host: {
         before: async (): Promise<DryRunSide> => {

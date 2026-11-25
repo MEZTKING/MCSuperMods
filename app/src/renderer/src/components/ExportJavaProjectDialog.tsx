@@ -11,6 +11,7 @@
 import { bookRuleEntries, type RulesView } from '../session/rules-view';
 import { Modal } from './NewElementDialog';
 import { MoreOptions } from './ui/MoreOptions';
+import { CheckOtherVersionsLine } from './upgrade/CheckOtherVersionsLine';
 
 /** The dialog's first line: what it does, in the user's words (ADR 0130 D2). */
 export const JAVA_PROJECT_DIALOG_INTRO =
@@ -83,6 +84,8 @@ export interface ExportJavaProjectDialogProps {
   /** Asks for the folder and runs the export. */
   onExport(): void;
   onClose(): void;
+  /** Opens **Move to another Minecraft version** at its other versions (ADR 0136 D7). */
+  onCheckOtherVersions?(): void;
 }
 
 export function ExportJavaProjectDialog({
@@ -90,6 +93,7 @@ export function ExportJavaProjectDialog({
   rules = [],
   onExport,
   onClose,
+  onCheckOtherVersions,
 }: ExportJavaProjectDialogProps) {
   return (
     <Modal
@@ -134,6 +138,12 @@ export function ExportJavaProjectDialog({
           <p className="text-muted text-sm" data-testid="java-project-rule-books">
             {`Rule books: ${[...new Set(rules.map((rule) => rule.bookId))].join(', ')}.`}
           </p>
+        )}
+        {onCheckOtherVersions && (
+          <CheckOtherVersionsLine
+            onOpen={onCheckOtherVersions}
+            testId="java-project-other-versions"
+          />
         )}
       </MoreOptions>
     </Modal>
