@@ -27,6 +27,9 @@ export const FACT_CLASSES: Readonly<Record<string, 'D' | 'D+H' | 'U' | 'H' | 'M'
   mcdocRef: 'D',
   mcmetaRef: 'D',
   previous: 'M',
+  // The change set: its generated half is tied to the vendored data by its own `--check`, its
+  // curated half is MSM's (B813).
+  changes: 'M',
   java: 'U',
   'folders.data': 'D+H',
   'folders.resource': 'D+H',

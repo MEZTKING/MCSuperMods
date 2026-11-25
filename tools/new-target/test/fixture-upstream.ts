@@ -57,7 +57,7 @@ export async function fixtureRepo(): Promise<string> {
   }
   await symlink(join(REPO, 'packages/targets/mc-26.4/node_modules'), join(root, 'node_modules'));
   // The targets' tsconfig references these; the transform and tsc read them.
-  for (const name of ['plugin-api', 'schemas', 'core']) {
+  for (const name of ['plugin-api', 'schemas', 'core', 'targets/migrate']) {
     await symlink(join(REPO, 'packages', name), join(root, 'packages', name));
   }
   return root;
