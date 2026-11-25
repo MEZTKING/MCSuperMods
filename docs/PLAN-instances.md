@@ -222,3 +222,7 @@ Folded into the briefs before wave B1 (the main session amends the briefs' text 
 ### B765's leftovers
 
 Test in Minecraft's Create test instance does not show the offer card yet: its renderer side (`TestInMinecraftDialog.tsx`, `App.tsx`'s `createTestInstance`) should call `instances.plan` with `{ kind: 'test' }` and `prepare` with `locations` set to the install targets; a `mine` outcome selects that location (B716 or B767). Play runs only in Prism: MultiMC and PolyMC need a non-Prism play root in `instances.ts` and `findPrismRoot`. After a Fabric loader change `createManagedInstance` rewrites a version 2 marker as version 1; a later brief could bring an instance up to date through `ensure` while the game is closed.
+
+### B766's leftovers
+
+**Open this map** button: after a world-zip export in `ExportMapDialog.tsx`, call `usePlainPlayStore.getState().openMap(plainPlayHostOf(session), { mapName, sourceId, worldDir, keepPlayerData })`, then drop "in a later version" from `docs/guide/maps.md` (B767). A map that needs its mod goes in `openMap`'s `needs-mod` branch (`not-yet` today, B767). Work folders a crash leaves in `<msmHome>/cache/plain-worlds/` are not cleaned up; Play without mods does not record the rename warnings' exports (ADR 0102); the launcher-not-found note does not name the world. Windows checks (N16): a world made under Fabric opens in an instance without a loader on 26.x, and the data pack in `datapacks/` is on at the first load.
