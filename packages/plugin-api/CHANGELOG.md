@@ -2,6 +2,20 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.29.0 — 2026-11-25
+
+Change sets and migration detail (ADR 0136 D2, D3 and D7; Plan D brief B812), shaped by the B810 spike (`docs/reference/spikes/b810/README.md`, "Shapes for B811 and B812", V11, V13 and V19). `API_VERSION` is `1.29.0`. **1.28.0 is skipped here**: it is reserved for Plan C's brief B782, which has not run; B782 takes the next free minor when it runs. Additive: plugins declaring `^1.0.0` load unchanged, built-in plugins keep declaring `^1.0.0`, and the `Target.migrateFrom` contract is unchanged.
+
+- `Target.previous?: string`: the id of the target this one follows. A built-in target's `previous` names a built-in target, and following it never loops (`packages/targets/all/test/targets.test.ts`).
+- `TargetFacts.changes?: TargetChangeSet` (`from`, `to`, `refs` with `TargetChangeRefs` `mcdoc` and `mcmeta` for both ends, `changes`, `additions` as counts by kind and registry). `TargetChange`: `id` (`${area}:${subject}`, `#${field}` for a field), `area` (`TargetChangeArea`), `what` (`TargetChangeWhat`), `registry?`, `subject`, `field?`, `from?`, `to?`, `stillIn?`, `handling` (`TargetChangeHandling`: `auto`, `manual`, `none`), `source` (`TargetChangeSource`), `candidate?` (`TargetChangeCandidate`: `kind`, `to`, `name`, `shape`, `ambiguous?`), and the curated `sentence?`, `hint?` and `inGameCheck?`.
+- `MigrationChange.details?: MigrationDetail[]`: what a step did inside the element (`op`, `MigrationDetailOp`: `rename-id`, `drop`, `move`, `set`; `path` as an RFC 6901 pointer; `from?`, the pointer before a `move`; `before?`; `after?`; `changeId`; `sentence?`). A host maps problem paths through them, so a moved value is not reported as new.
+- `MigrationReport.inGameChecks?: MigrationInGameCheck[]` (`changeId`, `check`, `elementIds?`) and `MigrationReport.reverses?: MigrationReverse[]` (`elementId`, `path`, `value`, `afterHash`): every dropped value, kept so moving back can put it again.
+- Both built-in targets: `mc-26.4` sets `previous: 'mc-26.3'`; no target sets `changes` yet (the shared migration engine, B813, writes them).
+
+### Migration from 1.27.0
+
+None for plugins: every new member is optional. A hook may keep returning reports without `details`, `inGameChecks` or `reverses`.
+
 ## 1.27.0 — 2026-11-23
 
 The community game types' facts (ADR 0132, Plan A brief B723), every value measured on a dedicated server of both built-in targets by the B720 spike (`docs/reference/spikes/b720/README.md`). `API_VERSION` is `1.27.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

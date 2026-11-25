@@ -135,6 +135,9 @@ export const target: Target = {
   id: ID,
   mcVersion: MC_VERSION,
   channel: 'snapshot',
+  // The target this one follows (ADR 0136 D2; plugin API 1.29.0). `changes` stays unset until
+  // the shared migration engine and the generated change set arrive (B813).
+  previous: 'mc-26.3',
   java: 25,
   packFormats: {
     resource: { major: 102, minor: 0 },

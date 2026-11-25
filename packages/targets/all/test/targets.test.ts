@@ -217,6 +217,38 @@ describe('builtInTargets', () => {
     expect(targetById('')).toBeUndefined();
   });
 
+  it('names a built-in target as every previous, with no loop in the chain (ADR 0136 D2)', () => {
+    const ids = new Set(builtInTargets.map((bundle) => bundle.target.id));
+    for (const { target } of builtInTargets) {
+      if (target.previous === undefined) continue;
+      expect(ids, `${target.id}.previous`).toContain(target.previous);
+      expect(target.previous).not.toBe(target.id);
+      // The target it follows is an older Minecraft version.
+      const previous = targetById(target.previous)?.target;
+      expect(
+        previous?.mcVersion.localeCompare(target.mcVersion, 'en', { numeric: true }),
+        `${target.id} follows an older version`,
+      ).toBe(-1);
+      // Following previous from here never comes back to a target already seen.
+      const seen = new Set<string>([target.id]);
+      let next: string | undefined = target.previous;
+      while (next !== undefined) {
+        expect(seen.has(next), `loop through ${next}`).toBe(false);
+        seen.add(next);
+        next = targetById(next)?.target.previous;
+      }
+    }
+    // Exactly one target starts the chain, and every other one reaches it.
+    const roots = builtInTargets.filter((bundle) => bundle.target.previous === undefined);
+    expect(roots).toHaveLength(1);
+    // A change set, where a target has one, runs from its previous target to itself.
+    for (const { target } of builtInTargets) {
+      if (target.changes === undefined) continue;
+      expect(target.changes.from).toBe(target.previous);
+      expect(target.changes.to).toBe(target.id);
+    }
+  });
+
   it('readVendoredJson rejects bytes that are not JSON', async () => {
     const bundle = builtInTargets[0] as TargetBundle;
     const bad = async (): Promise<Uint8Array> => new TextEncoder().encode('{not json');

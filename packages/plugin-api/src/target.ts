@@ -41,6 +41,95 @@ export interface MigrationChange {
    * host leaves the element's data as it is. Since 1.0.0.
    */
   data?: Json;
+  /**
+   * What was done inside the element, one entry per value the migration touched, in the order
+   * it did them (ADR 0136 D3). Absent on hooks written before 1.29.0 and on changes that only
+   * inform. A host maps a validation problem's path through these entries, so that a value the
+   * migration moved is not reported as a new problem at its new place. Since 1.29.0.
+   */
+  details?: MigrationDetail[];
+}
+
+/**
+ * What a migration step did to one value inside an element (ADR 0136 D3). Since 1.29.0.
+ *
+ * @example
+ * ```ts
+ * const detail: MigrationDetail = {
+ *   op: 'drop',
+ *   path: '/default_block',
+ *   before: { Name: 'minecraft:stone' },
+ *   changeId: 'formats:minecraft:resource/worldgen/noise_settings#/default_block',
+ * };
+ * ```
+ */
+export interface MigrationDetail {
+  /**
+   * The kind of step: `rename-id` replaced an id with its new name, `drop` removed a field,
+   * `move` moved a value to another place (see {@link MigrationDetail.from}), `set` gave a field
+   * a value the newer version requires. Since 1.29.0.
+   */
+  op: MigrationDetailOp;
+  /**
+   * Where the value is after the step, as an RFC 6901 JSON pointer into the element's data
+   * (`''` is the whole data). For `drop`, where the value was. Since 1.29.0.
+   */
+  path: string;
+  /**
+   * For `move` only: the RFC 6901 pointer the value was at before the step, so a host can map a
+   * path from before the move to after it. Since 1.29.0.
+   */
+  from?: string;
+  /** The value before the step; absent for `set` on a field that did not exist. Since 1.29.0. */
+  before?: Json;
+  /** The value after the step; absent for `drop`. Since 1.29.0. */
+  after?: Json;
+  /** The {@link TargetChange.id} this step answers. Since 1.29.0. */
+  changeId: string;
+  /**
+   * One plain sentence for the user, in British English, when the change set has one; a host
+   * otherwise words the entry from a template for its `op`. Since 1.29.0.
+   */
+  sentence?: string;
+}
+
+/**
+ * The kinds of {@link MigrationDetail.op}. Since 1.29.0.
+ */
+export type MigrationDetailOp = 'rename-id' | 'drop' | 'move' | 'set';
+
+/**
+ * A value a migration dropped, kept so moving back can put it again (ADR 0136 D7). The host saves
+ * these with the report. On a move back it puts a value back when the element exists, the parent
+ * object at {@link MigrationReverse.path} exists and the key is absent; otherwise it lists the
+ * value as not put back ("element gone", "place taken"). Since 1.29.0.
+ */
+export interface MigrationReverse {
+  /** The element the value was dropped from. Since 1.29.0. */
+  elementId: ResourceLocation;
+  /** Where the value was, as an RFC 6901 JSON pointer into the element's data. Since 1.29.0. */
+  path: string;
+  /** The value as it was before the move. Since 1.29.0. */
+  value: Json;
+  /**
+   * A hash of the element's data just after the move, so a host can tell an element edited since
+   * the move from one left as moved. The host computes it, with one function for writing and
+   * checking; the API does not fix the function. Since 1.29.0.
+   */
+  afterHash: string;
+}
+
+/**
+ * One thing to check in the game after a move, from a change-set entry that touches the project
+ * (ADR 0136 D12). Since 1.29.0.
+ */
+export interface MigrationInGameCheck {
+  /** The {@link TargetChange.id} whose {@link TargetChange.inGameCheck} this is. Since 1.29.0. */
+  changeId: string;
+  /** What to check, one plain sentence in British English. Since 1.29.0. */
+  check: string;
+  /** The project's elements the check concerns, when it concerns some. Since 1.29.0. */
+  elementIds?: ResourceLocation[];
 }
 
 /**
@@ -52,6 +141,205 @@ export interface MigrationReport {
   changes: MigrationChange[];
   /** Anything the migration could not handle automatically and the user must review. */
   problems: Problem[];
+  /**
+   * What to check in the game after the move: the change set's checks for the changes that touch
+   * this project. Absent when the hook has none. Since 1.29.0.
+   */
+  inGameChecks?: MigrationInGameCheck[];
+  /**
+   * Every value the migration dropped, so moving back can put it again (ADR 0136 D7). The host
+   * saves them with the report. Absent when nothing was dropped or the hook predates 1.29.0.
+   * Since 1.29.0.
+   */
+  reverses?: MigrationReverse[];
+}
+
+/**
+ * What a target records about how Minecraft changed since the target before it (ADR 0136 D2):
+ * the generated part written by the target tools from both targets' vendored data and the
+ * curated part written by a person, merged. Lives only in target packages; read through
+ * {@link TargetFacts.changes}. Since 1.29.0.
+ */
+export interface TargetChangeSet {
+  /** The id of the target this one follows: {@link Target.previous}. Since 1.29.0. */
+  from: string;
+  /** The id of the target that carries this set. Since 1.29.0. */
+  to: string;
+  /** The pins of both ends' vendored data the set was computed from. Since 1.29.0. */
+  refs: {
+    /** The older target's vanilla-mcdoc commit and mcmeta prefix. */
+    from: TargetChangeRefs;
+    /** This target's vanilla-mcdoc commit and mcmeta prefix. */
+    to: TargetChangeRefs;
+  };
+  /** Every change, sorted by {@link TargetChange.id}. Since 1.29.0. */
+  changes: TargetChange[];
+  /**
+   * What the newer version adds, as counts by kind and registry (such as `ids:block`); the list
+   * itself is kept outside the set and read when needed. Since 1.29.0.
+   */
+  additions: Record<string, number>;
+}
+
+/**
+ * The vendored data pins of one end of a {@link TargetChangeSet}. Since 1.29.0.
+ */
+export interface TargetChangeRefs {
+  /** The vanilla-mcdoc commit: {@link TargetFacts.mcdocRef}. */
+  mcdoc: string;
+  /** The mcmeta version prefix: {@link TargetFacts.mcmetaRef}. */
+  mcmeta: string;
+}
+
+/**
+ * One change in Minecraft between a target and the one before it (ADR 0136 D2). Since 1.29.0.
+ *
+ * @example
+ * ```ts
+ * const change: TargetChange = {
+ *   id: 'formats:minecraft:resource/worldgen/noise_settings#/default_block',
+ *   area: 'formats',
+ *   what: 'field-removed',
+ *   registry: 'minecraft:resource',
+ *   subject: 'minecraft:resource/worldgen/noise_settings',
+ *   field: '/default_block',
+ *   handling: 'auto',
+ *   source: 'mcdoc',
+ * };
+ * ```
+ */
+export interface TargetChange {
+  /**
+   * Stable id: `${area}:${subject}`, followed by `#${field}` for a field. Since 1.29.0.
+   */
+  id: string;
+  /** Which part of the game changed. Since 1.29.0. */
+  area: TargetChangeArea;
+  /** What happened. Since 1.29.0. */
+  what: TargetChangeWhat;
+  /**
+   * The registry the subject is a member of, or the dispatcher it is a member of for a data
+   * format (`minecraft:resource`). Since 1.29.0.
+   */
+  registry?: string;
+  /**
+   * What changed: a registry member, a dispatcher member
+   * (`minecraft:resource/worldgen/noise_settings`), a command path, a block, a file. Since
+   * 1.29.0.
+   */
+  subject: string;
+  /**
+   * The field, for a change below the subject: an RFC 6901 pointer below the subject for a data
+   * format, the property name for a block state. Since 1.29.0.
+   */
+  field?: string;
+  /** The value or shape before, when one is recorded (a removed id's new name is in `to`). Since 1.29.0. */
+  from?: Json;
+  /** The value or shape after, when one is recorded. Since 1.29.0. */
+  to?: Json;
+  /** For a removed id: the registries that still hold it. Since 1.29.0. */
+  stillIn?: string[];
+  /**
+   * Who acts: `auto`, a migration step does it; `manual`, the user must; `none`, only news.
+   * Since 1.29.0.
+   */
+  handling: TargetChangeHandling;
+  /** Where the change was found. Since 1.29.0. */
+  source: TargetChangeSource;
+  /**
+   * From the diff tool only: a likely rename, split, merge or field move with its evidence. A
+   * candidate is never applied by a migration until a person confirms it in the curated part.
+   * Since 1.29.0.
+   */
+  candidate?: TargetChangeCandidate;
+  /** Curated only: the plain sentence for the user, in British English. Since 1.29.0. */
+  sentence?: string;
+  /** Curated only: how the user can make the change by hand. Since 1.29.0. */
+  hint?: string;
+  /** Curated only: what to check in the game when the change touches a mod. Since 1.29.0. */
+  inGameCheck?: string;
+}
+
+/**
+ * The areas of {@link TargetChange.area}: ids in registries, data formats, commands, block
+ * states, pack formats and folders, what players need, the Java side, and the vanilla files that
+ * changed. Since 1.29.0.
+ */
+export type TargetChangeArea =
+  | 'ids'
+  | 'formats'
+  | 'commands'
+  | 'block-states'
+  | 'packs'
+  | 'players'
+  | 'java'
+  | 'vanilla-files';
+
+/**
+ * The kinds of {@link TargetChange.what}. Registries: `registry-moved`, `member-removed`,
+ * `member-renamed`. Data formats: `type-added`, `type-removed`, `type-changed`,
+ * `field-removed`, `field-addedRequired`, `field-addedOptional`, `field-madeOptional`,
+ * `field-madeRequired`, `field-retyped`. Commands: `root-removed`, `path-removed`,
+ * `argument-changed`. Block states: `property-added`, `property-removed`, `values-changed`,
+ * `default-changed`. Packs and other facts: `value-changed`. Vanilla files: `file-changed`.
+ * Since 1.29.0.
+ */
+export type TargetChangeWhat =
+  | 'registry-moved'
+  | 'member-removed'
+  | 'member-renamed'
+  | 'type-added'
+  | 'type-removed'
+  | 'type-changed'
+  | 'field-removed'
+  | 'field-addedRequired'
+  | 'field-addedOptional'
+  | 'field-madeOptional'
+  | 'field-madeRequired'
+  | 'field-retyped'
+  | 'root-removed'
+  | 'path-removed'
+  | 'argument-changed'
+  | 'property-added'
+  | 'property-removed'
+  | 'values-changed'
+  | 'default-changed'
+  | 'value-changed'
+  | 'file-changed';
+
+/**
+ * The values of {@link TargetChange.handling}. Since 1.29.0.
+ */
+export type TargetChangeHandling = 'auto' | 'manual' | 'none';
+
+/**
+ * The values of {@link TargetChange.source}: the vendored registries, mcdoc, command tree, block
+ * states or version file, mcmeta's file trees, or a person (`curated`). Since 1.29.0.
+ */
+export type TargetChangeSource =
+  | 'registries'
+  | 'mcdoc'
+  | 'commands'
+  | 'blocks'
+  | 'version'
+  | 'mcmeta-trees'
+  | 'curated';
+
+/**
+ * A likely rename, split, merge or field move the diff tool found (ADR 0136 D11), never applied
+ * until confirmed. Since 1.29.0.
+ */
+export interface TargetChangeCandidate {
+  /** What the tool thinks happened. */
+  kind: 'rename' | 'split' | 'merge' | 'field-move';
+  /** The id or pointer the subject likely became. */
+  to: string;
+  /** How alike the names are, from 0 to 1. */
+  name: number;
+  /** How the newer shape compares with the older: the same, wider, narrower, alike, different, or no shape to compare. */
+  shape: 'same' | 'superset' | 'subset' | 'similar' | 'differs' | 'none';
+  /** Set when more than one candidate fits as well. */
+  ambiguous?: true;
 }
 
 /**
@@ -1598,6 +1886,12 @@ export interface TargetFacts {
    * Since 1.27.0.
    */
   dataForms?: Readonly<Record<DataFormName, Json>>;
+  /**
+   * How Minecraft changed since {@link Target.previous} (ADR 0136 D2): the generated and curated
+   * change set a target's migration and the host's upgrade report read. Absent on a target with
+   * no previous target or whose change set is not written yet. Since 1.29.0.
+   */
+  changes?: TargetChangeSet;
 }
 
 /**
@@ -1637,6 +1931,12 @@ export type DataFormName =
  * ```
  */
 export interface Target extends TargetFacts {
+  /**
+   * The id of the target this one follows (ADR 0136 D2), the end its {@link TargetFacts.changes}
+   * and {@link Target.migrateFrom} start from. Names a target the host knows; following
+   * `previous` from any target never comes back to it. Absent on the oldest target. Since 1.29.0.
+   */
+  previous?: string;
   /**
    * The Java generator of the `java-project` exporter (ADR 0033). Optional: a target without
    * it or {@link Target.loadJavaProject} cannot eject a Java project, and the exporter reports

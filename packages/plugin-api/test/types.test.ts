@@ -34,7 +34,11 @@ import type {
   JsonObject,
   MaybePromise,
   MigrationChange,
+  MigrationDetail,
+  MigrationDetailOp,
+  MigrationInGameCheck,
   MigrationReport,
+  MigrationReverse,
   ModrinthFileFacts,
   OutputFile,
   OutputMergeMode,
@@ -59,6 +63,13 @@ import type {
   StatFacts,
   StatFormatName,
   Target,
+  TargetChange,
+  TargetChangeArea,
+  TargetChangeCandidate,
+  TargetChangeHandling,
+  TargetChangeSet,
+  TargetChangeSource,
+  TargetChangeWhat,
   TargetChannel,
   TargetFacts,
   TerrainPreviewApproximatePart,
@@ -1206,5 +1217,122 @@ describe('1.0.0 additions', () => {
     const older: TargetFacts = { ...testTarget };
     expect(older.dataForms).toBeUndefined();
     expect(older.scoreboard?.teamCriteria).toBeUndefined();
+  });
+
+  it('adds change sets and migration detail (1.29.0)', () => {
+    expectTypeOf<Target['previous']>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<TargetFacts['changes']>().toEqualTypeOf<TargetChangeSet | undefined>();
+    expectTypeOf<TargetChangeSet['changes']>().toEqualTypeOf<TargetChange[]>();
+    expectTypeOf<TargetChange['candidate']>().toEqualTypeOf<TargetChangeCandidate | undefined>();
+    expectTypeOf<MigrationChange['details']>().toEqualTypeOf<MigrationDetail[] | undefined>();
+    expectTypeOf<MigrationReport['inGameChecks']>().toEqualTypeOf<
+      MigrationInGameCheck[] | undefined
+    >();
+    expectTypeOf<MigrationReport['reverses']>().toEqualTypeOf<MigrationReverse[] | undefined>();
+    expectTypeOf<MigrationDetailOp>().toEqualTypeOf<'rename-id' | 'drop' | 'move' | 'set'>();
+    expectTypeOf<TargetChangeHandling>().toEqualTypeOf<'auto' | 'manual' | 'none'>();
+    expectTypeOf<TargetChangeArea>().toEqualTypeOf<
+      | 'ids'
+      | 'formats'
+      | 'commands'
+      | 'block-states'
+      | 'packs'
+      | 'players'
+      | 'java'
+      | 'vanilla-files'
+    >();
+    expectTypeOf<TargetChangeSource>().toEqualTypeOf<
+      'registries' | 'mcdoc' | 'commands' | 'blocks' | 'version' | 'mcmeta-trees' | 'curated'
+    >();
+    expectTypeOf<'field-addedRequired'>().toExtend<TargetChangeWhat>();
+    expectTypeOf<'file-changed'>().toExtend<TargetChangeWhat>();
+    expectTypeOf<TargetChangeCandidate['shape']>().toEqualTypeOf<
+      'same' | 'superset' | 'subset' | 'similar' | 'differs' | 'none'
+    >();
+
+    const set: TargetChangeSet = {
+      from: 'mc-<older>',
+      to: 'mc-<newer>',
+      refs: {
+        from: { mcdoc: 'a'.repeat(40), mcmeta: '<older>' },
+        to: { mcdoc: 'b'.repeat(40), mcmeta: '<newer>' },
+      },
+      changes: [
+        {
+          id: 'formats:minecraft:resource/worldgen/noise_settings#/default_block',
+          area: 'formats',
+          what: 'field-removed',
+          registry: 'minecraft:resource',
+          subject: 'minecraft:resource/worldgen/noise_settings',
+          field: '/default_block',
+          handling: 'auto',
+          source: 'mcdoc',
+          inGameCheck: 'Walk in a world made with the mod and look at the ground.',
+        },
+        {
+          id: 'ids:worldgen/feature/old_name',
+          area: 'ids',
+          what: 'member-removed',
+          registry: 'minecraft:worldgen/feature',
+          subject: 'minecraft:old_name',
+          stillIn: [],
+          handling: 'manual',
+          source: 'registries',
+          candidate: { kind: 'rename', to: 'minecraft:new_name', name: 0.8, shape: 'superset' },
+        },
+      ],
+      additions: { 'ids:block': 3 },
+    };
+    // The set is plain data: it survives a structured clone (the host posts it to a worker).
+    expect(structuredClone(set)).toEqual(set);
+    const facts: TargetFacts = { ...testTarget, changes: set };
+    expect(facts.changes?.changes).toHaveLength(2);
+
+    const report: MigrationReport = {
+      changes: [
+        {
+          elementId: 'demo:land',
+          description: 'Removed the default block.',
+          kind: 'update',
+          data: { sea_level: 63 },
+          details: [
+            {
+              op: 'drop',
+              path: '/default_block',
+              before: { Name: 'minecraft:stone' },
+              changeId: set.changes[0]?.id ?? '',
+            },
+            { op: 'move', from: '/a', path: '/b/a', before: 1, after: 1, changeId: 'x' },
+          ],
+        },
+      ],
+      problems: [],
+      inGameChecks: [
+        {
+          changeId: set.changes[0]?.id ?? '',
+          check: 'Look at the ground.',
+          elementIds: ['demo:land'],
+        },
+      ],
+      reverses: [
+        {
+          elementId: 'demo:land',
+          path: '/default_block',
+          value: { Name: 'minecraft:stone' },
+          afterHash: 'h',
+        },
+      ],
+    };
+    expect(report.reverses?.[0]?.path).toBe('/default_block');
+    // A hook written against an older API returns a report without any 1.29.0 field.
+    const older: MigrationReport = {
+      changes: [{ elementId: 'demo:x', description: 'd' }],
+      problems: [],
+    };
+    expect(older.inGameChecks).toBeUndefined();
+    expect(older.changes[0]?.details).toBeUndefined();
+    // The test target has neither a previous target nor a change set.
+    expect((testTarget as Target).previous).toBeUndefined();
+    expect(testTarget.changes).toBeUndefined();
   });
 });

@@ -11633,3 +11633,19 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 
 **Next**
 - B811 and B812 can start from the README's shapes; B831 must land before B826's re-pin.
+## 2026-11-25 — executor — B812 plugin API 1.29.0: change sets and migration detail
+
+**What**
+- Plugin API 1.29.0 (ADR 0136 D2, D3, D7), additive: `Target.previous?`; `TargetFacts.changes?` (`TargetChangeSet` with `from`, `to`, `refs`, `changes`, `additions`; `TargetChange` with `id`, `area`, `what`, `registry?`, `subject`, `field?`, `from?`, `to?`, `stillIn?`, `handling`, `source`, `candidate?`, `sentence?`, `hint?`, `inGameCheck?`; the unions `TargetChangeArea`, `TargetChangeWhat`, `TargetChangeHandling`, `TargetChangeSource`; `TargetChangeCandidate`, `TargetChangeRefs`), named as the B810 README's "Shapes for B811 and B812" so B811's local type agrees; `MigrationChange.details?` (`MigrationDetail`: `op`, `path`, `from?`, `before?`, `after?`, `changeId`, `sentence?`); `MigrationReport.inGameChecks?` (`MigrationInGameCheck`) and `reverses?` (`MigrationReverse`: `elementId`, `path`, `value`, `afterHash`, V13). Every member says "Since 1.29.0".
+- `mc-26.4` sets `previous: 'mc-26.3'`; `changes` stays unset until B813. A new `all/test/targets.test.ts` case: every `previous` names an older built-in target, the chain has no loop, one target starts it, and a change set runs from `previous` to its own target.
+- CHANGELOG, version files, the API version tests (`plugin-api` and `core`'s `registry.test.ts`), and the first line of `packages/plugin-api/CLAUDE.md`.
+- Checked: `pnpm lint`, `pnpm typecheck`, `node tools/check-deps/index.ts`, `@msm/plugin-api` 111 tests, `@msm/targets` 87, `mc-26.3` 269, `mc-26.4` 152, `core` registry test.
+
+**Decisions**
+- 1.28.0 is skipped: it stays reserved for Plan C's B782, which has not run; B782 takes the next free minor when it runs.
+- `MigrationDetail.from?` added beside the spike's shape: the pointer before a `move`, without which a host cannot map a problem's path through a move (the spike's D4 change 5).
+- `TargetChange.field` is documented as an RFC 6901 pointer for formats (the README) and the property name for block states (the draft set); the spike's draft JSON writes format fields without the leading `/`, which B811 should settle to the README's pointer.
+
+**Next**
+- B813: the engine fills `details`, `reverses` and `inGameChecks`, and the 26.4 change set.
+- The app's `toTargetFacts` copies named fields for non-built-in targets, and the AI helper's target dump strips large facts by name: both will need `changes` handled when it is set (B813 or the app briefs).
