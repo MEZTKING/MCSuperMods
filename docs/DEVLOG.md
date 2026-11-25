@@ -11620,3 +11620,16 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 - Before B826 can re-pin 26.4: mcmeta's command report changed format in `26.4-snapshot-8`, and the vendored Spyglass cannot read the new one (every argument warns). A `sync-mcmeta` adapter or a Spyglass update is needed first.
 - Outside this plan: the mcfunction checker on the snapshot target treats `since="26.4"` fields as unknown (`results/v4-gate-probe.txt`), which gives a false warning on `examples/flows/leaf_glider` today. `check-deps`' version pattern knows only `26.x`.
 - B811 and B812 can start from the README's shapes; the main session folds the requested changes into ADR 0136 and the plan.
+
+## 2026-11-25 — executor — B810 answers folded into ADR 0136 and the plan
+
+**What**
+- Applied the 16 changes the B810 README asks of ADR 0136 (still Proposed) and `docs/PLAN-version-upgrades.md`: D2 and D11 (mcdoc diffed both ways, registries by member overlap, commands normalised, Mojang-notes pairs as candidate evidence, no key names in the proof, `.nbt` left out), D3 (token search, no rewriting, lang skipped, command-word step dropped), D4 (warnings counted, identity by code, element and path), D6 (copy only `msm.project.json` and `content/`), D7 (reverses hold element, pointer, value, hash), D9 (one batched Modrinth call), Consequences (memory, check-deps, snapshot gating, command report format, change-set sizes), a findings line, and the plan's U8, B811, B813, B816 and B826 and Notes.
+- One finding line in ADR 0037: its "26.3 data formats are unchanged" was wrong.
+
+**Decisions**
+- The blocker (mcmeta's command report format from `26.4-snapshot-8`) is a line on B826 and a new reserve brief B831 (adapter or Spyglass update, plus the snapshot gating fix); the reserve range now starts at B832.
+- ADR 0136 stays Proposed.
+
+**Next**
+- B811 and B812 can start from the README's shapes; B831 must land before B826's re-pin.
