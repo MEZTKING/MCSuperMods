@@ -344,3 +344,7 @@ Old menu words still in renderer text: `components/WelcomeDialog.tsx` ("Help →
 ### B705's leftovers
 
 `liveviews/data/block-rules/BlockRules.tsx` still shows ids in the Vanilla block rules' default view (the sound line, "Drops <id> once" from the block rules model's `lines`, and Try it's block and tool lists): show them by name through `thingName` or the lang table, then empty `KNOWN_LEAKS` in `app/test/components/studios/blocks-items/plain-split.test.tsx`. Add `'world-addition-map'` to `section-why.ts` and cases for World addition, Extra drops and Vanilla block rules to `plain-no-ids.test.tsx`; the guide gains World addition's "On the map" and "Make my own copy" under Features' More options. Wax and age rows lose their `-plain` picker inside More options (shared `Section` shows non-common sections raw).
+
+### B716's leftovers
+
+Messages after an export, a Test in Minecraft run or a modpack test still show paths and "Fabric API"; the upgrade report's rows name things by id only (under More options; names need the project in the dialog); `forbiddenIn` matches "api" inside "Fabric API" (an exception for the name, or "Fabric's mod library" everywhere); `docs/guide/README.md` and the palette still say "Upgrade project target…" (the dialog is now "Move to another Minecraft version").
