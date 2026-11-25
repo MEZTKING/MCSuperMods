@@ -259,6 +259,8 @@ test('play: Play, Reload a data change, Restart needed for a new block, Restart'
 
   // Play: the managed instance, the jar, the dev files, and the stub opens the test world. ---
   await window.getByTestId('play-button').click();
+  // The first Play shows what it will make (ADR 0133 D3, B765): make it and play.
+  await window.getByTestId('instance-offer-make').click();
   await expect(toast(window)).toContainText('Made the test instance', { timeout: 30_000 });
   await expect(chip).toHaveAttribute('data-state', 'test-world', { timeout: 30_000 });
   await expect(chip).toHaveText('In the test world');

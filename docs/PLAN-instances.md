@@ -218,3 +218,7 @@ Folded into the briefs before wave B1 (the main session amends the briefs' text 
 - **D11:** a version the launcher lacks fails at start with the launcher's own message.
 - **Reserve:** "Open to LAN" by the runtime (`IntegratedServer.publishServer`, same signatures on both targets).
 - **N16:** 14 checks for the user's Windows machine, listed in the README.
+
+### B765's leftovers
+
+Test in Minecraft's Create test instance does not show the offer card yet: its renderer side (`TestInMinecraftDialog.tsx`, `App.tsx`'s `createTestInstance`) should call `instances.plan` with `{ kind: 'test' }` and `prepare` with `locations` set to the install targets; a `mine` outcome selects that location (B716 or B767). Play runs only in Prism: MultiMC and PolyMC need a non-Prism play root in `instances.ts` and `findPrismRoot`. After a Fabric loader change `createManagedInstance` rewrites a version 2 marker as version 1; a later brief could bring an instance up to date through `ensure` while the game is closed.
