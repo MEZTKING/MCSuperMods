@@ -187,4 +187,60 @@ describe('the command report formats', () => {
     expect(diff.changes).toEqual([]);
     expect(diff.formats).toEqual({ before: 'parser-properties', after: 'nested-argument' });
   });
+
+  it('maps the nested format renames, so only what Mojang changed is a change (B831)', () => {
+    const before = {
+      type: 'root',
+      children: {
+        recipe: {
+          type: 'literal',
+          children: {
+            count: { type: 'argument', parser: 'brigadier:integer', properties: { min: 1 } },
+            name: { type: 'argument', parser: 'brigadier:string', properties: { type: 'word' } },
+            who: {
+              type: 'argument',
+              parser: 'minecraft:entity',
+              properties: { amount: 'single', type: 'players' },
+            },
+            recipe: {
+              type: 'argument',
+              parser: 'minecraft:resource_key',
+              properties: { registry: 'minecraft:recipe' },
+            },
+          },
+        },
+      },
+    };
+    const after = {
+      type: 'root',
+      children: {
+        recipe: {
+          type: 'literal',
+          permissions: { type: 'minecraft:always_pass' },
+          children: {
+            count: { type: 'argument', argument: { type: 'minecraft:integer', min: 1 } },
+            name: { type: 'argument', argument: { type: 'minecraft:word' } },
+            who: {
+              type: 'argument',
+              argument: { type: 'minecraft:entity', players_only: true, single_result: true },
+            },
+            recipe: {
+              type: 'argument',
+              argument: { type: 'minecraft:resource', registry: 'minecraft:recipe' },
+              custom_suggestion: { type: 'minecraft:ask_server' },
+            },
+          },
+        },
+      },
+    };
+    const diff = diffCommands(before, after);
+    expect(diff.changes.map((c) => [c.subject, c.from, c.to])).toEqual([
+      [
+        'recipe <recipe>',
+        'minecraft:resource_key{"registry":"minecraft:recipe"}',
+        'minecraft:resource{"registry":"minecraft:recipe"}',
+      ],
+    ]);
+    expect(diff.additions).toEqual([]);
+  });
 });

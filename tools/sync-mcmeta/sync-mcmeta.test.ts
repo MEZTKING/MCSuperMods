@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  COMMAND_ADAPTER,
   type FetchFile,
   MCMETA_FILES,
   mcmetaRefs,
@@ -182,5 +183,88 @@ describe('syncMcmeta', () => {
     });
     expect(source.refs).toEqual(mcmetaRefs(snapshot));
     expect(requests[0]).toContain(`${snapshot}-summary`);
+  });
+
+  it('converts a nested-argument command report and records what it did', async () => {
+    out = await mkdtemp(join(tmpdir(), 'msm-sync-mcmeta-'));
+    const files = upstream();
+    const tree = commandTree(COMMAND_NAMES) as { children: Record<string, unknown> };
+    tree.children.give = {
+      type: 'literal',
+      permissions: { type: 'minecraft:always_pass' },
+      children: {
+        targets: {
+          type: 'argument',
+          argument: { type: 'minecraft:entity', players_only: true, single_result: false },
+          permissions: { type: 'minecraft:always_pass' },
+          children: {
+            count: {
+              type: 'argument',
+              argument: { type: 'minecraft:integer', min: 1 },
+              custom_suggestion: { type: 'minecraft:ask_server' },
+              executable: true,
+              permissions: {
+                type: 'minecraft:require',
+                permission: { type: 'minecraft:command_level', level: 'gamemasters' },
+              },
+            },
+          },
+        },
+      },
+    };
+    files['commands/data.min.json'] = tree;
+    const log: string[] = [];
+    const source = await syncMcmeta({
+      version: VERSION,
+      out,
+      fetchFile: fakeFetch(files, []),
+      log: (message) => log.push(message),
+    });
+    const written = JSON.parse(await readFile(join(out, 'commands.json'), 'utf8')) as {
+      children: Record<string, unknown>;
+    };
+    expect(written.children.give).toEqual({
+      type: 'literal',
+      children: {
+        targets: {
+          type: 'argument',
+          parser: 'minecraft:entity',
+          properties: { amount: 'multiple', type: 'players' },
+          children: {
+            count: {
+              type: 'argument',
+              parser: 'brigadier:integer',
+              properties: { min: 1 },
+              executable: true,
+              permissions: {
+                type: 'minecraft:require',
+                permission: { type: 'minecraft:command_level', level: 'gamemasters' },
+              },
+            },
+          },
+        },
+      },
+    });
+    expect(source.commands).toEqual({
+      adapter: COMMAND_ADAPTER,
+      format: 'nested-argument',
+      converted: 2,
+      renamed: { 'minecraft:integer -> brigadier:integer': 1 },
+      dropped: { custom_suggestion: 1, permissions: 2 },
+    });
+    expect(JSON.parse(await readFile(join(out, 'SOURCE.json'), 'utf8'))).toEqual(source);
+    expect(log).toContain(
+      'commands.json: converted 2 arguments from the nested-argument format (1 type renames)',
+    );
+  });
+
+  it('leaves SOURCE.json without `commands` for a report in the old format', async () => {
+    out = await mkdtemp(join(tmpdir(), 'msm-sync-mcmeta-'));
+    const source = await syncMcmeta({
+      version: VERSION,
+      out,
+      fetchFile: fakeFetch(upstream(), []),
+    });
+    expect(source.commands).toBeUndefined();
   });
 });

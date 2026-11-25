@@ -10,6 +10,11 @@
  * writes `version.json`, `registries.json`, `commands.json`, `blocks.json` and
  * `SOURCE.json` into `<dir>` with sorted keys and 2-space indent, atomically.
  *
+ * mcmeta's command report changed format at `26.4-snapshot-8` (the argument nested under
+ * `argument`, renamed argument types, `permissions` on every node). `commands.ts` converts such a
+ * report back to the parser-and-properties format the vendored Spyglass reads before it is
+ * checked and written, and `SOURCE.json` then records `commands` (what the adapter did).
+ *
  * It also writes `files.json`, the index of the version's own data and resource pack files
  * (paths and blob hashes from the trees of the tags `<version>-data` and `<version>-assets`, no
  * contents; `files.ts`), which `tools/diff-targets` compares between two targets. With
@@ -30,6 +35,7 @@ import {
   stringifySorted,
   writeFileAtomic,
 } from '../shared/download.ts';
+import { adaptCommandReport, type CommandAdaptation } from './commands.ts';
 import {
   FILE_INDEX_NAME,
   gitReadTree,
@@ -39,6 +45,14 @@ import {
   writeFileIndex,
 } from './files.ts';
 
+export {
+  adaptCommandReport,
+  type CommandAdaptation,
+  type CommandReportFormat,
+  type CommandReportNode,
+  commandReportFormat,
+  legacyArgument,
+} from './commands.ts';
 export { FILE_INDEX_NAME, type ReadTree, type VanillaFileIndex } from './files.ts';
 
 export const REPOSITORY: GitHubRepository = 'misode/mcmeta';
@@ -75,7 +89,15 @@ export interface McmetaSource {
   /** Every vendored file with the upstream path it came from (within `refs.summary`). */
   files: McmetaFile[];
   fetchedAt: string;
+  /**
+   * Present only when the upstream command report came in the nested-argument format and was
+   * converted (`commands.ts`): what the adapter did. A report in the old format leaves it out.
+   */
+  commands?: CommandAdaptation & { adapter: string };
 }
+
+/** The adapter's path, recorded in `SOURCE.json` `commands.adapter`. */
+export const COMMAND_ADAPTER = 'tools/sync-mcmeta/commands.ts';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -125,7 +147,30 @@ export function validateCommands(value: unknown): string[] {
   for (const name of REQUIRED_COMMANDS) {
     if (!(name in children)) problems.push(`commands.json: missing command "${name}"`);
   }
+  const unread = argumentNodesWithoutParser(value);
+  if (unread.length > 0) {
+    problems.push(
+      `commands.json: ${unread.length} argument nodes have no "parser" (first: ${unread[0]}); the vendored checker could not read them`,
+    );
+  }
   return problems;
+}
+
+/** Paths of argument nodes with no `parser`, which the vendored checker cannot parse. */
+function argumentNodesWithoutParser(root: Record<string, unknown>): string[] {
+  const found: string[] = [];
+  const walk = (node: Record<string, unknown>, path: string[]) => {
+    const children = node.children;
+    if (!isRecord(children)) return;
+    for (const [name, child] of Object.entries(children)) {
+      if (!isRecord(child)) continue;
+      const here = [...path, name];
+      if (child.type === 'argument' && typeof child.parser !== 'string') found.push(here.join(' '));
+      walk(child, here);
+    }
+  };
+  walk(root, []);
+  return found;
 }
 
 /** Returns problems with the block-state summary (`blocks/data.min.json`); empty means valid. */
@@ -219,6 +264,20 @@ export async function syncMcmeta(options: SyncMcmetaOptions): Promise<McmetaSour
     parsed.set(file.name, parseJsonStrict(text, file.name));
   }
 
+  // The vendored checker reads only the parser-and-properties format (B831).
+  let commandAdaptation: CommandAdaptation | undefined;
+  const rawCommands = parsed.get('commands.json');
+  if (isRecord(rawCommands)) {
+    const { tree, adaptation } = adaptCommandReport(rawCommands);
+    parsed.set('commands.json', tree);
+    if (adaptation.format === 'nested-argument') {
+      commandAdaptation = adaptation;
+      log(
+        `commands.json: converted ${adaptation.converted} arguments from the nested-argument format (${Object.keys(adaptation.renamed).length} type renames)`,
+      );
+    }
+  }
+
   const problems = [
     ...validateVersion(parsed.get('version.json'), options.version),
     ...validateRegistries(parsed.get('registries.json')),
@@ -240,6 +299,9 @@ export async function syncMcmeta(options: SyncMcmetaOptions): Promise<McmetaSour
     files: MCMETA_FILES.map((file) => ({ ...file })),
     fetchedAt: nowIso(),
   };
+  if (commandAdaptation !== undefined) {
+    source.commands = { adapter: COMMAND_ADAPTER, ...commandAdaptation };
+  }
   for (const file of MCMETA_FILES) {
     await writeFileAtomic(resolve(options.out, file.name), stringifySorted(parsed.get(file.name)));
   }

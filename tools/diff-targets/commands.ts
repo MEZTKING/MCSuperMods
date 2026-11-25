@@ -1,54 +1,29 @@
 /**
  * Command tree changes, from mcmeta's command report (`commands.json`).
  *
- * The report is normalised to one shape before diffing. Two formats are known:
- *
- * - **parser and properties** (every vendored target up to `26.4-snapshot-7`): an argument
- *   node carries `parser` and `properties` beside `type`, `children`, `executable` and
- *   `redirect`;
- * - **nested argument** (mcmeta from `26.4-snapshot-8`, B810 V4): an argument node carries
- *   `argument: { type, ...properties }` instead, and nodes may carry `permissions`.
- *
- * The nested shape is flattened to the first (`argument.type` becomes the parser) and
- * `permissions` is left out. The new format also renamed the argument types (`brigadier:bool`
- * became `minecraft:bool`, string types split into `word`, `quoted_string` and
- * `greedy_string`, `resource_key` became `resource`) and some entity and score-holder
- * properties; those renames are not mapped here, because no vendored report has the new
- * format yet: a diff across the two formats lists every renamed argument as changed (verify
- * at implementation, with the `sync-mcmeta` adapter B810 asks for).
+ * The report is normalised to one shape before diffing. Two formats are known (see
+ * `tools/sync-mcmeta/commands.ts`): **parser and properties** (every vendored target) and
+ * **nested argument** (mcmeta from `26.4-snapshot-8`). A nested argument is converted with
+ * `sync-mcmeta`'s adapter (`legacyArgument`), renames and reshapes included, so the format alone
+ * is no change: a diff across the two formats lists only what Mojang changed (for
+ * `26.4-snapshot-7` to `26.4-pre-1`, the 13 nodes of the merged key types `resource_key` and
+ * `resource_or_tag_key`). `permissions`, `custom_suggestion` and the properties the adapter drops
+ * are left out. Since `sync-mcmeta` converts every report it vendors, a vendored target is
+ * always in the first format; the nested path serves raw reports.
  *
  * @packageDocumentation
  */
 
+import {
+  type CommandReportFormat,
+  type CommandReportNode,
+  commandReportFormat,
+  legacyArgument,
+} from '../sync-mcmeta/commands.ts';
 import { makeChange, sortedStrings } from './change.ts';
 import type { TargetAddition, TargetChange } from './types.ts';
 
-/** A node of mcmeta's command report, in either format. */
-export interface CommandReportNode {
-  type?: string;
-  children?: Record<string, CommandReportNode>;
-  executable?: boolean;
-  parser?: string;
-  properties?: Record<string, unknown>;
-  redirect?: string[];
-  /** The nested-argument format's argument: its `type` and properties. */
-  argument?: { type: string; [property: string]: unknown };
-  permissions?: unknown;
-}
-
-/** Which of the two known formats a report is in. */
-export type CommandReportFormat = 'parser-properties' | 'nested-argument';
-
-/** Whether any node of the report nests its argument under `argument`. */
-export function commandReportFormat(root: CommandReportNode): CommandReportFormat {
-  const stack: CommandReportNode[] = [root];
-  while (stack.length > 0) {
-    const node = stack.pop() as CommandReportNode;
-    if (node.argument !== undefined) return 'nested-argument';
-    for (const child of Object.values(node.children ?? {})) stack.push(child);
-  }
-  return 'parser-properties';
-}
+export { type CommandReportFormat, type CommandReportNode, commandReportFormat };
 
 /** Canonical JSON with sorted keys, for property objects. */
 function canonical(value: unknown): string {
@@ -75,9 +50,9 @@ export function flattenCommands(root: CommandReportNode): Map<string, string> {
       let parser = child.parser;
       let properties: Record<string, unknown> | undefined = child.properties;
       if (child.argument !== undefined && parser === undefined) {
-        const { type, ...rest } = child.argument;
-        parser = type;
-        properties = Object.keys(rest).length > 0 ? rest : undefined;
+        const legacy = legacyArgument(child.argument);
+        parser = legacy.parser;
+        properties = legacy.properties;
       }
       const label = child.type === 'literal' ? name : `<${name}>`;
       const here = [...path, label];
