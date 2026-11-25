@@ -1,0 +1,4104 @@
+{
+ "from": "packages/targets/mc-26.3",
+ "to": "packages/targets/mc-26.4",
+ "fromVersion": "26.3",
+ "toVersion": "26.4-snapshot-7",
+ "mode": "both",
+ "timings": {
+  "registriesMs": 32.194658000000004,
+  "mcdoc_gated_ms": 119.83550200000002,
+  "mcdoc_refs_ms": 136.89729599999993,
+  "mcdoc_drift_ms": 110.98740199999997,
+  "commandsBlocksMs": 37.69756200000006,
+  "totalMs": 684.9786330000001
+ },
+ "registries": {
+  "counts": {
+   "registriesBefore": 190,
+   "registriesAfter": 192,
+   "addedRegistries": 3,
+   "removedRegistries": 1,
+   "removedMembers": 17,
+   "addedMembers": 805,
+   "registriesWithRemovals": 8,
+   "registriesWithAdditions": 35
+  },
+  "addedRegistries": [
+   "block_sound_set",
+   "rule_test_type",
+   "tag/block_sound_set"
+  ],
+  "removedRegistries": [
+   "rule_test"
+  ],
+  "moved": {
+   "rule_test": "rule_test_type"
+  },
+  "removed": {
+   "fluid": [
+    "flowing_lava",
+    "flowing_water"
+   ],
+   "model": [
+    "block/cube_top"
+   ],
+   "particle_type": [
+    "item_snowball"
+   ],
+   "sound_event": [
+    "intentionally_empty"
+   ],
+   "tag/entity_type": [
+    "freeze_immune_entity_types",
+    "ignores_poison_and_regen"
+   ],
+   "texture": [
+    "gui/sprites/friends/button",
+    "gui/sprites/friends/button_disabled",
+    "gui/sprites/friends/button_highlighted",
+    "gui/sprites/friends/loading",
+    "gui/sprites/friends/remove",
+    "gui/sprites/pause_menu/player_reporting",
+    "gui/sprites/pause_menu/social_interactions",
+    "gui/sprites/toast/social_interactions"
+   ],
+   "worldgen/density_function_type": [
+    "interpolated"
+   ],
+   "worldgen/feature_type": [
+    "large_dripstone"
+   ]
+  },
+  "added": {
+   "advancement": [
+    "adventure/what_goes_around_comes_around",
+    "recipes/building_blocks/calcite_pillar",
+    "recipes/building_blocks/calcite_pillar_from_calcite_stonecutting",
+    "recipes/building_blocks/calcite_slab",
+    "recipes/building_blocks/calcite_slab_from_calcite_stonecutting",
+    "recipes/building_blocks/calcite_stairs",
+    "recipes/building_blocks/calcite_stairs_from_calcite_stonecutting",
+    "recipes/building_blocks/chiseled_packed_ice",
+    "recipes/building_blocks/chiseled_packed_ice_from_packed_ice_bricks_stonecutting",
+    "recipes/building_blocks/chiseled_packed_ice_from_packed_ice_stonecutting",
+    "recipes/building_blocks/packed_ice_brick_slab",
+    "recipes/building_blocks/packed_ice_brick_slab_from_packed_ice_bricks_stonecutting",
+    "recipes/building_blocks/packed_ice_brick_slab_from_packed_ice_stonecutting",
+    "recipes/building_blocks/packed_ice_brick_stairs",
+    "recipes/building_blocks/packed_ice_brick_stairs_from_packed_ice_bricks_stonecutting",
+    "recipes/building_blocks/packed_ice_brick_stairs_from_packed_ice_stonecutting",
+    "recipes/building_blocks/packed_ice_bricks",
+    "recipes/building_blocks/packed_ice_bricks_from_packed_ice_stonecutting",
+    "recipes/building_blocks/polished_calcite",
+    "recipes/building_blocks/polished_calcite_brick_slab",
+    "recipes/building_blocks/polished_calcite_brick_slab_from_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_brick_slab_from_polished_calcite_bricks_stonecutting",
+    "recipes/building_blocks/polished_calcite_brick_slab_from_polished_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_brick_stairs",
+    "recipes/building_blocks/polished_calcite_brick_stairs_from_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_brick_stairs_from_polished_calcite_bricks_stonecutting",
+    "recipes/building_blocks/polished_calcite_brick_stairs_from_polished_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_bricks",
+    "recipes/building_blocks/polished_calcite_bricks_from_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_bricks_from_polished_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_from_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_slab",
+    "recipes/building_blocks/polished_calcite_slab_from_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_slab_from_polished_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_stairs",
+    "recipes/building_blocks/polished_calcite_stairs_from_calcite_stonecutting",
+    "recipes/building_blocks/polished_calcite_stairs_from_polished_calcite_stonecutting",
+    "recipes/building_blocks/snow_brick_slab",
+    "recipes/building_blocks/snow_brick_stairs",
+    "recipes/building_blocks/snow_bricks",
+    "recipes/decorations/calcite_wall",
+    "recipes/decorations/calcite_wall_from_calcite_stonecutting",
+    "recipes/decorations/packed_ice_brick_wall",
+    "recipes/decorations/packed_ice_brick_wall_from_packed_ice_bricks_stonecutting",
+    "recipes/decorations/packed_ice_brick_wall_from_packed_ice_stonecutting",
+    "recipes/decorations/polished_calcite_brick_wall",
+    "recipes/decorations/polished_calcite_brick_wall_from_calcite_stonecutting",
+    "recipes/decorations/polished_calcite_brick_wall_from_polished_calcite_bricks_stonecutting",
+    "recipes/decorations/polished_calcite_brick_wall_from_polished_calcite_stonecutting",
+    "recipes/decorations/polished_calcite_wall",
+    "recipes/decorations/polished_calcite_wall_from_calcite_stonecutting",
+    "recipes/decorations/polished_calcite_wall_from_polished_calcite_stonecutting",
+    "recipes/decorations/snow_brick_wall"
+   ],
+   "block": [
+    "brittle_ice",
+    "calcite_pillar",
+    "calcite_slab",
+    "calcite_stairs",
+    "calcite_wall",
+    "chiseled_packed_ice",
+    "chiseled_soulshale",
+    "ice_crystal",
+    "icicle",
+    "packed_ice_brick_slab",
+    "packed_ice_brick_stairs",
+    "packed_ice_brick_wall",
+    "packed_ice_bricks",
+    "polished_calcite",
+    "polished_calcite_brick_slab",
+    "polished_calcite_brick_stairs",
+    "polished_calcite_brick_wall",
+    "polished_calcite_bricks",
+    "polished_calcite_slab",
+    "polished_calcite_stairs",
+    "polished_calcite_wall",
+    "snow_brick_slab",
+    "snow_brick_stairs",
+    "snow_brick_wall",
+    "snow_bricks"
+   ],
+   "block_definition": [
+    "brittle_ice",
+    "calcite_pillar",
+    "calcite_slab",
+    "calcite_stairs",
+    "calcite_wall",
+    "chiseled_packed_ice",
+    "chiseled_soulshale",
+    "ice_crystal",
+    "icicle",
+    "packed_ice_brick_slab",
+    "packed_ice_brick_stairs",
+    "packed_ice_brick_wall",
+    "packed_ice_bricks",
+    "polished_calcite",
+    "polished_calcite_brick_slab",
+    "polished_calcite_brick_stairs",
+    "polished_calcite_brick_wall",
+    "polished_calcite_bricks",
+    "polished_calcite_slab",
+    "polished_calcite_stairs",
+    "polished_calcite_wall",
+    "snow_brick_slab",
+    "snow_brick_stairs",
+    "snow_brick_wall",
+    "snow_bricks"
+   ],
+   "block_predicate_type": [
+    "below_heightmap"
+   ],
+   "chunk_status": [
+    "noise_biomes"
+   ],
+   "entity_type": [
+    "frostbite",
+    "ice_ball"
+   ],
+   "environment_attribute": [
+    "visual/has_sky_occluder"
+   ],
+   "item": [
+    "brittle_ice",
+    "calcite_pillar",
+    "calcite_slab",
+    "calcite_stairs",
+    "calcite_wall",
+    "chiseled_packed_ice",
+    "chiseled_soulshale",
+    "frostbite_spawn_egg",
+    "ice_ball",
+    "ice_crystal",
+    "icicle",
+    "music_disc_flurry",
+    "packed_ice_brick_slab",
+    "packed_ice_brick_stairs",
+    "packed_ice_brick_wall",
+    "packed_ice_bricks",
+    "polished_calcite",
+    "polished_calcite_brick_slab",
+    "polished_calcite_brick_stairs",
+    "polished_calcite_brick_wall",
+    "polished_calcite_bricks",
+    "polished_calcite_slab",
+    "polished_calcite_stairs",
+    "polished_calcite_wall",
+    "snow_brick_slab",
+    "snow_brick_stairs",
+    "snow_brick_wall",
+    "snow_bricks"
+   ],
+   "item_definition": [
+    "brittle_ice",
+    "calcite_pillar",
+    "calcite_slab",
+    "calcite_stairs",
+    "calcite_wall",
+    "chiseled_packed_ice",
+    "chiseled_soulshale",
+    "frostbite_spawn_egg",
+    "ice_ball",
+    "ice_crystal",
+    "icicle",
+    "music_disc_flurry",
+    "packed_ice_brick_slab",
+    "packed_ice_brick_stairs",
+    "packed_ice_brick_wall",
+    "packed_ice_bricks",
+    "polished_calcite",
+    "polished_calcite_brick_slab",
+    "polished_calcite_brick_stairs",
+    "polished_calcite_brick_wall",
+    "polished_calcite_bricks",
+    "polished_calcite_slab",
+    "polished_calcite_stairs",
+    "polished_calcite_wall",
+    "snow_brick_slab",
+    "snow_brick_stairs",
+    "snow_brick_wall",
+    "snow_bricks"
+   ],
+   "jukebox_song": [
+    "flurry"
+   ],
+   "loot_table": [
+    "blocks/brittle_ice",
+    "blocks/calcite_pillar",
+    "blocks/calcite_slab",
+    "blocks/calcite_stairs",
+    "blocks/calcite_wall",
+    "blocks/chiseled_packed_ice",
+    "blocks/chiseled_soulshale",
+    "blocks/ice_crystal",
+    "blocks/icicle",
+    "blocks/packed_ice_brick_slab",
+    "blocks/packed_ice_brick_stairs",
+    "blocks/packed_ice_brick_wall",
+    "blocks/packed_ice_bricks",
+    "blocks/polished_calcite",
+    "blocks/polished_calcite_brick_slab",
+    "blocks/polished_calcite_brick_stairs",
+    "blocks/polished_calcite_brick_wall",
+    "blocks/polished_calcite_bricks",
+    "blocks/polished_calcite_slab",
+    "blocks/polished_calcite_stairs",
+    "blocks/polished_calcite_wall",
+    "blocks/snow_brick_slab",
+    "blocks/snow_brick_stairs",
+    "blocks/snow_brick_wall",
+    "blocks/snow_bricks",
+    "entities/frostbite"
+   ],
+   "menu": [
+    "jukebox"
+   ],
+   "mob_effect": [
+    "freezing"
+   ],
+   "model": [
+    "block/brittle_ice_0",
+    "block/brittle_ice_1",
+    "block/brittle_ice_2",
+    "block/brittle_ice_3",
+    "block/calcite_pillar",
+    "block/calcite_pillar_horizontal",
+    "block/calcite_slab",
+    "block/calcite_slab_top",
+    "block/calcite_stairs",
+    "block/calcite_stairs_inner",
+    "block/calcite_stairs_outer",
+    "block/calcite_wall_inventory",
+    "block/calcite_wall_post",
+    "block/calcite_wall_side",
+    "block/calcite_wall_side_tall",
+    "block/chiseled_packed_ice",
+    "block/chiseled_soulshale",
+    "block/ice_crystal",
+    "block/icicle_base",
+    "block/icicle_base_base",
+    "block/icicle_base_frustum",
+    "block/icicle_base_middle",
+    "block/icicle_base_tip",
+    "block/icicle_base_tip_merge",
+    "block/icicle_frustum",
+    "block/icicle_middle",
+    "block/icicle_tip",
+    "block/icicle_tip_merge",
+    "block/packed_ice_brick_slab",
+    "block/packed_ice_brick_slab_top",
+    "block/packed_ice_brick_stairs",
+    "block/packed_ice_brick_stairs_inner",
+    "block/packed_ice_brick_stairs_outer",
+    "block/packed_ice_brick_wall_inventory",
+    "block/packed_ice_brick_wall_post",
+    "block/packed_ice_brick_wall_side",
+    "block/packed_ice_brick_wall_side_tall",
+    "block/packed_ice_bricks",
+    "block/polished_calcite",
+    "block/polished_calcite_brick_slab",
+    "block/polished_calcite_brick_slab_top",
+    "block/polished_calcite_brick_stairs",
+    "block/polished_calcite_brick_stairs_inner",
+    "block/polished_calcite_brick_stairs_outer",
+    "block/polished_calcite_brick_wall_inventory",
+    "block/polished_calcite_brick_wall_post",
+    "block/polished_calcite_brick_wall_side",
+    "block/polished_calcite_brick_wall_side_tall",
+    "block/polished_calcite_bricks",
+    "block/polished_calcite_slab",
+    "block/polished_calcite_slab_double",
+    "block/polished_calcite_slab_top",
+    "block/polished_calcite_stairs",
+    "block/polished_calcite_stairs_inner",
+    "block/polished_calcite_stairs_outer",
+    "block/polished_calcite_wall_inventory",
+    "block/polished_calcite_wall_post",
+    "block/polished_calcite_wall_side",
+    "block/polished_calcite_wall_side_tall",
+    "block/snow_brick_slab",
+    "block/snow_brick_slab_top",
+    "block/snow_brick_stairs",
+    "block/snow_brick_stairs_inner",
+    "block/snow_brick_stairs_outer",
+    "block/snow_brick_wall_inventory",
+    "block/snow_brick_wall_post",
+    "block/snow_brick_wall_side",
+    "block/snow_brick_wall_side_tall",
+    "block/snow_bricks",
+    "block/template_icicle",
+    "block/template_icicle_base",
+    "item/frostbite_spawn_egg",
+    "item/ice_ball",
+    "item/ice_crystal",
+    "item/icicle",
+    "item/music_disc_flurry"
+   ],
+   "particle_type": [
+    "freezing"
+   ],
+   "potion": [
+    "freezing",
+    "long_freezing"
+   ],
+   "recipe": [
+    "brewing/lingering_potion_awkward_ice_ball",
+    "brewing/lingering_potion_freezing_redstone",
+    "brewing/lingering_potion_water_ice_ball",
+    "brewing/potion_awkward_ice_ball",
+    "brewing/potion_freezing_gunpowder",
+    "brewing/potion_freezing_redstone",
+    "brewing/potion_long_freezing_gunpowder",
+    "brewing/potion_water_ice_ball",
+    "brewing/splash_potion_awkward_ice_ball",
+    "brewing/splash_potion_freezing_dragon_breath",
+    "brewing/splash_potion_freezing_redstone",
+    "brewing/splash_potion_long_freezing_dragon_breath",
+    "brewing/splash_potion_water_ice_ball",
+    "calcite_pillar",
+    "calcite_pillar_from_calcite_stonecutting",
+    "calcite_slab",
+    "calcite_slab_from_calcite_stonecutting",
+    "calcite_stairs",
+    "calcite_stairs_from_calcite_stonecutting",
+    "calcite_wall",
+    "calcite_wall_from_calcite_stonecutting",
+    "chiseled_packed_ice",
+    "chiseled_packed_ice_from_packed_ice_bricks_stonecutting",
+    "chiseled_packed_ice_from_packed_ice_stonecutting",
+    "packed_ice_brick_slab",
+    "packed_ice_brick_slab_from_packed_ice_bricks_stonecutting",
+    "packed_ice_brick_slab_from_packed_ice_stonecutting",
+    "packed_ice_brick_stairs",
+    "packed_ice_brick_stairs_from_packed_ice_bricks_stonecutting",
+    "packed_ice_brick_stairs_from_packed_ice_stonecutting",
+    "packed_ice_brick_wall",
+    "packed_ice_brick_wall_from_packed_ice_bricks_stonecutting",
+    "packed_ice_brick_wall_from_packed_ice_stonecutting",
+    "packed_ice_bricks",
+    "packed_ice_bricks_from_packed_ice_stonecutting",
+    "polished_calcite",
+    "polished_calcite_brick_slab",
+    "polished_calcite_brick_slab_from_calcite_stonecutting",
+    "polished_calcite_brick_slab_from_polished_calcite_bricks_stonecutting",
+    "polished_calcite_brick_slab_from_polished_calcite_stonecutting",
+    "polished_calcite_brick_stairs",
+    "polished_calcite_brick_stairs_from_calcite_stonecutting",
+    "polished_calcite_brick_stairs_from_polished_calcite_bricks_stonecutting",
+    "polished_calcite_brick_stairs_from_polished_calcite_stonecutting",
+    "polished_calcite_brick_wall",
+    "polished_calcite_brick_wall_from_calcite_stonecutting",
+    "polished_calcite_brick_wall_from_polished_calcite_bricks_stonecutting",
+    "polished_calcite_brick_wall_from_polished_calcite_stonecutting",
+    "polished_calcite_bricks",
+    "polished_calcite_bricks_from_calcite_stonecutting",
+    "polished_calcite_bricks_from_polished_calcite_stonecutting",
+    "polished_calcite_from_calcite_stonecutting",
+    "polished_calcite_slab",
+    "polished_calcite_slab_from_calcite_stonecutting",
+    "polished_calcite_slab_from_polished_calcite_stonecutting",
+    "polished_calcite_stairs",
+    "polished_calcite_stairs_from_calcite_stonecutting",
+    "polished_calcite_stairs_from_polished_calcite_stonecutting",
+    "polished_calcite_wall",
+    "polished_calcite_wall_from_calcite_stonecutting",
+    "polished_calcite_wall_from_polished_calcite_stonecutting",
+    "snow_brick_slab",
+    "snow_brick_stairs",
+    "snow_brick_wall",
+    "snow_bricks"
+   ],
+   "sound": [
+    "block/blue_ice/break1",
+    "block/blue_ice/break2",
+    "block/blue_ice/break3",
+    "block/blue_ice/break4",
+    "block/blue_ice/break5",
+    "block/blue_ice/break6",
+    "block/blue_ice/hit1",
+    "block/blue_ice/hit2",
+    "block/blue_ice/hit3",
+    "block/blue_ice/hit4",
+    "block/blue_ice/hit5",
+    "block/blue_ice/place1",
+    "block/blue_ice/place2",
+    "block/blue_ice/place3",
+    "block/blue_ice/place4",
+    "block/blue_ice/place5",
+    "block/blue_ice/place6",
+    "block/blue_ice/step1",
+    "block/blue_ice/step2",
+    "block/blue_ice/step3",
+    "block/blue_ice/step4",
+    "block/blue_ice/step5",
+    "block/blue_ice/step6",
+    "block/brittle_ice/break1",
+    "block/brittle_ice/break2",
+    "block/brittle_ice/break3",
+    "block/brittle_ice/break4",
+    "block/brittle_ice/break5",
+    "block/brittle_ice/break6",
+    "block/brittle_ice/crack1",
+    "block/brittle_ice/crack2",
+    "block/brittle_ice/crack3",
+    "block/brittle_ice/crack4",
+    "block/brittle_ice/crack5",
+    "block/brittle_ice/hit1",
+    "block/brittle_ice/hit2",
+    "block/brittle_ice/hit3",
+    "block/brittle_ice/hit4",
+    "block/brittle_ice/hit5",
+    "block/brittle_ice/hit6",
+    "block/brittle_ice/place1",
+    "block/brittle_ice/place2",
+    "block/brittle_ice/place3",
+    "block/brittle_ice/place4",
+    "block/brittle_ice/place5",
+    "block/brittle_ice/place6",
+    "block/brittle_ice/step1",
+    "block/brittle_ice/step2",
+    "block/brittle_ice/step3",
+    "block/brittle_ice/step4",
+    "block/brittle_ice/step5",
+    "block/brittle_ice/step6",
+    "block/chiseled_soulshale/break1",
+    "block/chiseled_soulshale/break2",
+    "block/chiseled_soulshale/break3",
+    "block/chiseled_soulshale/break4",
+    "block/chiseled_soulshale/break5",
+    "block/chiseled_soulshale/hit1",
+    "block/chiseled_soulshale/hit2",
+    "block/chiseled_soulshale/hit3",
+    "block/chiseled_soulshale/hit4",
+    "block/chiseled_soulshale/hit5",
+    "block/chiseled_soulshale/place1",
+    "block/chiseled_soulshale/place2",
+    "block/chiseled_soulshale/place3",
+    "block/chiseled_soulshale/place4",
+    "block/chiseled_soulshale/place5",
+    "block/chiseled_soulshale/step1",
+    "block/chiseled_soulshale/step2",
+    "block/chiseled_soulshale/step3",
+    "block/chiseled_soulshale/step4",
+    "block/chiseled_soulshale/step5",
+    "block/frosted_ice/break1",
+    "block/frosted_ice/break2",
+    "block/frosted_ice/break3",
+    "block/frosted_ice/break4",
+    "block/frosted_ice/break5",
+    "block/frosted_ice/break6",
+    "block/frosted_ice/hit1",
+    "block/frosted_ice/hit2",
+    "block/frosted_ice/hit3",
+    "block/frosted_ice/hit4",
+    "block/frosted_ice/hit5",
+    "block/frosted_ice/hit6",
+    "block/frosted_ice/place1",
+    "block/frosted_ice/place2",
+    "block/frosted_ice/place3",
+    "block/frosted_ice/place4",
+    "block/frosted_ice/place5",
+    "block/frosted_ice/place6",
+    "block/frosted_ice/step1",
+    "block/frosted_ice/step2",
+    "block/frosted_ice/step3",
+    "block/frosted_ice/step4",
+    "block/frosted_ice/step5",
+    "block/frosted_ice/step6",
+    "block/ice/ambient1",
+    "block/ice/ambient10",
+    "block/ice/ambient11",
+    "block/ice/ambient12",
+    "block/ice/ambient13",
+    "block/ice/ambient14",
+    "block/ice/ambient15",
+    "block/ice/ambient16",
+    "block/ice/ambient17",
+    "block/ice/ambient18",
+    "block/ice/ambient19",
+    "block/ice/ambient2",
+    "block/ice/ambient20",
+    "block/ice/ambient21",
+    "block/ice/ambient22",
+    "block/ice/ambient23",
+    "block/ice/ambient3",
+    "block/ice/ambient4",
+    "block/ice/ambient5",
+    "block/ice/ambient6",
+    "block/ice/ambient7",
+    "block/ice/ambient8",
+    "block/ice/ambient9",
+    "block/ice/break1",
+    "block/ice/break2",
+    "block/ice/break3",
+    "block/ice/break4",
+    "block/ice/break5",
+    "block/ice/break6",
+    "block/ice/hit1",
+    "block/ice/hit2",
+    "block/ice/hit3",
+    "block/ice/hit4",
+    "block/ice/hit5",
+    "block/ice/place1",
+    "block/ice/place2",
+    "block/ice/place3",
+    "block/ice/place4",
+    "block/ice/place5",
+    "block/ice/place6",
+    "block/ice/step1",
+    "block/ice/step2",
+    "block/ice/step3",
+    "block/ice/step4",
+    "block/ice/step5",
+    "block/ice/step6",
+    "block/ice_crystal/ambient1",
+    "block/ice_crystal/ambient10",
+    "block/ice_crystal/ambient11",
+    "block/ice_crystal/ambient12",
+    "block/ice_crystal/ambient13",
+    "block/ice_crystal/ambient14",
+    "block/ice_crystal/ambient15",
+    "block/ice_crystal/ambient16",
+    "block/ice_crystal/ambient17",
+    "block/ice_crystal/ambient18",
+    "block/ice_crystal/ambient19",
+    "block/ice_crystal/ambient2",
+    "block/ice_crystal/ambient20",
+    "block/ice_crystal/ambient21",
+    "block/ice_crystal/ambient22",
+    "block/ice_crystal/ambient23",
+    "block/ice_crystal/ambient24",
+    "block/ice_crystal/ambient25",
+    "block/ice_crystal/ambient26",
+    "block/ice_crystal/ambient27",
+    "block/ice_crystal/ambient28",
+    "block/ice_crystal/ambient3",
+    "block/ice_crystal/ambient4",
+    "block/ice_crystal/ambient5",
+    "block/ice_crystal/ambient6",
+    "block/ice_crystal/ambient7",
+    "block/ice_crystal/ambient8",
+    "block/ice_crystal/ambient9",
+    "block/ice_crystal/break1",
+    "block/ice_crystal/break2",
+    "block/ice_crystal/break3",
+    "block/ice_crystal/break4",
+    "block/ice_crystal/break5",
+    "block/ice_crystal/hit1",
+    "block/ice_crystal/hit2",
+    "block/ice_crystal/hit3",
+    "block/ice_crystal/hit4",
+    "block/ice_crystal/hit5",
+    "block/ice_crystal/place1",
+    "block/ice_crystal/place2",
+    "block/ice_crystal/place3",
+    "block/ice_crystal/place4",
+    "block/ice_crystal/place5",
+    "block/ice_crystal/step1",
+    "block/ice_crystal/step2",
+    "block/ice_crystal/step3",
+    "block/ice_crystal/step4",
+    "block/ice_crystal/step5",
+    "block/icicle/break1",
+    "block/icicle/break2",
+    "block/icicle/break3",
+    "block/icicle/break4",
+    "block/icicle/break5",
+    "block/icicle/break6",
+    "block/icicle/hit1",
+    "block/icicle/hit2",
+    "block/icicle/hit3",
+    "block/icicle/hit4",
+    "block/icicle/hit5",
+    "block/icicle/land1",
+    "block/icicle/land2",
+    "block/icicle/land3",
+    "block/icicle/land4",
+    "block/icicle/land5",
+    "block/icicle/land6",
+    "block/icicle/place1",
+    "block/icicle/place2",
+    "block/icicle/place3",
+    "block/icicle/place4",
+    "block/icicle/place5",
+    "block/icicle/place6",
+    "block/icicle/step1",
+    "block/icicle/step2",
+    "block/icicle/step3",
+    "block/icicle/step4",
+    "block/icicle/step5",
+    "block/icicle/step6",
+    "block/packed_ice/break1",
+    "block/packed_ice/break2",
+    "block/packed_ice/break3",
+    "block/packed_ice/break4",
+    "block/packed_ice/break5",
+    "block/packed_ice/break6",
+    "block/packed_ice/hit1",
+    "block/packed_ice/hit2",
+    "block/packed_ice/hit3",
+    "block/packed_ice/hit4",
+    "block/packed_ice/hit5",
+    "block/packed_ice/hit6",
+    "block/packed_ice/place1",
+    "block/packed_ice/place2",
+    "block/packed_ice/place3",
+    "block/packed_ice/place4",
+    "block/packed_ice/place5",
+    "block/packed_ice/place6",
+    "block/packed_ice/step1",
+    "block/packed_ice/step2",
+    "block/packed_ice/step3",
+    "block/packed_ice/step4",
+    "block/packed_ice/step5",
+    "block/packed_ice/step6",
+    "entity/ice_ball/bow",
+    "entity/ice_ball/hit1",
+    "entity/ice_ball/hit2",
+    "entity/ice_ball/hit3",
+    "entity/ice_ball/hit4",
+    "event/mob_effects/freezing",
+    "mob/drowned/convert_to_zombie1",
+    "mob/drowned/convert_to_zombie2",
+    "mob/frostbite/ambient1",
+    "mob/frostbite/ambient2",
+    "mob/frostbite/ambient3",
+    "mob/frostbite/ambient4",
+    "mob/frostbite/convert1",
+    "mob/frostbite/convert2",
+    "mob/frostbite/death",
+    "mob/frostbite/hurt1",
+    "mob/frostbite/hurt2",
+    "mob/frostbite/hurt3",
+    "mob/frostbite/hurt4",
+    "mob/frostbite/step1",
+    "mob/frostbite/step2",
+    "mob/frostbite/step3",
+    "mob/frostbite/step4",
+    "mob/frostbite/step5",
+    "mob/zombie/convert1",
+    "mob/zombie/convert2",
+    "records/flurry"
+   ],
+   "sound_event": [
+    "block.blue_ice.break",
+    "block.blue_ice.fall",
+    "block.blue_ice.hit",
+    "block.blue_ice.place",
+    "block.blue_ice.step",
+    "block.brittle_ice.break",
+    "block.brittle_ice.crack",
+    "block.brittle_ice.fall",
+    "block.brittle_ice.hit",
+    "block.brittle_ice.place",
+    "block.brittle_ice.step",
+    "block.chiseled_soulshale.break",
+    "block.chiseled_soulshale.fall",
+    "block.chiseled_soulshale.hit",
+    "block.chiseled_soulshale.place",
+    "block.chiseled_soulshale.step",
+    "block.frosted_ice.break",
+    "block.frosted_ice.fall",
+    "block.frosted_ice.hit",
+    "block.frosted_ice.place",
+    "block.frosted_ice.step",
+    "block.ice.ambient",
+    "block.ice.break",
+    "block.ice.fall",
+    "block.ice.hit",
+    "block.ice.place",
+    "block.ice.step",
+    "block.ice_crystal.ambient",
+    "block.ice_crystal.break",
+    "block.ice_crystal.fall",
+    "block.ice_crystal.hit",
+    "block.ice_crystal.place",
+    "block.ice_crystal.step",
+    "block.icicle.break",
+    "block.icicle.fall",
+    "block.icicle.hit",
+    "block.icicle.land",
+    "block.icicle.place",
+    "block.icicle.step",
+    "block.packed_ice.break",
+    "block.packed_ice.fall",
+    "block.packed_ice.hit",
+    "block.packed_ice.place",
+    "block.packed_ice.step",
+    "entity.chicken_picky.step",
+    "entity.drowned.converted_to_zombie",
+    "entity.frostbite.ambient",
+    "entity.frostbite.converted_to_zombie",
+    "entity.frostbite.death",
+    "entity.frostbite.hurt",
+    "entity.frostbite.step",
+    "entity.ice_ball.break",
+    "entity.ice_ball.throw",
+    "entity.parrot.imitate.frostbite",
+    "entity.zombie.converted_to_frostbite",
+    "entity.zombie_nautilus.riding",
+    "event.mob_effect.freezing",
+    "music_disc.flurry"
+   ],
+   "sulfur_cube_archetype": [
+    "cold"
+   ],
+   "tag/block": [
+    "face_occluding_ice_blocks",
+    "ice_cave_ore_replaceables",
+    "ice_crevasse_replaceables",
+    "jukebox_containers",
+    "large_icicle_replaceable",
+    "melts_icicle_above",
+    "pathfinding/avoid_in_air",
+    "pathfinding/damage_cautious",
+    "pathfinding/damaging",
+    "pathfinding/drop_down",
+    "pathfinding/leaves",
+    "pathfinding/open",
+    "pathfinding/powder_snow",
+    "pathfinding/rails",
+    "pathfinding/sticky"
+   ],
+   "tag/damage_type": [
+    "no_hurt_sound"
+   ],
+   "tag/entity_type": [
+    "does_not_break_brittle_ice",
+    "immune_to_freezing",
+    "immune_to_poison",
+    "immune_to_regeneration",
+    "immune_to_weakness",
+    "immune_to_wither"
+   ],
+   "tag/fluid": [
+    "swimmable"
+   ],
+   "tag/item": [
+    "frostbite_preferred_weapons",
+    "jukebox_containers",
+    "knocks_back_players_even_with_zero_damage",
+    "sheep_wool_dyes",
+    "sulfur_cube_archetype/cold"
+   ],
+   "tag/worldgen/biome": [
+    "generated_in_below_zero_retrogen",
+    "is_cave",
+    "spawns_cold_variants_underground"
+   ],
+   "texture": [
+    "block/brittle_ice_0",
+    "block/brittle_ice_1",
+    "block/brittle_ice_2",
+    "block/brittle_ice_3",
+    "block/calcite_pillar_side",
+    "block/calcite_pillar_top",
+    "block/chiseled_packed_ice",
+    "block/chiseled_soulshale",
+    "block/ice_crystal",
+    "block/icicle_base",
+    "block/icicle_frustum",
+    "block/icicle_middle",
+    "block/icicle_side",
+    "block/icicle_tip",
+    "block/icicle_tip_merge",
+    "block/icicle_top",
+    "block/jukebox_bottom",
+    "block/packed_ice_bricks",
+    "block/polished_calcite",
+    "block/polished_calcite_bricks",
+    "block/polished_calcite_slab_side",
+    "block/snow_bricks",
+    "entity/zombie/frostbite",
+    "entity/zombie/frostbite_baby",
+    "entity/zombie/frostbite_outer_layer",
+    "gui/sprites/friends/background_light",
+    "gui/sprites/friends/presence_all",
+    "gui/sprites/friends/presence_limited",
+    "gui/sprites/friends/presence_none",
+    "gui/sprites/friends/profile",
+    "gui/sprites/friends/profile_highlighted",
+    "gui/sprites/friends/sort_alphabetical",
+    "gui/sprites/friends/sort_presence",
+    "gui/sprites/friends/tab",
+    "gui/sprites/friends/tab_highlighted",
+    "gui/sprites/friends/tab_selected",
+    "gui/sprites/pause_menu/feedback",
+    "gui/sprites/pause_menu/other_players",
+    "gui/sprites/widget/loading",
+    "item/frostbite_spawn_egg",
+    "item/ice_ball",
+    "item/ice_crystal",
+    "item/icicle",
+    "item/music_disc_flurry",
+    "mob_effect/freezing",
+    "particle/freezing_0",
+    "particle/freezing_1",
+    "particle/freezing_2",
+    "particle/freezing_3",
+    "particle/freezing_4",
+    "particle/freezing_5"
+   ],
+   "villager_trade": [
+    "wandering_trader/emerald_ice_crystal",
+    "wandering_trader/emerald_icicle"
+   ],
+   "worldgen/biome": [
+    "ice_caves"
+   ],
+   "worldgen/density_function_type": [
+    "domain_warp",
+    "upscale"
+   ],
+   "worldgen/feature": [
+    "ice_cave_ore_andesite",
+    "ice_cave_ore_coal",
+    "ice_cave_ore_coal_buried",
+    "ice_cave_ore_copper_small",
+    "ice_cave_ore_diamond_buried",
+    "ice_cave_ore_diamond_large",
+    "ice_cave_ore_diamond_medium",
+    "ice_cave_ore_diamond_small",
+    "ice_cave_ore_diorite",
+    "ice_cave_ore_gold_buried",
+    "ice_cave_ore_gravel",
+    "ice_cave_ore_iron",
+    "ice_cave_ore_iron_small",
+    "ice_cave_ore_lapis",
+    "ice_cave_ore_lapis_buried",
+    "ice_cave_ore_redstone",
+    "ice_crevasse",
+    "ice_crystal",
+    "icicle_cluster",
+    "large_icicle",
+    "snow_layer"
+   ],
+   "worldgen/feature_type": [
+    "crevasse",
+    "large_speleothem"
+   ],
+   "worldgen/material_rule": [
+    "overworld/biome_surface/ice_caves",
+    "overworld/ice_cave_bands"
+   ],
+   "worldgen/noise": [
+    "ice_cave_gradient"
+   ],
+   "worldgen/placed_feature": [
+    "ice_cave_ore_andesite_lower",
+    "ice_cave_ore_andesite_upper",
+    "ice_cave_ore_coal_lower",
+    "ice_cave_ore_coal_upper",
+    "ice_cave_ore_copper",
+    "ice_cave_ore_diamond",
+    "ice_cave_ore_diamond_buried",
+    "ice_cave_ore_diamond_large",
+    "ice_cave_ore_diamond_medium",
+    "ice_cave_ore_diorite_lower",
+    "ice_cave_ore_diorite_upper",
+    "ice_cave_ore_gold",
+    "ice_cave_ore_gold_lower",
+    "ice_cave_ore_gravel",
+    "ice_cave_ore_iron_middle",
+    "ice_cave_ore_iron_small",
+    "ice_cave_ore_iron_upper",
+    "ice_cave_ore_lapis",
+    "ice_cave_ore_lapis_buried",
+    "ice_cave_ore_redstone",
+    "ice_cave_ore_redstone_lower",
+    "ice_crevasse",
+    "ice_crystals",
+    "icicle_cluster",
+    "large_icicle",
+    "snow_layers"
+   ]
+  },
+  "stillElsewhere": {
+   "worldgen/feature_type": {
+    "large_dripstone": [
+     "worldgen/feature",
+     "worldgen/placed_feature"
+    ]
+   }
+  }
+ },
+ "mcdoc": {
+  "gated": {
+   "counts": {
+    "namedTypes": 2464,
+    "typesCompared": 2464,
+    "typesChanged": 20,
+    "typesOnlyBefore": 0,
+    "typesOnlyAfter": 0,
+    "dispatchers": 105,
+    "dispatchersChanged": 13,
+    "dispatcherMembersCompared": 1748,
+    "dispatcherKeysAdded": 9,
+    "dispatcherKeysRemoved": 2,
+    "dispatcherMembersChanged": 23,
+    "resources": 78,
+    "resourcesChanged": 8,
+    "resourceFieldsAdded": 22,
+    "resourceFieldsRemoved": 3,
+    "resourceFieldsRetyped": 54,
+    "typesBreaking": 6,
+    "membersBreaking": 8,
+    "fieldChanges": {
+     "addedRequired": 3,
+     "addedOptional": 33,
+     "removed": 2,
+     "madeOptional": 15,
+     "madeRequired": 0,
+     "retyped": 11,
+     "notStruct": 2
+    }
+   },
+   "typesChanged": [
+    {
+     "path": "::java::data::enchantment::effect::ExplodeEntityEffect",
+     "before": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle:@::java::util::particle::Particle,sound:@::java::data::util::SoundEventRef}",
+     "after": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle?:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle?:@::java::util::particle::Particle,sound?:@::java::data::util::SoundEventRef}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [
+       "sound",
+       "small_particle",
+       "large_particle"
+      ],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::sulfur_cube_archetype::SoundSettings",
+     "before": "{hit_sound:@::java::data::util::SoundEventRef,push_sound:@::java::data::util::SoundEventRef,push_sound_cooldown:float,push_sound_impulse_threshold:float}",
+     "after": "{hit_sound?:@::java::data::util::SoundEventRef,push_sound?:@::java::data::util::SoundEventRef,push_sound_cooldown:float,push_sound_impulse_threshold:float}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [
+       "hit_sound",
+       "push_sound"
+      ],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::sulfur_cube_archetype::SulfurCubeArchetype",
+     "before": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+     "after": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,location_based_effects?:[@::java::data::enchantment::effect_component::LocationChangedEnchantmentEffect],sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "location_based_effects"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::LargeSpeleothemConfig",
+     "before": "{column_radius:union(union(int(0..16)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)})),floor_to_ceiling_search_range?:int(1..512),height_scale:union(float(0..20)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),max_column_radius_to_cave_height_ratio:float(0..1),min_bluntness_for_wind:float(0..1),min_radius_for_wind:int(0..100),replaceable_blocks:union([string#id(block)]|string#id(block)),stalactite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),stalagmite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),wind_speed:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "after": "{base_block:@::java::util::block_state::BlockState,column_radius:union(union(int(0..16)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)})),floor_to_ceiling_search_range?:int(1..512),height_scale:union(float(0..20)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),max_column_radius_to_cave_height_ratio:float(0..1),min_bluntness_for_wind:float(0..1),min_radius_for_wind:int(0..100),replaceable_blocks:union([string#id(block)]|string#id(block)),stalactite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),stalagmite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),wind_speed:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "fields": {
+      "addedRequired": [
+       "base_block"
+      ],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::SpeleothemClusterConfig",
+     "before": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "after": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),placement_options?:{allow_water_placement:boolean,base_block_transformer:@::java::data::worldgen::feature::SpeleothemBaseBlockTransformer,placement_mode:@::java::data::worldgen::feature::SpeleothemClusterPlacementMode},pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "placement_options"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::block_predicate::MatchingFluidsPredicate",
+     "before": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3)}",
+     "after": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3),state?:@::java::data::worldgen::feature::block_predicate::FluidPredicateState}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "state"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::placement::FixedPlacementModifier",
+     "before": "{positions:union([[int](3..3)])}",
+     "after": "{positions:union([[int](3..3)](1..))}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "positions"
+      ]
+     }
+    },
+    {
+     "path": "::java::data::worldgen::noise_settings::NoiseGeneratorSettings",
+     "before": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_block:@::java::util::block_state::BlockState,default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+     "after": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [
+       "default_block"
+      ],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::noise_settings::NoiseGeneratorSettingsRef",
+     "before": "union(string#id(worldgen/noise_settings)|{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_block:@::java::util::block_state::BlockState,default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,name:string#id(worldgen/noise_settings),noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])})",
+     "after": "union(string#id(worldgen/noise_settings)|{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,name:string#id(worldgen/noise_settings),noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])})",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::data::worldgen::processor_list::RuleTest",
+     "before": "{predicate_type:union(string#id(rule_test)),...dispatch(minecraft:rule_test)}",
+     "after": "{predicate_type:union(string#id(rule_test_type)),...dispatch(minecraft:rule_test)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "predicate_type"
+      ]
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::ElementBase",
+     "before": "{projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::FeatureElement",
+     "before": "{feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::ListElement",
+     "before": "{elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::SingleElement",
+     "before": "{location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::block::jukebox::Jukebox",
+     "before": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+     "after": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,playlist_position:int,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+     "fields": {
+      "addedRequired": [
+       "playlist_position"
+      ],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::Drowned",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::Frostbite",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::Zombie",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::ZombieBase",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::ZombieVillager",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    }
+   ],
+   "typesOnlyBefore": [],
+   "typesOnlyAfter": [],
+   "dispatcherChanges": {
+    "mcdoc:gradient_density_coordinate": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "y",
+       "before": "union(int)",
+       "after": "union(@::java::data::worldgen::VerticalAnchor|int)",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [],
+        "notStruct": true
+       }
+      }
+     ]
+    },
+    "minecraft:block_entity": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "jukebox",
+       "before": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+       "after": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,playlist_position:int,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+       "fields": {
+        "addedRequired": [
+         "playlist_position"
+        ],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:block_predicate": {
+     "added": [
+      "below_heightmap"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "matching_fluids",
+       "before": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3)}",
+       "after": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3),state?:@::java::data::worldgen::feature::block_predicate::FluidPredicateState}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "state"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:density_function": {
+     "added": [
+      "domain_warp",
+      "upscale"
+     ],
+     "removed": [
+      "interpolated"
+     ],
+     "changed": []
+    },
+    "minecraft:entity": {
+     "added": [
+      "frostbite",
+      "ice_ball"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "drowned",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "husk",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "zombie",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "zombie_villager",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:entity_effect": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "explode",
+       "before": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle:@::java::util::particle::Particle,sound:@::java::data::util::SoundEventRef}",
+       "after": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle?:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle?:@::java::util::particle::Particle,sound?:@::java::data::util::SoundEventRef}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [
+         "sound",
+         "small_particle",
+         "large_particle"
+        ],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:environment_attribute": {
+     "added": [
+      "visual/has_sky_occluder"
+     ],
+     "removed": [],
+     "changed": []
+    },
+    "minecraft:feature_config": {
+     "added": [
+      "crevasse",
+      "large_speleothem"
+     ],
+     "removed": [
+      "large_dripstone"
+     ],
+     "changed": [
+      {
+       "key": "speleothem_cluster",
+       "before": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+       "after": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),placement_options?:{allow_water_placement:boolean,base_block_transformer:@::java::data::worldgen::feature::SpeleothemBaseBlockTransformer,placement_mode:@::java::data::worldgen::feature::SpeleothemClusterPlacementMode},pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "placement_options"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:location_based_effect": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "explode",
+       "before": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle:@::java::util::particle::Particle,sound:@::java::data::util::SoundEventRef}",
+       "after": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle?:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle?:@::java::util::particle::Particle,sound?:@::java::data::util::SoundEventRef}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [
+         "sound",
+         "small_particle",
+         "large_particle"
+        ],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:placement_modifier": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "fixed_placement",
+       "before": "{positions:union([[int](3..3)])}",
+       "after": "{positions:union([[int](3..3)](1..))}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "positions"
+        ]
+       }
+      }
+     ]
+    },
+    "minecraft:resource": {
+     "added": [
+      "block_sound_set"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "cat_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::cat::CatSounds,baby_sounds:@::java::data::variants::cat::CatSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::cat::OptionalCatSounds,baby_sounds:@::java::data::variants::cat::OptionalCatSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "chicken_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::chicken::ChickenSounds,baby_sounds:@::java::data::variants::chicken::ChickenSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::chicken::OptionalChickenSounds,baby_sounds:@::java::data::variants::chicken::OptionalChickenSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "cow_sound_variant",
+       "before": "union(@::java::data::variants::cow::CowSounds)",
+       "after": "union(@::java::data::variants::cow::OptionalCowSounds)",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [
+         "ambient_sound",
+         "hurt_sound",
+         "death_sound",
+         "step_sound"
+        ],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "pig_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::pig::PigSounds,baby_sounds:@::java::data::variants::pig::PigSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::pig::OptionalPigSounds,baby_sounds:@::java::data::variants::pig::OptionalPigSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "sulfur_cube_archetype",
+       "before": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+       "after": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,location_based_effects?:[@::java::data::enchantment::effect_component::LocationChangedEnchantmentEffect],sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "location_based_effects"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "wolf_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::wolf::WolfSounds,baby_sounds:@::java::data::variants::wolf::WolfSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::wolf::OptionalWolfSounds,baby_sounds:@::java::data::variants::wolf::OptionalWolfSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "worldgen/noise_settings",
+       "before": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_block:@::java::util::block_state::BlockState,default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+       "after": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [
+         "default_block"
+        ],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:template_pool_element": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "feature_pool_element",
+       "before": "{feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "legacy_single_pool_element",
+       "before": "{location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "list_pool_element",
+       "before": "{elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "single_pool_element",
+       "before": "{location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:trunk_placer": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "straight_trunk_placer",
+       "before": "{}",
+       "after": "{trunk_width?:union(int(1..)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)})}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "trunk_width"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    }
+   },
+   "resourceChanges": {
+    "block_sound_set": {
+     "added": [
+      ".break_sound",
+      ".break_sound.range",
+      ".break_sound.sound_id",
+      ".fall_sound",
+      ".fall_sound.range",
+      ".fall_sound.sound_id",
+      ".hit_sound",
+      ".hit_sound.range",
+      ".hit_sound.sound_id",
+      ".pitch",
+      ".place_sound",
+      ".place_sound.range",
+      ".place_sound.sound_id",
+      ".step_sound",
+      ".step_sound.range",
+      ".step_sound.sound_id",
+      ".volume"
+     ],
+     "removed": [],
+     "retyped": [],
+     "pathsBefore": 0,
+     "pathsAfter": 17
+    },
+    "cat_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.stray_ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hiss_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.beg_for_food_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.purr_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.purreow_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.stray_ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hiss_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.beg_for_food_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.purr_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.purreow_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 56,
+     "pathsAfter": 56
+    },
+    "chicken_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 26,
+     "pathsAfter": 26
+    },
+    "cow_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 12,
+     "pathsAfter": 12
+    },
+    "pig_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 32,
+     "pathsAfter": 32
+    },
+    "sulfur_cube_archetype": {
+     "added": [
+      ".location_based_effects",
+      ".location_based_effects[].effect",
+      ".location_based_effects[].effect.type",
+      ".location_based_effects[].requirements",
+      ".location_based_effects[].requirements.type"
+     ],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".sound_settings.hit_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".sound_settings.push_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 29,
+     "pathsAfter": 34
+    },
+    "wolf_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.growl_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.pant_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.whine_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.growl_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.pant_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.whine_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 38,
+     "pathsAfter": 38
+    },
+    "worldgen/noise_settings": {
+     "added": [],
+     "removed": [
+      ".default_block",
+      ".default_block.id",
+      ".default_block.properties"
+     ],
+     "retyped": [],
+     "pathsBefore": 51,
+     "pathsAfter": 48
+    }
+   }
+  },
+  "refs": {
+   "counts": {
+    "namedTypes": 2464,
+    "typesCompared": 2464,
+    "typesChanged": 20,
+    "typesOnlyBefore": 0,
+    "typesOnlyAfter": 0,
+    "dispatchers": 105,
+    "dispatchersChanged": 13,
+    "dispatcherMembersCompared": 1748,
+    "dispatcherKeysAdded": 9,
+    "dispatcherKeysRemoved": 2,
+    "dispatcherMembersChanged": 23,
+    "resources": 78,
+    "resourcesChanged": 8,
+    "resourceFieldsAdded": 22,
+    "resourceFieldsRemoved": 3,
+    "resourceFieldsRetyped": 54,
+    "typesBreaking": 6,
+    "membersBreaking": 8,
+    "fieldChanges": {
+     "addedRequired": 3,
+     "addedOptional": 33,
+     "removed": 2,
+     "madeOptional": 15,
+     "madeRequired": 0,
+     "retyped": 11,
+     "notStruct": 2
+    }
+   },
+   "typesChanged": [
+    {
+     "path": "::java::data::enchantment::effect::ExplodeEntityEffect",
+     "before": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle:@::java::util::particle::Particle,sound:@::java::data::util::SoundEventRef}",
+     "after": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle?:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle?:@::java::util::particle::Particle,sound?:@::java::data::util::SoundEventRef}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [
+       "sound",
+       "small_particle",
+       "large_particle"
+      ],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::sulfur_cube_archetype::SoundSettings",
+     "before": "{hit_sound:@::java::data::util::SoundEventRef,push_sound:@::java::data::util::SoundEventRef,push_sound_cooldown:float,push_sound_impulse_threshold:float}",
+     "after": "{hit_sound?:@::java::data::util::SoundEventRef,push_sound?:@::java::data::util::SoundEventRef,push_sound_cooldown:float,push_sound_impulse_threshold:float}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [
+       "hit_sound",
+       "push_sound"
+      ],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::sulfur_cube_archetype::SulfurCubeArchetype",
+     "before": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+     "after": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,location_based_effects?:[@::java::data::enchantment::effect_component::LocationChangedEnchantmentEffect],sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "location_based_effects"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::LargeSpeleothemConfig",
+     "before": "{column_radius:union(union(int(0..16)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)})),floor_to_ceiling_search_range?:int(1..512),height_scale:union(float(0..20)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),max_column_radius_to_cave_height_ratio:float(0..1),min_bluntness_for_wind:float(0..1),min_radius_for_wind:int(0..100),replaceable_blocks:union([string#id(block)]|string#id(block)),stalactite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),stalagmite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),wind_speed:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "after": "{base_block:@::java::util::block_state::BlockState,column_radius:union(union(int(0..16)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)})),floor_to_ceiling_search_range?:int(1..512),height_scale:union(float(0..20)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),max_column_radius_to_cave_height_ratio:float(0..1),min_bluntness_for_wind:float(0..1),min_radius_for_wind:int(0..100),replaceable_blocks:union([string#id(block)]|string#id(block)),stalactite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),stalagmite_bluntness:union(float(0.1..10)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),wind_speed:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "fields": {
+      "addedRequired": [
+       "base_block"
+      ],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::SpeleothemClusterConfig",
+     "before": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "after": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),placement_options?:{allow_water_placement:boolean,base_block_transformer:@::java::data::worldgen::feature::SpeleothemBaseBlockTransformer,placement_mode:@::java::data::worldgen::feature::SpeleothemClusterPlacementMode},pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "placement_options"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::block_predicate::MatchingFluidsPredicate",
+     "before": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3)}",
+     "after": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3),state?:@::java::data::worldgen::feature::block_predicate::FluidPredicateState}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "state"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::feature::placement::FixedPlacementModifier",
+     "before": "{positions:union([[int](3..3)])}",
+     "after": "{positions:union([[int](3..3)](1..))}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "positions"
+      ]
+     }
+    },
+    {
+     "path": "::java::data::worldgen::noise_settings::NoiseGeneratorSettings",
+     "before": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_block:@::java::util::block_state::BlockState,default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+     "after": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [
+       "default_block"
+      ],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::noise_settings::NoiseGeneratorSettingsRef",
+     "before": "union(string#id(worldgen/noise_settings)|{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_block:@::java::util::block_state::BlockState,default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,name:string#id(worldgen/noise_settings),noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])})",
+     "after": "union(string#id(worldgen/noise_settings)|{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,name:string#id(worldgen/noise_settings),noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])})",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::data::worldgen::processor_list::RuleTest",
+     "before": "{predicate_type:string#id(rule_test),...dispatch(minecraft:rule_test)}",
+     "after": "{predicate_type:union(string#id(rule_test_type)),...dispatch(minecraft:rule_test)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "predicate_type"
+      ]
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::ElementBase",
+     "before": "{projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::FeatureElement",
+     "before": "{feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::ListElement",
+     "before": "{elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::data::worldgen::template_pool::SingleElement",
+     "before": "{location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+     "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "corner_constraint"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::block::jukebox::Jukebox",
+     "before": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+     "after": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,playlist_position:int,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+     "fields": {
+      "addedRequired": [
+       "playlist_position"
+      ],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::Drowned",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::Frostbite",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::Zombie",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::ZombieBase",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::zombie::ZombieVillager",
+     "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "FrostbiteConversionTime",
+       "FreezingTime"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    }
+   ],
+   "typesOnlyBefore": [],
+   "typesOnlyAfter": [],
+   "dispatcherChanges": {
+    "mcdoc:gradient_density_coordinate": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "y",
+       "before": "union(int)",
+       "after": "union(@::java::data::worldgen::VerticalAnchor|int)",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [],
+        "notStruct": true
+       }
+      }
+     ]
+    },
+    "minecraft:block_entity": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "jukebox",
+       "before": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+       "after": "{RecordItem?:@::java::world::item::ItemStack,components?:@::java::world::component::DataComponentPatch,id?:string#id(block_entity_type),keepPacked?:boolean,playlist_position:int,ticks_since_song_started?:long,x?:int,y?:int,z?:int}",
+       "fields": {
+        "addedRequired": [
+         "playlist_position"
+        ],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:block_predicate": {
+     "added": [
+      "below_heightmap"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "matching_fluids",
+       "before": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3)}",
+       "after": "{fluids:union([string#id(fluid)]|string#id(fluid)),offset?:[int(-16..16)](3..3),state?:@::java::data::worldgen::feature::block_predicate::FluidPredicateState}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "state"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:density_function": {
+     "added": [
+      "domain_warp",
+      "upscale"
+     ],
+     "removed": [
+      "interpolated"
+     ],
+     "changed": []
+    },
+    "minecraft:entity": {
+     "added": [
+      "frostbite",
+      "ice_ball"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "drowned",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "husk",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "zombie",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "zombie_villager",
+       "before": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "after": "{AbsorptionAmount?:float,Air?:short,Brain?:{memories?:@::java::util::memory::Memories},CanBreakDoors?:boolean,CanPickUpLoot?:boolean,ConversionPlayer?:[int](4..4),ConversionTime?:int,CustomName?:union(@::java::util::text::Text),CustomNameVisible?:boolean,DeathLootTable?:string#id(loot_table),DeathLootTableSeed?:long,DeathTime?:short,DrownedConversionTime?:int,FallFlying?:boolean,Fire?:short,FreezingTime?:int,FrostbiteConversionTime?:int,Glowing?:boolean,Gossips?:[@::java::world::entity::mob::breedable::villager::PlayerReputationPart],HasVisualFire?:boolean,Health?:float,HurtTime?:short,InWaterTime?:int,Invulnerable?:boolean,IsBaby?:boolean,LeftHanded?:boolean,Motion?:[double](3..3),NoAI?:boolean,NoGravity?:boolean,Offers?:@::java::world::entity::mob::breedable::villager::Offers,OnGround?:boolean,Passengers?:[@::java::world::entity::AnyEntity],PersistenceRequired?:boolean,PortalCooldown?:int,Pos?:[double](3..3),Rotation?:[float](2..2),Silent?:boolean,Tags?:[string],Team?:string,TicksFrozen?:int,UUID?:[int](4..4),VillagerData?:@::java::world::entity::mob::breedable::villager::VillagerData,VillagerDataFinalized?:boolean,active_effects?:[@::java::util::effect::MobEffectInstance],attributes?:[@::java::world::entity::mob::Attribute],current_explosion_impact_pos?:[double](3..3),current_impulse_context_reset_grace_time?:int(0..),data?:@::java::world::component::CustomData,drop_chances?:@::java::world::entity::mob::DropChances,equipment?:@::java::world::entity::mob::EntityEquipment,fall_distance?:double,home_pos?:[int](3..3),home_radius?:int,invulnerable_time?:int(0..),last_hurt_by_mob?:[int](4..4),last_hurt_by_player?:[int](4..4),last_hurt_by_player_memory_time?:int(0..100),leash?:union([int](3..3)|{UUID?:[int](4..4)}),locator_bar_icon?:@::java::world::entity::mob::WaypointIcon,sleeping_pos?:[int](3..3),ticks_since_last_hurt_by_mob?:int(0..100)}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "FrostbiteConversionTime",
+         "FreezingTime"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:entity_effect": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "explode",
+       "before": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle:@::java::util::particle::Particle,sound:@::java::data::util::SoundEventRef}",
+       "after": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle?:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle?:@::java::util::particle::Particle,sound?:@::java::data::util::SoundEventRef}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [
+         "sound",
+         "small_particle",
+         "large_particle"
+        ],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:environment_attribute": {
+     "added": [
+      "visual/has_sky_occluder"
+     ],
+     "removed": [],
+     "changed": []
+    },
+    "minecraft:feature_config": {
+     "added": [
+      "crevasse",
+      "large_speleothem"
+     ],
+     "removed": [
+      "large_dripstone"
+     ],
+     "changed": [
+      {
+       "key": "speleothem_cluster",
+       "before": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+       "after": "{base_block:@::java::util::block_state::BlockState,chance_of_speleothem_at_max_distance_from_center:float(0..1),density:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)}),floor_to_ceiling_search_range:int(1..512),height:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),height_deviation:int(1..64),max_distance_from_center_affecting_height_bias:int(1..64),max_distance_from_edge_affecting_chance_of_speleothem:int(1..64),max_stalagmite_stalactite_height_diff:int(0..64),placement_options?:{allow_water_placement:boolean,base_block_transformer:@::java::data::worldgen::feature::SpeleothemBaseBlockTransformer,placement_mode:@::java::data::worldgen::feature::SpeleothemClusterPlacementMode},pointed_block:@::java::util::block_state::BlockState,radius:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),replaceable_blocks:union([string#id(block)]|string#id(block)),speleothem_block_layer_thickness:union(int(0..128)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)}),wetness:union(float(0..2)|{type:string#id(float_provider_type),...dispatch(minecraft:float_provider)})}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "placement_options"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:location_based_effect": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "explode",
+       "before": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle:@::java::util::particle::Particle,sound:@::java::data::util::SoundEventRef}",
+       "after": "{attribute_to_user?:boolean,block_interaction:@::java::data::enchantment::effect::BlockInteraction,block_particles?:[{particle:@::java::util::particle::Particle,scaling?:float,speed?:float,weight:int(0..)}],create_fire?:boolean,damage_type?:string#id(damage_type),immune_blocks?:union([string#id(block)]|string#id(block)),knockback_multiplier?:@::java::data::enchantment::LevelBasedValue,large_particle?:@::java::util::particle::Particle,offset?:[double](3..3),radius:@::java::data::enchantment::LevelBasedValue,small_particle?:@::java::util::particle::Particle,sound?:@::java::data::util::SoundEventRef}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [
+         "sound",
+         "small_particle",
+         "large_particle"
+        ],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:placement_modifier": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "fixed_placement",
+       "before": "{positions:union([[int](3..3)])}",
+       "after": "{positions:union([[int](3..3)](1..))}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "positions"
+        ]
+       }
+      }
+     ]
+    },
+    "minecraft:resource": {
+     "added": [
+      "block_sound_set"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "cat_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::cat::CatSounds,baby_sounds:@::java::data::variants::cat::CatSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::cat::OptionalCatSounds,baby_sounds:@::java::data::variants::cat::OptionalCatSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "chicken_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::chicken::ChickenSounds,baby_sounds:@::java::data::variants::chicken::ChickenSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::chicken::OptionalChickenSounds,baby_sounds:@::java::data::variants::chicken::OptionalChickenSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "cow_sound_variant",
+       "before": "union(@::java::data::variants::cow::CowSounds)",
+       "after": "union(@::java::data::variants::cow::OptionalCowSounds)",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [
+         "ambient_sound",
+         "hurt_sound",
+         "death_sound",
+         "step_sound"
+        ],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "pig_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::pig::PigSounds,baby_sounds:@::java::data::variants::pig::PigSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::pig::OptionalPigSounds,baby_sounds:@::java::data::variants::pig::OptionalPigSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "sulfur_cube_archetype",
+       "before": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+       "after": "{attribute_modifiers:[@::java::data::sulfur_cube_archetype::AttributeEntry],buoyant?:boolean,contact_damage?:@::java::data::sulfur_cube_archetype::ContactDamage,explosion?:@::java::data::sulfur_cube_archetype::ExplosionData,items:union([string#id(item)]|string#id(item)),knockback_modifiers:@::java::data::sulfur_cube_archetype::KnockbackModifiers,location_based_effects?:[@::java::data::enchantment::effect_component::LocationChangedEnchantmentEffect],sound_settings:@::java::data::sulfur_cube_archetype::SoundSettings}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "location_based_effects"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "wolf_sound_variant",
+       "before": "union({adult_sounds:@::java::data::variants::wolf::WolfSounds,baby_sounds:@::java::data::variants::wolf::WolfSounds})",
+       "after": "union({adult_sounds:@::java::data::variants::wolf::OptionalWolfSounds,baby_sounds:@::java::data::variants::wolf::OptionalWolfSounds})",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "adult_sounds",
+         "baby_sounds"
+        ]
+       }
+      },
+      {
+       "key": "worldgen/noise_settings",
+       "before": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_block:@::java::util::block_state::BlockState,default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+       "after": "{aquifers?:@::java::data::worldgen::noise_settings::Aquifer,debug_functions?:[@::java::data::worldgen::noise_settings::DebugFunctionEntry],default_fluid:@::java::util::block_state::BlockState,disable_mob_generation:boolean,legacy_random_source:boolean,material_rule:@::java::data::worldgen::material_rule::MaterialRuleRef,noise:@::java::data::worldgen::noise_settings::NoiseSettings,noise_router:@::java::data::worldgen::noise_settings::NoiseRouter,sea_level:union(int),spawn_target:union([@::java::data::worldgen::noise_settings::SpawnTargetPoint])}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [
+         "default_block"
+        ],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:template_pool_element": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "feature_pool_element",
+       "before": "{feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),feature:union(@::java::data::worldgen::feature::placement::PlacedFeatureRef),projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "legacy_single_pool_element",
+       "before": "{location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "list_pool_element",
+       "before": "{elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),elements:[@::java::data::worldgen::template_pool::Element],projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "single_pool_element",
+       "before": "{location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "after": "{corner_constraint?:[@::java::data::worldgen::template_pool::DensityPredicate](1..10),location:string#id(structure),override_liquid_settings?:@::java::data::worldgen::structure::LiquidSettings,processors:@::java::data::worldgen::processor_list::ProcessorListRef,projection:@::java::data::worldgen::template_pool::Projection}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "corner_constraint"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:trunk_placer": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "straight_trunk_placer",
+       "before": "{}",
+       "after": "{trunk_width?:union(int(1..)|{type:string#id(int_provider_type),...dispatch(minecraft:int_provider)})}",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "trunk_width"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    }
+   },
+   "resourceChanges": {
+    "block_sound_set": {
+     "added": [
+      ".break_sound",
+      ".break_sound.range",
+      ".break_sound.sound_id",
+      ".fall_sound",
+      ".fall_sound.range",
+      ".fall_sound.sound_id",
+      ".hit_sound",
+      ".hit_sound.range",
+      ".hit_sound.sound_id",
+      ".pitch",
+      ".place_sound",
+      ".place_sound.range",
+      ".place_sound.sound_id",
+      ".step_sound",
+      ".step_sound.range",
+      ".step_sound.sound_id",
+      ".volume"
+     ],
+     "removed": [],
+     "retyped": [],
+     "pathsBefore": 0,
+     "pathsAfter": 17
+    },
+    "cat_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.stray_ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hiss_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.beg_for_food_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.purr_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.purreow_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.stray_ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hiss_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.beg_for_food_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.purr_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.purreow_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 56,
+     "pathsAfter": 56
+    },
+    "chicken_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 26,
+     "pathsAfter": 26
+    },
+    "cow_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 12,
+     "pathsAfter": 12
+    },
+    "pig_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.step_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.eat_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 32,
+     "pathsAfter": 32
+    },
+    "sulfur_cube_archetype": {
+     "added": [
+      ".location_based_effects",
+      ".location_based_effects[].effect",
+      ".location_based_effects[].effect.type",
+      ".location_based_effects[].requirements",
+      ".location_based_effects[].requirements.type"
+     ],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".sound_settings.hit_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".sound_settings.push_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 29,
+     "pathsAfter": 34
+    },
+    "wolf_sound_variant": {
+     "added": [],
+     "removed": [],
+     "retyped": [
+      {
+       "path": ".adult_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.growl_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.pant_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".adult_sounds.whine_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.ambient_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.death_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.growl_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.hurt_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.pant_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      },
+      {
+       "path": ".baby_sounds.whine_sound",
+       "before": [
+        "(required)",
+        "…"
+       ],
+       "after": [
+        "(optional)",
+        "…"
+       ]
+      }
+     ],
+     "pathsBefore": 38,
+     "pathsAfter": 38
+    },
+    "worldgen/noise_settings": {
+     "added": [],
+     "removed": [
+      ".default_block",
+      ".default_block.id",
+      ".default_block.properties"
+     ],
+     "retyped": [],
+     "pathsBefore": 51,
+     "pathsAfter": 48
+    }
+   }
+  },
+  "drift": {
+   "counts": {
+    "namedTypes": 2464,
+    "typesCompared": 2464,
+    "typesChanged": 1,
+    "typesOnlyBefore": 0,
+    "typesOnlyAfter": 0,
+    "dispatchers": 105,
+    "dispatchersChanged": 0,
+    "dispatcherMembersCompared": 1750,
+    "dispatcherKeysAdded": 0,
+    "dispatcherKeysRemoved": 0,
+    "dispatcherMembersChanged": 0,
+    "resources": 77,
+    "resourcesChanged": 0,
+    "resourceFieldsAdded": 0,
+    "resourceFieldsRemoved": 0,
+    "resourceFieldsRetyped": 0,
+    "typesBreaking": 1,
+    "membersBreaking": 0,
+    "fieldChanges": {
+     "addedRequired": 0,
+     "addedOptional": 0,
+     "removed": 0,
+     "madeOptional": 0,
+     "madeRequired": 0,
+     "retyped": 1,
+     "notStruct": 0
+    }
+   },
+   "typesChanged": [
+    {
+     "path": "::java::data::worldgen::processor_list::RuleTest",
+     "before": "{predicate_type:string#id(rule_test),...dispatch(minecraft:rule_test)}",
+     "after": "{predicate_type:union(string#id(rule_test)),...dispatch(minecraft:rule_test)}",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "predicate_type"
+      ]
+     }
+    }
+   ],
+   "typesOnlyBefore": [],
+   "typesOnlyAfter": [],
+   "dispatcherChanges": {},
+   "resourceChanges": {}
+  }
+ },
+ "commands": {
+  "counts": {
+   "nodesBefore": 2474,
+   "nodesAfter": 2474,
+   "added": 0,
+   "removed": 0,
+   "changed": 5,
+   "addedTop": 0,
+   "removedTop": 0,
+   "rootsBefore": 94,
+   "rootsAfter": 94
+  },
+  "rootsAdded": [],
+  "rootsRemoved": [],
+  "parsersAdded": [],
+  "parsersRemoved": [],
+  "addedTop": [],
+  "removedTop": [],
+  "changed": [
+   {
+    "path": "effect clear <targets> <effect>",
+    "before": "minecraft:resource{\"registry\":\"minecraft:mob_effect\"} exec",
+    "after": "minecraft:resource_or_tag{\"registry\":\"minecraft:mob_effect\"} exec"
+   },
+   {
+    "path": "effect give <targets> <effect>",
+    "before": "minecraft:resource{\"registry\":\"minecraft:mob_effect\"} exec",
+    "after": "minecraft:resource_or_tag{\"registry\":\"minecraft:mob_effect\"} exec"
+   },
+   {
+    "path": "test run <tests> <numberOfTimes> <untilFailed> <rotationSteps>",
+    "before": "brigadier:integer exec",
+    "after": "brigadier:integer{\"max\":3,\"min\":0} exec"
+   },
+   {
+    "path": "test runfailed <numberOfTimes> <untilFailed> <rotationSteps>",
+    "before": "brigadier:integer exec",
+    "after": "brigadier:integer{\"max\":3,\"min\":0} exec"
+   },
+   {
+    "path": "test runfailed <onlyRequiredTests> <numberOfTimes> <untilFailed> <rotationSteps>",
+    "before": "brigadier:integer exec",
+    "after": "brigadier:integer{\"max\":3,\"min\":0} exec"
+   }
+  ]
+ },
+ "blocks": {
+  "counts": {
+   "before": 1286,
+   "after": 1311,
+   "added": 25,
+   "removed": 0,
+   "changed": 1
+  },
+  "added": [
+   "brittle_ice",
+   "calcite_pillar",
+   "calcite_slab",
+   "calcite_stairs",
+   "calcite_wall",
+   "chiseled_packed_ice",
+   "chiseled_soulshale",
+   "ice_crystal",
+   "icicle",
+   "packed_ice_brick_slab",
+   "packed_ice_brick_stairs",
+   "packed_ice_brick_wall",
+   "packed_ice_bricks",
+   "polished_calcite",
+   "polished_calcite_brick_slab",
+   "polished_calcite_brick_stairs",
+   "polished_calcite_brick_wall",
+   "polished_calcite_bricks",
+   "polished_calcite_slab",
+   "polished_calcite_stairs",
+   "polished_calcite_wall",
+   "snow_brick_slab",
+   "snow_brick_stairs",
+   "snow_brick_wall",
+   "snow_bricks"
+  ],
+  "removed": [],
+  "changed": [
+   {
+    "block": "jukebox",
+    "propsAdded": [
+     "playlist_mode"
+    ],
+    "propsRemoved": [],
+    "valuesChanged": [],
+    "defaultsChanged": []
+   }
+  ]
+ },
+ "packs": {
+  "data_version": {
+   "before": 5023,
+   "after": 5127
+  },
+  "data_pack_version": {
+   "before": 121,
+   "after": 126
+  },
+  "resource_pack_version": {
+   "before": 97,
+   "after": 102
+  },
+  "resource_pack_version_minor": {
+   "before": 1,
+   "after": 0
+  },
+  "protocol_version": {
+   "before": 777,
+   "after": 1073742169
+  },
+  "type": {
+   "before": "release",
+   "after": "snapshot"
+  },
+  "stable": {
+   "before": true,
+   "after": false
+  }
+ }
+}

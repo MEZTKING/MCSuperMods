@@ -1,0 +1,71 @@
+{
+ "statements": 14,
+ "net": [
+  {
+   "from": "gui/sprites/friends/button",
+   "to": "gui/sprites/friends/tab",
+   "registriesBefore": [
+    "texture"
+   ],
+   "registriesAfter": [
+    "texture"
+   ],
+   "notes": "26.4-snapshot-3.txt"
+  },
+  {
+   "from": "gui/sprites/friends/button_highlighted",
+   "to": "gui/sprites/friends/tab_highlighted",
+   "registriesBefore": [
+    "texture"
+   ],
+   "registriesAfter": [
+    "texture"
+   ],
+   "notes": "26.4-snapshot-3.txt"
+  },
+  {
+   "from": "gui/sprites/friends/loading",
+   "to": "gui/sprites/widget/loading",
+   "registriesBefore": [
+    "texture"
+   ],
+   "registriesAfter": [
+    "texture"
+   ],
+   "notes": "26.4-snapshot-3.txt"
+  },
+  {
+   "from": "gui/sprites/pause_menu/social_interactions",
+   "to": "gui/sprites/pause_menu/feedback",
+   "registriesBefore": [
+    "texture"
+   ],
+   "registriesAfter": [
+    "texture"
+   ],
+   "notes": "26.4-snapshot-3.txt"
+  },
+  {
+   "from": "interpolated",
+   "to": "upscale",
+   "registriesBefore": [
+    "worldgen/density_function_type"
+   ],
+   "registriesAfter": [
+    "worldgen/density_function_type"
+   ],
+   "notes": "26.4-snapshot-5.txt"
+  },
+  {
+   "from": "freeze_immune_entity_types",
+   "to": "immune_to_freezing",
+   "registriesBefore": [
+    "tag/entity_type"
+   ],
+   "registriesAfter": [
+    "tag/entity_type"
+   ],
+   "notes": "26.4-snapshot-5.txt"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "report": "differ-26.3-26.4.json",
+ "mcdocMode": "gated",
+ "changes": 86,
+ "additions": 830,
+ "byArea": {
+  "block-states": 1,
+  "commands": 5,
+  "formats": 53,
+  "ids": 20,
+  "packs": 7
+ },
+ "byHandling": {
+  "none": 46,
+  "manual": 33,
+  "auto": 7
+ },
+ "sizeWithAdditions": {
+  "raw": 168861,
+  "gzip": 9240
+ },
+ "sizeAdditionsAsCounts": {
+  "raw": 21667,
+  "gzip": 2515
+ },
+ "prettyWithAdditions": 206517
+}

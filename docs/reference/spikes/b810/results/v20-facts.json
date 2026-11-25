@@ -1,0 +1,857 @@
+{
+ "facts": 106,
+ "differing": 32,
+ "withRow": 85,
+ "changesRows": 74,
+ "datedRows": 59,
+ "out": [
+  {
+   "fact": "blocks.bedRules",
+   "same": true,
+   "bytes26_3": 85,
+   "bytes26_4": 85,
+   "changesRow": "`blocks.bedRules`, `dyeColours`, `stemTags`, `defaultTorchParticle` (ADR 0094 D2, D12; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.cauldrons",
+   "same": true,
+   "bytes26_3": 108,
+   "bytes26_4": 108,
+   "changesRow": "`blocks.cauldrons` (ADR 0108 D6; plugin API 1.20.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.containerSounds",
+   "same": true,
+   "bytes26_3": 77,
+   "bytes26_4": 77,
+   "changesRow": "`blocks.containerSounds`, `blocks.machineRecipeTypes` (ADR 0074 D7, ADR 0075 D7; plugin API 1.12.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.defaultTorchParticle",
+   "same": true,
+   "bytes26_3": 17,
+   "bytes26_4": 17,
+   "changesRow": "`blocks.bedRules`, `dyeColours`, `stemTags`, `defaultTorchParticle` (ADR 0094 D2, D12; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.dyeColours",
+   "same": true,
+   "bytes26_3": 137,
+   "bytes26_4": 137,
+   "changesRow": "`blocks.bedRules`, `dyeColours`, `stemTags`, `defaultTorchParticle` (ADR 0094 D2, D12; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.fluidModel",
+   "same": false,
+   "bytes26_3": 12,
+   "bytes26_4": 11,
+   "changesRow": "`blocks.fluidModel`, `blocks.fluidTags` (ADR 0099 D4; plugin API 1.18.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.fluidTags",
+   "same": false,
+   "bytes26_3": 55,
+   "bytes26_4": 77,
+   "changesRow": "`blocks.fluidModel`, `blocks.fluidTags` (ADR 0099 D4; plugin API 1.18.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.machineRecipeTypes",
+   "same": true,
+   "bytes26_3": 92,
+   "bytes26_4": 92,
+   "changesRow": "`blocks.containerSounds`, `blocks.machineRecipeTypes` (ADR 0074 D7, ADR 0075 D7; plugin API 1.12.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.modelTemplates",
+   "same": true,
+   "bytes26_3": 3026,
+   "bytes26_4": 3026,
+   "changesRow": "`blocks.modelTemplates` (ADR 0094 D10; plugin API 1.17.0; ADR 0103 additions B515)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.plantSoils",
+   "same": true,
+   "bytes26_3": 404,
+   "bytes26_4": 404,
+   "changesRow": "`blocks.plantSoils` (ADR 0103 D5 as amended; plugin API 1.19.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.portal",
+   "same": true,
+   "bytes26_3": 173,
+   "bytes26_4": 173,
+   "changesRow": "`blocks.portal` (ADR 0077 D7; plugin API 1.13.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.setTypes",
+   "same": true,
+   "bytes26_3": 98,
+   "bytes26_4": 98,
+   "changesRow": "`blocks.setTypes`, `blocks.woodTypes` (ADR 0067 D2, D9)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.soundModel",
+   "same": false,
+   "bytes26_3": 12,
+   "bytes26_4": 17,
+   "changesRow": "`blocks.soundModel`, `blocks.soundTypes` (ADR 0105 D1, D5 as amended; plugin API 1.19.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.soundSetEvents",
+   "same": false,
+   "bytes26_3": 0,
+   "bytes26_4": 33309,
+   "changesRow": "`blocks.soundSetEvents` (ADR 0105 D1, D5; plugin API 1.19.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.soundTypes",
+   "same": false,
+   "bytes26_3": 1797,
+   "bytes26_4": 1880,
+   "changesRow": "`blocks.soundModel`, `blocks.soundTypes` (ADR 0105 D1, D5 as amended; plugin API 1.19.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.stemTags",
+   "same": true,
+   "bytes26_3": 90,
+   "bytes26_4": 90,
+   "changesRow": "`blocks.bedRules`, `dyeColours`, `stemTags`, `defaultTorchParticle` (ADR 0094 D2, D12; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.vanillaPairs",
+   "same": true,
+   "bytes26_3": 9239,
+   "bytes26_4": 9239,
+   "changesRow": "`blocks.vanillaPairs` (ADR 0105 D4, D5 as amended; plugin API 1.19.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "blocks.woodTypes",
+   "same": true,
+   "bytes26_3": 121,
+   "bytes26_4": 121,
+   "changesRow": "`blocks.setTypes`, `blocks.woodTypes` (ADR 0067 D2, D9)",
+   "rowDated": true
+  },
+  {
+   "fact": "channel",
+   "same": false,
+   "bytes26_3": 9,
+   "bytes26_4": 10,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "commands.argumentTypes",
+   "same": true,
+   "bytes26_3": 2754,
+   "bytes26_4": 2754,
+   "changesRow": "`commands` (ADR 0096 D1, D6; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "commands.forms",
+   "same": true,
+   "bytes26_3": 8060,
+   "bytes26_4": 8060,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "commands.fragments",
+   "same": true,
+   "bytes26_3": 355,
+   "bytes26_4": 355,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "commands.vanillaNames",
+   "same": true,
+   "bytes26_3": 895,
+   "bytes26_4": 895,
+   "changesRow": "`commands` (ADR 0096 D1, D6; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "controls.keyNames",
+   "same": true,
+   "bytes26_3": 6056,
+   "bytes26_4": 6056,
+   "changesRow": "`controls` (ADR 0088 D9; plugin API 1.16.0; `src/controls.ts`)",
+   "rowDated": true
+  },
+  {
+   "fact": "controls.keyboardNamesByCode",
+   "same": true,
+   "bytes26_3": 9456,
+   "bytes26_4": 9456,
+   "changesRow": "`controls` (ADR 0088 D9; plugin API 1.16.0; `src/controls.ts`)",
+   "rowDated": true
+  },
+  {
+   "fact": "controls.mouseNamesByCode",
+   "same": true,
+   "bytes26_3": 194,
+   "bytes26_4": 194,
+   "changesRow": "`controls` (ADR 0088 D9; plugin API 1.16.0; `src/controls.ts`)",
+   "rowDated": true
+  },
+  {
+   "fact": "controls.runtimeKeys",
+   "same": true,
+   "bytes26_3": 109,
+   "bytes26_4": 109,
+   "changesRow": "`controls` (ADR 0088 D9; plugin API 1.16.0; `src/controls.ts`)",
+   "rowDated": true
+  },
+  {
+   "fact": "controls.unboundKey",
+   "same": true,
+   "bytes26_3": 22,
+   "bytes26_4": 22,
+   "changesRow": "`controls` (ADR 0088 D9; plugin API 1.16.0; `src/controls.ts`)",
+   "rowDated": true
+  },
+  {
+   "fact": "controls.vanillaCombinations",
+   "same": true,
+   "bytes26_3": 551,
+   "bytes26_4": 551,
+   "changesRow": "`controls` (ADR 0088 D9; plugin API 1.16.0; `src/controls.ts`)",
+   "rowDated": true
+  },
+  {
+   "fact": "controls.vanillaKeys",
+   "same": false,
+   "bytes26_3": 2352,
+   "bytes26_4": 2346,
+   "changesRow": "`controls` (ADR 0088 D9; plugin API 1.16.0; `src/controls.ts`)",
+   "rowDated": true
+  },
+  {
+   "fact": "dataForms.consume_item_with_data",
+   "same": true,
+   "bytes26_3": 132,
+   "bytes26_4": 132,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "dataForms.entity_is_type",
+   "same": true,
+   "bytes26_3": 108,
+   "bytes26_4": 108,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "dataForms.player_head_of_this",
+   "same": true,
+   "bytes26_3": 123,
+   "bytes26_4": 123,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "dataForms.player_killed_entity",
+   "same": true,
+   "bytes26_3": 89,
+   "bytes26_4": 89,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "dataVersion",
+   "same": false,
+   "bytes26_3": 4,
+   "bytes26_4": 4,
+   "changesRow": "`dataVersion`",
+   "rowDated": false
+  },
+  {
+   "fact": "dev.gameRules",
+   "same": true,
+   "bytes26_3": 123,
+   "bytes26_4": 123,
+   "changesRow": "`dev` (ADR 0084 D10; plugin API 1.15.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "dev.worldDataFolders",
+   "same": false,
+   "bytes26_3": 1040,
+   "bytes26_4": 1058,
+   "changesRow": "`dev` (ADR 0084 D10; plugin API 1.15.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "dyes",
+   "same": true,
+   "bytes26_3": 297,
+   "bytes26_4": 297,
+   "changesRow": "`dyes` (ADR 0121 D5; plugin API 1.25.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "entities.projectileItems",
+   "same": false,
+   "bytes26_3": 332,
+   "bytes26_4": 353,
+   "changesRow": "`entities.projectileItems`, `entities.saddleTag` (ADR 0070 D7, ADR 0071 D4)",
+   "rowDated": true
+  },
+  {
+   "fact": "entities.saddleTag",
+   "same": true,
+   "bytes26_3": 28,
+   "bytes26_4": 28,
+   "changesRow": "`entities.projectileItems`, `entities.saddleTag` (ADR 0070 D7, ADR 0071 D4)",
+   "rowDated": true
+  },
+  {
+   "fact": "entities.tradeSounds",
+   "same": true,
+   "bytes26_3": 119,
+   "bytes26_4": 119,
+   "changesRow": "`entities.tradeSounds` (ADR 0098 D1, D5; plugin API 1.18.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "entities.vanillaJobSites",
+   "same": true,
+   "bytes26_3": 1694,
+   "bytes26_4": 1694,
+   "changesRow": "`entities.vanillaJobSites` (ADR 0098 D2, D5; plugin API 1.18.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "entities.vanillaTradeSets",
+   "same": false,
+   "bytes26_3": 5907,
+   "bytes26_4": 5907,
+   "changesRow": "`entities.vanillaTradeSets` (ADR 0098 D1, D5 as amended; plugin API 1.18.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "entities.villagerTypes",
+   "same": true,
+   "bytes26_3": 61,
+   "bytes26_4": 61,
+   "changesRow": "`entities.villagerTypes` (ADR 0107 D6; plugin API 1.20.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "fabric.api",
+   "same": false,
+   "bytes26_3": 14,
+   "bytes26_4": 14,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "fabric.apiModrinth",
+   "same": false,
+   "bytes26_3": 365,
+   "bytes26_4": 365,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "fabric.gradle",
+   "same": true,
+   "bytes26_3": 7,
+   "bytes26_4": 7,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "fabric.loader",
+   "same": true,
+   "bytes26_3": 8,
+   "bytes26_4": 8,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "fabric.loom",
+   "same": true,
+   "bytes26_3": 8,
+   "bytes26_4": 8,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "fabric.minecraftDependency",
+   "same": false,
+   "bytes26_3": 7,
+   "bytes26_4": 16,
+   "changesRow": "`fabric.minecraftDependency`",
+   "rowDated": false
+  },
+  {
+   "fact": "folders.data",
+   "same": true,
+   "bytes26_3": 1487,
+   "bytes26_4": 1487,
+   "changesRow": "`dataVersion`",
+   "rowDated": false
+  },
+  {
+   "fact": "folders.resource",
+   "same": true,
+   "bytes26_3": 175,
+   "bytes26_4": 175,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "gameRules.categories",
+   "same": true,
+   "bytes26_3": 60,
+   "bytes26_4": 60,
+   "changesRow": "`gameRules` (ADR 0111 D5, D8; plugin API 1.20.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "gameRules.forGames",
+   "same": true,
+   "bytes26_3": 140,
+   "bytes26_4": 140,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "gameRules.kinds",
+   "same": true,
+   "bytes26_3": 21,
+   "bytes26_4": 21,
+   "changesRow": "Data kinds sweep folders (K2, `folders.data`, ADR 0064 D5)",
+   "rowDated": true
+  },
+  {
+   "fact": "gameRules.vanillaNames",
+   "same": true,
+   "bytes26_3": 1287,
+   "bytes26_4": 1287,
+   "changesRow": "`commands` (ADR 0096 D1, D6; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "geckolib.dependency",
+   "same": false,
+   "bytes26_3": 9,
+   "bytes26_4": 0,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "geckolib.fileName",
+   "same": false,
+   "bytes26_3": 32,
+   "bytes26_4": 0,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "geckolib.modId",
+   "same": false,
+   "bytes26_3": 10,
+   "bytes26_4": 0,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "geckolib.modrinthVersionId",
+   "same": false,
+   "bytes26_3": 10,
+   "bytes26_4": 0,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "geckolib.sha512",
+   "same": false,
+   "bytes26_3": 130,
+   "bytes26_4": 0,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "geckolib.url",
+   "same": false,
+   "bytes26_3": 89,
+   "bytes26_4": 0,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "geckolib.version",
+   "same": false,
+   "bytes26_3": 7,
+   "bytes26_4": 0,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "id",
+   "same": false,
+   "bytes26_3": 9,
+   "bytes26_4": 9,
+   "changesRow": "Structure template palette keys (decided by `dataVersion`, no field of its own)",
+   "rowDated": true
+  },
+  {
+   "fact": "items.armorMaterials",
+   "same": true,
+   "bytes26_3": 101,
+   "bytes26_4": 101,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "items.compostProviders",
+   "same": true,
+   "bytes26_3": 201,
+   "bytes26_4": 201,
+   "changesRow": "`items.compostProviders` (V4)",
+   "rowDated": true
+  },
+  {
+   "fact": "items.dataPackComponents",
+   "same": true,
+   "bytes26_3": 484,
+   "bytes26_4": 484,
+   "changesRow": "`items.dataPackComponents`",
+   "rowDated": true
+  },
+  {
+   "fact": "items.rangedPull",
+   "same": true,
+   "bytes26_3": 259,
+   "bytes26_4": 259,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "items.vanillaTools",
+   "same": true,
+   "bytes26_3": 3950,
+   "bytes26_4": 3950,
+   "changesRow": "`items.vanillaTools`",
+   "rowDated": true
+  },
+  {
+   "fact": "java",
+   "same": true,
+   "bytes26_3": 2,
+   "bytes26_4": 2,
+   "changesRow": "`javaProject`",
+   "rowDated": false
+  },
+  {
+   "fact": "mcVersion",
+   "same": false,
+   "bytes26_3": 6,
+   "bytes26_4": 17,
+   "changesRow": "`mcVersion`",
+   "rowDated": false
+  },
+  {
+   "fact": "mcdocRef",
+   "same": false,
+   "bytes26_3": 42,
+   "bytes26_4": 42,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "mcmetaRef",
+   "same": false,
+   "bytes26_3": 6,
+   "bytes26_4": 17,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "packFormats.data",
+   "same": false,
+   "bytes26_3": 23,
+   "bytes26_4": 23,
+   "changesRow": "`dataVersion`",
+   "rowDated": false
+  },
+  {
+   "fact": "packFormats.resource",
+   "same": false,
+   "bytes26_3": 22,
+   "bytes26_4": 23,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "particles.descriptionFolder",
+   "same": true,
+   "bytes26_3": 11,
+   "bytes26_4": 11,
+   "changesRow": "`particles` (ADR 0080 D9; plugin API 1.14.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "particles.textureFolder",
+   "same": true,
+   "bytes26_3": 10,
+   "bytes26_4": 10,
+   "changesRow": "`particles` (ADR 0080 D9; plugin API 1.14.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "particles.withOptions",
+   "same": true,
+   "bytes26_3": 505,
+   "bytes26_4": 505,
+   "changesRow": "`particles` (ADR 0080 D9; plugin API 1.14.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.collisionRules",
+   "same": true,
+   "bytes26_3": 49,
+   "bytes26_4": 49,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.criteria",
+   "same": true,
+   "bytes26_3": 76,
+   "bytes26_4": 76,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.customStatCriteria",
+   "same": true,
+   "bytes26_3": 165,
+   "bytes26_4": 165,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.deathMessageVisibility",
+   "same": true,
+   "bytes26_3": 55,
+   "bytes26_4": 55,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.displaySlots",
+   "same": true,
+   "bytes26_3": 395,
+   "bytes26_4": 395,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.nameTagVisibility",
+   "same": true,
+   "bytes26_3": 55,
+   "bytes26_4": 55,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.numberFormats",
+   "same": true,
+   "bytes26_3": 26,
+   "bytes26_4": 26,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.renderTypes",
+   "same": true,
+   "bytes26_3": 20,
+   "bytes26_4": 20,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.statTypes",
+   "same": true,
+   "bytes26_3": 87,
+   "bytes26_4": 87,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.teamColours",
+   "same": true,
+   "bytes26_3": 157,
+   "bytes26_4": 157,
+   "changesRow": "`scoreboard` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "scoreboard.teamCriteria",
+   "same": true,
+   "bytes26_3": 27,
+   "bytes26_4": 27,
+   "changesRow": "Community game types (ADR 0132; plugin API 1.27.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "stats.criterionPrefix",
+   "same": true,
+   "bytes26_3": 19,
+   "bytes26_4": 19,
+   "changesRow": "`stats` (ADR 0111 D6, D8; plugin API 1.20.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "stats.formats",
+   "same": true,
+   "bytes26_3": 29,
+   "bytes26_4": 29,
+   "changesRow": "`stats` (ADR 0111 D6, D8; plugin API 1.20.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "stats.vanillaCustomStats",
+   "same": true,
+   "bytes26_3": 1417,
+   "bytes26_4": 1417,
+   "changesRow": "`stats` (ADR 0111 D6, D8; plugin API 1.20.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "vehicles.maxSpeed",
+   "same": true,
+   "bytes26_3": 1,
+   "bytes26_4": 1,
+   "changesRow": "`vehicles` (ADR 0090 D3, D4, D13; plugin API 1.16.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "vehicles.modes",
+   "same": true,
+   "bytes26_3": 45,
+   "bytes26_4": 45,
+   "changesRow": "`vehicles` (ADR 0090 D3, D4, D13; plugin API 1.16.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worldgen.biomeAttributes",
+   "same": true,
+   "bytes26_3": 206,
+   "bytes26_4": 206,
+   "changesRow": "Folders, `worldgen.featureSteps`, `worldgen.biomeAttributes`",
+   "rowDated": false
+  },
+  {
+   "fact": "worldgen.dimensionHeight",
+   "same": true,
+   "bytes26_3": 36,
+   "bytes26_4": 36,
+   "changesRow": "`worldgen.dimensionHeight` (ADR 0100 D5; plugin API 1.18.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worldgen.environmentAttributes",
+   "same": false,
+   "bytes26_3": 1931,
+   "bytes26_4": 1967,
+   "changesRow": "`worldgen.environmentAttributes` (ADR 0100 D5; plugin API 1.18.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worldgen.featureSteps",
+   "same": true,
+   "bytes26_3": 214,
+   "bytes26_4": 214,
+   "changesRow": "Folders, `worldgen.featureSteps`, `worldgen.biomeAttributes`",
+   "rowDated": false
+  },
+  {
+   "fact": "worldgen.noiseSettingsDefaultBlock",
+   "same": false,
+   "bytes26_3": 4,
+   "bytes26_4": 5,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "worldgen.terrainPreview",
+   "same": false,
+   "bytes26_3": 663,
+   "bytes26_4": 678,
+   "changesRow": null,
+   "rowDated": false
+  },
+  {
+   "fact": "worldgen.vanillaFeatureOrder",
+   "same": false,
+   "bytes26_3": 6356,
+   "bytes26_4": 7246,
+   "changesRow": "`worldgen.vanillaFeatureOrder` (ADR 0097 D1; plugin API 1.17.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worlds.firstJoinCriterion",
+   "same": true,
+   "bytes26_3": 16,
+   "bytes26_4": 16,
+   "changesRow": "`worlds` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worlds.fixedPlacementShape",
+   "same": false,
+   "bytes26_3": 53,
+   "bytes26_4": 53,
+   "changesRow": "`worlds` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worlds.floatingIslandsSettings",
+   "same": true,
+   "bytes26_3": 28,
+   "bytes26_4": 28,
+   "changesRow": "`worlds` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worlds.structurePlacements",
+   "same": true,
+   "bytes26_3": 85,
+   "bytes26_4": 85,
+   "changesRow": "`worlds` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  },
+  {
+   "fact": "worlds.voidBiome",
+   "same": true,
+   "bytes26_3": 20,
+   "bytes26_4": 20,
+   "changesRow": "`worlds` (ADR 0113 D8; plugin API 1.22.0)",
+   "rowDated": true
+  }
+ ]
+}

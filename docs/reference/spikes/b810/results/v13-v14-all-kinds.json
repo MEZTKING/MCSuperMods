@@ -1,0 +1,43 @@
+{
+ "folder": "examples/all-kinds",
+ "v13": {
+  "changes": 1,
+  "droppedValues": 1,
+  "savedReportBytes": 93,
+  "backHookAnswer": [
+   "No migration needed"
+  ],
+  "editedElement": "msm_examples:gentle_hills",
+  "editApplied": true,
+  "notRestored": [],
+  "differingFromOriginal": [
+   {
+    "id": "msm_examples:gentle_hills",
+    "onlyBefore": [
+     "/sea_level=63"
+    ],
+    "onlyAfter": [
+     "/sea_level=64"
+    ]
+   }
+  ],
+  "problemsAfterRoundTrip": 0
+ },
+ "v14": {
+  "hop1Changes": 1,
+  "hop2Changes": 3,
+  "directOneHop": {
+   "changes": 0,
+   "problems": [
+    "target.no-migration-path"
+   ]
+  },
+  "chainProblems": [],
+  "mergedChanges": 3,
+  "chainEqualsTwoMoves": true,
+  "undo": {
+   "twoMovesNeedTwoUndos": true,
+   "chainIsOneUndo": true
+  }
+ }
+}

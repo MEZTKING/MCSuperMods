@@ -1,0 +1,6867 @@
+{
+ "registryPairs": [
+  {
+   "from": "block_predicate_type",
+   "to": "block_predicate_type",
+   "jaccard": 0.875,
+   "kind": "same"
+  },
+  {
+   "from": "chunk_status",
+   "to": "chunk_status",
+   "jaccard": 0.692,
+   "kind": "same"
+  },
+  {
+   "from": "data_component_type",
+   "to": "data_component_type",
+   "jaccard": 0.879,
+   "kind": "same"
+  },
+  {
+   "from": "int_provider_type",
+   "to": "int_provider_type",
+   "jaccard": 0.875,
+   "kind": "same"
+  },
+  {
+   "from": "loot_condition_type",
+   "to": "loot_condition_type",
+   "jaccard": 0.739,
+   "kind": "same"
+  },
+  {
+   "from": "map_decoration_type",
+   "to": "map_decoration_type",
+   "jaccard": 0.875,
+   "kind": "same"
+  },
+  {
+   "from": "outgoing_rpc_methods",
+   "to": "outgoing_rpc_methods",
+   "jaccard": 0.81,
+   "kind": "same"
+  },
+  {
+   "from": "post_effect",
+   "to": "post_effect",
+   "jaccard": 0.833,
+   "kind": "same"
+  },
+  {
+   "from": "recipe",
+   "to": "recipe",
+   "jaccard": 0.776,
+   "kind": "same"
+  },
+  {
+   "from": "recipe_type",
+   "to": "recipe_type",
+   "jaccard": 0.875,
+   "kind": "same"
+  },
+  {
+   "from": "rule_test",
+   "to": "rule_test",
+   "jaccard": 0.6,
+   "kind": "same"
+  },
+  {
+   "from": "structure",
+   "to": "structure",
+   "jaccard": 0.802,
+   "kind": "same"
+  },
+  {
+   "from": "tag/block",
+   "to": "tag/block",
+   "jaccard": 0.865,
+   "kind": "same"
+  },
+  {
+   "from": "tag/fluid",
+   "to": "tag/fluid",
+   "jaccard": 0.6,
+   "kind": "same"
+  },
+  {
+   "from": "tag/potion",
+   "to": "tag/potion",
+   "jaccard": 0.2,
+   "kind": "same"
+  },
+  {
+   "from": "tag/worldgen/biome",
+   "to": "tag/worldgen/biome",
+   "jaccard": 0.791,
+   "kind": "same"
+  },
+  {
+   "from": "tag/worldgen/configured_feature",
+   "to": "tag/worldgen/feature",
+   "jaccard": 1,
+   "kind": "moved"
+  },
+  {
+   "from": "tag/worldgen/structure",
+   "to": "tag/worldgen/structure",
+   "jaccard": 0.395,
+   "kind": "same"
+  },
+  {
+   "from": "worldgen/block_state_provider_type",
+   "to": "worldgen/block_state_provider_type",
+   "jaccard": 0,
+   "kind": "same"
+  },
+  {
+   "from": "worldgen/carver",
+   "to": "worldgen/carver_type",
+   "jaccard": 0.667,
+   "kind": "moved"
+  },
+  {
+   "from": "worldgen/configured_carver",
+   "to": "worldgen/carver",
+   "jaccard": 1,
+   "kind": "moved"
+  },
+  {
+   "from": "worldgen/configured_feature",
+   "to": "worldgen/feature",
+   "jaccard": 0.91,
+   "kind": "moved"
+  },
+  {
+   "from": "worldgen/density_function",
+   "to": "worldgen/density_function",
+   "jaccard": 0.636,
+   "kind": "same"
+  },
+  {
+   "from": "worldgen/density_function_type",
+   "to": "worldgen/density_function_type",
+   "jaccard": 0.5,
+   "kind": "same"
+  },
+  {
+   "from": "worldgen/feature",
+   "to": "worldgen/feature_type",
+   "jaccard": 0.754,
+   "kind": "moved"
+  },
+  {
+   "from": "worldgen/material_condition",
+   "to": "worldgen/material_condition_type",
+   "jaccard": 1,
+   "kind": "moved"
+  },
+  {
+   "from": "worldgen/material_rule",
+   "to": "worldgen/material_rule_type",
+   "jaccard": 0.8,
+   "kind": "moved"
+  },
+  {
+   "from": "worldgen/placement_modifier_type",
+   "to": "worldgen/placement_modifier_type",
+   "jaccard": 0.737,
+   "kind": "same"
+  },
+  {
+   "from": "worldgen/structure",
+   "to": "worldgen/structure",
+   "jaccard": 0.654,
+   "kind": "same"
+  },
+  {
+   "from": "worldgen/structure_placement",
+   "to": "worldgen/structure_placement",
+   "jaccard": 0.667,
+   "kind": "same"
+  },
+  {
+   "from": "worldgen/template_pool",
+   "to": "worldgen/template_pool",
+   "jaccard": 0.767,
+   "kind": "same"
+  }
+ ],
+ "dispatcherMapSize": 58,
+ "candidatesConsidered": 4379,
+ "proposed": [
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "dual_noise_provider",
+   "to": "dual_noise",
+   "name": 0.92,
+   "shape": "same",
+   "fieldOverlap": 1,
+   "score": 1.42
+  },
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "noise_threshold_provider",
+   "to": "noise_threshold",
+   "name": 0.92,
+   "shape": "same",
+   "fieldOverlap": 1,
+   "score": 1.42
+  },
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "noise_provider",
+   "to": "noise",
+   "name": 0.75,
+   "shape": "same",
+   "fieldOverlap": 1,
+   "score": 1.25
+  },
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "randomized_int_state_provider",
+   "to": "randomized_int",
+   "name": 0.75,
+   "shape": "same",
+   "fieldOverlap": 1,
+   "score": 1.25
+  },
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "rule_based_state_provider",
+   "to": "rule_based",
+   "name": 0.75,
+   "shape": "same",
+   "fieldOverlap": 1,
+   "score": 1.25
+  },
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "simple_state_provider",
+   "to": "simple",
+   "name": 0.58,
+   "shape": "same",
+   "fieldOverlap": 1,
+   "score": 1.08
+  },
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "weighted_state_provider",
+   "to": "weighted",
+   "name": 0.58,
+   "shape": "same",
+   "fieldOverlap": 1,
+   "score": 1.08
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/hit1",
+   "to": "mob/sulfur_cube/ball/slowsliding_hit1",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/hit2",
+   "to": "mob/sulfur_cube/ball/slowsliding_hit2",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/hit3",
+   "to": "mob/sulfur_cube/ball/slowsliding_hit3",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/hit4",
+   "to": "mob/sulfur_cube/ball/slowsliding_hit4",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/amethyst",
+   "to": "palettes/trim/amethyst",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/copper",
+   "to": "palettes/trim/copper",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/copper_darker",
+   "to": "palettes/trim/copper_darker",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/diamond",
+   "to": "palettes/trim/diamond",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/diamond_darker",
+   "to": "palettes/trim/diamond_darker",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/emerald",
+   "to": "palettes/trim/emerald",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/gold",
+   "to": "palettes/trim/gold",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/gold_darker",
+   "to": "palettes/trim/gold_darker",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/iron",
+   "to": "palettes/trim/iron",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/iron_darker",
+   "to": "palettes/trim/iron_darker",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/lapis",
+   "to": "palettes/trim/lapis",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/netherite",
+   "to": "palettes/trim/netherite",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/netherite_darker",
+   "to": "palettes/trim/netherite_darker",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/quartz",
+   "to": "palettes/trim/quartz",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/redstone",
+   "to": "palettes/trim/redstone",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/resin",
+   "to": "palettes/trim/resin",
+   "name": 1,
+   "shape": "none",
+   "score": 1
+  },
+  {
+   "registry": "villager_trade",
+   "toRegistry": "villager_trade",
+   "from": "cartographer/3/emerald_and_compass_trial_chamber_map",
+   "to": "cartographer/3/emerald_and_compass_buried_trial_chambers_map",
+   "name": 0.99,
+   "shape": "none",
+   "score": 0.99
+  },
+  {
+   "registry": "worldgen/block_state_provider_type",
+   "toRegistry": "worldgen/block_state_provider_type",
+   "from": "rotated_block_provider",
+   "to": "rotated",
+   "name": 0.58,
+   "shape": "superset",
+   "fieldOverlap": 0.5,
+   "score": 0.98
+  },
+  {
+   "registry": "villager_trade",
+   "toRegistry": "villager_trade",
+   "from": "cartographer/3/emerald_and_compass_ocean_explorer_map",
+   "to": "cartographer/3/emerald_and_compass_ocean_monument_map",
+   "name": 0.88,
+   "shape": "none",
+   "score": 0.88
+  },
+  {
+   "registry": "tag/worldgen/structure",
+   "toRegistry": "tag/worldgen/structure",
+   "from": "on_trial_chambers_maps",
+   "to": "on_buried_trial_chambers_maps",
+   "name": 0.8,
+   "shape": "none",
+   "score": 0.8
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_2d",
+   "to": "cache",
+   "name": 0.75,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0.75
+  },
+  {
+   "registry": "worldgen/placement_modifier_type",
+   "toRegistry": "worldgen/placement_modifier_type",
+   "from": "random_offset",
+   "to": "offset",
+   "name": 0.75,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0.75
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "end_islands",
+   "to": "end_outer_islands",
+   "name": 0.67,
+   "shape": "none",
+   "score": 0.67
+  },
+  {
+   "registry": "tag/worldgen/structure",
+   "toRegistry": "tag/worldgen/structure",
+   "from": "on_jungle_explorer_maps",
+   "to": "on_jungle_pyramid_maps",
+   "name": 0.6,
+   "shape": "none",
+   "score": 0.6
+  },
+  {
+   "registry": "tag/worldgen/structure",
+   "toRegistry": "tag/worldgen/structure",
+   "from": "on_ocean_explorer_maps",
+   "to": "on_ocean_monument_maps",
+   "name": 0.6,
+   "shape": "none",
+   "score": 0.6
+  },
+  {
+   "registry": "tag/worldgen/structure",
+   "toRegistry": "tag/worldgen/structure",
+   "from": "on_swamp_explorer_maps",
+   "to": "on_swamp_hut_maps",
+   "name": 0.6,
+   "shape": "none",
+   "score": 0.6
+  },
+  {
+   "registry": "tag/worldgen/structure",
+   "toRegistry": "tag/worldgen/structure",
+   "from": "on_woodland_explorer_maps",
+   "to": "on_woodland_mansion_maps",
+   "name": 0.6,
+   "shape": "none",
+   "score": 0.6
+  },
+  {
+   "registry": "data_component_type",
+   "toRegistry": "data_component_type",
+   "from": "map_color",
+   "to": "cushion/color",
+   "name": 0.58,
+   "shape": "none",
+   "score": 0.58
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "y_clamped_gradient",
+   "to": "gradient",
+   "name": 0.58,
+   "shape": "differs",
+   "fieldOverlap": 0.25,
+   "score": 0.58
+  },
+  {
+   "registry": "tag/block",
+   "toRegistry": "tag/block",
+   "from": "convertable_to_mud",
+   "to": "convertible_to_mud",
+   "name": 0.5,
+   "shape": "none",
+   "score": 0.5
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "trims/color_palettes/trim_palette",
+   "to": "palettes/trim_base",
+   "name": 0.5,
+   "shape": "none",
+   "score": 0.5
+  },
+  {
+   "registry": "model",
+   "toRegistry": "model",
+   "from": "block/template_farmland",
+   "to": "block/template_cube_bottom_top_indented",
+   "name": 0.39,
+   "shape": "none",
+   "score": 0.39
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "basalt_columns",
+   "to": "stepped_column_cluster",
+   "name": 0.25,
+   "shape": "none",
+   "score": 0.25
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "basalt_pillar",
+   "to": "single_block_pillar",
+   "name": 0.25,
+   "shape": "none",
+   "score": 0.25
+  },
+  {
+   "registry": "loot_condition_type",
+   "toRegistry": "loot_condition_type",
+   "from": "block_state_property",
+   "to": "match_block",
+   "name": 0.25,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0.25
+  },
+  {
+   "registry": "tag/item",
+   "toRegistry": "tag/item",
+   "from": "brewing_fuel",
+   "to": "brewing_potion_inputs",
+   "name": 0.25,
+   "shape": "none",
+   "score": 0.25
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "nether_sprouts_bonemeal",
+   "to": "nylium_bonemeal",
+   "name": 0.25,
+   "shape": "none",
+   "score": 0.25
+  },
+  {
+   "registry": "tag/block",
+   "toRegistry": "tag/block",
+   "from": "nether_carver_replaceables",
+   "to": "nether_portal_frame",
+   "name": 0.2,
+   "shape": "none",
+   "score": 0.2
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "crimson_forest_vegetation_bonemeal",
+   "to": "trees_dappled_forest",
+   "name": 0.17,
+   "shape": "none",
+   "score": 0.17
+  },
+  {
+   "registry": "tag/block",
+   "toRegistry": "tag/block",
+   "from": "overworld_carver_replaceables",
+   "to": "height_specific_ore_replaceables",
+   "name": 0.17,
+   "shape": "none",
+   "score": 0.17
+  },
+  {
+   "registry": "chunk_status",
+   "toRegistry": "chunk_status",
+   "from": "carvers",
+   "to": "terrain",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  }
+ ],
+ "ambiguous": [
+  {
+   "registry": "loot_condition_type",
+   "toRegistry": "loot_condition_type",
+   "from": "value_check",
+   "to": "float_value_check",
+   "name": 0.92,
+   "shape": "differs",
+   "fieldOverlap": 0.33,
+   "score": 0.92
+  },
+  {
+   "registry": "loot_condition_type",
+   "toRegistry": "loot_condition_type",
+   "from": "value_check",
+   "to": "int_value_check",
+   "name": 0.92,
+   "shape": "differs",
+   "fieldOverlap": 0.33,
+   "score": 0.92
+  },
+  {
+   "registry": "model",
+   "toRegistry": "model",
+   "from": "item/light",
+   "to": "item/light_blue_cushion",
+   "name": 0.85,
+   "shape": "none",
+   "score": 0.85
+  },
+  {
+   "registry": "model",
+   "toRegistry": "model",
+   "from": "item/light",
+   "to": "item/light_gray_cushion",
+   "name": 0.85,
+   "shape": "none",
+   "score": 0.85
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/light",
+   "to": "item/light_blue_cushion",
+   "name": 0.85,
+   "shape": "none",
+   "score": 0.85
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/light",
+   "to": "item/light_gray_cushion",
+   "name": 0.85,
+   "shape": "none",
+   "score": 0.85
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/abandoned_camp_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/buried_mineshaft_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/buried_treasure_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/desert_pyramid_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/desert_village_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/jungle_pyramid_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/ocean_monument_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/plains_village_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/savanna_village_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/snowy_village_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/swamp_hut_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/taiga_village_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "item/filled_map_markings",
+   "to": "item/woodland_mansion_map",
+   "name": 0.43,
+   "shape": "none",
+   "score": 0.43
+  },
+  {
+   "registry": "data_component_type",
+   "toRegistry": "data_component_type",
+   "from": "swing_animation",
+   "to": "attack_animation",
+   "name": 0.33,
+   "shape": "none",
+   "score": 0.33
+  },
+  {
+   "registry": "data_component_type",
+   "toRegistry": "data_component_type",
+   "from": "swing_animation",
+   "to": "interact_animation",
+   "name": 0.33,
+   "shape": "none",
+   "score": 0.33
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "ceil",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "distance_to_point",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "div",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "floor",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "lerp",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "log",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "negate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "pow",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "reciprocal",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "round",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "sign",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "slice",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "sqrt",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "sub",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_all_in_cell",
+   "to": "truncate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "ceil",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "distance_to_point",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "div",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "floor",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "lerp",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "log",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "negate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "pow",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "reciprocal",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "round",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "sign",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "slice",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "sqrt",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "sub",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "cache_once",
+   "to": "truncate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "coral_mushroom",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "coral_mushroom",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "coral_mushroom",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "coral_mushroom",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "desert_well",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "desert_well",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "desert_well",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "desert_well",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "ceil",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "distance_to_point",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "div",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "floor",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "lerp",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "log",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "negate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "pow",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "reciprocal",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "round",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "sign",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "slice",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "sqrt",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "sub",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "flat_cache",
+   "to": "truncate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "glowstone_blob",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "glowstone_blob",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "glowstone_blob",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "glowstone_blob",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "ceil",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "distance_to_point",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "div",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "floor",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "lerp",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "log",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "negate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "pow",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "reciprocal",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "round",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "sign",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "slice",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "sqrt",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "sub",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "invert",
+   "to": "truncate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "kelp",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "kelp",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "kelp",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "kelp",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient10",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient11",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient12",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient13",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient14",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient15",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient16",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient17",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient18",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient19",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient20",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient21",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient22",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient23",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient24",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient7",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient8",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/ambient9",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/wind1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/wind2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/poplar_leaves/wind3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/red_shrub/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/bounce1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/bounce2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/bounce3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/bounce4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/bounce5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/break5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/break6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/shelf_mushroom/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/break_leave",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/hit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/hit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/hit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/hit4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/hit5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/hit6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "block/straw_bed/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/get_up1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/get_up2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/get_up3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/sit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/sit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push1",
+   "to": "entity/cushion/sit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient10",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient11",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient12",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient13",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient14",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient15",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient16",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient17",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient18",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient19",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient20",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient21",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient22",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient23",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient24",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient7",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient8",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/ambient9",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/wind1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/wind2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/poplar_leaves/wind3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/red_shrub/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/bounce1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/bounce2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/bounce3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/bounce4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/bounce5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/break5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/break6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/shelf_mushroom/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/break_leave",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/hit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/hit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/hit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/hit4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/hit5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/hit6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "block/straw_bed/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/get_up1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/get_up2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/get_up3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/sit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/sit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push2",
+   "to": "entity/cushion/sit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient10",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient11",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient12",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient13",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient14",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient15",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient16",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient17",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient18",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient19",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient20",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient21",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient22",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient23",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient24",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient7",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient8",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/ambient9",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/wind1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/wind2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/poplar_leaves/wind3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/red_shrub/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/bounce1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/bounce2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/bounce3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/bounce4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/bounce5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/break5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/break6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/shelf_mushroom/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/break_leave",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/hit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/hit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/hit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/hit4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/hit5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/hit6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "block/straw_bed/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/get_up1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/get_up2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/get_up3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/sit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/sit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push3",
+   "to": "entity/cushion/sit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient10",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient11",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient12",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient13",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient14",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient15",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient16",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient17",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient18",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient19",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient20",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient21",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient22",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient23",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient24",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient7",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient8",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/ambient9",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/wind1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/wind2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/poplar_leaves/wind3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/red_shrub/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/bounce1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/bounce2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/bounce3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/bounce4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/bounce5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/break5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/break6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/shelf_mushroom/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/break4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/break_leave",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/hit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/hit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/hit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/hit4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/hit5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/hit6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/step1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/step2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/step3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/step4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/step5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "block/straw_bed/step6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/break1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/break2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/break3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/get_up1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/get_up2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/get_up3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/place1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/place2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/place3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/place4",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/place5",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/place6",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/sit1",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/sit2",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound",
+   "toRegistry": "sound",
+   "from": "mob/sulfur_cube/ball/push4",
+   "to": "entity/cushion/sit3",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "nether_forest_vegetation",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "nether_forest_vegetation",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "nether_forest_vegetation",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "nether_forest_vegetation",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "loot_condition_type",
+   "toRegistry": "loot_condition_type",
+   "from": "reference",
+   "to": "float_value_check",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "loot_condition_type",
+   "toRegistry": "loot_condition_type",
+   "from": "reference",
+   "to": "int_value_check",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "sea_pickle",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "sea_pickle",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "sea_pickle",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "sea_pickle",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "seagrass",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "seagrass",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "seagrass",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "seagrass",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "ceil",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "distance_to_point",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "div",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "floor",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "lerp",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "log",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "negate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "pow",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "reciprocal",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "round",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "sign",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "slice",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "sqrt",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "sub",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "shifted_noise",
+   "to": "truncate",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "twisting_vines",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "twisting_vines",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "twisting_vines",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "twisting_vines",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "coral/block_decoration",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "coral/brain_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "coral/bubble_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "coral/fire_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "coral/horn_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "coral/tube_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "end_podium_active",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "end_podium_inactive",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "fallen_poplar_tree",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "orange_poplar",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "orange_poplar_leaf_litter",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "red_poplar",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "red_poplar_leaf_litter",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "red_shrub",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "yellow_poplar",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "twisting_vines_bonemeal",
+   "to": "yellow_poplar_leaf_litter",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "coral/block_decoration",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "coral/brain_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "coral/bubble_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "coral/fire_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "coral/horn_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "coral/tube_block",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "end_podium_active",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "end_podium_inactive",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "fallen_poplar_tree",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "orange_poplar",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "orange_poplar_leaf_litter",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "red_poplar",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "red_poplar_leaf_litter",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "red_shrub",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "yellow_poplar",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/configured_feature",
+   "toRegistry": "worldgen/feature",
+   "from": "warped_forest_vegetation_bonemeal",
+   "to": "yellow_poplar_leaf_litter",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "weeping_vines",
+   "to": "end_podium",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "weeping_vines",
+   "to": "overlay",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "weeping_vines",
+   "to": "projected_random_patchy_square",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/feature",
+   "toRegistry": "worldgen/feature_type",
+   "from": "weeping_vines",
+   "to": "random_neighbor_spread",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  }
+ ],
+ "fieldMoves": [
+  {
+   "where": "minecraft:carver_config[cave]",
+   "from": "yScale",
+   "to": "thickness",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:carver_config[cave]",
+   "from": "yScale",
+   "to": "room_vertical_radius_multiplier",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:carver_config[cave]",
+   "from": "yScale",
+   "to": "start_vertical_radius_multiplier",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[abs]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[add]",
+   "from": "argument1",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[add]",
+   "from": "argument1",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[add]",
+   "from": "argument2",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[add]",
+   "from": "argument2",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[blend_density]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[constant]",
+   "from": "argument",
+   "to": "value",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[cube]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[half_negative]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[interpolated]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[max]",
+   "from": "argument1",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[max]",
+   "from": "argument1",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[max]",
+   "from": "argument2",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[max]",
+   "from": "argument2",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[min]",
+   "from": "argument1",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[min]",
+   "from": "argument1",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[min]",
+   "from": "argument2",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[min]",
+   "from": "argument2",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[mul]",
+   "from": "argument1",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[mul]",
+   "from": "argument1",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[mul]",
+   "from": "argument2",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[mul]",
+   "from": "argument2",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[quarter_negative]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[shift]",
+   "from": "argument",
+   "to": "noise",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[shift_a]",
+   "from": "argument",
+   "to": "noise",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[shift_b]",
+   "from": "argument",
+   "to": "noise",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[slide]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[square]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:density_function[squeeze]",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:loot_function[apply_bonus]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[copy_components]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[copy_custom_data]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[copy_name]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[copy_state]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[discard]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[enchant_randomly]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[enchant_with_levels]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[enchanted_count_increase]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[exploration_map]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[explosion_decay]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[fill_player_head]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[filtered]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[furnace_smelt]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[limit_count]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[modify_contents]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_attributes]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_banner_pattern]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_book_cover]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_components]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_contents]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_count]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_custom_data]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_custom_model_data]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_damage]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_enchantments]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_firework_explosion]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_fireworks]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_instrument]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_item]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_loot_table]",
+   "from": "name",
+   "to": "loot_table_id",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:loot_function[set_loot_table]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_lore]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_name]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_ominous_bottle_amplifier]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_potion]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_random_dyes]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_random_potion]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_stew_effect]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_writable_book_pages]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[set_written_book_pages]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_function[toggle_tooltips]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[alternatives]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[dynamic]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[empty]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[group]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[item]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[loot_table]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[sequence]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[slots]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:loot_pool_entry[tag]",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:resource[villager_trade]",
+   "from": "given_item_modifiers",
+   "to": "given_item_modifier",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:resource[worldgen/noise]",
+   "from": "firstOctave",
+   "to": "base_octave",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:resource[worldgen/noise]",
+   "from": "firstOctave",
+   "to": "octave_count",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "minecraft:resource[worldgen/noise]",
+   "from": "amplitudes",
+   "to": "base_amplitude",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:resource[worldgen/noise]",
+   "from": "amplitudes",
+   "to": "amplitude_modifiers",
+   "sameType": true,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:resource[worldgen/noise_settings]",
+   "from": "aquifers_enabled",
+   "to": "aquifers",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "minecraft:resource[worldgen/noise_settings]",
+   "from": "surface_rule",
+   "to": "material_rule",
+   "sameType": true,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::assets::model::ModelElement",
+   "from": "shade",
+   "to": "shade_direction_override",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::advancement::trigger::BlockStateConditions",
+   "from": "block",
+   "to": "blocks",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::advancement::trigger::PlacedBlockConditions",
+   "from": "block",
+   "to": "blocks",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::CompositePoolEntry",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::DynamicPoolEntry",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::ItemPoolEntry",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::LootPool",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::LootPoolEntryBase",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::LootTablePoolEntry",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::SingletonPoolEntry",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::SlotsPoolEntry",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::TagPoolEntry",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::ApplyBonus",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::Conditions",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::CopyComponents",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::CopyName",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::CopyNbt",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::CopyState",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::EnchantRandomly",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::EnchantWithLevels",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::EnchantedCountIncrease",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::ExplorationMap",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::FillPlayerHead",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::Filtered",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::LimitCount",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::LootingEnchant",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::ModifyContents",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::Reference",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetAttributes",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetBannerPattern",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetBookCover",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetComponents",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetContents",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetCount",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetCustomData",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetCustomModelData",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetDamage",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetEnchantments",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetFireworkExplosion",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetFireworks",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetInstrument",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetItem",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetLootTable",
+   "from": "name",
+   "to": "loot_table_id",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::loot::function::SetLootTable",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetLore",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetName",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetNbt",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetOminousBottleAmplifier",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetPotion",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetRandomDyes",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetRandomPotion",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetStewEffect",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetWriteableBookPages",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::SetWrittenBookPages",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::loot::function::ToggleTooltips",
+   "from": "conditions",
+   "to": "condition",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::villager_trade::VillagerTrade",
+   "from": "given_item_modifiers",
+   "to": "given_item_modifier",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::worldgen::attribute::BedRule",
+   "from": "explodes",
+   "to": "destroy_on_use",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::attribute::BedRule",
+   "from": "explodes",
+   "to": "destroy_on_leave",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::biome::NaturalMobSpawns",
+   "from": "spawners",
+   "to": "spawns_by_category",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::carver::CaveConfig",
+   "from": "yScale",
+   "to": "thickness",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::carver::CaveConfig",
+   "from": "yScale",
+   "to": "room_vertical_radius_multiplier",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::carver::CaveConfig",
+   "from": "yScale",
+   "to": "start_vertical_radius_multiplier",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::Constant",
+   "from": "argument",
+   "to": "value",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::Interpolated",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::OneArgument",
+   "from": "argument",
+   "to": "input",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::Shift",
+   "from": "argument",
+   "to": "noise",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::TwoArguments",
+   "from": "argument1",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::TwoArguments",
+   "from": "argument1",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::TwoArguments",
+   "from": "argument2",
+   "to": "left",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::density_function::TwoArguments",
+   "from": "argument2",
+   "to": "right",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::dimension::biome_source::NoiseParameters",
+   "from": "firstOctave",
+   "to": "base_octave",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::dimension::biome_source::NoiseParameters",
+   "from": "firstOctave",
+   "to": "octave_count",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::dimension::biome_source::NoiseParameters",
+   "from": "amplitudes",
+   "to": "base_amplitude",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::worldgen::dimension::biome_source::NoiseParameters",
+   "from": "amplitudes",
+   "to": "amplitude_modifiers",
+   "sameType": true,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::worldgen::feature::ColumnsConfig",
+   "from": "reach",
+   "to": "column_reach",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::worldgen::feature::ColumnsConfig",
+   "from": "reach",
+   "to": "cluster_reach",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseGeneratorSettings",
+   "from": "aquifers_enabled",
+   "to": "aquifers",
+   "sameType": false,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseGeneratorSettings",
+   "from": "surface_rule",
+   "to": "material_rule",
+   "sameType": true,
+   "nameSimilar": true
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "barrier",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "fluid_level_floodedness",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "fluid_level_spread",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "lava",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "vein_toggle",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "vein_ridged",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "vein_gap",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": false
+  },
+  {
+   "where": "::java::data::worldgen::noise_settings::NoiseRouter",
+   "from": "preliminary_surface_level",
+   "to": "chunk_surface_level",
+   "sameType": true,
+   "nameSimilar": true
+  }
+ ]
+}

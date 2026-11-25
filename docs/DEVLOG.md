@@ -11604,3 +11604,19 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 - Main session: put the six questions of the plan's section 2 to the user (defaults: releases only; keep a copy; never by itself; newest release, the one before and the next test builds; Modrinth on a click; re-pin 26.4 at its release with the new tool).
 - B810 (spike, Opus, high) can start in any free slot; B811 and B812 after it. B812 owns `packages/plugin-api/src/target.ts`: not beside Plan C's B782.
 - `docs/CLAUDE.md`'s "open plan" line and `docs/HANDOFF.md` do not name this plan yet (the main session's files).
+
+## 2026-11-25 — executor — B810 spike: what a version change really is, measured
+
+**What**
+- Answered V1 to V20 of `docs/PLAN-version-upgrades.md` for draft ADR 0136 in `docs/reference/spikes/b810/README.md`, with throwaway scripts (`scripts/`), the planted project's generator (`spike-src/plant.py`) and outputs (`results/`; ids, paths, counts and hashes only). No code outside that folder changed; the spikes index has a `b810/` line.
+- Ran a throwaway differ over both targets' vendored data (registries, mcdoc gated and by two refs, commands, block states, `version.json`), rename candidates scored against rename statements read from Mojang's patch notes for 26.2 → 26.3 and 26.3 → 26.4, a scan of all 168 projects in `examples/` and `fixtures/`, a planted project through `tools/check-project`, the dry run with the app's `ProjectSession` (cold in a worker thread and warm over every project), moving back and a chain through a stand-in third target, mcmeta's trees for changed vanilla files, one batched Modrinth call, and a table of the targets' 106 facts.
+- Read on the network (2026-11-25, nothing of it stored but ids and counts): Mojang's manifest and patch notes, mcmeta's tags and the `26.2` and `26.4-pre-1` summaries, vanilla-mcdoc's history and newest export, Fabric meta and Maven, Modrinth.
+
+**Decisions**
+- Go on ADR 0136's 5 s budget: a cold worker answered in 3.0 to 4.0 s of wall time (the dry run itself 0.4 to 1.9 s), warm runs in a median 0.12 s and at most 0.84 s; lowering stays in.
+- Sixteen changes asked of the ADR and plan, listed in the README. The main ones: diff mcdoc both gated and by two refs (vanilla-mcdoc gates only on releases); match registries by member overlap; normalise the command report; search scripts and function text for removed ids without rewriting them, and leave out the command-word step for now; count warnings as new problems, keyed by code, element and path; copy only `msm.project.json` and `content/`; one Modrinth `version_files/update` call; drop the key names from the proof test; check-deps entries for `@msm/target-migrate`.
+
+**Next**
+- Before B826 can re-pin 26.4: mcmeta's command report changed format in `26.4-snapshot-8`, and the vendored Spyglass cannot read the new one (every argument warns). A `sync-mcmeta` adapter or a Spyglass update is needed first.
+- Outside this plan: the mcfunction checker on the snapshot target treats `since="26.4"` fields as unknown (`results/v4-gate-probe.txt`), which gives a false warning on `examples/flows/leaf_glider` today. `check-deps`' version pattern knows only `26.x`.
+- B811 and B812 can start from the README's shapes; the main session folds the requested changes into ADR 0136 and the plan.

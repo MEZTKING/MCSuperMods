@@ -1,0 +1,26 @@
+{
+ "report": "differ-26.4s7-26.4pre1.json",
+ "mcdocMode": "refs",
+ "changes": 789,
+ "additions": 23,
+ "byArea": {
+  "commands": 758,
+  "formats": 14,
+  "ids": 12,
+  "packs": 5
+ },
+ "byHandling": {
+  "none": 771,
+  "manual": 13,
+  "auto": 5
+ },
+ "sizeWithAdditions": {
+  "raw": 258884,
+  "gzip": 10929
+ },
+ "sizeAdditionsAsCounts": {
+  "raw": 255154,
+  "gzip": 10579
+ },
+ "prettyWithAdditions": 296067
+}

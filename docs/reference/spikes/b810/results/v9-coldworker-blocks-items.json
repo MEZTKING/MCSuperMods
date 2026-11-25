@@ -1,0 +1,43 @@
+{
+ "folder": "examples/blocks-items",
+ "toTarget": "mc-26.4",
+ "elements": 289,
+ "projectBytes": 282147,
+ "loweredFilesBefore": 0,
+ "loweredFilesAfter": 1245,
+ "migration": {
+  "changes": 0,
+  "problems": 0
+ },
+ "problemsBefore": 0,
+ "problemsAfter": 0,
+ "phasesMs": {
+  "read folder": 87,
+  "open (own target)": 28,
+  "validate (own target)": 0,
+  "lower (own target)": 0,
+  "copy files": 1,
+  "open copy": 9,
+  "migrate (preview)": 6,
+  "apply move + second schema context": 1417,
+  "validate (new target)": 0,
+  "lower (new target)": 73
+ },
+ "dryRunMs": 1506,
+ "dryRunWithoutLoweringMs": 1433,
+ "heapMb": {
+  "read folder": 44,
+  "open (own target)": 50,
+  "validate (own target)": 50,
+  "lower (own target)": 50,
+  "copy files": 50,
+  "open copy": 54,
+  "migrate (preview)": 44,
+  "apply move + second schema context": 232,
+  "validate (new target)": 232,
+  "lower (new target)": 241
+ },
+ "rssMb": 486,
+ "worker": true,
+ "wallMsIncludingWorkerStart": 3972
+}

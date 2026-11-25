@@ -1,0 +1,5 @@
+[
+ { "from": "large_dripstone", "to": "large_speleothem", "note": "26.4-snapshot-3 notes state it reversed: 'Changed minecraft:large_dripstone (renamed from minecraft:large_speleothem)'; the registries show the direction" },
+ { "from": "ignores_poison_and_regen", "to": "immune_to_poison", "note": "26.4-snapshot-5: replaced by two tags (a split), immune_to_poison and immune_to_regeneration" },
+ { "from": "ignores_poison_and_regen", "to": "immune_to_regeneration", "note": "the other half of the split" }
+]

@@ -1,0 +1,233 @@
+{
+ "statements": 58,
+ "net": [
+  {
+   "from": "cache_once",
+   "to": "cache",
+   "registriesBefore": [
+    "worldgen/density_function_type"
+   ],
+   "registriesAfter": [
+    "worldgen/density_function_type"
+   ],
+   "notes": "26.3-snapshot-10.txt"
+  },
+  {
+   "from": "on_woodland_explorer_maps",
+   "to": "on_woodland_mansion_maps",
+   "registriesBefore": [
+    "tag/worldgen/structure"
+   ],
+   "registriesAfter": [
+    "tag/worldgen/structure"
+   ],
+   "notes": "26.3-snapshot-10.txt"
+  },
+  {
+   "from": "on_ocean_explorer_maps",
+   "to": "on_ocean_monument_maps",
+   "registriesBefore": [
+    "tag/worldgen/structure"
+   ],
+   "registriesAfter": [
+    "tag/worldgen/structure"
+   ],
+   "notes": "26.3-snapshot-10.txt"
+  },
+  {
+   "from": "on_jungle_explorer_maps",
+   "to": "on_jungle_pyramid_maps",
+   "registriesBefore": [
+    "tag/worldgen/structure"
+   ],
+   "registriesAfter": [
+    "tag/worldgen/structure"
+   ],
+   "notes": "26.3-snapshot-10.txt"
+  },
+  {
+   "from": "on_swamp_explorer_maps",
+   "to": "on_swamp_hut_maps",
+   "registriesBefore": [
+    "tag/worldgen/structure"
+   ],
+   "registriesAfter": [
+    "tag/worldgen/structure"
+   ],
+   "notes": "26.3-snapshot-10.txt"
+  },
+  {
+   "from": "basalt_columns",
+   "to": "stepped_column_cluster",
+   "registriesBefore": [
+    "worldgen/feature"
+   ],
+   "registriesAfter": [
+    "worldgen/feature_type"
+   ],
+   "notes": "26.3-snapshot-2.txt"
+  },
+  {
+   "from": "basalt_pillar",
+   "to": "single_block_pillar",
+   "registriesBefore": [
+    "worldgen/configured_feature",
+    "worldgen/feature",
+    "worldgen/placed_feature"
+   ],
+   "registriesAfter": [
+    "worldgen/feature_type"
+   ],
+   "notes": "26.3-snapshot-2.txt"
+  },
+  {
+   "from": "glowstone_blob",
+   "to": "random_neighbor_spread",
+   "registriesBefore": [
+    "worldgen/feature"
+   ],
+   "registriesAfter": [
+    "worldgen/feature_type"
+   ],
+   "notes": "26.3-snapshot-2.txt"
+  },
+  {
+   "from": "random_offset",
+   "to": "offset",
+   "registriesBefore": [
+    "worldgen/placement_modifier_type"
+   ],
+   "registriesAfter": [
+    "worldgen/noise",
+    "worldgen/placement_modifier_type"
+   ],
+   "notes": "26.3-snapshot-2.txt"
+  },
+  {
+   "from": "invert",
+   "to": "reciprocal",
+   "registriesBefore": [
+    "post_effect",
+    "worldgen/density_function_type"
+   ],
+   "registriesAfter": [
+    "worldgen/density_function_type"
+   ],
+   "notes": "26.3-snapshot-4.txt"
+  },
+  {
+   "from": "y_clamped_gradient",
+   "to": "gradient",
+   "registriesBefore": [
+    "worldgen/density_function_type"
+   ],
+   "registriesAfter": [
+    "banner_pattern",
+    "worldgen/density_function_type"
+   ],
+   "notes": "26.3-snapshot-6.txt"
+  },
+  {
+   "from": "end_islands",
+   "to": "end_outer_islands",
+   "registriesBefore": [
+    "worldgen/density_function_type"
+   ],
+   "registriesAfter": [
+    "worldgen/density_function_type"
+   ],
+   "notes": "26.3-snapshot-6.txt"
+  },
+  {
+   "from": "dual_noise_provider",
+   "to": "dual_noise",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  },
+  {
+   "from": "noise_provider",
+   "to": "noise",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type",
+    "worldgen/chunk_generator",
+    "worldgen/density_function_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  },
+  {
+   "from": "noise_threshold_provider",
+   "to": "noise_threshold",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type",
+    "worldgen/material_condition_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  },
+  {
+   "from": "randomized_int_state_provider",
+   "to": "randomized_int",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  },
+  {
+   "from": "rule_based_state_provider",
+   "to": "rule_based",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  },
+  {
+   "from": "simple_state_provider",
+   "to": "simple",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  },
+  {
+   "from": "weighted_state_provider",
+   "to": "weighted",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  },
+  {
+   "from": "rotated_block_provider",
+   "to": "rotated",
+   "registriesBefore": [
+    "worldgen/block_state_provider_type"
+   ],
+   "registriesAfter": [
+    "worldgen/block_state_provider_type"
+   ],
+   "notes": "26.3-pre-1.txt"
+  }
+ ]
+}

@@ -1,0 +1,208 @@
+{
+ "passed": 0,
+ "failed": 1,
+ "results": [
+  {
+   "folder": "<scratch>/planted",
+   "ok": false,
+   "fileProblems": [],
+   "targets": [
+    {
+     "targetId": "mc-26.4",
+     "mcVersion": "26.4-snapshot-7",
+     "upgraded": true,
+     "ok": false,
+     "errors": [
+      {
+       "severity": "error",
+       "where": "minecraft:planted",
+       "message": "#minecraft:ignores_poison_and_regen was removed from the registry tag/entity_type in Minecraft 26.4-snapshot-7."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:block/planted",
+       "message": "minecraft:block/cube_top was removed from the registry model in Minecraft 26.4-snapshot-7."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:en_gb",
+       "message": "minecraft:intentionally_empty was removed from the registry sound_event in Minecraft 26.4-snapshot-7."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:planted_df",
+       "message": "minecraft:interpolated was removed from the registry worldgen/density_function_type in Minecraft 26.4-snapshot-7."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:planted_pred",
+       "message": "minecraft:flowing_water was removed from the registry fluid in Minecraft 26.4-snapshot-7."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:planted_spike",
+       "message": "minecraft:large_dripstone was removed from the registry worldgen/feature_type in Minecraft 26.4-snapshot-7; use minecraft:large_speleothem and add its required base_block (for example minecraft:dripstone_block)."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:planted_df",
+       "message": "No union member matched; closest: Unknown field \"cell_size_xz\"; expected one of type."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:planted_df",
+       "message": "No union member matched; closest: Unknown field \"cell_size_y\"; expected one of type."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:planted_df",
+       "message": "No union member matched; closest: Unknown field \"input\"; expected one of type."
+      },
+      {
+       "severity": "error",
+       "where": "msm_starter:planted_spike",
+       "message": "Unknown minecraft:feature_config key \"minecraft:large_dripstone\"; expected one of bamboo, block_blob, block_column, block_pile, coral_claw, coral_tree, crevasse, delta_feature, disk, emerald_ore, ...."
+      },
+      {
+       "severity": "error",
+       "where": "data/msm_starter/worldgen/density_function/planted_df.json",
+       "message": "data/msm_starter/worldgen/density_function/planted_df.json: No union member matched; closest: Unknown field \"cell_size_xz\"; expected one of type."
+      },
+      {
+       "severity": "error",
+       "where": "data/msm_starter/worldgen/density_function/planted_df.json",
+       "message": "data/msm_starter/worldgen/density_function/planted_df.json: No union member matched; closest: Unknown field \"cell_size_y\"; expected one of type."
+      },
+      {
+       "severity": "error",
+       "where": "data/msm_starter/worldgen/density_function/planted_df.json",
+       "message": "data/msm_starter/worldgen/density_function/planted_df.json: No union member matched; closest: Unknown field \"input\"; expected one of type."
+      },
+      {
+       "severity": "error",
+       "where": "data/msm_starter/worldgen/feature/planted_spike.json",
+       "message": "data/msm_starter/worldgen/feature/planted_spike.json: Unknown minecraft:feature_config key \"minecraft:large_dripstone\"; expected one of bamboo, block_blob, block_column, block_pile, coral_claw, coral_tree, crevasse, delta_feature, disk, emerald_ore, ...."
+      }
+     ],
+     "warnings": [
+      {
+       "severity": "warning",
+       "where": "minecraft:planted",
+       "message": "Unknown entity_type id \"#minecraft:ignores_poison_and_regen\"."
+      },
+      {
+       "severity": "warning",
+       "where": "msm_starter:block/planted",
+       "message": "Unknown model id \"minecraft:block/cube_top\"."
+      },
+      {
+       "severity": "warning",
+       "where": "msm_starter:planted_df",
+       "message": "No union member matched; closest: Unknown worldgen/density_function_type id \"minecraft:interpolated\"."
+      },
+      {
+       "severity": "warning",
+       "where": "msm_starter:planted_fn",
+       "message": "Cannot find particle_type “minecraft:item_snowball” (rule: undeclaredSymbol)"
+      },
+      {
+       "severity": "warning",
+       "where": "msm_starter:planted_fn",
+       "message": "Cannot find tag/entity_type “minecraft:freeze_immune_entity_types” (rule: undeclaredSymbol)"
+      },
+      {
+       "severity": "warning",
+       "where": "msm_starter:planted_fn",
+       "message": "Cannot find sound_event “minecraft:intentionally_empty” (rule: undeclaredSymbol)"
+      },
+      {
+       "severity": "warning",
+       "where": "msm_starter:planted_pred",
+       "message": "Unknown fluid id \"minecraft:flowing_water\"."
+      },
+      {
+       "severity": "warning",
+       "where": "msm_starter:planted_spike",
+       "message": "Unknown worldgen/feature_type id \"minecraft:large_dripstone\"."
+      },
+      {
+       "severity": "warning",
+       "where": "assets/msm_starter/models/block/planted.json",
+       "message": "assets/msm_starter/models/block/planted.json: Unknown model id \"minecraft:block/cube_top\"."
+      },
+      {
+       "severity": "warning",
+       "where": "data/minecraft/tags/entity_type/planted.json",
+       "message": "data/minecraft/tags/entity_type/planted.json: Unknown entity_type id \"#minecraft:ignores_poison_and_regen\"."
+      },
+      {
+       "severity": "warning",
+       "where": "data/msm_starter/predicate/planted_pred.json",
+       "message": "data/msm_starter/predicate/planted_pred.json: Unknown fluid id \"minecraft:flowing_water\"."
+      },
+      {
+       "severity": "warning",
+       "where": "data/msm_starter/worldgen/density_function/planted_df.json",
+       "message": "data/msm_starter/worldgen/density_function/planted_df.json: No union member matched; closest: Unknown worldgen/density_function_type id \"minecraft:interpolated\"."
+      },
+      {
+       "severity": "warning",
+       "where": "data/msm_starter/worldgen/feature/planted_spike.json",
+       "message": "data/msm_starter/worldgen/feature/planted_spike.json: Unknown worldgen/feature_type id \"minecraft:large_dripstone\"."
+      }
+     ],
+     "exports": [
+      {
+       "name": "resource pack",
+       "needed": true,
+       "ok": true,
+       "files": 5
+      },
+      {
+       "name": "data pack",
+       "needed": true,
+       "ok": false,
+       "files": 0
+      },
+      {
+       "name": "Fabric mod jar",
+       "needed": true,
+       "ok": false,
+       "files": 0
+      }
+     ]
+    },
+    {
+     "targetId": "mc-26.3",
+     "mcVersion": "26.3",
+     "upgraded": false,
+     "ok": true,
+     "errors": [],
+     "warnings": [],
+     "exports": [
+      {
+       "name": "resource pack",
+       "needed": true,
+       "ok": true,
+       "files": 5
+      },
+      {
+       "name": "data pack",
+       "needed": true,
+       "ok": true,
+       "files": 15
+      },
+      {
+       "name": "Fabric mod jar",
+       "needed": true,
+       "ok": true,
+       "files": 19
+      }
+     ]
+    }
+   ],
+   "name": "Custom biome",
+   "sourceTarget": "mc-26.3"
+  }
+ ]
+}

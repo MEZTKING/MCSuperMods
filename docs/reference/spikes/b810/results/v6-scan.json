@@ -1,0 +1,73 @@
+{
+ "roots": [
+  "examples",
+  "fixtures"
+ ],
+ "removedIds": [
+  "#freeze_immune_entity_types",
+  "#ignores_poison_and_regen",
+  "block/cube_top",
+  "flowing_lava",
+  "flowing_water",
+  "gui/sprites/friends/button",
+  "gui/sprites/friends/button_disabled",
+  "gui/sprites/friends/button_highlighted",
+  "gui/sprites/friends/loading",
+  "gui/sprites/friends/remove",
+  "gui/sprites/pause_menu/player_reporting",
+  "gui/sprites/pause_menu/social_interactions",
+  "gui/sprites/toast/social_interactions",
+  "intentionally_empty",
+  "interpolated",
+  "item_snowball",
+  "large_dripstone"
+ ],
+ "counts": {
+  "projects": 168,
+  "elements": 3026,
+  "stringsWhole": 10863,
+  "idTokensWhole": 10863,
+  "idTokensInside": {
+   "function text": 72,
+   "script text": 78,
+   "other inside a string (minecraft:structure_template)": 172,
+   "embedded SNBT or JSON text": 8,
+   "rules (inside a string)": 4,
+   "other inside a string (msm:mod)": 2
+  },
+  "stringsWithIdsInside": {
+   "function text": 49,
+   "script text": 73,
+   "other inside a string (minecraft:structure_template)": 172,
+   "embedded SNBT or JSON text": 8,
+   "rules (inside a string)": 3,
+   "other inside a string (msm:mod)": 1
+  },
+  "blockStates": {
+   "structure template palette entries": 270,
+   "object: minecraft:enchantment": 1,
+   "object: minecraft:worldgen/feature": 7,
+   "in text: minecraft:function": 67,
+   "in text: msm:rules": 3,
+   "object: minecraft:worldgen/processor_list": 2,
+   "object: minecraft:worldgen/material_rule": 2,
+   "object: minecraft:worldgen/noise_settings": 40
+  },
+  "assetFiles": 772,
+  "assetJson": 0,
+  "nbtFiles": 120
+ },
+ "hitCount": 1,
+ "hits": [
+  {
+   "project": "fixtures/worldgen-parity/mc-26.3",
+   "element": "worldgen_parity:settings/markers",
+   "kind": "minecraft:worldgen/noise_settings",
+   "path": "/noise_router/final_density/left/left/left/right/input/type",
+   "value": "minecraft:interpolated",
+   "id": "interpolated",
+   "where": "whole string",
+   "walkFinds": true
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+c4404cc	2026-11-25T00:02:12+08:00	📝 Adjust item component doc comments
+09a273a	2026-11-24T23:28:30+08:00	✨ 26.4 pre-release 1 changes
+2824618	2026-11-20T19:11:18+08:00	🐛 Noise threshold min and max are doubles (#139)
+636352e	2026-11-20T19:06:34+08:00	🐛 Dispense sound volume and pitch are float providers (#140)
+62adc8b	2026-11-20T14:04:57+08:00	✨ 26.4 snapshot 9 mob steering data
+699fbbe	2026-11-18T10:33:29+08:00	🐛 Dispense behavior is a list
+ba85af0	2026-11-17T23:55:03+08:00	✨ 26.4 snapshot 9 changes
+eebb39b	2026-11-13T00:59:54+08:00	✨ 26.4 snapshot 7 equipment predicate fix
+f70b052	2026-11-11T15:23:21+08:00	✨ 26.4 snapshot 8 new keybind
+a946af6	2026-11-10T23:26:42+08:00	🐛 Undocumented loot context change in 26.3-pre2
+1a67453	2026-11-05T19:01:38+08:00	✨ Undocumented change from 26.4 snap2
+0ca060a	2026-10-28T00:05:31+08:00	✨ 26.4 snapshot 6 changes
+425ed21	2026-10-21T16:56:49+08:00	🐛 List of list is invalid in item modifier and slot source
+1e53460	2026-10-20T22:45:48+08:00	✨ 26.4 snapshot 5 changes
+829f895	2026-10-19T21:59:51+08:00	🐛 Add missing enchantment particle position scale constraint
+b6df528	2026-10-14T19:53:49+08:00	🐛 environment ARGB modifier codec became stricter since 26.3
+e02625e	2026-10-14T16:40:12+08:00	🐛 Fix zombified piglin legacy field
+96bc75c	2026-10-13T22:35:03+02:00	✨ 26.4 snapshot 4 changes (#137)
+bda7689	2026-10-12T19:08:02+02:00	🐛 Fix fields that vanilla's own data doesn't match (#136)
+4a901ef	2026-10-12T15:20:42+08:00	✨ Add language metadata section
+1528808	2026-10-08T17:35:22+08:00	🐛 Fix #134
+ab24909	2026-10-06T22:52:13+08:00	✨ 26.4 snapshot 3 changes
+59c8e03	2026-10-03T20:27:50+02:00	🐛 Saddle slot is not accepted in entity sub predicate minecraft:equipment (#133)
+da77575	2026-10-02T18:10:32+02:00	Revert "🐛Allow no inputs in number providers AggregateProvider  (#131)"
+e4624f0	2026-09-30T21:01:58+02:00	🐛Allow no inputs in number providers AggregateProvider  (#131)
+e6cc18e	2026-09-30T18:49:18+02:00	🐛 Change trim_material `palette` to `palette_id` for correct 26.3 syntax (#132)
+274828a	2026-09-29T22:38:43+08:00	✨ 26.4 snapshot 2 changes
+bb600c5	2026-09-29T12:50:29+08:00	🐛 Deduplicate block ID string in block particle option
+f74c1c4	2026-09-22T22:55:43+08:00	✨ 26.4 snapshot 1 changes
+ef1297a	2026-09-19T14:14:48+02:00	🐛 Add fields DragonDeathTime and sitting_damage_received
+d9bf6a3	2026-09-19T14:06:43+02:00	🐛 Fix cave carver typo
+209f429	2026-09-18T01:12:48+08:00	🐛 Temporary fix for another type param infinite recursion
+3abd9eb	2026-09-16T00:59:35+02:00	Reapply "🐛 Fix issue caused by union of spreaded dispatched type and normal struct"
+234532d	2026-09-15T14:00:20-06:00	Revert "🐛 Fix issue caused by union of spreaded dispatched type and normal struct"
+55c610d	2026-09-16T03:45:29+08:00	🐛 Fix issue caused by union of spreaded dispatched type and normal struct
+d3eba59	2026-09-15T12:37:05+08:00	🐛 More accurate (but more janky) fix of #130
+afe86b7	2026-09-14T18:46:48-06:00	💄 Clean up trailing whitespace
+d525b65	2026-09-14T13:37:31-06:00	🐛 Fixes #130
+f0ad79b	2026-09-11T22:31:42+02:00	🐛 Fix uniform legacy number provider
+9d2d65d	2026-09-09T15:07:02+08:00	♻️ Cleanup after d44f197 changes
+5a08f8b	2026-09-09T15:05:23+08:00	🐛 Fix block state provider dispatcher key typos
+d44f197	2026-09-09T15:03:50+08:00	♻️ Reuse weighted list types
+3993906	2026-09-07T01:17:03+08:00	🧹 Lint 304fd86
+304fd86	2026-09-05T22:32:45-06:00	🧹 Lint `CarverConfigBase`
+eea955a	2026-09-03T23:23:50+08:00	🚑️ Temporary fix of type generic infinite recursion
+cb965a1	2026-09-02T19:53:36-06:00	♻️ Rewrite number providers (#129)
+d8e143e	2026-09-02T11:45:36-06:00	🐛 Fix typos, resolves #127
+c373ab6	2026-09-02T16:29:44+08:00	✨ 26.3-pre-1 block state provider changes
+a79e0b0	2026-09-01T22:42:04-06:00	🐛 Fix mojank's changelog typo
+6681b67	2026-09-01T20:30:27-06:00	🐛 Fix typos in `contextual_integer`
+57c88fd	2026-09-01T19:23:12-06:00	✨ 26.3 pre-release 1 changes (#126)
+4ca198f	2026-08-30T11:27:15-06:00	🐛 Allow extra primitive types in text component `with` list (#121)
+2f3bc28	2026-08-27T23:18:03+08:00	📝 Make `expand` field in loot pool entries clearer
+1494c16	2026-08-26T19:44:11+08:00	🐛 Fix unnecessary union in slot source resource
+2f8784a	2026-08-26T19:41:52+08:00	✨ 26.3 snapshot 10 swing animation change
+800ac61	2026-08-25T13:01:08-06:00	✨ 26.3 snapshot 10 changes (#125)
+238d310	2026-08-25T16:07:37+08:00	🐛 Fix potion holder set in `set_random_potion` item modifier
+d79ca38	2026-08-19T22:24:10-06:00	📄 Update dev comment in `spawn_item.mcdoc`
+ce953a1	2026-08-20T12:23:02+08:00	✨ 26.3 snapshot 4 game test change
+2d3031f	2026-08-20T10:52:53+08:00	🐛 Fix state property predicate dispatcher key before 1.17
+8db9e6e	2026-08-19T23:10:39+02:00	🐛 Fix #123 make warden_level 0..4
+fce7c6e	2026-08-18T15:13:20-06:00	✨ 26.3 snapshot 9 changes (#122)
+4099d1b	2026-08-15T16:40:34+02:00	📝 supported_formats was not required in older versions
+52b7354	2026-08-15T16:36:40+02:00	📝 Remove redundant “default” from doc comment.
+ced1b0c	2026-08-15T16:34:23+02:00	📝 Document pack format
+8717003	2026-08-13T16:59:38+08:00	🐛 Fix nine slice border record value range
+10d1292	2026-08-12T19:53:36+08:00	✨ 26.3 snapshot 8 changes
+38eada9	2026-08-10T02:34:00-06:00	🐛 `AND` key can be used in block state definition (#120)
+0e35f01	2026-08-10T02:33:28-06:00	♻️ Rewrite advancement triggers to match in game codecs (#117)
+466fa04	2026-08-06T16:08:39+08:00	✨ 26.3 snapshot 7 memory module changes
+29f59b0	2026-08-04T23:29:34-06:00	✨ Add item count pseudo predicate (#119)
+8e0bdd3	2026-08-05T02:00:29+08:00	♻️ Collect direction types
+3b08300	2026-08-05T00:17:18+08:00	♻️ Improve block entity data union
+c4565e8	2026-08-04T23:21:33+08:00	🐛 Add fallback case to `minecraft:block` dispatcher
+a11558d	2026-08-04T22:57:04+08:00	✨ 26.3 snapshot 7 changes

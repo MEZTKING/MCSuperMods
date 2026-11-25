@@ -1,0 +1,456 @@
+{
+ "probes": [
+  {
+   "id": "effect-tag",
+   "line": "effect give @s #minecraft:harmful",
+   "why": "effect accepts tags on 26.4 (relaxed): an error before, none after"
+  },
+  {
+   "id": "test-rotation",
+   "line": "test run minecraft:always_pass 1 false 5",
+   "why": "rotationSteps limited to 0..3 on 26.4 (tightened)"
+  },
+  {
+   "id": "particle-removed",
+   "line": "particle minecraft:item_snowball ~ ~ ~",
+   "why": "particle type item_snowball removed"
+  },
+  {
+   "id": "particle-added",
+   "line": "particle minecraft:freezing ~ ~ ~",
+   "why": "particle type freezing added"
+  },
+  {
+   "id": "tag-removed",
+   "line": "kill @e[type=#minecraft:freeze_immune_entity_types]",
+   "why": "entity type tag removed (renamed immune_to_freezing)"
+  },
+  {
+   "id": "tag-renamed",
+   "line": "kill @e[type=#minecraft:immune_to_freezing]",
+   "why": "its new name"
+  },
+  {
+   "id": "sound-removed",
+   "line": "playsound minecraft:intentionally_empty master @a",
+   "why": "sound event removed"
+  },
+  {
+   "id": "fluid-state",
+   "line": "execute if block ~ ~ ~ minecraft:water[level=0] run say hi",
+   "why": "control: block states unchanged for water"
+  },
+  {
+   "id": "jukebox-state",
+   "line": "setblock ~ ~ ~ minecraft:jukebox[playlist_mode=true]",
+   "why": "block state property added on 26.4"
+  },
+  {
+   "id": "feature-place",
+   "line": "place feature minecraft:large_dripstone ~ ~ ~",
+   "why": "the configured feature still exists on both (control)"
+  },
+  {
+   "id": "block-added",
+   "line": "setblock ~ ~ ~ minecraft:icicle",
+   "why": "block added on 26.4"
+  },
+  {
+   "id": "item-nbt-control",
+   "line": "give @s minecraft:stone 1",
+   "why": "control"
+  },
+  {
+   "id": "summon-new-nbt",
+   "line": "summon minecraft:zombie ~ ~ ~ {FreezingTime:20}",
+   "why": "NBT field added on 26.4 (mcdoc)"
+  },
+  {
+   "id": "time-huge",
+   "line": "time add 3000000000t",
+   "why": "26.4-snapshot-7: time arguments over 2147483647 fail"
+  },
+  {
+   "id": "local-2d",
+   "line": "forceload add ^1 ^2",
+   "why": "26.4-snapshot-9: local 2D coordinates accepted"
+  }
+ ],
+ "out": {
+  "26.3": {
+   "initMs": 484,
+   "results": {
+    "effect-tag": {
+     "errors": 1,
+     "warnings": 1,
+     "first": {
+      "severity": "error",
+      "line": 0,
+      "start": 15,
+      "message": "Tags are not allowed here"
+     }
+    },
+    "test-rotation": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "particle-removed": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "particle-added": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 9,
+      "message": "Cannot find particle_type “minecraft:freezing” (rule: undeclaredSymbol)"
+     }
+    },
+    "tag-removed": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "tag-renamed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 13,
+      "message": "Cannot find tag/entity_type “minecraft:immune_to_freezing” (rule: undeclaredSymbol)"
+     }
+    },
+    "sound-removed": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "fluid-state": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "jukebox-state": {
+     "errors": 1,
+     "warnings": 0,
+     "first": {
+      "severity": "error",
+      "line": 0,
+      "start": 33,
+      "message": "Block minecraft:jukebox has no property \"playlist_mode\". Expected one of: has_record."
+     }
+    },
+    "feature-place": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "block-added": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 15,
+      "message": "Cannot find block “minecraft:icicle” (rule: undeclaredSymbol)"
+     }
+    },
+    "item-nbt-control": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "summon-new-nbt": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 31,
+      "message": "Unknown key “FreezingTime”"
+     }
+    },
+    "time-huge": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "local-2d": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    }
+   }
+  },
+  "26.4-snapshot-7": {
+   "initMs": 501,
+   "results": {
+    "effect-tag": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 15,
+      "message": "Cannot find tag/mob_effect “minecraft:harmful” (rule: undeclaredSymbol)"
+     }
+    },
+    "test-rotation": {
+     "errors": 1,
+     "warnings": 0,
+     "first": {
+      "severity": "error",
+      "line": 0,
+      "start": 39,
+      "message": "Expected an integer between 0 and 3"
+     }
+    },
+    "particle-removed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 9,
+      "message": "Cannot find particle_type “minecraft:item_snowball” (rule: undeclaredSymbol)"
+     }
+    },
+    "particle-added": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "tag-removed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 13,
+      "message": "Cannot find tag/entity_type “minecraft:freeze_immune_entity_types” (rule: undeclaredSymbol)"
+     }
+    },
+    "tag-renamed": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "sound-removed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 10,
+      "message": "Cannot find sound_event “minecraft:intentionally_empty” (rule: undeclaredSymbol)"
+     }
+    },
+    "fluid-state": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "jukebox-state": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "feature-place": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "block-added": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "item-nbt-control": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "summon-new-nbt": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "warning",
+      "line": 0,
+      "start": 31,
+      "message": "Unknown key “FreezingTime”"
+     }
+    },
+    "time-huge": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    },
+    "local-2d": {
+     "errors": 0,
+     "warnings": 0,
+     "first": null
+    }
+   }
+  },
+  "26.4-pre-1": {
+   "initMs": 407,
+   "results": {
+    "effect-tag": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 12,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "test-rotation": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 9,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "particle-removed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 9,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "particle-added": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 9,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "tag-removed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 5,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "tag-renamed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 5,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "sound-removed": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 10,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "fluid-state": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 17,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "jukebox-state": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 9,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "feature-place": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 14,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "block-added": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 9,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "item-nbt-control": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 5,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "summon-new-nbt": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 7,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "time-huge": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 9,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    },
+    "local-2d": {
+     "errors": 0,
+     "warnings": 1,
+     "first": {
+      "severity": "info",
+      "line": 0,
+      "start": 14,
+      "message": "Parser “%0%” hasn't been supported yet"
+     }
+    }
+   }
+  }
+ }
+}

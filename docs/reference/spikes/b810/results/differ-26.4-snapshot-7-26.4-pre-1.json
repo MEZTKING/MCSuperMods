@@ -1,0 +1,800 @@
+{
+ "from": "packages/targets/mc-26.4",
+ "to": "<scratch>/v2/mc-26.4-pre1",
+ "fromVersion": "26.4-snapshot-7",
+ "toVersion": "26.4-pre-1",
+ "registries": {
+  "counts": {
+   "registriesBefore": 192,
+   "registriesAfter": 195,
+   "addedRegistries": 3,
+   "removedRegistries": 0,
+   "removedMembers": 9,
+   "addedMembers": 23,
+   "registriesWithRemovals": 2,
+   "registriesWithAdditions": 10
+  },
+  "addedRegistries": [
+   "command_suggestion_type",
+   "dispense_behavior",
+   "dispense_behavior_type"
+  ],
+  "removedRegistries": [],
+  "moved": {},
+  "removed": {
+   "command_argument_type": [
+    "brigadier:bool",
+    "brigadier:double",
+    "brigadier:float",
+    "brigadier:integer",
+    "brigadier:long",
+    "brigadier:string",
+    "resource_key",
+    "resource_or_tag_key"
+   ],
+   "context_key_set": [
+    "command"
+   ]
+  }
+ },
+ "mcdoc": {
+  "gated": {
+   "counts": {
+    "namedTypes": 2472,
+    "typesCompared": 2472,
+    "typesChanged": 0,
+    "typesOnlyBefore": 0,
+    "typesOnlyAfter": 0,
+    "dispatchers": 106,
+    "dispatchersChanged": 0,
+    "dispatcherMembersCompared": 1764,
+    "dispatcherKeysAdded": 0,
+    "dispatcherKeysRemoved": 0,
+    "dispatcherMembersChanged": 0,
+    "resources": 79,
+    "resourcesChanged": 0,
+    "resourceFieldsAdded": 0,
+    "resourceFieldsRemoved": 0,
+    "resourceFieldsRetyped": 0,
+    "typesBreaking": 0,
+    "membersBreaking": 0,
+    "fieldChanges": {
+     "addedRequired": 0,
+     "addedOptional": 0,
+     "removed": 0,
+     "madeOptional": 0,
+     "madeRequired": 0,
+     "retyped": 0,
+     "notStruct": 0
+    }
+   },
+   "typesChanged": [],
+   "dispatcherChanges": {}
+  },
+  "refs": {
+   "counts": {
+    "namedTypes": 2472,
+    "typesCompared": 2464,
+    "typesChanged": 9,
+    "typesOnlyBefore": 0,
+    "typesOnlyAfter": 8,
+    "dispatchers": 106,
+    "dispatchersChanged": 6,
+    "dispatcherMembersCompared": 1757,
+    "dispatcherKeysAdded": 7,
+    "dispatcherKeysRemoved": 0,
+    "dispatcherMembersChanged": 6,
+    "resources": 79,
+    "resourcesChanged": 9,
+    "resourceFieldsAdded": 2,
+    "resourceFieldsRemoved": 0,
+    "resourceFieldsRetyped": 10,
+    "typesBreaking": 6,
+    "membersBreaking": 3,
+    "fieldChanges": {
+     "addedRequired": 0,
+     "addedOptional": 6,
+     "removed": 0,
+     "madeOptional": 0,
+     "madeRequired": 0,
+     "retyped": 8,
+     "notStruct": 3
+    }
+   },
+   "typesChanged": [
+    {
+     "path": "::java::data::advancement::predicate::EquipmentPredicateSlot",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::data::loot::LootContextParamSets",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::data::loot::LootTable",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "type"
+      ]
+     }
+    },
+    {
+     "path": "::java::data::worldgen::material_condition::NoiseThresholdCondition",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "min_threshold",
+       "max_threshold"
+      ]
+     }
+    },
+    {
+     "path": "::java::util::text::Keybind",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::world::component::item::Tool",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "damage_per_block"
+      ]
+     }
+    },
+    {
+     "path": "::java::world::component::item::TooltipDisplay",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "split_lines"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::breedable::saddled::Pig",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "item_based_steering"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::breedable::saddled::Saddled",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "item_based_steering"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    }
+   ],
+   "dispatcherChanges": {
+    "minecraft:data_component": {
+     "added": [
+      "dispense_behavior"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "tool",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "damage_per_block"
+        ]
+       }
+      },
+      {
+       "key": "tooltip_display",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "split_lines"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:dispense_behavior": {
+     "added": [
+      "%unknown",
+      "shoot_projectile",
+      "transform_block"
+     ],
+     "removed": [],
+     "changed": []
+    },
+    "minecraft:entity": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "pig",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "item_based_steering"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "strider",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "item_based_steering"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:material_condition": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "noise_threshold",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "min_threshold",
+         "max_threshold"
+        ]
+       }
+      }
+     ]
+    },
+    "minecraft:particle": {
+     "added": [
+      "bubble_column_up",
+      "current_down"
+     ],
+     "removed": [],
+     "changed": []
+    },
+    "minecraft:resource": {
+     "added": [
+      "dispense_behavior"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "loot_table",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "type"
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "drift": {
+   "counts": {
+    "namedTypes": 2472,
+    "typesCompared": 2464,
+    "typesChanged": 9,
+    "typesOnlyBefore": 0,
+    "typesOnlyAfter": 8,
+    "dispatchers": 106,
+    "dispatchersChanged": 6,
+    "dispatcherMembersCompared": 1757,
+    "dispatcherKeysAdded": 7,
+    "dispatcherKeysRemoved": 0,
+    "dispatcherMembersChanged": 6,
+    "resources": 79,
+    "resourcesChanged": 9,
+    "resourceFieldsAdded": 2,
+    "resourceFieldsRemoved": 0,
+    "resourceFieldsRetyped": 10,
+    "typesBreaking": 6,
+    "membersBreaking": 3,
+    "fieldChanges": {
+     "addedRequired": 0,
+     "addedOptional": 6,
+     "removed": 0,
+     "madeOptional": 0,
+     "madeRequired": 0,
+     "retyped": 8,
+     "notStruct": 3
+    }
+   },
+   "typesChanged": [
+    {
+     "path": "::java::data::advancement::predicate::EquipmentPredicateSlot",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::data::loot::LootContextParamSets",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::data::loot::LootTable",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "type"
+      ]
+     }
+    },
+    {
+     "path": "::java::data::worldgen::material_condition::NoiseThresholdCondition",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "min_threshold",
+       "max_threshold"
+      ]
+     }
+    },
+    {
+     "path": "::java::util::text::Keybind",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [],
+      "notStruct": true
+     }
+    },
+    {
+     "path": "::java::world::component::item::Tool",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": [
+       "damage_per_block"
+      ]
+     }
+    },
+    {
+     "path": "::java::world::component::item::TooltipDisplay",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "split_lines"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::breedable::saddled::Pig",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "item_based_steering"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    },
+    {
+     "path": "::java::world::entity::mob::breedable::saddled::Saddled",
+     "fields": {
+      "addedRequired": [],
+      "addedOptional": [
+       "item_based_steering"
+      ],
+      "removed": [],
+      "madeOptional": [],
+      "madeRequired": [],
+      "retyped": []
+     }
+    }
+   ],
+   "dispatcherChanges": {
+    "minecraft:data_component": {
+     "added": [
+      "dispense_behavior"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "tool",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "damage_per_block"
+        ]
+       }
+      },
+      {
+       "key": "tooltip_display",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "split_lines"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:dispense_behavior": {
+     "added": [
+      "%unknown",
+      "shoot_projectile",
+      "transform_block"
+     ],
+     "removed": [],
+     "changed": []
+    },
+    "minecraft:entity": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "pig",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "item_based_steering"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      },
+      {
+       "key": "strider",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [
+         "item_based_steering"
+        ],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": []
+       }
+      }
+     ]
+    },
+    "minecraft:material_condition": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      {
+       "key": "noise_threshold",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "min_threshold",
+         "max_threshold"
+        ]
+       }
+      }
+     ]
+    },
+    "minecraft:particle": {
+     "added": [
+      "bubble_column_up",
+      "current_down"
+     ],
+     "removed": [],
+     "changed": []
+    },
+    "minecraft:resource": {
+     "added": [
+      "dispense_behavior"
+     ],
+     "removed": [],
+     "changed": [
+      {
+       "key": "loot_table",
+       "fields": {
+        "addedRequired": [],
+        "addedOptional": [],
+        "removed": [],
+        "madeOptional": [],
+        "madeRequired": [],
+        "retyped": [
+         "type"
+        ]
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "commands": {
+  "counts": {
+   "nodesBefore": 2474,
+   "nodesAfter": 2474,
+   "added": 0,
+   "removed": 0,
+   "changed": 758,
+   "addedTop": 0,
+   "removedTop": 0,
+   "rootsBefore": 94,
+   "rootsAfter": 94
+  },
+  "rootsAdded": [],
+  "rootsRemoved": [],
+  "parsersAdded": [
+   "minecraft:bool",
+   "minecraft:double",
+   "minecraft:float",
+   "minecraft:greedy_string",
+   "minecraft:integer",
+   "minecraft:quoted_string",
+   "minecraft:word"
+  ],
+  "parsersRemoved": [
+   "brigadier:bool",
+   "brigadier:double",
+   "brigadier:float",
+   "brigadier:integer",
+   "brigadier:string",
+   "minecraft:resource_key",
+   "minecraft:resource_or_tag_key"
+  ],
+  "changedSample": [
+   {
+    "path": "advancement grant <targets>",
+    "before": "minecraft:entity{\"amount\":\"multiple\",\"type\":\"players\"}",
+    "after": "minecraft:entity{\"players_only\":true,\"single_result\":false}"
+   },
+   {
+    "path": "advancement grant <targets> from <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "advancement grant <targets> only <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "advancement grant <targets> only <advancement> <criterion>",
+    "before": "brigadier:string{\"type\":\"greedy\"} exec",
+    "after": "minecraft:greedy_string exec"
+   },
+   {
+    "path": "advancement grant <targets> through <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "advancement grant <targets> until <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "advancement revoke <targets>",
+    "before": "minecraft:entity{\"amount\":\"multiple\",\"type\":\"players\"}",
+    "after": "minecraft:entity{\"players_only\":true,\"single_result\":false}"
+   },
+   {
+    "path": "advancement revoke <targets> from <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "advancement revoke <targets> only <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "advancement revoke <targets> only <advancement> <criterion>",
+    "before": "brigadier:string{\"type\":\"greedy\"} exec",
+    "after": "minecraft:greedy_string exec"
+   },
+   {
+    "path": "advancement revoke <targets> through <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "advancement revoke <targets> until <advancement>",
+    "before": "minecraft:resource_key{\"registry\":\"minecraft:advancement\"} exec",
+    "after": "minecraft:resource{\"registry\":\"minecraft:advancement\"} exec"
+   },
+   {
+    "path": "attribute <target>",
+    "before": "minecraft:entity{\"amount\":\"single\",\"type\":\"entities\"}",
+    "after": "minecraft:entity{\"players_only\":false,\"single_result\":true}"
+   },
+   {
+    "path": "attribute <target> <attribute> base get <scale>",
+    "before": "brigadier:double exec",
+    "after": "minecraft:double exec"
+   },
+   {
+    "path": "attribute <target> <attribute> base set <value>",
+    "before": "brigadier:double exec",
+    "after": "minecraft:double exec"
+   },
+   {
+    "path": "attribute <target> <attribute> get <scale>",
+    "before": "brigadier:double exec",
+    "after": "minecraft:double exec"
+   },
+   {
+    "path": "attribute <target> <attribute> modifier add <id> <value>",
+    "before": "brigadier:double",
+    "after": "minecraft:double"
+   },
+   {
+    "path": "attribute <target> <attribute> modifier value get <id> <scale>",
+    "before": "brigadier:double exec",
+    "after": "minecraft:double exec"
+   },
+   {
+    "path": "ban-ip <target>",
+    "before": "brigadier:string{\"type\":\"word\"} exec",
+    "after": "minecraft:word exec"
+   },
+   {
+    "path": "bossbar set <id> max <max>",
+    "before": "brigadier:integer{\"min\":1} exec",
+    "after": "minecraft:integer{\"min\":1} exec"
+   }
+  ]
+ },
+ "blocks": {
+  "counts": {
+   "before": 1311,
+   "after": 1311,
+   "added": 0,
+   "removed": 0,
+   "changed": 0
+  },
+  "added": [],
+  "removed": [],
+  "changed": []
+ },
+ "packs": {
+  "data_version": {
+   "before": 5127,
+   "after": 5131
+  },
+  "data_pack_version": {
+   "before": 126,
+   "after": 128
+  },
+  "data_pack_version_minor": {
+   "before": 0,
+   "after": 1
+  },
+  "resource_pack_version": {
+   "before": 102,
+   "after": 104
+  },
+  "protocol_version": {
+   "before": 1073742169,
+   "after": 1073742173
+  }
+ },
+ "timings": {
+  "registriesMs": 39.702157000000014,
+  "mcdoc_gated_ms": 161.190309,
+  "mcdoc_refs_ms": 131.87737500000003,
+  "mcdoc_drift_ms": 135.7215040000001,
+  "commandsBlocksMs": 38.901921000000016,
+  "totalMs": 827.5209709999999
+ }
+}

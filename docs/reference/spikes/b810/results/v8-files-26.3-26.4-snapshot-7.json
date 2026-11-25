@@ -1,0 +1,286 @@
+{
+ "older": "26.3",
+ "newer": "26.4-snapshot-7",
+ "kinds": {
+  "data": {
+   "filesBefore": 9889,
+   "filesAfter": 10255,
+   "added": 368,
+   "removed": 2,
+   "changed": 1646,
+   "renamedExact": 1,
+   "overridable": {
+    "added": 368,
+    "removed": 2,
+    "changed": 1640
+   },
+   "topFolders": [
+    [
+     "data/minecraft/structure",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1511
+     }
+    ],
+    [
+     "data/minecraft/block_sound_set",
+     {
+      "added": 137,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "data/minecraft/recipe",
+     {
+      "added": 65,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "data/minecraft/advancement",
+     {
+      "added": 53,
+      "removed": 0,
+      "changed": 6
+     }
+    ],
+    [
+     "data/minecraft/worldgen/feature",
+     {
+      "added": 21,
+      "removed": 0,
+      "changed": 27
+     }
+    ],
+    [
+     "data/minecraft/worldgen/placed_feature",
+     {
+      "added": 26,
+      "removed": 0,
+      "changed": 18
+     }
+    ],
+    [
+     "data/minecraft/loot_table",
+     {
+      "added": 26,
+      "removed": 0,
+      "changed": 2
+     }
+    ],
+    [
+     "data/minecraft/tags/block",
+     {
+      "added": 15,
+      "removed": 0,
+      "changed": 12
+     }
+    ],
+    [
+     "data/minecraft/worldgen/biome",
+     {
+      "added": 1,
+      "removed": 0,
+      "changed": 13
+     }
+    ],
+    [
+     "data/minecraft/tags/entity_type",
+     {
+      "added": 6,
+      "removed": 2,
+      "changed": 5
+     }
+    ],
+    [
+     "data/minecraft/tags/worldgen",
+     {
+      "added": 3,
+      "removed": 0,
+      "changed": 9
+     }
+    ],
+    [
+     "data/minecraft/tags/item",
+     {
+      "added": 5,
+      "removed": 0,
+      "changed": 6
+     }
+    ],
+    [
+     "data/minecraft/worldgen/density_function",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 9
+     }
+    ],
+    [
+     "data/minecraft/worldgen/material_rule",
+     {
+      "added": 2,
+      "removed": 0,
+      "changed": 6
+     }
+    ],
+    [
+     "data/minecraft/worldgen/noise_settings",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 7
+     }
+    ]
+   ]
+  },
+  "assets": {
+   "filesBefore": 16744,
+   "filesAfter": 17175,
+   "added": 460,
+   "removed": 29,
+   "changed": 188,
+   "renamedExact": 6,
+   "overridable": {
+    "added": 460,
+    "removed": 14,
+    "changed": 184
+   },
+   "topFolders": [
+    [
+     "assets/minecraft/sounds",
+     {
+      "added": 270,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "assets/minecraft/lang",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 144
+     }
+    ],
+    [
+     "assets/minecraft/models",
+     {
+      "added": 76,
+      "removed": 1,
+      "changed": 1
+     }
+    ],
+    [
+     "assets/minecraft/textures/gui",
+     {
+      "added": 18,
+      "removed": 12,
+      "changed": 8
+     }
+    ],
+    [
+     "assets/minecraft/items",
+     {
+      "added": 28,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "assets/minecraft/shaders",
+     {
+      "added": 5,
+      "removed": 1,
+      "changed": 22
+     }
+    ],
+    [
+     "assets/minecraft/blockstates",
+     {
+      "added": 25,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "assets/minecraft/textures/block",
+     {
+      "added": 22,
+      "removed": 0,
+      "changed": 2
+     }
+    ],
+    [
+     "assets/realms/textures/gui",
+     {
+      "added": 0,
+      "removed": 15,
+      "changed": 0
+     }
+    ],
+    [
+     "assets/minecraft/textures/item",
+     {
+      "added": 5,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "assets/minecraft/textures/particle",
+     {
+      "added": 6,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "assets/minecraft/post_effect",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 5
+     }
+    ],
+    [
+     "assets/minecraft/textures/entity",
+     {
+      "added": 3,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "assets/minecraft/resourcepacks",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 2
+     }
+    ],
+    [
+     "assets/minecraft/particles",
+     {
+      "added": 1,
+      "removed": 0,
+      "changed": 0
+     }
+    ]
+   ]
+  }
+ },
+ "list": {
+  "entries": 2693,
+  "rawBytes": 189318,
+  "gzipBytes": 14640
+ },
+ "listOverridableOnly": {
+  "entries": 2668,
+  "rawBytes": 188145,
+  "gzipBytes": 14462
+ }
+}

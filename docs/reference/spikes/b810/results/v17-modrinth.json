@@ -1,0 +1,13 @@
+{
+  "read": "2026-11-25",
+  "updateModsToday": "per mod, GET /v2/project/{id} then GET /v2/project/{id}/version?loaders=[\"fabric\"]&game_versions=[\"<mc>\"], one mod after another (ModpacksDialog.tsx updateMods, interop modrinth/resolve.ts): 2 requests per mod",
+  "batchedCall": "POST https://api.modrinth.com/v2/version_files/update with {hashes: [sha1 of each pinned file], algorithm: \"sha1\", loaders: [\"fabric\"], game_versions: [\"<new mc version>\"]}",
+  "trial": {
+    "pinnedFiles": ["fabric-api 0.165.2+26.3 (sha1 2e364989e3...)", "geckolib 5.5.7 for 26.3 (sha1 064ad66ea6...)"],
+    "gameVersion": "26.4-pre-1",
+    "httpStatus": 200,
+    "seconds": 0.58,
+    "answer": {"fabric-api": "0.167.1+26.4 (newest build listing 26.4-pre-1)", "geckolib": "absent from the answer: no Fabric build for 26.4-pre-1"}
+  },
+  "rateLimitHeaders": {"x-ratelimit-limit": 300, "x-ratelimit-remaining": 300, "x-ratelimit-reset": 0}
+}

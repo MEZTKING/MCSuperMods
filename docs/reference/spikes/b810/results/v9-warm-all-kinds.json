@@ -1,0 +1,41 @@
+{
+ "folder": "examples/all-kinds",
+ "toTarget": "mc-26.4",
+ "elements": 194,
+ "projectBytes": 237408,
+ "loweredFilesBefore": 278,
+ "loweredFilesAfter": 279,
+ "migration": {
+  "changes": 1,
+  "problems": 0
+ },
+ "problemsBefore": 4,
+ "problemsAfter": 4,
+ "phasesMs": {
+  "read folder": 64,
+  "open (own target)": 29,
+  "validate (own target)": 1494,
+  "lower (own target)": 36,
+  "copy files": 1,
+  "open copy": 29,
+  "migrate (preview)": 3,
+  "apply move + second schema context": 882,
+  "validate (new target)": 0,
+  "lower (new target)": 15
+ },
+ "dryRunMs": 930,
+ "dryRunWithoutLoweringMs": 915,
+ "heapMb": {
+  "read folder": 37,
+  "open (own target)": 44,
+  "validate (own target)": 192,
+  "lower (own target)": 195,
+  "copy files": 195,
+  "open copy": 161,
+  "migrate (preview)": 163,
+  "apply move + second schema context": 271,
+  "validate (new target)": 271,
+  "lower (new target)": 273
+ },
+ "rssMb": 509
+}

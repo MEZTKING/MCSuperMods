@@ -1,0 +1,41 @@
+{
+ "folder": "<scratch>/made300",
+ "toTarget": "mc-26.4",
+ "elements": 300,
+ "projectBytes": 352470,
+ "loweredFilesBefore": 444,
+ "loweredFilesAfter": 445,
+ "migration": {
+  "changes": 1,
+  "problems": 0
+ },
+ "problemsBefore": 14,
+ "problemsAfter": 14,
+ "phasesMs": {
+  "read folder": 111,
+  "open (own target)": 42,
+  "validate (own target)": 1631,
+  "lower (own target)": 49,
+  "copy files": 1,
+  "open copy": 25,
+  "migrate (preview)": 4,
+  "apply move + second schema context": 838,
+  "validate (new target)": 0,
+  "lower (new target)": 22
+ },
+ "dryRunMs": 890,
+ "dryRunWithoutLoweringMs": 868,
+ "heapMb": {
+  "read folder": 39,
+  "open (own target)": 51,
+  "validate (own target)": 169,
+  "lower (own target)": 173,
+  "copy files": 173,
+  "open copy": 184,
+  "migrate (preview)": 188,
+  "apply move + second schema context": 267,
+  "validate (new target)": 267,
+  "lower (new target)": 270
+ },
+ "rssMb": 521
+}

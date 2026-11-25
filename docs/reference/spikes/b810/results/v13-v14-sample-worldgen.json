@@ -1,0 +1,33 @@
+{
+ "folder": "fixtures/sample-worldgen",
+ "v13": {
+  "changes": 0,
+  "droppedValues": 0,
+  "savedReportBytes": 2,
+  "backHookAnswer": [
+   "No migration needed"
+  ],
+  "editedElement": null,
+  "editApplied": true,
+  "notRestored": [],
+  "differingFromOriginal": [],
+  "problemsAfterRoundTrip": 0
+ },
+ "v14": {
+  "hop1Changes": 0,
+  "hop2Changes": 1,
+  "directOneHop": {
+   "changes": 0,
+   "problems": [
+    "target.no-migration-path"
+   ]
+  },
+  "chainProblems": [],
+  "mergedChanges": 1,
+  "chainEqualsTwoMoves": true,
+  "undo": {
+   "twoMovesNeedTwoUndos": true,
+   "chainIsOneUndo": true
+  }
+ }
+}

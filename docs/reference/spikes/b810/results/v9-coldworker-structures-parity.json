@@ -1,0 +1,43 @@
+{
+ "folder": "fixtures/structures-parity",
+ "toTarget": "mc-26.4",
+ "elements": 306,
+ "projectBytes": 227476,
+ "loweredFilesBefore": 0,
+ "loweredFilesAfter": 306,
+ "migration": {
+  "changes": 0,
+  "problems": 0
+ },
+ "problemsBefore": 0,
+ "problemsAfter": 0,
+ "phasesMs": {
+  "read folder": 160,
+  "open (own target)": 25,
+  "validate (own target)": 0,
+  "lower (own target)": 0,
+  "copy files": 1,
+  "open copy": 8,
+  "migrate (preview)": 3,
+  "apply move + second schema context": 353,
+  "validate (new target)": 0,
+  "lower (new target)": 50
+ },
+ "dryRunMs": 415,
+ "dryRunWithoutLoweringMs": 365,
+ "heapMb": {
+  "read folder": 41,
+  "open (own target)": 46,
+  "validate (own target)": 46,
+  "lower (own target)": 46,
+  "copy files": 46,
+  "open copy": 50,
+  "migrate (preview)": 53,
+  "apply move + second schema context": 63,
+  "validate (new target)": 63,
+  "lower (new target)": 68
+ },
+ "rssMb": 251,
+ "worker": true,
+ "wallMsIncludingWorkerStart": 2997
+}

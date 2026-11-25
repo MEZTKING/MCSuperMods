@@ -1,0 +1,880 @@
+{
+ "registryPairs": [
+  {
+   "from": "fluid",
+   "to": "fluid",
+   "jaccard": 0.6,
+   "kind": "same"
+  },
+  {
+   "from": "rule_test",
+   "to": "rule_test_type",
+   "jaccard": 1,
+   "kind": "moved"
+  },
+  {
+   "from": "tag/entity_type",
+   "to": "tag/entity_type",
+   "jaccard": 0.855,
+   "kind": "same"
+  }
+ ],
+ "memberDiff": {
+  "advancement": {
+   "removed": 0,
+   "added": 53
+  },
+  "block": {
+   "removed": 0,
+   "added": 25
+  },
+  "block_definition": {
+   "removed": 0,
+   "added": 25
+  },
+  "block_predicate_type": {
+   "removed": 0,
+   "added": 1
+  },
+  "chunk_status": {
+   "removed": 0,
+   "added": 1
+  },
+  "entity_type": {
+   "removed": 0,
+   "added": 2
+  },
+  "environment_attribute": {
+   "removed": 0,
+   "added": 1
+  },
+  "fluid": {
+   "removed": 2,
+   "added": 0
+  },
+  "item": {
+   "removed": 0,
+   "added": 28
+  },
+  "item_definition": {
+   "removed": 0,
+   "added": 28
+  },
+  "jukebox_song": {
+   "removed": 0,
+   "added": 1
+  },
+  "loot_table": {
+   "removed": 0,
+   "added": 26
+  },
+  "menu": {
+   "removed": 0,
+   "added": 1
+  },
+  "mob_effect": {
+   "removed": 0,
+   "added": 1
+  },
+  "model": {
+   "removed": 1,
+   "added": 76
+  },
+  "particle_type": {
+   "removed": 1,
+   "added": 1
+  },
+  "potion": {
+   "removed": 0,
+   "added": 2
+  },
+  "recipe": {
+   "removed": 0,
+   "added": 65
+  },
+  "sound": {
+   "removed": 0,
+   "added": 270
+  },
+  "sound_event": {
+   "removed": 1,
+   "added": 58
+  },
+  "sulfur_cube_archetype": {
+   "removed": 0,
+   "added": 1
+  },
+  "tag/block": {
+   "removed": 0,
+   "added": 15
+  },
+  "tag/damage_type": {
+   "removed": 0,
+   "added": 1
+  },
+  "tag/entity_type": {
+   "removed": 2,
+   "added": 6
+  },
+  "tag/fluid": {
+   "removed": 0,
+   "added": 1
+  },
+  "tag/item": {
+   "removed": 0,
+   "added": 5
+  },
+  "tag/worldgen/biome": {
+   "removed": 0,
+   "added": 3
+  },
+  "texture": {
+   "removed": 8,
+   "added": 51
+  },
+  "villager_trade": {
+   "removed": 0,
+   "added": 2
+  },
+  "worldgen/biome": {
+   "removed": 0,
+   "added": 1
+  },
+  "worldgen/density_function_type": {
+   "removed": 1,
+   "added": 2
+  },
+  "worldgen/feature": {
+   "removed": 0,
+   "added": 21
+  },
+  "worldgen/feature_type": {
+   "removed": 1,
+   "added": 2
+  },
+  "worldgen/material_rule": {
+   "removed": 0,
+   "added": 2
+  },
+  "worldgen/noise": {
+   "removed": 0,
+   "added": 1
+  },
+  "worldgen/placed_feature": {
+   "removed": 0,
+   "added": 26
+  }
+ },
+ "dispatcherMapSize": 57,
+ "candidatesConsidered": 559,
+ "proposed": [
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/loading",
+   "to": "gui/sprites/widget/loading",
+   "name": 0.85,
+   "shape": "none",
+   "score": 0.85
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/pause_menu/player_reporting",
+   "to": "gui/sprites/pause_menu/other_players",
+   "name": 0.81,
+   "shape": "none",
+   "score": 0.81
+  },
+  {
+   "registry": "worldgen/feature_type",
+   "toRegistry": "worldgen/feature_type",
+   "from": "large_dripstone",
+   "to": "large_speleothem",
+   "name": 0.33,
+   "shape": "superset",
+   "fieldOverlap": 0.91,
+   "score": 0.73
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/pause_menu/social_interactions",
+   "to": "gui/sprites/pause_menu/feedback",
+   "name": 0.67,
+   "shape": "none",
+   "score": 0.67
+  },
+  {
+   "registry": "model",
+   "toRegistry": "model",
+   "from": "block/cube_top",
+   "to": "block/calcite_slab_top",
+   "name": 0.5,
+   "shape": "none",
+   "score": 0.5
+  },
+  {
+   "registry": "tag/entity_type",
+   "toRegistry": "tag/entity_type",
+   "from": "freeze_immune_entity_types",
+   "to": "immune_to_freezing",
+   "name": 0.4,
+   "shape": "none",
+   "score": 0.4
+  },
+  {
+   "registry": "tag/entity_type",
+   "toRegistry": "tag/entity_type",
+   "from": "ignores_poison_and_regen",
+   "to": "immune_to_poison",
+   "name": 0.17,
+   "shape": "none",
+   "score": 0.17
+  },
+  {
+   "registry": "particle_type",
+   "toRegistry": "particle_type",
+   "from": "item_snowball",
+   "to": "freezing",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  }
+ ],
+ "ambiguous": [
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/button_highlighted",
+   "to": "gui/sprites/friends/profile_highlighted",
+   "name": 0.77,
+   "shape": "none",
+   "score": 0.77
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/button_highlighted",
+   "to": "gui/sprites/friends/tab_highlighted",
+   "name": 0.77,
+   "shape": "none",
+   "score": 0.77
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/button",
+   "to": "gui/sprites/friends/profile",
+   "name": 0.7,
+   "shape": "none",
+   "score": 0.7
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/button",
+   "to": "gui/sprites/friends/tab",
+   "name": 0.7,
+   "shape": "none",
+   "score": 0.7
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/remove",
+   "to": "gui/sprites/friends/profile",
+   "name": 0.7,
+   "shape": "none",
+   "score": 0.7
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/remove",
+   "to": "gui/sprites/friends/tab",
+   "name": 0.7,
+   "shape": "none",
+   "score": 0.7
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/button_disabled",
+   "to": "gui/sprites/friends/profile",
+   "name": 0.6,
+   "shape": "none",
+   "score": 0.6
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/friends/button_disabled",
+   "to": "gui/sprites/friends/tab",
+   "name": 0.6,
+   "shape": "none",
+   "score": 0.6
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/toast/social_interactions",
+   "to": "gui/sprites/friends/profile",
+   "name": 0.29,
+   "shape": "none",
+   "score": 0.29
+  },
+  {
+   "registry": "texture",
+   "toRegistry": "texture",
+   "from": "gui/sprites/toast/social_interactions",
+   "to": "gui/sprites/friends/tab",
+   "name": 0.29,
+   "shape": "none",
+   "score": 0.29
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.blue_ice.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.blue_ice.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.blue_ice.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.blue_ice.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.blue_ice.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.brittle_ice.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.brittle_ice.crack",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.brittle_ice.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.brittle_ice.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.brittle_ice.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.brittle_ice.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.chiseled_soulshale.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.chiseled_soulshale.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.chiseled_soulshale.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.chiseled_soulshale.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.chiseled_soulshale.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.frosted_ice.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.frosted_ice.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.frosted_ice.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.frosted_ice.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.frosted_ice.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice.ambient",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice_crystal.ambient",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice_crystal.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice_crystal.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice_crystal.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice_crystal.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.ice_crystal.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.icicle.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.icicle.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.icicle.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.icicle.land",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.icicle.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.icicle.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.packed_ice.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.packed_ice.fall",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.packed_ice.hit",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.packed_ice.place",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "block.packed_ice.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.chicken_picky.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.drowned.converted_to_zombie",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.frostbite.ambient",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.frostbite.converted_to_zombie",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.frostbite.death",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.frostbite.hurt",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.frostbite.step",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.ice_ball.break",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.ice_ball.throw",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.parrot.imitate.frostbite",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.zombie.converted_to_frostbite",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "entity.zombie_nautilus.riding",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "event.mob_effect.freezing",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "sound_event",
+   "toRegistry": "sound_event",
+   "from": "intentionally_empty",
+   "to": "music_disc.flurry",
+   "name": 0,
+   "shape": "none",
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "interpolated",
+   "to": "domain_warp",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0.17,
+   "score": 0
+  },
+  {
+   "registry": "worldgen/density_function_type",
+   "toRegistry": "worldgen/density_function_type",
+   "from": "interpolated",
+   "to": "upscale",
+   "name": 0,
+   "shape": "differs",
+   "fieldOverlap": 0.17,
+   "score": 0
+  }
+ ],
+ "fieldMoves": []
+}

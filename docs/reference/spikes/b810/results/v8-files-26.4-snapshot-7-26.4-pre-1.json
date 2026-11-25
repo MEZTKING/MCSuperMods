@@ -1,0 +1,214 @@
+{
+ "older": "26.4-snapshot-7",
+ "newer": "26.4-pre-1",
+ "kinds": {
+  "data": {
+   "filesBefore": 10255,
+   "filesAfter": 10287,
+   "added": 32,
+   "removed": 0,
+   "changed": 1527,
+   "renamedExact": 0,
+   "overridable": {
+    "added": 31,
+    "removed": 0,
+    "changed": 1521
+   },
+   "topFolders": [
+    [
+     "data/minecraft/structure",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1511
+     }
+    ],
+    [
+     "data/minecraft/dispense_behavior",
+     {
+      "added": 27,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "data/minecraft/worldgen/noise_settings",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 7
+     }
+    ],
+    [
+     "data/minecraft/datapacks",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 3
+     }
+    ],
+    [
+     "data/minecraft/block_transformer",
+     {
+      "added": 1,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "data/minecraft/tags/block",
+     {
+      "added": 2,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "data/minecraft/tags/damage_type",
+     {
+      "added": 1,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "data/minecraft/block_sound_set",
+     {
+      "added": 1,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "data/minecraft/sulfur_cube_archetype",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "data/minecraft/tags/entity_type",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "pack.mcmeta",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "version.json",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1
+     }
+    ]
+   ]
+  },
+  "assets": {
+   "filesBefore": 17175,
+   "filesAfter": 17183,
+   "added": 9,
+   "removed": 1,
+   "changed": 186,
+   "renamedExact": 0,
+   "overridable": {
+    "added": 9,
+    "removed": 1,
+    "changed": 182
+   },
+   "topFolders": [
+    [
+     "assets/minecraft/lang",
+     {
+      "added": 2,
+      "removed": 0,
+      "changed": 144
+     }
+    ],
+    [
+     "assets/minecraft/sounds",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 24
+     }
+    ],
+    [
+     "assets/minecraft/shaders",
+     {
+      "added": 1,
+      "removed": 1,
+      "changed": 9
+     }
+    ],
+    [
+     "assets/minecraft/textures/gui",
+     {
+      "added": 5,
+      "removed": 0,
+      "changed": 4
+     }
+    ],
+    [
+     "assets/minecraft/resourcepacks",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 2
+     }
+    ],
+    [
+     "assets/minecraft/textures/block",
+     {
+      "added": 1,
+      "removed": 0,
+      "changed": 0
+     }
+    ],
+    [
+     "assets/minecraft/sounds.json",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "pack.mcmeta",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1
+     }
+    ],
+    [
+     "version.json",
+     {
+      "added": 0,
+      "removed": 0,
+      "changed": 1
+     }
+    ]
+   ]
+  }
+ },
+ "list": {
+  "entries": 1755,
+  "rawBytes": 128990,
+  "gzipBytes": 9499
+ },
+ "listOverridableOnly": {
+  "entries": 1744,
+  "rawBytes": 128493,
+  "gzipBytes": 9373
+ }
+}
