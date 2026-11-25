@@ -340,3 +340,7 @@ Notes on the order:
 ### B711's leftovers (for B716)
 
 Old menu words still in renderer text: `components/WelcomeDialog.tsx` ("Help → Your First Mod…"), `components/wizard/StarterWizard.tsx` ("File > Upgrade Project Target"), `studios/entities/EntityStudio.tsx` ("File, Import Blockbench Model", two places), `modpacks/build.ts` ("Upgrade Project Target"), comments in `App.tsx` and `studios/structures/host.ts` ("File > More Exports"); `studios/blocks-items/FluidStudio.tsx` still says "under Advanced" twice (the guide quotes it). The native Help menu has no Guide… entry yet (a new `MenuCommand` and its handler in `App.tsx`). The four specs `maps-path`, `plugins-path`, `ai-path` and `ai-clarity-path` were not run after B711 (disk); run them in the next e2e pass.
+
+### B705's leftovers
+
+`liveviews/data/block-rules/BlockRules.tsx` still shows ids in the Vanilla block rules' default view (the sound line, "Drops <id> once" from the block rules model's `lines`, and Try it's block and tool lists): show them by name through `thingName` or the lang table, then empty `KNOWN_LEAKS` in `app/test/components/studios/blocks-items/plain-split.test.tsx`. Add `'world-addition-map'` to `section-why.ts` and cases for World addition, Extra drops and Vanilla block rules to `plain-no-ids.test.tsx`; the guide gains World addition's "On the map" and "Make my own copy" under Features' More options. Wax and age rows lose their `-plain` picker inside More options (shared `Section` shows non-common sections raw).
