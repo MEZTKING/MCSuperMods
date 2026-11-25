@@ -430,7 +430,7 @@ describe.each(targets.map((target) => [target.id, target] as const))(
       );
       expect(source.chat('/greet now').answer[0]).toBe('Incorrect argument for command');
       expect(source.chat('/give @s stone').result).toBe('ran');
-      expect(source.chat('/weather clear').result).toBe('game');
+      expect(source.chat('/locate biome minecraft:plains').result).toBe('game');
       expect(source.chat('/nothing').answer).toEqual([
         'Unknown or incomplete command, see below for error',
         'nothing<--[HERE]',

@@ -68,7 +68,7 @@
  * chat box runs the game's own commands and project commands' functions through it.
  */
 
-import type { Json, TargetFacts } from '@msm/plugin-api';
+import type { Json, JsonObject, TargetFacts } from '@msm/plugin-api';
 import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blocks/catalogue.js';
 import { useBlock } from './blocks/interact.js';
 import { breakBlock, placeBlock } from './blocks/placement.js';
@@ -79,7 +79,9 @@ import { Types3Area } from './blocks/types3/area.js';
 import { TIME_LAPSE_TICKS } from './blocks/weathering.js';
 import type { CommandsTarget } from './commands/catalogue.js';
 import { FunctionEngine, type FunctionRun } from './commands/functions.js';
+import { PREVIEW_PLAYER_NAME } from './commands/parse.js';
 import type { ChatLine } from './commands/run.js';
+import { countKill } from './commands/vanilla.js';
 import { type ControlsTarget, SimControls } from './controls/controls.js';
 import { readBoats, withBoats } from './entities/boats.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
@@ -87,7 +89,7 @@ import { EntityWorld } from './entities/entity-world.js';
 import { Mobs2Area } from './entities/mobs2.js';
 import type { EntityHit } from './entities/spawn.js';
 import { SimRandom } from './entities/wander.js';
-import { type Firing, PLAYER, type SimInventory } from './events/actions.js';
+import { type Firing, type ItemStack, PLAYER, type SimInventory } from './events/actions.js';
 import { type RuleBookInfo, readEventDefinitions } from './events/definitions.js';
 import { SimTrace, type TraceEntry } from './events/trace.js';
 import { type ChanceMode, TriggerEngine } from './events/triggers.js';
@@ -110,6 +112,7 @@ import {
   type GroundKind,
   groundState,
 } from './grounds/ground.js';
+import { applyItemModifier } from './loot/api.js';
 import type { BlockLookup } from './player/collide.js';
 import { REACH } from './player/constants.js';
 import { IDLE_INPUT, PlayerController, type PlayerInput } from './player/controller.js';
@@ -582,6 +585,7 @@ export class LocalWorldSource implements WorldSource {
         },
         data: () => this.evalContext().lookup,
         placeTemplate: (id, corner, origin) => this.games.placeTemplate(id, corner, origin),
+        modifyItem: (modifier, stack) => this.modifyItem(modifier, stack),
       },
       this.files,
       this.target,
@@ -617,6 +621,48 @@ export class LocalWorldSource implements WorldSource {
   setVanillaData(vanillaData: DataLookup | undefined): void {
     this.vanillaData = vanillaData;
     this.evalNow = null;
+  }
+
+  /**
+   * An item modifier on a stack (B727's `item modify`) through the loot evaluator, or
+   * `undefined` when the modifier is not a compound, a list or an id.
+   */
+  private modifyItem(
+    modifier: Json,
+    stack: ItemStack,
+  ): { stack: ItemStack; unsupported: string[] } | undefined {
+    if (typeof modifier !== 'string' && (modifier === null || typeof modifier !== 'object')) {
+      return undefined;
+    }
+    const ctx = this.evalContext();
+    const situation: Situation = {
+      context: 'minecraft:command',
+      position: [this.player.position.x, this.player.position.y, this.player.position.z],
+      dimension: 'minecraft:overworld',
+      weather: { raining: false, thundering: false },
+      time: { clock: 'minecraft:overworld', ticks: this.traders.timeOfDay },
+    };
+    const result = applyItemModifier(
+      modifier as JsonObject | readonly Json[] | string,
+      {
+        id: stack.id,
+        count: stack.count,
+        ...(stack.components === undefined ? {} : { components: stack.components }),
+      },
+      situation,
+      ctx,
+    );
+    const after = result.item;
+    return {
+      stack: {
+        id: after.id,
+        count: after.count,
+        ...(after.components === undefined || Object.keys(after.components).length === 0
+          ? {}
+          : { components: after.components }),
+      },
+      unsupported: result.unsupported.map(unsupportedWords),
+    };
   }
 
   /** What the evaluators read: the project's files over vanilla's, the area's seed (B606). */
@@ -891,6 +937,10 @@ export class LocalWorldSource implements WorldSource {
   }
 
   private actNow(action: PlayerAction): void {
+    // B727: a spectator (`gamemode spectator`) or a dead player cannot touch anything.
+    if (action.type !== 'move' && action.type !== 'tool' && action.type !== 'clear') {
+      if (!this.games.mayTouch()) return;
+    }
     switch (action.type) {
       case 'move':
         this.input = {
@@ -976,6 +1026,24 @@ export class LocalWorldSource implements WorldSource {
     }
   }
 
+  /**
+   * The player's input with the attributes games set (B727): a movement speed of 0 holds the
+   * player still (a head start), a jump strength of 0 stops jumping; a dead player stands still.
+   */
+  private heldInput(): PlayerInput {
+    const games = this.functions.state.games;
+    const still =
+      games.dead.has(PREVIEW_PLAYER_NAME) ||
+      (games.attribute(PREVIEW_PLAYER_NAME, 'minecraft:movement_speed') ?? 1) <= 0;
+    const grounded = (games.attribute(PREVIEW_PLAYER_NAME, 'minecraft:jump_strength') ?? 1) <= 0;
+    if (!still && !grounded) return this.input;
+    return {
+      ...this.input,
+      ...(still ? { forward: 0, strafe: 0, jump: false } : {}),
+      ...(grounded ? { jump: false } : {}),
+    };
+  }
+
   /** Runs one tick; see the module comment. */
   tick(): void {
     this.ticks += 1;
@@ -984,7 +1052,7 @@ export class LocalWorldSource implements WorldSource {
     this.games.tick();
     const wasRiding = this.vehicles.riding !== null;
     const gotOut = this.vehicles.tick(this.input);
-    if (!wasRiding) this.player.step(this.input);
+    if (!wasRiding) this.player.step(this.heldInput());
     else if (gotOut) this.input = { ...this.input, sneak: false };
     if (this.input.toggleFly) this.input = { ...this.input, toggleFly: false };
     // Shoulder pets get off before the mobs step (B540).
@@ -1447,6 +1515,8 @@ export class LocalWorldSource implements WorldSource {
     // A trader that remembers the player counts the hit and stays (B540).
     if (this.traders.hit(id, this.player.sneaking) === 'counted') return;
     if (!this.entities.hit(id)) return;
+    // B727: the kill criteria move (`totalKillCount`, `minecraft.killed:<type>`).
+    countKill(this.functions.state, PREVIEW_PLAYER_NAME, type);
     this.triggers.mobDied(type, id, position);
     this.scripts?.fire('entity.death', {
       entity: {

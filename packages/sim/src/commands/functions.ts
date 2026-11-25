@@ -29,6 +29,8 @@ import { type Actor, PLAYER } from '../events/actions.js';
 import type { DataLookup } from '../tags/api.js';
 import { createTagResolver } from '../tags/resolve.js';
 import type { SimFiles, SimOrigin, Vec3 } from '../types.js';
+import { GAMES_COMMAND_NAMES, respawnDue, syncHealthScores } from './games-commands.js';
+import { PREVIEW_PLAYER_NAME } from './parse.js';
 import {
   AREA_DIMENSION,
   CommandState,
@@ -83,6 +85,20 @@ export interface FunctionsTarget {
       /** Where advancements are read from (`advancement grant|revoke`). */
       readonly advancement?: string;
     };
+  };
+  /** The test tools' game rule names (B727: the keep-inventory rule the preview obeys). */
+  readonly dev?: { readonly gameRules?: { readonly keepInventory?: string } };
+  /** The vanilla game rule ids (`gamerule` refuses others, as the game does). */
+  readonly gameRules?: { readonly vanillaNames?: readonly string[] };
+}
+
+/** The game rule words of a target (B727). */
+function ruleWords(target: FunctionsTarget): { keepInventory?: string; known?: readonly string[] } {
+  const keepInventory = target.dev?.gameRules?.keepInventory;
+  const known = target.gameRules?.vanillaNames;
+  return {
+    ...(keepInventory === undefined ? {} : { keepInventory }),
+    ...(known === undefined ? {} : { known }),
   };
 }
 
@@ -285,7 +301,7 @@ export class FunctionEngine {
   private target: FunctionsTarget;
   private files: SimFiles;
   private readonly compiled = new Map<string, CompiledLine>();
-  private tagCache = new Map<string, readonly string[]>();
+  private tagCache = new Map<string, readonly string[] | undefined>();
   private advancementCache: Map<string, SimAdvancement> | undefined;
   private used = 0;
   private usedTick = -1;
@@ -297,6 +313,7 @@ export class FunctionEngine {
     this.files = files;
     this.target = target;
     this.functions = readFunctions(files, target);
+    this.state.games.rules = ruleWords(target);
   }
 
   /** The project's functions by id. */
@@ -318,6 +335,7 @@ export class FunctionEngine {
     const before = this.signature(this.files, this.target);
     this.files = files;
     this.target = target;
+    this.state.games.rules = ruleWords(target);
     this.tagCache = new Map();
     this.advancementCache = undefined;
     if (this.signature(files, target) === before) return;
@@ -329,6 +347,7 @@ export class FunctionEngine {
   /** "Clear the area": scores, tags, storage and schedules go; the load tag runs again. */
   clear(): void {
     this.state.clear();
+    this.state.games.rules = ruleWords(this.target);
     this.loadPending = true;
   }
 
@@ -343,12 +362,10 @@ export class FunctionEngine {
    * due, the tick tag, then the schedules due now.
    */
   tick(): void {
-    if (this.loadPending) {
-      this.loadPending = false;
-      if (this.tagMembers(LOAD_TAG) !== undefined) {
-        this.run([{ id: `#${LOAD_TAG}`, source: this.serverSource() }], false);
-      }
-    }
+    // B727: a dead player respawns when the time comes; `health` scores follow the player.
+    respawnDue(this.state, this.host, PREVIEW_PLAYER_NAME);
+    syncHealthScores(this.state, PREVIEW_PLAYER_NAME);
+    this.loadIfPending();
     if (this.tagMembers(TICK_TAG) !== undefined) {
       this.run([{ id: `#${TICK_TAG}`, source: this.serverSource() }], true);
     }
@@ -361,6 +378,19 @@ export class FunctionEngine {
         due.map((one) => ({ id: one.id, source: this.serverSource() })),
         false,
       );
+    }
+  }
+
+  /**
+   * Runs the load tag when it is due (the first tick, after an edit or "Clear the area"). A line
+   * typed or a function run before the area's first tick runs it first (B727): in the game a
+   * player can type only once the load functions have run.
+   */
+  private loadIfPending(): void {
+    if (!this.loadPending) return;
+    this.loadPending = false;
+    if (this.tagMembers(LOAD_TAG) !== undefined) {
+      this.run([{ id: `#${LOAD_TAG}`, source: this.serverSource() }], false);
     }
   }
 
@@ -391,6 +421,7 @@ export class FunctionEngine {
         result = value;
       },
     };
+    this.loadIfPending();
     if (!this.exists(id)) {
       this.host.log.info(`There is no function ${id} in the project.`, options.origin);
       return { id, commands: 0, stopped: false, answer: [`Unknown function ${id}`] };
@@ -419,7 +450,8 @@ export class FunctionEngine {
         return {
           result: 'game',
           answer: [
-            VANILLA_COMMANDS.includes(compiled.command)
+            VANILLA_COMMANDS.includes(compiled.command) ||
+            GAMES_COMMAND_NAMES.includes(compiled.command)
               ? `${compiled.why} runs only in Minecraft.`
               : `/${compiled.command} is one of the game's own commands; it runs only in Minecraft.`,
           ],
@@ -428,6 +460,7 @@ export class FunctionEngine {
       this.host.log.info(`The command /${text} did not run: ${compiled.why}.`);
       return { result: 'error', answer: [compiled.why] };
     }
+    this.loadIfPending();
     const mode = this.newMode(false);
     let outcome: Outcome | undefined;
     if (this.spend(mode)) {
@@ -487,8 +520,7 @@ export class FunctionEngine {
 
   /** The functions of a function tag in order, or `undefined` when it does not resolve. */
   private tagMembers(id: string): readonly string[] | undefined {
-    const cached = this.tagCache.get(id);
-    if (cached !== undefined) return cached.length === 0 ? undefined : cached;
+    if (this.tagCache.has(id)) return this.tagCache.get(id);
     const { tags, function: folder } = this.target.folders.data;
     if (tags === undefined || folder === undefined) return undefined;
     const project = (wanted: string, one: string): Json | undefined => {
@@ -508,14 +540,15 @@ export class FunctionEngine {
       tagsFolder: tags,
       exists: (_registry, member) => this.functions.has(member),
     })(folder, id);
-    const members = resolved.dropped ? [] : resolved.members.map((member) => member.id);
+    // A tag the game drops (or no file defines) is unknown; an empty tag runs as nothing (B727).
+    const members = resolved.dropped ? undefined : resolved.members.map((member) => member.id);
     this.tagCache.set(id, members);
     if (resolved.dropped && resolved.missing.some((one) => one !== `#${id}`)) {
       this.host.log.info(
         `The function tag #${id} names ${resolved.missing.join(', ')}, which do not exist; the game skips the whole tag.`,
       );
     }
-    return members.length === 0 ? undefined : members;
+    return members;
   }
 
   /** The source of {@link runFunction}: the player, the server, or an actor at a position. */

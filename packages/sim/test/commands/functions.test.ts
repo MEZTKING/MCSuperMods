@@ -23,7 +23,10 @@ const TARGET = {
     ...FAKE_TARGET.folders,
     data: { tags: 'tags', function: 'function', predicate: 'predicate' },
   },
-  commands: { vanillaNames: ['give', 'say', 'weather', 'spreadplayers', 'tp'], argumentTypes: {} },
+  commands: {
+    vanillaNames: ['give', 'locate', 'say', 'weather', 'spreadplayers', 'tp'],
+    argumentTypes: {},
+  },
 } as unknown as CatalogueTarget;
 
 function fn(path: string, lines: readonly string[]): [string, string] {
@@ -106,13 +109,17 @@ describe('the game commands of the chat box', () => {
     const { source, only } = area();
     expect(run(source, '/summon zoo:cow 10 0 10').result).toBe('ran');
     expect(source.entities.count).toBe(1);
-    expect(run(source, '/summon minecraft:zombie').result).toBe('error');
-    expect(only().some((line) => line.includes('summoning minecraft:zombie'))).toBe(true);
+    // B727: anything else is kept as a thing commands see, not drawn.
+    expect(run(source, '/summon minecraft:zombie').result).toBe('ran');
+    expect(only().some((line) => line.includes('how Zombie looks and acts'))).toBe(true);
+    expect(source.entities.count).toBe(1);
     run(source, '/tag @e[type=zoo:cow] add marked');
     expect(run(source, '/kill @e[tag=marked]').answer).toEqual(['Killed Moo Cow.']);
     expect(source.entities.count).toBe(0);
+    expect(run(source, '/kill @e[type=minecraft:zombie]').answer).toEqual(['Killed Zombie.']);
+    // B727: the player dies and respawns a second later.
     run(source, '/kill');
-    expect(only().some((line) => line.startsWith('dying'))).toBe(true);
+    expect(only().some((line) => line.startsWith('the death screen'))).toBe(true);
   });
 
   it('teleports the player inside the area', () => {
@@ -193,9 +200,11 @@ describe('the game commands of the chat box', () => {
     run(source, '/scoreboard objectives add health dummy');
     run(source, '/execute store result score @s health run data get entity @s Health');
     expect(source.functions.state.score('Player', 'health')).toBe(20);
-    expect(only().some((line) => line.includes("player's health"))).toBe(true);
+    expect(run(source, '/data get entity @s FoodLevel').result).toBe('ran');
+    expect(only().some((line) => line.includes("player's hunger"))).toBe(true);
     expect(run(source, '/data get entity @s Pos[1]').result).toBe('ran');
-    expect(run(source, '/data get entity @s Inventory').result).toBe('error');
+    expect(run(source, '/data get entity @s Inventory').result).toBe('ran');
+    expect(run(source, '/data get entity @s Brain').result).toBe('error');
     expect(run(source, '/data merge entity @s {}').result).toBe('game');
   });
 
@@ -233,15 +242,21 @@ describe('the game commands of the chat box', () => {
     expect(run(source, '/execute if score @s n > #none n').result).toBe('error');
     run(source, '/execute store success score #ok n if entity @s');
     expect(source.functions.state.score('#ok', 'n')).toBe(1);
-    expect(run(source, '/execute store result storage fx:s v int 1 run say x').result).toBe('game');
-    expect(run(source, '/execute on vehicle run say x').result).toBe('game');
+    // B727: storage, a failed test storing 0, counts, and `on` finding nobody here.
+    expect(run(source, '/execute store result storage fx:s v int 1 run say x').result).toBe('ran');
+    expect(source.functions.state.storage.get('fx:s')).toEqual({ v: 1 });
+    run(source, '/scoreboard players set #none n 5');
+    run(source, '/execute store result score #none n if entity @e[tag=nobody]');
+    expect(source.functions.state.score('#none', 'n')).toBe(0);
+    expect(run(source, '/execute on vehicle run say x').result).toBe('error');
+    expect(only().some((line) => line.includes('/execute on vehicle'))).toBe(true);
   });
 
   it('says commands the preview does not run, once, by name', () => {
     const { source, only } = area();
-    expect(run(source, '/spreadplayers ~ ~ 0 64 false @s').result).toBe('game');
-    run(source, '/spreadplayers ~ ~ 0 64 false @s');
-    expect(only().filter((line) => line.includes('spreadplayers'))).toHaveLength(1);
+    expect(run(source, '/locate biome minecraft:plains').result).toBe('game');
+    run(source, '/locate biome minecraft:plains');
+    expect(only().filter((line) => line.includes('locate'))).toHaveLength(1);
     expect(run(source, '/give @s').result).toBe('error');
   });
 });
@@ -357,9 +372,9 @@ describe('functions', () => {
     const { source, only, lines } = area(
       Object.fromEntries([
         fn('travel', [
-          'execute in fx:sky run spreadplayers ~ ~ 0 64 false @s',
-          'spreadplayers ~ ~ 0 64 false @s',
-          'weather rain',
+          'execute in fx:sky run locate biome minecraft:plains',
+          'locate biome minecraft:plains',
+          'forceload add 0 0',
           'say still here',
         ]),
       ]),
@@ -367,8 +382,8 @@ describe('functions', () => {
     source.runFunction('fx:travel');
     source.runFunction('fx:travel');
     expect(lines()).toContain('[Player] still here');
-    expect(only().filter((line) => line.includes('/spreadplayers'))).toHaveLength(1);
-    expect(only().filter((line) => line.includes('/weather'))).toHaveLength(1);
+    expect(only().filter((line) => line.includes('/locate'))).toHaveLength(1);
+    expect(only().filter((line) => line.includes('/forceload'))).toHaveLength(1);
   });
 
   it('runs a project command through its function in the chat box', () => {
@@ -428,14 +443,16 @@ describe('understands', () => {
     ).toBe(true);
     expect(understands('$give $(who) fx:candle $(count)')).toBe(true);
     expect(understands('$effect give @s minecraft:speed 30 $(power) true')).toBe(true);
-    expect(understands('spreadplayers ~ ~ 0 64 false @s')).toBe(false);
-    expect(lineSupport('execute in fx:sky run spreadplayers ~ ~ 0 64 false @s')).toMatchObject({
+    // B727: games' commands run.
+    expect(understands('spreadplayers ~ ~ 0 64 false @s')).toBe(true);
+    expect(understands('execute store result storage a:b c int 1 run say x')).toBe(true);
+    expect(lineSupport('execute in fx:sky run locate biome minecraft:plains')).toMatchObject({
       runs: false,
-      why: '/spreadplayers',
+      why: '/locate',
     });
-    expect(lineSupport('execute store result storage a:b c int 1 run say x')).toMatchObject({
+    expect(lineSupport('execute store result entity @s Health float 1 run say x')).toMatchObject({
       runs: false,
-      why: '/execute store result storage',
+      why: '/execute store result entity',
     });
     expect(lineSupport('# a comment')).toMatchObject({ runs: true, blank: true });
     expect(understands('# a comment')).toBe(false);

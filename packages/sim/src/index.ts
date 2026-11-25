@@ -5,6 +5,7 @@
 
 export * from './blocks/index.js';
 export * from './commands/functions.js';
+export * from './commands/games-commands.js';
 export * from './commands/index.js';
 export * from './commands/vanilla.js';
 export * from './controls/index.js';

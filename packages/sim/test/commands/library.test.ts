@@ -1,6 +1,7 @@
 /**
  * The library's and the fixtures' functions in Try it (B606): how many of their command lines
- * run (B600 counted 74 lines and expected 66 with B606's list; the 8 left are `spreadplayers`),
+ * run (B600 counted 74 lines and expected 66 with B606's list; the 8 left were `spreadplayers`,
+ * which runs since B727),
  * and fixture functions run on both built-in targets with the world they should leave.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -53,11 +54,10 @@ describe("the library's function lines", () => {
     const runs = lines.filter(({ line }) => lineSupport(line).runs);
     const not = lines.filter(({ line }) => !lineSupport(line).runs);
     // B600 counted 74 lines with four of the built-in templates' (66 run, 89 %); the mirror and
-    // the fixtures alone hold 70. Every line runs except the 8 that need /spreadplayers (the
-    // game flows' /team, /spawnpoint and /advancement lines run since they were taught).
+    // the fixtures alone hold 70. Every line runs (the game flows' /team, /spawnpoint and
+    // /advancement lines since they were taught, /spreadplayers since B727).
     expect(lines.length).toBeGreaterThanOrEqual(70);
-    expect(not.length).toBe(lines.filter(({ line }) => line.includes('spreadplayers')).length);
-    for (const { line } of not) expect(lineSupport(line).why).toBe('/spreadplayers');
+    expect(not.map(({ line }) => line)).toEqual([]);
     console.info(
       `B606: ${runs.length} of ${lines.length} function lines of the library and fixtures run in Try it (${Math.round((runs.length / lines.length) * 100)} %).`,
     );

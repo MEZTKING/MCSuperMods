@@ -81,6 +81,11 @@ export class EntityWorld {
     return this.mobs.get(id);
   }
 
+  /** Whether the project has a mob of `type` (B727: `summon` keeps anything else as a thing). */
+  knows(type: string): boolean {
+    return this.catalogue.get(type) !== undefined;
+  }
+
   /**
    * Spawns a mob of `type` (an entity type id) against a picked block. Refused, with the reason
    * as a log line too, when the type is unknown, the area is full or there is no room.

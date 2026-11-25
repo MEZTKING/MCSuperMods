@@ -18,14 +18,24 @@
  * The game flows (B557) write `team`, `spawnpoint` and `advancement` into project functions, so
  * they run too: teams with their options and members (score holders) in `CommandState.teams` and
  * `teamOf`, and the selector filter `team=`; spawn points kept per player (Try it's player never
- * dies, so nobody respawns there; the point is said); `advancement grant|revoke` with `only`
+ * respawns there since B727); `advancement grant|revoke` with `only`
  * (and a criterion), `until`, `from`, `through` and `everything` over the project's advancements
  * (read by the function engine), the criteria kept in `CommandState.advancements`, an advancement
  * done said in the chat and its reward function run as the player at once, as the game does.
  *
- * Every other command, and every form of a listed command the preview does not run (`execute
- * store ... storage`, `clone from`, `data merge`, a selector filter such as `gamemode=`), is one
- * "Only in Minecraft" line naming it, never silent. The behaviour is written from the command
+ * B727 (the commands games use, `games-commands.ts`): `gamemode`, `attribute`, `bossbar`,
+ * `worldborder`, `spreadplayers`, `item`, `trigger`, `gamerule`, `weather` and `difficulty`;
+ * `scoreboard players enable` and `objectives modify`; `execute store ... storage|bossbar`,
+ * `execute if items`, `execute on`; a condition at the end of `execute store` stores 0 when it
+ * fails and its count when it holds; `data modify|merge|remove storage` and NBT paths with
+ * indexes and filters; `give` and `item` keep components; the selector filters `gamemode=`,
+ * `nbt=` and `advancements=`; `kill` of the player is a death (death scores, a respawn a second
+ * later at the spawn point; `@e` does not find a dead player); `summon` of anything but the
+ * project's mobs keeps a thing commands see; positions in entity data are the world's.
+ *
+ * Every other command, and every form of a listed command the preview does not run (`clone
+ * from`, `data modify entity`, `execute store ... entity`, a selector filter such as `level=`),
+ * is one "Only in Minecraft" line naming it, never silent. The behaviour is written from the command
  * syntax (the vendored command trees of both targets agree on every form here) and B600's
  * observations, never from the game's code; numbers the preview cannot know (health, hunger) are
  * named when they are used.
@@ -41,15 +51,49 @@ import { updateNeighbours } from '../blocks/neighbours.js';
 import { plainEntityName } from '../entities/catalogue.js';
 import type { EntityWorld } from '../entities/entity-world.js';
 import type { SimRandom } from '../entities/wander.js';
-import { type Actor, PLAYER, parseBlockState, type SimInventory } from '../events/actions.js';
+import {
+  type Actor,
+  type ItemStack,
+  PLAYER,
+  parseBlockState,
+  type SimInventory,
+} from '../events/actions.js';
 import type { PlayerController } from '../player/controller.js';
 import { lookDirection } from '../player/pick.js';
 import type { Answer, Situation } from '../predicates/api.js';
 import type { BlockPos, BlockState, SimEffect, SimLog, SimOrigin, Vec3 } from '../types.js';
 import type { SimWorld } from '../world/sim-world.js';
+import {
+  type CommandKit,
+  FIRST_THING_ID,
+  GAMES_COMMAND_NAMES,
+  GamesCommandState,
+  gamesCommands,
+  getAtPath,
+  type NbtStep,
+  nbtMatches,
+  playerDies,
+  playerStacks,
+  putStack,
+  readItemPredicate,
+  readItemStackArg,
+  readNbtPath,
+  readSlots,
+  removeAtPath,
+  type SimThing,
+  setAtPath,
+  stackIn,
+  stackMatches,
+  storedNumber,
+} from './games-commands.js';
 import { PREVIEW_PLAYER_NAME } from './parse.js';
 
-/** The command names Try it runs (some forms of them are still said; see the module comment). */
+/**
+ * The command names Try it runs since B606 (some forms of them are still said; see the module
+ * comment). The AI helper's prompt names these (`TRY_IT_PROMPT_COMMANDS`, pinned by
+ * `app/test/ai-prompt-truth.test.ts`); B727's commands for games are
+ * {@link GAMES_COMMAND_NAMES}, which the prompt gains with its games topic (B738).
+ */
 export const VANILLA_COMMANDS: readonly string[] = Object.freeze([
   'advancement',
   'clear',
@@ -179,6 +223,15 @@ export interface VanillaHost {
    * Without it `place template` runs only in the game.
    */
   placeTemplate?(id: string, corner: BlockPos, origin: SimOrigin | undefined): number | undefined;
+  /**
+   * Applies an item modifier (inline, a list, or an id) to a stack through the loot evaluator
+   * (B727's `item modify`): the stack after it and what only the game does, in words; without
+   * it the commands read the inline `set_components` and `set_count` themselves.
+   */
+  modifyItem?(
+    modifier: Json,
+    stack: ItemStack,
+  ): { readonly stack: ItemStack; readonly unsupported: readonly string[] } | undefined;
 }
 
 /** What a running command reports to and asks of the runner. */
@@ -286,9 +339,12 @@ export class CommandState {
   readonly spawnPoints = new Map<string, SpawnPoint>();
   /** Holder key to advancement id to the criteria done (`advancement grant|revoke`). */
   readonly advancements = new Map<string, Map<string, Set<string>>>();
+  /** What the commands games use keep (B727, `games-commands.ts`). */
+  readonly games = new GamesCommandState();
 
   /** Forgets everything ("Clear the area"). */
   clear(): void {
+    this.games.clear();
     this.teams.clear();
     this.teamOf.clear();
     this.spawnPoints.clear();
@@ -716,6 +772,12 @@ interface Filters {
   readonly distance: Range | undefined;
   readonly scores: Readonly<Record<string, Range>>;
   readonly at: Readonly<Partial<Record<'x' | 'y' | 'z' | 'dx' | 'dy' | 'dz', number>>>;
+  /** `gamemode=` (B727): only players match, by their game mode. */
+  readonly gameModes: readonly { readonly mode: string; readonly not: boolean }[];
+  /** `nbt=` (B727): the entity's data holds the compound. */
+  readonly nbt: readonly { readonly value: Json; readonly not: boolean }[];
+  /** `advancements=` (B727): advancement id to done, or to criteria done. */
+  readonly advancements: Readonly<Record<string, boolean | Readonly<Record<string, boolean>>>>;
 }
 
 interface Selector {
@@ -736,6 +798,9 @@ const NO_FILTERS: Filters = {
   distance: undefined,
   scores: {},
   at: {},
+  gameModes: [],
+  nbt: [],
+  advancements: {},
 };
 
 /** Splits `a=1,b={c=2,d=3}` at its top-level commas. */
@@ -780,6 +845,9 @@ function readSelector(text: string): Selector {
   let distance: Range | undefined;
   const scores: Record<string, Range> = {};
   const at: Partial<Record<'x' | 'y' | 'z' | 'dx' | 'dy' | 'dz', number>> = {};
+  const gameModes: { mode: string; not: boolean }[] = [];
+  const nbt: { value: Json; not: boolean }[] = [];
+  const advancements: Record<string, boolean | Record<string, boolean>> = {};
   for (const pair of splitTop(match[2] ?? '')) {
     const eq = pair.indexOf('=');
     if (eq < 0) throw new BadLine(`Expected value for option '${pair}'`);
@@ -839,13 +907,60 @@ function readSelector(text: string): Selector {
         at[key] = n;
         break;
       }
+      case 'gamemode':
+        if (!['survival', 'creative', 'adventure', 'spectator'].includes(value)) {
+          throw new BadLine(`Invalid or unknown game mode '${value}'`);
+        }
+        gameModes.push({ mode: value, not });
+        break;
+      case 'nbt':
+        nbt.push({ value: parseSnbt(value), not });
+        break;
+      case 'advancements': {
+        const inner = /^\{(.*)\}$/s.exec(value);
+        if (inner === null) throw new BadLine('Expected { for advancements');
+        for (const entry of splitTop(inner[1] ?? '')) {
+          const eq = entry.indexOf('=');
+          if (eq < 0) throw new BadLine(`Invalid advancements '${value}'`);
+          const id = normalise(entry.slice(0, eq).trim());
+          const rest = entry.slice(eq + 1).trim();
+          if (rest === 'true' || rest === 'false') advancements[id] = rest === 'true';
+          else {
+            const criteria = /^\{(.*)\}$/s.exec(rest);
+            if (criteria === null) throw new BadLine(`Invalid advancements '${value}'`);
+            const out: Record<string, boolean> = {};
+            for (const one of splitTop(criteria[1] ?? '')) {
+              const [name, done] = one.split('=').map((part) => part.trim());
+              if (name === undefined || (done !== 'true' && done !== 'false')) {
+                throw new BadLine(`Invalid advancements '${value}'`);
+              }
+              out[name] = done === 'true';
+            }
+            advancements[id] = out;
+          }
+        }
+        break;
+      }
       default:
         throw new NotHere(`the selector filter ${key}=`);
     }
   }
   return {
     kind,
-    filters: { types, tags, names, teams, limit, sort, distance, scores, at },
+    filters: {
+      types,
+      tags,
+      names,
+      teams,
+      limit,
+      sort,
+      distance,
+      scores,
+      at,
+      gameModes,
+      nbt,
+      advancements,
+    },
     text,
   };
 }
@@ -869,24 +984,51 @@ function single(selector: Selector): boolean {
   );
 }
 
-function positionOf(host: VanillaHost, actor: Actor): Vec3 | undefined {
-  if (actor.kind === 'player') return host.player.position;
-  return host.entities.entity(actor.id)?.position;
+/** What the actor helpers read: the host and the state (things that are not mobs, B727). */
+interface Seen {
+  readonly host: VanillaHost;
+  readonly state: CommandState;
 }
 
-function typeOf(host: VanillaHost, actor: Actor): string | undefined {
+/** A thing that is not a project mob (B727), when the actor is one. */
+function thingOf(rc: Seen, actor: Actor): SimThing | undefined {
+  return actor.kind === 'mob' && actor.id >= FIRST_THING_ID
+    ? rc.state.games.things.get(actor.id)
+    : undefined;
+}
+
+function positionOf(rc: Seen, actor: Actor): Vec3 | undefined {
+  if (actor.kind === 'player') return rc.host.player.position;
+  return rc.host.entities.entity(actor.id)?.position ?? thingOf(rc, actor)?.pos;
+}
+
+function typeOf(rc: Seen, actor: Actor): string | undefined {
   if (actor.kind === 'player') return PLAYER_TYPE;
-  return host.entities.entity(actor.id)?.kind.id;
+  return rc.host.entities.entity(actor.id)?.kind.id ?? thingOf(rc, actor)?.type;
 }
 
 /** An actor's name in the chat and the log. */
-function actorName(host: VanillaHost, actor: Actor): string {
+function actorName(rc: Seen, actor: Actor): string {
   if (actor.kind === 'player') return PREVIEW_PLAYER_NAME;
-  return host.entities.entity(actor.id)?.kind.displayName ?? `mob ${actor.id}`;
+  const thing = thingOf(rc, actor);
+  if (thing !== undefined) return plainEntityName(thing.type);
+  return rc.host.entities.entity(actor.id)?.kind.displayName ?? `mob ${actor.id}`;
 }
 
-function everyone(host: VanillaHost): Actor[] {
-  return [PLAYER, ...host.entities.entities().map((mob) => ({ kind: 'mob' as const, id: mob.id }))];
+/** Whether an actor is still there (a removed mob or thing is not). */
+function present(rc: Seen, actor: Actor): boolean {
+  return actor.kind === 'player' || positionOf(rc, actor) !== undefined;
+}
+
+/**
+ * Every living entity `@e` and `@n` look through: the player (unless dead: the game's `@e`
+ * finds only living entities, `@a` every player), the project's mobs and the things.
+ */
+function everyone(rc: Seen): Actor[] {
+  const out: Actor[] = rc.state.games.dead.has(PREVIEW_PLAYER_NAME) ? [] : [PLAYER];
+  out.push(...rc.host.entities.entities().map((mob) => ({ kind: 'mob' as const, id: mob.id })));
+  for (const id of rc.state.games.things.keys()) out.push({ kind: 'mob', id });
+  return out;
 }
 
 const distanceBetween = (a: Vec3, b: Vec3): number => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
@@ -898,12 +1040,14 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
     const name = selector.name ?? '';
     if (name === PREVIEW_PLAYER_NAME || name === PREVIEW_PLAYER_UUID) return [PLAYER];
     const mob = host.entities.entities().find((one) => mobUuid(one.id) === name);
-    return mob === undefined ? [] : [{ kind: 'mob', id: mob.id }];
+    if (mob !== undefined) return [{ kind: 'mob', id: mob.id }];
+    const thing = [...rc.state.games.things.keys()].find((id) => mobUuid(id) === name);
+    return thing === undefined ? [] : [{ kind: 'mob', id: thing }];
   }
   if (selector.kind === 's') {
     const self = src.executor;
     if (self === null) return [];
-    if (self.kind === 'mob' && host.entities.entity(self.id) === undefined) return [];
+    if (!present(rc, self)) return [];
     return matches(rc, selector.filters, src, self) ? [self] : [];
   }
   const f = selector.filters;
@@ -914,7 +1058,7 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
     y: f.at.y === undefined ? src.pos.y : f.at.y - corner.y,
     z: f.at.z === undefined ? src.pos.z : f.at.z - corner.z,
   };
-  let found = selector.kind === 'e' || selector.kind === 'n' ? everyone(host) : [PLAYER as Actor];
+  let found = selector.kind === 'e' || selector.kind === 'n' ? everyone(rc) : [PLAYER as Actor];
   found = found.filter((actor) => matches(rc, f, { ...src, pos: base }, actor));
   const sort =
     f.sort ??
@@ -924,7 +1068,7 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
         ? 'random'
         : 'arbitrary');
   const dist = (actor: Actor): number => {
-    const pos = positionOf(host, actor);
+    const pos = positionOf(rc, actor);
     return pos === undefined ? Infinity : distanceBetween(pos, base);
   };
   if (sort === 'nearest') found.sort((a, b) => dist(a) - dist(b));
@@ -944,9 +1088,9 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
 }
 
 function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean {
-  const { host, state } = rc;
-  const type = typeOf(host, actor);
-  const pos = positionOf(host, actor);
+  const { state } = rc;
+  const type = typeOf(rc, actor);
+  const pos = positionOf(rc, actor);
   if (type === undefined || pos === undefined) return false;
   for (const one of f.types) if ((one.id === type) === one.not) return false;
   const own = state.tags.get(holderOf(actor)) ?? new Set<string>();
@@ -986,6 +1130,30 @@ function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean
       !inside(pos.z, src.pos.z, dz)
     ) {
       return false;
+    }
+  }
+  // B727: game modes (only players have one; anything else fails, negated or not), data and
+  // advancements.
+  for (const one of f.gameModes) {
+    if (actor.kind !== 'player') return false;
+    if ((state.games.gameMode(holderOf(actor)) === one.mode) === one.not) return false;
+  }
+  if (f.nbt.length > 0) {
+    const data = entityCompound(rc, actor, src.origin);
+    for (const one of f.nbt) if (nbtMatches(data, one.value) === one.not) return false;
+  }
+  for (const [id, wanted] of Object.entries(f.advancements)) {
+    if (actor.kind !== 'player') return false;
+    const advancement = rc.advancement?.(id);
+    const holder = holderOf(actor);
+    if (typeof wanted === 'boolean') {
+      const done = advancement !== undefined && state.advancementDone(holder, advancement);
+      if (done !== wanted) return false;
+      continue;
+    }
+    const doneCriteria = state.advancements.get(holder)?.get(id) ?? new Set<string>();
+    for (const [criterion, want] of Object.entries(wanted)) {
+      if (doneCriteria.has(criterion) !== want) return false;
     }
   }
   return true;
@@ -1226,7 +1394,7 @@ function componentText(rc: RunContext, value: Json, src: Source): string {
     text = score === undefined ? '' : String(score);
   } else if (typeof value.selector === 'string') {
     text = select(rc, readSelector(value.selector), src)
-      .map((actor) => actorName(rc.host, actor))
+      .map((actor) => actorName(rc, actor))
       .join(', ');
   } else if (typeof value.keybind === 'string') {
     text = `[${value.keybind}]`;
@@ -1244,7 +1412,7 @@ function expandSelectors(rc: RunContext, text: string, src: Source): string {
   return text.replace(/@[parsen](\[[^\]]*\])?/g, (found) => {
     try {
       return select(rc, readSelector(found), src)
-        .map((actor) => actorName(rc.host, actor))
+        .map((actor) => actorName(rc, actor))
         .join(', ');
     } catch {
       return found;
@@ -1253,7 +1421,7 @@ function expandSelectors(rc: RunContext, text: string, src: Source): string {
 }
 
 function sourceName(rc: RunContext, src: Source): string {
-  return src.executor === null ? 'Server' : actorName(rc.host, src.executor);
+  return src.executor === null ? 'Server' : actorName(rc, src.executor);
 }
 
 // Effects ----------------------------------------------------------------------------------------
@@ -1274,28 +1442,22 @@ function chip(rc: RunContext, text: string, actor: Actor, origin: SimOrigin | un
 
 // Inventory --------------------------------------------------------------------------------------
 
-/** Takes items matching `test` from the inventory, at most `max`; returns how many (or would). */
+/** Takes items matching `test` from the player's slots, at most `max`; how many (or would). */
 function takeItems(
-  inventory: SimInventory,
-  test: (id: string) => boolean,
+  rc: RunContext,
+  test: (stack: ItemStack) => boolean,
   max: number | undefined,
 ): number {
-  const stacks = inventory.slots.filter((stack) => stack !== null);
-  const total = stacks.reduce((sum, stack) => sum + (test(stack.id) ? stack.count : 0), 0);
+  const held = playerStacks(rc).filter(({ stack }) => test(stack));
+  const total = held.reduce((sum, { stack }) => sum + stack.count, 0);
   if (max === 0) return total;
   let left = max ?? Infinity;
-  const kept: { id: string; count: number }[] = [];
-  for (const stack of stacks) {
-    if (!test(stack.id) || left <= 0) {
-      kept.push({ id: stack.id, count: stack.count });
-      continue;
-    }
+  for (const { slot, stack } of held) {
+    if (left <= 0) break;
     const take = Math.min(left, stack.count);
     left -= take;
-    if (stack.count > take) kept.push({ id: stack.id, count: stack.count - take });
+    putStack(rc, slot, stack.count > take ? { ...stack, count: stack.count - take } : null);
   }
-  inventory.clear();
-  for (const stack of kept) inventory.give(stack.id, stack.count);
   return Math.min(total, max ?? Infinity);
 }
 
@@ -1347,12 +1509,22 @@ function teleport(cur: Cursor): Run {
       const found = select(rc, to.entity, src);
       const target = found[0];
       if (target === undefined) throw new Failed('No entity was found');
-      where = positionOf(rc.host, target) ?? src.pos;
+      where = positionOf(rc, target) ?? src.pos;
     } else where = resolveVec3(rc, to.pos, src, true);
     let moved = 0;
     for (const actor of movers) {
+      const thing = thingOf(rc, actor);
+      if (thing !== undefined) {
+        thing.pos = where;
+        moved += 1;
+        continue;
+      }
       if (actor.kind === 'mob') {
         rc.only('moving mobs with /teleport (the preview moves only you)', src.origin);
+        continue;
+      }
+      if (rc.state.games.dead.has(holderOf(actor))) {
+        rc.feedback(`${PREVIEW_PLAYER_NAME} is dead and cannot be moved.`, src.origin);
         continue;
       }
       const cell = blockOf(where);
@@ -1674,7 +1846,7 @@ function teamCommand(cur: Cursor): Run {
   }
 }
 
-/** `spawnpoint [<targets> [<pos> [<rotation>]]]`: kept per player; Try it's player never dies. */
+/** `spawnpoint [<targets> [<pos> [<rotation>]]]`: kept per player, who respawns there (B727). */
 function spawnpointCommand(cur: Cursor): Run {
   const targets = cur.done ? undefined : readTargets(cur, 'a target', true);
   const at = cur.done ? undefined : readVec3(cur);
@@ -1701,12 +1873,7 @@ function spawnpointCommand(cur: Cursor): Run {
         dimension: src.dimension,
       });
     }
-    rc.only(
-      'respawning at the spawn point (Try it’s player never dies; the point is kept)',
-      src.origin,
-    );
-    const who =
-      found.length === 1 ? actorName(rc.host, found[0] as Actor) : `${found.length} players`;
+    const who = found.length === 1 ? actorName(rc, found[0] as Actor) : `${found.length} players`;
     rc.feedback(
       `Set spawn point to ${posWords(pos)} [${round2(turn.yaw)}, ${round2(turn.pitch)}] in ${src.dimension} for ${who}.`,
       src.origin,
@@ -1790,7 +1957,7 @@ function advancementCommand(cur: Cursor): Run {
     const verb = grant ? 'grant' : 'revoke';
     const toFrom = grant ? 'to' : 'from';
     const who = (n: number): string =>
-      n === 1 ? actorName(rc.host, players[0] as Actor) : `${n} players`;
+      n === 1 ? actorName(rc, players[0] as Actor) : `${n} players`;
     const calls: FunctionCall[] = [];
     if (criterion !== undefined) {
       const one = root as SimAdvancement;
@@ -1879,7 +2046,7 @@ function changeCriteria(
   }
   if (done.size === 0) own.delete(advancement.id);
   if (grant && changed && !wasDone && rc.state.advancementDone(key, advancement)) {
-    const name = actorName(rc.host, player);
+    const name = actorName(rc, player);
     if (advancement.frame !== undefined && advancement.announce) {
       rc.chat(
         `${name} ${FRAME_WORDS[advancement.frame] ?? FRAME_WORDS.task} ${advancementWords(advancement)}`,
@@ -1890,7 +2057,7 @@ function changeCriteria(
       rc.only(`advancement rewards: ${advancement.otherRewards.join(', ')}`, src.origin);
     }
     if (advancement.rewardFunction !== undefined) {
-      const pos = positionOf(rc.host, player) ?? src.pos;
+      const pos = positionOf(rc, player) ?? src.pos;
       calls.push({
         id: advancement.rewardFunction,
         source: {
@@ -1906,6 +2073,83 @@ function changeCriteria(
   }
   return changed;
 }
+
+/** Things closer than this merge into one stack when they are the same item (approximate). */
+const ITEM_MERGE_DISTANCE = 1.5;
+
+/**
+ * `summon` of something that is not one of the project's mobs (B727): kept as a thing with its
+ * data, so selectors, `nbt=`, `data get entity` and `kill` see it; a dropped item merges into a
+ * stack of the same item close by, as the game merges them (up to 64, or 99 by its
+ * `max_stack_size` component).
+ */
+function summonThing(
+  rc: RunContext,
+  type: string,
+  pos: Vec3,
+  nbt: Json | undefined,
+  src: Source,
+): Outcome {
+  const data: JsonObject = isRecord(nbt) ? (structuredClone(nbt) as JsonObject) : {};
+  const games = rc.state.games;
+  if (type === 'minecraft:item') {
+    const item = data.Item;
+    if (!isRecord(item) || typeof item.id !== 'string') throw new Failed('Unable to summon entity');
+    const id = normalise(item.id);
+    const count = typeof item.count === 'number' ? item.count : 1;
+    const most =
+      isRecord(item.components) && typeof item.components['minecraft:max_stack_size'] === 'number'
+        ? item.components['minecraft:max_stack_size']
+        : 64;
+    for (const thing of games.things.values()) {
+      const have = thing.data.Item;
+      if (thing.type !== type || !isRecord(have) || normalise(String(have.id)) !== id) continue;
+      if (JSON.stringify(have.components ?? {}) !== JSON.stringify(item.components ?? {})) continue;
+      if (distanceBetween(thing.pos, pos) > ITEM_MERGE_DISTANCE) continue;
+      const now = typeof have.count === 'number' ? have.count : 1;
+      if (now + count > most) continue;
+      (have as Record<string, Json>).count = now + count;
+      rc.feedback(`Summoned new ${plainEntityName(id)}.`, src.origin);
+      return ok();
+    }
+    (item as Record<string, Json>).id = id;
+    (item as Record<string, Json>).count = count;
+  }
+  const id = games.newThingId();
+  games.things.set(id, { id, type, pos, data });
+  for (const tag of Array.isArray(data.Tags) ? data.Tags : []) {
+    if (typeof tag !== 'string') continue;
+    const key = mobUuid(id);
+    const own = rc.state.tags.get(key) ?? new Set<string>();
+    own.add(tag);
+    rc.state.tags.set(key, own);
+  }
+  rc.only(
+    `how ${plainEntityName(type)} looks and acts (Try it keeps it for commands but does not draw it)`,
+    src.origin,
+  );
+  rc.feedback(`Summoned new ${plainEntityName(type)}.`, src.origin);
+  return ok();
+}
+
+/** What `games-commands.ts` borrows to read and run its commands (B727). */
+const KIT: CommandKit = {
+  badLine: (message) => new BadLine(message),
+  notHere: (form) => new NotHere(form),
+  failed: (message) => new Failed(message),
+  readTargets: (cur, what, players, one) => readTargets(cur as Cursor, what, players, one),
+  select: (rc, selector, src) => select(rc, selector as Selector, src),
+  selectSome: (rc, selector, src, players) => selectSome(rc, selector as Selector, src, players),
+  readVec3: (cur) => readVec3(cur as Cursor),
+  resolveVec3: (rc, spec, src, centre) => resolveVec3(rc, spec as Vec3Spec, src, centre),
+  readTime,
+  parseSnbt,
+  componentText,
+  actorName: (rc, actor) => actorName(rc, actor),
+  holderOf,
+  normalise,
+  objectiveOf,
+};
 
 const COMMANDS: Readonly<Record<string, Compile>> = {
   advancement(cur) {
@@ -2034,16 +2278,18 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
       throw new BadLine(`Unknown item '${itemText}'`);
     }
     const id = normalise(match[1] as string);
-    const extra = match[2] ?? match[3];
+    if (match[3] !== undefined) throw new BadLine(`Unknown item '${itemText}'`);
+    // B727: an item's components are kept on the stack (`item`, `clear` and `execute if items`
+    // read them).
+    const stackArg =
+      match[2] === undefined ? { id } : readItemStackArg(itemText, parseSnbt, normalise);
+    if (stackArg === undefined) throw new BadLine(`Unknown item '${itemText}'`);
     const count = cur.done ? 1 : cur.int('a count', 1);
     cur.end();
     return (rc, src) => {
       const found = selectSome(rc, targets, src, true);
-      if (extra !== undefined) {
-        rc.only('item components on /give (the preview gives the plain item)', src.origin);
-      }
       const name = rc.host.itemName(id);
-      const left = rc.host.inventory().give(id, count);
+      const left = rc.host.inventory().give(id, count, stackArg.components);
       rc.feedback(`Gave ${count} ${name} to ${PREVIEW_PLAYER_NAME}.`, src.origin);
       if (left > 0) rc.only(`items that do not fit dropping at your feet`, src.origin);
       return ok(found.length);
@@ -2055,18 +2301,22 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     const item = cur.optional();
     const max = cur.done ? undefined : cur.int('a count', 0);
     cur.end();
-    let test: (id: string) => boolean = () => true;
-    if (item !== undefined && item !== '*') {
-      if (item.startsWith('#')) throw new NotHere('/clear with an item tag');
-      const match = /^([a-z0-9_.:/-]+)(\[.*\])?$/s.exec(item);
-      if (match === null) throw new BadLine(`Unknown item '${item}'`);
-      const id = normalise(match[1] as string);
-      test = (one) => one === id;
-    }
+    if (item?.startsWith('#') === true) throw new NotHere('/clear with an item tag');
+    const predicate =
+      item === undefined ? undefined : readItemPredicate(item, parseSnbt, normalise);
+    if (item !== undefined && predicate === undefined) throw new BadLine(`Unknown item '${item}'`);
+    const test = (stack: ItemStack): boolean =>
+      predicate === undefined || stackMatches(stack, predicate);
     return (rc, src) => {
       if (targets !== undefined) selectSome(rc, targets, src, true);
       else if (src.executor?.kind !== 'player') throw new Failed('No player was found');
-      const taken = takeItems(rc.host.inventory(), test, max);
+      if (predicate !== undefined && predicate.unknown.length > 0) {
+        rc.only(
+          `the item tests ${predicate.unknown.join(', ')} (the preview leaves them out)`,
+          src.origin,
+        );
+      }
+      const taken = takeItems(rc, test, max);
       if (taken === 0) throw new Failed(`No items were found on player ${PREVIEW_PLAYER_NAME}`);
       rc.feedback(
         max === 0
@@ -2250,10 +2500,13 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
   summon(cur) {
     const type = cur.id('an entity type');
     const at = cur.done ? undefined : readVec3(cur);
-    const nbt = cur.optional();
+    const nbtText = cur.optional();
     cur.end();
+    const nbt = nbtText === undefined ? undefined : parseSnbt(nbtText);
+    if (nbt !== undefined && !isRecord(nbt)) throw new BadLine('Expected a compound for the data');
     return (rc, src) => {
       const pos = at === undefined ? src.pos : resolveVec3(rc, at, src, true);
+      if (!rc.host.entities.knows(type)) return summonThing(rc, type, pos, nbt, src);
       const result = rc.host.entities.spawn(type, {
         pos: { x: Math.floor(pos.x), y: Math.floor(pos.y) - 1, z: Math.floor(pos.z) },
         face: 'up',
@@ -2264,9 +2517,9 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
         }
         throw new Failed('Unable to summon entity');
       }
-      if (nbt !== undefined) rc.only('entity data on /summon', src.origin);
+      if (nbt !== undefined) rc.only("entity data on /summon of your project's mobs", src.origin);
       rc.feedback(
-        `Summoned new ${actorName(rc.host, { kind: 'mob', id: result.entity.id })}.`,
+        `Summoned new ${actorName(rc, { kind: 'mob', id: result.entity.id })}.`,
         src.origin,
       );
       return ok();
@@ -2285,12 +2538,14 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
           : select(rc, targets, src);
       if (found.length === 0) throw new Failed('No entity was found');
       for (const actor of found) {
+        const name = actorName(rc, actor);
         if (actor.kind === 'player') {
-          rc.only('dying: the preview keeps you in the area', src.origin);
-          continue;
-        }
-        const name = actorName(rc.host, actor);
-        rc.host.entities.remove(actor.id);
+          // B727: the player dies (death scores, a respawn a second later).
+          playerDies(rc, holderOf(actor), `${name} was killed`, src.origin);
+        } else if (thingOf(rc, actor) !== undefined) {
+          rc.state.games.things.delete(actor.id);
+          rc.state.tags.delete(holderOf(actor));
+        } else rc.host.entities.remove(actor.id);
         rc.feedback(`Killed ${name}.`, src.origin);
       }
       return ok(found.length);
@@ -2356,7 +2611,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
         }
         own.set(effect, { amplifier, until });
         chip(rc, words, actor, src.origin);
-        rc.feedback(`Gave ${actorName(rc.host, actor)} ${words}.`, src.origin);
+        rc.feedback(`Gave ${actorName(rc, actor)} ${words}.`, src.origin);
       }
       rc.only(`what ${name} does (the preview shows a chip)`, src.origin);
       if (hide) rc.only('hidden effect particles', src.origin);
@@ -2501,10 +2756,9 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
       if (!rc.functionExists(id)) throw new Failed(`Unknown function ${id}`);
       let callArgs = args;
       if (fromStorage !== undefined) {
-        let value: Json | undefined = rc.state.storage.get(fromStorage.id) ?? {};
-        for (const key of (fromStorage.path ?? '').split('.').filter((one) => one !== '')) {
-          value = isRecord(value) ? value[key] : undefined;
-        }
+        const root: Json = rc.state.storage.get(fromStorage.id) ?? {};
+        const value =
+          fromStorage.path === undefined ? root : getAtPath(root, readPathArg(fromStorage.path));
         if (!isRecord(value)) throw new Failed(`Found no elements matching ${fromStorage.path}`);
         callArgs = value;
       }
@@ -2603,7 +2857,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
       }
       rc.feedback(
         `${action === 'add' ? 'Added' : 'Removed'} tag '${name}' ${action === 'add' ? 'to' : 'from'} ${found
-          .map((actor) => actorName(rc.host, actor))
+          .map((actor) => actorName(rc, actor))
           .join(', ')}.`,
         src.origin,
       );
@@ -2639,20 +2893,47 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
 
   data(cur) {
     const action = cur.next('an action');
+    if (action === 'modify') return dataModify(cur);
+    if (action === 'merge') {
+      const kind = cur.next('block, entity or storage');
+      if (kind !== 'storage') throw new NotHere(`/data merge ${kind}`);
+      const id = cur.id('a storage id');
+      const value = parseSnbt(cur.rest());
+      if (!isRecord(value)) throw new BadLine('Expected a compound');
+      return (rc, src) => {
+        const own = storageOf(rc, id);
+        mergeInto(own, value);
+        rc.feedback(`Modified storage ${id}`, src.origin);
+        return ok();
+      };
+    }
+    if (action === 'remove') {
+      const kind = cur.next('block, entity or storage');
+      if (kind !== 'storage') throw new NotHere(`/data remove ${kind}`);
+      const id = cur.id('a storage id');
+      const path = readPathArg(cur.next('a path'));
+      cur.end();
+      return (rc, src) => {
+        if (!removeAtPath(storageOf(rc, id), path)) {
+          throw new Failed('Nothing changed. The specified properties already have these values');
+        }
+        rc.feedback(`Modified storage ${id}`, src.origin);
+        return ok();
+      };
+    }
     if (action !== 'get') throw new NotHere(`/data ${action}`);
     const kind = cur.next('block, entity or storage');
     if (kind === 'block') throw new NotHere('/data get block');
     if (kind === 'storage') {
       const id = cur.id('a storage id');
-      const path = cur.optional();
+      const pathText = cur.optional();
+      const path = pathText === undefined ? undefined : readPathArg(pathText);
       const scale = cur.done ? 1 : cur.float('a scale');
       cur.end();
       return (rc, src) => {
-        let value: Json | undefined = rc.state.storage.get(id);
-        for (const key of (path ?? '').split('.').filter((one) => one !== '')) {
-          value = isRecord(value) ? value[key] : undefined;
-        }
-        if (value === undefined) throw new Failed(`Found no elements matching ${path ?? id}`);
+        const root = rc.state.storage.get(id);
+        const value = path === undefined ? root : getAtPath(root, path);
+        if (value === undefined) throw new Failed(`Found no elements matching ${pathText ?? id}`);
         const n = dataNumber(value, scale);
         rc.feedback(`Storage ${id} has the following contents: ${snbtWords(value)}`, src.origin);
         return ok(n);
@@ -2676,7 +2957,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
       }
       const n = dataNumber(value, scale);
       rc.feedback(
-        `${actorName(rc.host, actor)} has the following entity data: ${snbtWords(value)}`,
+        `${actorName(rc, actor)} has the following entity data: ${snbtWords(value)}`,
         src.origin,
       );
       return ok(n);
@@ -2717,7 +2998,119 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
   execute(cur) {
     return compileExecute(cur);
   },
+
+  // B727: `gamemode`, `attribute`, `bossbar`, `worldborder`, `spreadplayers`, `item`, `trigger`,
+  // `gamerule`, `weather` and `difficulty` (`games-commands.ts`).
+  ...(gamesCommands(KIT) as Readonly<Record<string, Compile>>),
 };
+
+/** An NBT path argument (B727). */
+function readPathArg(text: string): NbtStep[] {
+  const path = readNbtPath(text, parseSnbt);
+  if (path === undefined) throw new NotHere(`the NBT path ${text}`);
+  return path;
+}
+
+/** A command storage, made empty when it is first written. */
+function storageOf(rc: RunContext, id: string): JsonObject {
+  let own = rc.state.storage.get(id);
+  if (own === undefined) {
+    own = {};
+    rc.state.storage.set(id, own);
+  }
+  return own;
+}
+
+/** Merges a compound into another, compounds inside merged too (`data merge`). */
+function mergeInto(into: JsonObject, from: JsonObject): void {
+  const target = into as Record<string, Json>;
+  for (const [key, value] of Object.entries(from)) {
+    const have = target[key];
+    if (isRecord(have) && isRecord(value)) mergeInto(have, value);
+    else target[key] = structuredClone(value);
+  }
+}
+
+/** `data modify storage <id> <path> set|merge|append|prepend|insert ... value|from|string ...`. */
+function dataModify(cur: Cursor): Run {
+  const kind = cur.next('block, entity or storage');
+  if (kind !== 'storage') throw new NotHere(`/data modify ${kind}`);
+  const id = cur.id('a storage id');
+  const pathText = cur.next('a path');
+  const path = readPathArg(pathText);
+  const how = cur.next('set, merge, append, prepend or insert');
+  const index = how === 'insert' ? cur.int('an index') : undefined;
+  if (!['set', 'merge', 'append', 'prepend', 'insert'].includes(how)) {
+    throw new BadLine(`Unknown action '${how}'`);
+  }
+  const source = cur.next('value, from or string');
+  let read: (rc: RunContext, src: Source) => Json | undefined;
+  if (source === 'value') {
+    const value = parseSnbt(cur.rest());
+    read = () => structuredClone(value);
+  } else if (source === 'from' || source === 'string') {
+    const fromKind = cur.next('block, entity or storage');
+    let get: (rc: RunContext, src: Source) => Json | undefined;
+    if (fromKind === 'storage') {
+      const fromId = cur.id('a storage id');
+      const fromPath = cur.done ? undefined : readPathArg(cur.next('a path'));
+      get = (rc) => {
+        const root = rc.state.storage.get(fromId);
+        return fromPath === undefined ? root : getAtPath(root, fromPath);
+      };
+    } else if (fromKind === 'entity') {
+      const target = readTargets(cur, 'a target', false, true);
+      const fromPath = cur.done ? undefined : cur.next('a path');
+      get = (rc, src) => {
+        const actor = selectSome(rc, target, src, false)[0] as Actor;
+        return fromPath === undefined
+          ? entityCompound(rc, actor, src.origin)
+          : entityData(rc, actor, fromPath, src.origin);
+      };
+    } else throw new NotHere(`/data modify ... from ${fromKind}`);
+    let start: number | undefined;
+    let end: number | undefined;
+    if (source === 'string') {
+      start = cur.done ? undefined : cur.int('a start');
+      end = cur.done ? undefined : cur.int('an end');
+    }
+    cur.end();
+    read = (rc, src) => {
+      const value = get(rc, src);
+      if (value === undefined || source === 'from') return structuredClone(value);
+      const text = typeof value === 'string' ? value : snbtWords(value);
+      return text.slice(start, end);
+    };
+  } else throw new BadLine(`Unknown source '${source}'`);
+  return (rc, src) => {
+    const value = read(rc, src);
+    if (value === undefined) throw new Failed(`Found no elements matching ${pathText}`);
+    const root = storageOf(rc, id);
+    let changed = false;
+    if (how === 'set') changed = setAtPath(root, path, value);
+    else if (how === 'merge') {
+      const have = getAtPath(root, path);
+      if (!isRecord(value)) throw new Failed('Expected a compound');
+      if (isRecord(have)) mergeInto(have, value);
+      else setAtPath(root, path, structuredClone(value));
+      changed = true;
+    } else {
+      let list = getAtPath(root, path);
+      if (list === undefined) {
+        setAtPath(root, path, []);
+        list = getAtPath(root, path);
+      }
+      if (!Array.isArray(list)) throw new Failed(`The target is not a list`);
+      const items = list as Json[];
+      const at = how === 'append' ? items.length : how === 'prepend' ? 0 : (index as number);
+      items.splice(at < 0 ? items.length + at + 1 : at, 0, value);
+      changed = true;
+    }
+    if (!changed) throw new Failed(`Found no elements matching ${pathText}`);
+    rc.feedback(`Modified storage ${id}`, src.origin);
+    return ok();
+  };
+}
 
 /** A `data get` result as a number: numbers scaled, lists and text by length. */
 function dataNumber(value: Json, scale: number): number {
@@ -2728,44 +3121,120 @@ function dataNumber(value: Json, scale: number): number {
   return isRecord(value) ? Object.keys(value).length : 0;
 }
 
-/** The named entity data paths the preview knows (B600: `Health` first). */
+/**
+ * An entity's data as the preview knows it (B600: `Health` first; B727: things keep what
+ * `summon` gave them, the player's items are listed): position, rotation, motion, tags and the
+ * player's numbers.
+ */
+function entityCompound(rc: RunContext, actor: Actor, _origin: SimOrigin | undefined): JsonObject {
+  const { host } = rc;
+  const pos = positionOf(rc, actor) ?? { x: 0, y: 0, z: 0 };
+  const thing = thingOf(rc, actor);
+  const player = actor.kind === 'player';
+  const mob =
+    actor.kind === 'mob' && thing === undefined ? host.entities.entity(actor.id) : undefined;
+  const yaw = player ? host.player.yaw : (mob?.yaw ?? 0);
+  const pitch = player ? host.player.pitch : 0;
+  const velocity = player ? host.player.velocity : (mob?.velocity ?? { x: 0, y: 0, z: 0 });
+  const { corner } = rc.state;
+  const tags = [...(rc.state.tags.get(holderOf(actor)) ?? [])];
+  const values: Record<string, Json> = {
+    ...(thing?.data ?? {}),
+    Pos: [pos.x + corner.x, pos.y + corner.y, pos.z + corner.z],
+    Rotation: [yaw, pitch],
+    Motion: [velocity.x, velocity.y, velocity.z],
+    OnGround: player ? host.player.onGround : (mob?.onGround ?? true),
+    Tags: tags,
+  };
+  if (thing !== undefined) values.id = thing.type;
+  if (player) {
+    const holder = holderOf(actor);
+    const items = playerStacks(rc).map(({ slot, stack }) => ({
+      id: stack.id,
+      count: stack.count,
+      Slot: 'hotbar' in slot ? slot.hotbar : slotNumber(slot.named),
+      ...(stack.components === undefined ? {} : { components: stack.components }),
+    }));
+    const held = stackIn(rc, { hotbar: 0 });
+    Object.assign(values, {
+      Health: rc.state.games.healthOf(holder),
+      FoodLevel: 20,
+      Air: 300,
+      XpLevel: 0,
+      SelectedItemSlot: 0,
+      Inventory: items,
+      ...(held === null ? {} : { SelectedItem: { id: held.id, count: held.count } }),
+    });
+  }
+  return values;
+}
+
+/** The player's numbers the preview does not keep (it answers full food and air, no levels). */
+const UNKNOWN_PLAYER_DATA = new Set(['FoodLevel', 'Air', 'XpLevel', 'foodSaturationLevel']);
+
+/** A named slot's number in the player's data (`inventory.3` is 12, `armor.feet` 100). */
+function slotNumber(named: string): number {
+  const armour: Record<string, number> = {
+    'armor.feet': 100,
+    'armor.legs': 101,
+    'armor.chest': 102,
+    'armor.head': 103,
+    'weapon.offhand': -106,
+  };
+  const inv = /^inventory\.(\d+)$/.exec(named);
+  return inv === null ? (armour[named] ?? -1) : Number(inv[1]) + 9;
+}
+
+/** The value of an entity data path, or `undefined` when the preview does not know it. */
 function entityData(
   rc: RunContext,
   actor: Actor,
   path: string,
   origin: SimOrigin | undefined,
 ): Json | undefined {
-  const { host } = rc;
-  const pos = positionOf(host, actor);
-  if (pos === undefined) return undefined;
-  const player = actor.kind === 'player';
-  const mob = actor.kind === 'mob' ? host.entities.entity(actor.id) : undefined;
-  const yaw = player ? host.player.yaw : (mob?.yaw ?? 0);
-  const pitch = player ? host.player.pitch : 0;
-  const velocity = player ? host.player.velocity : (mob?.velocity ?? { x: 0, y: 0, z: 0 });
-  const tags = [...(rc.state.tags.get(holderOf(actor)) ?? [])];
-  const values: Record<string, Json> = {
-    Pos: [pos.x, pos.y, pos.z],
-    Rotation: [yaw, pitch],
-    Motion: [velocity.x, velocity.y, velocity.z],
-    OnGround: player ? host.player.onGround : (mob?.onGround ?? false),
-    Tags: tags,
-  };
-  if (player) {
-    rc.only("the player's health, hunger and air (the preview's player is always well)", origin);
-    Object.assign(values, {
-      Health: 20,
-      FoodLevel: 20,
-      Air: 300,
-      XpLevel: 0,
-      SelectedItemSlot: 0,
-    });
+  if (positionOf(rc, actor) === undefined) return undefined;
+  const steps = readNbtPath(path, parseSnbt);
+  if (steps === undefined) throw new NotHere(`the NBT path ${path}`);
+  const [first] = steps;
+  if (
+    actor.kind === 'player' &&
+    first !== undefined &&
+    'key' in first &&
+    UNKNOWN_PLAYER_DATA.has(first.key)
+  ) {
+    rc.only(
+      "the player's hunger, air and experience (the preview's player is never hungry)",
+      origin,
+    );
   }
-  const match = /^([A-Za-z]+)(?:\[(\d+)\])?$/.exec(path);
-  if (match === null) return undefined;
-  const value = values[match[1] as string];
-  if (match[2] === undefined) return value;
-  return Array.isArray(value) ? value[Number(match[2])] : undefined;
+  return getAtPath(entityCompound(rc, actor, origin), steps);
+}
+
+/**
+ * The criteria whose scores the preview moves (B727): `dummy` and `trigger` by commands, the
+ * death criteria when the player dies, `health` with the player's health, the kill criteria when
+ * the player kills (`countKill`).
+ */
+const SELF_MOVING_CRITERIA = new Set([
+  'dummy',
+  'trigger',
+  'deathCount',
+  'health',
+  'totalKillCount',
+  'minecraft.custom:minecraft.deaths',
+  'minecraft.custom:minecraft.time_since_death',
+  'minecraft.custom:minecraft.mob_kills',
+]);
+
+/** Kill criteria move when the player kills a mob (B727: Try it's player kills by hitting). */
+export function countKill(state: CommandState, holder: string, victimType: string): void {
+  for (const objective of state.objectives.values()) {
+    const kill =
+      objective.criterion === 'totalKillCount' ||
+      objective.criterion === 'minecraft.custom:minecraft.mob_kills' ||
+      objective.criterion === `minecraft.killed:${victimType}`;
+    if (kill) objective.scores.set(holder, ((objective.scores.get(holder) ?? 0) + 1) | 0);
+  }
 }
 
 function objectivesCommand(cur: Cursor, action: string): Run {
@@ -2780,7 +3249,7 @@ function objectivesCommand(cur: Cursor, action: string): Run {
       }
       const displayName = display === undefined ? name : componentText(rc, display, src);
       rc.state.objectives.set(name, { name, criterion, displayName, scores: new Map() });
-      if (criterion !== 'dummy' && criterion !== 'trigger') {
+      if (!SELF_MOVING_CRITERIA.has(criterion)) {
         rc.only(
           `the criterion ${criterion} (in the preview the score changes only by commands)`,
           src.origin,
@@ -2838,6 +3307,42 @@ function objectivesCommand(cur: Cursor, action: string): Run {
       );
       return ok(names.length);
     };
+  }
+  if (action === 'modify') {
+    const name = cur.next('an objective');
+    const what = cur.next('displayname, rendertype, numberformat or displayautoupdate');
+    if (what === 'displayname') {
+      const display = parseSnbt(cur.rest());
+      return (rc, src) => {
+        const objective = objectiveOf(rc, name);
+        const words = componentText(rc, display, src);
+        rc.state.objectives.set(name, { ...objective, displayName: words });
+        rc.feedback(`Changed the display name of ${name} to [${words}]`, src.origin);
+        return ok(0);
+      };
+    }
+    if (what === 'rendertype') {
+      const type = cur.next('integer or hearts');
+      cur.end();
+      if (type !== 'integer' && type !== 'hearts')
+        throw new BadLine(`Unknown render type '${type}'`);
+      return (rc, src) => {
+        objectiveOf(rc, name);
+        if (type === 'hearts') rc.only('scores drawn as hearts on the player list', src.origin);
+        rc.feedback(`Changed the render type of objective [${name}]`, src.origin);
+        return ok(0);
+      };
+    }
+    if (what === 'numberformat' || what === 'displayautoupdate') {
+      const rest = cur.rest();
+      void rest;
+      return (rc, src) => {
+        objectiveOf(rc, name);
+        rc.only(`how the scoreboard shows ${name}'s numbers (${what})`, src.origin);
+        return ok(0);
+      };
+    }
+    throw new BadLine(`Unknown objective option '${what}'`);
   }
   throw new NotHere(`/scoreboard objectives ${action}`);
 }
@@ -2987,6 +3492,36 @@ function playersCommand(cur: Cursor, action: string): Run {
       return ok(Object.keys(scores).length);
     };
   }
+  if (action === 'enable') {
+    const who = readHolders(cur);
+    const name = cur.next('an objective');
+    cur.end();
+    return (rc, src) => {
+      const objective = objectiveOf(rc, name);
+      if (objective.criterion !== 'trigger') {
+        throw new Failed("You can only enable 'trigger' objectives");
+      }
+      const keys = who.all ? allHolders(rc) : holders(rc, who, src, objective);
+      let changed = 0;
+      for (const key of keys) {
+        let own = rc.state.games.triggers.get(key);
+        if (own === undefined) {
+          own = new Set();
+          rc.state.games.triggers.set(key, own);
+        }
+        if (!own.has(name)) changed += 1;
+        own.add(name);
+      }
+      if (changed === 0) throw new Failed('Nothing changed. That trigger is already enabled');
+      rc.feedback(
+        keys.length === 1
+          ? `Enabled trigger [${objective.displayName}] for ${holderWords(rc.host, keys[0] as string)}`
+          : `Enabled trigger [${objective.displayName}] for ${keys.length} entities`,
+        src.origin,
+      );
+      return ok(changed);
+    };
+  }
   throw new NotHere(`/scoreboard players ${action}`);
 }
 
@@ -2994,21 +3529,48 @@ function playersCommand(cur: Cursor, action: string): Run {
 
 type Fork = (rc: RunContext, src: Source) => Source[];
 
-interface StoreSpec {
-  readonly kind: 'result' | 'success';
-  readonly holders: Holders;
-  readonly objective: string;
+/** Where `execute store` puts the value (B727: storage and boss bars too). */
+type StoreSpec =
+  | {
+      readonly kind: 'result' | 'success';
+      readonly where: 'score';
+      readonly holders: Holders;
+      readonly objective: string;
+    }
+  | {
+      readonly kind: 'result' | 'success';
+      readonly where: 'storage';
+      readonly id: string;
+      readonly path: readonly NbtStep[];
+      readonly type: string;
+      readonly scale: number;
+    }
+  | {
+      readonly kind: 'result' | 'success';
+      readonly where: 'bossbar';
+      readonly id: string;
+      readonly field: 'value' | 'max';
+    };
+
+interface TestStep {
+  readonly test: Test;
+  readonly want: boolean;
 }
 
-type Step = { readonly fork: Fork } | { readonly store: StoreSpec };
+type Step = { readonly fork: Fork } | { readonly store: StoreSpec } | TestStep;
 
 interface Branch {
   readonly src: Source;
   readonly stores: readonly { readonly spec: StoreSpec; readonly src: Source }[];
 }
 
-/** A test of `if`/`unless`: yes, no, or `undefined` when the preview cannot tell. */
-type Test = (rc: RunContext, src: Source) => boolean | undefined;
+/**
+ * A test of `if`/`unless`: how many things passed (a count for `entity` and `items`, 1 for
+ * yes), 0 for no, or `undefined` when the preview cannot tell.
+ */
+type Test = (rc: RunContext, src: Source) => number | undefined;
+
+const yes = (passed: boolean): number => (passed ? 1 : 0);
 
 function readTest(cur: Cursor): Test {
   const kind = cur.next('a condition');
@@ -3018,7 +3580,7 @@ function readTest(cur: Cursor): Test {
       const predicate = readBlockPredicate(cur.next('a block'));
       return (rc, src) => {
         const state = blockAt(rc, blockOf(resolveVec3(rc, at, src, false)));
-        return state === undefined ? false : blockMatches(rc, predicate, state);
+        return yes(state !== undefined && blockMatches(rc, predicate, state));
       };
     }
     case 'score': {
@@ -3031,7 +3593,7 @@ function readTest(cur: Cursor): Test {
           const objective = objectiveOf(rc, name);
           const [key] = holders(rc, who, src, objective);
           const value = key === undefined ? undefined : objective.scores.get(key);
-          return value !== undefined && inRange(value, range);
+          return yes(value !== undefined && inRange(value, range));
         };
       }
       if (!['<', '<=', '=', '>', '>='].includes(op)) throw new BadLine(`Invalid operation '${op}'`);
@@ -3044,25 +3606,60 @@ function readTest(cur: Cursor): Test {
         const [otherKey] = holders(rc, otherWho, src, other);
         const a = key === undefined ? undefined : objective.scores.get(key);
         const b = otherKey === undefined ? undefined : other.scores.get(otherKey);
-        if (a === undefined || b === undefined) return false;
-        return op === '<'
-          ? a < b
-          : op === '<='
-            ? a <= b
-            : op === '='
-              ? a === b
-              : op === '>'
-                ? a > b
-                : a >= b;
+        if (a === undefined || b === undefined) return 0;
+        return yes(
+          op === '<'
+            ? a < b
+            : op === '<='
+              ? a <= b
+              : op === '='
+                ? a === b
+                : op === '>'
+                  ? a > b
+                  : a >= b,
+        );
       };
     }
     case 'entity': {
       const selector = readSelector(cur.next('an entity'));
-      return (rc, src) => select(rc, selector, src).length > 0;
+      return (rc, src) => select(rc, selector, src).length;
     }
     case 'dimension': {
       const dimension = cur.id('a dimension');
-      return (_rc, src) => src.dimension === dimension;
+      return (_rc, src) => yes(src.dimension === dimension);
+    }
+    case 'items': {
+      // B727: `execute if items entity <targets> <slots> <predicate>`: how many items match.
+      const where = cur.next('block or entity');
+      if (where !== 'entity') throw new NotHere('/execute if items block');
+      const selector = readSelector(cur.next('an entity'));
+      const slotText = cur.next('slots');
+      const slots = readSlots(slotText);
+      if (slots === undefined) throw new NotHere(`/execute if items with the slots ${slotText}`);
+      const itemText = cur.next('an item predicate');
+      if (itemText.startsWith('#')) throw new NotHere('/execute if items with an item tag');
+      const predicate = readItemPredicate(itemText, parseSnbt, normalise);
+      if (predicate === undefined) throw new BadLine(`Unknown item '${itemText}'`);
+      return (rc, src) => {
+        if (predicate.unknown.length > 0) {
+          rc.only(
+            `the item tests ${predicate.unknown.join(', ')} (the preview leaves them out)`,
+            src.origin,
+          );
+        }
+        let count = 0;
+        for (const actor of select(rc, selector, src)) {
+          if (actor.kind !== 'player') {
+            rc.only('items held by mobs (/execute if items reads only yours)', src.origin);
+            continue;
+          }
+          for (const slot of slots) {
+            const stack = stackIn(rc, slot);
+            if (stack !== null && stackMatches(stack, predicate)) count += stack.count;
+          }
+        }
+        return count;
+      };
     }
     case 'predicate': {
       const id = cur.id('a predicate');
@@ -3078,7 +3675,7 @@ function readTest(cur: Cursor): Test {
           );
           return undefined;
         }
-        return answer.answer === 'yes';
+        return yes(answer.answer === 'yes');
       };
     }
     default:
@@ -3088,7 +3685,10 @@ function readTest(cur: Cursor): Test {
 
 /** The situation a predicate is tried in from a command source (B604's `Situation`). */
 function situationOf(rc: RunContext, src: Source): Situation {
-  rc.only("weather: the preview's sky is always clear", src.origin);
+  // B727: the weather `weather` set (clear until a command changes it).
+  const weather = rc.state.games.weather;
+  const kind =
+    weather.until !== undefined && weather.until <= rc.host.now() ? 'clear' : weather.kind;
   const self = src.executor;
   const situation: Situation = {
     context: 'minecraft:command',
@@ -3098,12 +3698,12 @@ function situationOf(rc: RunContext, src: Source): Situation {
       src.pos.z + rc.state.corner.z,
     ],
     dimension: src.dimension,
-    weather: { raining: false, thundering: false },
+    weather: { raining: kind !== 'clear', thundering: kind === 'thunder' },
     time: { clock: AREA_DIMENSION, ticks: rc.host.timeOfDay() },
   };
   if (self === null) return situation;
   const key = holderOf(self);
-  const pos = positionOf(rc.host, self) ?? src.pos;
+  const pos = positionOf(rc, self) ?? src.pos;
   const effects: Record<string, { amplifier: number; duration: number }> = {};
   const now = rc.host.now();
   for (const [id, one] of rc.state.effects.get(key) ?? []) {
@@ -3114,7 +3714,7 @@ function situationOf(rc: RunContext, src: Source): Situation {
   return {
     ...situation,
     thisEntity: {
-      type: typeOf(rc.host, self) ?? PLAYER_TYPE,
+      type: typeOf(rc, self) ?? PLAYER_TYPE,
       tags: [...(rc.state.tags.get(key) ?? [])],
       scores: rc.state.scoresOf(key),
       effects,
@@ -3145,7 +3745,7 @@ function compileExecute(cur: Cursor): Run {
         steps.push({
           fork: (rc, src) =>
             select(rc, selector, src).map((actor) => {
-              const pos = positionOf(rc.host, actor) ?? src.pos;
+              const pos = positionOf(rc, actor) ?? src.pos;
               const player = actor.kind === 'player';
               return {
                 ...src,
@@ -3167,7 +3767,7 @@ function compileExecute(cur: Cursor): Run {
             fork: (rc, src) =>
               select(rc, selector, src).map((actor) => ({
                 ...src,
-                pos: positionOf(rc.host, actor) ?? src.pos,
+                pos: positionOf(rc, actor) ?? src.pos,
               })),
           });
         } else {
@@ -3230,16 +3830,42 @@ function compileExecute(cur: Cursor): Run {
         });
         break;
       }
-      case 'if':
-      case 'unless': {
-        const test = readTest(cur);
-        const want = word === 'if';
+      case 'on': {
+        // B727: `on attacker` finds who last hit a thing (B728's practice players set it).
+        const relation = cur.next('a relation');
+        const RELATIONS = [
+          'attacker',
+          'controller',
+          'leasher',
+          'origin',
+          'owner',
+          'passengers',
+          'target',
+          'vehicle',
+        ];
+        if (!RELATIONS.includes(relation)) throw new BadLine(`Unknown relation '${relation}'`);
         steps.push({
           fork: (rc, src) => {
-            const answer = test(rc, src);
-            return answer === undefined || answer !== want ? [] : [src];
+            const self = src.executor;
+            if (self === null) return [];
+            const thing = thingOf(rc, self);
+            if (relation === 'attacker' && thing?.attacker !== undefined) {
+              return [{ ...src, executor: thing.attacker }];
+            }
+            if (relation !== 'attacker') {
+              rc.only(
+                `the ${relation} of an entity (/execute on ${relation} finds nobody here)`,
+                src.origin,
+              );
+            }
+            return [];
           },
         });
+        break;
+      }
+      case 'if':
+      case 'unless': {
+        steps.push({ test: readTest(cur), want: word === 'if' });
         break;
       }
       case 'store': {
@@ -3248,10 +3874,26 @@ function compileExecute(cur: Cursor): Run {
           throw new BadLine(`Unknown store kind '${kind}'`);
         }
         const where = cur.next('score, entity, block, storage or bossbar');
-        if (where !== 'score') throw new NotHere(`/execute store ${kind} ${where}`);
-        const who = readHolders(cur);
-        const objective = cur.next('an objective');
-        steps.push({ store: { kind, holders: who, objective } });
+        if (where === 'score') {
+          const who = readHolders(cur);
+          const objective = cur.next('an objective');
+          steps.push({ store: { kind, where: 'score', holders: who, objective } });
+        } else if (where === 'storage') {
+          const id = cur.id('a storage id');
+          const pathText = cur.next('a path');
+          const path = readPathArg(pathText);
+          const type = cur.next('a type');
+          if (!['byte', 'short', 'int', 'long', 'float', 'double'].includes(type)) {
+            throw new BadLine(`Unknown type '${type}'`);
+          }
+          const scale = cur.float('a scale');
+          steps.push({ store: { kind, where: 'storage', id, path, type, scale } });
+        } else if (where === 'bossbar') {
+          const id = cur.id('a boss bar id');
+          const field = cur.next('value or max');
+          if (field !== 'value' && field !== 'max') throw new BadLine(`Unknown field '${field}'`);
+          steps.push({ store: { kind, where: 'bossbar', id, field } });
+        } else throw new NotHere(`/execute store ${kind} ${where}`);
         break;
       }
       default:
@@ -3259,9 +3901,11 @@ function compileExecute(cur: Cursor): Run {
     }
   }
   if (steps.length === 0 && terminal === undefined) throw new BadLine('Expected a subcommand');
+  const last = steps[steps.length - 1];
+  const endsOnTest = terminal === undefined && last !== undefined && 'test' in last;
   return (rc, src) => {
     let branches: Branch[] = [{ src, stores: [] }];
-    for (const step of steps) {
+    for (const step of endsOnTest ? steps.slice(0, -1) : steps) {
       if ('store' in step) {
         branches = branches.map((branch) => ({
           src: branch.src,
@@ -3269,16 +3913,34 @@ function compileExecute(cur: Cursor): Run {
         }));
         continue;
       }
+      if ('test' in step) {
+        branches = branches.filter((branch) => {
+          const value = testValue(step, rc, branch.src);
+          return value !== undefined && value > 0;
+        });
+        continue;
+      }
       branches = branches.flatMap((branch) =>
         step.fork(rc, branch.src).map((next) => ({ src: next, stores: branch.stores })),
       );
     }
     if (terminal === undefined) {
-      const count = branches.length;
-      for (const branch of branches) applyStores(rc, branch, count, count > 0);
-      if (count === 0) throw new Failed('Test failed');
-      rc.feedback(count === 1 ? 'Test passed' : `Test passed, count: ${count}`, src.origin);
-      return ok(count);
+      // A condition at the end: each branch stores its count, or 0 when it fails (B727: as the
+      // game does); a branch the preview cannot answer stores nothing.
+      let passed = 0;
+      let total = 0;
+      for (const branch of branches) {
+        const value = endsOnTest ? testValue(last as TestStep, rc, branch.src) : 1;
+        if (value === undefined) continue;
+        applyStores(rc, branch, value, value > 0);
+        if (value > 0) {
+          passed += 1;
+          total += value;
+        }
+      }
+      if (passed === 0) throw new Failed('Test failed');
+      rc.feedback(total === 1 ? 'Test passed' : `Test passed, count: ${total}`, src.origin);
+      return ok(total);
     }
     let success = false;
     let result = 0;
@@ -3319,14 +3981,41 @@ function compileExecute(cur: Cursor): Run {
   };
 }
 
+/** A condition's value for one branch: its count when it holds (`unless`: 1), else 0. */
+function testValue(step: TestStep, rc: RunContext, src: Source): number | undefined {
+  const value = step.test(rc, src);
+  if (value === undefined) return undefined;
+  return step.want ? value : value > 0 ? 0 : 1;
+}
+
 function applyStores(rc: RunContext, branch: Branch, result: number, success: boolean): void {
   for (const { spec, src } of branch.stores) {
+    const value = spec.kind === 'result' ? int32(result) : success ? 1 : 0;
+    if (spec.where === 'storage') {
+      const stored = storedNumber(
+        spec.kind === 'result' ? result * spec.scale : value * spec.scale,
+        spec.type,
+      );
+      if (!setAtPath(storageOf(rc, spec.id), spec.path, stored)) {
+        rc.feedback(`Could not store into storage ${spec.id}`, src.origin);
+      }
+      continue;
+    }
+    if (spec.where === 'bossbar') {
+      const bar = rc.state.games.bossbars.get(spec.id);
+      if (bar === undefined) {
+        rc.feedback(`No bossbar exists with the ID '${spec.id}'`, src.origin);
+        continue;
+      }
+      if (spec.field === 'value') bar.value = Math.max(0, value);
+      else bar.max = Math.max(1, value);
+      continue;
+    }
     const objective = rc.state.objectives.get(spec.objective);
     if (objective === undefined) {
       rc.feedback(`Unknown scoreboard objective '${spec.objective}'`, src.origin);
       continue;
     }
-    const value = spec.kind === 'result' ? int32(result) : success ? 1 : 0;
     for (const key of holders(rc, spec.holders, src, objective)) objective.scores.set(key, value);
   }
 }

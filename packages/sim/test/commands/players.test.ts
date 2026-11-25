@@ -163,7 +163,12 @@ describe('spawnpoint', () => {
       'Set spawn point to 10, 2, 12 [0, 0] in minecraft:overworld for Player.',
     ]);
     expect(lines()).toContain(answer.answer[0]);
-    expect(only().some((line) => line.includes('never dies'))).toBe(true);
+    // B727: the player respawns there a second after dying.
+    source.player.teleport({ x: 30.5, y: 2, z: 30.5 });
+    run(source, '/kill @s');
+    for (let i = 0; i < 21; i += 1) source.tick();
+    expect(source.player.position).toMatchObject({ x: 10.5, z: 12.5 });
+    expect(only().some((line) => line.includes('the death screen'))).toBe(true);
     expect(source.functions.state.spawnPoints.get('Player')).toEqual({
       pos: { x: 10, y: 2, z: 12 },
       yaw: 0,

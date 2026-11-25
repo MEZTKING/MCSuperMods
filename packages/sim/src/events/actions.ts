@@ -98,7 +98,13 @@ export interface EventContext {
 export interface ItemStack {
   readonly id: string;
   readonly count: number;
+  /** Its item components (`give` and `item` with components, B727); none for a plain item. */
+  readonly components?: JsonObject;
 }
+
+/** Whether two stacks have the same components (and so stack together). */
+const sameComponents = (a: JsonObject | undefined, b: JsonObject | undefined): boolean =>
+  JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
 
 /**
  * The simple hotbar inventory `give_item` fills (B396): nine slots, stacks up to each item's
@@ -127,24 +133,37 @@ export class SimInventory {
     return this.items.reduce((sum, stack) => sum + (stack?.id === id ? stack.count : 0), 0);
   }
 
-  /** Adds items, filling stacks of the same item first, then empty slots; returns what is left. */
-  give(id: string, count: number): number {
+  /**
+   * Adds items, filling stacks of the same item (and the same components) first, then empty
+   * slots; returns what is left.
+   */
+  give(id: string, count: number, components?: JsonObject): number {
     const max = Math.max(1, this.maxStackOf(id));
+    const extra =
+      components === undefined || Object.keys(components).length === 0 ? {} : { components };
     let left = count;
     for (let i = 0; i < this.items.length && left > 0; i++) {
       const stack = this.items[i];
-      if (stack?.id !== id || stack.count >= max) continue;
+      if (stack?.id !== id || stack.count >= max || !sameComponents(stack.components, components)) {
+        continue;
+      }
       const add = Math.min(left, max - stack.count);
-      this.items[i] = Object.freeze({ id, count: stack.count + add });
+      this.items[i] = Object.freeze({ id, count: stack.count + add, ...extra });
       left -= add;
     }
     for (let i = 0; i < this.items.length && left > 0; i++) {
       if (this.items[i] !== null) continue;
       const add = Math.min(left, max);
-      this.items[i] = Object.freeze({ id, count: add });
+      this.items[i] = Object.freeze({ id, count: add, ...extra });
       left -= add;
     }
     return left;
+  }
+
+  /** Puts a stack (or nothing) in one slot (`item replace`, B727). */
+  set(slot: number, stack: ItemStack | null): void {
+    if (slot < 0 || slot >= this.items.length) return;
+    this.items[slot] = stack === null ? null : Object.freeze({ ...stack });
   }
 
   /** Empties every slot ("Clear the area"). */

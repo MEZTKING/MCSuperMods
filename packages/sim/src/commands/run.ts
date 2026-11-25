@@ -18,6 +18,7 @@ import type { EventOwner } from '../events/definitions.js';
 import type { SimLog, SimOrigin, Vec3 } from '../types.js';
 import { type CommandsTarget, readCommands, type SimCommand, usageOf } from './catalogue.js';
 import type { VanillaChatAnswer } from './functions.js';
+import { GAMES_COMMAND_NAMES } from './games-commands.js';
 import {
   type CommandContext,
   type CommandParse,
@@ -149,7 +150,9 @@ export class CommandRunner {
     if (
       functions !== null &&
       !ours &&
-      (VANILLA_COMMANDS.includes(literal) || this.vanilla.includes(literal))
+      (VANILLA_COMMANDS.includes(literal) ||
+        GAMES_COMMAND_NAMES.includes(literal) ||
+        this.vanilla.includes(literal))
     ) {
       const done = functions.runLine(typed);
       return this.keep({ typed, result: done.result, answer: done.answer });

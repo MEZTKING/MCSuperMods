@@ -224,7 +224,11 @@ describe('timers', () => {
     timer = source.games.status().timers[0];
     expect(timer?.value).toBe(0);
     expect(timer?.running).toBe(false);
-    expect(only().some((line) => line.includes('bossbar'))).toBe(true);
+    // B727: the boss bar itself runs in the engine too.
+    const [bar] = source.functions.state.games.bossbars.values();
+    expect(bar?.value).toBe(0);
+    expect(bar?.max).toBe(3);
+    expect(only().some((line) => line.includes('bossbar'))).toBe(false);
   });
 });
 

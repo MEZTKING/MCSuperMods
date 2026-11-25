@@ -39,7 +39,7 @@ afterEach(() => {
 const LINES = [
   '# Starts the game',
   'scoreboard objectives add lv dummy',
-  'spreadplayers ~ ~ 0 64 false @a',
+  'locate biome minecraft:plains',
   'give @s',
   '',
   'execute as @a run say \\',
@@ -59,7 +59,7 @@ describe('the marks of each line', () => {
       [7, true],
     ]);
     expect(marks[0]?.words).toBe(RUNS_WORDS);
-    expect(marks[1]?.words).toBe(`${ONLY_WORDS}: Try it does not run /spreadplayers.`);
+    expect(marks[1]?.words).toBe(`${ONLY_WORDS}: Try it does not run /locate.`);
     expect(marks[2]?.words).toBe(
       `${ONLY_WORDS}: the game would not read this line (Expected an item).`,
     );
@@ -95,16 +95,12 @@ describe('the gutter and the summary', () => {
       ['6', 'true'],
       ['7', 'true'],
     ]);
-    expect(marks[1]?.getAttribute('title')).toBe(
-      `${ONLY_WORDS}: Try it does not run /spreadplayers.`,
-    );
+    expect(marks[1]?.getAttribute('title')).toBe(`${ONLY_WORDS}: Try it does not run /locate.`);
     expect(screen.getByTestId('function-run-summary').textContent).toBe(
       'Runs in Try it: 3 of 5 lines. The rest are said in What happened.',
     );
     const notRun = screen.getByTestId('function-not-run');
-    expect(notRun.textContent).toContain(
-      'Line 3: Only in the game: Try it does not run /spreadplayers.',
-    );
+    expect(notRun.textContent).toContain('Line 3: Only in the game: Try it does not run /locate.');
     expect(notRun.textContent).toContain('Line 4: Only in the game');
   });
 
@@ -112,7 +108,7 @@ describe('the gutter and the summary', () => {
     render(<FunctionEditor lines={['say hi']} onChange={vi.fn()} />);
     await waitFor(() => expect(screen.getAllByTestId('function-line-mark')).toHaveLength(1));
     vi.useFakeTimers();
-    fireEvent.change(area(), { target: { value: 'say hi\nweather clear' } });
+    fireEvent.change(area(), { target: { value: 'say hi\nlocate biome minecraft:plains' } });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(LINE_MARKS_DEBOUNCE_MS);
     });

@@ -9,7 +9,9 @@
  *   land in the area (`setup.ts`, `grounds/void.ts`, `grounds/structure.ts`);
  * - the mock first join on the void ground, once per ground and after "Clear the area";
  * - `place template` from the project's structure templates (an area's reset, Rebuild now);
- * - the game mode: adventure stops breaking (the preview's items carry no `can_break`);
+ * - the game mode, kept in the engine's state since B727 (`gamemode` sets it too): adventure
+ *   stops breaking (the preview's items carry no `can_break`), a spectator or a dead player
+ *   touches nothing (`mayTouch`);
  * - the mock cobblestone generator (`generator.ts`);
  * - walks in and out of areas said in "What happened" (`areas.ts`);
  * - the status the side panel draws: one blocks, timers, the sidebar, the engine's teams and
@@ -18,6 +20,11 @@
 
 import type { BlockCatalogue } from '../blocks/catalogue.js';
 import type { FunctionEngine } from '../commands/functions.js';
+import {
+  DEFAULT_BORDER_SIZE,
+  type GamesCommandState,
+  playerHearts,
+} from '../commands/games-commands.js';
 import { PREVIEW_PLAYER_NAME } from '../commands/parse.js';
 import { PLAYER, type SimInventory } from '../events/actions.js';
 import { type GroundKind, groundState } from '../grounds/ground.js';
@@ -61,6 +68,10 @@ export interface GamesStatus {
   readonly team: TeamLook | null;
   readonly sidebar: SidebarView | null;
   readonly areas: readonly (AreaView & { readonly inside: boolean })[];
+  /** The player's hearts (B727: `attribute` sets the most): health and most in half hearts. */
+  readonly hearts: { readonly health: number; readonly most: number; readonly dead: boolean };
+  /** The world border (B727) when a command moved it: centre and width now, world positions. */
+  readonly border: { readonly x: number; readonly z: number; readonly size: number } | null;
 }
 
 const ZERO: BlockPos = Object.freeze({ x: 0, y: 0, z: 0 });
@@ -73,7 +84,6 @@ export class GamesArea {
   private plan: GamesPlan | null = null;
   private prepared: GamesPlan | null = null;
   private joinPending = false;
-  private mode: GameMode | null = null;
   private readonly generator: MockGenerator;
   private readonly watch = new AreaWatch();
 
@@ -120,7 +130,7 @@ export class GamesArea {
   clear(): void {
     this.generator.clear();
     this.watch.clear();
-    this.mode = null;
+    this.host.functions.state.games.gameModes.delete(PREVIEW_PLAYER_NAME);
     this.joinPending = this.plan?.join != null;
   }
 
@@ -146,7 +156,7 @@ export class GamesArea {
       host.player.teleport(join.spawn);
       host.player.setFlying(false);
     }
-    this.mode = gameModeOf(join.gameMode);
+    this.setGameMode(gameModeOf(join.gameMode));
     host.log.info(
       'You joined the game for the first time: you stand at the world spawn and get what new players get.',
     );
@@ -155,23 +165,44 @@ export class GamesArea {
     } else {
       for (const item of join.items) host.inventory().give(item.item, item.count);
     }
-    if (this.mode === 'adventure') {
+    if (this.gameMode === 'adventure') {
       host.log.info(
         'You play in adventure mode: blocks do not break (the side panel can change it).',
       );
-    } else if (this.mode === 'spectator') {
-      host.log.onlyInMinecraft('spectator mode (Try it lets you walk and fly as usual)');
+    } else if (this.gameMode === 'spectator') {
+      host.log.onlyInMinecraft(
+        'flying through blocks as a spectator (Try it lets you walk and fly as usual, touching nothing)',
+      );
     }
   }
 
   /** Sets the game mode (the side panel's "Play as"); `null` is Try it's own. */
   setGameMode(mode: GameMode | null): void {
-    this.mode = mode;
+    const modes = this.host.functions.state.games.gameModes;
+    if (mode === null) modes.delete(PREVIEW_PLAYER_NAME);
+    else modes.set(PREVIEW_PLAYER_NAME, mode);
   }
 
-  /** The game mode now. */
+  /** The game mode now (`null`: no join or command set one; Try it's own). */
   get gameMode(): GameMode | null {
-    return this.mode;
+    return this.host.functions.state.games.gameModes.get(PREVIEW_PLAYER_NAME) ?? null;
+  }
+
+  /**
+   * Whether the player may touch the area (break, place, use, hit): not as a spectator, not
+   * while dead (B727). Said once each time it refuses.
+   */
+  mayTouch(): boolean {
+    const games = this.host.functions.state.games;
+    if (games.dead.has(PREVIEW_PLAYER_NAME)) {
+      this.host.log.info('You are dead; you respawn in a moment.');
+      return false;
+    }
+    if (this.gameMode !== 'spectator') return true;
+    this.host
+      .catalogue()
+      .sayOnce('games.spectator', 'touching the world as a spectator (a spectator only watches)');
+    return false;
   }
 
   /**
@@ -224,7 +255,7 @@ export class GamesArea {
    * `can_break` names the block breaks it, and the preview's items carry no components.
    */
   mayBreak(): boolean {
-    if (this.mode !== 'adventure') return true;
+    if (this.gameMode !== 'adventure') return true;
     this.host
       .catalogue()
       .sayOnce(
@@ -305,17 +336,28 @@ export class GamesArea {
     const inside = this.watch.now;
     return {
       ground: this.plan?.kind ?? null,
-      gameMode: this.mode,
+      gameMode: this.gameMode,
       oneBlocks: oneBlockStatuses(this.games, state, state.corner, (pos) => world.inBounds(pos)),
       timers: timerStatuses(this.games, state),
       teams,
       team,
       sidebar: sidebarOf(this.games, state, team?.colour ?? null),
       areas: this.areas().map((view) => ({ ...view, inside: inside.has(view.id) })),
+      hearts: playerHearts(state.games, PREVIEW_PLAYER_NAME),
+      border: borderOf(state.games, this.host.now()),
     };
   }
 }
 
 function gameModeOf(text: string): GameMode {
   return text === 'creative' || text === 'adventure' || text === 'spectator' ? text : 'survival';
+}
+
+/** The world border for the panel and the view, or `null` while it is the game's default. */
+function borderOf(games: GamesCommandState, now: number): GamesStatus['border'] {
+  const size = games.borderSize(now);
+  if (size >= DEFAULT_BORDER_SIZE && games.border.centre.x === 0 && games.border.centre.z === 0) {
+    return null;
+  }
+  return { x: games.border.centre.x, z: games.border.centre.z, size };
 }
