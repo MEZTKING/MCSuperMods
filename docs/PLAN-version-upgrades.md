@@ -255,3 +255,7 @@ At most five executors at once across all plans. This plan's waves V0 to V2 touc
 
 B810 answers are in `docs/reference/spikes/b810/README.md` and folded into ADR 0136 and the briefs above (2026-11-25). Outside this plan: the checker's snapshot gating makes `since="26.4"` fields unknown on `26.4-snapshot-7`.
 
+
+### B812's notes (for B811, B813 and the app briefs)
+
+The plugin API is 1.29.0 (1.28.0 stays reserved for B782). B811's local type must match `TargetChange` exactly, and write format fields as RFC 6901 pointers with the leading `/` (`#/default_block`, not the spike draft's `#default_block`); `MigrationDetail.from?` holds a moved value's old pointer. B813: make `@msm/targets`' `targetFacts` carry `changes`. App briefs: `toTargetFacts` in `app/src/renderer/src/plugins/external-plugins.ts` drops `changes` and `previous` for third-party targets, and the AI helper's target dump (`app/src/renderer/src/ai/tool-executor.ts`) should strip `changes` as it strips other large facts.
