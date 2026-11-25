@@ -18,7 +18,11 @@ export interface McfunctionData {
 
 /** Options of `createMcfunctionService`. */
 export interface McfunctionServiceOptions {
-  /** The target's Minecraft version; gates command syntax and mcdoc `#[since]`/`#[until]`. */
+  /**
+   * The target's Minecraft version (`Target.mcVersion`); gates command syntax and mcdoc
+   * `#[since]`/`#[until]`. A development version (`<release>-snapshot-<n>` and the like) gates as
+   * the release it belongs to (`releaseOfGameVersion`).
+   */
   mcVersion: string;
   /**
    * The parsed vanilla-mcdoc symbol export (`mcdoc-cli export symbols.json`) the target vendors.

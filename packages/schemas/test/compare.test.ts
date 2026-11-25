@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compareGameVersions, isVersionInRange } from '../src/index';
+import { compareGameVersions, isVersionInRange, releaseOfGameVersion } from '../src/index';
 
 describe('compareGameVersions', () => {
   it('orders numeric tuples', () => {
@@ -38,5 +38,22 @@ describe('isVersionInRange', () => {
     expect(isVersionInRange('0.1', undefined, '1.0')).toBe(true);
     expect(isVersionInRange('1.0', undefined, '1.0')).toBe(false);
     expect(isVersionInRange('9.0', '1.0')).toBe(true);
+  });
+});
+
+describe('releaseOfGameVersion', () => {
+  it('gives the release a development version is named after', () => {
+    expect(releaseOfGameVersion('99.4-snapshot-7')).toBe('99.4');
+    expect(releaseOfGameVersion('99.4-pre-1')).toBe('99.4');
+    expect(releaseOfGameVersion('99.4-rc-2')).toBe('99.4');
+    expect(releaseOfGameVersion('99.4.1-snapshot-1')).toBe('99.4.1');
+    expect(releaseOfGameVersion(' 99.4-pre-1 ')).toBe('99.4');
+  });
+
+  it('returns a release and an id it cannot place unchanged', () => {
+    expect(releaseOfGameVersion('99.4')).toBe('99.4');
+    expect(releaseOfGameVersion('99.4.2')).toBe('99.4.2');
+    expect(releaseOfGameVersion('99w14a')).toBe('99w14a');
+    expect(releaseOfGameVersion('99.4-experimental')).toBe('99.4-experimental');
   });
 });

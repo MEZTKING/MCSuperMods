@@ -47,3 +47,19 @@ export function isVersionInRange(version: string, since?: string, until?: string
   if (until !== undefined && compareGameVersions(version, until) >= 0) return false;
   return true;
 }
+
+/** A development version named after its release: `<release>-<kind>-<n>`. */
+const DEVELOPMENT_VERSION = /^([0-9]+\.[0-9]+(?:\.[0-9]+)?)-[a-z]+-[0-9]+$/;
+
+/**
+ * The release a game version belongs to: for a development version named after its release
+ * (`<release>-snapshot-<n>`, `<release>-pre-<n>`, `<release>-rc-<n>`) that release, otherwise the
+ * version itself. Spyglass gates command syntax and mcdoc `#[since]`/`#[until]` by release only
+ * and cannot order a development id (Spyglass derives a snapshot's release with the same rule
+ * from mcmeta's version list), so the mcfunction service passes it this. The target id follows
+ * the same rule (`mc-` and the version up to the first `-`).
+ */
+export function releaseOfGameVersion(version: string): string {
+  const trimmed = version.trim();
+  return DEVELOPMENT_VERSION.exec(trimmed)?.[1] ?? trimmed;
+}

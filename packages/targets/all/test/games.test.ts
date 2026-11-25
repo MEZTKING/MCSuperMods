@@ -177,21 +177,6 @@ const GAME_TYPE_FORMS: readonly CommandFormName[] = [
 ];
 
 /**
- * A warning the offline checker gives for a line the game runs: on 26.4 the inline item
- * modifier of `item modify` (`{type:"minecraft:set_components",...}`) draws "Unknown key"
- * warnings for its own keys, while B720 K7 ran the same line on that version's dedicated server
- * and the compass was pointed. A checker gap, as the spike's `summon minecraft:block_display`
- * one; errors are never excused.
- */
-function knownCheckerGap(targetId: string, line: string, message: string): boolean {
-  return (
-    targetId === 'mc-26.4' &&
-    line.startsWith('item modify entity ') &&
-    /^Unknown key “(type|components)”$/.test(message)
-  );
-}
-
-/**
  * Fills a data form: each JSON string whose whole text is `<name>` becomes `values[name]`.
  * Throws on a placeholder without a value.
  */
@@ -410,11 +395,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         ),
       ];
       for (const line of gameTypeLines) {
-        const problems = await service.check(line, { uri, projectIds });
-        expect(
-          problems.filter((problem) => !knownCheckerGap(target.id, line, problem.message)),
-          line,
-        ).toEqual([]);
+        // No excuse on 26.4 any more: its "Unknown key" warnings on the inline item modifier of
+        // `item modify` were the checker's snapshot gating, fixed by B831.
+        expect(await service.check(line, { uri, projectIds }), line).toEqual([]);
       }
     }, 120_000);
 

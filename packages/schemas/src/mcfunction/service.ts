@@ -12,6 +12,7 @@ import * as json from '@spyglassmc/json';
 import * as mcdoc from '@spyglassmc/mcdoc';
 import * as nbt from '@spyglassmc/nbt';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { releaseOfGameVersion } from '../version/compare';
 import { checkBlockStates } from './block-states';
 import { loadMcdocSymbols, readMcdocSymbolExport } from './mcdoc-symbols';
 import type {
@@ -164,7 +165,11 @@ export async function createMcfunctionService(
   const config = core.VanillaConfig;
   const cacheRoot = 'file:///msm/.spyglass-cache/' as const;
   const externals = offlineExternals;
-  const release = mcVersion as ReleaseVersion;
+  // Spyglass knows releases only: a development version is checked as the release it belongs to,
+  // as vanilla-mcdoc gates its fields (`since="<release>"`, never a snapshot). Given the raw
+  // development id, Spyglass's version compare fails and every gated field and syntax is wrong
+  // (B810 V4, B831).
+  const release = releaseOfGameVersion(mcVersion) as ReleaseVersion;
 
   je.mcf.initialize(
     { cacheRoot, config, externals, isDebugging: false, logger, meta, projectRoots: [] },
@@ -210,7 +215,7 @@ export async function createMcfunctionService(
     roots: [],
     symbols,
     // What `je.initialize` would return; parsers and checkers gate syntax on `loadedVersion`.
-    ctx: { loadedVersion: mcVersion, errorSource: mcVersion },
+    ctx: { loadedVersion: release, errorSource: release },
   };
 
   const parser = meta.getParserForLanguageId<core.AstNode>(LANGUAGE_ID);

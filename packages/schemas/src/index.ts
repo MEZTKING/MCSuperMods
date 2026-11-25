@@ -57,4 +57,4 @@ export {
   type ValidateOptions,
   validateJson,
 } from './validate/validate';
-export { compareGameVersions, isVersionInRange } from './version/compare';
+export { compareGameVersions, isVersionInRange, releaseOfGameVersion } from './version/compare';

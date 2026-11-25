@@ -98,15 +98,6 @@ const fillMacro = (line: string): string =>
       })
     : line;
 
-/**
- * The one warning the offline checker gives for a line the game runs: on the snapshot target the
- * inline item modifier of `item modify` draws "Unknown key" for its own `type` and `components`
- * (B723's `knownCheckerGap` in `packages/targets/all/test/games.test.ts`; B720 K7 ran the same
- * line on that version's server and the compass was pointed). Errors never pass.
- */
-const knownCheckerGap = (line: string, message: string): boolean =>
-  line.includes(' run item modify entity ') && /^Unknown key “(type|components)”$/.test(message);
-
 describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
   'the mechanics hearts, tracker and head start lowered for %s',
   (targetId, bundle) => {
@@ -144,7 +135,6 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       const found: string[] = [];
       let macros = 0;
       let lines = 0;
-      let gaps = 0;
       for (const file of all.filter((entry) => entry.language === 'mcfunction')) {
         const match = /^data\/([^/]+)\/[^/]+\/(.+)\.mcfunction$/.exec(file.path);
         const [, namespace, path] = match as unknown as [string, string, string];
@@ -157,12 +147,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           projectIds,
         });
         for (const problem of problems) {
-          const line = filled[problem.line] ?? '';
           if (problem.severity !== 'error' && problem.severity !== 'warning') continue;
-          if (problem.severity === 'warning' && knownCheckerGap(line, problem.message)) {
-            gaps += 1;
-            continue;
-          }
           found.push(`${file.path}:${problem.line + 1} ${problem.severity} ${problem.message}`);
         }
       }
@@ -170,9 +155,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       // The hearts' `set` and the trackers' `set` (two hand slots each) are macro lines.
       expect(macros).toBe(3 + 2 * 2);
       expect(lines).toBeGreaterThan(600);
-      // The gap shows on the snapshot target only (two keys on each of the four lines), and a
+      // No warning on either target: the snapshot target's "Unknown key" warnings on the inline
+      // item modifiers of `item modify` were the checker's snapshot gating, fixed by B831. A
       // line with a wrong form does not pass.
-      expect(gaps).toBe(bundle.target.channel === 'snapshot' ? 2 * 4 : 0);
       const wrong = await tools.mcfunction.check(
         'attribute @s minecraft:max_health base set\nexecute as @a run function',
         { uri: defaultFunctionUri('demo', 'wrong', folders.function), projectIds },
