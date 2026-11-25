@@ -12,12 +12,20 @@
  *   counting down, seconds gone counting up) and `#<path>.on` (1 while it runs), and has the
  *   functions `<ns>:msm_games/timer/<path>/start` and `/stop`;
  * - a project area has `<ns>:msm_games/area/<path>/clear` and, with `reset`, `/reset`;
- * - a project one block keeps its phase, from 0, as `#<path>.phase` on `<ns>.msm_one_block`.
+ * - a project one block keeps its phase, from 0, as `#<path>.phase` on `<ns>.msm_one_block`;
+ * - a project game (B724) has the functions `<ns>:msm_games/game/<path>/start` and `/end` (run
+ *   by the server; `end` makes the players tagged `<ns>.game.<dotted path>.winner` win) and
+ *   `/out` (run as a player: puts them out of the round); a player still in its round carries
+ *   the tag `<ns>.game.<dotted path>.in`; with the `hearts` mechanic (B725) a player's hearts
+ *   are their score on `<ns>.msm_hearts` and `/hearts/apply`, run as them, sets their most
+ *   health from it;
+ * - a project kit (B724) has `<ns>:msm_games/kit/<path>/give`, run as the player who gets it.
  *
  * The function bridge (ADR 0115 D5, as built): the games kinds' functions run hook function
  * tags, empty and merged (`merge: 'tag'`): `#<ns>:msm_games/area/<path>/entered` and `/left`
  * (as the player), `#<ns>:msm_games/timer/<path>/ended` and
- * `#<ns>:msm_games/one_block/<path>/broken` (from the server, before the break is counted).
+ * `#<ns>:msm_games/one_block/<path>/broken` (from the server, before the break is counted), and
+ * a game's `#<ns>:msm_games/game/<path>/started` and `/ended` (from the server, B724).
  * When a rule listens, the rule book's lowering writes the same tag with an optional entry, the
  * function `<ns>:msm_rules/signal/<kind>/<path>/<event>`, whose one line runs the project's
  * signal command `/msm_signal_<host ns> <word>` (`<host ns>:msm_signal`, permission 2, one
@@ -68,6 +76,26 @@ export const oneBlockObjective = (id: string): string => `${namespaceOf(id)}.msm
 /** A one block's phase holder, its phase counted from 0: `#<path>.phase`. */
 export const oneBlockPhaseHolder = (id: string): string => `#${dotted(pathOf(id))}.phase`;
 
+/** A function of a project game: `start`, `end`, `out` or `hearts/apply` (B724, B725). */
+export const gameFunction = (
+  gameId: string,
+  part: 'start' | 'end' | 'out' | 'hearts/apply',
+): string => `${namespaceOf(gameId)}:msm_games/game/${pathOf(gameId)}/${part}`;
+
+/** An entity tag of a project game: `<ns>.game.<dotted path>.<name>` (`in`, `winner`). */
+export const gameTag = (gameId: string, name: 'in' | 'winner'): string =>
+  `${namespaceOf(gameId)}.game.${dotted(pathOf(gameId))}.${name}`;
+
+/** The hearts objective of a game's namespace (the `hearts` mechanic): `<ns>.msm_hearts`. */
+export const heartsObjective = (gameId: string): string => `${namespaceOf(gameId)}.msm_hearts`;
+
+/** The function of a project kit that gives it to `@s`: `<ns>:msm_games/kit/<path>/give`. */
+export const kitGiveFunction = (kitId: string): string =>
+  `${namespaceOf(kitId)}:msm_games/kit/${pathOf(kitId)}/give`;
+
+/** The attribute "Set most hearts" changes without a game: two points of it are one heart. */
+export const MOST_HEALTH_ATTRIBUTE = 'minecraft:max_health';
+
 /** The path of the signal command in its namespace: the command is `<ns>:msm_signal`. */
 export const SIGNAL_COMMAND_PATH = 'msm_signal';
 /** The name of the signal command's one argument (a `word`). */
@@ -99,6 +127,8 @@ const HOOKS: Readonly<Record<SignalName, { folder: string; hook: string }>> = {
   leave: { folder: 'area', hook: 'left' },
   end: { folder: 'timer', hook: 'ended' },
   break: { folder: 'one_block', hook: 'broken' },
+  game_start: { folder: 'game', hook: 'started' },
+  game_end: { folder: 'game', hook: 'ended' },
 };
 
 /** The hook tag a games kind's function runs: `#<ns>:msm_games/<kind>/<path>/<hook>`. */
@@ -150,6 +180,20 @@ export const RULES_ENTRY_FORMS: Readonly<Record<string, readonly RulesFormName[]
   timer_running: ['score_get'],
   timer_left: ['score_get'],
   one_block_broken: ['if_score_run'],
+  // Rules 4 for games (B729).
+  set_most_hearts: ['score_set', 'run_function', 'attribute_base_set'],
+  add_most_hearts: [
+    'score_add',
+    'score_remove',
+    'if_score_run',
+    'run_function',
+    'attribute_base_set',
+  ],
+  give_kit: ['run_function'],
+  take_out_of_game: ['run_function'],
+  start_game: ['run_function'],
+  end_game: ['tag_add', 'run_function'],
+  only_one_left: ['if_entity'],
 });
 
 /** A piece of command text: literal words, or a TypeScript expression of a string or number. */

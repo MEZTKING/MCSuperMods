@@ -11420,3 +11420,27 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 **Next**
 - Blockloom: the `tint` bug above; a base-colour input and a deepslate ore would let MSM's colours map exactly.
 - The AI helper's `create_texture` could take a description; Try it's drawn texture ids could carry `blockPictureCacheKey()` if Try it ever caches across opens.
+
+## 2026-11-25 — executor — B729 Rules 4 for games
+
+**What**
+- `@msm/plugin-rules` catalogue: 3 triggers, 6 steps, 1 condition (now 69 triggers, 68 steps, 26 conditions, 17 values, 7 places). Triggers **A player dies** (`player_died`: `entity.death` for players only, actors the player who died and the killer), **The game starts** and **The game ends** (`game_started`, `game_ended`: subject a project `msm:game`, through the function bridge from B724's hook tags `#<ns>:msm_games/game/<path>/started` and `/ended`, signals `game_start` and `game_end`). Steps **Set most hearts**, **Add to most hearts** (in a game with the `hearts` mechanic: its `<ns>.msm_hearts` score, never below 1, then the game's `hearts/apply`; without a game: `attribute ... minecraft:max_health base set`, two points a heart, at most 1024), **Give a kit** (`<ns>:msm_games/kit/<path>/give` as the player), **Take out of the game** (the game's `out` as the player), **Start the game** (`start`), **End the game** (optional **won by**: tags the game's `winner` first, then `end`). Condition **Only one is left** (one player carries the game's tag `in`). Slot types `kit` and `game`, subject sort `game`. Every command is filled from `TargetFacts.commands.forms` (`run_function`, `score_set`, `score_add`, `score_remove`, `if_score_run`, `attribute_base_set`, `tag_add`, `if_entity`) and listed in `RULES_ENTRY_FORMS`.
+- `compile/games.ts` repeats the games plugin's names (`gameFunction`, `gameTag`, `heartsObjective`, `kitGiveFunction`); `test/games-4.test.ts` lowers a real game and kit with the games plugin (loaded by path) and checks every function, hook tag, entity tag and the hearts objective Rules names exists, plus the scripts, the bridge files and the checks.
+- Checks: kit and game slots must name the project's own (`rules.unknown-subject`); the hearts steps refuse a game without the `hearts` mechanic (same code, its own message); an optional "won by" may be left out on a trigger without a player. The expander reads `msm:game` and `msm:kit` too.
+- Script API 1.8 (K21: the runtime's `entity.death` names no attacker for a knock into the void): `EntityDeathEvent.killer` (`LivingEntity.getKillCredit()`, "Since runtime 1.5.10"), in `script-api-v1.json`, the typings golden and engine-mod's `ScriptEvents`/`ScriptBridges`; GameTest `entityDeathNamesTheKillCredit` (the void death with no attacker credits the zombie that last hurt the player). The 1.7 description kept as `test/fixtures/previous/script-api-v1-1.11.0.json`; `script-api-1-8.test.ts`.
+- `rules.mcdoc` (the trigger, step and condition enums and their structs) and `symbols.json`; the schema test's lists; search words (most hearts, kit, out of the game, round, only one); goldens for the ten new samples.
+- Rule book Studio: `ProjectIdMenu` in `id-pickers.tsx` lists the project's kits or games by name (and says how to make one when there is none), used by the kit and game chips (`SlotChip.tsx`) and a game trigger's subject (`RuleCard.tsx`); chip words in `slot-words.ts`; `msm:game` and `msm:kit` show by their `name` (`thing-sources.ts`). Test `rules-games-4-pickers.test.tsx` (picks, names, the empty case, `expectPlain` over a book with every new entry).
+- The AI's `kind_schema` for `msm:rules` is 30,371 characters on both targets, under its 31,000 allowance (not raised; noted in `schema-summary.ts`). `app/test/ai-rules.test.ts` lets the ten new ids wait for B738's prompt topic (`RULES_AWAITING_THE_PROMPT`).
+
+**Checks**
+- `pnpm lint`, `pnpm typecheck`, `node tools/check-deps/index.ts`, `node tools/build-msm-mcdoc/index.ts --check`; tests of rules, scripting, schemas, games and the sim's script walk; the app's Rule book, Rules section, rules pickers, AI rules and schema summary, games Studios and signal export tests. engine-mod `./gradlew build` on 26.3 and `-Pmc=26.4` (852 GameTests each) and `-PwithoutGeckolib`.
+
+**Decisions**
+- Hearts steps take an optional game: with one that keeps hearts they change its score (so the game's own most and its later kills agree); without one they set the attribute at once (adding reads `maxHealth`, which includes modifiers).
+- No new problem code: a missing kit, game or hearts reuses `rules.unknown-subject` with its own words (so the app's plain problem words need nothing new).
+- The parity test K21 names is left to B736, whose `SampleCommunityGamesParityTest` has the stand-in players; the runtime part is covered by the GameTest.
+
+**Next**
+- B738: name the ten entries and Script API 1.8 in the AI prompt and empty `RULES_AWAITING_THE_PROMPT`; the guide's Rules page.
+- B736: a parity test of "A player dies" with a knock into the void on the stand-in players.
+- B735: golden search queries "lifesteal steal a heart rule", "give a loadout when a player respawns", "last one standing ends the round".

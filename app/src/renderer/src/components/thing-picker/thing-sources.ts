@@ -188,6 +188,9 @@ const NAMED_KINDS: ReadonlySet<string> = new Set([
   'msm:objective',
   'msm:timer',
   'msm:area',
+  // A game and a kit (ADR 0132), as Rules 4's pickers name them (B729).
+  'msm:game',
+  'msm:kit',
 ]);
 
 type JsonObject = { [key: string]: Json };

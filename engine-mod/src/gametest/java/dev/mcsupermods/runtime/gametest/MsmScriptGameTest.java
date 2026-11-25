@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
@@ -399,6 +400,26 @@ public class MsmScriptGameTest {
         zombie.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000);
         helper.assertFalse(zombie.isAlive(), "zombie survived");
         assertLogged(helper, host, EVENTS + "entity.death minecraft:zombie attacker minecraft:player isPlayer=true");
+        helper.succeed();
+    }
+
+    /**
+     * Script API 1.8 (B729, the B720 spike's K21): {@code killer} is {@code getKillCredit()}. A player last hurt by a
+     * zombie and then lost to the void has no attacker (the void's damage source names nobody), but the zombie is credited, as
+     * vanilla's kill score and death message credit it; a melee kill names its attacker as killer too.
+     */
+    @GameTest
+    public void entityDeathNamesTheKillCredit(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerPlayer player = survivalPlayer(helper);
+        Mob zombie = named(helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, AT), "msm-kill-credit");
+        // What a hit records (a mock player is invulnerable just after it joins, and the test world may be peaceful).
+        player.setLastHurtByMob(zombie);
+        helper.assertTrue(player.getKillCredit() == zombie, "kill credit after the hit: " + player.getKillCredit());
+        ServerLivingEntityEvents.AFTER_DEATH.invoker().afterDeath(player, helper.getLevel().damageSources().fellOutOfWorld());
+        assertLogged(helper, host, EVENTS + "entity.death player test-mock-player attacker none killer msm-kill-credit");
+        ServerLivingEntityEvents.AFTER_DEATH.invoker().afterDeath(player, helper.getLevel().damageSources().mobAttack(zombie));
+        assertLogged(helper, host, EVENTS + "entity.death player test-mock-player attacker msm-kill-credit killer msm-kill-credit");
         helper.succeed();
     }
 

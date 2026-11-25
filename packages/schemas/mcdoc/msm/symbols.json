@@ -24113,6 +24113,56 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::AddMostHeartsStep": {
+      "fields": [
+        {
+          "desc": "The hearts to add, -512 to 512 (below 0 takes them away), or a reading (rounded).",
+          "key": "hearts",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 512,
+                  "min": -512
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "A project game with the `hearts` part (an `msm:game` id); absent changes the most health.",
+          "key": "game",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::AddToStatStep": {
       "fields": [
         {
@@ -24759,6 +24809,11 @@
           "desc": "A project timer is running.",
           "identifier": "TimerRunning",
           "value": "timer_running"
+        },
+        {
+          "desc": "Only one player is still in a project game's round (B729).",
+          "identifier": "OnlyOneLeft",
+          "value": "only_one_left"
         }
       ]
     },
@@ -25204,6 +25259,33 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::EndGameStep": {
+      "fields": [
+        {
+          "desc": "The project game (an `msm:game` id).",
+          "key": "game",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Who wins (tagged the game's winners first); absent, the players the game has already\nnamed win, or nobody.",
+          "key": "winners",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::EveryTrigger": {
       "fields": [
         {
@@ -25453,6 +25535,23 @@
         }
       ]
     },
+    "::msm::rules::GameTrigger": {
+      "fields": [
+        {
+          "desc": "The project game (an `msm:game` id).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::GiveEffectStep": {
       "fields": [
         {
@@ -25586,6 +25685,33 @@
           "type": {
             "kind": "reference",
             "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::GiveKitStep": {
+      "fields": [
+        {
+          "desc": "The project kit (an `msm:kit` id).",
+          "key": "kit",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
           }
         },
         {
@@ -26883,6 +27009,23 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::OnlyOneLeftCondition": {
+      "fields": [
+        {
+          "desc": "The project game (an `msm:game` id).",
+          "key": "game",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::OpenDialogStep": {
       "fields": [
         {
@@ -27404,6 +27547,36 @@
           "desc": "Stops a project timer.",
           "identifier": "StopTimer",
           "value": "stop_timer"
+        },
+        {
+          "desc": "Sets a player's most hearts (B729).",
+          "identifier": "SetMostHearts",
+          "value": "set_most_hearts"
+        },
+        {
+          "desc": "Adds to (or, below 0, takes from) a player's most hearts.",
+          "identifier": "AddMostHearts",
+          "value": "add_most_hearts"
+        },
+        {
+          "desc": "Gives a project kit.",
+          "identifier": "GiveKit",
+          "value": "give_kit"
+        },
+        {
+          "desc": "Puts a player out of a project game's round.",
+          "identifier": "TakeOutOfGame",
+          "value": "take_out_of_game"
+        },
+        {
+          "desc": "Starts a round of a project game.",
+          "identifier": "StartGame",
+          "value": "start_game"
+        },
+        {
+          "desc": "Ends the round of a project game.",
+          "identifier": "EndGame",
+          "value": "end_game"
         }
       ]
     },
@@ -28279,6 +28452,56 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::SetMostHeartsStep": {
+      "fields": [
+        {
+          "desc": "The hearts, 1 to 512, or a reading (rounded, at least 1).",
+          "key": "hearts",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 512,
+                  "min": 1
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "A project game with the `hearts` part (an `msm:game` id); absent sets the most health.",
+          "key": "game",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::SetOnFireStep": {
       "fields": [
         {
@@ -28684,6 +28907,23 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::StartGameStep": {
+      "fields": [
+        {
+          "desc": "The project game (an `msm:game` id).",
+          "key": "game",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::StatAtLeastCondition": {
       "fields": [
         {
@@ -29045,6 +29285,36 @@
           "value": "stop_timer"
         },
         {
+          "desc": "Sets a player's most hearts (B729).",
+          "identifier": "SetMostHearts",
+          "value": "set_most_hearts"
+        },
+        {
+          "desc": "Adds to (or, below 0, takes from) a player's most hearts.",
+          "identifier": "AddMostHearts",
+          "value": "add_most_hearts"
+        },
+        {
+          "desc": "Gives a project kit.",
+          "identifier": "GiveKit",
+          "value": "give_kit"
+        },
+        {
+          "desc": "Puts a player out of a project game's round.",
+          "identifier": "TakeOutOfGame",
+          "value": "take_out_of_game"
+        },
+        {
+          "desc": "Starts a round of a project game.",
+          "identifier": "StartGame",
+          "value": "start_game"
+        },
+        {
+          "desc": "Ends the round of a project game.",
+          "identifier": "EndGame",
+          "value": "end_game"
+        },
+        {
           "desc": "If the conditions hold, then some steps, otherwise others.",
           "identifier": "If",
           "value": "if"
@@ -29136,6 +29406,33 @@
           "type": {
             "kind": "reference",
             "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::TakeOutOfGameStep": {
+      "fields": [
+        {
+          "desc": "The project game (an `msm:game` id).",
+          "key": "game",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
           }
         },
         {
@@ -29440,6 +29737,11 @@
           "value": "player_respawned"
         },
         {
+          "desc": "A player dies; the killer is the kill credit, the hitter of a knock into the void too\n(B729; Script API 1.8).",
+          "identifier": "PlayerDied",
+          "value": "player_died"
+        },
+        {
           "desc": "A player sends a chat message.",
           "identifier": "PlayerChatted",
           "value": "player_chatted"
@@ -29558,6 +29860,16 @@
           "desc": "A player breaks a project one block, in any phase or in one.",
           "identifier": "OneBlockBroken",
           "value": "one_block_broken"
+        },
+        {
+          "desc": "A round of a project game starts (ADR 0132; fired by the game's hook `started` through\nthe function bridge, ADR 0115 D5; B729).",
+          "identifier": "GameStarted",
+          "value": "game_started"
+        },
+        {
+          "desc": "A round of a project game ends, won or not (the game's hook `ended`).",
+          "identifier": "GameEnded",
+          "value": "game_ended"
         },
         {
           "desc": "The world starts.",
@@ -32246,6 +32558,10 @@
         "kind": "reference",
         "path": "::msm::rules::OnTeamCondition"
       },
+      "only_one_left": {
+        "kind": "reference",
+        "path": "::msm::rules::OnlyOneLeftCondition"
+      },
       "player_food": {
         "kind": "reference",
         "path": "::msm::rules::PlayerCompareCondition"
@@ -32316,6 +32632,10 @@
       }
     },
     "msm:rule_step": {
+      "add_most_hearts": {
+        "kind": "reference",
+        "path": "::msm::rules::AddMostHeartsStep"
+      },
       "add_to_counter": {
         "kind": "reference",
         "path": "::msm::rules::CounterStep"
@@ -32340,6 +32660,10 @@
         "kind": "reference",
         "path": "::msm::rules::DropLootStep"
       },
+      "end_game": {
+        "kind": "reference",
+        "path": "::msm::rules::EndGameStep"
+      },
       "explode": {
         "kind": "reference",
         "path": "::msm::rules::ExplodeStep"
@@ -32359,6 +32683,10 @@
       "give_item": {
         "kind": "reference",
         "path": "::msm::rules::GiveItemStep"
+      },
+      "give_kit": {
+        "kind": "reference",
+        "path": "::msm::rules::GiveKitStep"
       },
       "give_loot": {
         "kind": "reference",
@@ -32456,6 +32784,10 @@
         "kind": "reference",
         "path": "::msm::rules::SetHudStep"
       },
+      "set_most_hearts": {
+        "kind": "reference",
+        "path": "::msm::rules::SetMostHeartsStep"
+      },
       "set_on_fire": {
         "kind": "reference",
         "path": "::msm::rules::SetOnFireStep"
@@ -32508,6 +32840,10 @@
         "kind": "reference",
         "path": "::msm::rules::SpawnParticlesStep"
       },
+      "start_game": {
+        "kind": "reference",
+        "path": "::msm::rules::StartGameStep"
+      },
       "start_timer": {
         "kind": "reference",
         "path": "::msm::rules::TimerStep"
@@ -32523,6 +32859,10 @@
       "take_item": {
         "kind": "reference",
         "path": "::msm::rules::TakeItemStep"
+      },
+      "take_out_of_game": {
+        "kind": "reference",
+        "path": "::msm::rules::TakeOutOfGameStep"
       },
       "teleport": {
         "kind": "reference",
@@ -32625,6 +32965,14 @@
       "effect_started": {
         "kind": "reference",
         "path": "::msm::rules::EffectTrigger"
+      },
+      "game_ended": {
+        "kind": "reference",
+        "path": "::msm::rules::GameTrigger"
+      },
+      "game_started": {
+        "kind": "reference",
+        "path": "::msm::rules::GameTrigger"
       },
       "item_held": {
         "kind": "reference",
@@ -32802,5 +33150,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:5a4d4e47d4389e871ec7fb706059dc5b63cf9fcb7eea7ccfb973cb837e927adf"
+  "ref": "msm-mcdoc:sha256:bd351c32eb44a664d4344be95f8adc019f7ab58681f20a5903bd3013f6f58bf8"
 }

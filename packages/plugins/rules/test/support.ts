@@ -205,6 +205,34 @@ export const PROJECT: readonly Element[] = Object.freeze([
     name: 'Points',
     render: 'integer',
   }),
+  // A game with hearts, one without, and a kit (ADR 0132; Rules 4 for games, B729).
+  element('msm:game', 'demo:lifesteal', {
+    mechanics: [
+      { at_zero: 'spectate', most: 20, per_kill: 1, start: 10, type: 'hearts', withdraw: false },
+    ],
+    name: 'Lifesteal',
+    players: { max: 16, min: 2 },
+    round: { after: 'stay', countdown: 0, kind: 'endless', start: 'world_start', win: [] },
+    type: 'lifesteal',
+  }),
+  element('msm:game', 'demo:duel', {
+    mechanics: [],
+    name: 'Duel',
+    players: { max: 2, min: 2 },
+    round: {
+      after: 'stay',
+      countdown: 10,
+      kind: 'rounds',
+      start: 'command',
+      win: [{ by: 'players', type: 'last_standing' }],
+    },
+    type: 'custom',
+  }),
+  element('msm:kit', 'demo:starter', {
+    clear_first: true,
+    items: [{ count: 1, item: 'minecraft:stone_sword' }],
+    name: 'Starter',
+  }),
 ]);
 
 /** Ids the registry index treats as project ids. */
@@ -304,6 +332,8 @@ const SCHEMA_OF_KIND: Record<string, string> = {
   'msm:one_block': MSM_SCHEMA_REFS.oneBlock,
   'msm:team': MSM_SCHEMA_REFS.team,
   'msm:objective': MSM_SCHEMA_REFS.objective,
+  'msm:game': MSM_SCHEMA_REFS.game,
+  'msm:kit': MSM_SCHEMA_REFS.kit,
 };
 
 /** Errors and unknown-id warnings of `value` against the schema of `kind`. */

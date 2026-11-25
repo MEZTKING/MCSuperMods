@@ -8,9 +8,11 @@
  *   those Rules can read (`READABLE_ARGUMENT_TYPES`, limit N20).
  * - `game_rule_value`: true or false for an on-or-off rule, a number (or a reading) for a
  *   whole-number one; a rule whose kind is not known (Minecraft's) offers both.
+ * - `kit` and `game` (Rules 4 for games, B729): one of the project's own kits or games
+ *   (`msm:kit`, `msm:game`), by name, narrowed by typing; also a game trigger's subject.
  *
- * The pure parts ({@link idChoices}, {@link commandArgumentsOf}, {@link gameRuleKindOf}) run in
- * Node tests.
+ * The pure parts ({@link idChoices}, {@link projectIdChoices}, {@link commandArgumentsOf},
+ * {@link gameRuleKindOf}) run in Node tests.
  *
  * @packageDocumentation
  */
@@ -183,6 +185,103 @@ export function IdMenu(props: {
           </button>
         </Popover.Close>
       )}
+    </div>
+  );
+}
+
+/**
+ * The slot types that name one of the project's own elements of a kind (Rules 4 for games,
+ * B729), with their words.
+ */
+export const PROJECT_ID_SLOTS: Readonly<
+  Record<'kit' | 'game', { kind: string; one: string; none: string }>
+> = Object.freeze({
+  kit: {
+    kind: 'msm:kit',
+    one: 'one of your kits',
+    none: 'You have no kits yet. Add one under Games with Add element.',
+  },
+  game: {
+    kind: 'msm:game',
+    one: 'one of your games',
+    none: 'You have no games yet. Add one under Games with Add element.',
+  },
+});
+
+/** A slot type of {@link PROJECT_ID_SLOTS}. */
+export type ProjectIdSlotType = keyof typeof PROJECT_ID_SLOTS;
+
+/** Whether a slot type names one of the project's own kits or games. */
+export const isProjectIdSlot = (type: string): type is ProjectIdSlotType =>
+  Object.hasOwn(PROJECT_ID_SLOTS, type);
+
+/**
+ * The project's elements of `kind` matching `filter` (in the name or the id, ignoring case), by
+ * name then id.
+ */
+export function projectIdChoices(project: Project, kind: string, filter: string): IdChoice[] {
+  const needle = filter.trim().toLowerCase();
+  const out: IdChoice[] = [];
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      if (element.kind !== kind) continue;
+      const name = thingName(project, element.id);
+      if (
+        needle !== '' &&
+        !element.id.toLowerCase().includes(needle) &&
+        !name.toLowerCase().includes(needle)
+      ) {
+        continue;
+      }
+      out.push({ id: element.id, name, own: true });
+    }
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name, 'en') || a.id.localeCompare(b.id));
+}
+
+/** The menu of a kit or game slot: the project's own, by name, narrowed by typing. */
+export function ProjectIdMenu(props: { pointer: string; type: ProjectIdSlotType; label: string }) {
+  const env = useRulesEnv();
+  const { book, change } = useBookEdit();
+  const [filter, setFilter] = useState('');
+  const filterId = useId();
+  const spec = PROJECT_ID_SLOTS[props.type];
+  const raw = getAt(book, props.pointer);
+  const value = typeof raw === 'string' ? raw : undefined;
+  const all = projectIdChoices(env.project, spec.kind, '');
+  const choices = filter.trim() === '' ? all : projectIdChoices(env.project, spec.kind, filter);
+  return (
+    <div className="flex flex-col gap-1.5" data-testid={`rules-project-menu-${props.type}`}>
+      {all.length > 8 && (
+        <span className="flex items-center gap-1.5">
+          <label htmlFor={filterId} className="text-muted">
+            Find
+          </label>
+          <input
+            id={filterId}
+            type="text"
+            className={inputClass}
+            data-testid="rules-project-filter"
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+          />
+        </span>
+      )}
+      {all.length === 0 && (
+        <p className="text-xs text-muted" data-testid="rules-project-none">
+          {spec.none}
+        </p>
+      )}
+      <MenuList
+        label={props.label}
+        choices={choices.map((choice) => ({
+          key: choice.id,
+          label: env.mode.advanced ? `${choice.name} (${choice.id})` : choice.name,
+          chosen: choice.id === value,
+          testId: `rules-project-${choice.id}`,
+        }))}
+        onPick={(key) => change(setAt(book, props.pointer, key))}
+      />
     </div>
   );
 }

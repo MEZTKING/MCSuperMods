@@ -22,7 +22,8 @@ import org.mozilla.javascript.ScriptableObject;
  * particle options of ADR 0080 D5 and the 1.4 weather, time, explosion, drop and removal members of ADR 0082 D5, the 1.5 HUD, key and vehicle members
  * and events of ADR 0089 D8, and the 1.6 riding, dropped item and contents members and the place, explosion and command
  * events of ADR 0096 D4 and ADR 0095 D5, and the 1.7 game rule, statistic and dialog members and the crafting, pickup, eating,
- * sleeping and advancement events of ADR 0111 D3 to D6), built from Java: the {@code msm} tree each script receives and the object types
+ * sleeping and advancement events of ADR 0111 D3 to D6, and the 1.8 kill credit {@code EntityDeathEvent.killer} of
+ * B729), built from Java: the {@code msm} tree each script receives and the object types
  * of the event objects. One instance per {@link ScriptHost} load (it holds the shared, sealed standard-object scope);
  * {@link #describe()} returns the installed member tree, which the JUnit {@code ScriptApiContractTest} compares with
  * {@code packages/plugins/scripting/api/script-api-v1.json}.

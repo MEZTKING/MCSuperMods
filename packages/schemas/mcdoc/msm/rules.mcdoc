@@ -132,6 +132,9 @@ enum(string) Trigger {
 	PlayerLeft = "player_left",
 	/// A player respawns.
 	PlayerRespawned = "player_respawned",
+	/// A player dies; the killer is the kill credit, the hitter of a knock into the void too
+	/// (B729; Script API 1.8).
+	PlayerDied = "player_died",
 	/// A player sends a chat message.
 	PlayerChatted = "player_chatted",
 	/// A player changes dimension.
@@ -181,6 +184,11 @@ enum(string) Trigger {
 	TimerEnded = "timer_ended",
 	/// A player breaks a project one block, in any phase or in one.
 	OneBlockBroken = "one_block_broken",
+	/// A round of a project game starts (ADR 0132; fired by the game's hook `started` through
+	/// the function bridge, ADR 0115 D5; B729).
+	GameStarted = "game_started",
+	/// A round of a project game ends, won or not (the game's hook `ended`).
+	GameEnded = "game_ended",
 	/// The world starts.
 	WorldStarted = "world_started",
 	/// Every few seconds.
@@ -372,6 +380,12 @@ struct OneBlockOptions {
 	/// Only breaks in this phase, 1 to 64 in the order of the one block's `phases` (the plugin
 	/// checks it has that many); absent means every phase.
 	phase?: int @ 1..64,
+}
+
+/// A project game whose round starts or ends (B729).
+dispatch msm:rule_trigger[game_started, game_ended] to struct GameTrigger {
+	/// The project game (an `msm:game` id).
+	subject: string @ 1..,
 }
 
 /// A crafted, picked up or eaten item: any item, or one of one kind (ADR 0111 D3).
@@ -794,6 +808,8 @@ enum(string) ConditionKind {
 	ScoreAtLeast = "score_at_least",
 	/// A project timer is running.
 	TimerRunning = "timer_running",
+	/// Only one player is still in a project game's round (B729).
+	OnlyOneLeft = "only_one_left",
 }
 
 /// One condition, selected by `condition`.
@@ -961,6 +977,12 @@ dispatch msm:rule_condition[timer_running] to struct TimerRunningCondition {
 	timer: string @ 1..,
 }
 
+/// Only one player is still in a project game's round.
+dispatch msm:rule_condition[only_one_left] to struct OnlyOneLeftCondition {
+	/// The project game (an `msm:game` id).
+	game: string @ 1..,
+}
+
 // ---------------------------------------------------------------------------------------------
 // Steps (ADR 0082 D5)
 // ---------------------------------------------------------------------------------------------
@@ -1084,6 +1106,18 @@ enum(string) PlainStepKind {
 	StartTimer = "start_timer",
 	/// Stops a project timer.
 	StopTimer = "stop_timer",
+	/// Sets a player's most hearts (B729).
+	SetMostHearts = "set_most_hearts",
+	/// Adds to (or, below 0, takes from) a player's most hearts.
+	AddMostHearts = "add_most_hearts",
+	/// Gives a project kit.
+	GiveKit = "give_kit",
+	/// Puts a player out of a project game's round.
+	TakeOutOfGame = "take_out_of_game",
+	/// Starts a round of a project game.
+	StartGame = "start_game",
+	/// Ends the round of a project game.
+	EndGame = "end_game",
 }
 
 /// A step that holds other steps (levels 1 and 2 only).
@@ -1216,6 +1250,18 @@ enum(string) StepKind {
 	StartTimer = "start_timer",
 	/// Stops a project timer.
 	StopTimer = "stop_timer",
+	/// Sets a player's most hearts (B729).
+	SetMostHearts = "set_most_hearts",
+	/// Adds to (or, below 0, takes from) a player's most hearts.
+	AddMostHearts = "add_most_hearts",
+	/// Gives a project kit.
+	GiveKit = "give_kit",
+	/// Puts a player out of a project game's round.
+	TakeOutOfGame = "take_out_of_game",
+	/// Starts a round of a project game.
+	StartGame = "start_game",
+	/// Ends the round of a project game.
+	EndGame = "end_game",
 	/// If the conditions hold, then some steps, otherwise others.
 	If = "if",
 	/// Repeats steps.
@@ -1763,6 +1809,58 @@ dispatch msm:rule_step[set_score, add_to_score] to struct ScoreStep {
 dispatch msm:rule_step[start_timer, stop_timer] to struct TimerStep {
 	/// The project timer (an `msm:timer` id).
 	timer: string @ 1..,
+}
+
+/// Sets a player's most hearts (B729): in a project game with the `hearts` part its hearts
+/// score, which the game turns into most health; without a game the most health at once.
+dispatch msm:rule_step[set_most_hearts] to struct SetMostHeartsStep {
+	/// The hearts, 1 to 512, or a reading (rounded, at least 1).
+	hearts: (int @ 1..512 | Value),
+	/// A project game with the `hearts` part (an `msm:game` id); absent sets the most health.
+	game?: string @ 1..,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Adds to a player's most hearts, never below one heart.
+dispatch msm:rule_step[add_most_hearts] to struct AddMostHeartsStep {
+	/// The hearts to add, -512 to 512 (below 0 takes them away), or a reading (rounded).
+	hearts: (int @ -512..512 | Value),
+	/// A project game with the `hearts` part (an `msm:game` id); absent changes the most health.
+	game?: string @ 1..,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Gives a project kit (its `give` function, run as each player).
+dispatch msm:rule_step[give_kit] to struct GiveKitStep {
+	/// The project kit (an `msm:kit` id).
+	kit: string @ 1..,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Puts players out of a project game's round (its `out` function, run as each); they watch.
+dispatch msm:rule_step[take_out_of_game] to struct TakeOutOfGameStep {
+	/// The project game (an `msm:game` id).
+	game: string @ 1..,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Starts a round of a project game (its `start` function: the countdown, or the round).
+dispatch msm:rule_step[start_game] to struct StartGameStep {
+	/// The project game (an `msm:game` id).
+	game: string @ 1..,
+}
+
+/// Ends the round of a project game now (its `end` function).
+dispatch msm:rule_step[end_game] to struct EndGameStep {
+	/// The project game (an `msm:game` id).
+	game: string @ 1..,
+	/// Who wins (tagged the game's winners first); absent, the players the game has already
+	/// named win, or nobody.
+	winners?: Who,
 }
 
 /// Resets a project area: its entities removed and its structures placed again.

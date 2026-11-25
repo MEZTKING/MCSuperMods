@@ -44,8 +44,14 @@ import {
   areaFunction,
   areaTag,
   fillForm,
+  gameFunction,
   gameName,
+  gameTag,
+  heartsObjective,
+  kitGiveFunction,
+  MOST_HEALTH_ATTRIBUTE,
   type Piece,
+  piecesText,
   type RulesFormName,
   SIGNAL_ARGUMENT,
   timerFunction,
@@ -565,6 +571,11 @@ const NEEDS_PLAYER = new Set([
   'add_to_stat',
   'give_loot',
   'set_spawn_point',
+  // Rules 4 for games (B729): hearts, kits and a round are a player's.
+  'set_most_hearts',
+  'add_most_hearts',
+  'give_kit',
+  'take_out_of_game',
 ]);
 
 /** The most ticks of fire `Fire` holds (a short). */
@@ -602,6 +613,8 @@ export interface GamesContext {
   readonly timer: (id: string) => TimerFacts | undefined;
   /** Whether a project area has `reset` (else only its `clear` function exists). */
   readonly areaHasReset: (id: string) => boolean;
+  /** Whether a project game has the `hearts` mechanic (B725), whose score keeps hearts. */
+  readonly gameHasHearts: (id: string) => boolean;
 }
 
 /** The bridge of a signal trigger (ADR 0115 D5): the command's id and the word it is sent. */
@@ -614,6 +627,7 @@ const NO_GAMES: GamesContext = {
   form: () => undefined,
   timer: () => undefined,
   areaHasReset: () => false,
+  gameHasHearts: () => false,
 };
 
 /** One rule to write into a handler. */
@@ -736,8 +750,30 @@ export class ScriptBuilder {
           'const player: Player | undefined = e.player;',
         );
         break;
-      case 'entity.hurt':
       case 'entity.death':
+        if (trigger.id === 'player_died') {
+          // A player's death (B729, K21): the killer is the kill credit (Script API 1.8), so the
+          // hitter of a knock into the void counts as vanilla's kill score does.
+          head.push(
+            'const player: Player | undefined = e.entity.asPlayer();',
+            'if (player === undefined) return;',
+            'const world = e.world;',
+            'const here = player.pos;',
+            'const other: Entity | undefined = e.killer;',
+          );
+          break;
+        }
+        head.push('if (e.entity.isPlayer) return;');
+        if (subject !== undefined) head.push(`if (e.entity.type !== ${literal(subject)}) return;`);
+        head.push(
+          'const world = e.world;',
+          'const here = e.entity.pos;',
+          'const mob: Entity | undefined = e.entity;',
+          'const other: Entity | undefined = e.attacker;',
+          'const player: Player | undefined = e.attacker !== undefined ? e.attacker.asPlayer() : undefined;',
+        );
+        break;
+      case 'entity.hurt':
         head.push('if (e.entity.isPlayer) return;');
         if (subject !== undefined) head.push(`if (e.entity.type !== ${literal(subject)}) return;`);
         head.push(
@@ -1034,6 +1070,17 @@ class RuleWriter {
     const form = this.builder.games.form(name);
     const pieces = form === undefined ? undefined : fillForm(form, values);
     return pieces === undefined ? '""' : piecesCode(pieces);
+  }
+
+  /** A command of a form as one piece: its words when all are literal, else an expression. */
+  private commandPiece(
+    name: RulesFormName,
+    values: Readonly<Record<string, Piece | undefined>>,
+  ): Piece {
+    const form = this.builder.games.form(name);
+    const pieces = form === undefined ? undefined : fillForm(form, values);
+    const text = pieces === undefined ? undefined : piecesText(pieces);
+    return text === undefined ? code(this.command(name, values)) : words(text);
   }
 
   /** `scoreboard players get` of a timer's holder, run as the server: its time or `.on`. */
@@ -1351,6 +1398,9 @@ class RuleWriter {
         return `${this.use('ran')}(${this.one(condition.who)}, ${this.scoreGet(str(condition, 'objective'))}) >= ${this.number(condition.number, env)}`;
       case 'timer_running':
         return `${this.timerGet(str(condition, 'timer') ?? '', true)} > 0`;
+      case 'only_one_left':
+        // The players still in the game's round carry its tag `in` (B724).
+        return `world.runCommand(${this.command('if_entity', { entities: words(`@a[tag=${gameTag(str(condition, 'game') ?? '', 'in')}]`) })}) === 1`;
       case 'stat_at_least':
         return this.hasPlayer(
           `stat(${literal(str(condition, 'stat') ?? '')}) >= ${this.number(condition.number, env)}`,
@@ -1772,6 +1822,36 @@ class RuleWriter {
         return [
           `world.runFunction(${literal(timerFunction(str(step, 'timer') ?? '', id === 'start_timer' ? 'start' : 'stop'))});`,
         ];
+      case 'set_most_hearts':
+      case 'add_most_hearts':
+        return this.mostHearts(id, step, env, who('player'));
+      case 'give_kit':
+        return [
+          `${who('player')}.forEach((target) => target.runCommand(${this.command('run_function', { function: words(kitGiveFunction(str(step, 'kit') ?? '')) })}));`,
+        ];
+      case 'take_out_of_game':
+        // The round's `out` (B724), run as the player: out of the round, watching.
+        return [
+          `${who('player')}.forEach((target) => target.runCommand(${this.command('run_function', { function: words(gameFunction(str(step, 'game') ?? '', 'out')) })}));`,
+        ];
+      case 'start_game':
+        return [
+          `world.runCommand(${this.command('run_function', { function: words(gameFunction(str(step, 'game') ?? '', 'start')) })});`,
+        ];
+      case 'end_game': {
+        // B724's `end`: the players tagged `winner` win; the winners named here are tagged first.
+        const game = str(step, 'game') ?? '';
+        const out: string[] = [];
+        if (step.winners !== undefined) {
+          out.push(
+            `${this.who(step.winners, 'player', true)}.forEach((target) => target.runCommand(${this.command('tag_add', { entities: words('@s'), tag: words(gameTag(game, 'winner')) })}));`,
+          );
+        }
+        out.push(
+          `world.runCommand(${this.command('run_function', { function: words(gameFunction(game, 'end')) })});`,
+        );
+        return out;
+      }
       case 'reset_area': {
         const area = str(step, 'area') ?? '';
         const part = this.builder.games.areaHasReset(area) ? 'reset' : 'clear';
@@ -1827,6 +1907,83 @@ class RuleWriter {
       default:
         return [`// Left out: step "${commentText(id)}" is not known.`];
     }
+  }
+
+  /**
+   * "Set most hearts" and "Add to most hearts" (B729). In a game with the `hearts` mechanic the
+   * player's hearts score changes (never below 1) and the game's `hearts/apply` sets the most
+   * health from it, kept under the game's most (B725, K2); without a game the most health is
+   * set at once by `attribute`, two points to a heart (adding reads the most health now).
+   */
+  private mostHearts(id: string, step: JsonObject, env: Env, targets: string): string[] {
+    const game = str(step, 'game');
+    const raw = step.hearts;
+    const literalHearts = typeof raw === 'number' ? Math.round(raw) : undefined;
+    const lines: string[] = [];
+    let name = '';
+    if (literalHearts === undefined) {
+      name = this.builder.freshName('hearts');
+      lines.push(`const ${name} = Math.round(${this.number(raw, env)});`);
+    }
+    if (game === undefined || !this.builder.games.gameHasHearts(game)) {
+      let value: Piece;
+      if (id === 'set_most_hearts') {
+        value =
+          literalHearts === undefined
+            ? code(`String(Math.min(1024, Math.max(1, ${name}) * 2))`)
+            : words(String(Math.min(1024, Math.max(1, literalHearts) * 2)));
+      } else {
+        const add = literalHearts === undefined ? name : numberLiteral(literalHearts);
+        value = code(
+          `String(Math.min(1024, Math.max(1, Math.round(target.maxHealth / 2) + ${add}) * 2))`,
+        );
+      }
+      lines.push(
+        `${targets}.forEach((target) => target.runCommand(${this.command('attribute_base_set', {
+          entity: words('@s'),
+          attribute: words(MOST_HEALTH_ATTRIBUTE),
+          value,
+        })}));`,
+      );
+      return lines;
+    }
+    const objective = words(heartsObjective(game));
+    const self = words('@s');
+    const apply = this.command('run_function', {
+      function: words(gameFunction(game, 'hearts/apply')),
+    });
+    let change: string;
+    if (id === 'set_most_hearts') {
+      const score =
+        literalHearts === undefined
+          ? code(`String(Math.max(1, ${name}))`)
+          : words(String(Math.max(1, literalHearts)));
+      change = this.command('score_set', { holders: self, objective, score });
+    } else if (literalHearts !== undefined) {
+      change = this.command(literalHearts >= 0 ? 'score_add' : 'score_remove', {
+        holders: self,
+        objective,
+        score: words(String(Math.abs(literalHearts))),
+      });
+    } else {
+      change = `${name} >= 0 ? ${this.command('score_add', { holders: self, objective, score: code(`String(${name})`) })} : ${this.command('score_remove', { holders: self, objective, score: code(`String(-${name})`) })}`;
+    }
+    const floor = this.command('if_score_run', {
+      holder: self,
+      objective,
+      range: words('..0'),
+      command: this.commandPiece('score_set', { holders: self, objective, score: words('1') }),
+    });
+    lines.push(
+      `${targets}.forEach((target) => {`,
+      ...indent([
+        `target.runCommand(${change});`,
+        ...(id === 'add_most_hearts' ? [`target.runCommand(${floor});`] : []),
+        `target.runCommand(${apply});`,
+      ]),
+      '});',
+    );
+    return lines;
   }
 
   /** "Set the world border": its width, over some seconds, and its centre when given. */

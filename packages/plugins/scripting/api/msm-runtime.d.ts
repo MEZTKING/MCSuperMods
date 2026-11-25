@@ -573,6 +573,12 @@ interface EntityDeathEvent extends GameEvent {
   readonly attacker?: Entity;
   /** The entity that died. */
   readonly entity: Entity;
+  /**
+   * Who the game credits with the kill, as its kill scores and death message do: the attacker of a direct hit, and also the last entity that hurt it a short while before a death with no attacker (a knock into the void, a fall, lava); `undefined` when nobody is credited. For example `msm.events.on("entity.death", (e) => { const k = e.killer?.asPlayer(); if (e.entity.isPlayer && k) k.sendMessage("You got " + e.entity.name); });`.
+   *
+   * Since runtime 1.5.10.
+   */
+  readonly killer?: Entity;
 }
 
 /** A living entity is about to take damage. */

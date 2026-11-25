@@ -9,6 +9,8 @@ import {
   type Actor,
   AREA_KIND,
   conditionById,
+  GAME_KIND,
+  KIT_KIND,
   MAX_DEPTH,
   MAX_PICK_CHOICES,
   MAX_STEPS,
@@ -65,6 +67,8 @@ export interface CheckContext {
   readonly elementKind?: (id: string) => string | undefined;
   /** Whether the target has a command form (ADR 0115 D1); absent skips the check. */
   readonly hasForm?: (name: RulesFormName) => boolean;
+  /** Whether a project game has the `hearts` mechanic (B729); absent skips the check. */
+  readonly gameHasHearts?: (id: string) => boolean;
 }
 
 /** The project kinds the games slots name, with their words (ADR 0115). */
@@ -74,7 +78,13 @@ const GAME_SLOTS: Readonly<Record<string, { kind: string; plural: string; projec
     area: { kind: AREA_KIND, plural: 'areas', projectOnly: true },
     team: { kind: TEAM_KIND, plural: 'teams', projectOnly: false },
     objective: { kind: OBJECTIVE_KIND, plural: 'scores', projectOnly: false },
+    // Rules 4 for games (ADR 0132; B729).
+    game: { kind: GAME_KIND, plural: 'games', projectOnly: true },
+    kit: { kind: KIT_KIND, plural: 'kits', projectOnly: true },
   };
+
+/** The steps whose `game` changes that game's hearts (the `hearts` mechanic, B725). */
+const HEARTS_STEPS: ReadonlySet<string> = new Set(['set_most_hearts', 'add_most_hearts']);
 
 /** The steps, conditions and values that read or change one someone, not several. */
 const ONE_WHO = new Set(['on_team', 'score_at_least', 'score']);
@@ -224,6 +234,7 @@ class RuleChecker {
     this.forms(id, entry.label, path);
     if (id === 'ride') this.single(step.mount, pointer(path, 'mount'));
     this.slots(entry.slots, step, path, scope, entry.defaultWho);
+    if (HEARTS_STEPS.has(id)) this.heartsGame(step.game, pointer(path, 'game'));
     if (id === 'if') {
       this.conditions(step, path, scope);
       this.steps(step, 'do', path, level + 1, scope);
@@ -319,6 +330,18 @@ class RuleChecker {
     );
   }
 
+  /** A game named by "Set most hearts" or "Add to most hearts" must keep hearts (B729). */
+  private heartsGame(value: Json | undefined, path: string): void {
+    if (typeof value !== 'string' || this.context.gameHasHearts === undefined) return;
+    if (this.context.elementKind?.(value) !== GAME_KIND || this.context.gameHasHearts(value))
+      return;
+    this.reporter.error(
+      CODES.unknownSubject,
+      path,
+      `"${value}" keeps no hearts: give it the Hearts part, or leave the game out to change the player's most health at once.`,
+    );
+  }
+
   /** A step or condition made for some triggers only (B458). */
   private onlyFor(triggers: readonly string[], label: string, path: string): void {
     if (triggers.includes(this.trigger.id)) return;
@@ -377,6 +400,8 @@ class RuleChecker {
           if (value !== undefined || slot.name !== 'center') this.place(value ?? 'here', at, scope);
           break;
         case 'who':
+          // An optional someone other than `who` ("won by" of "End the game") may be left out.
+          if (value === undefined && slot.name !== 'who' && slot.optional === true) break;
           this.who(value ?? defaultWho ?? 'player', at, scope);
           break;
         case 'game_rule_value':
@@ -386,6 +411,8 @@ class RuleChecker {
         case 'area':
         case 'team':
         case 'objective':
+        case 'game':
+        case 'kit':
           this.gameSlot(slot.type, value, at);
           break;
         default:

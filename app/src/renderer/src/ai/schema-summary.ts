@@ -70,6 +70,9 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  * `block`, `mob` and `weight` (about 480 characters). `msm:world_setup` (about 1,100),
  * `msm:team`, `msm:objective`, `msm:timer` and `msm:area` are complete within the defaults, and
  * `msm:rules` with Rules 3 and the step `set_on_fire` is about 28,500 characters.
+ *
+ * Rules 4 for games (B729: 69 triggers, 68 steps, 26 conditions, 17 values) takes `msm:rules`
+ * to 30,371 characters on both targets, still within its 31,000.
  */
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>

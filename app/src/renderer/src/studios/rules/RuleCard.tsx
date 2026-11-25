@@ -27,7 +27,7 @@ import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { ConditionList } from './ConditionList';
 import { type BookEdit, BookEditContext, useBookEdit, useRulesEnv } from './env';
-import { IdMenu } from './id-pickers';
+import { IdMenu, ProjectIdMenu } from './id-pickers';
 import { ChipPopover, chipClass, MenuList, ProblemLines } from './parts';
 import {
   asObject,
@@ -408,6 +408,9 @@ function SubjectChip(props: {
   if (GAME_SUBJECTS.has(trigger.subject)) {
     return <GameSubjectChip pointer={props.pointer} trigger={trigger} />;
   }
+  if (trigger.subject === 'game') {
+    return <ProjectSubjectChip pointer={props.pointer} />;
+  }
   return <ThingSubjectChip {...props} />;
 }
 
@@ -437,6 +440,28 @@ function GameSubjectChip(props: { pointer: string; trigger: TriggerEntry }) {
       sort={sort}
       slot={slot}
     />
+  );
+}
+
+/** The game a game trigger is about (Rules 4 for games, B729): one of the project's games. */
+function ProjectSubjectChip(props: { pointer: string }) {
+  const env = useRulesEnv();
+  const { book } = useBookEdit();
+  const raw = getAt(book, props.pointer);
+  const subject = typeof raw === 'string' ? raw : undefined;
+  const invalid = (env.problems.get(props.pointer)?.length ?? 0) > 0;
+  const words = subject !== undefined ? env.name(subject) : 'pick one of your games';
+  return (
+    <ChipPopover
+      label={words}
+      ariaLabel={`Thing: ${words}`}
+      className={chipClass({ invalid, empty: subject === undefined })}
+      testId="rules-chip-subject"
+      pointer={props.pointer}
+      invalid={invalid}
+    >
+      <ProjectIdMenu pointer={props.pointer} type="game" label="Game" />
+    </ChipPopover>
   );
 }
 

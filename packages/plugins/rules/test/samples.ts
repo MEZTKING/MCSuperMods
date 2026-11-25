@@ -95,6 +95,8 @@ const TRIGGER_WHEN: Record<string, JsonObject> = {
   area_left: { subject: 'demo:arena' },
   timer_ended: { subject: 'demo:round' },
   one_block_broken: { options: { phase: 2 }, subject: 'demo:magic_block' },
+  game_started: { subject: 'demo:lifesteal' },
+  game_ended: { subject: 'demo:lifesteal' },
 };
 
 const when = (trigger: string): JsonObject => ({ ...TRIGGER_WHEN[trigger], trigger });
@@ -107,7 +109,9 @@ const triggerSample = (trigger: string): Json[] => {
     trigger === 'world_started' ||
     trigger === 'world_every' ||
     trigger === 'timer_ended' ||
-    trigger === 'one_block_broken'
+    trigger === 'one_block_broken' ||
+    trigger === 'game_started' ||
+    trigger === 'game_ended'
   ) {
     return [{ seconds: 30, step: 'set_weather', weather: 'clear' }];
   }
@@ -349,6 +353,31 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
   },
   start_timer: { trigger: 'area_entered', steps: [{ step: 'start_timer', timer: 'demo:round' }] },
   stop_timer: { trigger: 'area_left', steps: [{ step: 'stop_timer', timer: 'demo:round' }] },
+  // Rules 4 for games (B729).
+  set_most_hearts: {
+    trigger: 'player_joined',
+    steps: [
+      { game: 'demo:lifesteal', hearts: 12, step: 'set_most_hearts' },
+      { hearts: { value: 'player_level' }, step: 'set_most_hearts' },
+    ],
+  },
+  add_most_hearts: {
+    trigger: 'player_died',
+    steps: [
+      { game: 'demo:lifesteal', hearts: 1, step: 'add_most_hearts', who: 'other' },
+      { hearts: -1, step: 'add_most_hearts' },
+    ],
+  },
+  give_kit: { trigger: 'player_respawned', steps: [{ kit: 'demo:starter', step: 'give_kit' }] },
+  take_out_of_game: {
+    trigger: 'area_left',
+    steps: [{ game: 'demo:lifesteal', step: 'take_out_of_game' }],
+  },
+  start_game: { trigger: 'timer_ended', steps: [{ game: 'demo:lifesteal', step: 'start_game' }] },
+  end_game: {
+    trigger: 'player_died',
+    steps: [{ game: 'demo:lifesteal', step: 'end_game', winners: 'other' }],
+  },
   pick_random: {
     trigger: 'any_block_broken',
     steps: [
@@ -410,6 +439,11 @@ const CONDITION_SAMPLES: Record<
     condition: { number: 10, objective: 'demo:points' },
   },
   timer_running: { trigger: 'block_used', condition: { not: true, timer: 'demo:round' } },
+  only_one_left: {
+    trigger: 'player_died',
+    condition: { game: 'demo:lifesteal' },
+    steps: [{ game: 'demo:lifesteal', step: 'end_game' }],
+  },
   counter: {
     trigger: 'block_used',
     condition: {

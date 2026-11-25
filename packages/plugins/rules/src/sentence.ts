@@ -232,6 +232,8 @@ function valueWords(
     case 'timer':
     case 'area':
     case 'one_block':
+    case 'kit':
+    case 'game':
       return typeof raw === 'string' ? nameOf(context, raw) : '';
     case 'team':
     case 'objective':

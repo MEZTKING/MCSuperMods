@@ -100,9 +100,32 @@ import {
 } from '../src/renderer/src/session/project-session';
 import { newSession } from './session-fixture';
 
+/**
+ * Rules 4 for games (B729), in the catalogue before the prompt's games topic names them: B738
+ * writes that topic (`packages/ai/src/prompt/`, whose pin it owns) and empties this.
+ */
+const RULES_AWAITING_THE_PROMPT: ReadonlySet<string> = new Set([
+  'player_died',
+  'game_started',
+  'game_ended',
+  'set_most_hearts',
+  'add_most_hearts',
+  'give_kit',
+  'take_out_of_game',
+  'start_game',
+  'end_game',
+  'only_one_left',
+]);
+
 describe('the system prompt names the Rules catalogue exactly (ADR 0082 D10)', () => {
   it('lists every catalogue id in the catalogue order', () => {
-    expect(RULES_PROMPT_IDS).toEqual(CATALOGUE_IDS);
+    const named = Object.fromEntries(
+      Object.entries(CATALOGUE_IDS).map(([section, ids]) => [
+        section,
+        ids.filter((id) => !RULES_AWAITING_THE_PROMPT.has(id)),
+      ]),
+    );
+    expect(RULES_PROMPT_IDS).toEqual(named);
   });
 
   it('lists the plain steps and the cancellable triggers of the catalogue', () => {

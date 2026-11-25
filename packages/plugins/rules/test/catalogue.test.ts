@@ -48,14 +48,14 @@ describe('the catalogue', () => {
     expect(sorted(CATALOGUE_IDS.who)).toEqual(sorted([...enumValues('WhoName'), 'players_nearby']));
   });
 
-  it('counts 66 triggers, 62 steps, 25 conditions, 17 values and 7 places', () => {
+  it('counts 69 triggers, 68 steps, 26 conditions, 17 values and 7 places', () => {
     expect([
       TRIGGERS.length,
       STEPS.length,
       CONDITIONS.length,
       VALUES.length,
       PLACES.length,
-    ]).toEqual([66, 62, 25, 17, 7]);
+    ]).toEqual([69, 68, 26, 17, 7]);
   });
 
   const all: [string, readonly CatalogueEntry[]][] = [
@@ -203,6 +203,8 @@ describe('the catalogue', () => {
       area_left: ['leave', 'command', ['msm:area']],
       timer_ended: ['end', 'command', ['msm:timer']],
       one_block_broken: ['break', 'command', ['msm:one_block']],
+      game_started: ['game_start', 'command', ['msm:game']],
+      game_ended: ['game_end', 'command', ['msm:game']],
     });
   });
 

@@ -121,6 +121,10 @@ const TRIGGERS = [
   'area_left',
   'timer_ended',
   'one_block_broken',
+  // Rules 4 for games (B729).
+  'player_died',
+  'game_started',
+  'game_ended',
 ];
 
 /** Script triggers whose subject may be left out (ADR 0111 D3), as the `any_` triggers. */
@@ -146,6 +150,7 @@ const NO_SUBJECT = new Set([
   'explosion',
   'player_slept',
   'player_woke',
+  'player_died',
 ]);
 
 /** One valid case of every step of ADR 0082 D5 (logic steps included). */
@@ -271,6 +276,13 @@ const STEPS: Record<string, Json> = {
   },
   start_timer: { step: 'start_timer', timer: 'mymod:round' },
   stop_timer: { step: 'stop_timer', timer: 'mymod:round' },
+  // Rules 4 for games (B729).
+  set_most_hearts: { game: 'mymod:lifesteal', hearts: 12, step: 'set_most_hearts' },
+  add_most_hearts: { hearts: -1, step: 'add_most_hearts', who: 'other' },
+  give_kit: { kit: 'mymod:starter', step: 'give_kit' },
+  take_out_of_game: { game: 'mymod:lifesteal', step: 'take_out_of_game', who: 'every_player' },
+  start_game: { game: 'mymod:lifesteal', step: 'start_game' },
+  end_game: { game: 'mymod:lifesteal', step: 'end_game', winners: 'other' },
   reset_area: { area: 'mymod:arena', step: 'reset_area' },
   set_world_spawn: { step: 'set_world_spawn', where: 'above_here' },
   set_spawn_point: { step: 'set_spawn_point', who: 'player' },
@@ -313,6 +325,7 @@ const CONDITIONS: Record<string, Json> = {
   on_team: { condition: 'on_team', team: 'blue', who: 'other' },
   score_at_least: { condition: 'score_at_least', number: 5, objective: 'mymod:points' },
   timer_running: { condition: 'timer_running', not: true, timer: 'mymod:round' },
+  only_one_left: { condition: 'only_one_left', game: 'mymod:lifesteal' },
   counter: {
     compare: 'more_than',
     condition: 'counter',

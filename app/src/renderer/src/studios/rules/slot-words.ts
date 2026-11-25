@@ -82,6 +82,9 @@ const SLOT_LABELS: Readonly<Record<string, string>> = {
   // Rules 3 for games (B553).
   objective: 'Score',
   one_block: 'Magic block',
+  // Rules 4 for games (B729).
+  hearts: 'Hearts',
+  winners: 'Won by',
 };
 
 const capitalise = (text: string): string =>
@@ -151,6 +154,10 @@ export function emptyWords(slot: SlotSpec): string {
       return 'pick one of your areas';
     case 'one_block':
       return 'pick one of your magic blocks';
+    case 'kit':
+      return 'pick one of your kits';
+    case 'game':
+      return 'pick one of your games';
     default:
       return `set ${slotLabel(slot).toLowerCase()}`;
   }
@@ -219,6 +226,8 @@ function bareSlotWords(
     case 'timer':
     case 'area':
     case 'one_block':
+    case 'kit':
+    case 'game':
       return typeof raw === 'string' ? (context.names(raw) ?? raw) : undefined;
     case 'team':
     case 'objective':

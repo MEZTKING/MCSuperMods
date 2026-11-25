@@ -6,7 +6,9 @@
  * (`test/fixtures/previous/script-api-v1-1.10.0.json`): exactly the members, types and events
  * below, with the parameter counts the runtime's `ScriptApi` installs, each documented with the
  * Since line; scripts that use them type-check. The release that ships them is decided at the
- * close of the plan (B544), so the Since line says so.
+ * close of the plan (B544), so the Since line says so. The 1.7 description as its Script API
+ * version had it is `test/fixtures/previous/script-api-v1-1.11.0.json`; later additions (1.8,
+ * B729) are pinned in `script-api-1-8.test.ts`.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -23,6 +25,13 @@ import { typeCheck } from './support';
 const PREVIOUS: ScriptApi = parseScriptApi(
   JSON.parse(
     readFileSync(new URL('./fixtures/previous/script-api-v1-1.10.0.json', import.meta.url), 'utf8'),
+  ),
+);
+
+/** The 1.7 description as its Script API version had it, before the 1.8 additions. */
+const API_1_7: ScriptApi = parseScriptApi(
+  JSON.parse(
+    readFileSync(new URL('./fixtures/previous/script-api-v1-1.11.0.json', import.meta.url), 'utf8'),
   ),
 );
 
@@ -115,10 +124,8 @@ describe('script API 1.7 is additive', () => {
 
 describe('script API 1.7 members (the list B533 installs)', () => {
   it('adds exactly these types, members and events', () => {
-    expect(Object.keys(SCRIPT_API.types).filter((name) => !PREVIOUS.types[name])).toEqual(
-      ADDED_TYPES,
-    );
-    const added = Object.entries(SCRIPT_API.types).flatMap(([name, type]) =>
+    expect(Object.keys(API_1_7.types).filter((name) => !PREVIOUS.types[name])).toEqual(ADDED_TYPES);
+    const added = Object.entries(API_1_7.types).flatMap(([name, type]) =>
       PREVIOUS.types[name]
         ? Object.keys(type.members)
             .filter((key) => PREVIOUS.types[name]?.members[key] === undefined)
@@ -126,7 +133,7 @@ describe('script API 1.7 members (the list B533 installs)', () => {
         : [],
     );
     expect([...added].sort()).toEqual([...ADDED_MEMBERS].sort());
-    expect(Object.keys(SCRIPT_API.events).filter((name) => !PREVIOUS.events[name])).toEqual(
+    expect(Object.keys(API_1_7.events).filter((name) => !PREVIOUS.events[name])).toEqual(
       Object.keys(ADDED_EVENTS),
     );
   });

@@ -27,6 +27,9 @@ export const TIMER_KIND = 'msm:timer';
 export const ONE_BLOCK_KIND = 'msm:one_block';
 export const TEAM_KIND = 'msm:team';
 export const OBJECTIVE_KIND = 'msm:objective';
+/** A whole game and a kit (ADR 0132 D1, D3): Rules 4 for games (B729). */
+export const GAME_KIND = 'msm:game';
+export const KIT_KIND = 'msm:kit';
 
 const SUBJECT_BLOCK: SlotSpec = { name: 'subject', type: 'block' };
 const SUBJECT_ITEM: SlotSpec = { name: 'subject', type: 'item' };
@@ -38,6 +41,7 @@ const SUBJECT_COMMAND: SlotSpec = { name: 'subject', type: 'command' };
 const SUBJECT_AREA: SlotSpec = { name: 'subject', type: 'area' };
 const SUBJECT_TIMER: SlotSpec = { name: 'subject', type: 'timer' };
 const SUBJECT_ONE_BLOCK: SlotSpec = { name: 'subject', type: 'one_block' };
+const SUBJECT_GAME: SlotSpec = { name: 'subject', type: 'game' };
 /** The one block's phase, 1 to 64 in the order of its `phases`; absent means every phase. */
 const PHASE: SlotSpec = {
   name: 'phase',
@@ -537,6 +541,18 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     slots: [],
     scriptEvent: 'player.respawn',
   }),
+  // A player's death (B729, the B720 spike's K21): `entity.death` for players, with the kill
+  // credit (Script API 1.8 `EntityDeathEvent.killer`): the hitter of a knock into the void too.
+  trigger({
+    id: 'player_died',
+    label: 'A player dies',
+    sentence: 'When a player dies',
+    group: 'players',
+    slots: [],
+    scriptEvent: 'entity.death',
+    actors: ['player', 'other'],
+    actorLabels: { player: 'the player who died', other: 'the killer' },
+  }),
   player({
     id: 'player_chatted',
     label: 'A player chats',
@@ -794,6 +810,33 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     scriptEvent: 'command',
     signal: 'break',
     // The one block's tick function sees the break, not who made it (B552).
+    actors: [],
+    hasPlace: false,
+  }),
+  // A game's round (ADR 0132 D1, B724's hooks `started` and `ended`; B729), through the bridge.
+  trigger({
+    id: 'game_started',
+    label: 'The game starts',
+    sentence: 'When a round of {subject} starts',
+    group: 'world',
+    slots: [SUBJECT_GAME],
+    subject: 'game',
+    subjectKinds: [GAME_KIND],
+    scriptEvent: 'command',
+    signal: 'game_start',
+    actors: [],
+    hasPlace: false,
+  }),
+  trigger({
+    id: 'game_ended',
+    label: 'The game ends',
+    sentence: 'When a round of {subject} ends',
+    group: 'world',
+    slots: [SUBJECT_GAME],
+    subject: 'game',
+    subjectKinds: [GAME_KIND],
+    scriptEvent: 'command',
+    signal: 'game_end',
     actors: [],
     hasPlace: false,
   }),

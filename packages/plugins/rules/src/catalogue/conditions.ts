@@ -256,6 +256,14 @@ export const CONDITIONS: readonly ConditionEntry[] = Object.freeze([
     notSentence: '{timer} is not running',
     slots: [{ name: 'timer', type: 'timer' }],
   }),
+  // A game's round (ADR 0132; B729): the players still in it, by B724's tag `in`.
+  condition({
+    id: 'only_one_left',
+    label: 'Only one is left',
+    sentence: 'only one player is left in {game}',
+    notSentence: 'more than one player, or nobody, is left in {game}',
+    slots: [{ name: 'game', type: 'game' }],
+  }),
   condition({
     id: 'counter',
     label: 'A counter',

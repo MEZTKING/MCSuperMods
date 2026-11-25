@@ -53,13 +53,26 @@ const SAMPLE_VALUES: Readonly<Record<string, string>> = {
   range: '1',
   command: 'say hi',
   ticks: '100',
+  function: 'demo:msm_games/game/lifesteal/start',
+  entity: '@s',
+  attribute: 'minecraft:max_health',
+  value: '24',
+  tag: 'demo.game.lifesteal.winner',
 };
 
 const PROJECT_IDS = {
-  objective: ['demo.points', 'demo.msm_timers', 'demo.msm_one_block', 'kills'],
+  objective: ['demo.points', 'demo.msm_timers', 'demo.msm_one_block', 'demo.msm_hearts', 'kills'],
   team: ['demo.red', 'blue'],
   loot_table: ['demo:lucky'],
   structure: ['demo:island'],
+  // The functions of B724's round engine, B725's hearts and a kit the B729 steps run.
+  function: [
+    'demo:msm_games/game/lifesteal/start',
+    'demo:msm_games/game/lifesteal/end',
+    'demo:msm_games/game/lifesteal/out',
+    'demo:msm_games/game/lifesteal/hearts/apply',
+    'demo:msm_games/kit/starter/give',
+  ],
 };
 
 /** Every command text that is all literal words in the generated scripts of the samples. */
@@ -146,6 +159,13 @@ describe('the forms of the new entries', () => {
       'timer_left',
       'team_size',
       'one_block_broken',
+      'set_most_hearts',
+      'add_most_hearts',
+      'give_kit',
+      'take_out_of_game',
+      'start_game',
+      'end_game',
+      'only_one_left',
     ];
     expect(Object.keys(RULES_ENTRY_FORMS).sort()).toEqual([...commandEntries].sort());
     const ids = new Set([...STEPS, ...CONDITIONS, ...VALUES].map((entry) => entry.id));

@@ -58,7 +58,11 @@ export type SlotType =
   /** A project area (`msm:area`, ADR 0113 D7). */
   | 'area'
   /** A project one block (`msm:one_block`, ADR 0113 D3). */
-  | 'one_block';
+  | 'one_block'
+  /** A project kit (`msm:kit`, ADR 0132 D3). */
+  | 'kit'
+  /** A project game (`msm:game`, ADR 0132 D1). */
+  | 'game';
 
 /** One blank of a sentence: the field it edits and how. */
 export interface SlotSpec {
@@ -121,6 +125,8 @@ export type SubjectSort =
   | 'timer'
   /** A project one block (ADR 0115 D4; through the function bridge). */
   | 'one_block'
+  /** A project game (ADR 0132 D1; through the function bridge, B729). */
+  | 'game'
   /** No subject: player and world triggers. */
   | 'none';
 
@@ -250,14 +256,19 @@ export interface TriggerEntry extends CatalogueEntry {
   readonly beforeRemoval?: boolean;
   /**
    * A trigger fired by a games kind's function through the function bridge (ADR 0115 D5): what
-   * happened to the subject (`enter`, `leave`, `end` or `break`). The rule listens to the
-   * Script API `command` event of the project's signal command.
+   * happened to the subject (`enter`, `leave`, `end`, `break`, or a game's `game_start` and
+   * `game_end`). The rule listens to the Script API `command` event of the project's signal
+   * command.
    */
   readonly signal?: SignalName;
 }
 
-/** What a games kind's function signals through the function bridge (ADR 0115 D5). */
-export type SignalName = 'enter' | 'leave' | 'end' | 'break';
+/**
+ * What a games kind's function signals through the function bridge (ADR 0115 D5): an area
+ * entered or left, a timer's end, a one block's break, and a game's round started or ended
+ * (B724's hooks `started` and `ended`, B729).
+ */
+export type SignalName = 'enter' | 'leave' | 'end' | 'break' | 'game_start' | 'game_end';
 
 /** The groups of the Do picker. */
 export type StepGroup = 'players' | 'world' | 'sounds' | 'mobs' | 'logic' | 'counters';

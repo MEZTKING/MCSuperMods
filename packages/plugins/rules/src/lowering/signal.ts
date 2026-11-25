@@ -42,7 +42,14 @@ export const RULES_SIGNAL_FIELD = 'generated_signal';
 /** The schema of function tag files, shared with the games kinds' empty tags. */
 export const FUNCTION_TAG_SCHEMA = 'tag:function';
 
-const SIGNAL_NAMES: ReadonlySet<string> = new Set<SignalName>(['enter', 'leave', 'end', 'break']);
+const SIGNAL_NAMES: ReadonlySet<string> = new Set<SignalName>([
+  'enter',
+  'leave',
+  'end',
+  'break',
+  'game_start',
+  'game_end',
+]);
 
 const isObject = (value: Json | undefined): value is JsonObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);

@@ -2,7 +2,8 @@
  * The words of the Rules catalogue for the search (ADR 0124 D5; B655): one word group per idea
  * of a trigger, step, condition or value label, whose `idea` is a word of that label, so a query
  * in other words ("mines", "kills", "tp", "xp", "countdown ends") reaches the Rule book's "When"
- * and "Do" lines; the 25 entries of Rules 3 for games (B553) included. Plain data.
+ * and "Do" lines; the 25 entries of Rules 3 for games (B553) and the ten of Rules 4 (B729)
+ * included. Plain data.
  */
 
 import type { SearchWordGroup } from '@msm/plugin-api';
@@ -342,6 +343,26 @@ const STEP_WORDS: SearchWordGroup[] = [
     idea: 'reset',
     same: ['resets', 'restore', 'rebuild', 'clean up', 'start over'],
   },
+  // Rules 4 for games (B729).
+  {
+    idea: 'most hearts',
+    same: ['max hearts', 'maximum hearts', 'max health', 'maximum health', 'heart limit'],
+    near: ['extra hearts', 'lifesteal', 'steal a heart'],
+  },
+  {
+    idea: 'kit',
+    same: ['kits', 'loadout', 'loadouts', 'starter kit', 'gear set'],
+    near: ['class items'],
+  },
+  {
+    idea: 'out of the game',
+    same: ['eliminate', 'eliminated', 'knock out', 'knocked out', 'put out', 'disqualify'],
+  },
+  {
+    idea: 'round',
+    same: ['match', 'start the round', 'end the round', 'start the match', 'end the match'],
+    near: ['minigame', 'begin the game', 'game over'],
+  },
 ];
 
 /** Word groups of the conditions ("Only if ...") and values ("the ..."). */
@@ -431,6 +452,11 @@ const CONDITION_WORDS: SearchWordGroup[] = [
   {
     idea: 'team size',
     same: ['players on the team', 'how many on the team', 'team count'],
+  },
+  {
+    idea: 'only one',
+    same: ['last one standing', 'last player standing', 'one player left', 'sole survivor'],
+    near: ['winner left', 'everyone else is out'],
   },
   {
     idea: 'time left',

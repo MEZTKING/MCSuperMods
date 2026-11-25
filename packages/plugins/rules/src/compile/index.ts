@@ -44,6 +44,7 @@ import {
 import {
   AREA_KIND,
   COMMAND_KIND,
+  GAME_KIND,
   ONE_BLOCK_KIND,
   TIMER_KIND,
   type TriggerEntry,
@@ -92,7 +93,14 @@ const PORTAL_COMPONENTS = new Set([
 ]);
 
 /** The games kinds whose `name` is the name players see (ADR 0113 D4 to D7). */
-const GAME_NAMED = new Set(['msm:team', 'msm:objective', 'msm:timer', 'msm:area']);
+const GAME_NAMED = new Set([
+  'msm:team',
+  'msm:objective',
+  'msm:timer',
+  'msm:area',
+  'msm:game',
+  'msm:kit',
+]);
 
 /** Display names of project elements, for the sentences in the script's comments. */
 export function namesFromElements(
@@ -208,6 +216,7 @@ const SUBJECT_PLURALS: Readonly<Record<string, string>> = {
   area: 'areas',
   timer: 'timers',
   one_block: 'one blocks',
+  game: 'games',
 };
 
 /**
@@ -264,6 +273,16 @@ export function compileRuleBooks(
     const element = byId.get(id);
     return element?.kind === GAME_RULE_KIND ? str(asObject(element.data), 'kind') : undefined;
   };
+  // A game with the `hearts` mechanic (B725): "Set most hearts" changes its hearts score.
+  const gameHasHearts = (id: string): boolean => {
+    const element = byId.get(id);
+    return (
+      element?.kind === GAME_KIND &&
+      asArray(asObject(element.data)?.mechanics).some(
+        (mechanic) => asObject(mechanic)?.type === 'hearts',
+      )
+    );
+  };
   const shared = new Map<string, SharedGroup>();
   const passes: BookPass[] = [];
   const games: GamesContext = {
@@ -278,9 +297,11 @@ export function compileRuleBooks(
       const element = byId.get(id);
       return element?.kind === AREA_KIND && asObject(element.data)?.reset !== undefined;
     },
+    gameHasHearts,
   };
   const context: Omit<CheckContext, 'commandArguments'> = {
     gameRuleKind,
+    gameHasHearts,
     elementKind: (id) => byId.get(id)?.kind,
     hasForm: (name) => commandForm(target, name) !== undefined,
   };

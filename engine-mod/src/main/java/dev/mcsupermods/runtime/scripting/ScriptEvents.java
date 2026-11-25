@@ -161,11 +161,14 @@ public final class ScriptEvents {
     public static final class EntityDeath extends Data {
         final Entity entity;
         final Entity attacker;
+        /** The kill credit ({@code LivingEntity.getKillCredit()}), Script API 1.8: also the hitter of a knock into the void. */
+        final Entity killer;
 
-        EntityDeath(ServerLevel level, Entity entity, Entity attacker) {
+        EntityDeath(ServerLevel level, Entity entity, Entity attacker, Entity killer) {
             super(level);
             this.entity = entity;
             this.attacker = attacker;
+            this.killer = killer;
         }
     }
 
@@ -410,7 +413,8 @@ public final class ScriptEvents {
 
     static final ScriptType ENTITY_DEATH = event("EntityDeathEvent")
             .constant("entity", EntityDeath.class, (api, e) -> api.entity(e.entity))
-            .constant("attacker", EntityDeath.class, (api, e) -> e.attacker == null ? null : api.entity(e.attacker));
+            .constant("attacker", EntityDeath.class, (api, e) -> e.attacker == null ? null : api.entity(e.attacker))
+            .constant("killer", EntityDeath.class, (api, e) -> e.killer == null ? null : api.entity(e.killer));
 
     static final ScriptType PLAYER_JOIN = event("PlayerJoinEvent")
             .constant("player", PlayerJoin.class, (api, e) -> api.player(e.player));

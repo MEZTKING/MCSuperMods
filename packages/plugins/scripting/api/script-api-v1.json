@@ -1328,6 +1328,12 @@
           "type": "Entity",
           "doc": "The entity that killed it, when there is one.",
           "optional": true
+        },
+        "killer": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "Who the game credits with the kill, as its kill scores and death message do: the attacker of a direct hit, and also the last entity that hurt it a short while before a death with no attacker (a knock into the void, a fall, lava); `undefined` when nobody is credited. For example `msm.events.on(\"entity.death\", (e) => { const k = e.killer?.asPlayer(); if (e.entity.isPlayer && k) k.sendMessage(\"You got \" + e.entity.name); });`.\n\nSince runtime 1.5.10.",
+          "optional": true
         }
       },
       "extends": "GameEvent"

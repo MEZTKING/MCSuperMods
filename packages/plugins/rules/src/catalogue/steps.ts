@@ -51,6 +51,13 @@ const TEAM: SlotSpec = { name: 'team', type: 'team' };
 const OBJECTIVE: SlotSpec = { name: 'objective', type: 'objective' };
 /** A project timer. */
 const TIMER: SlotSpec = { name: 'timer', type: 'timer' };
+/** A project game (ADR 0132 D1). */
+const GAME: SlotSpec = { name: 'game', type: 'game' };
+/**
+ * A project game with the `hearts` mechanic, whose hearts score the step changes; absent, the
+ * player's most health is set at once (B729).
+ */
+const HEARTS_GAME: SlotSpec = { name: 'game', type: 'game', optional: true, prefix: 'in' };
 
 export const STEPS: readonly StepEntry[] = Object.freeze([
   // Players
@@ -299,6 +306,39 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     sentence: 'take {who} off their team',
     group: 'players',
     slots: [WHO],
+    defaultWho: 'player',
+  }),
+  // Games (ADR 0132; B729): hearts, kits and a round, through the games kinds' functions.
+  step({
+    id: 'set_most_hearts',
+    label: 'Set most hearts',
+    sentence: 'set the most hearts of {who} to {hearts} {game}',
+    group: 'players',
+    slots: [WHO, { name: 'hearts', type: 'number', min: 1, max: 512, whole: true }, HEARTS_GAME],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'add_most_hearts',
+    label: 'Add to most hearts',
+    sentence: 'add {hearts} to the most hearts of {who} {game}',
+    group: 'players',
+    slots: [{ name: 'hearts', type: 'number', min: -512, max: 512, whole: true }, WHO, HEARTS_GAME],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'give_kit',
+    label: 'Give a kit',
+    sentence: 'give {who} {kit}',
+    group: 'players',
+    slots: [WHO, { name: 'kit', type: 'kit' }],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'take_out_of_game',
+    label: 'Take out of the game',
+    sentence: 'take {who} out of {game}',
+    group: 'players',
+    slots: [WHO, GAME],
     defaultWho: 'player',
   }),
   step({
@@ -743,5 +783,20 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     sentence: 'stop {timer}',
     group: 'counters',
     slots: [TIMER],
+  }),
+  // A game's round (ADR 0132 D1; B724's `start` and `end`).
+  step({
+    id: 'start_game',
+    label: 'Start the game',
+    sentence: 'start a round of {game}',
+    group: 'counters',
+    slots: [GAME],
+  }),
+  step({
+    id: 'end_game',
+    label: 'End the game',
+    sentence: 'end the round of {game} {winners}',
+    group: 'counters',
+    slots: [GAME, { name: 'winners', type: 'who', optional: true, prefix: 'won by' }],
   }),
 ]);

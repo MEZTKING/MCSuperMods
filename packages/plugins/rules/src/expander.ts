@@ -24,7 +24,7 @@ import type {
   ProjectExpander,
 } from '@msm/plugin-api';
 import { asObject } from './book';
-import { OBJECTIVE_KIND, TEAM_KIND, TRIGGERS } from './catalogue';
+import { KIT_KIND, OBJECTIVE_KIND, TEAM_KIND, TRIGGERS } from './catalogue';
 import { compileRuleBooks } from './compile';
 import { RULES_KIND } from './kinds';
 import { RULES_SCRIPT_FIELD, RULES_SIGNAL_FIELD } from './lowering';
@@ -71,13 +71,19 @@ export function expandRules({ elements, target }: ExpansionInput): ExpansionResu
 }
 
 /**
- * The kinds the expander reads: rule books, and every kind a rule's subject may be (a changed
- * block or item changes its patches too).
+ * The kinds the expander reads: rule books, every kind a rule's subject may be (a changed
+ * block or item changes its patches too), and the teams, objectives and kits steps name.
  */
 export const RULES_EXPANDER_KINDS: readonly string[] = Object.freeze([
   RULES_KIND,
   ...[
-    ...new Set([...TRIGGERS.flatMap((trigger) => trigger.subjectKinds), TEAM_KIND, OBJECTIVE_KIND]),
+    ...new Set([
+      ...TRIGGERS.flatMap((trigger) => trigger.subjectKinds),
+      TEAM_KIND,
+      OBJECTIVE_KIND,
+      // Steps name kits, and "Set most hearts" reads a game's mechanics (B729).
+      KIT_KIND,
+    ]),
   ].sort(),
 ]);
 

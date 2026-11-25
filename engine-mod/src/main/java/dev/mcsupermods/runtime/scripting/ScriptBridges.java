@@ -309,7 +309,8 @@ public final class ScriptBridges {
         }
         if (host != null && host.handles(ScriptEvents.ENTITY_DEATH_EVENT)) {
             host.fire(ScriptEvents.ENTITY_DEATH_EVENT,
-                    new ScriptEvents.EntityDeath((ServerLevel) entity.level(), entity, source.getEntity()));
+                    new ScriptEvents.EntityDeath((ServerLevel) entity.level(), entity, source.getEntity(),
+                            entity.getKillCredit()));
         }
     }
 

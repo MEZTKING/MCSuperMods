@@ -54,6 +54,14 @@ msm.events.on("entity.death", function (e) {
     msm.log.info("entity.death " + e.entity.type + " attacker "
         + (e.attacker ? e.attacker.type + " isPlayer=" + e.attacker.isPlayer : "none"));
 });
+// Script API 1.8 (B729): a player's death names the kill credit, also with no attacker (a knock into the void).
+msm.events.on("entity.death", function (e) {
+    if (!e.entity.isPlayer) {
+        return;
+    }
+    msm.log.info("entity.death player " + e.entity.name + " attacker " + (e.attacker ? e.attacker.name : "none")
+        + " killer " + (e.killer ? e.killer.name : "none"));
+});
 msm.events.on("player.join", function (e) {
     msm.log.info("player.join " + e.player.name + " in " + e.world.dimension);
 });

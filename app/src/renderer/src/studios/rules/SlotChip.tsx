@@ -17,7 +17,7 @@ import { type ReactNode, useId } from 'react';
 import { Button } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { useBookEdit, useRulesEnv } from './env';
-import { ArgumentMenu, GameRuleValueEditor, IdMenu } from './id-pickers';
+import { ArgumentMenu, GameRuleValueEditor, IdMenu, ProjectIdMenu } from './id-pickers';
 import { ChipPopover, chipClass, MenuList, ProblemLines } from './parts';
 import { HudMenu, WeaponSelect } from './project-pickers';
 import {
@@ -182,6 +182,14 @@ export function SlotChip(props: SlotChipProps) {
       return (
         <ChipPopover {...common}>
           <ArgumentMenu pointer={pointer} label={label} />
+        </ChipPopover>
+      );
+    // Rules 4 for games (B729): one of the project's kits or games.
+    case 'kit':
+    case 'game':
+      return (
+        <ChipPopover {...common}>
+          <ProjectIdMenu pointer={pointer} type={slot.type} label={label} />
         </ChipPopover>
       );
     case 'game_rule_value':
