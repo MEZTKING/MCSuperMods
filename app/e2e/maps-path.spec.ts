@@ -267,6 +267,8 @@ test('maps: Play my game, export the world as a map, bring a build in from it', 
   const playGame = window.getByTestId('play-menu-play-game');
   await expect(playGame).toBeEnabled();
   await playGame.click();
+  // The first Play my game shows what it will make (ADR 0133 D3, B765): make it and play.
+  await window.getByTestId('instance-offer-make').click();
   await expect(chip).toHaveAttribute('data-state', 'game-world', { timeout: 60_000 });
   await expect(chip).toHaveText('In my game');
   const plays = stubLog(root).filter((entry) => entry.event === 'play');
