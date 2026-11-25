@@ -11966,3 +11966,20 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 **Next**
 - The main session folds the README's "Requested changes to ADR 0137" (13 items) and "to the plan" into the ADR and the briefs before B841; B867 can be dropped.
 - Outside this plan: the Try it script worker (`tryit/script-worker.ts`) strips the same globals and probably leaves storage buckets, locks and notifications open too (not measured).
+
+## 2026-11-25 — executor — B840 answers folded into ADR 0137 and the plan
+
+**What**
+- ADR 0137 (kept Proposed): the 13 requested changes applied. D2 notes (S12's seven layout additions with the three Studios' shares, T1's 590 colour uses outside the theme tokens, S13 for `fromFiles`), D3 (host-held field values, path patches, `data:` pictures, transferred `OffscreenCanvas`, the fallback frame removed), D4 (`project:read` in pages of at most 100), D6 (Node `https` with a `lookup` check, no system proxy), D7 (the crash weakness as measured, the conditions of staying, the idle heartbeat, B864 sized), D8 (safe mode's marks, hashing, the `index.json.sig` format, the never-do list, S7's removals, WebAssembly), D10 (T2's 3,800 places), D12, Consequences (kit size and shared field parts, T3), and a findings line in Status.
+- `docs/PLAN-app-plugins.md`: changes to B841, B842, B843, B848, B850, B851, B853, B859, B862 and the reserves; new B871 (hardening of today's plugin and script workers), noted as run now by the main session as B870 (worktree b870).
+- ADR 0035: one finding line (iframes in their own process in Electron 45; WebAssembly refused by the CSP).
+
+**Decisions**
+- Verdicts recorded: the view kit go; staying in the renderer go, with conditions.
+- WebAssembly stays refused (no `'wasm-unsafe-eval'`); reconsidering needs a new ADR.
+- B867 dropped, B864 kept and sized by S4, B865 sized by T2.
+- Docs only; no code touched.
+
+**Next**
+- The main session runs B870 (B871's scope), then B841.
+- The user's eight questions in the plan's section 2 still stand.
