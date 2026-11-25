@@ -1,18 +1,25 @@
 /**
- * What a Your mods card shows besides the name (ADR 0128 D4): the mod's picture and thing count
- * read from main (`project.recentSummary`) once per mod and time it was opened, cached for the
- * session, and "last opened" in words. Pure but for the cache; no DOM.
+ * What a Your mods card shows besides the name (ADR 0128 D4): the mod's picture, thing count and
+ * target read from main (`project.recentSummary`) once per mod and time it was opened, cached for
+ * the session, "last opened" in words and the Minecraft it is made for (ADR 0136 D5). Pure but
+ * for the cache; no DOM.
  *
  * @packageDocumentation
  */
 
+import type { TargetFacts } from '@msm/plugin-api';
 import type { RecentProjectSummary } from '../../../../shared/platform';
 import { imageDataUrl } from '../texture-editor/png-canvas';
+import { newerTargetFor } from '../upgrade/notice';
 
-/** A card's summary: the picture as a `data:` URL (or `null`) and the thing count. */
+/**
+ * A card's summary: the picture as a `data:` URL (or `null`), the thing count and the target id
+ * the mod is made for (`null` when its file names none).
+ */
 export interface RecentCardSummary {
   readonly things: number;
   readonly picture: string | null;
+  readonly target: string | null;
 }
 
 const cache = new Map<string, Promise<RecentCardSummary>>();
@@ -37,12 +44,32 @@ export function recentSummary(
   const made = read(root).then((summary) => ({
     things: summary.things,
     picture: summary.picture === null ? null : imageDataUrl(summary.picture),
+    target: summary.target ?? null,
   }));
   cache.set(key, made);
   made.catch(() => {
     if (cache.get(key) === made) cache.delete(key);
   });
   return made;
+}
+
+/**
+ * A card's Minecraft line (ADR 0136 D5), from the mod's file alone (no dry run for a closed
+ * mod): "Made for Minecraft X", with ", can move to Y" where a newer version is announced. `null`
+ * when the mod names no target this app knows. Versions come from the targets' facts.
+ */
+export function madeForWords(
+  targetId: string | null,
+  targets: readonly TargetFacts[],
+  testVersions: boolean,
+): string | null {
+  if (targetId === null) return null;
+  const made = targets.find((entry) => entry.id === targetId);
+  if (made === undefined) return null;
+  const newer = newerTargetFor(made.id, targets, testVersions);
+  return newer === null
+    ? `Made for Minecraft ${made.mcVersion}`
+    : `Made for Minecraft ${made.mcVersion}, can move to ${newer.mcVersion}`;
 }
 
 /** "1 thing", "4 things", "No things yet". */

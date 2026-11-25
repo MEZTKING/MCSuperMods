@@ -2,7 +2,8 @@
  * Home's **Your mods** (ADR 0128 D4, D5): the recent mods as a grid of cards above the
  * Showcase. A card shows the mod's picture (its `pack.png`, else its first item or block
  * texture, else a drawn monogram), its name, how many things it has and when it was last
- * opened, with **Open** as its main action and a menu with **Show in folder** and **Remove from
+ * opened, the Minecraft it is made for and the newer one it can move to (ADR 0136 D5, from its
+ * file alone), with **Open** as its main action and a menu with **Show in folder** and **Remove from
  * this list**. The eight most recent show; **See all my mods** opens the whole list. A mod whose
  * folder is gone says "This mod's folder is not there any more." with **Remove**.
  *
@@ -10,13 +11,15 @@
  * Home never waits for them. The arrow keys move between the cards' Open buttons.
  *
  * Test ids: `home-your-mods`, `home-recent-card-<n>`, `home-recent-<n>` (Open),
- * `home-recent-picture-<n>`, `home-recent-things-<n>`, `home-recent-menu-<n>`,
+ * `home-recent-picture-<n>`, `home-recent-things-<n>`, `home-recent-made-for-<n>`,
+ * `home-recent-menu-<n>`,
  * `home-recent-show`, `home-recent-remove` (menu items), `home-recent-missing-<n>`,
  * `home-recent-remove-<n>` (a missing mod's Remove), `home-recent-all`, `your-mods-dialog`.
  *
  * @packageDocumentation
  */
 
+import type { TargetFacts } from '@msm/plugin-api';
 import { FolderOpen, MoreHorizontal, X } from 'lucide-react';
 import { Dialog, DropdownMenu } from 'radix-ui';
 import { type KeyboardEvent, useEffect, useId, useState } from 'react';
@@ -24,6 +27,7 @@ import type { RecentProjectSummary, RecentProjectView } from '../../../../shared
 import { Button, iconButtonClass } from '../ui/Button';
 import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import {
+  madeForWords,
   monogram,
   monogramHue,
   openedAgo,
@@ -54,6 +58,10 @@ export interface YourModsProps {
   readonly summary?: (root: string) => Promise<RecentProjectSummary>;
   /** The time now in milliseconds (tests). */
   readonly now?: () => number;
+  /** Every built-in target, for "Made for Minecraft X"; absent shows no such line. */
+  readonly targets?: readonly TargetFacts[];
+  /** **Tell me about test versions of Minecraft**: "can move to" names test versions too. */
+  readonly testVersions?: boolean;
 }
 
 /** A card's picture: the mod's own, else its monogram. */
@@ -114,6 +122,10 @@ function ModCard(props: CardProps) {
     };
   }, [entry.root, entry.openedAt, entry.exists, summary]);
   const ago = openedAgo(entry.openedAt, (props.now ?? Date.now)());
+  const madeFor =
+    read === null || props.targets === undefined
+      ? null
+      : madeForWords(read.target, props.targets, props.testVersions === true);
   return (
     <li
       className="flex w-72 flex-col gap-2 rounded-md border border-border bg-panel p-2"
@@ -131,6 +143,11 @@ function ModCard(props: CardProps) {
                 {read === null ? ' ' : thingsInWords(read.things)}
               </p>
               {ago !== '' && <p className="text-muted text-xs">Opened {ago}</p>}
+              {madeFor !== null && (
+                <p className="text-muted text-xs" data-testid={`home-recent-made-for-${index}`}>
+                  {madeFor}
+                </p>
+              )}
             </>
           ) : (
             <p className="text-error text-xs" data-testid={`home-recent-missing-${index}`}>

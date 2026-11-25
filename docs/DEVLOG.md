@@ -11861,3 +11861,27 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 - Run B840 in any free slot (it writes only under `docs/reference/spikes/b840/`); fold its answers into ADR 0137 before B841.
 - The renderer is at 20.1 of 21 MB with the stop line at 20.5: if B840's T3 shows the kit will not fit as lazy chunks, run reserve B868 first.
 - Single-owner files this plan shares with the others are listed in the plan's section 3; B841 must not run beside Plan C's B782.
+## 2026-11-25 — executor — B817 The notice
+
+**What**
+- New `app/src/renderer/src/components/upgrade/notice.ts` (ADR 0136 D5): `newerTargetFor(currentId, targets, testVersions)` (a target whose `previous` chain reaches the mod's target; releases only unless test versions are on; the one furthest along the chain; a loop or unknown id ends the walk), `isTestVersion`, `stepsBack`, and the per-mod **Not now** memory in `.msm/upgrade-notice.json` (`{ "notNow": [<target ids>] }`, sorted, 2-space; `readNotNow`, `rememberNotNow`).
+- New `use-upgrade-notice.ts`: `useUpgradeNotice` calls `session.upgradeReport(newer.id)` when idle after the first paint (400 ms pause, then `requestIdleCallback`) and again after each edit; a run rejected as `DryRunCancelled` (checked by name, so `dry-run.ts` stays lazy) is asked for again when idle, up to five times. States `none`, `checking` (nothing shows), `ready` (`done` without notes, `todo`), `failed`; the counts of an older run stay until the new one is in. `noticeShows`.
+- New `UpgradeNotice.tsx` (a lazy chunk, 1.7 kB): the Things to fix note "Minecraft X is ready for this mod: 3 things change by themselves, 1 needs you." with **See what changes** (opens B818's dialog on that version) and **Not now**; a failed dry run is one quiet line under More options ("MCSuperMods could not check what moving to Minecraft X would change: …").
+- `StatusBar.tsx`: a small "X is ready" button beside "For Minecraft …" (`project-target-newer`) once the report is ready; it opens the report. It stays after **Not now** (the quiet way back); only the note is put off.
+- Home's Your mods: "Made for Minecraft X" on each card, ", can move to Y" where a newer version is announced (`home-recent-made-for-<n>`), from the project file's first target alone: main's `readRecentSummary` returns `target` (optional field on `RecentProjectSummary`), cached in `recent-summary.ts` with `madeForWords`; `Home` passes `targets` and `testVersions` through.
+- Settings, under Updates: **Tell me about test versions of Minecraft** (off by default; `preferences.ts` `testVersions`, `settings-catalogue.ts` line `test-versions`).
+- `App.tsx`: the hook beside the After moving wiring, the note as `<ThingsToFix note={…} />`, the status bar's `newer`, Home's `targets` and `testVersions`.
+
+**Checks**
+- New `app/test/components/upgrade-notice.test.tsx` (16): which target is told about, with stand-in release and test-version targets both ways and the built-in pair (26.4 is a snapshot target, so nothing is announced for a 26.3 mod with the setting off); the sentences; no version in the three new files' own text; each state (none, checking, newer release, newer test version with the setting off and on, put off and remembered across reopening but not for a newer version, failed, cancelled then asked again); the status bar mark; Home's line; the live view over a real dry run of B816's fixture (noise settings and a large dripstone feature, setting on): removing the feature lowers the "needs you" count. `expectPlain` on the note, the mark and the cards. `main-platform.test.ts` reads the target.
+- `pnpm lint`, `pnpm typecheck`, `node tools/check-deps/index.ts`; app 458 files, 4874 tests; `pnpm --filter @msm/app build`; `dist:dir` and check-size within budget.
+- Size: renderer 20.2 MB of 21 (+7.0 kB), first paint 5.3 MB of 6 (+5.2 kB: the hook, `notice.ts`, the status bar and card lines; measured against the same tree built without B817), `app.asar` 30,704,354 bytes (29.3 MB of 32).
+
+**Decisions**
+- **Not now** puts off the note only; the status bar's mark stays, so the report is one click away.
+- Home's line names a newer version from the project file alone and no dry run; a target this app does not know gives no line.
+- The notice runs the dry run even when put off, for the mark; it never moves anything.
+
+**Next**
+- B825: guide sentences (`targets.md`): "When a newer Minecraft is ready for your mod, the status bar shows a small mark beside its version and Things to fix says what would change by itself and what needs you. **See what changes** opens the report; **Not now** puts the note off for that mod and that version. Home's Your mods says which Minecraft each mod is made for and where it can move. Only real releases are announced unless **Tell me about test versions of Minecraft** is on in Settings; nothing is moved until you press the button."
+- B825: search lines for the setting are in the settings catalogue; the AI helper's prompt may mention the notice.

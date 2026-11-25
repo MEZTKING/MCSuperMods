@@ -363,6 +363,11 @@ export interface RecentProjectSummary {
   picture: Uint8Array | null;
   /** Where the picture came from. */
   pictureFrom: 'pack' | 'texture' | null;
+  /**
+   * The target id the mod is made for (the first of `targets` in `msm.project.json`); absent
+   * when the file names none (ADR 0136 D5: Home's "Made for Minecraft X").
+   */
+  target?: string;
 }
 
 /** A partial settings update: fields left out keep their stored value. */

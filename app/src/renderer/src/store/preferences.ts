@@ -1,7 +1,8 @@
 /**
  * View preferences (ADR 0047, ADR 0118 D1, D8, ADR 0124 D11, ADR 0130 D1, ADR 0135 D5): the
  * collapsed sidebar groups, the live preview beside the form, the showcase's setting and fold,
- * the block picture style, and the search's
+ * the block picture style, **Tell me about test versions of Minecraft** (ADR 0136 D5), and the
+ * search's
  * **Remember my searches** with its local history (`search/history.ts`, its own storage key).
  * Kept in the renderer's local storage: they change no file. Storage failures are ignored.
  *
@@ -34,6 +35,7 @@ interface StoredPreferences {
   showcaseOpen?: boolean;
   rememberSearches?: boolean;
   blockStyle?: unknown;
+  testVersions?: boolean;
 }
 
 /** The preferences store's shape. */
@@ -70,6 +72,13 @@ export interface PreferencesState {
    */
   blockStyle: BlockPictureStyle;
   setBlockStyle(style: BlockPictureStyle): void;
+  /**
+   * **Tell me about test versions of Minecraft** (ADR 0136 D5): the notice that a newer
+   * Minecraft is ready for the open mod also tells about snapshots and pre-releases. Default off:
+   * only real releases are told about (test versions stay choosable by hand).
+   */
+  testVersions: boolean;
+  setTestVersions(on: boolean): void;
   /** The local search history (empty while {@link rememberSearches} is off). */
   searchHistory: SearchHistory;
   setRememberSearches(on: boolean): void;
@@ -107,6 +116,7 @@ function writeStored(
     | 'showcaseOpen'
     | 'rememberSearches'
     | 'blockStyle'
+    | 'testVersions'
   >,
 ): void {
   try {
@@ -119,6 +129,7 @@ function writeStored(
         showcaseOpen: state.showcaseOpen,
         rememberSearches: state.rememberSearches,
         blockStyle: state.blockStyle,
+        testVersions: state.testVersions,
       }),
     );
   } catch {
@@ -188,6 +199,7 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
   showcaseOpen: stored.showcaseOpen === true,
   rememberSearches: stored.rememberSearches !== false,
   blockStyle: storedBlockStyle,
+  testVersions: stored.testVersions === true,
   ideasSeed: readIdeasSeed(),
   searchHistory: stored.rememberSearches !== false ? readHistory() : EMPTY_HISTORY,
   setRememberSearches(on) {
@@ -218,6 +230,10 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
     const next: BlockPictureStyle = style === 'classic' ? 'classic' : 'blockloom';
     setBlockPictureStyle(next);
     set({ blockStyle: next });
+    writeStored(get());
+  },
+  setTestVersions(on) {
+    set({ testVersions: on });
     writeStored(get());
   },
   setShowcaseClips(on) {

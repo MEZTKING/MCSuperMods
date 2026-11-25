@@ -455,6 +455,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
   const autoCheckId = useId();
   const showcaseClipsId = useId();
   const showcaseClips = usePreferences((state) => state.showcaseClips);
+  const testVersionsId = useId();
+  const testVersions = usePreferences((state) => state.testVersions);
   const blockStyle = usePreferences((state) => state.blockStyle);
   const jarSource = props.jarSource ?? null;
   const manualRoots = props.manualRoots ?? [];
@@ -862,6 +864,24 @@ export function SettingsDialog(props: SettingsDialogProps) {
               The installed Windows app looks for a new release shortly after it starts and
               downloads it in the background. It installs only when you choose Restart to update.
               Help, Check for Updates works either way.
+            </p>
+
+            <div className="mt-2 flex items-center gap-1.5" data-setting="test-versions">
+              <input
+                id={testVersionsId}
+                type="checkbox"
+                data-testid="settings-test-versions"
+                checked={testVersions}
+                onChange={(event) =>
+                  usePreferences.getState().setTestVersions(event.target.checked)
+                }
+              />
+              <label htmlFor={testVersionsId}>Tell me about test versions of Minecraft</label>
+            </div>
+            <p className="text-xs text-muted">
+              When a newer Minecraft is ready for your mod, MCSuperMods tells you. Off, it tells you
+              only about real releases; on, also about test versions, which can change every week.
+              You can always choose any version yourself.
             </p>
 
             <h3 className="mt-3 font-semibold">Showcase</h3>

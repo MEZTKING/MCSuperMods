@@ -12,15 +12,19 @@ export function thingsToFixWords(count: number): string | null {
  * The mod's name, whether it is saved, the Minecraft it is for (ADR 0037 D4, plan B703: "For
  * Minecraft <version>" with a "snapshot" badge where it is one), undo and redo in words and the
  * number of things to fix, all in plain words (the folder is reached by Show in folder on Home's
- * Your mods). Messages go to toasts.
+ * Your mods). Messages go to toasts. When a newer Minecraft is ready for the mod (ADR 0136 D5),
+ * a small "X is ready" mark beside the version opens the report (`project-target-newer`).
  */
 export function StatusBar({
   snapshot,
   target = null,
+  newer = null,
 }: {
   snapshot: SessionSnapshot;
   /** The open project's target; shown only while a project is open. */
   target?: TargetFacts | null;
+  /** A newer Minecraft the mod's report is ready for (its version, and opening the report). */
+  newer?: { readonly mcVersion: string; readonly onOpen: () => void } | null;
 }) {
   const toFix = thingsToFixWords(
     snapshot.problems.filter(
@@ -44,6 +48,17 @@ export function StatusBar({
             >
               snapshot
             </span>
+          )}
+          {newer !== null && (
+            <button
+              type="button"
+              className="cursor-pointer rounded border border-accent px-1 text-[0.65rem] text-accent hover:underline"
+              aria-label={`Minecraft ${newer.mcVersion} is ready for this mod: see what changes`}
+              data-testid="project-target-newer"
+              onClick={newer.onOpen}
+            >
+              {newer.mcVersion} is ready
+            </button>
           )}
         </span>
       )}

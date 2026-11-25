@@ -97,6 +97,14 @@ export const SETTINGS_CATALOGUE: readonly SettingsCatalogueEntry[] = [
     words: ['update', 'auto update', 'new version', 'release', 'upgrade', 'download'],
   },
   {
+    id: 'test-versions',
+    title: 'Tell me about test versions of Minecraft',
+    sentence:
+      'Also tell you when a snapshot or pre-release of Minecraft is ready for your mod, not only real releases.',
+    section: 'Updates',
+    words: ['snapshot', 'snapshots', 'pre-release', 'prerelease', 'test version', 'beta'],
+  },
+  {
     id: 'showcase-clips',
     title: 'Play showcase clips',
     sentence: 'Play the moving pictures on Home and in New project; off shows still pictures.',

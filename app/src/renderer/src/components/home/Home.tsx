@@ -22,6 +22,7 @@
  */
 
 import type { Project } from '@msm/core';
+import type { TargetFacts } from '@msm/plugin-api';
 import { Dices, FilePlus, FolderOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { RecentProjectSummary, RecentProjectView } from '../../../../shared/platform';
@@ -61,6 +62,10 @@ export interface HomeProps {
   onShowRecentInFolder?(root: string): void;
   /** Reads a recent mod's picture and thing count for its card. */
   recentSummary?(root: string): Promise<RecentProjectSummary>;
+  /** Every built-in target, for the cards' "Made for Minecraft X" (ADR 0136 D5). */
+  targets?: readonly TargetFacts[];
+  /** **Tell me about test versions of Minecraft**, for the cards' "can move to Y". */
+  testVersions?: boolean;
   /** The showcase gallery (**See what you can make**); absent shows none. */
   showcase?: ReactNode;
   /** Whether the showcase stays open for a mod that has things (default folded). */
@@ -193,6 +198,8 @@ export function Home(props: HomeProps) {
                 ? {}
                 : { onShowInFolder: props.onShowRecentInFolder })}
               {...(props.recentSummary === undefined ? {} : { summary: props.recentSummary })}
+              {...(props.targets === undefined ? {} : { targets: props.targets })}
+              testVersions={props.testVersions === true}
             />
           )}
           {props.showcase !== undefined && props.showcase !== null && (

@@ -9,6 +9,7 @@
  * - The things are counted as Home's My things counts them (`components/home/things.ts`): one
  *   per Creator set (`meta.creator.setId`) and one per loose block, item, mob, effect, potion,
  *   vehicle, village job, liquid, rule book, command, key, on-screen element or creative tab.
+ * - The target is the first of `targets` in `msm.project.json` (ADR 0136 D5).
  *
  * @packageDocumentation
  */
@@ -101,20 +102,34 @@ async function readPicture(path: string): Promise<Uint8Array | null> {
   }
 }
 
-/** The mod's own namespaces from `msm.project.json` (never `minecraft`). */
-async function namespacesOf(root: string): Promise<string[]> {
+/** The parsed `msm.project.json` of `root`, or an empty record when unreadable. */
+async function manifestOf(root: string): Promise<Record<string, unknown>> {
   try {
     const parsed: unknown = JSON.parse(await readFile(join(root, 'msm.project.json'), 'utf8'));
-    if (typeof parsed !== 'object' || parsed === null) return [];
-    const list = (parsed as Record<string, unknown>).namespaces;
-    if (!Array.isArray(list)) return [];
-    return list.filter(
-      (entry): entry is string =>
-        typeof entry === 'string' && entry !== 'minecraft' && /^[a-z0-9_.-]+$/.test(entry),
-    );
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
   } catch {
-    return [];
+    return {};
   }
+}
+
+/** The mod's own namespaces from its manifest (never `minecraft`). */
+function namespacesOf(manifest: Record<string, unknown>): string[] {
+  const list = manifest.namespaces;
+  if (!Array.isArray(list)) return [];
+  return list.filter(
+    (entry): entry is string =>
+      typeof entry === 'string' && entry !== 'minecraft' && /^[a-z0-9_.-]+$/.test(entry),
+  );
+}
+
+/** The target the mod is made for: the first of its manifest's `targets` (ADR 0136 D5). */
+function targetOf(manifest: Record<string, unknown>): string | undefined {
+  const list = manifest.targets;
+  if (!Array.isArray(list)) return undefined;
+  const first: unknown = list[0];
+  return typeof first === 'string' && /^[a-z0-9_.-]+$/.test(first) ? first : undefined;
 }
 
 /** The set id of an element file's Creator set, or `null` for a loose element. */
@@ -130,7 +145,10 @@ function setIdOf(text: string): string | null {
 
 /** Reads the summary of the mod in `root` (an absolute folder the caller has checked). */
 export async function readRecentSummary(root: string): Promise<RecentProjectSummary> {
-  const namespaces = await namespacesOf(root);
+  const manifest = await manifestOf(root);
+  const namespaces = namespacesOf(manifest);
+  const target = targetOf(manifest);
+  const made = target === undefined ? {} : { target };
   const left = { count: MAX_FILES };
   const files: string[] = [];
   for (const namespace of namespaces) {
@@ -159,14 +177,17 @@ export async function readRecentSummary(root: string): Promise<RecentProjectSumm
   ];
   for (const path of packs) {
     const picture = await readPicture(path);
-    if (picture !== null) return { things: sets.size + loose, picture, pictureFrom: 'pack' };
+    if (picture !== null)
+      return { things: sets.size + loose, picture, pictureFrom: 'pack', ...made };
   }
   for (const sort of ['item', 'block']) {
     for (const namespace of namespaces) {
       const path = await firstPng(join(root, 'assets', namespace, 'textures', sort));
       const picture = path === null ? null : await readPicture(path);
-      if (picture !== null) return { things: sets.size + loose, picture, pictureFrom: 'texture' };
+      if (picture !== null) {
+        return { things: sets.size + loose, picture, pictureFrom: 'texture', ...made };
+      }
     }
   }
-  return { things: sets.size + loose, picture: null, pictureFrom: null };
+  return { things: sets.size + loose, picture: null, pictureFrom: null, ...made };
 }

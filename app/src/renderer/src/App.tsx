@@ -154,6 +154,7 @@ import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { UsagesDialog } from './components/UsagesDialog';
 import { DialogContent, DialogRoot } from './components/ui/DialogContent';
+import { noticeShows, useUpgradeNotice } from './components/upgrade/use-upgrade-notice';
 import { WelcomeDialog } from './components/WelcomeDialog';
 import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WishlistDialog } from './components/WishlistDialog';
@@ -289,6 +290,7 @@ const SearchPanel = lazy(async () => {
 const ResultPreview = lazy(() => import('./search/ResultPreview'));
 /** The user guide read inside the app (ADR 0124 D14; B661). */
 const GuideDialog = lazy(() => import('./components/GuideDialog'));
+const UpgradeNotice = lazy(() => import('./components/upgrade/UpgradeNotice'));
 
 /** The app's own lists the search reads (ADR 0124 D3; B660, B662). */
 const SEARCH_LISTS: AppLists = {
@@ -937,6 +939,18 @@ export function App({
     if (store.areaRoot !== null && store.areaRoot !== projectRoot) store.reset();
     if (projectRoot === null) store.reset();
   }, [projectRoot]);
+  // The newer-Minecraft notice (ADR 0136 D5, B817): status bar, Things to fix and Home.
+  const testVersions = usePreferences((state) => state.testVersions);
+  const upgradeNotice = useUpgradeNotice({
+    session,
+    fs: bridge.fs ?? null,
+    root: projectRoot,
+    project,
+    target,
+    targets: session.availableTargets,
+    testVersions,
+  });
+  const readyNewer = upgradeNotice.notice.status === 'ready' ? upgradeNotice.notice.newer : null;
   // The After moving list (ADR 0136 D6, B818) needs the saved moves read once per project.
   const [, setSavedMovesRead] = useState(0);
   useEffect(() => {
@@ -3751,6 +3765,8 @@ export function App({
                     bridge.project.recentSummary?.(root) ??
                     Promise.reject(new Error('No summary.')),
                 })}
+            targets={session.availableTargets}
+            testVersions={testVersions}
             search={startSearchBar('home-search-field')}
             showcase={homeGallery(homeClipsVisible, homeClipsVisible)}
             {...(heroExample === null || target === null
@@ -3986,9 +4002,32 @@ export function App({
                       onOpenMoveReport={(folder) =>
                         setDialog({ type: 'upgrade-target', savedFolder: folder })
                       }
+                      note={
+                        noticeShows(upgradeNotice.notice) ? (
+                          <Suspense fallback={null}>
+                            <UpgradeNotice
+                              notice={upgradeNotice.notice}
+                              onSee={(targetId) => setDialog({ type: 'upgrade-target', targetId })}
+                              onNotNow={upgradeNotice.notNow}
+                            />
+                          </Suspense>
+                        ) : undefined
+                      }
                     />
                   )}
-                  <StatusBar snapshot={snapshot} target={project === null ? null : target} />
+                  <StatusBar
+                    snapshot={snapshot}
+                    target={project === null ? null : target}
+                    newer={
+                      readyNewer === null
+                        ? null
+                        : {
+                            mcVersion: readyNewer.mcVersion,
+                            onOpen: () =>
+                              setDialog({ type: 'upgrade-target', targetId: readyNewer.id }),
+                          }
+                    }
+                  />
                 </div>
               </div>
               <StatusToast />

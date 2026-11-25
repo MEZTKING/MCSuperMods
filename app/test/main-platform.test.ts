@@ -327,6 +327,12 @@ describe('main platform recent projects', () => {
     const pack = await p.project.recentSummary(root);
     expect(pack.pictureFrom).toBe('pack');
     expect(pack.picture?.[8]).toBe(9);
+    // The Minecraft it is made for (ADR 0136 D5): the first of its targets.
+    await p.fs.writeFile(
+      'msm.project.json',
+      json({ name: 'Ruby', namespaces: ['minecraft', 'ruby'], targets: ['mc-1.0'] }),
+    );
+    expect((await p.project.recentSummary(root)).target).toBe('mc-1.0');
     // A folder not in the list is never read.
     await expect(p.project.recentSummary(join(temp, 'elsewhere'))).rejects.toThrow(
       /not in the recent projects list/,
