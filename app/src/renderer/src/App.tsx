@@ -114,6 +114,7 @@ import {
   type ManualLauncher,
   type ManualLauncherRoot,
 } from './components/install-target';
+import { OfferCardHost } from './components/instances/OfferCard';
 import { ModpacksDialog } from './components/ModpacksDialog';
 import { MC_TEXTURES_PREFIX } from './components/mc-textures/catalogue';
 import {
@@ -4557,6 +4558,7 @@ export function App({
                   }}
                 />
               )}
+              <OfferCardHost />
               <CommandPalette
                 open={paletteOpen}
                 commands={palette}

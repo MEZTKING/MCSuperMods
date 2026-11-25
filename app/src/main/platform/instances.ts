@@ -105,6 +105,8 @@ export interface InstancesDeps {
   /** Milliseconds since the epoch. */
   now?(): number;
   sleep?(ms: number): Promise<void>;
+  /** The launcher folders' queue, shared with Play and Test in Minecraft (B765); a new one by default. */
+  queue?: <T>(key: string, step: () => Promise<T>) => Promise<T>;
 }
 
 /** The recipe facts of a built-in target. */
@@ -279,7 +281,7 @@ export function createInstancesService(deps: InstancesDeps): InstancesService {
   const now = deps.now ?? (() => Date.now());
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   const serversDir = serversFolder(deps.msmHome);
-  const queue = createFolderQueue();
+  const queue = deps.queue ?? createFolderQueue();
   /** Instance folders made in this run, and when (Prism is given a moment before `--launch`). */
   const madeAt = new Map<string, number>();
 

@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.9.
+- **Play asks before it makes an instance.** The first time Play or Play my game needs the test instance, a card says what MCSuperMods will make (its name, the Minecraft version and what goes in it) and waits for **Make it and play** or Cancel; tick **Do this by itself next time** to skip it. Settings, Game locations, **Instances MSM made** lists what MCSuperMods made, with **Show in folder** and **Remove** (to the recycle bin), and **Ask before making an instance**. When Prism Launcher is missing, its panel first names the MultiMC, PolyMC or CurseForge folders you added and what they can do.
 
 ## [1.5.9] - 2026-11-24
 

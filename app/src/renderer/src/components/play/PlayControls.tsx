@@ -110,6 +110,7 @@ export function PlayControls() {
   const restartDialog = usePlayStore((state) => state.restartDialog);
   const prismPanel = usePlayStore((state) => state.prismPanel);
   const prismMessage = usePlayStore((state) => state.prismMessage);
+  const otherLaunchers = usePlayStore((state) => state.otherLaunchers);
   const snapshot = useSessionSnapshot(host?.session ?? null);
   const menu = useMenuOpen();
 
@@ -300,6 +301,7 @@ export function PlayControls() {
       {prismPanel && (
         <PrismSetupPanel
           message={prismMessage}
+          launchers={otherLaunchers}
           busy={running !== null}
           onFind={() => void store.findPrism()}
           onChooseFolder={() => void store.choosePrismFolder()}

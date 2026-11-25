@@ -11,6 +11,14 @@
  * renames that world as New test world renames the test world. The chip's words and the restart reasons come from main
  * (`PlayStatus.label`, `PlayRestartReason.text`); the words here are the renderer's own.
  *
+ * Instances through recipes (ADR 0133 D3, B765): before Play or Play my game sends anything,
+ * it asks `instances.plan` for the test instance of the project's target. When it is not made
+ * yet, the offer card says what will be made (the first time for that kind, by default) and
+ * `instances.ensure` makes it, in the launcher folder's queue; an existing test instance never
+ * shows the card, so with everything in place Play is one progress line and no dialog. When
+ * Prism Launcher is missing, the setup panel first names the other launchers already added in
+ * Settings.
+ *
  * @packageDocumentation
  */
 
@@ -19,6 +27,9 @@ import type { OutputFile } from '@msm/plugin-api';
 import { blockItemIdOf } from '@msm/plugin-blocks-items';
 import { create } from 'zustand';
 import type {
+  InstancePlanRequest,
+  InstancesPlatform,
+  LauncherSettings,
   PlatformAdapter,
   PlayGameSettings,
   PlayInput,
@@ -36,6 +47,11 @@ import type {
 import { flushPendingEdits } from '../session/pending-edits';
 import type { ProjectSession } from '../session/project-session';
 import { errorCount, userFacingExportProblems } from '../studios/export-state';
+import {
+  type InstanceOfferInput,
+  type InstanceOfferOutcome,
+  useInstancesStore,
+} from './instances-store';
 import { type StatusMessage, useUiStore } from './ui-store';
 
 /** The renderer's own words for Play (the chip and restart texts come from main). */
@@ -71,7 +87,45 @@ export const PLAY_CONTROL_LABELS = {
   startOver: 'Start over',
   startOverOff: 'Close Minecraft first.',
   seed: 'Seed',
+  makingInstance: (name: string): string => `Making ${name}…`,
+  otherLaunchersIntro: 'These launchers are already on this computer:',
+  otherLaunchersPlay:
+    'Play and its test world need Prism Launcher for now. To use one of these, choose one of its Fabric instances in Settings, Game locations, then use Test in Minecraft.',
+  prismSteps: 'To use Play, get Prism Launcher:',
 } as const;
+
+/** A launcher the user already added in Settings, for the Prism setup panel (B765). */
+export interface OtherLauncher {
+  kind: 'multimc' | 'curseforge';
+  /** Its name and what it can do, in plain words. */
+  label: string;
+  /** How many of its folders were added. */
+  folders: number;
+}
+
+/** The launchers other than Prism added in Settings (B765: offered before getting Prism). */
+export function otherLaunchers(launchers: LauncherSettings | null | undefined): OtherLauncher[] {
+  const out: OtherLauncher[] = [];
+  const multimc = launchers?.multimcRoots.length ?? 0;
+  if (multimc > 0) {
+    out.push({
+      kind: 'multimc',
+      label:
+        'MultiMC or PolyMC: Test in Minecraft can put your mod into its Fabric instances and start them.',
+      folders: multimc,
+    });
+  }
+  const curseForge = launchers?.curseForgeRoots.length ?? 0;
+  if (curseForge > 0) {
+    out.push({
+      kind: 'curseforge',
+      label:
+        'CurseForge: Test in Minecraft can put your mod into its Fabric profiles; you start them from the CurseForge app.',
+      folders: curseForge,
+    });
+  }
+  return out;
+}
 
 /** What the controls run now (the chip's progress line belongs to it). */
 export type PlayOperation =
@@ -103,6 +157,13 @@ export interface PlayHost {
   shell: Pick<PlatformAdapter['shell'], 'showItemInFolder'>;
   settings: PlatformAdapter['settings'];
   dialogs: Pick<PlatformAdapter['dialogs'], 'pickDirectory'>;
+  /**
+   * `window.msm.instances` (ADR 0133): Play asks it for the test instance's plan first. Without
+   * it (an old test double) main makes the instance during Play, as before B765.
+   */
+  instances?: Pick<InstancesPlatform, 'plan'>;
+  /** Shows the offer card when the plan asks; defaults to the instances store's `prepare`. */
+  prepareInstance?(input: InstanceOfferInput): Promise<InstanceOfferOutcome>;
   /** Shows a status bar message; defaults to the UI store's. */
   notify?(message: StatusMessage): void;
   /** Shows the problems that blocked a build; defaults to the UI store's Problems panel. */
@@ -125,6 +186,8 @@ export interface PlayState {
   prismPanel: boolean;
   /** The Prism panel's last finding ("still not found"), or `null`. */
   prismMessage: string | null;
+  /** The launchers other than Prism added in Settings, shown first in the Prism panel. */
+  otherLaunchers: OtherLauncher[];
 
   setStatus(status: PlayStatus | null): void;
   /** Reads the status for the open project's target again. */
@@ -374,6 +437,62 @@ export function restartTexts(reasons: readonly PlayRestartReason[]): string[] {
   return [...new Set(reasons.map((reason) => reason.text))];
 }
 
+/**
+ * Makes sure the test instance of `kind`'s recipe is there before Play (ADR 0133 D3): asks
+ * `instances.plan`; when nothing is made yet, the offer card (or, when the plan does not ask,
+ * `instances.ensure` at once) makes it. Resolves `go` to play on, with `made` when the instance
+ * was made now, or `stop` when the user cancelled or making failed (already said).
+ */
+async function readyTestInstance(
+  host: PlayHost,
+  kind: PlayWorldKind,
+  built: Extract<BuiltInput, { ok: true }>,
+  setProgress: (line: string | null) => void,
+  onNoLauncher: () => void,
+): Promise<{ go: true; made: boolean } | { go: false }> {
+  const instances = host.instances;
+  const namespace = playNamespaces(built.project)[0];
+  if (instances === undefined || namespace === undefined) return { go: true, made: false };
+  const request: InstancePlanRequest = {
+    targetId: host.session.target.id,
+    action: { kind },
+    project: { namespace, modId: built.modId, playsWithoutMods: false },
+  };
+  let plan: Awaited<ReturnType<typeof instances.plan>>;
+  try {
+    plan = await instances.plan(request);
+  } catch {
+    // Main could not plan: Play goes on and main says what is wrong, as before.
+    return { go: true, made: false };
+  }
+  // A failed plan is left to Play's own message; an existing test instance never shows the card.
+  if (!plan.ok || plan.existing !== null) return { go: true, made: false };
+  if (plan.launcher === null) {
+    onNoLauncher();
+    return { go: false };
+  }
+  if (!plan.ask) setProgress(PLAY_CONTROL_LABELS.makingInstance(plan.recipe.place.name));
+  const prepare = host.prepareInstance ?? useInstancesStore.getState().prepare;
+  const outcome = await prepare({
+    plan,
+    request,
+    jars: async () => [{ modId: built.modId, data: built.jar }],
+  });
+  setProgress(null);
+  switch (outcome.kind) {
+    case 'made':
+      return { go: true, made: outcome.made.created };
+    case 'failed':
+      if (outcome.failure.code === 'no-launcher') onNoLauncher();
+      notifyOf(host)({ kind: 'error', text: outcome.failure.message });
+      return { go: false };
+    // Play offers none of the user's own instances (its test world needs the test instance).
+    case 'mine':
+    case 'cancelled':
+      return { go: false };
+  }
+}
+
 /** Built input, or the problems that blocked the content jar. */
 type BuiltInput =
   | {
@@ -430,6 +549,19 @@ function showBlocked(host: PlayHost, what: string, problems: readonly Problem[])
 
 /** The Play store. */
 export const usePlayStore = create<PlayState>()((set, get) => {
+  /** Opens the Prism panel and reads the other launchers added in Settings for it. */
+  const openPanel = (host: PlayHost): void => {
+    set({ prismPanel: true, prismMessage: null });
+    void (async () => {
+      try {
+        const launchers = otherLaunchers((await host.settings.get()).launchers);
+        if (get().host === host) set({ otherLaunchers: launchers });
+      } catch {
+        // Without the settings the panel only explains how to get Prism.
+      }
+    })();
+  };
+
   const targetOf = (host: PlayHost): string | null =>
     host.session.snapshot.project === null ? null : host.session.target.id;
 
@@ -437,7 +569,7 @@ export const usePlayStore = create<PlayState>()((set, get) => {
     const { host, running, status } = get();
     if (host === null || running !== null || host.session.snapshot.project === null) return;
     if (status?.instance === 'no-prism') {
-      set({ prismPanel: true, prismMessage: null });
+      openPanel(host);
       return;
     }
     const notify = notifyOf(host);
@@ -459,6 +591,14 @@ export const usePlayStore = create<PlayState>()((set, get) => {
         notify({ kind: 'error', text: PLAY_CONTROL_LABELS.playGameOff });
         return;
       }
+      const ready = await readyTestInstance(
+        host,
+        kind,
+        built,
+        (progress) => set({ progress }),
+        () => openPanel(host),
+      );
+      if (!ready.go) return;
       const input: PlayInput = {
         targetId: host.session.target.id,
         modId: built.modId,
@@ -470,13 +610,18 @@ export const usePlayStore = create<PlayState>()((set, get) => {
       };
       const result = op === 'play' ? await host.play.play(input) : await host.play.restart(input);
       if (!result.ok) {
-        if (result.code === 'no-prism') set({ prismPanel: true, prismMessage: null });
+        if (result.code === 'no-prism') openPanel(host);
         notify({ kind: 'error', text: result.message });
         return;
       }
       // ADR 0102 D4: the jar's ids are in the test world now.
       await host.session.recordPlayed('play');
-      notify({ kind: 'info', text: playResultMessage(result) });
+      notify({
+        kind: 'info',
+        text: playResultMessage(
+          ready.made && !result.instanceCreated ? { ...result, instanceCreated: true } : result,
+        ),
+      });
     } catch (error) {
       notify({ kind: 'error', text: `Play failed: ${messageOf(error)}` });
     } finally {
@@ -521,6 +666,7 @@ export const usePlayStore = create<PlayState>()((set, get) => {
     restartDialog: null,
     prismPanel: false,
     prismMessage: null,
+    otherLaunchers: [],
 
     setStatus: (status) => set({ status }),
 
@@ -600,7 +746,11 @@ export const usePlayStore = create<PlayState>()((set, get) => {
       if (reasons.length > 0) set({ restartDialog: reasons });
     },
     closeRestartDialog: () => set({ restartDialog: null }),
-    openPrismPanel: () => set({ prismPanel: true, prismMessage: null }),
+    openPrismPanel() {
+      const { host } = get();
+      if (host === null) set({ prismPanel: true, prismMessage: null });
+      else openPanel(host);
+    },
     closePrismPanel: () => set({ prismPanel: false, prismMessage: null }),
 
     async findPrism() {
@@ -654,6 +804,7 @@ export interface PlayBridge {
   shell: PlayHost['shell'];
   settings: PlayHost['settings'];
   dialogs: PlayHost['dialogs'];
+  instances?: PlayHost['instances'] | undefined;
 }
 
 /**
@@ -677,6 +828,7 @@ export function connectPlay(
     shell: bridge.shell,
     settings: bridge.settings,
     dialogs: bridge.dialogs,
+    ...(bridge.instances === undefined ? {} : { instances: bridge.instances }),
     ...options,
   };
   usePlayStore.setState({
@@ -687,6 +839,7 @@ export function connectPlay(
     restartDialog: null,
     prismPanel: false,
     prismMessage: null,
+    otherLaunchers: [],
   });
   const targetOf = (): string | null =>
     session.snapshot.project === null ? null : session.target.id;

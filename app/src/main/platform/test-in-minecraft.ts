@@ -87,7 +87,20 @@ export interface TestInMinecraftDeps {
   pickProgram(opts: { title: string; filters?: FileFilter[] | undefined }): Promise<string | null>;
   /** Resolves symlinks in an existing absolute path. Defaults to `fs.realpath`. */
   realpath?(absPath: string): Promise<string>;
+  /** The launcher folders' queue shared with the instances service (B765). */
+  queue?: FolderQueue;
 }
+
+/**
+ * Runs `step` after every earlier step under the same key (a launcher data folder): main's
+ * instances service makes one (`createFolderQueue`) and hands it to Play and Test in Minecraft
+ * too, so making the test instance and `instances.ensure` never stage in one Prism folder at
+ * once (B763, B765).
+ */
+export type FolderQueue = <T>(key: string, step: () => Promise<T>) => Promise<T>;
+
+/** Runs the step at once: the default without a shared queue. */
+export const NO_QUEUE: FolderQueue = (_key, step) => step();
 
 /** The launchers' display names, for messages. */
 export const LAUNCHER_NAMES: Record<LaunchableLauncher, string> = {
@@ -212,6 +225,7 @@ export function createTestInMinecraftService(deps: TestInMinecraftDeps): TestInM
   const download = deps.download ?? fetchDownloader;
   const spawnLauncher = deps.spawnLauncher ?? spawnDetached;
   const resolveReal = deps.realpath ?? ((path: string) => realpath(path));
+  const queue = deps.queue ?? NO_QUEUE;
 
   /** The first existing Prism data folder: detected ones, then those added in Settings. */
   const prismRoot = (): Promise<string | null> => findPrismRoot(fs, deps.env, deps.settings);
@@ -326,8 +340,11 @@ export function createTestInMinecraftService(deps: TestInMinecraftDeps): TestInM
       }
       const [instancesDir] = (await readMmcConfig(fs, root)).instanceDirs;
       if (instancesDir === undefined) throw new Error('Prism Launcher has no instances folder.');
-      await fs.mkdirp(instancesDir);
-      const created = await createManagedInstance(fs, instancesDir, facts);
+      // In the launcher folder's queue: never at the same time as `instances.ensure` (B765).
+      const created = await queue(locationPathKey(root), async () => {
+        await fs.mkdirp(instancesDir);
+        return createManagedInstance(fs, instancesDir, facts);
+      });
       await deps.settings.set({
         installTarget: { launcher: 'prism', root: normalize(root), instance: created.folder },
       });

@@ -34,7 +34,7 @@ import {
 import { createExportsService } from './exports';
 import { createGeckolibJarService } from './geckolib-jar';
 import { type GradleWrapperLocation, readGradleWrapper } from './gradle-wrapper';
-import { createInstancesService, type InstancesService } from './instances';
+import { createFolderQueue, createInstancesService, type InstancesService } from './instances';
 import {
   createLocalServerService,
   type LocalServerDeps,
@@ -384,7 +384,10 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     cacheDir: downloadsDir,
     ...(testOptions.download === undefined ? {} : { download: testOptions.download }),
   });
+  // B765: one queue per launcher folder for every step that makes or changes an instance.
+  const launcherFolders = createFolderQueue();
   const testInMinecraft = createTestInMinecraftService({
+    queue: launcherFolders,
     fs: installFs,
     env: { ...deps.installEnv, ...testOptions.env },
     locations,
@@ -399,6 +402,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   const scripting = deps.scripting ?? createScriptingService();
   // ADR 0084: Play uses only the managed instance and the same download cache.
   const play = createPlayService({
+    queue: launcherFolders,
     fs: installFs,
     env: { ...deps.installEnv, ...testOptions.env },
     settings,
@@ -470,6 +474,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   });
   // ADR 0133 D1 to D5: the managed instances of every purpose, in Prism Launcher for now.
   const instances = createInstancesService({
+    queue: launcherFolders,
     fs: installFs,
     env: { ...deps.installEnv, ...testOptions.env },
     settings,

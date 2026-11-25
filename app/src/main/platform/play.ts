@@ -65,6 +65,7 @@ import {
   isHandled,
   type LauncherProgramEnv,
   launchArguments,
+  locationPathKey,
   MANAGED_INSTANCE_MARKER,
   managedInstanceName,
   nextPlayRequest,
@@ -116,8 +117,10 @@ import type { SettingsStore } from './settings';
 import {
   builtInFabricFacts,
   checkedFolderInGame,
+  type FolderQueue,
   findPrismRoot,
   messageOf,
+  NO_QUEUE,
   spawnDetached,
 } from './test-in-minecraft';
 
@@ -200,6 +203,11 @@ export interface PlayDeps {
   /** Interval timer for the status poll. */
   setInterval?(fn: () => void, ms: number): unknown;
   clearInterval?(handle: unknown): void;
+  /**
+   * The launcher folders' queue shared with the instances service (B765): Play makes or updates
+   * the test instance in it, so it never stages in a Prism folder while `instances.ensure` does.
+   */
+  queue?: FolderQueue;
 }
 
 /** The version facts Play needs beyond the Fabric versions. */
@@ -362,6 +370,7 @@ export function createPlayService(deps: PlayDeps): PlayService {
   const rename = deps.rename ?? renameNode;
   const now = deps.now ?? (() => Date.now());
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  const queue = deps.queue ?? NO_QUEUE;
   const startInterval = deps.setInterval ?? ((fn: () => void, ms: number) => setInterval(fn, ms));
   const stopInterval =
     deps.clearInterval ?? ((handle: unknown) => clearInterval(handle as NodeJS.Timeout));
@@ -618,10 +627,15 @@ export function createPlayService(deps: PlayDeps): PlayService {
     if (instancesDir === undefined) {
       throw new PlayFailure('no-prism', 'Prism Launcher has no instances folder.');
     }
-    await fs.mkdirp(instancesDir);
     let created: Awaited<ReturnType<typeof createManagedInstance>>;
     try {
-      created = await createManagedInstance(fs, instancesDir, facts);
+      // The renderer makes a missing test instance through `instances.ensure` first (the offer
+      // card, ADR 0133 D3); here it is only checked and brought up to date, in the launcher
+      // folder's queue so the two never overlap (B765).
+      created = await queue(locationPathKey(root), async () => {
+        await fs.mkdirp(instancesDir);
+        return createManagedInstance(fs, instancesDir, facts);
+      });
     } catch (error) {
       throw new PlayFailure('instance-not-managed', messageOf(error));
     }

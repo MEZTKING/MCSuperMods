@@ -8,12 +8,14 @@ For a one-off test with another launcher, or to install the mod into a world you
 
 ## What you need
 
-- [Prism Launcher](https://prismlauncher.org/), installed, started once and **signed in to a Microsoft account**. MCSuperMods cannot start Minecraft itself, because Minecraft needs your sign-in, and the official launcher and CurseForge cannot be told to start an instance. If Play's chip on the toolbar says Prism Launcher is missing, open the panel it offers (**Get Prism Launcher**): it says how to install and sign in, and has **Find Prism** and **Choose Prism's folder…**. Once found it says "Found Prism Launcher. Press Play to start."
+- [Prism Launcher](https://prismlauncher.org/), installed, started once and **signed in to a Microsoft account**. MCSuperMods cannot start Minecraft itself, because Minecraft needs your sign-in, and the official launcher and CurseForge cannot be told to start an instance. If Play's chip on the toolbar says Prism Launcher is missing, open the panel it offers (**Get Prism Launcher**): it says how to install and sign in, and has **Find Prism** and **Choose Prism's folder…**. Once found it says "Found Prism Launcher. Press Play to start." When you have already added a MultiMC, PolyMC or CurseForge folder in Settings, the panel names those first and what they can do now: **Test in Minecraft…** can put your mod into their Fabric instances, while Play and its test world need Prism Launcher for now.
 - A project with no errors. If a mistake stops the mod from being built, Play says "Play blocked by N error(s); nothing was sent to the game. See Problems." (the same errors are in **Things to fix**).
 
 ## Play
 
 Press **Play** in the toolbar, **File > Play**, or **F5**. When the game is not running, the first line of Play's menu (the arrow beside it) says how the game is; the chip beside Play shows only when Prism Launcher is missing, a restart is needed or the game is running. MCSuperMods saves the project, builds the mod and starts the game. The first time it also makes the test instance **MCSuperMods Test (26.3)** (or the one for the target you are using) in Prism with Fabric, Fabric API and your mod. Prism downloads Minecraft that first time, which takes a few minutes. Your other Prism instances and worlds are never touched.
+
+When Play or Test in Minecraft needs an instance that is not there yet, MCSuperMods first shows what it will make: the instance's name, the Minecraft version and what goes in it. Press **Make it and play**, choose **Use one of mine instead…** to pick one of your own instances, or Cancel. Tick **Do this by itself next time** to skip the question for that kind. Play's test world needs its own test instance, so Play does not offer your own instances. Once the test instance is there, Play does not ask again: it shows one progress line and starts the game. A project for the other Minecraft version (see [Targets](targets.md)) gets its own test instance the same way.
 
 The game opens by itself in a **test world**: a flat Creative world named "MCSuperMods test (your namespace)". It is made for trying things:
 
@@ -88,6 +90,12 @@ Choose **Restart** in the dialog (or in the Play menu). The game saves, closes, 
 ## Where it works
 
 Dev tools are on only in the test instance's single-player test world. They are off in your other instances, on servers and for friends who install the jar, so nothing in a Share my mod jar changes. MCSuperMods puts a folder `msm-dev/` in the test instance's game folder, with the files that carry your changes; nothing is written to your other Prism instances.
+
+## Instances MSM made
+
+Settings, Game locations, **Instances MSM made** lists every instance and server MCSuperMods made, with what each is for. **Show in folder** opens it; **Remove** moves it to the recycle bin with its worlds, after asking. Your own instances are never listed or changed.
+
+**Ask before making an instance**: the first time for each kind (the default), every time, or never. **Ask again** brings the question back for the kinds made without asking.
 
 ## World backups
 
