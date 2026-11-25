@@ -11838,3 +11838,26 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 
 **Next**
 - Wire the part (seam in the plan's "B822's notes"); B825: the guide's `eject.md` lines on **Save upgrade notes…**.
+
+## 2026-11-25 — orchestrator — App plugins: ADR 0137 and the plan (Plan E)
+
+**What**
+- The user (2026-11-25): "Make a plugin support system so anybody can add plugins to modify this application". Read what exists at `3a4ca9f`: plugin API 1.30.0 is a content API; third-party plugins run one worker each under `msm-app://` (ADR 0035) and receive only what they are asked about; `editors`, `commands` and `targets` from them are ignored; the app's own seams (commands, the Studio registry, the live view registry, the `PlainFix` table, the AI tool catalogue, eight colour tokens, shortcuts) are internal; getting a plugin is copying a folder and restarting; the app has no translation layer; the community repository holds examples only. Twenty findings P1 to P20 in the plan's section 1.
+- Wrote [ADR 0137](adr/0137-app-plugins-extension-points-permissions-and-the-catalogue.md) (Proposed, D1 to D14) and `docs/PLAN-app-plugins.md` (spike B840, briefs B841 to B863 in waves P0 to P8, reserves B864 to B869, B870 to B879 free), a ROADMAP section and one pointer line in DESIGN §7. No code.
+
+**Decisions** (all vetoable; ADR 0137)
+- Three tiers: data, code without a screen, code with a screen; each of the fifteen extension points sits in the lowest tier that can express it.
+- Plugin screens are a view tree the host draws from a fixed kit of 23 parts, with a canvas for free drawing; no iframe and no DOM for plugins. Reasons: one mode and plain words hold by construction, the existing worker stays the only wall, a plugin cannot imitate the app's trust screens, and a tree is testable data. The spike can overturn it only for the canvas.
+- Permissions in manifest version 2, shown as plain sentences before any plugin code runs and again when an update asks for more; a plugin changes a mod only by a changeset applied as one undo step on a user action; the network only through a broker in main to named `https:` hosts; no clipboard read.
+- Off per plugin, per mod and for all; safe mode by flag and after two failed starts; SHA-256 pinning in a lock file; the catalogue index signed, with a recall list.
+- Install is app-wide, use is per project; a project names its plugins and never carries their code.
+- The catalogue is the community repository, by pull request, with CI checks and a maintainer's approval for new plugins and for more permissions; updates only on a click, with the changelog and the version before kept.
+- `@msm/plugin-kit` (build, check, pack, a harness speaking the real protocol), templates per point, dev mode with hot reload, an inspector.
+- Stable and experimental members; nothing stable removed before 2.0 (tightens ADR 0036 D1's "at least one minor", which is days at the present pace).
+- Left out on purpose: translating the app's own words (reserve B865), author signatures, third-party targets, Java in the runtime mod.
+
+**Next**
+- Eight questions for the user in the plan's section 2 (who approves catalogue entries, plugins from outside it, the daily update check, the internet for plugins, plugins inside a mod's folder, translating the app, what may be listed, Java in the runtime). The spike and wave P1 do not wait for them.
+- Run B840 in any free slot (it writes only under `docs/reference/spikes/b840/`); fold its answers into ADR 0137 before B841.
+- The renderer is at 20.1 of 21 MB with the stop line at 20.5: if B840's T3 shows the kit will not fit as lazy chunks, run reserve B868 first.
+- Single-owner files this plan shares with the others are listed in the plan's section 3; B841 must not run beside Plan C's B782.

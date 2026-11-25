@@ -1150,3 +1150,33 @@ The app notices a newer Minecraft for the open mod, tries the move on a copy, mo
 - [ ] B826 The 26.4 run of the tools: dry run now, the re-pin at the release (wave V5; Opus, high; takes over "26.4 release re-pin", was reserve B163)
 - [ ] B827 Close (wave V6; main session)
 - Reserve: B828 migration-only records for a dropped target, B829 Check all my mods on Home, B830 a quick fix for projects moved before a migration was corrected; B831 to B839 free.
+
+### App plugins (ADR 0137 proposed, `docs/PLAN-app-plugins.md`, user 2026-11-25: "Make a plugin support system so anybody can add plugins to modify this application")
+
+Plugins may change the app itself, not only add content: fifteen extension points in three tiers (data, code without a screen, code whose screen the app draws from a fixed kit), permissions in plain words before install, changes to a mod only as one undo step, the network only through main to named hosts, off switches and safe mode, hash pinning, a reviewed and signed catalogue in the community repository with updates on a click, and a developer kit (`@msm/plugin-kit`, templates, a test harness, hot reload, an inspector). Eight questions for the user in the plan's section 2.
+
+- [ ] B840 Spike: can the wall hold the new surface, measured (wave P0; Opus, high)
+- [ ] B841 Plugin API: the app surface (wave P1; Opus, high)
+- [ ] B842 Sandbox 2 in the renderer, with `fixtures/hostile-plugin` (wave P1; Opus, high)
+- [ ] B843 Main: packages, the lock file, the broker, safe mode (wave P1; Opus, high)
+- [ ] B844 `@msm/plugin-kit`: build, check, pack and the test harness (wave P2; Opus, medium)
+- [ ] B845 Settings > Plugins and the question before install (wave P2; Opus, high)
+- [ ] B846 Commands, menus, toolbar More and shortcuts (wave P2; Opus, medium)
+- [ ] B847 Changes by plugins: the review sheet, fixes and suggestions (wave P2; Opus, medium)
+- [ ] B848 Themes (wave P3; Opus, medium)
+- [ ] B849 Home rows, Settings pages and the plugin's own words (wave P3; Opus, medium)
+- [ ] B850 Studio layouts and sections from data (wave P3; Opus, high)
+- [ ] B851 The view kit (wave P4; Opus, high)
+- [ ] B852 Coded Studios, sections, panels and dialogs (wave P4; Opus, high)
+- [ ] B853 Live views for plugin kinds (wave P4; Opus, high)
+- [ ] B854 AI helper tools from plugins (wave P5; Opus, high)
+- [ ] B855 Hooks and export steps (wave P5; Opus, medium)
+- [ ] B856 Try it tools (wave P5; Opus, medium)
+- [ ] B857 The catalogue: format, CI and review tools (wave P6; Opus, high)
+- [ ] B858 Get more, links, updates and recall in the app (wave P6; Opus, high)
+- [ ] B859 Dev mode and the inspector (wave P7; Opus, high)
+- [ ] B860 Templates and `fixtures/sample-app-plugin` (wave P7; Opus, medium)
+- [ ] B861 Docs, guide, search words, AI helper lines and changelog (wave P7; Sonnet, Opus for the prompt lines)
+- [ ] B862 e2e and the safety run (wave P7; Opus, high)
+- [ ] B863 Close (wave P8; main session)
+- Reserve: B864 plugin workers in a process of their own, B865 the app's own words as a string list and language packs, B866 author signatures, B867 a sandboxed frame for the Canvas node, B868 a size brief, B869 Get the plugin rows in search; B870 to B879 free.
