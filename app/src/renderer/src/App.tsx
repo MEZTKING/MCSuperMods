@@ -145,7 +145,7 @@ import {
   TestInMinecraftDialog,
   testInMinecraftMessage,
 } from './components/TestInMinecraftDialog';
-import { ThingsToFix } from './components/ThingsToFix';
+import { afterMovingGroup, ThingsToFix } from './components/ThingsToFix';
 import { modKey, SearchDoorField, Toolbar, type ToolbarPluginExport } from './components/Toolbar';
 import { NewTextureDialog } from './components/texture-editor/NewTextureDialog';
 import { PictureToTextureDialog } from './components/texture-editor/PictureToTextureDialog';
@@ -441,7 +441,7 @@ type DialogState =
   | { type: 'plugin-export'; exporterId: string }
   | { type: 'java-project' }
   | { type: 'test-in-minecraft' }
-  | { type: 'upgrade-target' }
+  | { type: 'upgrade-target'; targetId?: string; savedFolder?: string }
   | { type: 'whats-new'; version: string; notes?: string }
   | { type: 'welcome' }
   | { type: 'modpacks' }
@@ -804,10 +804,12 @@ export function App({
     [select, session, setMessage, setExportProblems, refreshMinecraftStatus, refreshRecent],
   );
 
-  const previewUpgrade = useCallback(
-    (targetId: string) => session.upgradeTargetPreview(targetId),
+  // The upgrade report (ADR 0136 D4, B818): the dry run the dialog shows, and the saved moves.
+  const upgradeReportOf = useCallback(
+    (targetId: string, signal: AbortSignal) => session.upgradeReport(targetId, { signal }),
     [session],
   );
+  const loadSavedMoves = useCallback(() => session.savedUpgradeReports(), [session]);
 
   const openRecent = useCallback(
     (root: string) => void openWith('Open project', () => session.openRecent(root)),
@@ -935,6 +937,21 @@ export function App({
     if (store.areaRoot !== null && store.areaRoot !== projectRoot) store.reset();
     if (projectRoot === null) store.reset();
   }, [projectRoot]);
+  // The After moving list (ADR 0136 D6, B818) needs the saved moves read once per project.
+  const [, setSavedMovesRead] = useState(0);
+  useEffect(() => {
+    if (projectRoot === null) return;
+    let live = true;
+    session.savedUpgradeReports().then(
+      () => {
+        if (live) setSavedMovesRead((count) => count + 1);
+      },
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, [session, projectRoot]);
   // Choosing an element leaves Try it (it keeps its area for the way back).
   useEffect(() => {
     if (selectedId !== null) useTryItStore.getState().close();
@@ -3958,6 +3975,17 @@ export function App({
                       }}
                       onFix={fixProblem}
                       {...(aiController === null ? {} : { onAsk: explainWithAi })}
+                      afterMoving={afterMovingGroup(session.openUpgradeItems())}
+                      onTickUpgradeItem={(folder, itemId, ticked) => {
+                        session
+                          .setUpgradeItemTicked(folder, itemId, ticked)
+                          .catch((error: unknown) =>
+                            setMessage({ kind: 'error', text: messageOf(error) }),
+                          );
+                      }}
+                      onOpenMoveReport={(folder) =>
+                        setDialog({ type: 'upgrade-target', savedFolder: folder })
+                      }
                     />
                   )}
                   <StatusBar snapshot={snapshot} target={project === null ? null : target} />
@@ -4035,24 +4063,52 @@ export function App({
                 <UpgradeTargetDialog
                   currentTargetId={target.id}
                   targets={session.availableTargets}
-                  preview={previewUpgrade}
+                  project={project}
+                  problems={snapshot.problems}
+                  report={upgradeReportOf}
+                  loadSaved={loadSavedMoves}
+                  {...(dialog.targetId === undefined ? {} : { initialTargetId: dialog.targetId })}
+                  {...(dialog.savedFolder === undefined
+                    ? {}
+                    : { initialSavedFolder: dialog.savedFolder })}
                   onCancel={() => setDialog(null)}
-                  onUpgrade={(targetId, report) => {
+                  onShow={(elementId, path) => {
                     setDialog(null);
-                    session.upgradeTarget(targetId, report).then(
-                      () => {
-                        setMessage({
-                          kind: 'info',
-                          text: `Project target changed to ${targetId}.`,
-                        });
-                        void refreshMinecraftStatus();
-                      },
-                      (error: unknown) =>
-                        setMessage({
-                          kind: 'error',
-                          text: `Upgrade project target failed: ${messageOf(error)}`,
-                        }),
-                    );
+                    navigateTo(elementId as ResourceLocation, path ?? null, null);
+                  }}
+                  onFix={fixProblem}
+                  {...(aiController === null
+                    ? {}
+                    : {
+                        onAsk: (problem: Problem) => {
+                          setDialog(null);
+                          explainWithAi(problem);
+                        },
+                      })}
+                  onMove={(targetId, move) => {
+                    setDialog(null);
+                    const mcVersion =
+                      session.availableTargets.find((entry) => entry.id === targetId)?.mcVersion ??
+                      targetId;
+                    session
+                      .upgradeTarget(targetId, move.migration, { upgradeReport: move.report })
+                      .then(
+                        (outcome) => {
+                          setMessage({
+                            kind: outcome.saveError === undefined ? 'info' : 'error',
+                            text:
+                              outcome.saveError === undefined
+                                ? `Your mod now uses Minecraft ${mcVersion}.`
+                                : `Your mod now uses Minecraft ${mcVersion}, but the copy of it as it was could not be kept: ${outcome.saveError}`,
+                          });
+                          void refreshMinecraftStatus();
+                        },
+                        (error: unknown) =>
+                          setMessage({
+                            kind: 'error',
+                            text: `Could not move your mod to Minecraft ${mcVersion}: ${messageOf(error)}`,
+                          }),
+                      );
                   }}
                 />
               )}

@@ -106,9 +106,18 @@ export const BUILT_IN_COMMANDS: Readonly<
     words: ['recent', 'last project', 'history', 'reopen'],
   },
   upgradeTarget: {
-    title: 'Upgrade project target…',
-    sentence: 'Move the mod to another Minecraft version.',
-    words: ['minecraft version', 'update version', 'snapshot', 'port', 'migrate'],
+    title: 'Move to another Minecraft version…',
+    sentence: 'Move the mod to another Minecraft version and see what changes.',
+    words: [
+      'minecraft version',
+      'update version',
+      'upgrade',
+      'upgrade project target',
+      'new version',
+      'snapshot',
+      'port',
+      'migrate',
+    ],
   },
   save: {
     title: 'Save',

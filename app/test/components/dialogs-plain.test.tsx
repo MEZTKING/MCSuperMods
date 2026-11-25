@@ -35,7 +35,10 @@ import {
   TestInMinecraftDialog,
   type TestInstanceOfferHost,
 } from '../../src/renderer/src/components/TestInMinecraftDialog';
-import { UpgradeTargetDialog } from '../../src/renderer/src/components/UpgradeTargetDialog';
+import {
+  type MoveReport,
+  UpgradeTargetDialog,
+} from '../../src/renderer/src/components/UpgradeTargetDialog';
 import { USAGES_TITLE, UsagesDialog } from '../../src/renderer/src/components/UsagesDialog';
 import type { ProjectSession } from '../../src/renderer/src/session/project-session';
 import type { InstanceOfferInput } from '../../src/renderer/src/store/instances-store';
@@ -160,6 +163,43 @@ const report: MigrationReport = {
   problems: [
     { severity: 'warning', code: 'target.check', message: 'Check by hand', elementId: 'demo:gem' },
   ],
+};
+
+/** The dry run the Move dialog shows: `report` above as parts 2 and 3 (ADR 0136 D4, B818). */
+const move: MoveReport = {
+  migration: report,
+  report: {
+    from: { targetId: target.id, mcVersion: target.mcVersion },
+    to: { targetId: other.id, mcVersion: other.mcVersion },
+    changed: [],
+    done: [
+      {
+        elementId: 'demo:ruby' as ResourceLocation,
+        kind: 'update',
+        description: 'Its sound moved',
+        details: [],
+        changeIds: [],
+      },
+    ],
+    todo: [
+      {
+        id: 'todo:gem',
+        source: 'migration',
+        problem: report.problems[0] as MigrationReport['problems'][number],
+        check: 'manual',
+      },
+    ],
+    players: {
+      rows: [
+        { fact: 'minecraft', before: target.mcVersion, after: other.mcVersion, changed: true },
+      ],
+      changes: [],
+      exports: [],
+    },
+    added: { total: 0, byKind: {} },
+    inGame: { checks: [], standing: ['start-game', 'open-world', 'look-at-changes'] },
+    untouched: { total: 0, byArea: {} },
+  },
 };
 
 /** Each dialog with plain words by default, and the old test ids found under More options. */
@@ -288,12 +328,12 @@ const DIALOGS: {
       <UpgradeTargetDialog
         currentTargetId={target.id}
         targets={targets}
-        preview={async () => report}
-        onUpgrade={vi.fn()}
+        report={async () => move}
+        onMove={vi.fn()}
         onCancel={vi.fn()}
       />
     ),
-    ready: () => screen.findByTestId('upgrade-target-summary'),
+    ready: () => screen.findByTestId('upgrade-report'),
     intro: 'upgrade-target-intro',
     more: 'upgrade-target',
     inMore: ['upgrade-target-ids'],
@@ -404,24 +444,24 @@ describe('the dialogs in plain words (plan B716)', () => {
       <UpgradeTargetDialog
         currentTargetId={target.id}
         targets={targets}
-        preview={async () => report}
-        onUpgrade={vi.fn()}
+        report={async () => move}
+        onMove={vi.fn()}
         onCancel={vi.fn()}
       />,
     );
     const changes = await screen.findByTestId('upgrade-target-changes');
-    expect(changes.textContent).toBe('Its sound moved');
+    expect(screen.getByTestId('upgrade-done-0-steps').textContent).toBe('Its sound moved');
+    expect(changes.textContent).not.toContain('demo:ruby');
     openMore('upgrade-target');
-    expect(screen.getByTestId('upgrade-target-changes').textContent).toBe(
-      'demo:ruby: Its sound moved',
+    expect(screen.getByTestId('upgrade-target-changes').textContent).toContain('demo:ruby:');
+    expect(screen.getByTestId('upgrade-todo-0-raw').textContent).toBe(
+      'target.check demo:gem : Check by hand',
     );
-    expect(screen.getByTestId('upgrade-target-problems-warning').textContent).toBe(
-      'demo:gem: Check by hand',
-    );
+    expect(screen.getByTestId('upgrade-target-summary').textContent).toBe('1 change, 1 problem.');
     expect(screen.getByTestId(`upgrade-target-${other.id}`).textContent).toContain(other.id);
     // Closed again: the ids go.
     fireEvent.click(screen.getByTestId('more-options-dialog-upgrade-target'));
-    expect(screen.getByTestId('upgrade-target-changes').textContent).toBe('Its sound moved');
+    expect(screen.getByTestId('upgrade-target-changes').textContent).not.toContain('demo:ruby');
   });
 
   it('Change id: a plain title and what changing an id means; the body shows the id', () => {

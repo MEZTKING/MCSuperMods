@@ -1006,7 +1006,7 @@ describe('App project target (ADR 0037 D4)', () => {
     // Upgrading loads the second target and lowers the whole project again, which takes
     // more than findByText's default second when CI runs every package's tests at once.
     await screen.findByText(
-      `Project target changed to ${snapshotTarget.id}.`,
+      `Your mod now uses Minecraft ${snapshotTarget.mcVersion}.`,
       { ignore: 'script, style, body > [role="status"]' },
       { timeout: 10_000 },
     );
@@ -1032,14 +1032,14 @@ describe('App project target (ADR 0037 D4)', () => {
     );
   });
 
-  it('offers "Upgrade project target…" in the palette', async () => {
+  it('offers "Move to another Minecraft version…" in the palette', async () => {
     const harness = await renderApp();
     await harness.menu('commandPalette');
     const palette = await screen.findByTestId('command-palette');
     const user = userEvent.setup();
     await user.click(within(palette).getByTestId('command-upgradeTarget'));
     const dialog = await screen.findByTestId('upgrade-target-dialog');
-    await user.click(within(dialog).getByText('Cancel'));
+    await user.click(within(dialog).getByText('Not now'));
     await waitFor(() => expect(screen.queryByTestId('upgrade-target-dialog')).toBeNull());
   });
 });

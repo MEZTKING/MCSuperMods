@@ -1,8 +1,8 @@
 /**
  * Targets (ADR 0037): a new project through the Custom ore wizard keeps the default target
- * (the newest release target); the status bar shows it; "Upgrade project target…" (File >
- * Upgrade Project Target… in the menu bar, here through the command palette) offers the
- * snapshot target with its badge and previews the migration report; Upgrade moves the
+ * (the newest release target); the status bar shows it; "Move to another Minecraft version…"
+ * (File menu, here through the command palette) offers the snapshot target with its badge and
+ * shows the report of the move (ADR 0136); **Move my mod to Minecraft X** moves the
  * project, the status bar follows, the resource pack zip is named for the new target and its
  * `pack.mcmeta` carries that target's formats; Undo moves the project back.
  *
@@ -142,7 +142,7 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
   await upgrade.getByTestId('upgrade-target-dialog-submit').click();
   await expect(upgrade).toBeHidden();
   await expect(window.getByTestId('status-toast-text')).toContainText(
-    `Project target changed to ${snapshot.id}.`,
+    `Your mod now uses Minecraft ${snapshot.mcVersion}.`,
   );
 
   // The status bar follows, with the snapshot badge. --------------------------------------

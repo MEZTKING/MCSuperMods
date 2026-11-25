@@ -63,6 +63,20 @@ export interface ThingsToFixProps {
   note?: ReactNode;
 }
 
+/**
+ * The After moving group of `session.openUpgradeItems()`'s answer (the newest saved move and its
+ * open items), or `null` when there is none.
+ */
+export function afterMovingGroup(
+  open: {
+    upgrade: { folder: string; to: { mcVersion: string } };
+    items: readonly UpgradeTodoItem[];
+  } | null,
+): AfterMovingGroup | null {
+  if (open === null || open.items.length === 0) return null;
+  return { folder: open.upgrade.folder, mcVersion: open.upgrade.to.mcVersion, items: open.items };
+}
+
 /** The label of the After moving group's button that reopens the saved report. */
 export const WHAT_CHANGED_WHEN_I_MOVED = 'What changed when I moved';
 
@@ -199,7 +213,7 @@ function AfterMoving(props: {
       <ul className="flex flex-col gap-1">
         {group.items.map((item, index) => {
           const testId = `things-to-fix-after-moving-${index}`;
-          const hint = todoItemHint(item);
+          const hint = todoItemHint(item, group.items[index - 1]);
           return (
             <Row
               key={item.id}
