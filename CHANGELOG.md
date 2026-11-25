@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.10.
+- **Play without mods.** A game made only of data packs can be played as players without mods have it: **Play without mods** in the Play menu opens a copy of your game's world, with your packs and without the test instance's extras, in a second Prism instance, **MCSuperMods Plain**, that has Minecraft and nothing else. A game that needs its mod is told so; a game with no world yet is told to press **Play my game** once first.
 
 ## [1.5.10] - 2026-11-25
 

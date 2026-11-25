@@ -12,8 +12,13 @@
  * again just before. `ensureInstance` and removal run one at a time per launcher folder (B761:
  * a second run's stale-staging clean-up could remove the first run's staging folder).
  *
+ * Play without mods and Open this map (D6, B766): `playPlain` and `openMap` copy a world by the
+ * map export's plan (`plain-play.ts`), make or update the Plain instance on that copy with
+ * `ensureInstance` and start Prism on it with `--world`. A project that needs its mod is refused
+ * in words (`needs-mod`); a map that needs its mod answers `not-yet` (its own instance, B767).
+ *
  * Every answer is `{ ok: false, code, message }` on failure, never a throw, as Play's.
- * `playPlain`, `openMap` and `curseForgeProfile` answer `not-yet` until B766, B767 and B768.
+ * `curseForgeProfile` answers `not-yet` until B768.
  *
  * @packageDocumentation
  */
@@ -29,6 +34,7 @@ import {
   FabricTestError,
   fetchDownloader,
   findLauncherProgram,
+  gameWorldFolder,
   type InstallFileSystem,
   InstanceError,
   joinInstallPath,
@@ -62,6 +68,8 @@ import type {
   InstanceFailureCode,
   InstanceJar,
   InstanceLaunchResult,
+  InstanceOpenMapRequest,
+  InstancePlainRequest,
   InstancePlanRequest,
   InstancePlanResult,
   InstanceRecipeView,
@@ -69,6 +77,14 @@ import type {
   ManagedKind,
   ManagedThing,
 } from '../../shared/platform';
+import { MANAGED_MAP_SOURCE } from './map-export';
+import {
+  NEEDS_MOD_MESSAGE,
+  NO_GAME_WORLD_MESSAGE,
+  type PlainWorlds,
+  type PreparedWorld,
+  plainWorldFolder,
+} from './plain-play';
 import type { SettingsStore } from './settings';
 import { messageOf, spawnDetached } from './test-in-minecraft';
 
@@ -107,6 +123,8 @@ export interface InstancesDeps {
   sleep?(ms: number): Promise<void>;
   /** The launcher folders' queue, shared with Play and Test in Minecraft (B765); a new one by default. */
   queue?: <T>(key: string, step: () => Promise<T>) => Promise<T>;
+  /** The worlds Play without mods and Open this map copy (B766); without it both fail plainly. */
+  plainWorlds?: PlainWorlds;
 }
 
 /** The recipe facts of a built-in target. */
@@ -463,6 +481,83 @@ export function createInstancesService(deps: InstancesDeps): InstancesService {
     'MCSuperMods did not make this, or it is gone, so MCSuperMods leaves it alone.',
   );
 
+  /** Starts Prism on MSM's instance `found` for `recipe`: joining its server or opening its copied world. */
+  const launchFound = async (
+    root: string,
+    recipe: RunRecipe,
+    found: { folder: string; instanceDir: string },
+  ): Promise<InstanceLaunchResult> => {
+    if (recipe.join !== null && recipe.place.kind === 'instance' && recipe.place.role === 'test') {
+      // B760 N14: a play request left from an earlier Play could open the test world
+      // instead of joining the server.
+      const playRequest = devPaths(await gameDirOf(found.instanceDir)).play;
+      if (await fs.exists(playRequest)) await fs.remove(playRequest);
+    }
+    const program = await findLauncherProgram(
+      fs,
+      'prism',
+      root,
+      deps.env,
+      (await deps.settings.launcherPrograms()).prism,
+    );
+    if (program === null) {
+      return {
+        ok: true,
+        name: found.folder,
+        launched: false,
+        note: `Start Prism Launcher and choose "${found.folder}".`,
+      };
+    }
+    const args = launchArguments({ launcher: 'prism', root, instance: found.folder }, deps.env);
+    if (recipe.join !== null) args.push('--server', `${recipe.join.host}:${recipe.join.port}`);
+    else if (recipe.world !== null && recipe.world.source !== null) {
+      args.push('--world', recipe.world.folder);
+    }
+    // B760: a running Prism lists a new instance folder a moment after it appears.
+    const made = madeAt.get(normalize(found.instanceDir));
+    if (made !== undefined) {
+      const wait = made + LAUNCH_AFTER_CREATE_MS - now();
+      if (wait > 0) await sleep(wait);
+    }
+    try {
+      await spawnLauncher(program, args);
+    } catch (error) {
+      return failure('failed', `Prism Launcher could not be started: ${messageOf(error)}`);
+    }
+    return { ok: true, name: found.folder, launched: true, note: null };
+  };
+
+  /**
+   * Play without mods and Open this map (D6): the copied world into the Plain instance (made or
+   * brought up to date) through `ensureInstance`, in the launcher folder's queue, then Prism
+   * started on it. The work folder of the copy is removed whatever happens.
+   */
+  const playCopied = async (
+    request: { targetId: string; project: InstancePlainRequest['project'] },
+    action: (world: PreparedWorld) => RunAction,
+    prepare: () => Promise<PreparedWorld>,
+  ): Promise<InstanceLaunchResult> => {
+    const root = await prismRoot();
+    if (root === null) return failure('no-launcher', NO_PRISM_MESSAGE);
+    const world = await prepare();
+    try {
+      const recipe = recipeFor(action(world), request.project, facts(request.targetId));
+      if (recipe.place.kind !== 'instance' || recipe.place.role !== 'plain') {
+        return failure('needs-mod', NEEDS_MOD_MESSAGE);
+      }
+      const ensured = await queue(locationPathKey(root), () =>
+        ensureInstance({ fs, sha512, bytesOf: bytesOf([]) }, root, recipe),
+      );
+      if (ensured.created) madeAt.set(normalize(ensured.instanceDir), now());
+      return await launchFound(root, recipe, {
+        folder: ensured.folder,
+        instanceDir: ensured.instanceDir,
+      });
+    } finally {
+      await world.dispose().catch(() => {});
+    }
+  };
+
   return {
     async plan(request): Promise<InstancePlanResult> {
       try {
@@ -600,55 +695,90 @@ export function createInstancesService(deps: InstancesDeps): InstancesService {
         if (found === null) {
           return failure('not-found', `${recipe.place.name} is not made yet. Make it first.`);
         }
-        if (recipe.join !== null && recipe.place.role === 'test') {
-          // B760 N14: a play request left from an earlier Play could open the test world
-          // instead of joining the server.
-          const playRequest = devPaths(await gameDirOf(found.instanceDir)).play;
-          if (await fs.exists(playRequest)) await fs.remove(playRequest);
-        }
-        const program = await findLauncherProgram(
-          fs,
-          'prism',
-          root,
-          deps.env,
-          (await deps.settings.launcherPrograms()).prism,
-        );
-        if (program === null) {
-          return {
-            ok: true,
-            name: found.folder,
-            launched: false,
-            note: `Start Prism Launcher and choose "${found.folder}".`,
-          };
-        }
-        const args = launchArguments({ launcher: 'prism', root, instance: found.folder }, deps.env);
-        if (recipe.join !== null) args.push('--server', `${recipe.join.host}:${recipe.join.port}`);
-        else if (recipe.world !== null && recipe.world.source !== null) {
-          args.push('--world', recipe.world.folder);
-        }
-        // B760: a running Prism lists a new instance folder a moment after it appears.
-        const made = madeAt.get(normalize(found.instanceDir));
-        if (made !== undefined) {
-          const wait = made + LAUNCH_AFTER_CREATE_MS - now();
-          if (wait > 0) await sleep(wait);
-        }
-        try {
-          await spawnLauncher(program, args);
-        } catch (error) {
-          return failure('failed', `Prism Launcher could not be started: ${messageOf(error)}`);
-        }
-        return { ok: true, name: found.folder, launched: true, note: null };
+        return await launchFound(root, recipe, found);
       } catch (error) {
         return failureOf(error);
       }
     },
 
-    async playPlain() {
-      return notYet('Playing without mods');
+    async playPlain(request: InstancePlainRequest): Promise<InstanceLaunchResult> {
+      try {
+        if (!request.project.playsWithoutMods) return failure('needs-mod', NEEDS_MOD_MESSAGE);
+        // The namespace and target are checked before anything is read.
+        recipeFor({ kind: 'plain' }, request.project, facts(request.targetId));
+        const worlds = deps.plainWorlds;
+        if (worlds === undefined) {
+          return failure('failed', 'Playing without mods is not available here.');
+        }
+        const worldDir = request.world ?? gameWorldFolder(request.project.namespace);
+        if ((await worlds.locate(request.targetId, MANAGED_MAP_SOURCE, worldDir)) === null) {
+          return failure('not-found', NO_GAME_WORLD_MESSAGE);
+        }
+        return await playCopied(
+          request,
+          (world) => ({
+            kind: 'plain',
+            world: { folder: world.folder, source: world.source, replace: true },
+          }),
+          () =>
+            worlds.prepare({
+              targetId: request.targetId,
+              sourceId: MANAGED_MAP_SOURCE,
+              worldDir,
+              folder: worldDir,
+              keepPlayerData: false,
+              dataPack: request.dataPack,
+              resourcePack: request.resourcePack,
+            }),
+        );
+      } catch (error) {
+        return failureOf(error);
+      }
     },
 
-    async openMap() {
-      return notYet('Opening a map in its own instance');
+    async openMap(request: InstanceOpenMapRequest): Promise<InstanceLaunchResult> {
+      try {
+        if (!request.project.playsWithoutMods) {
+          return notYet('Opening a map that needs its mod in its own instance');
+        }
+        const worlds = deps.plainWorlds;
+        if (worlds === undefined) {
+          return failure('failed', 'Opening a map is not available here.');
+        }
+        const folder = plainWorldFolder(request.mapName);
+        // The map's name, namespace and target are checked before anything is read.
+        recipeFor(
+          { kind: 'map', name: request.mapName, world: { folder, source: folder } },
+          request.project,
+          facts(request.targetId),
+        );
+        if ((await worlds.locate(request.targetId, request.sourceId, request.worldDir)) === null) {
+          return failure(
+            'not-found',
+            'That world is no longer there. Choose it again from the list.',
+          );
+        }
+        return await playCopied(
+          request,
+          (world) => ({
+            kind: 'map',
+            name: request.mapName,
+            world: { folder: world.folder, source: world.source, replace: true },
+          }),
+          () =>
+            worlds.prepare({
+              targetId: request.targetId,
+              sourceId: request.sourceId,
+              worldDir: request.worldDir,
+              folder,
+              keepPlayerData: request.keepPlayerData === true,
+              dataPack: request.dataPack,
+              resourcePack: request.resourcePack,
+            }),
+        );
+      } catch (error) {
+        return failureOf(error);
+      }
     },
 
     async curseForgeProfile() {

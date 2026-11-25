@@ -1287,12 +1287,19 @@ export type InstanceLaunchResult =
     }
   | InstanceFailure;
 
-/** Play without mods (B766): the Plain instance on a copy of the project's game world. */
+/**
+ * Play without mods (B766): the Plain instance on a copy of the project's game world, made by the
+ * map export's plan (the project's packs in, the dev pack out).
+ */
 export interface InstancePlainRequest {
   targetId: string;
   project: InstanceProjectFacts;
   /** The test instance's world to copy (default `msm-game-<namespace>`). */
   world?: string;
+  /** The project's data pack, written to the copy's `datapacks/<fileName>` (B766). */
+  dataPack?: { fileName: string; data: Uint8Array } | undefined;
+  /** The project's resource pack, written as the copy's `resources.zip` (B766). */
+  resourcePack?: Uint8Array | undefined;
 }
 
 /** Open in my launcher after Export as a map (B767): the map's world from a listed source. */
@@ -1306,6 +1313,12 @@ export interface InstanceOpenMapRequest {
   worldDir: string;
   /** The content jars, when the map needs its mod. */
   jars: InstanceJar[];
+  /** "Keep my player data", as the map was exported (B766; default off). */
+  keepPlayerData?: boolean | undefined;
+  /** A map without mods: the project's data pack, as in the exported map (B766). */
+  dataPack?: { fileName: string; data: Uint8Array } | undefined;
+  /** A map without mods: the project's resource pack, as `resources.zip` (B766). */
+  resourcePack?: Uint8Array | undefined;
 }
 
 /** A CurseForge profile file (B768): the content jars and Fabric API for its app's import. */
@@ -1335,9 +1348,16 @@ export interface InstancesPlatform {
   showInFolder(id: string): Promise<InstanceDoneResult>;
   /** Starts the launcher on the action's instance, joining its server or opening its copied world. */
   launch(request: InstancePlanRequest): Promise<InstanceLaunchResult>;
-  /** Play without mods (B766); answers `not-yet` until then. */
+  /**
+   * Play without mods (B766): copies the game world into the Plain instance (made or brought up to
+   * date) and starts Prism on it. `needs-mod` for a project that needs its mod; `not-found` (in
+   * words: press Play my game once first) when the game has no world yet.
+   */
   playPlain(request: InstancePlainRequest): Promise<InstanceLaunchResult>;
-  /** A map's own instance (B767); answers `not-yet` until then. */
+  /**
+   * Open this map: a map without mods opens in the Plain instance on a copy of its world (B766);
+   * a map that needs its mod gets its own instance (B767; answers `not-yet` until then).
+   */
   openMap(request: InstanceOpenMapRequest): Promise<InstanceLaunchResult>;
   /** A CurseForge profile file (B768); answers `not-yet` until then. */
   curseForgeProfile(request: InstanceCurseForgeRequest): Promise<InstanceFileResult>;

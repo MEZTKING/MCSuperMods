@@ -4,8 +4,8 @@
  * Restart needed, starting or in a world), and the progress line only while busy. The quiet
  * states (checking, not running) are the first line of the Play menu (`play-status`) and part of
  * Play's tip; the open world's seed in Play my game is a line of the menu (`play-seed`). The
- * menu has "Play my game" and "Start over" (ADR 0116 D1), "New test world", "Restart" and "Open
- * the test instance's folder". It takes no props: it reads the session and the bridge through
+ * menu has "Play my game", "Play without mods" (ADR 0133 D6, B766: `PlainPlay.tsx`) and "Start
+ * over" (ADR 0116 D1), "New test world", "Restart" and "Open the test instance's folder". It takes no props: it reads the session and the bridge through
  * the Play store ({@link connectPlay}) and renders nothing until the store is connected and a
  * mod is open. The Restart needed dialog and the Prism setup panel open from here. The
  * container carries the state as `data-state` (`checking` before the first status).
@@ -26,6 +26,12 @@ import {
   playGameSettings,
   usePlayStore,
 } from '../../store/play-store';
+import {
+  PLAIN_PLAY_WORDS,
+  PlainPlayDialog,
+  plainPlayHostOf,
+  usePlainPlayStore,
+} from '../instances/PlainPlay';
 import { Button, buttonClass } from '../ui/Button';
 import { Tip } from '../ui/Tip';
 import { useMenuOpen } from './menu-open';
@@ -111,6 +117,7 @@ export function PlayControls() {
   const prismPanel = usePlayStore((state) => state.prismPanel);
   const prismMessage = usePlayStore((state) => state.prismMessage);
   const otherLaunchers = usePlayStore((state) => state.otherLaunchers);
+  const plainProgress = usePlainPlayStore((state) => state.progress);
   const snapshot = useSessionSnapshot(host?.session ?? null);
   const menu = useMenuOpen();
 
@@ -118,8 +125,10 @@ export function PlayControls() {
   const store = usePlayStore.getState();
 
   const mainBusy = status?.busy ?? null;
-  const busy = running !== null || mainBusy !== null;
-  const progress = mainBusy !== null ? (status?.progress ?? null) : localProgress;
+  const busy = running !== null || mainBusy !== null || plainProgress !== null;
+  const progress =
+    mainBusy !== null ? (status?.progress ?? null) : (localProgress ?? plainProgress);
+  const plainHost = plainPlayHostOf(host.session, host.notify);
   const chip = playChipState(status);
   const running_ = gameRunning(status);
   const canReload = status?.canReload === true;
@@ -198,6 +207,16 @@ export function PlayControls() {
               reason={hasGame ? null : PLAY_CONTROL_LABELS.playGameOff}
               onSelect={() => void store.playMyGame()}
             />
+            {plainHost !== null && (
+              <MenuItem
+                label={PLAIN_PLAY_WORDS.menu}
+                testId="play-menu-play-plain"
+                reason={
+                  !hasGame ? PLAY_CONTROL_LABELS.playGameOff : busy ? PLAIN_PLAY_WORDS.busy : null
+                }
+                onSelect={() => void usePlainPlayStore.getState().play(plainHost)}
+              />
+            )}
             <MenuItem
               label={PLAY_CONTROL_LABELS.startOver}
               testId="play-menu-start-over"
@@ -298,6 +317,7 @@ export function PlayControls() {
           onClose={() => store.closeRestartDialog()}
         />
       )}
+      <PlainPlayDialog onPlayMyGame={() => void store.playMyGame()} />
       {prismPanel && (
         <PrismSetupPanel
           message={prismMessage}

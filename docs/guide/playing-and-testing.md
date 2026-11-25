@@ -34,6 +34,7 @@ The very first time Minecraft starts it may ask about accessibility settings bef
 The small menu beside Play has:
 
 - **Play my game** and **Start over**: your game in a world of its own (see [Play my game](#play-my-game)).
+- **Play without mods**: your game as players without mods have it (see [Play without mods](#play-without-mods)).
 - **New test world**: keeps the old world under the name `msm-test-<namespace>-old-1` (and so on) in the instance, and makes a fresh one next time. Counters from your rules start again. Close Minecraft first.
 - **Restart**: closes the game and starts it again with the latest mod (see below).
 - **Open the test instance's folder**: opens the instance's game folder.
@@ -56,6 +57,16 @@ The test world suits trying a block, not playing a Skyblock or an adventure map.
 Minecraft shows an "experimental settings" screen each time a world with a World Type from a data pack is opened. In **Play my game** MCSuperMods answers it for you with "I Know What I'm Doing!", so a Reload that reopens the world and a second Play do not wait for a click. When you open the world yourself from Minecraft's world list, the screen asks you: choose to go on.
 
 **Play my game** is off until the project has a world setup, and says "Add a world setup first (Make a game), so Minecraft knows how your world starts." To share the world as a map, see [Maps](maps.md).
+
+### Play without mods
+
+A game made only of data packs plays without any mods, so players need nothing but Minecraft. **Play without mods** in the Play menu shows it that way: it opens a copy of your game's world in a second instance, **MCSuperMods Plain (26.3)** (or the one for your target), which has Minecraft and nothing else.
+
+- The first time, a card says what will be made: "A Prism Launcher instance named MCSuperMods Plain (26.3), with Minecraft 26.3 and nothing else." and that it opens a copy of your game world with your data pack in it. Press **Make it and play**, or Cancel. Your other instances are not touched.
+- The copy holds your data pack and resource pack as players get them, and leaves out what only the test instance uses (its dev pack) and your player's things. It is made again from your game world each time, so changes you make while playing in the copy do not stay.
+- When your game has no world yet, the card says: "Your game has no world yet. Press Play my game once: Minecraft makes the world, then Play without mods opens a copy of it." Its button starts **Play my game**.
+- A game that needs its mod (custom blocks, mobs or anything else only the mod jar has) cannot be played without mods; the card says so and points to **Play my game**.
+- Leave your game's world in the test instance (or close Minecraft) first: a world that is open is not copied.
 
 ## Reload
 
@@ -94,6 +105,8 @@ Dev tools are on only in the test instance's single-player test world. They are 
 ## Instances MSM made
 
 Settings, Game locations, **Instances MSM made** lists every instance and server MCSuperMods made, with what each is for. **Show in folder** opens it; **Remove** moves it to the recycle bin with its worlds, after asking. Your own instances are never listed or changed.
+
+The Plain instance (**MCSuperMods Plain**) is listed there too, with the worlds MCSuperMods copied into it.
 
 **Ask before making an instance**: the first time for each kind (the default), every time, or never. **Ask again** brings the question back for the kinds made without asking.
 

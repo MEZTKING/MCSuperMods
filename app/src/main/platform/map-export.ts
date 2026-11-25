@@ -9,6 +9,9 @@
  *   for a project that needs the jar, a `.mrpack` (ADR 0046 D4: `modrinth.index.json`, the jar
  *   under `overrides/mods/`, the world under `overrides/saves/`). What goes in and what is left
  *   out is `@msm/interop`'s map plan. `level.dat` is copied, never written.
+ * - `locateWorld` and `copyWorld` serve Play without mods and Open this map (ADR 0133 D6, B766):
+ *   the same world plan as a map, written as a folder (the data pack in, the dev pack and the
+ *   game's lock out) for `ensureInstance` to move into the Plain instance.
  * - `listStructureSaves` and `readStructureSave` read the structure-block saves of the managed
  *   instance's worlds (`generated/<ns>/structure/<path>.nbt`, B547) for the `.nbt` importer.
  *
@@ -16,12 +19,22 @@
  * folder resolves through its real path inside the real `saves/`, inside the real game folder
  * (and, for an instance, inside the instance folder). Symbolic links inside a world are not
  * followed or copied. The only write is the map file the user picked, which must not lie
- * inside the world being copied. Nothing in a world is changed.
+ * inside the world being copied (or, for `copyWorld`, the new folder the caller names, which must
+ * not exist yet and must lie outside the world). Nothing in a world is changed.
  *
  * @packageDocumentation
  */
 
-import { lstat, readFile, realpath, stat } from 'node:fs/promises';
+import {
+  copyFile,
+  lstat,
+  mkdir,
+  readdir,
+  readFile,
+  realpath,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import { basename, dirname, join, normalize } from 'node:path';
 import {
   isMapFolderName,
@@ -85,10 +98,42 @@ export interface MapExportDeps {
   onWritten?(path: string): void;
 }
 
+/** What {@link MapExportService.copyWorld} copies: a listed world and what a map adds to it. */
+export interface MapWorldCopyRequest {
+  targetId: string;
+  /** A {@link MapWorldSource.id} from {@link MapExportService.listWorlds}. */
+  sourceId: string;
+  /** A world folder of that source. */
+  worldDir: string;
+  /** "Keep my player data": players' files and `level.dat_old` are copied too. */
+  keepPlayerData: boolean;
+  /** Written to `datapacks/<fileName>` (an existing file of that name is replaced). */
+  dataPack?: { fileName: string; data: Uint8Array } | undefined;
+  /** Written as `resources.zip`. */
+  resourcePack?: Uint8Array | undefined;
+}
+
+/** What {@link MapExportService.copyWorld} wrote. */
+export interface MapWorldCopy {
+  /** Files written (the world's kept files and the added packs). */
+  files: number;
+  /** Top-most world entries left out, with their reasons, sorted by path. */
+  leftOut: { path: string; reason: MapLeftOutReason }[];
+}
+
 /** The service the IPC layer serves `maps:*` from. */
 export interface MapExportService {
   listWorlds(targetId: string): Promise<MapWorldSource[]>;
   exportMap(request: MapExportRequest): Promise<MapExportResult | null>;
+  /** The real folder of a listed world, or `null` when it is not (or no longer) there. */
+  locateWorld(targetId: string, sourceId: string, worldDir: string): Promise<string | null>;
+  /**
+   * Copies a listed world into the new folder `destination` by the map's plan (ADR 0133 D6):
+   * the lock file and the dev data pack left out (player data unless kept), the project's packs
+   * added. Refuses a world open in the managed game, and a destination that exists or lies inside
+   * the world. Symbolic links are not followed or copied.
+   */
+  copyWorld(request: MapWorldCopyRequest, destination: string): Promise<MapWorldCopy>;
   listStructureSaves(targetId: string): Promise<StructureSaveInfo[]>;
   readStructureSave(targetId: string, world: string, id: string): Promise<Uint8Array>;
 }
@@ -364,6 +409,81 @@ export function createMapExportService(deps: MapExportDeps): MapExportService {
       deps.onWritten?.(written);
       leftOut.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
       return { path: written, kind: pkg, entries, leftOut };
+    },
+
+    async locateWorld(targetId, sourceId, worldDir) {
+      try {
+        return (await requireWorld(targetId, sourceId, worldDir)).world;
+      } catch {
+        return null;
+      }
+    },
+
+    async copyWorld(request, destination) {
+      const extras = mapExtraFiles({
+        dataPack: request.dataPack,
+        resourcePack: request.resourcePack,
+      });
+      const { world, folder } = await requireWorld(
+        request.targetId,
+        request.sourceId,
+        request.worldDir,
+      );
+      if (folder.managed) {
+        const managed = await deps.managedGame(request.targetId);
+        if (managed?.openWorld === request.worldDir) {
+          throw new Error(
+            'That world is open in the game. Leave it (or close Minecraft) first, then try again.',
+          );
+        }
+      }
+      const out = normalize(destination);
+      const realParent = await realOrNull(dirname(out));
+      if (realParent === null) throw new Error('The folder to copy the world into does not exist.');
+      const target = join(realParent, basename(out));
+      if (isSameOrInside(world, target) || isSameOrInside(target, world)) {
+        throw new Error('A world cannot be copied into itself.');
+      }
+      if ((await realOrNull(target)) !== null) {
+        throw new Error('The folder to copy the world into is already there.');
+      }
+      const options = {
+        keepPlayerData: request.keepPlayerData,
+        dataPackFile: request.dataPack?.fileName,
+        resourcePack: request.resourcePack !== undefined,
+      };
+      const leftOut: MapWorldCopy['leftOut'] = [];
+      let files = 0;
+      const walk = async (from: string, to: string, relative: string): Promise<void> => {
+        await mkdir(to);
+        const entries = await readdir(from, { withFileTypes: true });
+        entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+        for (const entry of entries) {
+          // Symbolic links and anything but files and folders stay behind, as in a map.
+          if (entry.isSymbolicLink() || !(entry.isFile() || entry.isDirectory())) continue;
+          const rel = relative === '' ? entry.name : `${relative}/${entry.name}`;
+          const reason = mapEntryLeftOut(rel, entry.isDirectory(), options);
+          if (reason !== null) {
+            leftOut.push({ path: rel, reason });
+            continue;
+          }
+          if (entry.isDirectory()) {
+            await walk(join(from, entry.name), join(to, entry.name), rel);
+          } else {
+            await copyFile(join(from, entry.name), join(to, entry.name));
+            files += 1;
+          }
+        }
+      };
+      await walk(world, target, '');
+      for (const extra of extras) {
+        const parts = extra.path.split('/');
+        await mkdir(join(target, ...parts.slice(0, -1)), { recursive: true });
+        await writeFile(join(target, ...parts), extra.data);
+        files += 1;
+      }
+      leftOut.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+      return { files, leftOut };
     },
 
     async listStructureSaves(targetId) {

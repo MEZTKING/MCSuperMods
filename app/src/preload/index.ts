@@ -97,6 +97,22 @@ function jarsOf(jars: readonly InstanceJar[]): InstanceJar[] {
   return jars.map((jar) => ({ modId: jar.modId, data: jar.data }));
 }
 
+/** The project's packs a Play without mods or an Open this map carries (B766). */
+function packsOf(request: {
+  dataPack?: { fileName: string; data: Uint8Array } | undefined;
+  resourcePack?: Uint8Array | undefined;
+}): {
+  dataPack?: { fileName: string; data: Uint8Array };
+  resourcePack?: Uint8Array;
+} {
+  return {
+    ...(request.dataPack === undefined
+      ? {}
+      : { dataPack: { fileName: request.dataPack.fileName, data: request.dataPack.data } }),
+    ...(request.resourcePack === undefined ? {} : { resourcePack: request.resourcePack }),
+  };
+}
+
 function planRequest(request: InstancePlanRequest): InstancePlanRequest {
   return {
     targetId: request.targetId,
@@ -392,6 +408,7 @@ const bridge: MsmBridge = {
         targetId: request.targetId,
         project: projectFacts(request.project),
         ...(request.world === undefined ? {} : { world: request.world }),
+        ...packsOf(request),
       }),
     openMap: (request) =>
       ipcRenderer.invoke(InvokeChannels.instancesOpenMap, {
@@ -401,6 +418,8 @@ const bridge: MsmBridge = {
         sourceId: request.sourceId,
         worldDir: request.worldDir,
         jars: jarsOf(request.jars),
+        ...(request.keepPlayerData === undefined ? {} : { keepPlayerData: request.keepPlayerData }),
+        ...packsOf(request),
       }),
     curseForgeProfile: (request) =>
       ipcRenderer.invoke(InvokeChannels.instancesCurseForgeProfile, {

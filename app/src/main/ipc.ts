@@ -299,6 +299,7 @@ export function createIpcHandlers(
         targetId: req.targetId,
         project: { ...req.project },
         ...(req.world === undefined ? {} : { world: req.world }),
+        ...packsOf(req),
       }),
     [InvokeChannels.instancesOpenMap]: (req) =>
       platform.instances.openMap({
@@ -308,6 +309,8 @@ export function createIpcHandlers(
         sourceId: req.sourceId,
         worldDir: req.worldDir,
         jars: req.jars.map((jar) => ({ modId: jar.modId, data: jar.data })),
+        ...(req.keepPlayerData === undefined ? {} : { keepPlayerData: req.keepPlayerData }),
+        ...packsOf(req),
       }),
     [InvokeChannels.instancesCurseForgeProfile]: (req) =>
       platform.instances.curseForgeProfile({
@@ -346,6 +349,22 @@ function planRequest(req: InstancePlanIpc): InstancePlanRequest {
             ? { kind: 'map', name: action.name }
             : { kind: action.kind },
     project: { ...req.project },
+  };
+}
+
+/** The project's packs a Play without mods or an Open this map carries (B766). */
+function packsOf(request: {
+  dataPack?: { fileName: string; data: Uint8Array } | undefined;
+  resourcePack?: Uint8Array | undefined;
+}): {
+  dataPack?: { fileName: string; data: Uint8Array };
+  resourcePack?: Uint8Array;
+} {
+  return {
+    ...(request.dataPack === undefined
+      ? {}
+      : { dataPack: { fileName: request.dataPack.fileName, data: request.dataPack.data } }),
+    ...(request.resourcePack === undefined ? {} : { resourcePack: request.resourcePack }),
   };
 }
 

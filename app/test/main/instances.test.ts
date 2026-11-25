@@ -523,9 +523,10 @@ describe('instances: launch', () => {
 
 describe('instances: later briefs', () => {
   it('declares their channels and answers not yet', async () => {
+    // Play without mods (B766, `plain-play.test.ts`) needs its worlds service, absent here.
     expect(await service.playPlain({ targetId: 'mc-test', project: plainProject })).toMatchObject({
       ok: false,
-      code: 'not-yet',
+      code: 'failed',
     });
     expect(
       await service.openMap({

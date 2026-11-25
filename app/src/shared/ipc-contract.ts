@@ -2061,7 +2061,15 @@ export const ipcContract = {
     response: instanceLaunchResult,
   },
   [InvokeChannels.instancesPlayPlain]: {
-    request: z.object({ targetId, project: instanceProject, world: worldDir.optional() }).strict(),
+    request: z
+      .object({
+        targetId,
+        project: instanceProject,
+        world: worldDir.optional(),
+        dataPack: z.object({ fileName: packFileName, data: bytes }).strict().optional(),
+        resourcePack: bytes.optional(),
+      })
+      .strict(),
     response: instanceLaunchResult,
   },
   [InvokeChannels.instancesOpenMap]: {
@@ -2073,6 +2081,9 @@ export const ipcContract = {
         sourceId: mapSourceId,
         worldDir,
         jars: instanceJars,
+        keepPlayerData: z.boolean().optional(),
+        dataPack: z.object({ fileName: packFileName, data: bytes }).strict().optional(),
+        resourcePack: bytes.optional(),
       })
       .strict(),
     response: instanceLaunchResult,

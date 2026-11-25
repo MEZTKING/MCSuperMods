@@ -45,6 +45,7 @@ import { createMapExportService } from './map-export';
 import { createMcfunctionBroker } from './mcfunction';
 import { createMinecraftService, type MinecraftService } from './minecraft';
 import { createModpackService, type ModpackService } from './modpacks';
+import { createPlainWorlds } from './plain-play';
 import { createPlayService, type PlayService } from './play';
 import { readRecentSummary } from './recent-summary';
 import { type RuntimeJarLocation, readRuntimeJar, runtimeVersionKey } from './runtime-jar';
@@ -488,6 +489,8 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     ...(deps.instanceTargetFacts === undefined ? {} : { targetFacts: deps.instanceTargetFacts }),
     showItemInFolder: (path) => deps.showItemInFolder(path),
     serverRunning: (serverDir) => localServer.runs(serverDir),
+    // B766: Play without mods and Open this map copy worlds by the map export's plan.
+    plainWorlds: createPlainWorlds({ maps: mapExport, msmHome: deps.msmHome }),
   });
 
   const recentChanged = (recent: readonly RecentProject[]): void => {

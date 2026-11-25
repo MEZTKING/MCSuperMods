@@ -38,6 +38,10 @@ Good to know:
 - A `.zip`: unzip it into the `saves` folder of a Minecraft game folder (or a launcher instance's), then open the world from Minecraft's world list.
 - A `.mrpack`: import it in Prism Launcher or the Modrinth app, start the new instance and open the world.
 
+### Open this map
+
+**Open this map** comes beside **Export as a map** in a later version. For a map that plays without mods it will open a copy of the world you exported, with the same packs and the same choice about players' things, in the instance **MCSuperMods Plain (26.3)** (Minecraft and nothing else), and start it on that world, as **Play without mods** does for your game ([Playing and testing](playing-and-testing.md#play-without-mods)). The first time, a card says what will be made; your other instances are not touched. A map that needs its mod (a `.mrpack`) will get its own instance; until then, import the `.mrpack` as above.
+
 ## Bring builds from my test worlds
 
 Islands, arenas and other buildings are made in the game:
