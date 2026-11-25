@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import type { Project, TargetFacts } from '@msm/plugin-api';
+import type { Project, Target, TargetFacts } from '@msm/plugin-api';
 import type { LoweredElements } from '../../../session/project-session';
 import type { WorldgenKindLike } from '../../../terrain/files';
 
@@ -22,6 +22,8 @@ export interface UpgradeViewsHost {
   readonly registry: { get(kind: string): UpgradeViewKind | undefined };
   /** Every built-in target, with its change set (`session.availableTargets`). */
   readonly targets: readonly TargetFacts[];
+  /** The built-in target with `id`, hooks and all (`targetById` of `@msm/targets`). */
+  targetOf(id: string): Target | undefined;
   /** Whether the user's Minecraft files of a version are set up here (`minecraft.status`). */
   minecraftStatus(mcVersion: string): Promise<{ readonly cache?: unknown }>;
   /** Reads one of Minecraft's own files of a version, or `null` (`minecraft.readAsset`). */

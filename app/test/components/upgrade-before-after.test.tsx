@@ -14,10 +14,12 @@
  */
 import type { UpgradeDoneItem } from '@msm/core';
 import type { Element, Project, ResourceLocation } from '@msm/plugin-api';
+import { targetById } from '@msm/targets';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UpgradeViewsHost } from '../../src/renderer/src/components/upgrade/BeforeAfter';
 import BeforeAfter, {
+  MovedJavaProject,
   MovedVanillaFiles,
 } from '../../src/renderer/src/components/upgrade/BeforeAfter';
 import {
@@ -28,6 +30,7 @@ import {
   setOpenPair,
   sideFiles,
 } from '../../src/renderer/src/components/upgrade/before-after/sides';
+import { foldedLines } from '../../src/renderer/src/components/upgrade/before-after/TextDifference';
 import type { UpgradeDryRun } from '../../src/renderer/src/session/upgrade/dry-run';
 import { HILLS, next, openSampleWorldgen, release } from './upgrade-fixture';
 
@@ -100,6 +103,7 @@ function hostOf(session: Session, jars: readonly string[] = []): UpgradeViewsHos
     loweredElements: (project, targetId) => session.loweredElements(project, targetId),
     registry: session.registry,
     targets: session.availableTargets,
+    targetOf: (id) => targetById(id)?.target,
     minecraftStatus: async (version) => ({ cache: jars.includes(version) ? {} : null }),
     readVanillaAsset: async () => null,
     readProjectAsset: async () => null,
@@ -406,5 +410,42 @@ describe('before and after views (B819)', () => {
     expect(within(part).getByTestId('upgrade-vanilla-file-0').dataset.change).toBe('changed');
     fireEvent.click(within(part).getByTestId('upgrade-vanilla-file-0-show'));
     expect(host.onShow).toHaveBeenCalledWith(igloo);
+  });
+
+  it('wires If you exported a Java project for a move up, and not for moving back', async () => {
+    const { session } = await openSampleWorldgen();
+    const dry = await session.upgradeReport(next.id);
+    const host = hostOf(session);
+    const saveFile = vi.fn(async () => null);
+    const { rerender } = render(
+      <MovedJavaProject host={host} move={dry} scanJavaProject={undefined} saveFile={saveFile} />,
+    );
+    expect(screen.getByTestId('upgrade-part-java-project')).toBeTruthy();
+    expect(screen.getByTestId('upgrade-java-eject').textContent).toContain(
+      `Minecraft ${next.mcVersion}`,
+    );
+    rerender(
+      <MovedJavaProject
+        host={host}
+        move={{ ...dry, hops: [{ from: next.id, to: release.id, direction: 'down' }] }}
+        scanJavaProject={undefined}
+        saveFile={saveFile}
+      />,
+    );
+    expect(screen.queryByTestId('upgrade-part-java-project')).toBeNull();
+  });
+
+  it('folds long runs of unchanged lines in the text difference', () => {
+    const same = (text: string) => ({ type: 'same' as const, text });
+    const lines = [
+      ...Array.from({ length: 10 }, (_, index) => same(`a${index}`)),
+      { type: 'removed' as const, text: 'old' },
+      { type: 'added' as const, text: 'new' },
+      ...Array.from({ length: 10 }, (_, index) => same(`b${index}`)),
+    ];
+    const folded = foldedLines(lines);
+    expect(folded[0]).toEqual({ type: 'folded', count: 7 });
+    expect(folded.filter((line) => line.type !== 'folded')).toHaveLength(8);
+    expect(folded.at(-1)).toEqual({ type: 'folded', count: 7 });
   });
 });

@@ -11,7 +11,7 @@ import { structureSaveFileName } from '@msm/interop';
 import type { ExampleProject, Plugin, Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
 import type { SearchHit } from '@msm/search';
-import { targetFacts } from '@msm/targets';
+import { targetById, targetFacts } from '@msm/targets';
 import { Dialog, Toast, Tooltip } from 'radix-ui';
 import {
   lazy,
@@ -298,6 +298,12 @@ const UpgradeBeforeAfter = lazy(() => import('./components/upgrade/BeforeAfter')
 const UpgradeVanillaFiles = lazy(() =>
   import('./components/upgrade/BeforeAfter').then((module) => ({
     default: module.MovedVanillaFiles,
+  })),
+);
+/** The upgrade report's If you exported a Java project (ADR 0136 D8; B822, wired by B819). */
+const UpgradeJavaProject = lazy(() =>
+  import('./components/upgrade/BeforeAfter').then((module) => ({
+    default: module.MovedJavaProject,
   })),
 );
 
@@ -3446,6 +3452,7 @@ export function App({
       loweredElements: (from, targetId) => session.loweredElements(from, targetId),
       registry: session.registry,
       targets: session.availableTargets,
+      targetOf: (id) => targetById(id)?.target,
       minecraftStatus: (version) => bridge.minecraft.status(version),
       readVanillaAsset: (version, path) => bridge.minecraft.readAsset(version, path),
       readProjectAsset,
@@ -4150,6 +4157,12 @@ export function App({
                           host={upgradeViewsHost}
                           project={project}
                           move={move}
+                        />
+                        <UpgradeJavaProject
+                          host={upgradeViewsHost}
+                          move={move}
+                          scanJavaProject={bridge.exports.scanJavaProject}
+                          saveFile={bridge.dialogs.saveFile}
                         />
                       </Suspense>
                     ),

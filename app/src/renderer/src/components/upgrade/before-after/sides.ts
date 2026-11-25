@@ -12,7 +12,6 @@
 import type { Element, Json, OutputFile, Project } from '@msm/plugin-api';
 import { useCallback, useSyncExternalStore } from 'react';
 import { hasLiveView } from '../../../liveviews/registry';
-import { armourPreviewOf } from '../../../preview/armour-preview';
 import { isPreviewKind, modelFieldSubject } from '../../../preview/PreviewPanel';
 import { type DiffLine, lineDiff } from '../../ai/line-diff';
 
@@ -130,13 +129,24 @@ export function fileDifferences(
   });
 }
 
+/**
+ * Kinds the preview panel draws without a preview kind of their own: custom items and blocks
+ * (their model, an armour look), armour looks (`preview/armour-preview.ts`) and recipes.
+ */
+const PANEL_KINDS: ReadonlySet<string> = new Set([
+  'msm:item',
+  'msm:block',
+  'minecraft:equipment',
+  'minecraft:recipe',
+]);
+
 /** Which view draws a thing twice: the world map's compare, the preview panel, or none. */
 export type PairView = 'worldgen' | 'panel' | 'none';
 
 /**
  * The view a thing is drawn with: the live world map for a `worldgen_map` kind, the preview
  * panel for a kind it previews (its preview kind, a registered live view, a custom block or
- * item's model, an armour look or a recipe), else none (the text difference stands in).
+ * item, an armour look or a recipe), else none (the text difference stands in).
  *
  * @param previewKind - The kind's `previewKind`.
  */
@@ -149,9 +159,8 @@ export function pairViewOf(
   if (
     isPreviewKind(previewKind) ||
     hasLiveView(element.kind) ||
-    modelFieldSubject(element, project) !== null ||
-    armourPreviewOf(element, project) !== null ||
-    element.kind === 'minecraft:recipe'
+    PANEL_KINDS.has(element.kind) ||
+    modelFieldSubject(element, project) !== null
   ) {
     return 'panel';
   }

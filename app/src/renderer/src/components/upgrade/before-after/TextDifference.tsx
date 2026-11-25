@@ -6,7 +6,34 @@
  * @packageDocumentation
  */
 
+import type { DiffLine } from '../../ai/line-diff';
 import type { FileDifference } from './sides';
+
+/** Lines kept around each change; longer runs of unchanged lines are folded into one line. */
+export const CONTEXT_LINES = 3;
+
+/** The lines to show: changes with {@link CONTEXT_LINES} around them, the rest folded. */
+export function foldedLines(
+  lines: readonly DiffLine[],
+): (DiffLine | { type: 'folded'; count: number })[] {
+  const keep = lines.map((line) => line.type !== 'same');
+  const near = keep.map((_, index) =>
+    lines
+      .slice(Math.max(0, index - CONTEXT_LINES), index + CONTEXT_LINES + 1)
+      .some((line) => line.type !== 'same'),
+  );
+  const out: (DiffLine | { type: 'folded'; count: number })[] = [];
+  for (const [index, line] of lines.entries()) {
+    if (near[index] === true) {
+      out.push(line);
+      continue;
+    }
+    const last = out.at(-1);
+    if (last?.type === 'folded') last.count += 1;
+    else out.push({ type: 'folded', count: 1 });
+  }
+  return out;
+}
 
 const STATUS_WORDS: Record<FileDifference['status'], string> = {
   same: 'the same',
@@ -46,22 +73,28 @@ export function TextDifference({ differences, testId }: TextDifferenceProps) {
             <p className="text-muted text-xs">A picture or other file that is not text.</p>
           ) : (
             <pre className="max-h-64 overflow-auto rounded border border-border p-1 font-mono text-xs">
-              {file.lines.map((line, index) => (
-                <div
-                  key={index}
-                  className={
-                    line.type === 'added'
-                      ? 'bg-green-500/15 text-green-700 dark:text-green-300'
-                      : line.type === 'removed'
-                        ? 'bg-red-500/15 text-red-700 dark:text-red-300'
-                        : ''
-                  }
-                  data-line={line.type}
-                >
-                  {line.type === 'added' ? '+ ' : line.type === 'removed' ? '- ' : '  '}
-                  {line.text}
-                </div>
-              ))}
+              {foldedLines(file.lines).map((line, index) =>
+                line.type === 'folded' ? (
+                  <div key={index} className="text-muted" data-line="folded">
+                    {`  … ${line.count} ${line.count === 1 ? 'line' : 'lines'} the same`}
+                  </div>
+                ) : (
+                  <div
+                    key={index}
+                    className={
+                      line.type === 'added'
+                        ? 'bg-green-500/15 text-green-700 dark:text-green-300'
+                        : line.type === 'removed'
+                          ? 'bg-red-500/15 text-red-700 dark:text-red-300'
+                          : ''
+                    }
+                    data-line={line.type}
+                  >
+                    {line.type === 'added' ? '+ ' : line.type === 'removed' ? '- ' : '  '}
+                    {line.text}
+                  </div>
+                ),
+              )}
             </pre>
           )}
         </li>

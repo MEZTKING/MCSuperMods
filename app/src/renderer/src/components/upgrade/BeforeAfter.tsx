@@ -50,6 +50,7 @@ import { TextDifference } from './before-after/TextDifference';
 import { thingName } from './parts/shared';
 
 export type { UpgradeViewsHost } from './before-after/host';
+export { MovedJavaProject } from './before-after/MovedJavaProject';
 export { MovedVanillaFiles } from './before-after/MovedVanillaFiles';
 
 const WorldgenPair = lazy(() => import('./before-after/WorldgenPair'));
