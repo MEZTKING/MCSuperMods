@@ -26,6 +26,7 @@ import {
 } from './install-target';
 import { useMenuOpen } from './play/menu-open';
 import { PlayControls } from './play/PlayControls';
+import { useRowEntry } from './row-entry';
 import { buttonClass, iconButtonClass } from './ui/Button';
 import { Tip } from './ui/Tip';
 
@@ -918,10 +919,13 @@ export function Toolbar(props: ToolbarProps) {
   const iconSize = 16;
   const busy = props.exporting === true;
   const save = saveLook(props);
+  const rowEntry = useRowEntry();
   return (
     <RadixToolbar.Root
       aria-label="Mod"
       data-testid="toolbar"
+      onPointerDown={rowEntry.onPointerDown}
+      onFocus={rowEntry.onFocus}
       className="flex min-w-0 flex-nowrap items-stretch gap-1.5 border-b border-border bg-panel p-2"
     >
       <ToolButton
