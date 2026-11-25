@@ -12,7 +12,7 @@ Phase 2 code complete: `runExport` (collect, lower, merge assets, validate JSON 
 |---|---|---|
 | `vanilla-packs/` | 1–2 | Resource pack zip, data pack zip, or both zips in one folder (`combinedFileNames`: `<slug>-<target id>-resources.zip`, `-data.zip`) |
 | `fabric-content-jar/` | 4 | Jar with `assets/`, `data/`, `msm/`, `fabric.mod.json`; nested `msm_runtime` jar; nested GeckoLib only for mobs that need it |
-| `java-project/` | 6 | Eject: Gradle project (`files.ts`: Gradle files, README, licence notes), `src/main/resources/` (`fabric.mod.json` with entrypoints, `assets/`, `data/`), Java from the target's generator; no dependency on `msm_runtime`; scripts and `run_script` left out (`export.scripts-not-ejected`) |
+| `java-project/` | 6 | Eject: Gradle project (`files.ts`: Gradle files, README, licence notes), `src/main/resources/` (`fabric.mod.json` with entrypoints, `assets/`, `data/`), Java from the target's generator; no dependency on `msm_runtime`; scripts and `run_script` left out (`export.scripts-not-ejected`). `upgrade-notes.ts` (B822, ADR 0136 D8): the upgrade notes of an ejected project from a host's read-only scan (`isUpgradeScanPath`), both targets' facts and the move's change sets (`matchChanges` and the token search over `src/main/resources`), pure; `upgradeNotesMarkdown` writes the one file |
 
 `vanilla-packs/mod-only.ts`: vanilla pack safety (ADR 0066), pure; `vanillaSafeExporter` wraps the data pack exporter over host-computed mod-only ids (`modOnlyIdsOf`), leaving out files naming them (`export.mod-only-reference`), making tag entries optional and warning on functions (`export.mod-only-function`); the app session and the library test's vanilla server packs use it.
 

@@ -35,6 +35,7 @@ import { createExportsService } from './exports';
 import { createGeckolibJarService } from './geckolib-jar';
 import { type GradleWrapperLocation, readGradleWrapper } from './gradle-wrapper';
 import { createFolderQueue, createInstancesService, type InstancesService } from './instances';
+import { createJavaProjectScanService } from './java-project-scan';
 import {
   createLocalServerService,
   type LocalServerDeps,
@@ -689,6 +690,11 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
         return readRuntimeJar(deps.runtimeJar, runtimeVersionKey(mcVersion));
       },
       geckolibJar: (targetId) => geckolib.jar(targetId),
+      // B822: an ejected Java project, only read, for its upgrade notes (ADR 0136 D8).
+      scanJavaProject: (title) =>
+        createJavaProjectScanService({
+          pickFolder: (opts) => deps.dialogs.pickDirectory(opts),
+        }).scan(title),
       gradleWrapper: async () =>
         deps.gradleWrapper === undefined ? null : readGradleWrapper(deps.gradleWrapper),
     },

@@ -58,6 +58,7 @@ export const InvokeChannels = {
   exportsGeckolibJar: 'msm:v1:exports:geckolibJar',
   exportsWriteTree: 'msm:v1:exports:writeTree',
   exportsGradleWrapper: 'msm:v1:exports:gradleWrapper',
+  exportsScanJavaProject: 'msm:v1:exports:scanJavaProject',
   scriptingTranspile: 'msm:v1:scripting:transpile',
   scriptingCheck: 'msm:v1:scripting:check',
   testInMinecraftStatus: 'msm:v1:testInMinecraft:status',

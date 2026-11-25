@@ -9,6 +9,7 @@
 import type { AiEvent, AiKeyTestResult, AiSettings, AiStartRequest, AiToolResult } from '@msm/ai';
 import type { Modpack, ModpackMod, ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
+import type { JavaProjectScan } from '@msm/exporters';
 import type { Json, Problem } from '@msm/plugin-api';
 import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
 // Type-only: the AI helper's protocol (ADR 0041); the SDK itself runs only in main.
@@ -1804,6 +1805,14 @@ export interface PlatformAdapter {
      * `engine-mod/gradlew{,.bat}`. `null` when any file is missing.
      */
     gradleWrapper(): Promise<GradleWrapperFiles | null>;
+    /**
+     * Shows a folder picker and reads the chosen ejected Java project, only reading (ADR 0136
+     * D8, B822): the build files, `msm.export.json` and the JSON and function files under
+     * `src/main/resources/data` and `assets`, with the `.java` files counted, never read.
+     * `null` when cancelled. The preload always provides it; optional so that test doubles
+     * written before it may omit it.
+     */
+    scanJavaProject?(title: string): Promise<JavaProjectScan | null>;
   };
   /**
    * The TypeScript service for scripts (ADRs 0031 D2 and D5), run in main and loaded on first

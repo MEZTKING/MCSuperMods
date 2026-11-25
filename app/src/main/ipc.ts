@@ -173,6 +173,10 @@ export function createIpcHandlers(
     [InvokeChannels.exportsGeckolibJar]: (req) => platform.exports.geckolibJar(req.targetId),
     [InvokeChannels.exportsWriteTree]: (req) => platform.exports.writeTree(req.folder, req.files),
     [InvokeChannels.exportsGradleWrapper]: () => platform.exports.gradleWrapper(),
+    [InvokeChannels.exportsScanJavaProject]: (req) =>
+      platform.exports.scanJavaProject === undefined
+        ? Promise.resolve(null)
+        : platform.exports.scanJavaProject(req.title),
     [InvokeChannels.scriptingTranspile]: (req) =>
       platform.scripting.transpile(req.source, req.name),
     [InvokeChannels.scriptingCheck]: (req) =>

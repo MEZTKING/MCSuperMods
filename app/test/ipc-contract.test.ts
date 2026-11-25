@@ -620,6 +620,17 @@ const samples: Record<
     request: [undefined, {}],
     response: [{ jar: bytes, gradlew: '#!/bin/sh', gradlewBat: '@echo off' }, { jar: bytes }],
   },
+  [InvokeChannels.exportsScanJavaProject]: {
+    request: [{ title: 'Choose the Java project' }, { title: 1 }],
+    response: [
+      {
+        folder: '/home/me/my_mod',
+        files: [{ path: 'gradle.properties', text: 'minecraft_version=1.0\n' }],
+        javaFiles: 3,
+      },
+      { folder: '/home/me/my_mod', files: [{ path: '', text: '' }], javaFiles: -1 },
+    ],
+  },
   [InvokeChannels.scriptingTranspile]: {
     request: [
       { source: 'let a = 1;', name: 'msm/demo/script/glow.ts' },

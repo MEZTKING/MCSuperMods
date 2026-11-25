@@ -283,6 +283,8 @@ const bridge: MsmBridge = {
         files: files.map((file) => ({ path: file.path, data: file.data })),
       }),
     gradleWrapper: () => ipcRenderer.invoke(InvokeChannels.exportsGradleWrapper),
+    scanJavaProject: (title) =>
+      ipcRenderer.invoke(InvokeChannels.exportsScanJavaProject, { title }),
   },
   scripting: {
     transpile: (source, name) =>

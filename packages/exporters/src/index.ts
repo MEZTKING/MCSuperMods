@@ -57,6 +57,30 @@ export {
   javaPackageFor,
   modClassNameFor,
 } from './java-project/index';
+export {
+  type BuildLineNote,
+  buildLineNotes,
+  type FoundChangeNote,
+  foundChangeSentence,
+  foundChanges,
+  isJavaSourcePath,
+  isUpgradeScanPath,
+  type JavaEditedByHand,
+  type JavaNote,
+  type JavaProjectScan,
+  jsonValueLines,
+  UPGRADE_BUILD_FILES,
+  UPGRADE_SCAN_LIMITS,
+  type UpgradeAdvice,
+  type UpgradeNotes,
+  type UpgradeNotesInput,
+  type UpgradeScanFile,
+  upgradeAdviceSentences,
+  upgradeNotes,
+  upgradeNotesMarkdown,
+  type VersionFactChange,
+  versionFactChanges,
+} from './java-project/upgrade-notes';
 export { EXPORT_MANIFEST_FILE, EXPORT_MANIFEST_FORMAT_VERSION, exportManifest } from './manifest';
 export {
   createMrpack,

@@ -95,6 +95,10 @@ const mcVersion = z
   .regex(/^[A-Za-z0-9._+-]+$/)
   .refine((value) => value !== '.' && value !== '..', { message: 'Not a version id' });
 /** An absolute path chosen by the user or returned by main; main checks it further. */
+/** The most files the read-only Java project scan returns (B822, ADR 0136 D8). */
+export const JAVA_SCAN_MAX_FILES = 8000;
+/** The most characters of one file the Java project scan returns (one megabyte of bytes). */
+export const JAVA_SCAN_MAX_FILE_CHARS = 1024 * 1024;
 const absolutePath = z.string().min(1).max(4096);
 const fileFilters = z
   .array(z.object({ name: z.string(), extensions: z.array(z.string().min(1)) }).strict())
@@ -1720,6 +1724,28 @@ export const ipcContract = {
       .strict()
       .nullable(),
   },
+  [InvokeChannels.exportsScanJavaProject]: {
+    request: z.object({ title: z.string().max(256) }).strict(),
+    response: z
+      .object({
+        folder: absolutePath,
+        files: z
+          .array(
+            z
+              .object({
+                path: z.string().min(1).max(4096),
+                text: z.string().max(JAVA_SCAN_MAX_FILE_CHARS),
+              })
+              .strict(),
+          )
+          .max(JAVA_SCAN_MAX_FILES),
+        javaFiles: z.number().int().nonnegative(),
+        truncated: z.boolean().optional(),
+      })
+      .strict()
+      .nullable(),
+  },
+
   [InvokeChannels.scriptingTranspile]: {
     request: z
       .object({ source: z.string().max(SCRIPT_MAX_SOURCE_LENGTH), name: scriptName })
