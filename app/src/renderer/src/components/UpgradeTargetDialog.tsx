@@ -284,6 +284,10 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
       : `Move my mod to Minecraft ${chosenTarget.mcVersion}`;
   const canMove = view.kind === 'move' && ready !== null && !ready.checking;
   const shown = ready === null ? null : (props.shownReport?.(ready.targetId, ready.move) ?? null);
+  /** A move back to an older version: its summary and one sentence say "put back". */
+  const back =
+    ready !== null &&
+    (ready.move.inverted !== undefined || ready.move.hops?.[0]?.direction === 'down');
 
   return (
     <DialogRoot
@@ -375,7 +379,7 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
                       data-testid="upgrade-target-preview"
                     >
                       <p className="font-medium text-sm" data-testid="upgrade-report-summary">
-                        {moveSummary(shown ?? ready.move.report)}
+                        {moveSummary(shown ?? ready.move.report, back)}
                         {ready.checking && (
                           <span
                             className="ml-2 font-normal text-muted"
@@ -390,6 +394,7 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
                           {...reportProps}
                           report={shown ?? ready.move.report}
                           made={false}
+                          back={back}
                           testVersion={chosenTarget?.channel === 'snapshot'}
                           {...(props.extras?.(ready.targetId, ready.move, { choose: setChosen }) ??
                             {})}

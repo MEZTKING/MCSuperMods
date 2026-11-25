@@ -111,9 +111,13 @@ export const BUILT_IN_COMMANDS: Readonly<
     words: [
       'minecraft version',
       'update version',
+      'update my mod',
       'upgrade',
-      'upgrade project target',
+      'upgrade my mod',
       'new version',
+      'newer minecraft',
+      'move to minecraft',
+      'move back',
       'snapshot',
       'port',
       'migrate',
@@ -386,6 +390,28 @@ export const BUILT_IN_COMMANDS: Readonly<
     words: ['search', 'find', 'look up', 'search bar', 'what can i make'],
   },
 };
+
+/**
+ * The search words of a built-in command (ADR 0124 D3), with the Minecraft versions the app
+ * knows added to **Move to another Minecraft version…** (ADR 0136 D15: a version number finds the move).
+ * The versions come from the targets the caller has (`@msm/targets`); none is typed here.
+ *
+ * @param id - The command.
+ * @param mcVersions - The Minecraft versions of the targets, for example a release and a
+ *   snapshot ("1.0", "1.1-snapshot-2"); a test version is also found by its release number.
+ */
+export function commandWords(id: BuiltInCommandId, mcVersions: readonly string[]): string[] {
+  const words = [...(BUILT_IN_COMMANDS[id].words ?? [])];
+  if (id !== 'upgradeTarget') return words;
+  const versions = new Set<string>();
+  for (const version of mcVersions) {
+    versions.add(version);
+    const release = version.split('-')[0];
+    if (release !== undefined && release !== '') versions.add(release);
+  }
+  for (const version of [...versions].sort()) words.push(`minecraft ${version}`, version);
+  return words;
+}
 
 /** Handlers of the available built-in commands; a missing or `null` one is unavailable. */
 export type CommandHandlers = Partial<Record<BuiltInCommandId, (() => void) | null>>;

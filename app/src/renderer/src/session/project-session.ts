@@ -1619,7 +1619,7 @@ export class ProjectSession {
       options.upgradeReport ?? (dryRun?.state === before ? dryRun.settled?.report : undefined);
     stack.execute({
       id: 'app.upgrade-target',
-      label: `Upgrade target to ${targetId}`,
+      label: `Move to Minecraft ${next.mcVersion}`,
       apply(draft) {
         for (const part of parts) part.apply(draft);
       },

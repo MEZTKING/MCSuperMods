@@ -930,7 +930,10 @@ describe('the prompt in topic files (B681)', () => {
   // raw text, the picture buttons' one set of words, and how to speak without a View line.
   // B701 moved it for the one toolbar row (ADR 0131 D1): the row's labels and the More menu's.
   // B711 moved it for the menu bar's plain words (the jar's export, a map, a building).
-  const PINNED = 'a219644f837cf55af6e1d093e786c7e25644294bb32438dbb9b5c110e90290cf';
+  // B825 moved it for the topic of moving to a newer Minecraft (`src/prompt/upgrade.ts`: the
+  // notice, the report's parts, the move, After moving, moving back and upgrade_report; ADR 0136
+  // D15).
+  const PINNED = '0543d0ed75a36c85f73c841289f9ed2ab644428ccf9a8db683d7c3288d436f47';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
@@ -969,8 +972,8 @@ describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
     expect(text).not.toMatch(/build mode|chat mode|switch to/i);
   });
 
-  it('stays within its size budget of 104,000 characters (ADR 0125 D7, raised by B617, B553, B561 the Try it commands and B632)', () => {
-    expect(text.length).toBeLessThanOrEqual(104_000);
+  it('stays within its size budget of 105,000 characters (ADR 0125 D7, raised by B617, B553, B561 the Try it commands, B632 and B825)', () => {
+    expect(text.length).toBeLessThanOrEqual(105_000);
   });
 
   it('searches the library before listing starters or templates (ADR 0124 D12, B669)', () => {

@@ -238,7 +238,7 @@ describe('ProjectSession: the move and the kept copy (ADR 0136 D6, D7)', () => {
     const outcome = await session.upgradeTarget(next.id, dry.migration);
     expect(outcome.saveError).toBeUndefined();
     expect(session.snapshot.project?.targets).toEqual([next.id]);
-    expect(session.snapshot.undoLabel).toBe(`Upgrade target to ${next.id}`);
+    expect(session.snapshot.undoLabel).toBe(`Move to Minecraft ${next.mcVersion}`);
 
     const saved = outcome.saved;
     if (saved === undefined) throw new Error('Nothing was saved.');

@@ -17,7 +17,7 @@ The left side lists the modpacks MCSuperMods knows about. Select one to see its 
 ## Details
 
 - **Name**, **Version** and **Summary** describe the modpack. The version is free text such as `1.0.0`; it becomes part of the exported file's name.
-- **Minecraft version** is the version every project in the modpack must be made for. A project made for another version is marked "made for …"; open it and use **File → Move to another Minecraft version…** ([Minecraft versions](targets.md)), or change the modpack's version.
+- **Minecraft version** is the version every project in the modpack must be made for. A project made for another version is marked "made for …"; open it and use **File → Move to another Minecraft version…** ([Moving to a newer Minecraft](targets.md)), or change the modpack's version.
 
 Changes are saved when you leave a field.
 
@@ -37,6 +37,10 @@ A modpack can include mods other people made, from [Modrinth](https://modrinth.c
 If the mod needs other mods, the message names their Modrinth projects: add those too. Fabric API is always included, so you never need to add it. **Remove** takes a mod out again.
 
 A mod is pinned to the file made for one Minecraft version. After you change the modpack's **Minecraft version**, choose **Update mods**: MCSuperMods looks each mod up again and pins the newest file for the new version. Mods that have no such file yet are named in the message and kept as they are; remove them or try again later. **Update mods** also picks up newer releases of your mods at any time.
+
+### When one of your mods moves to a newer Minecraft
+
+If your mod is in a modpack, the report of its move ([Moving to a newer Minecraft](targets.md#mods-in-a-modpack)) shows **Mods in this pack** (**Mods in your modpacks** when there are several). MCSuperMods asks Modrinth whether each mod has a build for the new Minecraft only when you press **Check my mods**, with one question for every pack. Mods with a build are updated in the same step as the move, so Undo puts them back. A mod without a build can wait in the pack (**Keep it and wait for a build**) or come out of it (**Take it out of the pack**), or the pack can stay on the old Minecraft. The report says which other mods of the pack are still made for the old version. The next time you press Play, MCSuperMods makes a new instance for the new Minecraft and leaves the old one as it is.
 
 ## Export modpack (.mrpack)…
 

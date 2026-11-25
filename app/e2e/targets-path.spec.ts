@@ -118,11 +118,11 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
   expect(before.name.endsWith(`-${release.id}.zip`)).toBe(true);
   expect(packOf(before.files).pack_format).toBe(release.packFormats.resource.major);
 
-  // Upgrade project target through the palette. -------------------------------------------
+  // Move to another Minecraft version through the palette, by the words people use. --------
   await window.keyboard.press('ControlOrMeta+Shift+P');
   const palette = window.getByTestId('command-palette');
   await expect(palette).toBeVisible();
-  await palette.getByTestId('command-palette-input').fill('upgrade project target');
+  await palette.getByTestId('command-palette-input').fill('new minecraft version');
   await palette.getByTestId('command-upgradeTarget').click();
   await expect(palette).toBeHidden();
   const upgrade = window.getByTestId('upgrade-target-dialog');
@@ -138,6 +138,12 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
   await expect(option).toHaveAttribute('aria-pressed', 'true');
   // The Custom ore project uses no id the snapshot removed: nothing to change.
   await expect(upgrade.getByTestId('upgrade-target-summary')).toHaveText('0 changes, 0 problems.');
+  await expect(upgrade.getByTestId('upgrade-report-summary')).toHaveText(
+    'Nothing in your mod needs changing.',
+  );
+  await expect(upgrade.getByTestId('upgrade-nothing')).toHaveText(
+    /^Nothing in your mod needs changing for Minecraft /,
+  );
   await expect(upgrade.getByTestId('upgrade-target-changes')).toHaveCount(0);
   await upgrade.getByTestId('upgrade-target-dialog-submit').click();
   await expect(upgrade).toBeHidden();
@@ -161,7 +167,10 @@ test('targets: Custom ore wizard on the default target, upgrade to the snapshot,
 
   await window.screenshot({ path: join(outputDir, 'targets-path.png') });
 
-  // Undo moves the project back to the release target. ------------------------------------
+  // Undo moves the project back to the release target; its label is in plain words. --------
+  await expect(window.locator('footer')).toContainText(
+    `Undo: Move to Minecraft ${snapshot.mcVersion}`,
+  );
   await window.getByTestId('toolbar-undo').click();
   await expect(status).toHaveText(`For Minecraft ${release.mcVersion}`);
   await expect(window.getByTestId('project-target-snapshot')).toHaveCount(0);

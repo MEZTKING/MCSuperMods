@@ -34,6 +34,8 @@ export interface UpgradeReportViewProps {
   made: boolean;
   /** Whether the version moved to is a test version. */
   testVersion: boolean;
+  /** Whether this is a move back to an older version (its one sentence is worded for that). */
+  back?: boolean;
   /** Minecraft versions by target id, for a chain's changes. */
   versions?: Readonly<Record<string, string>>;
   /** For a saved report: the ids of part 3's items still open now. */
@@ -83,7 +85,7 @@ export default function UpgradeReportView(props: UpgradeReportViewProps) {
         {props.lead}
         {nothing ? (
           <p className="text-sm" data-testid="upgrade-nothing">
-            {nothingTouchesSentence(report.untouched.total, mcVersion)}
+            {nothingTouchesSentence(report.untouched.total, mcVersion, props.back === true)}
           </p>
         ) : (
           <>

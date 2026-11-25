@@ -75,6 +75,7 @@ import { addWish } from '../wishlist/wishlist';
 import type { LibrarySearch } from './library-search';
 import { projectContextOf } from './project-context';
 import { kindSchemaSummary, kindSchemaSummaryOptions } from './schema-summary';
+import { UpgradeReportUnavailable, upgradeReportFor } from './upgrade-report-tool';
 
 /** What the executor asks the user (the panel answers; ADR 0041 D4 user-decision tools). */
 export interface DecisionHost {
@@ -787,6 +788,43 @@ export function createToolExecutor(
       // 0136 D2) is for the move report, not the model: like the other large facts it is not
       // copied. The helper reads a move through the report (ADR 0136 D15).
       return { value: JSON.parse(JSON.stringify(facts)) as unknown };
+    },
+
+    upgrade_report: async ({ version }, signal) => {
+      const project = live();
+      try {
+        const value = await withSignal(
+          () =>
+            upgradeReportFor(
+              {
+                target: session.target,
+                targets: session.availableTargets,
+                project,
+                problems: session.snapshot.problems,
+                savedMoves: () => session.savedUpgradeReports(),
+                dryRun: async (targetId, runSignal) => {
+                  const dry = await session.upgradeReport(targetId, { signal: runSignal });
+                  return { report: dry.report, back: dry.direction === 'down' };
+                },
+              },
+              version,
+              signal,
+            ),
+          signal,
+        );
+        return { value };
+      } catch (error) {
+        if (error instanceof UpgradeReportUnavailable) {
+          throw new ToolError(ToolErrorCodes.notFound, error.message);
+        }
+        if (error instanceof Error && error.name === 'DryRunCancelled') {
+          throw new ToolError(
+            ToolErrorCodes.internal,
+            'The mod changed while MCSuperMods was checking the move. Call upgrade_report again.',
+          );
+        }
+        throw error;
+      }
     },
 
     script_api_typings: async () => ({ value: { typings: session.scriptTypings } }),

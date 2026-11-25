@@ -11,7 +11,7 @@ import { structureSaveFileName } from '@msm/interop';
 import type { ExampleProject, Plugin, Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
 import type { SearchHit } from '@msm/search';
-import { targetById, targetFacts } from '@msm/targets';
+import { builtInTargets, targetById, targetFacts } from '@msm/targets';
 import { Dialog, Toast, Tooltip } from 'radix-ui';
 import {
   lazy,
@@ -43,6 +43,7 @@ import {
   BUILT_IN_COMMANDS,
   type BuiltInCommandId,
   type CommandHandlers,
+  commandWords,
   definitionOf,
   type FocusedLocation,
   paletteCommands,
@@ -329,8 +330,16 @@ const UpgradeMoveBackLead = lazy(() =>
 /** The app's own lists the search reads (ADR 0124 D3; B660, B662). */
 const SEARCH_LISTS: AppLists = {
   commands: BUILT_IN_COMMAND_IDS.map((id) => {
-    const { title, sentence, words } = BUILT_IN_COMMANDS[id];
-    return { id, title, sentence, words };
+    const { title, sentence } = BUILT_IN_COMMANDS[id];
+    return {
+      id,
+      title,
+      sentence,
+      words: commandWords(
+        id,
+        builtInTargets.map((bundle) => bundle.target.mcVersion),
+      ),
+    };
   }),
   settings: SETTINGS_CATALOGUE,
   kinds: {

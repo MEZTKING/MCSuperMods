@@ -1077,7 +1077,7 @@
       "mode": "easy",
       "expect": "guide:try-it#try-it",
       "same": ["guide:try-it#what-it-is"],
-      "reason": "Search follow-ups after the close (2026-11-23): \"how \u2026 work\" is read as the question, the last `work` never matched as a word, so the page comes first and `needs` is gone."
+      "reason": "Search follow-ups after the close (2026-11-23): \"how … work\" is read as the question, the last `work` never matched as a word, so the page comes first and `needs` is gone."
     },
     {
       "q": "how to eject to java",
@@ -1760,6 +1760,61 @@
       "expect": "command:changeMinecraftTexture",
       "same": ["tile:minecraft-texture"],
       "reason": "ADR 0129 D4 (2026-11-23): Change a Minecraft texture is a palette command and a Home tile with the same action, so they fold; its words carry the ways people ask for a retexture."
+    },
+    {
+      "q": "new minecraft version",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "command:upgradeTarget",
+      "top3": ["guide:targets#moving-to-a-newer-minecraft"],
+      "reason": "B825 (ADR 0136 D15): the move to a newer Minecraft is found by the words people use for it (update, upgrade, new version, port, move back); a version number is checked apart, from the targets, in move-words.test.ts."
+    },
+    {
+      "q": "update minecraft version",
+      "class": "plain",
+      "mode": "easy",
+      "expect": "command:upgradeTarget",
+      "top3": ["guide:targets#moving-to-a-newer-minecraft"],
+      "reason": "B825 (ADR 0136 D15): the move to a newer Minecraft is found by the words people use for it (update, upgrade, new version, port, move back); a version number is checked apart, from the targets, in move-words.test.ts."
+    },
+    {
+      "q": "upgrade to a newer minecraft",
+      "class": "plain",
+      "mode": "very-easy",
+      "expect": "command:upgradeTarget",
+      "top3": ["guide:targets#moving-to-a-newer-minecraft"],
+      "reason": "B825 (ADR 0136 D15): the move to a newer Minecraft is found by the words people use for it (update, upgrade, new version, port, move back); a version number is checked apart, from the targets, in move-words.test.ts."
+    },
+    {
+      "q": "port to new version",
+      "class": "slang",
+      "mode": "easy",
+      "expect": "command:upgradeTarget",
+      "top3": ["guide:targets#moving-to-a-newer-minecraft"],
+      "reason": "B825 (ADR 0136 D15): the move to a newer Minecraft is found by the words people use for it (update, upgrade, new version, port, move back); a version number is checked apart, from the targets, in move-words.test.ts."
+    },
+    {
+      "q": "upgrade mod version",
+      "class": "slang",
+      "mode": "very-easy",
+      "expect": "command:upgradeTarget",
+      "top3": ["guide:targets#moving-to-a-newer-minecraft"],
+      "reason": "B825 (ADR 0136 D15): the move to a newer Minecraft is found by the words people use for it (update, upgrade, new version, port, move back); a version number is checked apart, from the targets, in move-words.test.ts."
+    },
+    {
+      "q": "move to another minecraft version",
+      "class": "command",
+      "mode": "easy",
+      "expect": "command:upgradeTarget",
+      "reason": "B825 (ADR 0136 D15): the move to a newer Minecraft is found by the words people use for it (update, upgrade, new version, port, move back); a version number is checked apart, from the targets, in move-words.test.ts."
+    },
+    {
+      "q": "move back to an older minecraft",
+      "class": "plain",
+      "mode": "easy",
+      "expect": "command:upgradeTarget",
+      "same": ["guide:targets#moving-back"],
+      "reason": "B825 (ADR 0136 D15): the move to a newer Minecraft is found by the words people use for it (update, upgrade, new version, port, move back); a version number is checked apart, from the targets, in move-words.test.ts."
     }
   ]
 }

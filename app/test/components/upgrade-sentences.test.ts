@@ -3,6 +3,8 @@
  * reads in plain words (no id, no forbidden word), uses its curated sentence when it has one,
  * and a template names no version of its own: the version comes from the caller.
  */
+
+import type { UpgradeReport } from '@msm/core';
 import type { TargetChange } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
@@ -10,6 +12,8 @@ import { forbiddenIn } from '../../src/renderer/src/components/ai/ai-words';
 import {
   changeSentence,
   detailSentence,
+  moveSummary,
+  nothingTouchesSentence,
   plainText,
   subjectWords,
   todoItemHint,
@@ -81,5 +85,21 @@ describe('The upgrade report in plain words', () => {
         hint: 'use minecraft:water',
       }),
     ).toBe('How: Use water.');
+  });
+
+  it('words a move back as putting back, not as changing (B825)', () => {
+    expect(nothingTouchesSentence(3, '9.8')).toBe(
+      'Nothing in your mod needs changing for Minecraft 9.8: none of the 3 changes MCSuperMods knows about touches it.',
+    );
+    expect(nothingTouchesSentence(0, '9.8', true)).toBe(
+      'Nothing in your mod needs putting back for Minecraft 9.8: it moves back as it is.',
+    );
+    const report = { done: [], todo: [] } as unknown as UpgradeReport;
+    expect(moveSummary(report)).toBe('Nothing in your mod needs changing.');
+    expect(moveSummary(report, true)).toBe('Nothing in your mod needs putting back.');
+    const item = { elementId: 'a:b', kind: 'update', description: '', details: [], changeIds: [] };
+    const two = { done: [item, item], todo: [] } as unknown as UpgradeReport;
+    expect(moveSummary(two, true)).toBe('2 things are put back by themselves, 0 need you.');
+    expect(moveSummary(two)).toBe('2 things change by themselves, 0 need you.');
   });
 });

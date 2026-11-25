@@ -60,7 +60,7 @@ describe('ProjectSession: targets (ADR 0037 D4)', () => {
     await session.upgradeTarget(other.id, report);
     expect(session.snapshot.project?.targets).toEqual([other.id]);
     expect(session.target.id).toBe(other.id);
-    expect(session.snapshot.undoLabel).toBe(`Upgrade target to ${other.id}`);
+    expect(session.snapshot.undoLabel).toBe(`Move to Minecraft ${other.mcVersion}`);
     // The schema context of the new target was loaded.
     expect(calls.vendoredReads.some((read) => read.startsWith(other.id))).toBe(true);
     expect(session.undo()).toBe(true);

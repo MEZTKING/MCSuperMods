@@ -69,6 +69,16 @@ export const templateDataInput = z.object({
 });
 export const listStartersInput = z.object({});
 export const targetFactsInput = z.object({});
+export const upgradeReportInput = z.object({
+  version: z
+    .string()
+    .min(1)
+    .max(40)
+    .optional()
+    .describe(
+      'A Minecraft version as the user says it ("1.2") or a target id. Omit it for the last move made to the mod\'s own version, else the newer version MCSuperMods would offer.',
+    ),
+});
 export const scriptApiTypingsInput = z.object({});
 export const pendingChangesInput = z.object({});
 
@@ -83,6 +93,7 @@ export type ListTemplatesInput = z.infer<typeof listTemplatesInput>;
 export type TemplateDataInput = z.infer<typeof templateDataInput>;
 export type ListStartersInput = z.infer<typeof listStartersInput>;
 export type TargetFactsInput = z.infer<typeof targetFactsInput>;
+export type UpgradeReportInput = z.infer<typeof upgradeReportInput>;
 export type ScriptApiTypingsInput = z.infer<typeof scriptApiTypingsInput>;
 export type PendingChangesInput = z.infer<typeof pendingChangesInput>;
 
@@ -163,6 +174,13 @@ export const READ_TOOLS = [
     input: targetFactsInput,
     description:
       "Returns facts of the project's Minecraft target: the version, pack formats, the registries the schemas know and the Fabric versions used for the mod jar.",
+  },
+  {
+    name: 'upgrade_report',
+    group: 'read',
+    input: upgradeReportInput,
+    description:
+      'Returns the report of moving the mod to another Minecraft version, in the words the app shows: what changed in Minecraft for this mod, what MCSuperMods changes by itself, what the user needs to change (each with its thing, field path, sentence and hint, and whether it is still open after a move), what players need, what to check in the game and what the report cannot know. A move not made yet is tried on a copy; nothing changes. Only the changes listed there touch the mod as far as MCSuperMods knows: never state another change in Minecraft. You cannot move the mod; the user does, in the move dialog.',
   },
   {
     name: 'script_api_typings',

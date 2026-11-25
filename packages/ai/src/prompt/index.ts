@@ -31,6 +31,7 @@ import {
 import { SPEAKING } from './speaking';
 import { TEXTURES } from './textures';
 import { TRY_IT } from './try-it';
+import { UPGRADE } from './upgrade';
 import { MORE_DATA_KINDS, POTIONS, VANILLA_ADDITIONS } from './vanilla-additions';
 import { VANILLA_PARITY } from './vanilla-parity';
 import { SCRIPT_API_15, VEHICLES } from './vehicles';
@@ -69,6 +70,7 @@ export {
   TRY_IT_PROMPT_TICK_COMMANDS,
   TRY_IT_PROMPT_TOOLS,
 } from './try-it';
+export { UPGRADE_PROMPT_LABELS } from './upgrade';
 export {
   MOB_VARIANT_PROMPT_KINDS,
   MORE_DATA_PROMPT_KINDS,
@@ -115,6 +117,7 @@ const PARAGRAPHS = [
   LIVE_VIEWS,
   LOOKS,
   APP_MAP,
+  UPGRADE,
   CORE_TAIL,
 ].join('\n');
 

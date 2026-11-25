@@ -81,6 +81,15 @@ A project with mobs uses GeckoLib for their models and animations, including mob
 
 `LICENSE-NOTES.md` lists the licences: Fabric Loader and Fabric API (Apache 2.0), Fabric Loom (MIT, build only), the Gradle wrapper (Apache 2.0) and GeckoLib (MIT). Minecraft itself is downloaded by Loom at build time under the Minecraft EULA and is not part of the project or of the built jar. The generated sources carry no licence of their own: choose one for your mod (the `license` field of `fabric.mod.json` comes from the `msm:mod` element).
 
+## After moving to a newer Minecraft
+
+When you move your MCSuperMods mod to a newer Minecraft ([Moving to a newer Minecraft](targets.md)), a Java project you exported earlier stays as it was: MCSuperMods never changes it. The move's report has a part **If you exported a Java project**: it says whether MCSuperMods can export a Java project for the new version, and asks whether you changed the project's Java by hand (**Yes**, **No** or **Not sure**).
+
+- **Look at my Java project…** asks for the project's folder and reads it without changing anything (no file is written, and very large folders are read only in part). The report then says which lines and places in your Java project need changing for the new Minecraft.
+- **Save upgrade notes…**, once the folder is read, saves those notes as a Markdown file you can keep beside the project: what changed in Minecraft that touches it, and where. The notes open with advice: where the Java was not changed by hand and MCSuperMods can export for the new version, exporting the Java project again into a new folder is simpler than following them.
+
+The notes are drawn from the same data as the report; when MCSuperMods knows of no Java change for that version, the notes say so.
+
 ## Troubleshooting
 
 | Problem | What to do |

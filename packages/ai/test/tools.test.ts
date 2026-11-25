@@ -21,6 +21,7 @@ const EXAMPLES: { [N in AiToolName]: AiToolInputs[N] } = {
   template_data: { templateId: 'datapack.recipe.shaped', id: 'ruby_tools:ruby_block' },
   list_starters: {},
   target_facts: {},
+  upgrade_report: { version: '1.2' },
   script_api_typings: {},
   pending_changes: {},
   create_elements: {
@@ -97,6 +98,7 @@ describe('tool catalogue', () => {
       'template_data',
       'list_starters',
       'target_facts',
+      'upgrade_report',
       'script_api_typings',
       'pending_changes',
       'create_elements',
@@ -182,6 +184,16 @@ describe('tool catalogue', () => {
     expect(read?.description).toContain('ids only');
   });
 
+  it('upgrade_report takes an optional short version and nothing else (ADR 0136 D15)', () => {
+    expect(parseToolInput('upgrade_report', {}).ok).toBe(true);
+    expect(parseToolInput('upgrade_report', { version: 'mc-1.2' }).ok).toBe(true);
+    expect(parseToolInput('upgrade_report', { version: '' }).ok).toBe(false);
+    expect(parseToolInput('upgrade_report', { version: 'x'.repeat(41) }).ok).toBe(false);
+    const read = TOOL_CATALOGUE.find((t) => t.name === 'upgrade_report');
+    expect(read?.group).toBe('read');
+    expect(read?.description).toContain('never state another change in Minecraft');
+  });
+
   it('caps create_elements at 64 elements', () => {
     const element = { id: 'a:b', kind: 'minecraft:recipe', data: {} };
     expect(parseToolInput('create_elements', { elements: Array(64).fill(element) }).ok).toBe(true);
@@ -227,7 +239,8 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B669: the read-only search_library (ADR 0124 D12) before
+  // The hash last changed with B825: the read-only upgrade_report after target_facts (ADR 0136
+  // D15: the helper reads a move through the report). Before that with B669: the read-only search_library (ADR 0124 D12) before
   // list_templates. Before that with B557: create_texture's recipe list gained the lucky block, flag
   // and timer of the game flows (ADR 0117 D2). Before that with B682: propose_plan is called first only for a whole mod or more
   // than three main things (ADR 0125 D2), and no description says "placeholder" or "changeset"
@@ -239,11 +252,11 @@ describe('tool catalogue is frozen (ADR 0055 D11)', () => {
   // Before that with B498: create_texture draws MSM's Minecraft-like art from a recipe (with the
   // older pattern still accepted), a second colour, a finish and a seed, and its description and
   // add_starter's and list_starters' no longer call the pictures placeholders (ADR 0092 D15).
-  it('has 23 tools in the documented order with unchanged schemas', () => {
+  it('has 24 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
-    expect(TOOL_CATALOGUE).toHaveLength(23);
+    expect(TOOL_CATALOGUE).toHaveLength(24);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      'ff54504be77f230254911ce82740098ebe36f1192ca6a3ffffba2425872567e9',
+      'bff0e9a5092d51ca3c7fc0f51ccf985568ca2b3addaf7a931b268ecc2873cf34',
     );
   });
 });

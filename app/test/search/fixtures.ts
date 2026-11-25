@@ -49,6 +49,7 @@ export async function appLists(): Promise<AppLists> {
   const commands = (await import(/* @vite-ignore */ commandsPath)) as {
     BUILT_IN_COMMAND_IDS: readonly string[];
     BUILT_IN_COMMANDS: Record<string, { title: string; sentence?: string; words?: string[] }>;
+    commandWords(id: string, mcVersions: readonly string[]): string[];
   };
   const sidebar = (await import(/* @vite-ignore */ sidebarPath)) as {
     GROUP_LABELS: Record<string, string>;
@@ -64,7 +65,10 @@ export async function appLists(): Promise<AppLists> {
         id,
         title: line?.title ?? id,
         ...(line?.sentence !== undefined ? { sentence: line.sentence } : {}),
-        ...(line?.words !== undefined ? { words: line.words } : {}),
+        words: commands.commandWords(
+          id,
+          builtInTargets.map((entry) => entry.target.mcVersion),
+        ),
       };
     }),
     settings: settings.SETTINGS_CATALOGUE,

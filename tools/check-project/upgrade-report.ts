@@ -9,14 +9,9 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import {
-  createMemoryFileSystem,
-  type Project,
-  type UpgradeReport,
-  type UpgradeTodoItem,
-} from '@msm/core';
-import type { MigrationDetail, TargetChange } from '@msm/plugin-api';
+import { createMemoryFileSystem, type Project, type UpgradeReport } from '@msm/core';
 import { builtInTargets } from '@msm/targets';
+import * as sentences from '../../app/src/renderer/src/components/upgrade/sentences.ts';
 import { builtInPlugins } from '../../app/src/renderer/src/plugins/built-in.ts';
 import { mcfunctionCheckerFromPlatform } from '../../app/src/renderer/src/session/mcfunction-problems.ts';
 import { ProjectSession } from '../../app/src/renderer/src/session/project-session.ts';
@@ -24,29 +19,8 @@ import { ALL_TARGETS } from './check.ts';
 import { type FileProblem, fileProblems, PROJECT_FILE, projectFiles, readFolder } from './files.ts';
 import { checkerPlatform } from './platform.ts';
 
-/**
- * The parts of the app's `components/upgrade/sentences.ts` the plain form uses. The file is
- * pure (no React) but is not in the app's node tsconfig, which this project's type check
- * follows, so it is loaded at run time through this shape instead of a static import.
- */
-interface Sentences {
-  additionsSentence(added: UpgradeReport['added'], mcVersion: string): string;
-  changeSentence(change: TargetChange, mcVersion: string): string;
-  count(n: number, one: string, many: string): string;
-  detailSentence(detail: MigrationDetail, mcVersion: string): string;
-  moveSummary(report: UpgradeReport): string;
-  nothingTouchesSentence(total: number, mcVersion: string): string;
-  PLAYER_FACT_LABELS: Readonly<Record<string, string>>;
-  playerValue(fact: never, value: string | boolean | undefined): string;
-  plainText(text: string): string;
-  todoItemHint(item: UpgradeTodoItem, previous?: UpgradeTodoItem): string | null;
-  todoItemText(item: UpgradeTodoItem, project: Project | null, mcVersion: string): string;
-  untouchedSentence(total: number, mcVersion: string): string;
-}
-
-const SENTENCES = '../../app/src/renderer/src/components/upgrade/sentences.ts';
-const loadSentences = async (): Promise<Sentences> =>
-  (await import(/* @vite-ignore */ new URL(SENTENCES, import.meta.url).href)) as Sentences;
+/** The app's report sentences (`components/upgrade/sentences.ts`, pure: no React). */
+type Sentences = typeof sentences;
 
 /** The report of one move. */
 export interface UpgradeMoveReport {
@@ -135,7 +109,7 @@ export function plainReport(
     lines.push('  What your players need:');
     for (const row of changedRows) {
       lines.push(
-        `    - ${w.PLAYER_FACT_LABELS[row.fact]}: ${w.playerValue(row.fact as never, row.before)} becomes ${w.playerValue(row.fact as never, row.after)}`,
+        `    - ${w.PLAYER_FACT_LABELS[row.fact]}: ${w.playerValue(row.fact, row.before)} becomes ${w.playerValue(row.fact, row.after)}`,
       );
     }
   }
@@ -198,7 +172,6 @@ export async function upgradeReports(
       result.error = `MSM could not open this project: ${'reason' in opened ? opened.reason : 'cancelled'}`;
       return result;
     }
-    const words = await loadSentences();
     const sourceName = result.name ?? folder;
     for (const targetId of wanted) {
       const dry = await session.upgradeReport(targetId);
@@ -207,7 +180,7 @@ export async function upgradeReports(
         mcVersion: dry.report.to.mcVersion,
         needsYou: dry.report.todo.length,
         report: dry.report,
-        plain: plainReport(words, dry.report, session.snapshot.project, sourceName),
+        plain: plainReport(sentences, dry.report, session.snapshot.project, sourceName),
       });
     }
   } catch (error) {

@@ -164,6 +164,7 @@ export {
   TRY_IT_PROMPT_SCRIPT_SECONDS,
   TRY_IT_PROMPT_TICK_COMMANDS,
   TRY_IT_PROMPT_TOOLS,
+  UPGRADE_PROMPT_LABELS,
   VANILLA_PACK_FLOWS,
   VANILLA_PARITY_PROMPT_TEMPLATES,
   VEHICLE_PROMPT_TEMPLATES,
@@ -220,6 +221,7 @@ export type {
   SearchLibraryInput,
   TargetFactsInput,
   TemplateDataInput,
+  UpgradeReportInput,
 } from './tools/read';
 export {
   SEARCH_LIBRARY_DEFAULT,

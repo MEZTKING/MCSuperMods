@@ -72,6 +72,7 @@
     "src/renderer/src/search/wording.ts",
     "src/renderer/src/search/worker.ts",
     "src/renderer/src/components/settings-catalogue.ts",
+    "src/renderer/src/components/upgrade/sentences.ts",
     "src/renderer/src/showcase/clip.ts",
     "src/renderer/src/showcase/showcases.ts",
     "electron.vite.config.ts",

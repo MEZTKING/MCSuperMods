@@ -336,19 +336,36 @@ export function untouchedSentence(total: number, mcVersion: string): string {
     : `${total} other changes in Minecraft ${mcVersion} do not touch your mod, as far as MCSuperMods knows.`;
 }
 
-/** The one sentence of a mod nothing touches. */
-export function nothingTouchesSentence(total: number, mcVersion: string): string {
+/**
+ * The one sentence of a mod nothing touches. Moving back (`back`), nothing has to be put back:
+ * the move up changed nothing in the mod, or it was undone already.
+ */
+export function nothingTouchesSentence(total: number, mcVersion: string, back = false): string {
+  if (back) {
+    return `Nothing in your mod needs putting back for Minecraft ${mcVersion}: it moves back as it is.`;
+  }
   return total === 0
     ? `Nothing in your mod needs changing for Minecraft ${mcVersion}.`
     : `Nothing in your mod needs changing for Minecraft ${mcVersion}: none of the ${count(total, 'change', 'changes')} MCSuperMods knows about touches it.`;
 }
 
-/** The report's summary before a move: what changes by itself and what needs the user. */
-export function moveSummary(report: UpgradeReport): string {
+/**
+ * The report's summary before a move: what changes by itself and what needs the user. Moving
+ * back (`back`), the things changed are put back.
+ */
+export function moveSummary(report: UpgradeReport, back = false): string {
   const done = report.done.filter((item) => item.kind !== 'note').length;
   const todo = report.todo.length;
-  if (done === 0 && todo === 0) return 'Nothing in your mod needs changing.';
-  const doneText = done === 1 ? '1 thing changes by itself' : `${done} things change by themselves`;
+  if (done === 0 && todo === 0) {
+    return back ? 'Nothing in your mod needs putting back.' : 'Nothing in your mod needs changing.';
+  }
+  const doneText = back
+    ? done === 1
+      ? '1 thing is put back by itself'
+      : `${done} things are put back by themselves`
+    : done === 1
+      ? '1 thing changes by itself'
+      : `${done} things change by themselves`;
   const todoText = todo === 1 ? '1 needs you' : `${todo} need you`;
   return `${doneText}, ${todoText}.`;
 }

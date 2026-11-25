@@ -82,7 +82,7 @@ export default defineConfig({
           { text: 'Checking the AI helper', link: '/ai-helper-check' },
           { text: 'AI pictures', link: '/ai-pictures' },
           { text: 'Drawing pictures', link: '/pictures' },
-          { text: 'Minecraft versions', link: '/targets' },
+          { text: 'Moving to a newer Minecraft', link: '/targets' },
           { text: 'Plugins', link: '/plugins' },
           { text: 'Modpacks', link: '/modpacks' },
         ],
