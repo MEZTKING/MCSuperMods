@@ -7,14 +7,16 @@
  * 1. Every `@msm/*` entry in a workspace package's dependencies,
  *    devDependencies or peerDependencies must be allowed by `layers.json`.
  * 2. No `.ts`/`.tsx` file under `packages/<pkg>/src`, `packages/<pkg>/test`
- *    or `app/src` (excluding `packages/targets/**`) may contain a Minecraft
- *    version literal such as `26.3`, unless the line contains
- *    `msm-allow-version`.
- * 3. The Fabric version facts of `engine-mod/parity/gradle.properties` (a separate Gradle build
+ *    or `app/src` (excluding `packages/targets/**` but for the shared migration
+ *    engine `packages/targets/migrate/`) may contain a Minecraft version literal
+ *    such as `26.3` or `'27.1'`, unless the line contains `msm-allow-version`.
+ * 3. The shared migration engine (`packages/targets/migrate/`) imports no target package
+ *    and no file outside its own folder, so it reaches no target fact.
+ * 4. The Fabric version facts of `engine-mod/parity/gradle.properties` (a separate Gradle build
  *    that reads only its own file) equal those of `engine-mod/gradle.properties`.
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { join, posix, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** Allowed internal dependencies per package name or glob (`*` matches any suffix). */
@@ -36,7 +38,7 @@ export interface SourceFile {
 }
 
 export interface Violation {
-  kind: 'layer' | 'version-fact' | 'unknown-package' | 'gradle-facts';
+  kind: 'layer' | 'version-fact' | 'unknown-package' | 'gradle-facts' | 'engine-import';
   message: string;
 }
 
@@ -93,22 +95,30 @@ export function checkLayers(packages: readonly WorkspacePackage[], layers: Layer
 }
 
 /**
- * A Minecraft version literal such as `26.3` or `26.3.1`; not the tail of a longer dotted
- * version such as the plugin API's `1.26.0`.
+ * A Minecraft version literal: `26.3` or `26.3.1` anywhere (not the tail of a longer dotted
+ * version such as the plugin API's `1.26.0`), and from 27 to 89 a version written as a string
+ * (`'27.1'`, `"27.1.1"`, `'27.2-snapshot-3'`) or in a target id (`mc-27.1`). Minecraft's own
+ * numbering (year, drop from 1, hotfix from 1) has no `.0` part, so Java's `31.0.1` and a
+ * loader's `47.2.0` are not matched; versions from 90 on are left free for invented test
+ * versions (`99.0`).
  */
-export const VERSION_FACT = /(?<![0-9.])\b26\.[0-9]+(\.[0-9]+)?\b/;
+export const VERSION_FACT =
+  /(?<![0-9.])\b26\.[0-9]+(\.[0-9]+)?\b|(?:['"`]|\bmc-)(?:2[7-9]|[3-8][0-9])\.[1-9][0-9]*(?:\.[1-9][0-9]*)?(?:-[a-z]+(?:-[0-9]+)?)?(?=['"`]|[^0-9.a-z-]|$)/;
 export const ALLOW_MARKER = 'msm-allow-version';
 
 /** Whether a file path is subject to the version-fact grep. */
 export function isVersionCheckedPath(path: string): boolean {
   if (!/\.tsx?$/.test(path)) return false;
-  if (path.startsWith('packages/targets/')) return false;
+  // Version facts live in the target packages; the shared engine beside them holds none.
+  if (path.startsWith('packages/targets/') && !path.startsWith('packages/targets/migrate/')) {
+    return false;
+  }
   if (path.split('/').includes('node_modules')) return false;
   if (path.startsWith('app/src/')) return true;
   return /^packages\/.+\/(src|test)\//.test(path);
 }
 
-/** Reports every line holding a version literal outside `packages/targets`. */
+/** Reports every line holding a version literal outside the target packages. */
 export function findVersionFacts(files: readonly SourceFile[]): Violation[] {
   const violations: Violation[] = [];
   for (const file of files) {
@@ -118,8 +128,41 @@ export function findVersionFacts(files: readonly SourceFile[]): Violation[] {
       if (VERSION_FACT.test(line) && !line.includes(ALLOW_MARKER)) {
         violations.push({
           kind: 'version-fact',
-          message: `${file.path}:${index + 1}: version-specific literal outside packages/targets: ${line.trim()}`,
+          message: `${file.path}:${index + 1}: version-specific literal outside the target packages: ${line.trim()}`,
         });
+      }
+    });
+  }
+  return violations;
+}
+
+/** The folder of the shared migration engine, which holds no version fact (ADR 0136 D3). */
+export const ENGINE_DIR = 'packages/targets/migrate/';
+
+/** Module specifiers of `import … from`, `export … from` and `import(…)` in a line. */
+const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*|^\s*import\s+)['"]([^'"]+)['"]/g;
+
+/**
+ * Reports every import in the engine's sources of a target package (`@msm/target-*`,
+ * `@msm/targets`) or of a file outside the engine's folder.
+ */
+export function findEngineImports(files: readonly SourceFile[]): Violation[] {
+  const violations: Violation[] = [];
+  for (const file of files) {
+    if (!file.path.startsWith(ENGINE_DIR)) continue;
+    file.content.split(/\r?\n/).forEach((line, index) => {
+      for (const match of line.matchAll(SPECIFIER)) {
+        const specifier = match[1] as string;
+        const target = specifier.startsWith('@msm/target');
+        const outside =
+          specifier.startsWith('.') &&
+          !posix.join(posix.dirname(file.path), specifier).startsWith(ENGINE_DIR);
+        if (target || outside) {
+          violations.push({
+            kind: 'engine-import',
+            message: `${file.path}:${index + 1}: the migration engine must not import ${specifier}`,
+          });
+        }
       }
     });
   }
@@ -253,7 +296,12 @@ export function run(root: string): Violation[] {
     existsSync(engine) && existsSync(parity)
       ? compareGradleFacts(readFileSync(engine, 'utf8'), readFileSync(parity, 'utf8'))
       : [];
-  return [...checkLayers(loadPackages(root), layers), ...findVersionFacts(sources), ...gradle];
+  return [
+    ...checkLayers(loadPackages(root), layers),
+    ...findVersionFacts(sources),
+    ...findEngineImports(sources),
+    ...gradle,
+  ];
 }
 
 function main(): void {
@@ -264,7 +312,9 @@ function main(): void {
     for (const violation of violations) console.error(`  [${violation.kind}] ${violation.message}`);
     process.exit(1);
   }
-  console.log('check-deps: dependency direction, version facts and Gradle facts OK');
+  console.log(
+    'check-deps: dependency direction, version facts, the migration engine and Gradle facts OK',
+  );
 }
 
 const invokedPath = process.argv[1];

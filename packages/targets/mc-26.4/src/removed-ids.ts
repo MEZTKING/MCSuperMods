@@ -1,19 +1,27 @@
 /**
- * Registry members that exist in the 26.3 vendored registries and not in this target's
- * (ADR 0037 D3), as data. Ids carry no namespace, as in `registries.json`; consumers add
- * `minecraft:`.
+ * The removed-id tables of this target (ADR 0037 D3), as a view of its change set: registry
+ * members that exist in the 26.3 vendored registries and not in this target's, the registry that
+ * moved, the removed ids another registry still has, and the confirmed renames. Ids carry no
+ * namespace, as in `registries.json`; consumers add `minecraft:`.
  *
- * `test/removed-ids.test.ts` computes the diff of `mc-26.3/vendor/mcmeta/registries.json` and
- * this target's `vendor/mcmeta/registries.json` and asserts it equals {@link REMOVED_IDS},
- * {@link MOVED_REGISTRIES} and {@link STILL_REGISTERED_ELSEWHERE}; rerun it (and update these
- * tables) on every re-pin.
+ * The data is `changes/generated.json` (written only by `tools/diff-targets`, tied to both
+ * vendored `registries.json` files by `test/changes.test.ts`) with `changes/curated.ts` laid
+ * over it; nothing here is typed by hand but the moved registry's members, which the change set
+ * records as one move and `test/removed-ids.test.ts` ties to the vendored data.
  */
 
-/** Registry name to the ids removed from it since 26.3, both sorted. */
-export const REMOVED_IDS: Readonly<Record<string, readonly string[]>> = Object.freeze({
-  fluid: ['flowing_lava', 'flowing_water'],
-  model: ['block/cube_top'],
-  particle_type: ['item_snowball'],
+import { idTablesFromChangeSet, type KnownRename } from '@msm/target-migrate';
+import { changeSet } from './changes/index';
+
+export type { KnownRename };
+
+const tables = idTablesFromChangeSet(changeSet);
+
+/**
+ * The members of each registry that moved, unchanged, under another name (`rule_test` became
+ * `rule_test_type`): the change set records the move, not the members.
+ */
+const MOVED_REGISTRY_MEMBERS: Readonly<Record<string, readonly string[]>> = Object.freeze({
   rule_test: [
     'all_of',
     'always_true',
@@ -26,30 +34,22 @@ export const REMOVED_IDS: Readonly<Record<string, readonly string[]>> = Object.f
     'random_blockstate_match',
     'tag_match',
   ],
-  sound_event: ['intentionally_empty'],
-  'tag/entity_type': ['freeze_immune_entity_types', 'ignores_poison_and_regen'],
-  texture: [
-    'gui/sprites/friends/button',
-    'gui/sprites/friends/button_disabled',
-    'gui/sprites/friends/button_highlighted',
-    'gui/sprites/friends/loading',
-    'gui/sprites/friends/remove',
-    'gui/sprites/pause_menu/player_reporting',
-    'gui/sprites/pause_menu/social_interactions',
-    'gui/sprites/toast/social_interactions',
-  ],
-  'worldgen/density_function_type': ['interpolated'],
-  'worldgen/feature_type': ['large_dripstone'],
 });
 
+/** Registry name to the ids removed from it since 26.3, both sorted; a moved registry lists all its members. */
+export const REMOVED_IDS: Readonly<Record<string, readonly string[]>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries({ ...tables.removed, ...MOVED_REGISTRY_MEMBERS }).sort(([a], [b]) =>
+      a < b ? -1 : a > b ? 1 : 0,
+    ),
+  ),
+);
+
 /**
- * Registries that are gone in this target while every member lives on, unchanged, in the
- * named registry (`rule_test` became `rule_test_type`). Their ids still mean the same thing,
- * so the migration does not report them.
+ * Registries that are gone in this target while every member lives on, unchanged, in the named
+ * registry. Their ids still mean the same thing, so the migration does not report them.
  */
-export const MOVED_REGISTRIES: Readonly<Record<string, string>> = Object.freeze({
-  rule_test: 'rule_test_type',
-});
+export const MOVED_REGISTRIES: Readonly<Record<string, string>> = Object.freeze(tables.moved);
 
 /**
  * Removed members whose id is still an entry of another registry in this target (registry →
@@ -59,36 +59,10 @@ export const MOVED_REGISTRIES: Readonly<Record<string, string>> = Object.freeze(
  */
 export const STILL_REGISTERED_ELSEWHERE: Readonly<
   Record<string, Readonly<Record<string, readonly string[]>>>
-> = Object.freeze({
-  'worldgen/feature_type': { large_dripstone: ['worldgen/feature', 'worldgen/placed_feature'] },
-});
+> = Object.freeze(tables.stillRegistered);
 
-/** A removed id with a known replacement (ADR 0037 D3). */
-export interface KnownRename {
-  /** The registry the id was removed from. */
-  registry: string;
-  /** The removed id, without namespace. */
-  from: string;
-  /** The replacement id in the same registry, without namespace. */
-  to: string;
-  /**
-   * Whether the replacement takes exactly the same fields, checked against the vendored
-   * vanilla-mcdoc by `test/removed-ids.test.ts`. Only then does the migration rewrite the id;
-   * otherwise it reports the id and names the replacement.
-   */
-  sameShape: boolean;
-  /** What the user has to change when `sameShape` is false, in British English. */
-  hint?: string;
-}
-
-/** Known renames from 26.3 to this target. */
-export const KNOWN_RENAMES: readonly KnownRename[] = Object.freeze([
-  {
-    registry: 'worldgen/feature_type',
-    from: 'large_dripstone',
-    to: 'large_speleothem',
-    // LargeSpeleothemConfig gained the required `base_block` in 26.4.
-    sameShape: false,
-    hint: 'use minecraft:large_speleothem and add its required base_block (for example minecraft:dripstone_block)',
-  },
-]);
+/**
+ * Confirmed renames from 26.3 to this target (`curated.ts`). `sameShape` is true only for a
+ * rename proved the same shape; every rename here is reported with its hint, none rewritten.
+ */
+export const KNOWN_RENAMES: readonly KnownRename[] = Object.freeze(tables.renames);

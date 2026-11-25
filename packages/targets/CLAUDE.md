@@ -4,7 +4,7 @@ Phase 2 code complete: `mc-26.3/` with `Target.folders.resource` and `folders.da
 
 ## Purpose
 
-One package per Minecraft version, `@msm/target-mc-<version>`, holding every version-specific fact and its vendored schema and registry data. This is the only place in the repo where version facts live. Support policy (ADR 0037 D1): the current release and the next version's snapshots (release when it lands): `mc-26.3` (`channel: 'release'`) and `mc-26.4` (`channel: 'snapshot'`).
+One package per Minecraft version, `@msm/target-mc-<version>`, holding every version-specific fact and its vendored schema and registry data. The target packages are the only place in the repo where version facts live. Beside them, `migrate/` (`@msm/target-migrate`, ADR 0136 D3) is the shared migration engine: general code with no version fact, importing no target; `tools/check-deps` proves both (its own `layers.json` entry, the version grep and an import check over its folder). Support policy (ADR 0037 D1): the current release and the next version's snapshots (release when it lands): `mc-26.3` (`channel: 'release'`) and `mc-26.4` (`channel: 'snapshot'`).
 
 ## Contents
 
@@ -13,12 +13,13 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 - `mc-26.3/vendor/vanilla-mcdoc/`: Spyglass symbol export, `LICENSE`, `SOURCE.json` (ADR 0005).
 - `mc-26.3/vendor/mcmeta/`: `version.json`, `registries.json`, `commands.json` (pretty-printed, about 583 kB), `blocks.json`, `SOURCE.json` (ADR 0006).
 - `mc-26.3/CHANGES.md`: verified facts with sources, and what Mojang changed that affected us.
-- `mc-26.4/`: same layout; `src/removed-ids.ts` (registry → ids removed since 26.3, moved registries, ids still registered elsewhere, known renames) and `src/migrate.ts` (`migrateFrom`: `target.removed-id` with element and RFC 6901 path, renames applied only when the mcdoc shape matches, `default_block` dropped from noise settings elements and inline dimension and world preset settings by the `noiseSettingsDefaultBlock` fact (ADR 0036 D8), `target.no-migration-path` from an unknown target).
+- `mc-26.4/`: same layout, plus `previous: 'mc-26.3'` and the change set from it (ADR 0136 D2) in `src/changes/`: `generated.json` and `generated.additions.json` (written only by `tools/diff-targets`, never by hand; `test/changes.test.ts` runs its `--check`; Biome leaves them alone; the additions list is not bundled), `curated.ts` (a person's half: the `default_block` drop steps, the confirmed renames with their claimed shape and hint, sentences, hints and in-game checks for the changes that touch the examples, proved by `test/changes.test.ts` against both versions' vanilla-mcdoc and checked by the engine's `curatedErrors`) and `index.ts` (the merged set, the target's `changes` fact, which `@msm/targets`' `targetFacts` carries). `src/removed-ids.ts` is a view of the merged set (removed ids, the moved registry, ids still registered elsewhere, confirmed renames; only the moved registry's members are typed, tied to the vendored files by `test/removed-ids.test.ts`). `src/migrate.ts` is the engine over that set (`migrateFrom`: `target.removed-id` errors with element and RFC 6901 path, `target.removed-id-in-text` warnings for ids inside function lines, scripts and other text, never rewritten; renames applied only when confirmed and the same shape (none today); `default_block` dropped from noise settings elements and inline dimension and world preset settings by the `noiseSettingsDefaultBlock` fact (ADR 0036 D8), with `details`, `reverses` and `inGameChecks`; `target.no-migration-path` from an unknown target).
+- `migrate/` (`@msm/target-migrate`, depends on `@msm/plugin-api` only): `src/types.ts` (steps: `rename-id`, `drop`, `move`, `set`, `block-state`; places with `*`; the plan; the curated set's shape), `src/walk.ts` (pointers, whole-string id walk, the report-only token search inside text; `minecraft:lang` skipped), `src/steps/` (field, block state and id steps; the removed-id tables of a change set), `src/engine.ts` (`createMigration`: one `update` per element with `details`, `reverses` for dropped values with `afterHash`, `inGameChecks`), `src/plan.ts` (`mergeChangeSet`, `planFromChangeSet`, `curatedErrors`, `compareShapes`), `src/inverse.ts` (exact inverses for moving back), `src/hash.ts` (`dataHash`: canonical JSON, cyrb53). Its tests use an invented step `mc-98.0` to `mc-99.0`. No command-word step: no change has needed one (B810 V4, V6).
 - `all/src/index.ts` (`@msm/targets`): `builtInTargets` (newest first by `mcVersion`, snapshots included), `releaseTargets`, `defaultTargetId` (the first `release` target, never a snapshot), `targetById`, `targetFacts` (hooks stripped, safe to `structuredClone`), `readVendoredJson`. The only way code outside this tree reaches a target; plugin and exporter `src/` may not import it (tests only). The app's main build bundles every target's vendored data into `out/main/vendor/` (compacted and gzipped as `*.json.gz`, ADRs 0079 and 0123, decoded by the app's `readVendored`; vanilla-mcdoc's `LICENSE` copied beside it).
 
 ## Conventions
 
-- Data only, plus small hooks; no general logic.
+- Target packages hold data, plus small hooks; general logic (the migration engine) lives in `migrate/` and holds no version fact. A target's `migrateFrom` is the engine over its own change set.
 - Every field is documented on the `Target` type in `@msm/plugin-api`.
 - Vendored data is regenerated only by `tools/sync-mcdoc` and `tools/sync-mcmeta`; never edit it by hand.
 - vanilla-mcdoc has no tags: pin a commit sha. mcmeta refs are the tags `<version>-summary` / `<version>-registries`.
@@ -26,19 +27,23 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 - Mark every unverified value "(verify at implementation)"; record verified ones with date and source in `CHANGES.md`.
 - Target changes are handled at lowering time; moving a project to another target goes through that target's `migrateFrom` (pure; the host applies the report as one undo step).
 - The target id is `mc-` plus `mcVersion` up to the first `-` (`26.4-snapshot-7` → `mc-26.4`); that key also names the runtime jar.
-- The removed-id table is data, never hand-guessed: `mc-26.4/test/removed-ids.test.ts` recomputes the diff of both vendored `registries.json` files and the mcdoc shape of each rename.
+- The change set is data, never hand-guessed: the generated half comes only from `tools/diff-targets` and a test reruns its `--check`; a curated rename is applied only when its claimed shape is `same` and the target's test proves it against the vendored vanilla-mcdoc, and is otherwise reported with its hint.
 
 ## Do / Don't
 
-- Do add a version by copying the previous folder, updating facts and pins, re-running both sync scripts, and running the tests.
-- Do re-pin a snapshot target (and at release: `mcVersion`, `channel: 'release'`, GeckoLib) with `sync-mcmeta` and `sync-mcdoc`, then both target test suites, the removed-id test (update `removed-ids.ts` to the new diff) and `UPDATE_GOLDENS=1` for the plugin and exporter goldens of that target.
+- Do add a version with `node tools/new-target/index.ts --from <newest target> --version <new>` (`--dry-run` first): it copies the newest folder without the previous step's migration files, vendors the new version with `sync-mcmeta`, `sync-mcdoc` and `sync-feature-order`, sets the identity facts and `previous`, writes `src/changes/generated.json` and `CHANGES-draft.md` with `tools/diff-targets`, drafts `drafts/engine-mod.properties` from Fabric's meta service and Mojang's version JSON, and writes `VERIFY.md`. Then work through `VERIFY.md`: every hand-verified fact read again and recorded in `CHANGES.md` with date and source, the target's tests and goldens, the runtime's GameTests and parity fixtures, and the wiring into `@msm/targets`, the tsconfig references, the migration engine (`src/changes/curated.ts`, `index.ts`, `migrate.ts` and `removed-ids.ts` as `mc-26.4` has them, the `changes` and `migrateFrom` members of `target.ts`, and `@msm/target-migrate` in `package.json`) and `engine-mod/versions/`.
+- Do re-pin a target (a snapshot, and at release with `channel: 'release'` and GeckoLib) with `--repin mc-<v> --version <new>`: it changes only `vendor/`, the generated change set, `CHANGES-draft.md`, `drafts/` and `VERIFY.md`; carry section 1's changed facts into `target.ts` by hand, check `curated.ts` against the new generated set (`test/changes.test.ts`), then both target test suites and `UPDATE_GOLDENS=1` for that target's plugin and exporter goldens. At each release cut, `node tools/new-target/index.ts --check` says whether Mojang has anything newer than each target.
 - Do keep the real-data tests: schema load and coverage (zero unsupported nodes in Phase 2 and Phase 3 kinds), loot validation and the mcfunction service over the vendored data.
-- Don't let version facts leak into any other package (`tools/check-deps` enforces this).
+- Don't let version facts leak into any other package, `migrate/` included (`tools/check-deps` enforces this; its pattern catches `26.x` anywhere and later versions written as strings or `mc-` ids; invented test versions use 90 and above, such as `99.0`).
+- Don't import one target from another, or a target from the engine; `all/` stays the only door from outside.
+- Don't edit `src/changes/generated*.json` by hand.
 - Don't add pre-26.1 targets in v1.
 
 ## Commands
 
-- `pnpm --filter "@msm/target-*" test`
+- `pnpm --filter "@msm/target-*" test` (the engine included)
+- `node tools/diff-targets/index.ts --from packages/targets/mc-<a> --to packages/targets/mc-<b> --out packages/targets/mc-<b>/src/changes/generated.json [--check]`
+- `node tools/new-target/index.ts --from mc-<a> --version <new> | --repin mc-<b> --version <new> | --check [--dry-run [--out <dir>]]`
 - `node tools/sync-mcdoc/index.ts --ref <sha> --out packages/targets/mc-<version>/vendor/vanilla-mcdoc`
 - `node tools/sync-mcmeta/index.ts --version <version> --out packages/targets/mc-<version>/vendor/mcmeta`
 
@@ -46,4 +51,4 @@ One package per Minecraft version, `@msm/target-mc-<version>`, holding every ver
 
 - [DESIGN §9 Targets and Exporters](../../docs/DESIGN.md#9-targets-and-exporters)
 - [DESIGN §17 Risks and Mitigations](../../docs/DESIGN.md#17-risks-and-mitigations)
-- [ADR 0005](../../docs/adr/0005-vanilla-mcdoc-pinning-and-loading.md), [ADR 0006](../../docs/adr/0006-mcmeta-refs.md), [ROADMAP](../../docs/ROADMAP.md)
+- [ADR 0005](../../docs/adr/0005-vanilla-mcdoc-pinning-and-loading.md), [ADR 0006](../../docs/adr/0006-mcmeta-refs.md), [ADR 0136](../../docs/adr/0136-version-upgrades-noticed-moved-and-explained.md), [ROADMAP](../../docs/ROADMAP.md)

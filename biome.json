@@ -14,6 +14,7 @@
       "!**/vendor",
       "!**/test/fixtures",
       "!fixtures/**/*.json",
+      "!packages/targets/*/src/changes/generated*.json",
       "!pnpm-lock.yaml",
       "!engine-mod",
       "!docs/reference/spikes",

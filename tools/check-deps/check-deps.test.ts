@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   checkLayers,
   compareGradleFacts,
+  findEngineImports,
   findVersionFacts,
   type LayerMap,
   matchesPattern,
@@ -163,6 +164,120 @@ describe('findVersionFacts', () => {
       },
     ]);
     expect(violations).toEqual([]);
+  });
+});
+
+describe('the shared migration engine (ADR 0136 D3)', () => {
+  const real = JSON.parse(
+    readFileSync(new URL('./layers.json', import.meta.url), 'utf8'),
+  ) as LayerMap;
+  const literal = ['26', '3'].join('.');
+
+  it('may depend on the plugin API only, and targets may depend on it but not on each other', () => {
+    const violations = checkLayers(
+      [
+        {
+          name: '@msm/target-migrate',
+          dir: 'packages/targets/migrate',
+          dependencies: ['@msm/plugin-api'],
+        },
+        {
+          name: '@msm/target-mc-x',
+          dir: 'packages/targets/mc-x',
+          dependencies: ['@msm/plugin-api', '@msm/target-migrate'],
+        },
+      ],
+      real,
+    );
+    expect(violations).toEqual([]);
+    const wrong = checkLayers(
+      [
+        {
+          name: '@msm/target-migrate',
+          dir: 'packages/targets/migrate',
+          dependencies: ['@msm/target-mc-x', '@msm/schemas', '@msm/core', '@msm/targets'],
+        },
+        {
+          name: '@msm/target-mc-x',
+          dir: 'packages/targets/mc-x',
+          dependencies: ['@msm/target-mc-y'],
+        },
+      ],
+      real,
+    );
+    expect(wrong.map((v) => v.message.split(' must not depend on ')[1]?.split(' ')[0])).toEqual([
+      '@msm/target-mc-x',
+      '@msm/schemas',
+      '@msm/core',
+      '@msm/targets',
+      '@msm/target-mc-y',
+    ]);
+  });
+
+  it('is grepped for version literals, unlike the target packages', () => {
+    const violations = findVersionFacts([
+      { path: 'packages/targets/migrate/src/engine.ts', content: `const v = '${literal}';` },
+      { path: 'packages/targets/migrate/test/a.test.ts', content: `const t = 'mc-${literal}';` },
+      { path: 'packages/targets/mc-x/src/target.ts', content: `const v = '${literal}';` },
+    ]);
+    expect(violations.map((v) => v.message.split(':')[0])).toEqual([
+      'packages/targets/migrate/src/engine.ts',
+      'packages/targets/migrate/test/a.test.ts',
+    ]);
+  });
+
+  it('imports no target and no file outside its folder', () => {
+    const violations = findEngineImports([
+      {
+        path: 'packages/targets/migrate/src/engine.ts',
+        content: [
+          "import type { Json } from '@msm/plugin-api';",
+          "import { walk } from './walk';",
+          "import { x } from '../../mc-x/src/removed-ids';",
+          "export { y } from '@msm/target-mc-x';",
+          "const z = await import('@msm/targets');",
+        ].join('\n'),
+      },
+      {
+        path: 'packages/targets/migrate/src/steps/ids.ts',
+        content: "import type { IdStep } from '../types';",
+      },
+      {
+        path: 'packages/targets/mc-x/src/migrate.ts',
+        content: "import { x } from '@msm/target-migrate';",
+      },
+    ]);
+    expect(violations.map((v) => v.message)).toEqual([
+      'packages/targets/migrate/src/engine.ts:3: the migration engine must not import ../../mc-x/src/removed-ids',
+      'packages/targets/migrate/src/engine.ts:4: the migration engine must not import @msm/target-mc-x',
+      'packages/targets/migrate/src/engine.ts:5: the migration engine must not import @msm/targets',
+    ]);
+  });
+});
+
+describe('the version pattern beyond 26', () => {
+  it('flags later versions written as strings or target ids, not other numbers', () => {
+    const flagged = (content: string) =>
+      findVersionFacts([{ path: 'packages/core/src/a.ts', content }]).length;
+    for (const line of [
+      "const v = '27.1';",
+      'const v = "27.1.1";',
+      'const v = `30.2-snapshot-3`;',
+      'const id = mc-27.1;',
+      "const id = 'mc-41.2';",
+    ]) {
+      expect(flagged(line), line).toBe(1);
+    }
+    for (const line of [
+      "seedJava(fs, 'a-31', '31.0.1');",
+      "parse('forge-47.2.0');",
+      "const mcVersion = '99.1';",
+      'teleport({ x: 30.5, y: 0, z: 30.5 });',
+      '// 87.8 % first',
+      "const v = '27.0';",
+    ]) {
+      expect(flagged(line), line).toBe(0);
+    }
   });
 });
 

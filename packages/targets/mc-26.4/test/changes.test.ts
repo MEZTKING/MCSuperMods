@@ -1,0 +1,203 @@
+/**
+ * This target's change set (ADR 0136 D2): `generated.json` is what `tools/diff-targets` writes
+ * from both targets' vendored data today (`--check`), `curated.ts` answers real changes with
+ * steps of the right type, every confirmed rename's shape is proved against the vendored
+ * vanilla-mcdoc, and the target carries the merged set.
+ */
+import { execFileSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import type { TargetChangeSet } from '@msm/plugin-api';
+import { createSchemaIndex, parseVanillaMcdocSymbols, type SchemaNode } from '@msm/schemas';
+import {
+  type CuratedChangeSet,
+  type CuratedRename,
+  compareShapes,
+  curatedErrors,
+  mergeChangeSet,
+} from '@msm/target-migrate';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { changeSet, curated, generatedChangeSet } from '../src/changes/index';
+import { target, vendored } from '../src/index';
+import { KNOWN_RENAMES } from '../src/removed-ids';
+
+const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
+/** The previous release's version, as the shared vanilla-mcdoc tree gates it. */
+const PREVIOUS_VERSION = '26.3';
+
+type Index = ReturnType<typeof createSchemaIndex>;
+let previous: Index;
+let current: Index;
+
+beforeAll(async () => {
+  const raw = JSON.parse(await readFile(vendored.vanillaMcdocSymbols, 'utf8')) as unknown;
+  const symbols = parseVanillaMcdocSymbols(raw);
+  previous = createSchemaIndex(symbols, { mcVersion: PREVIOUS_VERSION });
+  current = createSchemaIndex(symbols, { mcVersion: target.mcVersion });
+});
+
+/** A struct's fields as `key` or `key?`. */
+function fields(node: SchemaNode | undefined): string[] | undefined {
+  return node?.kind === 'struct'
+    ? node.fields.map((field) => `${field.key}${field.optional ? '?' : ''}`)
+    : undefined;
+}
+
+/**
+ * What is wrong with each rename's claimed shape: a rename with a shape must have both members in
+ * its dispatcher (the old one gated out of this target and the new one absent before it) and
+ * their field sets must compare as claimed; a rename with shape `none` must have no shape there.
+ */
+function renameShapeErrors(set: CuratedChangeSet): string[] {
+  const errors: string[] = [];
+  for (const entry of set.changes) {
+    const rename: CuratedRename | undefined = entry.rename;
+    if (rename === undefined) continue;
+    const from = generatedChangeSet.changes.find((c) => c.id === entry.id)?.from;
+    if (typeof from !== 'string') {
+      errors.push(`${entry.id}: no removed member`);
+      continue;
+    }
+    if (rename.shape === 'none') {
+      if (rename.dispatcher !== undefined)
+        errors.push(`${entry.id}: shape none names a dispatcher`);
+      continue;
+    }
+    const dispatcher = rename.dispatcher as string;
+    const before = fields(previous.dispatch(dispatcher, from));
+    const after = fields(current.dispatch(dispatcher, rename.to));
+    if (before === undefined || after === undefined) {
+      errors.push(
+        `${entry.id}: ${dispatcher} has no struct for ${from} before or ${rename.to} after`,
+      );
+      continue;
+    }
+    if (current.dispatch(dispatcher, from) !== undefined) {
+      errors.push(`${entry.id}: ${from} is still in ${dispatcher}`);
+    }
+    if (previous.dispatch(dispatcher, rename.to) !== undefined) {
+      errors.push(`${entry.id}: ${rename.to} was already in ${dispatcher}`);
+    }
+    const shape = compareShapes(before, after);
+    if (shape !== rename.shape) {
+      errors.push(`${entry.id}: claims ${rename.shape}, the schemas say ${shape}`);
+    }
+  }
+  return errors;
+}
+
+describe('the generated change set', () => {
+  it('is what tools/diff-targets writes from the vendored data today (--check)', () => {
+    const args = [
+      'tools/diff-targets/index.ts',
+      '--from',
+      'packages/targets/mc-26.3',
+      '--to',
+      'packages/targets/mc-26.4',
+      '--out',
+      'packages/targets/mc-26.4/src/changes/generated.json',
+      '--check',
+    ];
+    // Throws (exit 1) when generated.json or its additions list differs from a fresh run.
+    const out = execFileSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8' });
+    expect(out).toContain('Up to date.');
+  }, 60_000);
+
+  it('runs from the previous target to this one, with both pins', () => {
+    expect(generatedChangeSet.from).toBe(target.previous);
+    expect(generatedChangeSet.to).toBe(target.id);
+    expect(generatedChangeSet.refs.to).toEqual({
+      mcdoc: target.mcdocRef,
+      mcmeta: target.mcmetaRef,
+    });
+    expect(generatedChangeSet.changes.length).toBeGreaterThan(0);
+    for (const change of generatedChangeSet.changes) {
+      expect(change.source, change.id).not.toBe('curated');
+      expect(change.sentence, change.id).toBeUndefined();
+    }
+  });
+});
+
+describe('the curated change set', () => {
+  it('answers real changes, with steps of the right type', () => {
+    expect(curatedErrors(generatedChangeSet, curated)).toEqual([]);
+  });
+
+  it('claims for each rename the shape the vendored vanilla-mcdoc gives', () => {
+    expect(renameShapeErrors(curated)).toEqual([]);
+  });
+
+  it('fails a rename whose claimed shape is wrong, and a step that answers the wrong change', () => {
+    const wrong: CuratedChangeSet = {
+      ...curated,
+      changes: curated.changes.map((entry) =>
+        entry.id === 'ids:worldgen/feature_type/large_dripstone' && entry.rename !== undefined
+          ? { ...entry, rename: { ...entry.rename, shape: 'same' } }
+          : entry,
+      ),
+    };
+    expect(renameShapeErrors(wrong)).toEqual([
+      'ids:worldgen/feature_type/large_dripstone: claims same, the schemas say superset',
+    ]);
+    const misplaced: CuratedChangeSet = {
+      ...curated,
+      changes: [
+        {
+          id: 'formats:::java::data::worldgen::feature::LargeSpeleothemConfig#/base_block',
+          handling: 'auto',
+          steps: [{ op: 'drop', places: [], field: 'base_block' }],
+        },
+      ],
+    };
+    expect(curatedErrors(generatedChangeSet, misplaced)).toEqual([
+      'formats:::java::data::worldgen::feature::LargeSpeleothemConfig#/base_block: a drop step cannot answer a field-addedRequired change.',
+    ]);
+  });
+
+  it('drops default_block by itself and reports the speleothem rename with its hint', () => {
+    const find = (id: string) => changeSet.changes.find((c) => c.id === id);
+    expect(find('formats:minecraft:resource/worldgen/noise_settings#/default_block')).toMatchObject(
+      {
+        handling: 'auto',
+        what: 'field-removed',
+      },
+    );
+    expect(
+      find(
+        'formats:::java::data::worldgen::noise_settings::NoiseGeneratorSettingsRef#/default_block',
+      ),
+    ).toMatchObject({ handling: 'auto' });
+    expect(find('ids:worldgen/feature_type/large_dripstone')).toMatchObject({
+      what: 'member-renamed',
+      to: 'large_speleothem',
+      handling: 'manual',
+      candidate: { kind: 'rename', to: 'large_speleothem', shape: 'superset' },
+    });
+    expect(find('ids:worldgen/feature_type/large_dripstone')?.hint).toContain('base_block');
+    // No rename is applied: each is reported with its hint.
+    expect(KNOWN_RENAMES.length).toBeGreaterThan(0);
+    expect(KNOWN_RENAMES.every((rename) => !rename.sameShape && rename.hint !== undefined)).toBe(
+      true,
+    );
+  });
+
+  it('gives every change that a step does a sentence, and no generated entry a sentence twice', () => {
+    for (const change of changeSet.changes) {
+      if (change.handling === 'auto' && change.area !== 'packs') {
+        expect(change.sentence, change.id).toBeTruthy();
+      }
+    }
+  });
+});
+
+describe('the target', () => {
+  it('carries the merged change set as its changes fact', () => {
+    expect(target.changes).toBe(changeSet);
+    expect(changeSet).toEqual(mergeChangeSet(generatedChangeSet, curated));
+    const ids = changeSet.changes.map((c) => c.id);
+    expect(ids).toEqual([...ids].sort());
+    expect(new Set(ids).size).toBe(ids.length);
+    // Plain data: a host can clone it and send it to a worker.
+    expect(structuredClone(changeSet as TargetChangeSet)).toEqual(changeSet);
+  });
+});

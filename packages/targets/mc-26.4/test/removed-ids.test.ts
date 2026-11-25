@@ -1,8 +1,8 @@
 /**
- * Ties the removed-id tables to the vendored data (ADR 0037 D3): the diff of the 26.3 and
- * this target's `registries.json` must equal `REMOVED_IDS`, `MOVED_REGISTRIES` and
- * `STILL_REGISTERED_ELSEWHERE`, and every known rename's `sameShape` must match the vendored
- * vanilla-mcdoc. Rerun on every re-pin of either target.
+ * Ties the removed-id view of the change set to the vendored data (ADR 0037 D3): the diff of the
+ * 26.3 and this target's `registries.json` must equal `REMOVED_IDS`, `MOVED_REGISTRIES` and
+ * `STILL_REGISTERED_ELSEWHERE`, and every confirmed rename names a member of the newer registry
+ * (each rename's shape is proved in `changes.test.ts`). Rerun on every re-pin of either target.
  */
 import { readFile } from 'node:fs/promises';
 import { createSchemaIndex, parseVanillaMcdocSymbols, type SchemaNode } from '@msm/schemas';
@@ -90,25 +90,15 @@ describe('removed-id tables', () => {
     expect(STILL_REGISTERED_ELSEWHERE).toEqual(expected);
   });
 
-  it('record whether each known rename keeps the config shape (vendored vanilla-mcdoc)', async () => {
+  it('name for each confirmed rename a removed id and a member of the same registry here', async () => {
     const after = await readJson(vendored.mcmetaRegistries);
-    const raw = JSON.parse(await readFile(vendored.vanillaMcdocSymbols, 'utf8')) as unknown;
-    const symbols = parseVanillaMcdocSymbols(raw);
-    const previous = createSchemaIndex(symbols, { mcVersion: PREVIOUS_VERSION });
-    const current = createSchemaIndex(symbols, { mcVersion: target.mcVersion });
     for (const rename of KNOWN_RENAMES) {
       const label = `${rename.registry} ${rename.from} → ${rename.to}`;
       expect(REMOVED_IDS[rename.registry], label).toContain(rename.from);
       expect(after[rename.registry], label).toContain(rename.to);
-      expect(rename.registry, label).toBe('worldgen/feature_type');
-      const before = previous.dispatch(FEATURE_CONFIG_DISPATCHER, rename.from);
-      const now = current.dispatch(FEATURE_CONFIG_DISPATCHER, rename.to);
-      // The old key is gated out of this target and the new one is absent before it.
-      expect(current.dispatch(FEATURE_CONFIG_DISPATCHER, rename.from), label).toBeUndefined();
-      expect(previous.dispatch(FEATURE_CONFIG_DISPATCHER, rename.to), label).toBeUndefined();
-      const same = JSON.stringify(shape(before)) === JSON.stringify(shape(now));
-      expect(rename.sameShape, label).toBe(same);
-      if (!same) expect(rename.hint, label).toBeTruthy();
+      // None is the same shape (proved in changes.test.ts), so each is reported with its hint.
+      expect(rename.sameShape, label).toBe(false);
+      expect(rename.hint, label).toBeTruthy();
     }
   });
 

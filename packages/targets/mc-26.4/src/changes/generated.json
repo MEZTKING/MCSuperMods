@@ -1,0 +1,1394 @@
+{
+  "additions": {
+    "ids:(registries)": 2,
+    "ids:advancement": 53,
+    "ids:block": 25,
+    "ids:block_definition": 25,
+    "ids:block_predicate_type": 1,
+    "ids:block_sound_set": 137,
+    "ids:chunk_status": 1,
+    "ids:entity_type": 2,
+    "ids:environment_attribute": 1,
+    "ids:item": 28,
+    "ids:item_definition": 28,
+    "ids:jukebox_song": 1,
+    "ids:loot_table": 26,
+    "ids:menu": 1,
+    "ids:mob_effect": 1,
+    "ids:model": 76,
+    "ids:particle_type": 1,
+    "ids:potion": 2,
+    "ids:recipe": 65,
+    "ids:sound": 270,
+    "ids:sound_event": 58,
+    "ids:sulfur_cube_archetype": 1,
+    "ids:tag/block": 15,
+    "ids:tag/block_sound_set": 1,
+    "ids:tag/damage_type": 1,
+    "ids:tag/entity_type": 6,
+    "ids:tag/fluid": 1,
+    "ids:tag/item": 5,
+    "ids:tag/worldgen/biome": 3,
+    "ids:texture": 51,
+    "ids:villager_trade": 2,
+    "ids:worldgen/biome": 1,
+    "ids:worldgen/density_function_type": 2,
+    "ids:worldgen/feature": 21,
+    "ids:worldgen/feature_type": 2,
+    "ids:worldgen/material_rule": 2,
+    "ids:worldgen/noise": 1,
+    "ids:worldgen/placed_feature": 26
+  },
+  "changes": [
+    {
+      "area": "block-states",
+      "field": "playlist_mode",
+      "handling": "none",
+      "id": "block-states:jukebox#playlist_mode",
+      "source": "blocks",
+      "subject": "jukebox",
+      "to": [
+        "true",
+        "false"
+      ],
+      "what": "property-added"
+    },
+    {
+      "area": "commands",
+      "from": "minecraft:resource{\"registry\":\"minecraft:mob_effect\"} exec",
+      "handling": "none",
+      "id": "commands:effect clear <targets> <effect>",
+      "source": "commands",
+      "subject": "effect clear <targets> <effect>",
+      "to": "minecraft:resource_or_tag{\"registry\":\"minecraft:mob_effect\"} exec",
+      "what": "argument-changed"
+    },
+    {
+      "area": "commands",
+      "from": "minecraft:resource{\"registry\":\"minecraft:mob_effect\"} exec",
+      "handling": "none",
+      "id": "commands:effect give <targets> <effect>",
+      "source": "commands",
+      "subject": "effect give <targets> <effect>",
+      "to": "minecraft:resource_or_tag{\"registry\":\"minecraft:mob_effect\"} exec",
+      "what": "argument-changed"
+    },
+    {
+      "area": "commands",
+      "from": "brigadier:integer exec",
+      "handling": "none",
+      "id": "commands:test run <tests> <numberOfTimes> <untilFailed> <rotationSteps>",
+      "source": "commands",
+      "subject": "test run <tests> <numberOfTimes> <untilFailed> <rotationSteps>",
+      "to": "brigadier:integer{\"max\":3,\"min\":0} exec",
+      "what": "argument-changed"
+    },
+    {
+      "area": "commands",
+      "from": "brigadier:integer exec",
+      "handling": "none",
+      "id": "commands:test runfailed <numberOfTimes> <untilFailed> <rotationSteps>",
+      "source": "commands",
+      "subject": "test runfailed <numberOfTimes> <untilFailed> <rotationSteps>",
+      "to": "brigadier:integer{\"max\":3,\"min\":0} exec",
+      "what": "argument-changed"
+    },
+    {
+      "area": "commands",
+      "from": "brigadier:integer exec",
+      "handling": "none",
+      "id": "commands:test runfailed <onlyRequiredTests> <numberOfTimes> <untilFailed> <rotationSteps>",
+      "source": "commands",
+      "subject": "test runfailed <onlyRequiredTests> <numberOfTimes> <untilFailed> <rotationSteps>",
+      "to": "brigadier:integer{\"max\":3,\"min\":0} exec",
+      "what": "argument-changed"
+    },
+    {
+      "area": "formats",
+      "field": "/hit_sound",
+      "handling": "none",
+      "id": "formats:::java::data::sulfur_cube_archetype::SoundSettings#/hit_sound",
+      "source": "mcdoc",
+      "subject": "::java::data::sulfur_cube_archetype::SoundSettings",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/push_sound",
+      "handling": "none",
+      "id": "formats:::java::data::sulfur_cube_archetype::SoundSettings#/push_sound",
+      "source": "mcdoc",
+      "subject": "::java::data::sulfur_cube_archetype::SoundSettings",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/base_block",
+      "handling": "manual",
+      "id": "formats:::java::data::worldgen::feature::LargeSpeleothemConfig#/base_block",
+      "source": "mcdoc",
+      "subject": "::java::data::worldgen::feature::LargeSpeleothemConfig",
+      "what": "field-addedRequired"
+    },
+    {
+      "area": "formats",
+      "field": "/default_block",
+      "handling": "manual",
+      "id": "formats:::java::data::worldgen::noise_settings::NoiseGeneratorSettingsRef#/default_block",
+      "source": "mcdoc",
+      "subject": "::java::data::worldgen::noise_settings::NoiseGeneratorSettingsRef",
+      "what": "field-removed"
+    },
+    {
+      "area": "formats",
+      "from": "int",
+      "handling": "manual",
+      "id": "formats:mcdoc:gradient_density_coordinate/y",
+      "registry": "mcdoc:gradient_density_coordinate",
+      "source": "mcdoc",
+      "subject": "mcdoc:gradient_density_coordinate/y",
+      "to": "union(@::java::data::worldgen::VerticalAnchor|int)",
+      "what": "type-changed"
+    },
+    {
+      "area": "formats",
+      "field": "/playlist_position",
+      "handling": "manual",
+      "id": "formats:minecraft:block_entity/jukebox#/playlist_position",
+      "registry": "minecraft:block_entity",
+      "source": "mcdoc",
+      "subject": "minecraft:block_entity/jukebox",
+      "what": "field-addedRequired"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:block_predicate/below_heightmap",
+      "registry": "minecraft:block_predicate",
+      "source": "mcdoc",
+      "subject": "minecraft:block_predicate/below_heightmap",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "field": "/state",
+      "handling": "none",
+      "id": "formats:minecraft:block_predicate/matching_fluids#/state",
+      "registry": "minecraft:block_predicate",
+      "source": "mcdoc",
+      "subject": "minecraft:block_predicate/matching_fluids",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:density_function/domain_warp",
+      "registry": "minecraft:density_function",
+      "source": "mcdoc",
+      "subject": "minecraft:density_function/domain_warp",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "handling": "manual",
+      "id": "formats:minecraft:density_function/interpolated",
+      "registry": "minecraft:density_function",
+      "source": "mcdoc",
+      "subject": "minecraft:density_function/interpolated",
+      "what": "type-removed"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:density_function/upscale",
+      "registry": "minecraft:density_function",
+      "source": "mcdoc",
+      "subject": "minecraft:density_function/upscale",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "field": "/FreezingTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/drowned#/FreezingTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/drowned",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/FrostbiteConversionTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/drowned#/FrostbiteConversionTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/drowned",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:entity/frostbite",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/frostbite",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "field": "/FreezingTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/husk#/FreezingTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/husk",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/FrostbiteConversionTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/husk#/FrostbiteConversionTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/husk",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:entity/ice_ball",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/ice_ball",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "field": "/FreezingTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/zombie#/FreezingTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/zombie",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/FrostbiteConversionTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/zombie#/FrostbiteConversionTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/zombie",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/FreezingTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/zombie_villager#/FreezingTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/zombie_villager",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/FrostbiteConversionTime",
+      "handling": "none",
+      "id": "formats:minecraft:entity/zombie_villager#/FrostbiteConversionTime",
+      "registry": "minecraft:entity",
+      "source": "mcdoc",
+      "subject": "minecraft:entity/zombie_villager",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/large_particle",
+      "handling": "none",
+      "id": "formats:minecraft:entity_effect/explode#/large_particle",
+      "registry": "minecraft:entity_effect",
+      "source": "mcdoc",
+      "subject": "minecraft:entity_effect/explode",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/small_particle",
+      "handling": "none",
+      "id": "formats:minecraft:entity_effect/explode#/small_particle",
+      "registry": "minecraft:entity_effect",
+      "source": "mcdoc",
+      "subject": "minecraft:entity_effect/explode",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/sound",
+      "handling": "none",
+      "id": "formats:minecraft:entity_effect/explode#/sound",
+      "registry": "minecraft:entity_effect",
+      "source": "mcdoc",
+      "subject": "minecraft:entity_effect/explode",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:environment_attribute/visual/has_sky_occluder",
+      "registry": "minecraft:environment_attribute",
+      "source": "mcdoc",
+      "subject": "minecraft:environment_attribute/visual/has_sky_occluder",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:feature_config/crevasse",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/crevasse",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "handling": "manual",
+      "id": "formats:minecraft:feature_config/large_dripstone",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/large_dripstone",
+      "what": "type-removed"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:feature_config/large_speleothem",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/large_speleothem",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "field": "/placement_options",
+      "handling": "none",
+      "id": "formats:minecraft:feature_config/speleothem_cluster#/placement_options",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/speleothem_cluster",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/large_particle",
+      "handling": "none",
+      "id": "formats:minecraft:location_based_effect/explode#/large_particle",
+      "registry": "minecraft:location_based_effect",
+      "source": "mcdoc",
+      "subject": "minecraft:location_based_effect/explode",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/small_particle",
+      "handling": "none",
+      "id": "formats:minecraft:location_based_effect/explode#/small_particle",
+      "registry": "minecraft:location_based_effect",
+      "source": "mcdoc",
+      "subject": "minecraft:location_based_effect/explode",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/sound",
+      "handling": "none",
+      "id": "formats:minecraft:location_based_effect/explode#/sound",
+      "registry": "minecraft:location_based_effect",
+      "source": "mcdoc",
+      "subject": "minecraft:location_based_effect/explode",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/positions",
+      "from": "[[int](3..3)]",
+      "handling": "manual",
+      "id": "formats:minecraft:placement_modifier/fixed_placement#/positions",
+      "registry": "minecraft:placement_modifier",
+      "source": "mcdoc",
+      "subject": "minecraft:placement_modifier/fixed_placement",
+      "to": "[[int](3..3)](1..)",
+      "what": "field-retyped"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:resource/block_sound_set",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/block_sound_set",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/beg_for_food_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/beg_for_food_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/eat_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/eat_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/hiss_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/hiss_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/purr_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/purr_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/purreow_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/purreow_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/stray_ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/adult_sounds/stray_ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/beg_for_food_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/beg_for_food_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/eat_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/eat_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/hiss_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/hiss_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/purr_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/purr_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/purreow_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/purreow_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/stray_ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cat_sound_variant#/baby_sounds/stray_ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cat_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/adult_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/adult_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/adult_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/step_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/adult_sounds/step_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/baby_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/baby_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/baby_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/step_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/chicken_sound_variant#/baby_sounds/step_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/chicken_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cow_sound_variant#/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cow_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cow_sound_variant#/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cow_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cow_sound_variant#/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cow_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/step_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/cow_sound_variant#/step_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/cow_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/adult_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/adult_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/eat_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/adult_sounds/eat_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/adult_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/step_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/adult_sounds/step_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/baby_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/baby_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/eat_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/baby_sounds/eat_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/baby_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/step_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/pig_sound_variant#/baby_sounds/step_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/pig_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/location_based_effects",
+      "handling": "none",
+      "id": "formats:minecraft:resource/sulfur_cube_archetype#/location_based_effects",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/sulfur_cube_archetype",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/adult_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/adult_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/growl_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/adult_sounds/growl_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/adult_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/pant_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/adult_sounds/pant_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/adult_sounds/whine_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/adult_sounds/whine_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/ambient_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/baby_sounds/ambient_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/death_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/baby_sounds/death_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/growl_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/baby_sounds/growl_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/hurt_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/baby_sounds/hurt_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/pant_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/baby_sounds/pant_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/baby_sounds/whine_sound",
+      "handling": "none",
+      "id": "formats:minecraft:resource/wolf_sound_variant#/baby_sounds/whine_sound",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/wolf_sound_variant",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/default_block",
+      "handling": "manual",
+      "id": "formats:minecraft:resource/worldgen/noise_settings#/default_block",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/worldgen/noise_settings",
+      "what": "field-removed"
+    },
+    {
+      "area": "formats",
+      "field": "/corner_constraint",
+      "handling": "none",
+      "id": "formats:minecraft:template_pool_element/feature_pool_element#/corner_constraint",
+      "registry": "minecraft:template_pool_element",
+      "source": "mcdoc",
+      "subject": "minecraft:template_pool_element/feature_pool_element",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/corner_constraint",
+      "handling": "none",
+      "id": "formats:minecraft:template_pool_element/legacy_single_pool_element#/corner_constraint",
+      "registry": "minecraft:template_pool_element",
+      "source": "mcdoc",
+      "subject": "minecraft:template_pool_element/legacy_single_pool_element",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/corner_constraint",
+      "handling": "none",
+      "id": "formats:minecraft:template_pool_element/list_pool_element#/corner_constraint",
+      "registry": "minecraft:template_pool_element",
+      "source": "mcdoc",
+      "subject": "minecraft:template_pool_element/list_pool_element",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/corner_constraint",
+      "handling": "none",
+      "id": "formats:minecraft:template_pool_element/single_pool_element#/corner_constraint",
+      "registry": "minecraft:template_pool_element",
+      "source": "mcdoc",
+      "subject": "minecraft:template_pool_element/single_pool_element",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/trunk_width",
+      "handling": "none",
+      "id": "formats:minecraft:trunk_placer/straight_trunk_placer#/trunk_width",
+      "registry": "minecraft:trunk_placer",
+      "source": "mcdoc",
+      "subject": "minecraft:trunk_placer/straight_trunk_placer",
+      "what": "field-addedOptional"
+    },
+    {
+      "area": "ids",
+      "from": "flowing_lava",
+      "handling": "manual",
+      "id": "ids:fluid/flowing_lava",
+      "registry": "fluid",
+      "source": "registries",
+      "subject": "fluid/flowing_lava",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "from": "flowing_water",
+      "handling": "manual",
+      "id": "ids:fluid/flowing_water",
+      "registry": "fluid",
+      "source": "registries",
+      "subject": "fluid/flowing_water",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "kind": "rename",
+        "name": 0.5,
+        "shape": "none",
+        "to": "block/calcite_slab_top"
+      },
+      "from": "block/cube_top",
+      "handling": "manual",
+      "id": "ids:model/block/cube_top",
+      "registry": "model",
+      "source": "registries",
+      "subject": "model/block/cube_top",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "from": "item_snowball",
+      "handling": "manual",
+      "id": "ids:particle_type/item_snowball",
+      "registry": "particle_type",
+      "source": "registries",
+      "subject": "particle_type/item_snowball",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "from": "rule_test",
+      "handling": "none",
+      "id": "ids:rule_test",
+      "source": "registries",
+      "subject": "rule_test",
+      "to": "rule_test_type",
+      "what": "registry-moved"
+    },
+    {
+      "area": "ids",
+      "from": "intentionally_empty",
+      "handling": "manual",
+      "id": "ids:sound_event/intentionally_empty",
+      "registry": "sound_event",
+      "source": "registries",
+      "subject": "sound_event/intentionally_empty",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "kind": "rename",
+        "name": 0.4,
+        "shape": "none",
+        "to": "immune_to_freezing"
+      },
+      "from": "freeze_immune_entity_types",
+      "handling": "manual",
+      "id": "ids:tag/entity_type/freeze_immune_entity_types",
+      "registry": "tag/entity_type",
+      "source": "registries",
+      "subject": "tag/entity_type/freeze_immune_entity_types",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "from": "ignores_poison_and_regen",
+      "handling": "manual",
+      "id": "ids:tag/entity_type/ignores_poison_and_regen",
+      "registry": "tag/entity_type",
+      "source": "registries",
+      "subject": "tag/entity_type/ignores_poison_and_regen",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "ambiguous": true,
+        "kind": "rename",
+        "name": 0.7,
+        "shape": "none",
+        "to": "gui/sprites/friends/profile"
+      },
+      "from": "gui/sprites/friends/button",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/friends/button",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/friends/button",
+      "to": [
+        "gui/sprites/friends/profile",
+        "gui/sprites/friends/tab"
+      ],
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "ambiguous": true,
+        "kind": "rename",
+        "name": 0.6,
+        "shape": "none",
+        "to": "gui/sprites/friends/profile"
+      },
+      "from": "gui/sprites/friends/button_disabled",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/friends/button_disabled",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/friends/button_disabled",
+      "to": [
+        "gui/sprites/friends/profile",
+        "gui/sprites/friends/tab"
+      ],
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "ambiguous": true,
+        "kind": "rename",
+        "name": 0.77,
+        "shape": "none",
+        "to": "gui/sprites/friends/profile_highlighted"
+      },
+      "from": "gui/sprites/friends/button_highlighted",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/friends/button_highlighted",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/friends/button_highlighted",
+      "to": [
+        "gui/sprites/friends/profile_highlighted",
+        "gui/sprites/friends/tab_highlighted"
+      ],
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "kind": "rename",
+        "name": 0.85,
+        "shape": "none",
+        "to": "gui/sprites/widget/loading"
+      },
+      "from": "gui/sprites/friends/loading",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/friends/loading",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/friends/loading",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "ambiguous": true,
+        "kind": "rename",
+        "name": 0.7,
+        "shape": "none",
+        "to": "gui/sprites/friends/profile"
+      },
+      "from": "gui/sprites/friends/remove",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/friends/remove",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/friends/remove",
+      "to": [
+        "gui/sprites/friends/profile",
+        "gui/sprites/friends/tab"
+      ],
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "kind": "rename",
+        "name": 0.81,
+        "shape": "none",
+        "to": "gui/sprites/pause_menu/other_players"
+      },
+      "from": "gui/sprites/pause_menu/player_reporting",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/pause_menu/player_reporting",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/pause_menu/player_reporting",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "kind": "rename",
+        "name": 0.67,
+        "shape": "none",
+        "to": "gui/sprites/pause_menu/feedback"
+      },
+      "from": "gui/sprites/pause_menu/social_interactions",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/pause_menu/social_interactions",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/pause_menu/social_interactions",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "from": "gui/sprites/toast/social_interactions",
+      "handling": "manual",
+      "id": "ids:texture/gui/sprites/toast/social_interactions",
+      "registry": "texture",
+      "source": "registries",
+      "subject": "texture/gui/sprites/toast/social_interactions",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "ambiguous": true,
+        "kind": "rename",
+        "name": 0,
+        "shape": "differs",
+        "to": "domain_warp"
+      },
+      "from": "interpolated",
+      "handling": "manual",
+      "id": "ids:worldgen/density_function_type/interpolated",
+      "registry": "worldgen/density_function_type",
+      "source": "registries",
+      "subject": "worldgen/density_function_type/interpolated",
+      "to": [
+        "domain_warp",
+        "upscale"
+      ],
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "kind": "rename",
+        "name": 0.33,
+        "shape": "superset",
+        "to": "large_speleothem"
+      },
+      "from": "large_dripstone",
+      "handling": "manual",
+      "id": "ids:worldgen/feature_type/large_dripstone",
+      "registry": "worldgen/feature_type",
+      "source": "registries",
+      "stillIn": [
+        "worldgen/feature",
+        "worldgen/placed_feature"
+      ],
+      "subject": "worldgen/feature_type/large_dripstone",
+      "what": "member-removed"
+    },
+    {
+      "area": "packs",
+      "from": {
+        "major": 121,
+        "minor": 0
+      },
+      "handling": "auto",
+      "id": "packs:data_pack_format",
+      "source": "version",
+      "subject": "data_pack_format",
+      "to": {
+        "major": 126,
+        "minor": 0
+      },
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": 5023,
+      "handling": "auto",
+      "id": "packs:data_version",
+      "source": "version",
+      "subject": "data_version",
+      "to": 5127,
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": 777,
+      "handling": "none",
+      "id": "packs:protocol_version",
+      "source": "version",
+      "subject": "protocol_version",
+      "to": 1073742169,
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": {
+        "major": 97,
+        "minor": 1
+      },
+      "handling": "auto",
+      "id": "packs:resource_pack_format",
+      "source": "version",
+      "subject": "resource_pack_format",
+      "to": {
+        "major": 102,
+        "minor": 0
+      },
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": true,
+      "handling": "none",
+      "id": "packs:stable",
+      "source": "version",
+      "subject": "stable",
+      "to": false,
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": "release",
+      "handling": "none",
+      "id": "packs:type",
+      "source": "version",
+      "subject": "type",
+      "to": "snapshot",
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": "26.3",
+      "handling": "none",
+      "id": "packs:version",
+      "source": "version",
+      "subject": "version",
+      "to": "26.4-snapshot-7",
+      "what": "value-changed"
+    }
+  ],
+  "from": "mc-26.3",
+  "refs": {
+    "from": {
+      "mcdoc": "0ca060a4f1631f9d5eb7198cfe94c7b77a773d32",
+      "mcmeta": "26.3"
+    },
+    "to": {
+      "mcdoc": "1a674539af7150444db0e2fa8fc46318f91ed86b",
+      "mcmeta": "26.4-snapshot-7"
+    }
+  },
+  "to": "mc-26.4"
+}

@@ -29,6 +29,7 @@
     { "path": "packages/targets/all" },
     { "path": "packages/targets/mc-26.3" },
     { "path": "packages/targets/mc-26.4" },
+    { "path": "packages/targets/migrate" },
     { "path": "tools" }
   ]
 }

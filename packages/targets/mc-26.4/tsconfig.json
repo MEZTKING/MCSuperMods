@@ -5,10 +5,17 @@
     "outDir": "dist-types",
     "types": ["node"]
   },
-  "include": ["src", "test", "vitest.config.ts", "vendor/worldgen/feature-order.json"],
+  "include": [
+    "src",
+    "test",
+    "vitest.config.ts",
+    "vendor/worldgen/feature-order.json",
+    "src/changes/generated.json"
+  ],
   "references": [
     { "path": "../../plugin-api" },
     { "path": "../../schemas" },
-    { "path": "../../core" }
+    { "path": "../../core" },
+    { "path": "../migrate" }
   ]
 }

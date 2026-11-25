@@ -249,6 +249,21 @@ describe('builtInTargets', () => {
     }
   });
 
+  it('gives every target that follows another its change set, through targetFacts too (B813)', () => {
+    for (const { target } of builtInTargets) {
+      if (target.previous === undefined) continue;
+      expect(target.changes, `${target.id}.changes`).toBeDefined();
+      const facts = targetFacts(target.id);
+      expect(facts?.changes).toEqual(target.changes);
+      // A copy, not the target's own set.
+      expect(facts?.changes).not.toBe(target.changes);
+      // Ids are unique and sorted.
+      const ids = (target.changes?.changes ?? []).map((change) => change.id);
+      expect(ids).toEqual([...ids].sort());
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+  });
+
   it('readVendoredJson rejects bytes that are not JSON', async () => {
     const bundle = builtInTargets[0] as TargetBundle;
     const bad = async (): Promise<Uint8Array> => new TextEncoder().encode('{not json');
