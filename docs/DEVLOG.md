@@ -11583,3 +11583,24 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 - B732: the Game tab's `RoundView` calls `playRoundHeadless` with a source of its own over the lowered game; its last line and the players' hearts are `run.lines` and `source.practice.views()`.
 - B733: the starters' games should match what the scripts read: Lifesteal in rounds with `last_standing` and "spectate" at zero (an endless Lifesteal never ends a round, so its script stops after the knock-outs), Bed Wars-style with its first two bases within 48 blocks of each other, Spleef's floor with `from`/`to` (or the registered floor expander).
 - B736: the stand-in players of the parity tests can follow the same scripts.
+
+## 2026-11-25 — orchestrator — Version upgrades: ADR 0136 and the plan
+
+**What**
+- The user (2026-11-25): "also make a system to automatically upgrade a mods version for the next minecraft, it should tell you what has changed and what needs to change. etc". Plan only; no code.
+- Read what exists: `Target.migrateFrom` and `MigrationReport` (plugin API), `mc-26.4`'s hand-written `migrate.ts` and `removed-ids.ts`, `ProjectSession.upgradeTargetPreview` and `upgradeTarget`, `UpgradeTargetDialog` ("Move to another Minecraft version", B716), `tools/check-project` (which already upgrades a copy and validates it), the sync tools, `engine-mod/versions/`, ADR 0037 with its amendment. Findings U1 to U14 in the plan's section 1.
+- Read Mojang's version manifest (2026-11-25): latest release 26.3, latest snapshot `26.4-pre-1` (2026-11-24); the 26.4 target is still pinned to `26.4-snapshot-7`.
+- Wrote `docs/adr/0136-version-upgrades-noticed-moved-and-explained.md` (Proposed, D1 to D15), `docs/PLAN-version-upgrades.md` (Plan D: B810 to B827, reserves B828 to B830, B831 to B839 free), a ROADMAP section and a pointer in DESIGN §9.
+
+**Decisions**
+- "Automatic" is: noticed, tried on a copy, one click, explained, and fed by a diff tool. The app never moves a mod without a click.
+- Each target carries a change set against the one before it: a generated part written only by `tools/diff-targets` and tied to the vendored data by a test, and a curated part (renames, sentences, in-game checks, changes not in data). One shared engine under `packages/targets/` runs it; chains across versions; inverses for moving back.
+- The report comes from a dry run (migrate, validate and lower a copy, compare with today), which `tools/check-project` already proves possible; what is left after a move stays in Things to fix under "After moving to Minecraft X" and clears by itself.
+- Ejected Java projects are advised with written notes and a read-only scan, never rewritten. Modpacks ask Modrinth only on a click.
+- The developer tools' proof is a test: the differ must find again, unaided, everything found by hand for 26.3 to 26.4.
+- No scheduled CI job watches for new versions (Actions sparingly). B801 to B809 stay free.
+
+**Next**
+- Main session: put the six questions of the plan's section 2 to the user (defaults: releases only; keep a copy; never by itself; newest release, the one before and the next test builds; Modrinth on a click; re-pin 26.4 at its release with the new tool).
+- B810 (spike, Opus, high) can start in any free slot; B811 and B812 after it. B812 owns `packages/plugin-api/src/target.ts`: not beside Plan C's B782.
+- `docs/CLAUDE.md`'s "open plan" line and `docs/HANDOFF.md` do not name this plan yet (the main session's files).

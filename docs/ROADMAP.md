@@ -1126,3 +1126,27 @@ To be planned by the orchestrator with an ADR before any code; one target at a t
 ### Blockloom block pictures (ADR 0135, 2026-11-24)
 
 - [x] B800 Blockloom draws block pictures (its recipes ported into the library's `art/blockloom/`), **Describe it** in the Draw dialog, Settings' **Block picture style** with Classic kept (user, 2026-11-24: "go ahead with the recommended, keep classic in settings")
+
+### Version upgrades (ADR 0136 proposed, `docs/PLAN-version-upgrades.md`, user 2026-11-25: "also make a system to automatically upgrade a mods version for the next minecraft, it should tell you what has changed and what needs to change. etc")
+
+The app notices a newer Minecraft for the open mod, tries the move on a copy, moves it on one click as one undo step, and reports what changed, what it changed, what the user must change (kept in Things to fix), what players need and what to check in the game; targets are made and re-pinned by tools that diff two versions. Six questions for the user in the plan's section 2.
+
+- [ ] B810 Spike: what a version change really is, measured (wave V0; Opus, high)
+- [ ] B811 `tools/diff-targets` (wave V1; Opus, high)
+- [ ] B812 Plugin API: change sets and migration detail (wave V1; Opus, medium)
+- [ ] B813 The shared migration engine, and 26.4 on it (wave V2; Opus, high)
+- [ ] B814 `tools/new-target` and the checklist (wave V2; Opus, medium)
+- [ ] B815 Core: chains, inverse and the report model (wave V2; Opus, medium)
+- [ ] B816 The dry run and the kept copy in the app (wave V3; Opus, high)
+- [ ] B817 The notice: status bar, Things to fix, Home (wave V3; Opus, medium)
+- [ ] B818 The dialog as the report (wave V3; Opus, high)
+- [ ] B819 Before and after live views (wave V4; Opus, high)
+- [ ] B820 Other versions and moving back (wave V4; Opus, medium)
+- [ ] B821 Modpacks in the report (wave V4; Opus, medium)
+- [ ] B822 Notes for ejected Java projects (wave V4; Opus, medium)
+- [ ] B823 Changed vanilla files (wave V4; Opus, medium)
+- [ ] B824 `check-project --upgrade-report` and the community repository (wave V5; Sonnet)
+- [ ] B825 e2e, guide, search, AI helper lines and changelog (wave V5)
+- [ ] B826 The 26.4 run of the tools: dry run now, the re-pin at the release (wave V5; Opus, high; takes over "26.4 release re-pin", was reserve B163)
+- [ ] B827 Close (wave V6; main session)
+- Reserve: B828 migration-only records for a dropped target, B829 Check all my mods on Home, B830 a quick fix for projects moved before a migration was corrected; B831 to B839 free.

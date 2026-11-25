@@ -524,6 +524,8 @@ Phase 7 adds the second target, `mc-26.4`, pinned to `26.4-snapshot-7` (`channel
 
 Support policy ([ADR 0037](adr/0037-second-target-mc-26.4-and-target-upgrade.md) D1): the current release (26.3) and the next version's snapshots, replaced by its release when it lands; snapshots are best-effort.
 
+Proposed ([ADR 0136](adr/0136-version-upgrades-noticed-moved-and-explained.md), 2026-11-25; plan `PLAN-version-upgrades.md`): each target carries a change set against the target before it (a generated part from `tools/diff-targets`, a curated part), one shared migration engine runs it, and the app notices a newer version, tries the move on a copy and reports what changed and what the user must change before one click moves the mod. This paragraph becomes the design at acceptance.
+
 Block facts (plugin API 1.10.0, [ADR 0067](adr/0067-block-types-and-states.md) D9): `TargetFacts.blocks?: BlockFacts` lists the MSM names of the door, trapdoor, button and plate set types and of the fence gate wood types each target supports; family tag names are checked against each target's vendored registries in the plugin tests.
 
 Container and machine facts (plugin API 1.12.0, [ADR 0074](adr/0074-containers-and-block-entities.md) D7, [ADR 0075](adr/0075-machines-and-machine-recipes.md) D7): `BlockFacts.containerSounds?` (both targets: `minecraft:block.barrel.open` and `minecraft:block.barrel.close`) and `BlockFacts.machineRecipeTypes?` (both targets: `minecraft:smelting`, `minecraft:blasting`, `minecraft:smoking`, `minecraft:campfire_cooking`), checked against the vendored sound events and `recipe_type` registry.
