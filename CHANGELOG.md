@@ -6,7 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.11.
+
+## [1.5.11] - 2026-11-25
+
 - **Play without mods.** A game made only of data packs can be played as players without mods have it: **Play without mods** in the Play menu opens a copy of your game's world, with your packs and without the test instance's extras, in a second Prism instance, **MCSuperMods Plain**, that has Minecraft and nothing else. A game that needs its mod is told so; a game with no world yet is told to press **Play my game** once first.
+- **Practice players in Try it.** The games panel adds up to seven stand-in players with names, teams and hearts; tell each what to do (walk, hit, knock out, break the block under them, leave, join), and **Watch a round** plays a short round of each game type to a win with captions.
+- **Dialogs in plain words.** Export, install, map export, modpacks, Test in Minecraft and the import dialogs each start with one plain line, with ids and paths under **More options**; "Export Fabric mod jar" is now **Save the mod as a file** and "Upgrade project target" is **Move to another Minecraft version**. Test in Minecraft asks before it makes an instance, as Play does, and the menu bar has **Help > Guide…**.
+- The Particle, Creative tab, World addition, Extra drops and Vanilla block rules Studios show plain words first, with the rarer settings under **More options**; World addition shows **On the map**.
 
 ## [1.5.10] - 2026-11-25
 
