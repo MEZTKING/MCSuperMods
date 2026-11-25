@@ -20,7 +20,12 @@ import {
   POTION_COMMON_SECTIONS,
 } from '../plain';
 import type { StudioEntry, StudioProps } from '../types';
-import { ExtraDropsStudio, VanillaBlockRulesStudio, WorldAdditionStudio } from './AdditionStudios';
+import {
+  ExtraDropsStudio,
+  VanillaBlockRulesStudio,
+  WORLD_ADDITION_MAP_SECTION,
+  WorldAdditionStudio,
+} from './AdditionStudios';
 import {
   BIOME_ADDITION_KIND,
   LOOT_ADDITION_KIND,
@@ -87,6 +92,53 @@ function LazyFluidStudio(props: StudioProps) {
   );
 }
 
+/**
+ * The common sections of the Studios split by B705 (ADR 0130 D3): what a first-timer sets to
+ * get a working thing, its live view among them. Declared here, not in `studios/plain.ts`.
+ */
+export const PARTICLE_COMMON_SECTIONS: readonly string[] = [
+  'particle-pictures',
+  'particle-life',
+  'particle-movement',
+  'particle-colour',
+  'particle-preview-section',
+];
+
+/** The Creative tab Studio's sections in the main area. */
+export const CREATIVE_TAB_COMMON_SECTIONS: readonly string[] = [
+  'creative-tab-preview',
+  'creative-tab-general',
+  'creative-tab-hand-order',
+  'creative-tab-members',
+];
+
+/** The World addition Studio's sections in the main area. */
+export const WORLD_ADDITION_COMMON_SECTIONS: readonly string[] = [
+  WORLD_ADDITION_MAP_SECTION,
+  'world-addition-biomes',
+  'world-addition-features',
+  'world-addition-spawns',
+];
+
+/** The Extra drops Studio's sections in the main area. */
+export const EXTRA_DROPS_COMMON_SECTIONS: readonly string[] = [
+  'extra-drops-tables',
+  'extra-drops-pools',
+  'extra-drops-live',
+];
+
+/**
+ * The Vanilla block rules Studio's sections in the main area: the axe, shovel and hoe, burning
+ * and Try it here; honeycomb and ageing are all More options.
+ */
+export const VANILLA_BLOCK_RULES_COMMON_SECTIONS: readonly string[] = [
+  'vanilla-rules-strip',
+  'vanilla-rules-flatten',
+  'vanilla-rules-till',
+  'vanilla-rules-burn',
+  'vanilla-rules-try-it-here',
+];
+
 export const studios: StudioEntry[] = [
   {
     id: 'msm.blocks-items.block',
@@ -116,20 +168,33 @@ export const studios: StudioEntry[] = [
     id: 'msm.blocks-items.biome-addition',
     kindId: BIOME_ADDITION_KIND,
     component: WorldAdditionStudio,
+    common: WORLD_ADDITION_COMMON_SECTIONS,
   },
-  { id: 'msm.blocks-items.loot-addition', kindId: LOOT_ADDITION_KIND, component: ExtraDropsStudio },
+  {
+    id: 'msm.blocks-items.loot-addition',
+    kindId: LOOT_ADDITION_KIND,
+    component: ExtraDropsStudio,
+    common: EXTRA_DROPS_COMMON_SECTIONS,
+  },
   // The "Vanilla block rules" Studio (ADR 0105 D4, ADR 0112 D1).
   {
     id: 'msm.blocks-items.vanilla-block-rules',
     kindId: VANILLA_BLOCK_RULES_KIND,
     component: VanillaBlockRulesStudio,
+    common: VANILLA_BLOCK_RULES_COMMON_SECTIONS,
   },
-  { id: 'msm.blocks-items.particle', kindId: PARTICLE_KIND, component: LazyParticleStudio },
+  {
+    id: 'msm.blocks-items.particle',
+    kindId: PARTICLE_KIND,
+    component: LazyParticleStudio,
+    common: PARTICLE_COMMON_SECTIONS,
+  },
   // The Creative Tab Studio (ADR 0096 D2, ADR 0101 D1).
   {
     id: 'msm.blocks-items.creative-tab',
     kindId: CREATIVE_TAB_KIND,
     component: LazyCreativeTabStudio,
+    common: CREATIVE_TAB_COMMON_SECTIONS,
   },
   // The Fluid Studio (ADR 0099 D1, ADR 0101 D1).
   {

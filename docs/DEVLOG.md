@@ -11523,3 +11523,19 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 - Plan A's Test and share tab can call the same `play` with `plainPlayHostOf`.
 - Not checked in the game: that 26.x opens a world made with Fabric in an instance without a loader, and enables the data pack found in `datapacks/` on the first load (both expected; for the Windows list, N16).
 - Work folders left by a crash in `<msmHome>/cache/plain-worlds/` are not cleaned up yet.
+## 2026-11-25 — executor — B705 Split: the blocks and items area's remaining Studios
+
+**What**
+- Particle, Creative tab, World addition, Extra drops and Vanilla block rules now have their common sections (ADR 0130 D3), declared in `studios/blocks-items/studios.tsx` (`PARTICLE_COMMON_SECTIONS`, `CREATIVE_TAB_COMMON_SECTIONS`, `WORLD_ADDITION_COMMON_SECTIONS`, `EXTRA_DROPS_COMMON_SECTIONS`, `VANILLA_BLOCK_RULES_COMMON_SECTIONS`), each with its live view.
+- Particle: every section common; the strip splitter, Between, Size at the end, the exact Gravity, Drag, Spin, Stops on blocks, Tint at the end, Opacity, See-through and Show from far away moved to their section's More options. Creative tab: every section common; the order choice in the Tab section's More options.
+- World addition: a new **On the map** section (the worldgen map line, `MapLine` mode `element`, lazy: See it on the map draws the addition's Scatter, Walk in it) as its live view; Biomes, Features and Spawns common; the biome id help, each feature's step, Make my own copy with its note and the long "Feature order cycle" help, each spawn's category and group sizes in More options; plain help lines in their place.
+- Extra drops: the table suggestions and the table ids in the Loot tables section's More options (a plain line in their place), "Only when a player kills it" in the Drops section's; With and without has its own why. Vanilla block rules: the axe, shovel, hoe and burning lists and Try it here common, honeycomb and Ages like copper all in More options; each list's note is now its why; the intro no longer says "tool turns".
+- New `app/test/components/studios/blocks-items/plain-split.test.tsx` over real examples (`starters/particle`, `starters/creative-tab`, `starters/custom_ore`, `starters/extra-drop`, `all-kinds` mossy stone rules; two patched copies add an own order, a vanilla feature and a spawn): the default view is plain, with every More options open every test id and control label recorded on the base commit is still there (plus only More options, whys and On the map), and each `common` list holds the live view.
+
+**Decisions**
+- On the map's test id is a constant (`WORLD_ADDITION_MAP_SECTION`) with its own `why`, since `section-why.ts` is not this brief's file; the shared table should gain `world-addition-map`.
+- Vanilla block rules' live view (`liveviews/data/block-rules/BlockRules.tsx`, not this brief's file) still names sounds, a drop and Try it's blocks and tools by id; the test pins those seven leaks and fails once they are fixed.
+
+**Next**
+- `BlockRules.tsx`: the sound line under More options or by name, `Drops <id> once` and the In Try it lists by name (`thingName` or the lang table).
+- Add `world-addition-map` to `studios/section-why.ts`; add the five Studios to `plain-no-ids.test.tsx`'s cases.

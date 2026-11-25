@@ -14,6 +14,11 @@
  *   "See-through", "Show from far away".
  * - Preview: `ParticlePreview`, a 2D canvas driven by `particle-sim.ts`.
  *
+ * Split in one mode (ADR 0130 D3, B705): every section is common (`PARTICLE_COMMON_SECTIONS`);
+ * the strip splitter, the lifetime range, the size at the end, the exact gravity, drag, spin,
+ * stopping on blocks, the end tint, opacity, see-through and far away sit in each section's
+ * More options.
+ *
  * Every change is one undoable edit; everything else is in "Every setting".
  *
  * @packageDocumentation
@@ -150,8 +155,58 @@ export default function ParticleStudio(props: StudioProps) {
   const translucent =
     typeof data.translucent === 'boolean' ? data.translucent : defaultTranslucent(element.data);
 
+  // One strip cut into frames: a rarer way in, in the Pictures section's More options.
+  const splitBox = (
+    <div
+      className="flex flex-wrap items-end gap-2 rounded border border-border p-2"
+      data-testid="particle-split"
+    >
+      <LabelledChoice
+        label="Split a strip into frames"
+        value={layout}
+        labels={FRAME_LAYOUT_LABELS}
+        order={FRAME_LAYOUTS}
+        testId="particle-split-layout"
+        onChange={(next) => setLayout(next as FrameLayout)}
+      />
+      <NumberField
+        label="Frames (empty: square frames)"
+        value={splitCount}
+        integer
+        allowEmpty
+        testId="particle-split-count"
+        onCommit={setSplitCount}
+      />
+      {layout === 'grid' && (
+        <NumberField
+          label="Columns"
+          value={splitColumns}
+          integer
+          allowEmpty
+          testId="particle-split-columns"
+          onCommit={setSplitColumns}
+        />
+      )}
+      <label className="flex flex-col gap-0.5 text-xs">
+        <span className="text-muted">Picture to split (PNG)</span>
+        <input
+          type="file"
+          accept="image/png"
+          aria-label="Picture to split into frames"
+          className={inputClass}
+          data-testid="particle-split-file"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if (file !== undefined) void split(file);
+          }}
+        />
+      </label>
+    </div>
+  );
+
   const pictures = (
-    <Section title="Pictures" testId="particle-pictures">
+    <Section title="Pictures" testId="particle-pictures" more={splitBox}>
       <ol className="flex flex-col gap-1" data-testid="particle-frames">
         {frames.map((sprite, index) => {
           const missing = !hasSpritePicture(project, target, sprite);
@@ -343,52 +398,6 @@ export default function ParticleStudio(props: StudioProps) {
           <code>minecraft:generic_0</code> or <code>minecraft:glow</code> come from the game.
         </p>
       </InMore>
-      <div
-        className="flex flex-wrap items-end gap-2 rounded border border-border p-2"
-        data-testid="particle-split"
-      >
-        <LabelledChoice
-          label="Split a strip into frames"
-          value={layout}
-          labels={FRAME_LAYOUT_LABELS}
-          order={FRAME_LAYOUTS}
-          testId="particle-split-layout"
-          onChange={(next) => setLayout(next as FrameLayout)}
-        />
-        <NumberField
-          label="Frames (empty: square frames)"
-          value={splitCount}
-          integer
-          allowEmpty
-          testId="particle-split-count"
-          onCommit={setSplitCount}
-        />
-        {layout === 'grid' && (
-          <NumberField
-            label="Columns"
-            value={splitColumns}
-            integer
-            allowEmpty
-            testId="particle-split-columns"
-            onCommit={setSplitColumns}
-          />
-        )}
-        <label className="flex flex-col gap-0.5 text-xs">
-          <span className="text-muted">Picture to split (PNG)</span>
-          <input
-            type="file"
-            accept="image/png"
-            aria-label="Picture to split into frames"
-            className={inputClass}
-            data-testid="particle-split-file"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              event.target.value = '';
-              if (file !== undefined) void split(file);
-            }}
-          />
-        </label>
-      </div>
       {status !== null && (
         <p
           role="status"
@@ -416,7 +425,25 @@ export default function ParticleStudio(props: StudioProps) {
   );
 
   const lifeAndSize = (
-    <Section title="Life and size" testId="particle-life">
+    <Section
+      title="Life and size"
+      testId="particle-life"
+      more={
+        <>
+          <CheckField
+            label="Between"
+            checked={range}
+            testId="particle-lifetime-between"
+            onChange={(checked) => set(['lifetime'], lifetimeWithRange(life, checked))}
+          />
+          <p className="text-muted text-xs">
+            Between: each particle lasts a number of ticks picked from the two.
+          </p>
+          {number('size_end', 'Size at the end', 'particle-size-end')}
+          <p className="text-muted text-xs">Empty size at the end: the same size.</p>
+        </>
+      }
+    >
       <div className="flex flex-wrap items-end gap-2">
         {range ? (
           <>
@@ -444,12 +471,6 @@ export default function ParticleStudio(props: StudioProps) {
         ) : (
           number('lifetime', 'Lifetime (ticks)', 'particle-lifetime', true)
         )}
-        <CheckField
-          label="Between"
-          checked={range}
-          testId="particle-lifetime-between"
-          onChange={(checked) => set(['lifetime'], lifetimeWithRange(life, checked))}
-        />
       </div>
       <p className="text-muted text-xs">20 ticks are one second. Empty: 20.</p>
       {at(['lifetime'])}
@@ -457,11 +478,9 @@ export default function ParticleStudio(props: StudioProps) {
       {at(['lifetime', 'max'])}
       <div className="flex flex-wrap items-end gap-2">
         {number('size', 'Size', 'particle-size')}
-        {number('size_end', 'Size at the end', 'particle-size-end')}
       </div>
       <p className="text-muted text-xs">
-        Size is half the width in blocks (0.2 draws a square 0.4 blocks wide). Empty size at the
-        end: the same size.
+        Size is half the width in blocks (0.2 draws a square 0.4 blocks wide).
       </p>
       {at(['size'])}
       {at(['size_end'])}
@@ -469,9 +488,29 @@ export default function ParticleStudio(props: StudioProps) {
   );
 
   const movement = (
-    <Section title="Movement" testId="particle-movement">
+    <Section
+      title="Movement"
+      testId="particle-movement"
+      more={
+        <>
+          {number('gravity', 'Gravity', 'particle-gravity')}
+          <div className="flex flex-wrap items-end gap-2">
+            {number('friction', 'Drag (speed kept per tick, 0 to 1)', 'particle-drag')}
+            {number('spin', 'Spin (degrees per tick)', 'particle-spin')}
+          </div>
+          <CheckField
+            label="Stops on blocks"
+            checked={data.collision !== false}
+            testId="particle-collision"
+            onChange={(checked) => set(['collision'], checked ? undefined : false)}
+          />
+          <p className="text-muted text-xs">
+            Gravity below 0 floats up. Empty drag: 0.98, as vanilla's particles; 1 keeps the speed.
+          </p>
+        </>
+      }
+    >
       <div className="flex flex-wrap items-end gap-2">
-        {number('gravity', 'Gravity', 'particle-gravity')}
         {GRAVITY_SHORTCUTS.map((shortcut) => (
           <button
             key={shortcut.key}
@@ -489,19 +528,6 @@ export default function ParticleStudio(props: StudioProps) {
           </button>
         ))}
       </div>
-      <div className="flex flex-wrap items-end gap-2">
-        {number('friction', 'Drag (speed kept per tick, 0 to 1)', 'particle-drag')}
-        {number('spin', 'Spin (degrees per tick)', 'particle-spin')}
-      </div>
-      <CheckField
-        label="Stops on blocks"
-        checked={data.collision !== false}
-        testId="particle-collision"
-        onChange={(checked) => set(['collision'], checked ? undefined : false)}
-      />
-      <p className="text-muted text-xs">
-        Gravity below 0 floats up. Empty drag: 0.98, as vanilla's particles; 1 keeps the speed.
-      </p>
       {['gravity', 'friction', 'spin', 'collision'].map((key) => (
         <ProblemsAt key={key} problems={problems} pointer={`/${key}`} />
       ))}
@@ -509,7 +535,43 @@ export default function ParticleStudio(props: StudioProps) {
   );
 
   const colour = (
-    <Section title="Colour and light" testId="particle-colour">
+    <Section
+      title="Colour and light"
+      testId="particle-colour"
+      more={
+        <>
+          <ColourField
+            label="Tint at the end"
+            value={data.color_end}
+            clearable
+            testId="particle-tint-end"
+            onChange={(value) => set(['color_end'], value, typingKey('/color_end'))}
+          />
+          {number('alpha', 'Opacity (0 to 1)', 'particle-opacity')}
+          <CheckField
+            label="See-through"
+            checked={translucent}
+            testId="particle-translucent"
+            onChange={(checked) =>
+              set(
+                ['translucent'],
+                checked === defaultTranslucent(element.data) ? undefined : checked,
+              )
+            }
+          />
+          <CheckField
+            label="Show from far away"
+            checked={data.always_show === true}
+            testId="particle-always-show"
+            onChange={(checked) => set(['always_show'], checked ? true : undefined)}
+          />
+          <p className="text-muted text-xs">
+            See-through draws soft edges and fades (on by itself with an opacity below 1 or a fade).
+            Show from far away draws it beyond 32 blocks and with Particles: Minimal.
+          </p>
+        </>
+      }
+    >
       <ColourField
         label="Tint"
         value={data.color}
@@ -517,16 +579,8 @@ export default function ParticleStudio(props: StudioProps) {
         testId="particle-tint"
         onChange={(value) => set(['color'], value, typingKey('/color'))}
       />
-      <ColourField
-        label="Tint at the end"
-        value={data.color_end}
-        clearable
-        testId="particle-tint-end"
-        onChange={(value) => set(['color_end'], value, typingKey('/color_end'))}
-      />
       <p className="text-muted text-xs">No tint: the picture as drawn.</p>
       <div className="flex flex-wrap items-end gap-2">
-        {number('alpha', 'Opacity (0 to 1)', 'particle-opacity')}
         <LabelledChoice
           label="Fade"
           value={typeof data.fade === 'string' ? data.fade : 'none'}
@@ -542,24 +596,6 @@ export default function ParticleStudio(props: StudioProps) {
         testId="particle-emissive"
         onChange={(checked) => set(['emissive'], checked ? true : undefined)}
       />
-      <CheckField
-        label="See-through"
-        checked={translucent}
-        testId="particle-translucent"
-        onChange={(checked) =>
-          set(['translucent'], checked === defaultTranslucent(element.data) ? undefined : checked)
-        }
-      />
-      <CheckField
-        label="Show from far away"
-        checked={data.always_show === true}
-        testId="particle-always-show"
-        onChange={(checked) => set(['always_show'], checked ? true : undefined)}
-      />
-      <p className="text-muted text-xs">
-        See-through draws soft edges and fades (on by itself with an opacity below 1 or a fade).
-        Show from far away draws it beyond 32 blocks and with Particles: Minimal.
-      </p>
       {['color', 'color_end', 'alpha', 'fade', 'emissive', 'translucent', 'always_show'].map(
         (key) => (
           <ProblemsAt key={key} problems={problems} pointer={`/${key}`} />

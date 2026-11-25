@@ -7,7 +7,7 @@ ADR 0130 folds Very easy, Easy and Advanced into one mode: plain by default, the
 - A Studio entry's `common` list (`StudioEntry.common`, `app/src/renderer/src/studios/plain.ts` and the area `studios.tsx` files) names the sections of its main area. A section on it shows its title, its one-line why (`studios/section-why.ts`) and its common settings, with a **More options** at its bottom for the id fields (sent there by `InMore`) and anything the section passes as `more`. A section not on it shows its title, its why and a More options holding all of it.
 - A Studio without a list shows every section in the main area (never hidden), each with its why and its More options for ids.
 - Every Studio ends with **Every setting** (the kind's whole schema form, before ADR 0130 the Studio's "Advanced (all fields)"), and every open thing with **Name** (id and Change id in More options) and **Where it goes** (Used by, the lowered files and Edit as raw text in More options).
-- The default view of every split Studio is swept with `forbiddenIn` over a real example by `app/test/components/studios/plain-no-ids.test.tsx`.
+- The default view of every split Studio is swept with `forbiddenIn` over a real example by `app/test/components/studios/plain-no-ids.test.tsx`; the blocks and items Studios split by B705 also by `app/test/components/studios/blocks-items/plain-split.test.tsx`, which checks that no field was lost with every More options open.
 
 ## Split (a list of common sections)
 
@@ -27,6 +27,11 @@ ADR 0130 folds Very easy, Easy and Advanced into one mode: plain by default, the
 | Command | `msm:command` | Rules, How it is typed, Name, What the player types after it, Who can use it, What it does, Message back |
 | Game rule | `msm:game_rule` | Game rule |
 | Statistic | `msm:stat` | Statistic |
+| Particle | `msm:particle` | Pictures, Life and size, Movement, Colour and light, Preview (B705; the strip splitter, the lifetime range, the size at the end, the exact gravity, drag, spin, stopping on blocks, the end tint, opacity, see-through and far away in More options) |
+| Creative tab | `msm:creative_tab` | Preview, Tab, Your own order, What is in it (B705; the order choice in the Tab section's More options) |
+| World addition | `msm:biome_addition` | On the map (new: the live map through the worldgen map line), Biomes, Features, Spawns (B705; each feature's step and Make my own copy, each spawn's category and group sizes in More options) |
+| Extra drops | `msm:loot_addition` | Loot tables, Drops, With and without (B705; the table suggestions and Only when a player kills it in More options) |
+| Vanilla block rules | `msm:vanilla_block_rules` | Axe, shovel, hoe, Burns, Try it here (B705; honeycomb and Ages like copper all in More options). Its live view still names sounds, a drop and Try it's blocks and tools by id (`liveviews/data/block-rules/BlockRules.tsx`) |
 | How my world starts | `msm:world_setup` | every section |
 | One block | `msm:one_block` | every section |
 | Team, Score, Timer, Area | `msm:team`, `msm:objective`, `msm:timer`, `msm:area` | every section |
@@ -37,12 +42,7 @@ These show all their sections in the main area. Their id fields are plain (names
 
 | Studio | Kind | Note |
 |---|---|---|
-| Particle | `msm:particle` | Swept (no ids) but not split; the frame ids are in the Pictures section's More options |
-| Creative tab | `msm:creative_tab` | Swept but not split |
 | Rule book | `msm:rules` | Its What this becomes and Copy as my own script are in its own More options; a rule's key in the card's |
-| World addition | `msm:biome_addition` | |
-| Extra drops | `msm:loot_addition` | |
-| Vanilla block rules | `msm:vanilla_block_rules` | |
 | Script | `msm:script` | The script editor is the Studio, unchanged (ADR 0130 D4) |
 | Structure | `minecraft:structure_template` | Keeps its own "Every setting" switch |
 | Template pool | `minecraft:worldgen/template_pool` | Keeps its own "Every setting" switch |

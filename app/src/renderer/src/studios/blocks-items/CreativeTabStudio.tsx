@@ -15,6 +15,9 @@
  *   `creative_tab` through the host as one undo step; "Add everything without a tab" adds every
  *   such thing in one step too.
  *
+ * Split in one mode (ADR 0130 D3, B705): every section is common
+ * (`CREATIVE_TAB_COMMON_SECTIONS`); the order choice sits in the Tab section's More options.
+ *
  * Everything else is in "Every setting".
  *
  * @packageDocumentation
@@ -136,7 +139,41 @@ export default function CreativeTabStudio(props: StudioProps) {
   );
 
   const general = (
-    <Section title="Tab" testId="creative-tab-general">
+    <Section
+      title="Tab"
+      testId="creative-tab-general"
+      more={
+        <>
+          <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+            <label htmlFor={orderId} className="text-muted">
+              Order of the things in it
+            </label>
+            <select
+              id={orderId}
+              className={inputClass}
+              data-testid="creative-tab-order"
+              value={order}
+              onChange={(event) =>
+                onChange(
+                  '',
+                  withTabOrder(project, element.id, element.data, event.target.value as TabOrder),
+                )
+              }
+            >
+              {TAB_ORDERS.map((value) => (
+                <option key={value} value={value}>
+                  {TAB_ORDER_LABELS[value]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="text-muted text-xs">
+            The order the mod adds them follows the order you made your things in; your own order
+            lets you list them one by one.
+          </p>
+        </>
+      }
+    >
       <TextField
         label="Title"
         value={data.display_name}
@@ -154,29 +191,6 @@ export default function CreativeTabStudio(props: StudioProps) {
         onCommit={(value) => set(['icon'], value)}
       />
       {at(['icon'])}
-      <div className="flex min-w-0 flex-col gap-0.5 text-xs">
-        <label htmlFor={orderId} className="text-muted">
-          Order of the things in it
-        </label>
-        <select
-          id={orderId}
-          className={inputClass}
-          data-testid="creative-tab-order"
-          value={order}
-          onChange={(event) =>
-            onChange(
-              '',
-              withTabOrder(project, element.id, element.data, event.target.value as TabOrder),
-            )
-          }
-        >
-          {TAB_ORDERS.map((value) => (
-            <option key={value} value={value}>
-              {TAB_ORDER_LABELS[value]}
-            </option>
-          ))}
-        </select>
-      </div>
       {at(['order'])}
       {at(['items'])}
     </Section>

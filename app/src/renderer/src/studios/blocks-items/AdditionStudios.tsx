@@ -13,6 +13,14 @@
  * Every edit is one undo step; typing in a number coalesces. Choices (steps, categories) come
  * from the schema.
  *
+ * Split in one mode (ADR 0130 D3, B705; the lists in `studios.tsx`): World addition shows **On
+ * the map** (the live map's Scatter, through `MapLine`), Biomes and Features, with each
+ * feature's step, Make my own copy and the ids in the Features section's More options, and
+ * Spawns with each spawn's category and group sizes in its More options; Extra drops keeps the tables, the drops and With
+ * and without, with the table suggestions and "Only when a player kills it" in More options;
+ * Vanilla block rules keeps the axe, shovel, hoe and burning lists and Try it here, with
+ * honeycomb and ageing as sections all in More options.
+ *
  * A feature row naming a vanilla placed feature offers "Make my own copy" (ADR 0097 D3): one
  * undo step that adds a project placed feature with the vanilla one's configured feature and
  * placement (read from the game's own file through the vanilla cache when it can be) and points
@@ -74,6 +82,14 @@ import { asObject, choicesThrough, moved, pathSetter, pointerOf } from './blocks
 import { useBlocksItemsStudioHost } from './host';
 import { CheckField, ProblemsAt } from './parts';
 
+/** The test id of World addition's On the map section (its why is its own, B705). */
+export const WORLD_ADDITION_MAP_SECTION = 'world-addition-map';
+
+/** The worldgen Studios' map line (ADR 0119 D7, B587), loaded with the section. */
+const MapLine = lazy(() =>
+  import('../worldgen/MapLine').then((module) => ({ default: module.MapLine })),
+);
+
 /** The live views' host (B609): loaded with the section, not with the Studio. */
 const BundleLiveView = lazy(() => import('../../liveviews/BundleLiveView'));
 
@@ -82,9 +98,14 @@ const BundleLiveView = lazy(() => import('../../liveviews/BundleLiveView'));
  * drops, "Try it here" for vanilla block rules.
  */
 function LiveViewSection(
-  props: StudioProps & { readonly title: string; readonly testId: string; readonly what: string },
+  props: StudioProps & {
+    readonly title: string;
+    readonly testId: string;
+    readonly what: string;
+    readonly why: string;
+  },
 ) {
-  const { project, element, target, title, testId, what } = props;
+  const { project, element, target, title, testId, what, why } = props;
   const host = useBlocksItemsStudioHost();
   const root = useUiStore((state) => state.snapshot?.root ?? null);
   const onSetup = useCallback(
@@ -96,7 +117,7 @@ function LiveViewSection(
     [what],
   );
   return (
-    <Section title={title} testId={testId}>
+    <Section title={title} testId={testId} why={why}>
       <Suspense fallback={<p className="text-muted text-xs">Loading the view…</p>}>
         <BundleLiveView
           project={project}
@@ -334,9 +355,15 @@ export function WorldAdditionStudio(props: StudioProps) {
         onChange={(next) => set(['biomes'], next)}
       />
       <p className="text-muted text-xs">
-        Biome ids such as minecraft:plains, or biome tags starting with # such as
-        #minecraft:is_overworld; the addition applies to all of them.
+        Pick biomes, or a group of biomes such as every Overworld biome; the addition applies to all
+        of them.
       </p>
+      <InMore>
+        <p className="text-muted text-xs">
+          Biome ids such as minecraft:plains, or biome tags starting with # such as
+          #minecraft:is_overworld.
+        </p>
+      </InMore>
       <ProblemsAt problems={problems} pointer="/biomes" />
     </Section>
   );
@@ -365,15 +392,17 @@ export function WorldAdditionStudio(props: StudioProps) {
                   testId={`world-addition-feature-${index}-id`}
                   onCommit={(text) => set(['features', index, 'feature'], text)}
                 />
-                <SelectField
-                  label={`${name} step`}
-                  value={typeof row.step === 'string' ? row.step : undefined}
-                  choices={steps}
-                  testId={`world-addition-feature-${index}-step`}
-                  onChange={(value) => {
-                    if (value !== undefined) set(['features', index, 'step'], value);
-                  }}
-                />
+                <InMore>
+                  <SelectField
+                    label={`${name} step`}
+                    value={typeof row.step === 'string' ? row.step : undefined}
+                    choices={steps}
+                    testId={`world-addition-feature-${index}-step`}
+                    onChange={(value) => {
+                      if (value !== undefined) set(['features', index, 'step'], value);
+                    }}
+                  />
+                </InMore>
                 <RowButtons
                   name={name}
                   index={index}
@@ -389,12 +418,14 @@ export function WorldAdditionStudio(props: StudioProps) {
               </div>
               <RowProblems problems={problems} pointer={pointer} />
               {vanillaPlacedFeature(row.feature) !== undefined && (
-                <OwnCopyButton
-                  {...props}
-                  index={index}
-                  feature={vanillaPlacedFeature(row.feature) as string}
-                  onNote={setCopyNote}
-                />
+                <InMore>
+                  <OwnCopyButton
+                    {...props}
+                    index={index}
+                    feature={vanillaPlacedFeature(row.feature) as string}
+                    onNote={setCopyNote}
+                  />
+                </InMore>
               )}
             </li>
           );
@@ -412,17 +443,23 @@ export function WorldAdditionStudio(props: StudioProps) {
         <Plus size={12} aria-hidden />
         Add feature
       </Button>
-      {copyNote !== null && (
-        <p className="text-muted text-xs" data-testid="world-addition-copy-note">
-          {copyNote}
-        </p>
-      )}
       <p className="text-muted text-xs">
-        Placed features from this project or the game. Only chunks generated after the mod is added
-        get them: explore new land to see them. Prefer your own placed features: an added game
-        feature runs after features the game runs later, which can stop worlds with "Feature order
-        cycle", so make your own copy of it.
+        Only land made after the mod is added gets them: explore new land to see them. One of
+        Minecraft's own can stop a world from loading; under More options, make your own copy of it.
       </p>
+      <InMore>
+        {copyNote !== null && (
+          <p className="text-muted text-xs" data-testid="world-addition-copy-note">
+            {copyNote}
+          </p>
+        )}
+        <p className="text-muted text-xs">
+          Placed features from this project or the game. Only chunks generated after the mod is
+          added get them. Prefer your own placed features: an added game feature runs after features
+          the game runs later, which can stop worlds with "Feature order cycle", so make your own
+          copy of it.
+        </p>
+      </InMore>
       <ProblemsAt problems={problems} pointer="/features" />
     </Section>
   );
@@ -463,18 +500,20 @@ export function WorldAdditionStudio(props: StudioProps) {
                   testId={`world-addition-spawn-${index}-entity`}
                   onCommit={(text) => set(['spawns', index, 'entity'], text)}
                 />
-                <SelectField
-                  label={`${name} category`}
-                  value={typeof row.category === 'string' ? row.category : undefined}
-                  choices={categories}
-                  testId={`world-addition-spawn-${index}-category`}
-                  onChange={(value) => {
-                    if (value !== undefined) set(['spawns', index, 'category'], value);
-                  }}
-                />
                 {spawnNumber(index, 'weight', `${name} weight`, row.weight)}
-                {spawnNumber(index, 'min_group', `${name} min group`, row.min_group)}
-                {spawnNumber(index, 'max_group', `${name} max group`, row.max_group)}
+                <InMore>
+                  <SelectField
+                    label={`${name} category`}
+                    value={typeof row.category === 'string' ? row.category : undefined}
+                    choices={categories}
+                    testId={`world-addition-spawn-${index}-category`}
+                    onChange={(value) => {
+                      if (value !== undefined) set(['spawns', index, 'category'], value);
+                    }}
+                  />
+                  {spawnNumber(index, 'min_group', `${name} min group`, row.min_group)}
+                  {spawnNumber(index, 'max_group', `${name} max group`, row.max_group)}
+                </InMore>
                 <RowButtons
                   name={name}
                   index={index}
@@ -524,6 +563,21 @@ export function WorldAdditionStudio(props: StudioProps) {
         export; vanilla packs do not carry it.
       </p>
       <ProblemsAt problems={problems} pointer="" />
+      <Section
+        title="On the map"
+        testId={WORLD_ADDITION_MAP_SECTION}
+        why="Where it adds things, drawn live as you change it."
+      >
+        <Suspense fallback={<p className="text-muted text-xs">Loading the map…</p>}>
+          <MapLine
+            project={props.project}
+            target={props.target}
+            element={element}
+            mode="element"
+            words="Its features on land of its first biome; added mobs show only in the game."
+          />
+        </Suspense>
+      </Section>
       {biomesSection}
       {featuresSection}
       {spawnsSection}
@@ -581,12 +635,14 @@ function DropRow(props: {
           write({ ...drop, chance: Math.round(value * 100) / 10000 }, key('chance'));
         }}
       />
-      <CheckField
-        label="Only when a player kills it"
-        checked={drop.playerKill}
-        testId={`extra-drops-${index}-player-kill`}
-        onChange={(checked) => write({ ...drop, playerKill: checked })}
-      />
+      <InMore>
+        <CheckField
+          label="Only when a player kills it"
+          checked={drop.playerKill}
+          testId={`extra-drops-${index}-player-kill`}
+          onChange={(checked) => write({ ...drop, playerKill: checked })}
+        />
+      </InMore>
     </>
   );
 }
@@ -603,17 +659,35 @@ export function ExtraDropsStudio(props: StudioProps) {
   const groupLabel = TABLE_GROUPS.find((entry) => entry.id === group)?.label ?? '';
 
   const tablesSection = (
-    <Section title="Loot tables" testId="extra-drops-tables">
-      <SelectField
-        label="Suggest tables of"
-        value={groupLabel === '' ? undefined : groupLabel}
-        choices={TABLE_GROUPS.map((entry) => entry.label)}
-        emptyLabel="(all tables)"
-        testId="extra-drops-table-group"
-        onChange={(value) =>
-          setGroup(TABLE_GROUPS.find((entry) => entry.label === value)?.id ?? '')
-        }
-      />
+    <Section
+      title="Loot tables"
+      testId="extra-drops-tables"
+      more={
+        <>
+          <SelectField
+            label="Suggest tables of"
+            value={groupLabel === '' ? undefined : groupLabel}
+            choices={TABLE_GROUPS.map((entry) => entry.label)}
+            emptyLabel="(all tables)"
+            testId="extra-drops-table-group"
+            onChange={(value) =>
+              setGroup(TABLE_GROUPS.find((entry) => entry.label === value)?.id ?? '')
+            }
+          />
+          {tables.length > 0 && (
+            <p className="text-muted text-xs" data-testid="extra-drops-table-groups">
+              {tables.map((id) => `${id} (${tableGroupLabel(id)})`).join(', ')}
+            </p>
+          )}
+          <p className="text-muted text-xs">
+            {group === ''
+              ? 'Suggestions cover every loot table.'
+              : `Suggestions show ${groupLabel.toLowerCase()} first: type a name such as zombie.`}{' '}
+            Mob tables are entities/…, block tables blocks/…, chest tables chests/….
+          </p>
+        </>
+      }
+    >
       <IdList
         label="Loot tables"
         ids={tables}
@@ -623,17 +697,7 @@ export function ExtraDropsStudio(props: StudioProps) {
         problems={problems}
         onChange={(next) => set(['tables'], next)}
       />
-      {tables.length > 0 && (
-        <p className="text-muted text-xs" data-testid="extra-drops-table-groups">
-          {tables.map((id) => `${id} (${tableGroupLabel(id)})`).join(', ')}
-        </p>
-      )}
-      <p className="text-muted text-xs">
-        {group === ''
-          ? 'Suggestions cover every loot table.'
-          : `Suggestions show ${groupLabel.toLowerCase()} first: type a name such as zombie.`}{' '}
-        Mob tables are entities/…, block tables blocks/…, chest tables chests/….
-      </p>
+      <p className="text-muted text-xs">Pick whose drops get more: a mob, a block or a chest.</p>
       <ProblemsAt problems={problems} pointer="/tables" />
     </Section>
   );
@@ -720,6 +784,7 @@ export function ExtraDropsStudio(props: StudioProps) {
         {...props}
         title="With and without"
         testId="extra-drops-live"
+        why="The drops rolled without and with your extra drops, side by side."
         what="roll Minecraft’s own tables here"
       />
     </section>
@@ -857,8 +922,7 @@ export function VanillaBlockRulesStudio(props: StudioProps) {
     const rows = listAt(data, list);
     const targetField = ruleTargetField(list);
     return (
-      <Section key={list} title={words.title} testId={`vanilla-rules-${list}`}>
-        <p className="text-muted text-xs">{words.note}</p>
+      <Section key={list} title={words.title} testId={`vanilla-rules-${list}`} why={words.note}>
         {rows.length === 0 && <p className="text-muted text-xs">None.</p>}
         <ol className="flex flex-col gap-2">
           {rows.map((raw, index) => {
@@ -963,8 +1027,9 @@ export function VanillaBlockRulesStudio(props: StudioProps) {
       className="flex flex-col gap-4"
     >
       <p className="text-muted text-xs">
-        Rules for Minecraft's own blocks: what a tool turns them into, how they age and how they
-        burn. They need the Fabric mod export; vanilla packs do not carry them.
+        Rules for Minecraft's own blocks: what an axe, a shovel, a hoe or honeycomb makes of them,
+        how they age and how they burn. They need the Fabric mod export; vanilla packs do not carry
+        them.
       </p>
       <ProblemsAt problems={problems} pointer="" />
       {VANILLA_RULE_LISTS.map(section)}
@@ -972,6 +1037,7 @@ export function VanillaBlockRulesStudio(props: StudioProps) {
         {...props}
         title="Try it here"
         testId="vanilla-rules-try-it-here"
+        why="Each block before and after, with the tool that changes it."
         what="see Minecraft’s own blocks' pictures here"
       />
     </section>
