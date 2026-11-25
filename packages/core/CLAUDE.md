@@ -17,6 +17,7 @@ Phase 2 code complete: model, serialisation, load/save with the `SaveManifest` (
 - `src/problems/`: problem codes (incl. `lowering.merge-conflict`, `refs.rename-conflict`).
 - `src/lowering/`: `lowerProject` (unknown kind, thrown lowering and same-path conflicts become `lowering.*` error problems); `mergeOutputFiles` (ADR 0027: `OutputFile.merge` `tag`/`object`, `lowering.merge-conflict`; also used by `runExport` with `export.conflict`).
 - `src/refs/`: `buildReferenceIndex(project, resolveSchema, textReferences?)` over `collectReferences` from `@msm/schemas` (`Reference` with `key?` for map keys, `range?` for text), `collectTextReferences` (exact id tokens in function lines, registry `''`), `normaliseReferenceId`.
+- `src/upgrade/`: moving a project across versions (ADR 0136 D3, D4, D6, D7; B815), pure with targets as arguments: `migrationChain` (the `previous` links up or down), `runChain` (each up hop's `migrateFrom` on a copy, one merged report, reverses hashed by `elementDataHash`), `applyMigration`, `invert` (undoes recorded steps and puts dropped values back; never overwrites, lists element gone, place taken, changed since), `problemKey`/`newProblems` (code + element + path, mapped through `details`; errors and warnings), `matchChanges`, `buildUpgradeReport` (the six parts and the untouched count) and `openItems` (the After moving list).
 - `test/fixtures/`: golden projects; the root `biome.json` excludes `**/test/fixtures`.
 
 ## Conventions

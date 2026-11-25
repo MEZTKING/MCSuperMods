@@ -80,3 +80,4 @@ export {
 } from './registry/element-kind-registry';
 export { PluginCompatibilityError, registerPlugin } from './registry/register-plugin';
 export { parseJson, stableStringify, utf8 } from './serialise/index';
+export * from './upgrade/index';
