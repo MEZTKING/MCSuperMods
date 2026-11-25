@@ -7,16 +7,25 @@
 
 import { resolve } from 'node:path';
 import { ALL_TARGETS, checkProject, type ProjectCheck } from './check.ts';
+import {
+  formatUpgradeReports,
+  type ProjectUpgradeReports,
+  upgradeReports,
+} from './upgrade-report.ts';
 
 /** Parsed command-line arguments. */
 export interface CliArgs {
   folders: string[];
   targets: string[];
   json: boolean;
+  /** Print the upgrade report for each newer target instead of checking. */
+  upgradeReport: boolean;
+  /** Whether `--target` was given (the report then covers only those targets). */
+  targetsGiven: boolean;
 }
 
 const USAGE =
-  'Usage: node tools/check-project/index.ts <project folder>... [--target <target id>|all] [--json]';
+  'Usage: node tools/check-project/index.ts <project folder>... [--target <target id>|all] [--json] [--upgrade-report]';
 
 /**
  * Parses the arguments. `--target` may be given more than once; `all` (the default) means
@@ -28,9 +37,11 @@ export function parseArgs(argv: readonly string[]): CliArgs {
   const folders: string[] = [];
   const targets: string[] = [];
   let json = false;
+  let upgradeReport = false;
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index] as string;
     if (arg === '--json') json = true;
+    else if (arg === '--upgrade-report') upgradeReport = true;
     else if (arg === '--target' || arg.startsWith('--target=')) {
       if (arg === '--target') index += 1;
       const value = arg === '--target' ? argv[index] : arg.slice('--target='.length);
@@ -46,7 +57,13 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     else folders.push(arg);
   }
   if (folders.length === 0) throw new Error(`Name at least one project folder.\n${USAGE}`);
-  return { folders, targets: [...new Set(targets.length === 0 ? ALL_TARGETS : targets)], json };
+  return {
+    folders,
+    targets: [...new Set(targets.length === 0 ? ALL_TARGETS : targets)],
+    json,
+    upgradeReport,
+    targetsGiven: targets.length > 0,
+  };
 }
 
 /** The plain-words report of one project. */
@@ -94,6 +111,7 @@ export async function main(argv: readonly string[]): Promise<number> {
     console.error(error instanceof Error ? error.message : String(error));
     return 2;
   }
+  if (args.upgradeReport) return reportMain(args);
   const results: ProjectCheck[] = [];
   for (const folder of args.folders) {
     const result = await checkProject(resolve(folder), { targets: args.targets }).catch(
@@ -122,4 +140,46 @@ export async function main(argv: readonly string[]): Promise<number> {
     );
   }
   return failed === 0 ? 0 : 1;
+}
+
+/**
+ * `--upgrade-report`: the report for each project and each newer target, in plain words or JSON.
+ * The exit code is 0 when every report was made and none has a thing the user must change, 1
+ * otherwise.
+ */
+async function reportMain(args: CliArgs): Promise<number> {
+  const results: ProjectUpgradeReports[] = [];
+  for (const folder of args.folders) {
+    const result = await upgradeReports(resolve(folder), {
+      ...(args.targetsGiven ? { targets: args.targets } : {}),
+    }).catch(
+      (error: unknown): ProjectUpgradeReports => ({
+        folder: resolve(folder),
+        fileProblems: [],
+        moves: [],
+        error: `The checker could not read this folder: ${error instanceof Error ? error.message : String(error)}`,
+      }),
+    );
+    result.folder = folder;
+    results.push(result);
+    if (!args.json) console.log(formatUpgradeReports(result));
+  }
+  const needing = results.filter(
+    (result) =>
+      result.error !== undefined ||
+      result.fileProblems.length > 0 ||
+      result.moves.some((move) => move.needsYou > 0),
+  ).length;
+  if (args.json) {
+    const summary = results.map((result) => ({
+      ...result,
+      moves: result.moves.map(({ plain, ...rest }) => ({ ...rest, plain })),
+    }));
+    console.log(JSON.stringify({ needingYou: needing, results: summary }, null, 2));
+  } else {
+    console.log(
+      `\n${results.length - needing} of ${results.length} project${results.length === 1 ? '' : 's'} need nothing from you on a newer Minecraft.`,
+    );
+  }
+  return needing === 0 ? 0 : 1;
 }

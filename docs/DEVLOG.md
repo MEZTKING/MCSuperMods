@@ -11911,3 +11911,19 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 - B825: guide lines for **See it before and after** and the stand-ins sentence; e2e over a real move.
 - The first paint grew 26 kB from chunking alone; if it nears 5.5 MB, `@msm/exporters` could mark `sideEffects: false` so `upgrade-notes` stays in the lazy chunk.
 
+
+## 2026-11-25 — executor — B824 check-project --upgrade-report
+
+**What**
+- `tools/check-project/upgrade-report.ts` (new) and `cli.ts`: `--upgrade-report` prints, for each project folder and each target newer than the project's own (`--target` narrows), the report the app's dry run (`ProjectSession.upgradeReport`) makes, over an in-memory copy, applying nothing. Plain words use the app's `components/upgrade/sentences.ts` directly (pure, importable under Node without React): summary, what changed, what MCSuperMods changes, what you need to change (with hints), changed player facts, additions, what does not touch the mod. `--json` gives `{ needingYou, results }` with each move's full `report`, `plain` lines and `needsYou`. Exit 1 when a project needs something by hand or cannot be read.
+- README of the tool and of `tools/community-repo` (the community repository's check of shared mods runs the flag); tests: argument parsing, newer targets, a real example's report, already-newest, the command line in JSON.
+
+**Examples (146 projects under `examples/`, report to 26.4-snapshot-7)**
+- 145 have no "you need to change" item. One has: `examples/flows/leaf_glider`, a warning from `msm_examples:give_leaf_glider` (`mcfunction.check`: "Unknown key equip_sound" at `/lines/1`), a component its command uses that 26.4 does not know. Not changed (examples are not mine); follow-up for the example's owner and for a possible change-set entry.
+
+**Decisions**
+- `sentences.ts` is loaded at run time (`import()` of its file URL, typed by a local interface), because `app/tsconfig.node.json` (not mine) does not list it and the tools type check follows that file. The clean fix is one line in that include.
+- No new IPC or session API: one session per project, one dry run per newer target. The generic "Something in X may need changing" sentence of the app is kept as it is; the problem's own message is in the JSON.
+
+**Next**
+- Fix `leaf_glider`'s `equip_sound` (or add the change to 26.4's change set), then the examples all report clean.

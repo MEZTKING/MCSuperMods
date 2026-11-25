@@ -3,11 +3,12 @@
 Checks that MSM project folders open, validate and export with no errors, the way the app does it. The [MCSuperMods community repository](https://github.com/MEZTKING/MCSuperMods-Community) runs it on every example and every shared mod.
 
 ```sh
-node tools/check-project/index.ts <project folder>... [--target <target id>|all] [--json]
+node tools/check-project/index.ts <project folder>... [--target <target id>|all] [--json] [--upgrade-report]
 ```
 
 - `--target` picks the targets (`mc-26.3`, `mc-26.4`, a comma-separated list, or `all`, the default); it may be given more than once.
 - `--json` prints one JSON report (`passed`, `failed`, and each project's result) instead of the plain-words report.
+- `--upgrade-report` checks nothing else: it prints the report the app's **See what changes** dialog would show (ADR 0136 D4) for each project and each target newer than the project's own (`--target` narrows them). It runs the app's own dry run (`ProjectSession.upgradeReport`) over an in-memory copy and applies nothing. The plain-words form uses the app's `components/upgrade/sentences.ts` (pure, no React), so the words are the app's; `--json` adds the full `UpgradeReport` of each move (`report`), its plain lines (`plain`) and `needsYou`, the number of things the user must change. The exit code is 0 when no project needs anything from the user on any newer target, 1 when one does or a project could not be read, 2 for bad arguments.
 - The exit code is 0 when every project passed on every target, 1 when one failed, and 2 for bad arguments.
 
 ## What it does
@@ -48,6 +49,7 @@ The workspace packages import each other's files without endings, which bundlers
 |---|---|
 | `index.ts` | The entry: registers the hooks and runs `cli.ts`. |
 | `cli.ts` | Arguments, the plain-words report and the exit code. |
+| `upgrade-report.ts` | `--upgrade-report`: the dry run per newer target and its plain-words form. |
 | `check.ts` | `checkProject`: the session, the upgrade, validation, the three exports and the asset use rule. |
 | `files.ts` | The file rules and the size caps. |
 | `platform.ts` | The headless platform adapter the session runs on. |

@@ -15,6 +15,7 @@ import {
   MAX_SOUND_BYTES,
   projectFiles,
 } from './files.ts';
+import { formatUpgradeReports, newerTargets, upgradeReports } from './upgrade-report.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..');
@@ -151,14 +152,19 @@ describe('parseArgs', () => {
       folders: ['a', 'b'],
       targets: [...ALL_TARGETS],
       json: false,
+      upgradeReport: false,
+      targetsGiven: false,
     });
     const one = ALL_TARGETS[1] as string;
     expect(parseArgs(['a', '--target', one, '--json'])).toEqual({
       folders: ['a'],
       targets: [one],
       json: true,
+      upgradeReport: false,
+      targetsGiven: true,
     });
     expect(parseArgs(['a', '--target=all']).targets).toEqual([...ALL_TARGETS]);
+    expect(parseArgs(['a', '--upgrade-report']).upgradeReport).toBe(true);
   });
 
   it('refuses unknown targets and options, and no folder', () => {
@@ -268,5 +274,53 @@ describe('the command line', () => {
       (error: { code?: number }) => error.code,
     );
     expect(failed).toBe(1);
+  }, 120_000);
+});
+
+describe('upgradeReports', () => {
+  const oldest = ALL_TARGETS[ALL_TARGETS.length - 1] as string;
+
+  it("lists only the targets newer than the project's own, oldest first", () => {
+    expect(newerTargets(ALL_TARGETS[0] as string)).toEqual([]);
+    expect(newerTargets(oldest)).toEqual(ALL_TARGETS.slice(0, -1).reverse());
+    expect(newerTargets('mc-0.0')).toEqual([]);
+  });
+
+  it("reports a mirror example for the newer target in the app's words, writing nothing", async () => {
+    const folder = join(examples, 'starters', 'simple-block');
+    const result = await upgradeReports(folder);
+    expect(result.error).toBeUndefined();
+    expect(result.moves.map((move) => move.targetId)).toEqual(newerTargets(oldest));
+    for (const move of result.moves) expect(move.needsYou).toBe(move.report.todo.length);
+    const text = formatUpgradeReports(result);
+    expect(text).toContain('What your players need:');
+    expect(text).not.toMatch(/\bundefined\b/);
+  }, 120_000);
+
+  it('says so when the project is already on the newest target', async () => {
+    const result = await upgradeReports(join(examples, 'starters', 'simple-block'), {
+      targets: [oldest],
+    });
+    expect(result.moves).toEqual([]);
+    expect(formatUpgradeReports(result)).toContain('No newer Minecraft');
+  }, 120_000);
+
+  it('prints JSON and exits 0 over the command line', async () => {
+    const { stdout } = await run(
+      process.execPath,
+      [
+        join(here, 'index.ts'),
+        join(examples, 'starters', 'simple-block'),
+        '--upgrade-report',
+        '--json',
+      ],
+      { cwd: repoRoot, maxBuffer: 16 * 1024 * 1024 },
+    );
+    const out = JSON.parse(stdout) as {
+      needingYou: number;
+      results: { moves: { targetId: string; needsYou: number; plain: string[] }[] }[];
+    };
+    expect(out.needingYou).toBe(0);
+    expect(out.results[0]?.moves[0]?.plain.length).toBeGreaterThan(0);
   }, 120_000);
 });

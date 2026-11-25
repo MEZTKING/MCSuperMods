@@ -22,6 +22,8 @@ Each mirror project (a folder holding `msm.project.json`) becomes `examples/<the
 
 The README text comes from the library (`@msm/plugin-library`): `popular/<folder>` from `popularExamples` (`popularFolder`), `worlds/<name>` from `worldExamples`, `starters/<id>` from `libraryStarters`, and the grouped projects (`all-kinds`, `blocks-items`, `entities`, `scripts`, `rules`) from the same lists `library.test.ts` builds them from, with a category and description of their own in `examples.ts`. A mirror folder that matches none fails the sync, so a new kind of mirror folder is noticed.
 
+The community repository's check of shared mods can show what a newer Minecraft would ask of each one (ADR 0136, B824): `node tools/check-project/index.ts <mod folder>... --upgrade-report` prints the report in plain words (or `--json`), exits 1 when a mod needs something changed by hand, and writes nothing.
+
 Like `check-project`, `sync.ts` registers `tools/shared/workspace-hooks.ts` first so Node can load the workspace packages.
 
 ## Files
