@@ -1,0 +1,45 @@
+{
+  "enabledMcpjsonServers": [
+    "roundtable"
+  ],
+  "permissions": {
+    "allow": [
+      "mcp__roundtable"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "roundtable hook session-start --agent mcsupermods",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "roundtable hook stop --agent mcsupermods",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "roundtable hook session-end --agent mcsupermods",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

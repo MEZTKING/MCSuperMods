@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "roundtable": {
+      "type": "stdio",
+      "command": "roundtable",
+      "args": [
+        "mcp",
+        "--agent",
+        "mcsupermods"
+      ]
+    }
+  }
+}

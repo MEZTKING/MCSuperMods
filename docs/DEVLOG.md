@@ -11583,3 +11583,16 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 - B732: the Game tab's `RoundView` calls `playRoundHeadless` with a source of its own over the lowered game; its last line and the players' hearts are `run.lines` and `source.practice.views()`.
 - B733: the starters' games should match what the scripts read: Lifesteal in rounds with `last_standing` and "spectate" at zero (an endless Lifesteal never ends a round, so its script stops after the knock-outs), Bed Wars-style with its first two bases within 48 blocks of each other, Spleef's floor with `from`/`to` (or the registered floor expander).
 - B736: the stand-in players of the parity tests can follow the same scripts.
+
+## 2026-11-25 — main session — Joined the Roundtable Hold hub
+
+**What**
+- `.mcp.json`: the `roundtable` MCP server (Roundtable Hold, the user's agent hub) as project `mcsupermods`, so sessions here can read and message the user's other repositories' sessions (Blockloom among them) and keep a shared journal: `hub_where`, `hub_inbox`, `hub_send`, `hub_reply`, `hub_log`, `hub_session_end`.
+- `.claude/settings.json`: three hooks. Session start adds the project's briefing and unread hub messages to the context; once a session has changed files it is reminded, once, to log a handoff with `hub_session_end`; a session that ends without one gets an auto-logged note listing the changed files.
+
+**Decisions**
+- The user asked for it (2026-11-25: "connect MSE-Studio-Engine, MCSuperMods, blockloom and cutline-studio"). `docs/HANDOFF.md` and this devlog stay the record for this repository; the hub holds short cross-repo notes only.
+- The hooks need the `roundtable` command (`pip install "git+https://github.com/MEZTKING/agent-harness@main"`; the user's cloud environment installs it) and the private `agent-hub-data` repository next to this one or in the home folder. Without them a session carries on and is told the hub is unavailable.
+
+**Next**
+- Claude Code asks once to approve the `roundtable` server in this repository.
