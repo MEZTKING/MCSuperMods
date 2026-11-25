@@ -18,6 +18,7 @@ export * from './items/bags.js';
 export * from './local-source.js';
 export * from './loot/index.js';
 export * from './player/index.js';
+export * from './players/index.js';
 export * from './predicates/index.js';
 export * from './script/index.js';
 export * from './tags/index.js';

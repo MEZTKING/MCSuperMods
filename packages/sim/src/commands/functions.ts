@@ -25,11 +25,12 @@
  */
 
 import type { Json, JsonObject } from '@msm/plugin-api';
-import { type Actor, PLAYER } from '../events/actions.js';
+import { PLAYER } from '../events/actions.js';
+import type { CommandActor } from '../players/actor.js';
 import type { DataLookup } from '../tags/api.js';
 import { createTagResolver } from '../tags/resolve.js';
 import type { SimFiles, SimOrigin, Vec3 } from '../types.js';
-import { GAMES_COMMAND_NAMES, respawnDue, syncHealthScores } from './games-commands.js';
+import { GAMES_COMMAND_NAMES, playerDies, respawnDue, syncHealthScores } from './games-commands.js';
 import { PREVIEW_PLAYER_NAME } from './parse.js';
 import {
   AREA_DIMENSION,
@@ -130,8 +131,29 @@ export function readAdvancement(id: string, json: Json): SimAdvancement | undefi
   }
   if (Array.isArray(rewards.loot) && rewards.loot.length > 0) otherRewards.push('loot');
   if (Array.isArray(rewards.recipes) && rewards.recipes.length > 0) otherRewards.push('recipes');
+  // B728: each criterion's trigger and conditions, for the ones Try it fires itself.
+  const triggers: Record<string, { trigger: string; conditions: JsonObject }> = {};
+  if (
+    file.criteria !== null &&
+    typeof file.criteria === 'object' &&
+    !Array.isArray(file.criteria)
+  ) {
+    for (const [name, raw] of Object.entries(file.criteria as JsonObject)) {
+      if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) continue;
+      const one = raw as JsonObject;
+      if (typeof one.trigger !== 'string') continue;
+      const conditions =
+        one.conditions !== null &&
+        typeof one.conditions === 'object' &&
+        !Array.isArray(one.conditions)
+          ? (one.conditions as JsonObject)
+          : {};
+      triggers[name] = { trigger: normaliseId(one.trigger), conditions };
+    }
+  }
   return {
     id,
+    triggers,
     parent: typeof file.parent === 'string' ? normaliseId(file.parent) : undefined,
     criteria,
     requirements,
@@ -251,6 +273,21 @@ export function fillMacro(
 export interface FunctionHost extends VanillaHost {
   /** The project's data files (function tags), project over vanilla. */
   readonly data?: () => DataLookup;
+  /**
+   * Called when a tick, a function run, a line or a death from outside has run to the end
+   * (B728: the practice players' deaths are settled then, before anything else runs).
+   */
+  afterRun?(): void;
+}
+
+/** How {@link FunctionEngine.runFunction} runs a function. */
+export interface RunFunctionOptions {
+  readonly args?: JsonObject;
+  readonly asServer?: boolean;
+  readonly as?: CommandActor | null;
+  readonly at?: Vec3;
+  readonly quiet?: boolean;
+  readonly origin?: SimOrigin;
 }
 
 /** What one run did (Run in Try it, `/function` in the chat box, a project command). */
@@ -307,6 +344,8 @@ export class FunctionEngine {
   private usedTick = -1;
   private stoppedTick = -1;
   private loadPending = true;
+  /** How deep public runs are nested (B728: the host hears when the outermost ends). */
+  private depth = 0;
 
   constructor(host: FunctionHost, files: SimFiles, target: FunctionsTarget) {
     this.host = host;
@@ -362,6 +401,10 @@ export class FunctionEngine {
    * due, the tick tag, then the schedules due now.
    */
   tick(): void {
+    this.outermost(() => this.tickNow());
+  }
+
+  private tickNow(): void {
     // B727: a dead player respawns when the time comes; `health` scores follow the player.
     respawnDue(this.state, this.host, PREVIEW_PLAYER_NAME);
     syncHealthScores(this.state, PREVIEW_PLAYER_NAME);
@@ -400,17 +443,11 @@ export class FunctionEngine {
    * event's player or mob, or `null` for the server), `at` (the event's position) and `quiet`
    * (the runtime suppresses the commands' own answers: only what the game shows is logged).
    */
-  runFunction(
-    id: string,
-    options: {
-      readonly args?: JsonObject;
-      readonly asServer?: boolean;
-      readonly as?: Actor | null;
-      readonly at?: Vec3;
-      readonly quiet?: boolean;
-      readonly origin?: SimOrigin;
-    } = {},
-  ): FunctionRun {
+  runFunction(id: string, options: RunFunctionOptions = {}): FunctionRun {
+    return this.outermost(() => this.runFunctionNow(id, options));
+  }
+
+  private runFunctionNow(id: string, options: RunFunctionOptions): FunctionRun {
     const source = this.sourceFor(options);
     let result: number | undefined;
     const call: FunctionCall = {
@@ -442,6 +479,25 @@ export class FunctionEngine {
 
   /** Runs a line typed in the chat box (one of the game's own commands), as the player. */
   runChatLine(line: string): VanillaChatAnswer {
+    return this.runLine(line);
+  }
+
+  /**
+   * Runs one of the game's own commands (B728): as the player by default, or as another actor
+   * (a practice player types too) or the server (`null`), with its own answer logged unless
+   * `quiet`.
+   */
+  runLine(
+    line: string,
+    options: { readonly as?: CommandActor | null; readonly quiet?: boolean } = {},
+  ): VanillaChatAnswer {
+    return this.outermost(() => this.runLineNow(line, options));
+  }
+
+  private runLineNow(
+    line: string,
+    options: { readonly as?: CommandActor | null; readonly quiet?: boolean },
+  ): VanillaChatAnswer {
     const text = line.trim().replace(/^\//, '');
     const compiled = this.compile(text);
     if (!compiled.ok) {
@@ -461,15 +517,31 @@ export class FunctionEngine {
       return { result: 'error', answer: [compiled.why] };
     }
     this.loadIfPending();
-    const mode = this.newMode(false);
+    const mode = this.newMode(options.quiet === true);
     let outcome: Outcome | undefined;
     if (this.spend(mode)) {
-      outcome = runCompiled(compiled.run, this.context(mode), this.playerSource());
+      const source =
+        options.as === undefined ? this.playerSource() : this.sourceFor({ as: options.as });
+      outcome = runCompiled(compiled.run, this.context(mode), source);
       if (outcome.calls !== undefined) this.drain(this.framesFor(outcome.calls, null, mode), mode);
     }
     this.flush(mode);
     const failed = outcome === undefined || !outcome.success;
     return { result: failed ? 'error' : 'ran', answer: mode.answer };
+  }
+
+  /**
+   * A player dies outside any command (B728: a practice player's hit or fall), as `kill` makes
+   * them die, with the player who killed them when there is one. False when already dead.
+   */
+  playerDies(actor: CommandActor, message: string, killer?: CommandActor): boolean {
+    return this.outermost(() => {
+      this.loadIfPending();
+      const mode = this.newMode(true);
+      const died = playerDies(this.context(mode), actor, message, undefined, killer);
+      this.flush(mode);
+      return died;
+    });
   }
 
   /** The project's advancements (parents before children, then by id). */
@@ -506,6 +578,17 @@ export class FunctionEngine {
   }
 
   // -------------------------------------------------------------------------------------------
+
+  /** Runs `run`; when it is the outermost run, tells the host it has ended (B728). */
+  private outermost<T>(run: () => T): T {
+    this.depth += 1;
+    try {
+      return run();
+    } finally {
+      this.depth -= 1;
+      if (this.depth === 0) this.host.afterRun?.();
+    }
+  }
 
   private signature(files: SimFiles, target: FunctionsTarget): string {
     const folder = `/${target.folders.data.function ?? '-'}/`;
@@ -554,7 +637,7 @@ export class FunctionEngine {
   /** The source of {@link runFunction}: the player, the server, or an actor at a position. */
   private sourceFor(options: {
     readonly asServer?: boolean;
-    readonly as?: Actor | null;
+    readonly as?: CommandActor | null;
     readonly at?: Vec3;
   }): Source {
     if (options.as === undefined) {
@@ -569,6 +652,17 @@ export class FunctionEngine {
     if (actor.kind === 'player') {
       const base = this.playerSource();
       return options.at === undefined ? base : { ...base, pos: options.at };
+    }
+    if (actor.kind === 'practice') {
+      // B728: a practice player runs at its own place and facing.
+      const one = this.state.games.practice.get(actor.name);
+      return {
+        executor: actor,
+        pos: options.at ?? one?.pos ?? this.serverSource().pos,
+        yaw: one?.yaw ?? 0,
+        pitch: one?.pitch ?? 0,
+        dimension: AREA_DIMENSION,
+      };
     }
     const mob = this.host.entities.entity(actor.id);
     return {

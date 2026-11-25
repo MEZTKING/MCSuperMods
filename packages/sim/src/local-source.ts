@@ -117,6 +117,8 @@ import type { BlockLookup } from './player/collide.js';
 import { REACH } from './player/constants.js';
 import { IDLE_INPUT, PlayerController, type PlayerInput } from './player/controller.js';
 import { adjacentPos, lookDirection, type PickResult, pick } from './player/pick.js';
+import type { CommandActor } from './players/actor.js';
+import { PracticePlayers } from './players/practice.js';
 import { type EvalContext, type Situation, testPredicate } from './predicates/api.js';
 import { unsupportedWords } from './predicates/words.js';
 import type { ScriptApiDescription } from './script/api.js';
@@ -277,6 +279,9 @@ export function pickFloor(
   };
 }
 
+/** Practice players are told to scripts with ids from here (as players that are gone, B728). */
+const PRACTICE_SCRIPT_ID = 900_000;
+
 const samePos = (a: BlockPos, b: BlockPos): boolean => a.x === b.x && a.y === b.y && a.z === b.z;
 
 /** The local simulation behind Try it; see the module comment. */
@@ -313,6 +318,11 @@ export class LocalWorldSource implements WorldSource {
    * template`, the game mode, the mock generator and the side panel's status.
    */
   readonly games: GamesArea;
+  /**
+   * Practice players (B728, ADR 0132 D10): up to seven stand-in players commands see, moved and
+   * acted for from the panel "Your game" and by round scripts.
+   */
+  readonly practice: PracticePlayers;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -586,6 +596,9 @@ export class LocalWorldSource implements WorldSource {
         data: () => this.evalContext().lookup,
         placeTemplate: (id, corner, origin) => this.games.placeTemplate(id, corner, origin),
         modifyItem: (modifier, stack) => this.modifyItem(modifier, stack),
+        // B728: deaths are settled by the practice players' controller after the action or tick.
+        playerDied: (victim, killer) => this.practice.died(victim, killer),
+        afterRun: () => this.practice?.settle(),
       },
       this.files,
       this.target,
@@ -600,6 +613,21 @@ export class LocalWorldSource implements WorldSource {
       inventory: () => this.triggers.inventory,
     });
     this.games.setProject(options.games ?? NO_GAMES);
+    this.practice = new PracticePlayers({
+      world: this.world,
+      shapes: this.shapes,
+      functions: this.functions,
+      log: this.log,
+      now: () => this.ticks,
+      area: (id) => {
+        const view = this.games.areas().find((one) => one.id === id);
+        return view?.min == null || view.max == null ? undefined : { min: view.min, max: view.max };
+      },
+      playerPosition: () => this.player.position,
+      teleportPlayer: (pos) => this.player.teleport(pos),
+      blockName: (id) => this.nameOf(id),
+      died: (victim, killer) => this.playerDeath(victim, killer),
+    });
     this.parity2.commands.useFunctions({
       runLine: (line) => this.functions.runChatLine(line),
       runFunction: (id, args, origin) => this.functions.runFunction(id, { args, origin }).answer,
@@ -1048,8 +1076,10 @@ export class LocalWorldSource implements WorldSource {
   tick(): void {
     this.ticks += 1;
     this.functions.tick();
-    // The games' join and generator follow the functions (B558).
+    // The games' join and generator follow the functions (B558); then the practice players walk
+    // and fall, and deaths are settled (B728).
     this.games.tick();
+    this.practice.tick();
     const wasRiding = this.vehicles.riding !== null;
     const gotOut = this.vehicles.tick(this.input);
     if (!wasRiding) this.player.step(this.heldInput());
@@ -1503,6 +1533,52 @@ export class LocalWorldSource implements WorldSource {
         mob.kind.origin,
       );
     }
+  }
+
+  /**
+   * A player died (B728): your death fires the scripts' `entity.death` (Rules' "A player dies")
+   * with the killer, a practice player standing in as a player that is gone; a practice
+   * player's death is said, since scripts in Try it know only you as a player.
+   */
+  private playerDeath(victim: CommandActor, killer: CommandActor | undefined): void {
+    const scripts = this.scripts;
+    if (scripts === null) return;
+    if (victim.kind !== 'player') {
+      this.log.onlyInMinecraft(
+        "scripts and Rules on a practice player's death (scripts in Try it know only you as a player)",
+      );
+      return;
+    }
+    const killerValue =
+      killer === undefined
+        ? undefined
+        : killer.kind === 'mob'
+          ? mobValue(killer.id)
+          : killer.kind === 'practice'
+            ? this.practiceValue(killer.name)
+            : PLAYER_VALUE;
+    scripts.fire('entity.death', {
+      entity: PLAYER_VALUE,
+      ...(killerValue === undefined ? {} : { attacker: killerValue, killer: killerValue }),
+    });
+  }
+
+  /** A practice player as scripts can see one: a player-type entity that is not theirs to move. */
+  private practiceValue(name: string): EncodedValue {
+    const one = this.functions.state.games.practice.get(name);
+    const index = this.functions.state.games.practice.all().findIndex((p) => p.name === name);
+    const at = one?.pos ?? this.player.position;
+    return {
+      $entity: {
+        kind: 'gone',
+        mob: {
+          id: PRACTICE_SCRIPT_ID + Math.max(0, index),
+          type: 'minecraft:player',
+          name,
+          pos: [at.x, at.y, at.z],
+        },
+      },
+    };
   }
 
   /** A hit removes the mob (B393) and fires its `msm:on_death`. */

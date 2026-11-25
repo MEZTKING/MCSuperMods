@@ -321,9 +321,16 @@ export class GamesArea {
     });
   }
 
-  /** The areas' outline for the view, or `null` when none lies in the test area. */
+  /**
+   * The areas' outline for the view, or `null` when none lies in the test area; practice players
+   * in the game stand in it as player-sized boxes (B728: the view draws outlines, so they are
+   * seen without a body of their own).
+   */
   outline(): { readonly pos: BlockPos; readonly boxes: readonly Box[] } | null {
-    return this.active ? areaOutline(this.areas()) : null;
+    const areas = this.active ? areaOutline(this.areas()) : null;
+    const players = practiceBoxes(this.host.functions.state.games);
+    if (players.length === 0) return areas;
+    return { pos: ZERO, boxes: [...(areas?.boxes ?? []), ...players] };
   }
 
   /** What the side panel draws. */
@@ -347,6 +354,28 @@ export class GamesArea {
       border: borderOf(state.games, this.host.now()),
     };
   }
+}
+
+/** Half a player's width (0.6 blocks) and their height (1.8), as the game's player box. */
+const PLAYER_HALF_WIDTH = 0.3;
+const PLAYER_HEIGHT = 1.8;
+
+/** The boxes of the practice players in the game and alive, in area positions (B728). */
+export function practiceBoxes(games: GamesCommandState): Box[] {
+  const out: Box[] = [];
+  for (const one of games.practice.online()) {
+    if (games.dead.has(one.name)) continue;
+    const { x, y, z } = one.pos;
+    out.push([
+      x - PLAYER_HALF_WIDTH,
+      y,
+      z - PLAYER_HALF_WIDTH,
+      x + PLAYER_HALF_WIDTH,
+      y + PLAYER_HEIGHT,
+      z + PLAYER_HALF_WIDTH,
+    ]);
+  }
+  return out;
 }
 
 function gameModeOf(text: string): GameMode {

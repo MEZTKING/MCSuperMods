@@ -20,6 +20,9 @@ export const TEAM_KIND = 'msm:team';
 export const OBJECTIVE_KIND = 'msm:objective';
 export const TIMER_KIND = 'msm:timer';
 export const AREA_KIND = 'msm:area';
+/** A whole game and a kit (ADR 0132, B724): Try it shows the panel for them too (B728). */
+export const GAME_KIND = 'msm:game';
+export const KIT_KIND = 'msm:kit';
 
 /** The one dimension the area stands in. */
 export const OVERWORLD = 'minecraft:overworld';
@@ -112,9 +115,16 @@ export function worldSetupOf(games: GamesProject): GamesElement | undefined {
 /** Whether a project has any games element. */
 export function hasGames(games: GamesProject): boolean {
   return games.elements.some((element) =>
-    [WORLD_SETUP_KIND, ONE_BLOCK_KIND, TEAM_KIND, OBJECTIVE_KIND, TIMER_KIND, AREA_KIND].includes(
-      element.kind,
-    ),
+    [
+      WORLD_SETUP_KIND,
+      ONE_BLOCK_KIND,
+      TEAM_KIND,
+      OBJECTIVE_KIND,
+      TIMER_KIND,
+      AREA_KIND,
+      GAME_KIND,
+      KIT_KIND,
+    ].includes(element.kind),
   );
 }
 

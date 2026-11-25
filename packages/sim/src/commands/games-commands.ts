@@ -41,7 +41,9 @@
  */
 
 import type { Json, JsonObject } from '@msm/plugin-api';
-import type { Actor, ItemStack } from '../events/actions.js';
+import type { ItemStack, SimInventory } from '../events/actions.js';
+import { type CommandActor, isPlayerActor } from '../players/actor.js';
+import { PracticeRoster } from '../players/roster.js';
 import type { BlockPos, SimOrigin, Vec3 } from '../types.js';
 import { PREVIEW_PLAYER_NAME } from './parse.js';
 import type { Objective, Outcome, RunContext, Source, VanillaHost } from './vanilla.js';
@@ -138,7 +140,7 @@ export interface SimThing {
   /** Its entity data (as `summon` gave it; an item's `Item` with `id` and `count`). */
   data: JsonObject;
   /** Who last hit it (`execute on attacker`; B728's practice players set it). */
-  attacker?: Actor;
+  attacker?: CommandActor;
 }
 
 /** Things are numbered from here, past any mob the preview spawns, so their UUIDs stay apart. */
@@ -146,6 +148,12 @@ export const FIRST_THING_ID = 1_000_000;
 
 /** Ticks a dead player waits before respawning (Try it's player presses Respawn after a second). */
 export const RESPAWN_TICKS = 20;
+
+/**
+ * How long a hit counts as who killed a player who dies soon after (a fall, the void), and as
+ * `execute on attacker`: about five seconds, as observed in the game (approximate).
+ */
+export const KILL_CREDIT_TICKS = 100;
 
 /** Weather kinds. */
 export type WeatherKind = 'clear' | 'rain' | 'thunder';
@@ -181,8 +189,17 @@ export class GamesCommandState {
   /** Holder key of a dead player to the tick it respawns. */
   readonly dead = new Map<string, number>();
   rules: GameRuleWords = {};
+  /** The practice players (B728): kept through "Clear the area", standing still with empty hands. */
+  readonly practice = new PracticeRoster();
+  /**
+   * Holder key of a player to who last hurt them and when (B728): `execute on attacker` and the
+   * kill credit of a fall soon after read it within {@link KILL_CREDIT_TICKS}.
+   */
+  readonly hurtBy = new Map<string, { readonly by: CommandActor; readonly tick: number }>();
 
   clear(): void {
+    this.practice.reset();
+    this.hurtBy.clear();
     this.gameModes.clear();
     this.attributes.clear();
     this.health.clear();
@@ -694,15 +711,15 @@ export interface CommandKit {
   /** The command read but failed (the game's message). */
   failed(message: string): Error;
   readTargets(cur: KitCursor, what: string, players?: boolean, one?: boolean): KitSelector;
-  select(rc: RunContext, selector: KitSelector, src: Source): Actor[];
-  selectSome(rc: RunContext, selector: KitSelector, src: Source, players: boolean): Actor[];
+  select(rc: RunContext, selector: KitSelector, src: Source): CommandActor[];
+  selectSome(rc: RunContext, selector: KitSelector, src: Source, players: boolean): CommandActor[];
   readVec3(cur: KitCursor): KitVec3;
   resolveVec3(rc: RunContext, spec: KitVec3, src: Source, centre: boolean): Vec3;
   readTime(text: string): number;
   parseSnbt(text: string): Json;
   componentText(rc: RunContext, value: Json, src: Source): string;
-  actorName(rc: RunContext, actor: Actor): string;
-  holderOf(actor: Actor): string;
+  actorName(rc: RunContext, actor: CommandActor): string;
+  holderOf(actor: CommandActor): string;
   normalise(id: string): string;
   objectiveOf(rc: RunContext, name: string): Objective;
 }
@@ -760,7 +777,7 @@ export function gamesCommands(
     return (rc, src) => {
       const found =
         targets === undefined
-          ? src.executor?.kind === 'player'
+          ? src.executor !== null && isPlayerActor(src.executor)
             ? [src.executor]
             : []
           : kit.selectSome(rc, targets, src, true);
@@ -796,8 +813,8 @@ export function gamesCommands(
     const holderAt = (rc: RunContext, src: Source): string => {
       const [actor] = kit.selectSome(rc, target, src, false);
       if (actor === undefined) throw kit.failed('No entity was found');
-      if (actor.kind !== 'player') {
-        rc.only("a mob's attributes (the preview keeps the player's)", src.origin);
+      if (!isPlayerActor(actor)) {
+        rc.only("a mob's attributes (the preview keeps the players')", src.origin);
       }
       return kit.holderOf(actor);
     };
@@ -1202,7 +1219,7 @@ export function gamesCommands(
       const found = kit.selectSome(rc, targets, src, false);
       const { world } = rc.host;
       const { corner } = rc.state;
-      const groups = new Map<string, Actor[]>();
+      const groups = new Map<string, CommandActor[]>();
       for (const actor of found) {
         const key = teams
           ? (rc.state.teamOf.get(kit.holderOf(actor)) ?? kit.holderOf(actor))
@@ -1240,7 +1257,14 @@ export function gamesCommands(
         for (const actor of members) {
           const at = { x: spot.x + 0.5, y: spot.y, z: spot.z + 0.5 };
           if (actor.kind === 'player') rc.host.player.teleport(at);
-          else {
+          else if (actor.kind === 'practice') {
+            const one = rc.state.games.practice.get(actor.name);
+            if (one !== undefined) {
+              one.pos = at;
+              one.walkTo = null;
+              one.fall = 0;
+            }
+          } else {
             const thing = rc.state.games.things.get(actor.id);
             if (thing !== undefined) thing.pos = at;
             else rc.only('moving mobs with /spreadplayers (the preview moves you)', src.origin);
@@ -1281,16 +1305,16 @@ export function gamesCommands(
       return (rc, src) => {
         let changed = 0;
         for (const actor of kit.selectSome(rc, targets, src, false)) {
-          if (actor.kind !== 'player') {
-            rc.only('items held by mobs (/item ... the preview keeps only yours)', src.origin);
+          if (!isPlayerActor(actor)) {
+            rc.only('items held by mobs (/item ... the preview keeps only players’)', src.origin);
             continue;
           }
           for (const slot of slots) {
-            const stack = stackIn(rc, slot);
+            const stack = stackIn(rc, actor, slot);
             if (stack === null) continue;
             const after = modifyStack(rc, modifier, stack, src);
             if (after === undefined) continue;
-            putStack(rc, slot, after.count <= 0 ? null : after);
+            putStack(rc, actor, slot, after.count <= 0 ? null : after);
             changed += 1;
           }
         }
@@ -1331,11 +1355,11 @@ export function gamesCommands(
             : kit.normalise(raw);
       make = (rc, src) => {
         const [from] = kit.selectSome(rc, source, src, false);
-        if (from?.kind !== 'player') {
-          rc.only('items held by mobs (/item ... the preview keeps only yours)', src.origin);
+        if (from === undefined || !isPlayerActor(from)) {
+          rc.only('items held by mobs (/item ... the preview keeps only players’)', src.origin);
           return null;
         }
-        const stack = stackIn(rc, fromSlots[0] as SlotRef);
+        const stack = stackIn(rc, from, fromSlots[0] as SlotRef);
         if (stack === null || modifier === undefined) return stack;
         return modifyStack(rc, modifier, stack, src) ?? stack;
       };
@@ -1343,12 +1367,12 @@ export function gamesCommands(
     return (rc, src) => {
       let changed = 0;
       for (const actor of kit.selectSome(rc, targets, src, false)) {
-        if (actor.kind !== 'player') {
-          rc.only('items held by mobs (/item ... the preview keeps only yours)', src.origin);
+        if (!isPlayerActor(actor)) {
+          rc.only('items held by mobs (/item ... the preview keeps only players’)', src.origin);
           continue;
         }
         for (const slot of slots) {
-          putStack(rc, slot, make(rc, src));
+          putStack(rc, actor, slot, make(rc, src));
           changed += 1;
         }
       }
@@ -1424,7 +1448,7 @@ export function gamesCommands(
     }
     cur.end();
     return (rc, src) => {
-      if (src.executor?.kind !== 'player')
+      if (src.executor === null || !isPlayerActor(src.executor))
         throw kit.failed('A player is required to run this command here');
       const objective = kit.objectiveOf(rc, name);
       if (objective.criterion !== 'trigger') {
@@ -1556,19 +1580,36 @@ export function gamesCommands(
 // ---------------------------------------------------------------------------------------------
 // Slots of the player.
 
-/** The stack in one of the player's slots, or `null`. */
-export function stackIn(rc: RunContext, slot: SlotRef): ItemStack | null {
-  if ('hotbar' in slot) return rc.host.inventory().slots[slot.hotbar] ?? null;
-  return rc.state.games.slots.get(PREVIEW_PLAYER_NAME)?.get(slot.named) ?? null;
+/** A player's holder key: Try it's own player's name or a practice player's (B728). */
+function playerKey(actor: CommandActor): string {
+  return actor.kind === 'practice' ? actor.name : PREVIEW_PLAYER_NAME;
 }
 
-/** Puts a stack (or nothing) in one of the player's slots. */
-export function putStack(rc: RunContext, slot: SlotRef, stack: ItemStack | null): void {
+/** A player's hotbar (Try it's own or a practice player's), or `undefined` for a mob. */
+export function inventoryOf(rc: RunContext, actor: CommandActor): SimInventory | undefined {
+  if (actor.kind === 'player') return rc.host.inventory();
+  if (actor.kind === 'practice') return rc.state.games.practice.get(actor.name)?.inventory;
+  return undefined;
+}
+
+/** The stack in one of a player's slots, or `null`. */
+export function stackIn(rc: RunContext, actor: CommandActor, slot: SlotRef): ItemStack | null {
+  if ('hotbar' in slot) return inventoryOf(rc, actor)?.slots[slot.hotbar] ?? null;
+  return rc.state.games.slots.get(playerKey(actor))?.get(slot.named) ?? null;
+}
+
+/** Puts a stack (or nothing) in one of a player's slots. */
+export function putStack(
+  rc: RunContext,
+  actor: CommandActor,
+  slot: SlotRef,
+  stack: ItemStack | null,
+): void {
   if ('hotbar' in slot) {
-    rc.host.inventory().set(slot.hotbar, stack);
+    inventoryOf(rc, actor)?.set(slot.hotbar, stack);
     return;
   }
-  const key = PREVIEW_PLAYER_NAME;
+  const key = playerKey(actor);
   let own = rc.state.games.slots.get(key);
   if (own === undefined) {
     own = new Map();
@@ -1578,15 +1619,16 @@ export function putStack(rc: RunContext, slot: SlotRef, stack: ItemStack | null)
   else own.set(slot.named, stack);
 }
 
-/** Every stack the player holds, with its slot (hotbar first). */
+/** Every stack a player holds, with its slot (hotbar first). */
 export function playerStacks(
   rc: RunContext,
+  actor: CommandActor,
 ): { readonly slot: SlotRef; readonly stack: ItemStack }[] {
   const out: { slot: SlotRef; stack: ItemStack }[] = [];
-  rc.host.inventory().slots.forEach((stack, hotbar) => {
+  inventoryOf(rc, actor)?.slots.forEach((stack, hotbar) => {
     if (stack !== null) out.push({ slot: { hotbar }, stack });
   });
-  for (const [named, stack] of rc.state.games.slots.get(PREVIEW_PLAYER_NAME) ?? []) {
+  for (const [named, stack] of rc.state.games.slots.get(playerKey(actor)) ?? []) {
     out.push({ slot: { named }, stack });
   }
   return out;
@@ -1599,40 +1641,92 @@ export function playerStacks(
 const DEATH_COUNTED = new Set(['deathCount', 'minecraft.custom:minecraft.deaths']);
 const DEATH_RESET = new Set(['minecraft.custom:minecraft.time_since_death']);
 
+/** The kill criteria a player's kill of a player moves for the killer (B728). */
+const PLAYER_KILL_COUNTED = new Set([
+  'playerKillCount',
+  'totalKillCount',
+  'minecraft.killed:minecraft.player',
+]);
+
 /**
- * The player dies (`kill`, the void): death scores move, effects go, the inventory empties
- * unless the keep-inventory rule is on, and a respawn waits {@link RESPAWN_TICKS}. False when the
+ * A player dies (`kill`, the void, a practice player's hit): death scores move, effects go, the
+ * inventory empties unless the keep-inventory rule is on, and a respawn waits
+ * {@link RESPAWN_TICKS}. With a `killer` (a player, B728) the kill criteria move as the game
+ * moves them: the killer's `playerKillCount`, `totalKillCount` and `minecraft.killed:
+ * minecraft.player`, the killer's `teamkill.<colour>` by the victim's team colour and the
+ * victim's `killedByTeam.<colour>` by the killer's. The host hears of it last
+ * (`VanillaHost.playerDied`: scripts' `entity.death`, the killer's advancements). False when the
  * player was already dead.
  */
 export function playerDies(
   rc: RunContext,
-  key: string,
+  actor: CommandActor,
   message: string,
   origin: SimOrigin | undefined,
+  killer?: CommandActor,
 ): boolean {
   const games = rc.state.games;
+  const key = playerKey(actor);
   if (games.dead.has(key)) return false;
   games.dead.set(key, rc.host.now() + RESPAWN_TICKS);
   games.health.set(key, 0);
+  const killerKey = killer !== undefined && isPlayerActor(killer) ? playerKey(killer) : undefined;
+  const colourOf = (holder: string | undefined): string | undefined => {
+    if (holder === undefined) return undefined;
+    const team = rc.state.teamOf.get(holder);
+    return team === undefined ? undefined : rc.state.teams.get(team)?.colour;
+  };
+  const victimColour = colourOf(key);
+  const killerColour = colourOf(killerKey);
+  const bump = (holder: string, objective: Objective): void => {
+    objective.scores.set(holder, ((objective.scores.get(holder) ?? 0) + 1) | 0);
+  };
   for (const objective of rc.state.objectives.values()) {
-    if (DEATH_COUNTED.has(objective.criterion)) {
-      objective.scores.set(key, ((objective.scores.get(key) ?? 0) + 1) | 0);
-    } else if (DEATH_RESET.has(objective.criterion)) objective.scores.set(key, 0);
-    else if (objective.criterion === 'health') objective.scores.set(key, 0);
+    const { criterion } = objective;
+    if (DEATH_COUNTED.has(criterion)) bump(key, objective);
+    else if (DEATH_RESET.has(criterion)) objective.scores.set(key, 0);
+    else if (criterion === 'health') objective.scores.set(key, 0);
+    else if (killerKey !== undefined) {
+      if (criterion === 'minecraft.killed_by:minecraft.player') bump(key, objective);
+      else if (killerColour !== undefined && criterion === `killedByTeam.${killerColour}`) {
+        bump(key, objective);
+      } else if (PLAYER_KILL_COUNTED.has(criterion)) bump(killerKey, objective);
+      else if (victimColour !== undefined && criterion === `teamkill.${victimColour}`) {
+        bump(killerKey, objective);
+      }
+    }
   }
   rc.state.effects.delete(key);
   const keep = games.rules.keepInventory;
   if (keep === undefined || games.rule(keep) !== true) {
-    rc.host.inventory().clear();
+    inventoryOf(rc, actor)?.clear();
     games.slots.delete(key);
-    rc.only('the items you held dropping where you died (Try it takes them away)', origin);
+    rc.only(
+      actor.kind === 'practice'
+        ? 'items dropping where a player died (Try it takes them away)'
+        : 'the items you held dropping where you died (Try it takes them away)',
+      origin,
+    );
   }
+  const practice = actor.kind === 'practice' ? games.practice.get(actor.name) : undefined;
+  if (practice !== undefined) {
+    practice.walkTo = null;
+    practice.fall = 0;
+  }
+  games.hurtBy.delete(key);
   rc.chat(message, origin);
-  rc.only('the death screen (Try it’s player respawns a second later)', origin);
+  if (actor.kind === 'player') {
+    rc.only('the death screen (Try it’s player respawns a second later)', origin);
+  }
+  rc.host.playerDied?.(actor, killer, origin);
   return true;
 }
 
-/** Respawns the dead whose time has come: full health, at their spawn point when it is in the area. */
+/**
+ * Respawns the dead whose time has come: full health, at their spawn point when it is in the
+ * area (Try it's own player) or wherever it is (a practice player, B728); without one where they
+ * were.
+ */
 export function respawnDue(
   state: {
     readonly games: GamesCommandState;
@@ -1647,23 +1741,33 @@ export function respawnDue(
     if (until > now) continue;
     state.games.dead.delete(key);
     state.games.health.delete(key);
-    if (key !== playerName) continue;
     const point = state.spawnPoints.get(key);
-    if (point !== undefined) {
-      const at = {
-        x: point.pos.x - state.corner.x,
-        y: point.pos.y - state.corner.y,
-        z: point.pos.z - state.corner.z,
-      };
-      if (
-        host.world.inBounds({
-          x: Math.floor(at.x),
-          y: Math.max(0, Math.floor(at.y)),
-          z: Math.floor(at.z),
-        })
-      ) {
-        host.player.teleport({ x: at.x + 0.5, y: at.y, z: at.z + 0.5 });
-      }
+    const at =
+      point === undefined
+        ? undefined
+        : {
+            x: point.pos.x - state.corner.x + 0.5,
+            y: point.pos.y - state.corner.y,
+            z: point.pos.z - state.corner.z + 0.5,
+          };
+    const practice = state.games.practice.get(key);
+    if (practice !== undefined) {
+      if (at !== undefined) practice.pos = at;
+      practice.walkTo = null;
+      practice.fall = 0;
+      host.log.info(`${key} respawned${at === undefined ? '' : ' at their spawn point'}.`);
+      continue;
+    }
+    if (key !== playerName) continue;
+    if (
+      at !== undefined &&
+      host.world.inBounds({
+        x: Math.floor(at.x),
+        y: Math.max(0, Math.floor(at.y)),
+        z: Math.floor(at.z),
+      })
+    ) {
+      host.player.teleport(at);
     }
     host.log.info(
       point === undefined
@@ -1673,7 +1777,7 @@ export function respawnDue(
   }
 }
 
-/** The hearts row of the panel: health and most health in half hearts (2 a heart). */
+/** A player's hearts row: health and most health in half hearts (2 a heart). */
 export function playerHearts(
   games: GamesCommandState,
   playerName: string,
@@ -1685,7 +1789,7 @@ export function playerHearts(
   };
 }
 
-/** Keeps `health` objectives at the player's health (ceil, as the game shows it). */
+/** Keeps `health` objectives at each player's health (ceil, as the game shows it). */
 export function syncHealthScores(
   state: {
     readonly games: GamesCommandState;
@@ -1693,8 +1797,9 @@ export function syncHealthScores(
   },
   playerName: string,
 ): void {
+  const keys = [playerName, ...state.games.practice.all().map((one) => one.name)];
   for (const objective of state.objectives.values()) {
     if (objective.criterion !== 'health') continue;
-    objective.scores.set(playerName, Math.ceil(state.games.healthOf(playerName)));
+    for (const key of keys) objective.scores.set(key, Math.ceil(state.games.healthOf(key)));
   }
 }

@@ -51,15 +51,11 @@ import { updateNeighbours } from '../blocks/neighbours.js';
 import { plainEntityName } from '../entities/catalogue.js';
 import type { EntityWorld } from '../entities/entity-world.js';
 import type { SimRandom } from '../entities/wander.js';
-import {
-  type Actor,
-  type ItemStack,
-  PLAYER,
-  parseBlockState,
-  type SimInventory,
-} from '../events/actions.js';
+import { type ItemStack, PLAYER, parseBlockState, type SimInventory } from '../events/actions.js';
 import type { PlayerController } from '../player/controller.js';
 import { lookDirection } from '../player/pick.js';
+import { type CommandActor, isPlayerActor } from '../players/actor.js';
+import type { PracticeState } from '../players/roster.js';
 import type { Answer, Situation } from '../predicates/api.js';
 import type { BlockPos, BlockState, SimEffect, SimLog, SimOrigin, Vec3 } from '../types.js';
 import type { SimWorld } from '../world/sim-world.js';
@@ -70,6 +66,8 @@ import {
   GamesCommandState,
   gamesCommands,
   getAtPath,
+  inventoryOf,
+  KILL_CREDIT_TICKS,
   type NbtStep,
   nbtMatches,
   playerDies,
@@ -152,7 +150,7 @@ const ID = /^#?([a-z0-9_.-]+:)?[a-z0-9_./-]+$/;
 /** Where and as whom a command runs (the game's command source). */
 export interface Source {
   /** `@s`: the player, a mob, or nobody (the server, as load and tick functions run). */
-  readonly executor: Actor | null;
+  readonly executor: CommandActor | null;
   readonly pos: Vec3;
   /** Degrees, as the player's look. */
   readonly yaw: number;
@@ -232,6 +230,16 @@ export interface VanillaHost {
     modifier: Json,
     stack: ItemStack,
   ): { readonly stack: ItemStack; readonly unsupported: readonly string[] } | undefined;
+  /**
+   * A player died (B728): Try it's own or a practice player, with the player who killed them
+   * when there is one. The local source fires the scripts' `entity.death` and the killer's
+   * advancements from it.
+   */
+  playerDied?(
+    victim: CommandActor,
+    killer: CommandActor | undefined,
+    origin: SimOrigin | undefined,
+  ): void;
 }
 
 /** What a running command reports to and asks of the runner. */
@@ -302,6 +310,13 @@ export interface SimAdvancement {
   readonly rewardFunction: string | undefined;
   /** Rewards only the game gives (experience, loot, recipes), in words. */
   readonly otherRewards: readonly string[];
+  /**
+   * Each criterion's trigger and conditions (B728: Try it fires `player_killed_entity`,
+   * `entity_killed_player` and `consume_item` for practice players and you).
+   */
+  readonly triggers?: Readonly<
+    Record<string, { readonly trigger: string; readonly conditions: JsonObject }>
+  >;
 }
 
 /** A function waiting for its tick (`schedule`). */
@@ -392,9 +407,14 @@ export function mobUuid(id: number): string {
   return `00000000-0000-4000-8000-${id.toString(16).padStart(12, '0')}`;
 }
 
-/** The score holder (and tag owner) key of an actor: the player's name or a mob's UUID. */
-export function holderOf(actor: Actor): string {
-  return actor.kind === 'player' ? PREVIEW_PLAYER_NAME : mobUuid(actor.id);
+/**
+ * The score holder (and tag owner) key of an actor: the player's name, a practice player's name
+ * (B728) or a mob's UUID.
+ */
+export function holderOf(actor: CommandActor): string {
+  if (actor.kind === 'player') return PREVIEW_PLAYER_NAME;
+  if (actor.kind === 'practice') return actor.name;
+  return mobUuid(actor.id);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -991,41 +1011,80 @@ interface Seen {
 }
 
 /** A thing that is not a project mob (B727), when the actor is one. */
-function thingOf(rc: Seen, actor: Actor): SimThing | undefined {
+function thingOf(rc: Seen, actor: CommandActor): SimThing | undefined {
   return actor.kind === 'mob' && actor.id >= FIRST_THING_ID
     ? rc.state.games.things.get(actor.id)
     : undefined;
 }
 
-function positionOf(rc: Seen, actor: Actor): Vec3 | undefined {
+/** A practice player in the game (B728), when the actor is one. */
+function practiceOf(rc: Seen, actor: CommandActor): PracticeState | undefined {
+  if (actor.kind !== 'practice') return undefined;
+  const one = rc.state.games.practice.get(actor.name);
+  return one?.online === true ? one : undefined;
+}
+
+function positionOf(rc: Seen, actor: CommandActor): Vec3 | undefined {
   if (actor.kind === 'player') return rc.host.player.position;
+  if (actor.kind === 'practice') return practiceOf(rc, actor)?.pos;
   return rc.host.entities.entity(actor.id)?.position ?? thingOf(rc, actor)?.pos;
 }
 
-function typeOf(rc: Seen, actor: Actor): string | undefined {
-  if (actor.kind === 'player') return PLAYER_TYPE;
+function typeOf(rc: Seen, actor: CommandActor): string | undefined {
+  if (actor.kind === 'player' || actor.kind === 'practice') return PLAYER_TYPE;
   return rc.host.entities.entity(actor.id)?.kind.id ?? thingOf(rc, actor)?.type;
 }
 
+/** An actor's facing: the player's look, a practice player's or a mob's yaw. */
+function yawOf(rc: Seen, actor: CommandActor): number {
+  if (actor.kind === 'player') return rc.host.player.yaw;
+  if (actor.kind === 'practice') return practiceOf(rc, actor)?.yaw ?? 0;
+  return rc.host.entities.entity(actor.id)?.yaw ?? 0;
+}
+
+function pitchOf(rc: Seen, actor: CommandActor): number {
+  if (actor.kind === 'player') return rc.host.player.pitch;
+  if (actor.kind === 'practice') return practiceOf(rc, actor)?.pitch ?? 0;
+  return 0;
+}
+
 /** An actor's name in the chat and the log. */
-function actorName(rc: Seen, actor: Actor): string {
+function actorName(rc: Seen, actor: CommandActor): string {
   if (actor.kind === 'player') return PREVIEW_PLAYER_NAME;
+  if (actor.kind === 'practice') return actor.name;
   const thing = thingOf(rc, actor);
   if (thing !== undefined) return plainEntityName(thing.type);
   return rc.host.entities.entity(actor.id)?.kind.displayName ?? `mob ${actor.id}`;
 }
 
-/** Whether an actor is still there (a removed mob or thing is not). */
-function present(rc: Seen, actor: Actor): boolean {
+/** Whether an actor is still there (a removed mob or thing is not, nor a player who left). */
+function present(rc: Seen, actor: CommandActor): boolean {
   return actor.kind === 'player' || positionOf(rc, actor) !== undefined;
 }
 
 /**
- * Every living entity `@e` and `@n` look through: the player (unless dead: the game's `@e`
+ * The players selectors look through (B728): Try it's own player unless watching from outside
+ * the game, then the practice players in the game. `living` leaves the dead out: the game's
+ * `@p`, `@r`, `@e` and `@n` find only living players, `@a` every player.
+ */
+function players(rc: Seen, living: boolean): CommandActor[] {
+  const { games } = rc.state;
+  const out: CommandActor[] = [];
+  if (!games.practice.userAway && !(living && games.dead.has(PREVIEW_PLAYER_NAME))) {
+    out.push(PLAYER);
+  }
+  for (const one of games.practice.online()) {
+    if (!(living && games.dead.has(one.name))) out.push(one.actor);
+  }
+  return out;
+}
+
+/**
+ * Every living entity `@e` and `@n` look through: the players (unless dead: the game's `@e`
  * finds only living entities, `@a` every player), the project's mobs and the things.
  */
-function everyone(rc: Seen): Actor[] {
-  const out: Actor[] = rc.state.games.dead.has(PREVIEW_PLAYER_NAME) ? [] : [PLAYER];
+function everyone(rc: Seen): CommandActor[] {
+  const out = players(rc, true);
   out.push(...rc.host.entities.entities().map((mob) => ({ kind: 'mob' as const, id: mob.id })));
   for (const id of rc.state.games.things.keys()) out.push({ kind: 'mob', id });
   return out;
@@ -1034,11 +1093,15 @@ function everyone(rc: Seen): Actor[] {
 const distanceBetween = (a: Vec3, b: Vec3): number => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 
 /** The actors a selector finds from a source. */
-function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
+function select(rc: RunContext, selector: Selector, src: Source): CommandActor[] {
   const { host } = rc;
   if (selector.kind === 'name') {
     const name = selector.name ?? '';
-    if (name === PREVIEW_PLAYER_NAME || name === PREVIEW_PLAYER_UUID) return [PLAYER];
+    if (name === PREVIEW_PLAYER_NAME || name === PREVIEW_PLAYER_UUID) {
+      return rc.state.games.practice.userAway ? [] : [PLAYER];
+    }
+    const practice = rc.state.games.practice.get(name);
+    if (practice !== undefined) return practice.online ? [practice.actor] : [];
     const mob = host.entities.entities().find((one) => mobUuid(one.id) === name);
     if (mob !== undefined) return [{ kind: 'mob', id: mob.id }];
     const thing = [...rc.state.games.things.keys()].find((id) => mobUuid(id) === name);
@@ -1058,7 +1121,10 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
     y: f.at.y === undefined ? src.pos.y : f.at.y - corner.y,
     z: f.at.z === undefined ? src.pos.z : f.at.z - corner.z,
   };
-  let found = selector.kind === 'e' || selector.kind === 'n' ? everyone(rc) : [PLAYER as Actor];
+  let found =
+    selector.kind === 'e' || selector.kind === 'n'
+      ? everyone(rc)
+      : players(rc, selector.kind !== 'a');
   found = found.filter((actor) => matches(rc, f, { ...src, pos: base }, actor));
   const sort =
     f.sort ??
@@ -1067,7 +1133,7 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
       : selector.kind === 'r'
         ? 'random'
         : 'arbitrary');
-  const dist = (actor: Actor): number => {
+  const dist = (actor: CommandActor): number => {
     const pos = positionOf(rc, actor);
     return pos === undefined ? Infinity : distanceBetween(pos, base);
   };
@@ -1076,8 +1142,8 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
   else if (sort === 'random') {
     for (let i = found.length - 1; i > 0; i -= 1) {
       const j = Math.floor(host.random.next() * (i + 1));
-      const swap = found[i] as Actor;
-      found[i] = found[j] as Actor;
+      const swap = found[i] as CommandActor;
+      found[i] = found[j] as CommandActor;
       found[j] = swap;
     }
   }
@@ -1087,7 +1153,7 @@ function select(rc: RunContext, selector: Selector, src: Source): Actor[] {
   return limit === undefined ? found : found.slice(0, limit);
 }
 
-function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean {
+function matches(rc: RunContext, f: Filters, src: Source, actor: CommandActor): boolean {
   const { state } = rc;
   const type = typeOf(rc, actor);
   const pos = positionOf(rc, actor);
@@ -1100,7 +1166,9 @@ function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean
     if (one.tag === '' ? has !== one.not : has === one.not) return false;
   }
   for (const one of f.names) {
-    const named = actor.kind === 'player' && one.name === PREVIEW_PLAYER_NAME;
+    const named =
+      (actor.kind === 'player' && one.name === PREVIEW_PLAYER_NAME) ||
+      (actor.kind === 'practice' && one.name === actor.name);
     if (named === one.not) return false;
   }
   const team = state.teamOf.get(holderOf(actor));
@@ -1135,7 +1203,7 @@ function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean
   // B727: game modes (only players have one; anything else fails, negated or not), data and
   // advancements.
   for (const one of f.gameModes) {
-    if (actor.kind !== 'player') return false;
+    if (!isPlayerActor(actor)) return false;
     if ((state.games.gameMode(holderOf(actor)) === one.mode) === one.not) return false;
   }
   if (f.nbt.length > 0) {
@@ -1143,7 +1211,7 @@ function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean
     for (const one of f.nbt) if (nbtMatches(data, one.value) === one.not) return false;
   }
   for (const [id, wanted] of Object.entries(f.advancements)) {
-    if (actor.kind !== 'player') return false;
+    if (!isPlayerActor(actor)) return false;
     const advancement = rc.advancement?.(id);
     const holder = holderOf(actor);
     if (typeof wanted === 'boolean') {
@@ -1160,9 +1228,14 @@ function matches(rc: RunContext, f: Filters, src: Source, actor: Actor): boolean
 }
 
 /** A selector that must find at least one: the game's errors otherwise. */
-function selectSome(rc: RunContext, selector: Selector, src: Source, players: boolean): Actor[] {
+function selectSome(
+  rc: RunContext,
+  selector: Selector,
+  src: Source,
+  players: boolean,
+): CommandActor[] {
   const found = select(rc, selector, src);
-  const kept = players ? found.filter((actor) => actor.kind === 'player') : found;
+  const kept = players ? found.filter(isPlayerActor) : found;
   if (kept.length === 0) throw new Failed(players ? 'No player was found' : 'No entity was found');
   return kept;
 }
@@ -1431,7 +1504,14 @@ const roman = (amplifier: number): string =>
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
-function chip(rc: RunContext, text: string, actor: Actor, origin: SimOrigin | undefined): void {
+function chip(
+  rc: RunContext,
+  text: string,
+  actor: CommandActor,
+  origin: SimOrigin | undefined,
+): void {
+  // A practice player's chips are not drawn (B728); the chat line says it.
+  if (actor.kind === 'practice') return;
   rc.host.effect({
     kind: 'chip',
     id: text,
@@ -1440,15 +1520,26 @@ function chip(rc: RunContext, text: string, actor: Actor, origin: SimOrigin | un
   });
 }
 
+/**
+ * Who a chat line is for, when that is not you nor everyone (B728): "To Alex: " before a line
+ * the functions send a practice player alone, so What happened says whose screen shows it.
+ */
+function addressed(rc: RunContext, found: readonly CommandActor[]): string {
+  if (found.some((actor) => actor.kind === 'player')) return '';
+  if (found.length >= players(rc, false).length) return '';
+  return `To ${found.map((actor) => actorName(rc, actor)).join(', ')}: `;
+}
+
 // Inventory --------------------------------------------------------------------------------------
 
-/** Takes items matching `test` from the player's slots, at most `max`; how many (or would). */
+/** Takes items matching `test` from a player's slots, at most `max`; how many (or would). */
 function takeItems(
   rc: RunContext,
+  actor: CommandActor,
   test: (stack: ItemStack) => boolean,
   max: number | undefined,
 ): number {
-  const held = playerStacks(rc).filter(({ stack }) => test(stack));
+  const held = playerStacks(rc, actor).filter(({ stack }) => test(stack));
   const total = held.reduce((sum, { stack }) => sum + stack.count, 0);
   if (max === 0) return total;
   let left = max ?? Infinity;
@@ -1456,7 +1547,7 @@ function takeItems(
     if (left <= 0) break;
     const take = Math.min(left, stack.count);
     left -= take;
-    putStack(rc, slot, stack.count > take ? { ...stack, count: stack.count - take } : null);
+    putStack(rc, actor, slot, stack.count > take ? { ...stack, count: stack.count - take } : null);
   }
   return Math.min(total, max ?? Infinity);
 }
@@ -1524,7 +1615,18 @@ function teleport(cur: Cursor): Run {
         continue;
       }
       if (rc.state.games.dead.has(holderOf(actor))) {
-        rc.feedback(`${PREVIEW_PLAYER_NAME} is dead and cannot be moved.`, src.origin);
+        rc.feedback(`${actorName(rc, actor)} is dead and cannot be moved.`, src.origin);
+        continue;
+      }
+      const practice = practiceOf(rc, actor);
+      if (practice !== undefined) {
+        // B728: a practice player goes anywhere (outside the area's columns it stands where it
+        // is put, with no ground to fall to).
+        practice.pos = where;
+        practice.walkTo = null;
+        practice.fall = 0;
+        rc.feedback(`Teleported ${practice.name} to ${posWords(where)}.`, src.origin);
+        moved += 1;
         continue;
       }
       const cell = blockOf(where);
@@ -1853,9 +1955,9 @@ function spawnpointCommand(cur: Cursor): Run {
   const rotation = cur.done ? undefined : readRotation(cur);
   cur.end();
   return (rc, src) => {
-    let found: Actor[];
+    let found: CommandActor[];
     if (targets === undefined) {
-      if (src.executor?.kind !== 'player') {
+      if (src.executor === null || !isPlayerActor(src.executor)) {
         throw new Failed('A player is required to run this command here');
       }
       found = [src.executor];
@@ -1873,7 +1975,8 @@ function spawnpointCommand(cur: Cursor): Run {
         dimension: src.dimension,
       });
     }
-    const who = found.length === 1 ? actorName(rc, found[0] as Actor) : `${found.length} players`;
+    const who =
+      found.length === 1 ? actorName(rc, found[0] as CommandActor) : `${found.length} players`;
     rc.feedback(
       `Set spawn point to ${posWords(pos)} [${round2(turn.yaw)}, ${round2(turn.pitch)}] in ${src.dimension} for ${who}.`,
       src.origin,
@@ -1957,7 +2060,7 @@ function advancementCommand(cur: Cursor): Run {
     const verb = grant ? 'grant' : 'revoke';
     const toFrom = grant ? 'to' : 'from';
     const who = (n: number): string =>
-      n === 1 ? actorName(rc, players[0] as Actor) : `${n} players`;
+      n === 1 ? actorName(rc, players[0] as CommandActor) : `${n} players`;
     const calls: FunctionCall[] = [];
     if (criterion !== undefined) {
       const one = root as SimAdvancement;
@@ -2018,7 +2121,7 @@ const FRAME_WORDS: Readonly<Record<string, string>> = {
  */
 function changeCriteria(
   rc: RunContext,
-  player: Actor,
+  player: CommandActor,
   advancement: SimAdvancement,
   criteria: readonly string[],
   grant: boolean,
@@ -2063,8 +2166,8 @@ function changeCriteria(
         source: {
           executor: player,
           pos,
-          yaw: rc.host.player.yaw,
-          pitch: rc.host.player.pitch,
+          yaw: yawOf(rc, player),
+          pitch: pitchOf(rc, player),
           dimension: AREA_DIMENSION,
           ...(src.origin === undefined ? {} : { origin: src.origin }),
         },
@@ -2230,7 +2333,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     const component = parseSnbt(raw);
     return (rc, src) => {
       const found = selectSome(rc, targets, src, true);
-      rc.chat(componentText(rc, component, src), src.origin);
+      rc.chat(`${addressed(rc, found)}${componentText(rc, component, src)}`, src.origin);
       return ok(found.length);
     };
   },
@@ -2264,8 +2367,8 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
       const text = componentText(rc, component, src);
       const where =
         mode === 'title' ? 'Title' : mode === 'subtitle' ? 'Subtitle' : 'Above the hotbar';
-      rc.chat(`${where}: ${text}`, src.origin);
-      chip(rc, text, PLAYER, src.origin);
+      rc.chat(`${addressed(rc, found)}${where}: ${text}`, src.origin);
+      if (found.some((actor) => actor.kind === 'player')) chip(rc, text, PLAYER, src.origin);
       return ok(found.length);
     };
   },
@@ -2289,9 +2392,14 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     return (rc, src) => {
       const found = selectSome(rc, targets, src, true);
       const name = rc.host.itemName(id);
-      const left = rc.host.inventory().give(id, count, stackArg.components);
-      rc.feedback(`Gave ${count} ${name} to ${PREVIEW_PLAYER_NAME}.`, src.origin);
-      if (left > 0) rc.only(`items that do not fit dropping at your feet`, src.origin);
+      let left = 0;
+      for (const actor of found) {
+        left += inventoryOf(rc, actor)?.give(id, count, stackArg.components) ?? 0;
+      }
+      const who =
+        found.length === 1 ? actorName(rc, found[0] as CommandActor) : `${found.length} players`;
+      rc.feedback(`Gave ${count} ${name} to ${who}.`, src.origin);
+      if (left > 0) rc.only(`items that do not fit dropping at a player's feet`, src.origin);
       return ok(found.length);
     };
   },
@@ -2308,20 +2416,31 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     const test = (stack: ItemStack): boolean =>
       predicate === undefined || stackMatches(stack, predicate);
     return (rc, src) => {
-      if (targets !== undefined) selectSome(rc, targets, src, true);
-      else if (src.executor?.kind !== 'player') throw new Failed('No player was found');
+      let found: CommandActor[];
+      if (targets !== undefined) found = selectSome(rc, targets, src, true);
+      else if (src.executor !== null && isPlayerActor(src.executor)) found = [src.executor];
+      else throw new Failed('No player was found');
       if (predicate !== undefined && predicate.unknown.length > 0) {
         rc.only(
           `the item tests ${predicate.unknown.join(', ')} (the preview leaves them out)`,
           src.origin,
         );
       }
-      const taken = takeItems(rc, test, max);
-      if (taken === 0) throw new Failed(`No items were found on player ${PREVIEW_PLAYER_NAME}`);
+      let taken = 0;
+      for (const actor of found) taken += takeItems(rc, actor, test, max);
+      const who =
+        found.length === 1 ? actorName(rc, found[0] as CommandActor) : `${found.length} players`;
+      if (taken === 0) {
+        throw new Failed(
+          found.length === 1
+            ? `No items were found on player ${who}`
+            : `No items were found on ${who}`,
+        );
+      }
       rc.feedback(
         max === 0
-          ? `Found ${plural(taken, 'matching item')} on ${PREVIEW_PLAYER_NAME}.`
-          : `Removed ${plural(taken, 'item')} from ${PREVIEW_PLAYER_NAME}.`,
+          ? `Found ${plural(taken, 'matching item')} on ${who}.`
+          : `Removed ${plural(taken, 'item')} from ${who}.`,
         src.origin,
       );
       return ok(taken);
@@ -2539,9 +2658,10 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
       if (found.length === 0) throw new Failed('No entity was found');
       for (const actor of found) {
         const name = actorName(rc, actor);
-        if (actor.kind === 'player') {
-          // B727: the player dies (death scores, a respawn a second later).
-          playerDies(rc, holderOf(actor), `${name} was killed`, src.origin);
+        if (actor.kind !== 'mob') {
+          // B727: the player dies (death scores, a respawn a second later); B728 a practice
+          // player too.
+          playerDies(rc, actor, `${name} was killed`, src.origin);
         } else if (thingOf(rc, actor) !== undefined) {
           rc.state.games.things.delete(actor.id);
           rc.state.tags.delete(holderOf(actor));
@@ -2640,7 +2760,9 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
         pitch,
         ...(src.origin === undefined ? {} : { origin: src.origin }),
       });
-      rc.feedback(`Played sound ${sound} to ${PREVIEW_PLAYER_NAME}.`, src.origin);
+      const who =
+        found.length === 1 ? actorName(rc, found[0] as CommandActor) : `${found.length} players`;
+      rc.feedback(`Played sound ${sound} to ${who}.`, src.origin);
       return ok(found.length);
     };
   },
@@ -2945,7 +3067,7 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
     const scale = cur.done ? 1 : cur.float('a scale');
     cur.end();
     return (rc, src) => {
-      const actor = selectSome(rc, target, src, false)[0] as Actor;
+      const actor = selectSome(rc, target, src, false)[0] as CommandActor;
       if (path === undefined) {
         rc.only("an entity's whole data (/data get entity without a path)", src.origin);
         return fail;
@@ -2988,8 +3110,12 @@ const COMMANDS: Readonly<Record<string, Compile>> = {
         rc.only('a dialog written inline in the command', src.origin);
         return ok(found.length);
       }
-      rc.state.dialog = { id, tick: rc.host.now() };
-      rc.chat(`The dialog ${id} opens for ${PREVIEW_PLAYER_NAME}.`, src.origin);
+      // B728: only your own screen shows it; a practice player's opens in words.
+      if (found.some((actor) => actor.kind === 'player')) {
+        rc.state.dialog = { id, tick: rc.host.now() };
+      }
+      const who = found.map((actor) => actorName(rc, actor)).join(', ');
+      rc.chat(`The dialog ${id} opens for ${who}.`, src.origin);
       rc.only('dialog screens (the preview names the dialog)', src.origin);
       return ok(found.length);
     };
@@ -3062,7 +3188,7 @@ function dataModify(cur: Cursor): Run {
       const target = readTargets(cur, 'a target', false, true);
       const fromPath = cur.done ? undefined : cur.next('a path');
       get = (rc, src) => {
-        const actor = selectSome(rc, target, src, false)[0] as Actor;
+        const actor = selectSome(rc, target, src, false)[0] as CommandActor;
         return fromPath === undefined
           ? entityCompound(rc, actor, src.origin)
           : entityData(rc, actor, fromPath, src.origin);
@@ -3126,16 +3252,26 @@ function dataNumber(value: Json, scale: number): number {
  * `summon` gave them, the player's items are listed): position, rotation, motion, tags and the
  * player's numbers.
  */
-function entityCompound(rc: RunContext, actor: Actor, _origin: SimOrigin | undefined): JsonObject {
+function entityCompound(
+  rc: RunContext,
+  actor: CommandActor,
+  _origin: SimOrigin | undefined,
+): JsonObject {
   const { host } = rc;
   const pos = positionOf(rc, actor) ?? { x: 0, y: 0, z: 0 };
   const thing = thingOf(rc, actor);
-  const player = actor.kind === 'player';
+  const player = isPlayerActor(actor);
+  const own = actor.kind === 'player';
+  const practice = practiceOf(rc, actor);
   const mob =
     actor.kind === 'mob' && thing === undefined ? host.entities.entity(actor.id) : undefined;
-  const yaw = player ? host.player.yaw : (mob?.yaw ?? 0);
-  const pitch = player ? host.player.pitch : 0;
-  const velocity = player ? host.player.velocity : (mob?.velocity ?? { x: 0, y: 0, z: 0 });
+  const yaw = yawOf(rc, actor);
+  const pitch = pitchOf(rc, actor);
+  const velocity = own
+    ? host.player.velocity
+    : practice !== undefined
+      ? { x: 0, y: -practice.fall, z: 0 }
+      : (mob?.velocity ?? { x: 0, y: 0, z: 0 });
   const { corner } = rc.state;
   const tags = [...(rc.state.tags.get(holderOf(actor)) ?? [])];
   const values: Record<string, Json> = {
@@ -3143,19 +3279,23 @@ function entityCompound(rc: RunContext, actor: Actor, _origin: SimOrigin | undef
     Pos: [pos.x + corner.x, pos.y + corner.y, pos.z + corner.z],
     Rotation: [yaw, pitch],
     Motion: [velocity.x, velocity.y, velocity.z],
-    OnGround: player ? host.player.onGround : (mob?.onGround ?? true),
+    OnGround: own
+      ? host.player.onGround
+      : practice !== undefined
+        ? practice.fall === 0
+        : (mob?.onGround ?? true),
     Tags: tags,
   };
   if (thing !== undefined) values.id = thing.type;
   if (player) {
     const holder = holderOf(actor);
-    const items = playerStacks(rc).map(({ slot, stack }) => ({
+    const items = playerStacks(rc, actor).map(({ slot, stack }) => ({
       id: stack.id,
       count: stack.count,
       Slot: 'hotbar' in slot ? slot.hotbar : slotNumber(slot.named),
       ...(stack.components === undefined ? {} : { components: stack.components }),
     }));
-    const held = stackIn(rc, { hotbar: 0 });
+    const held = stackIn(rc, actor, { hotbar: 0 });
     Object.assign(values, {
       Health: rc.state.games.healthOf(holder),
       FoodLevel: 20,
@@ -3188,7 +3328,7 @@ function slotNumber(named: string): number {
 /** The value of an entity data path, or `undefined` when the preview does not know it. */
 function entityData(
   rc: RunContext,
-  actor: Actor,
+  actor: CommandActor,
   path: string,
   origin: SimOrigin | undefined,
 ): Json | undefined {
@@ -3197,7 +3337,7 @@ function entityData(
   if (steps === undefined) throw new NotHere(`the NBT path ${path}`);
   const [first] = steps;
   if (
-    actor.kind === 'player' &&
+    isPlayerActor(actor) &&
     first !== undefined &&
     'key' in first &&
     UNKNOWN_PLAYER_DATA.has(first.key)
@@ -3649,12 +3789,12 @@ function readTest(cur: Cursor): Test {
         }
         let count = 0;
         for (const actor of select(rc, selector, src)) {
-          if (actor.kind !== 'player') {
-            rc.only('items held by mobs (/execute if items reads only yours)', src.origin);
+          if (!isPlayerActor(actor)) {
+            rc.only('items held by mobs (/execute if items reads only players’)', src.origin);
             continue;
           }
           for (const slot of slots) {
-            const stack = stackIn(rc, slot);
+            const stack = stackIn(rc, actor, slot);
             if (stack !== null && stackMatches(stack, predicate)) count += stack.count;
           }
         }
@@ -3746,12 +3886,11 @@ function compileExecute(cur: Cursor): Run {
           fork: (rc, src) =>
             select(rc, selector, src).map((actor) => {
               const pos = positionOf(rc, actor) ?? src.pos;
-              const player = actor.kind === 'player';
               return {
                 ...src,
                 pos,
-                yaw: player ? rc.host.player.yaw : (rc.host.entities.entity(actor.id)?.yaw ?? 0),
-                pitch: player ? rc.host.player.pitch : 0,
+                yaw: yawOf(rc, actor),
+                pitch: pitchOf(rc, actor),
                 dimension: AREA_DIMENSION,
               };
             }),
@@ -3803,11 +3942,8 @@ function compileExecute(cur: Cursor): Run {
             fork: (rc, src) =>
               select(rc, selector, src).map((actor) => ({
                 ...src,
-                yaw:
-                  actor.kind === 'player'
-                    ? rc.host.player.yaw
-                    : (rc.host.entities.entity(actor.id)?.yaw ?? 0),
-                pitch: actor.kind === 'player' ? rc.host.player.pitch : 0,
+                yaw: yawOf(rc, actor),
+                pitch: pitchOf(rc, actor),
               })),
           });
         } else {
@@ -3850,7 +3986,16 @@ function compileExecute(cur: Cursor): Run {
             if (self === null) return [];
             const thing = thingOf(rc, self);
             if (relation === 'attacker' && thing?.attacker !== undefined) {
-              return [{ ...src, executor: thing.attacker }];
+              return present(rc, thing.attacker) ? [{ ...src, executor: thing.attacker }] : [];
+            }
+            // B728: a player's attacker is who hurt them in the last five seconds or so.
+            const hurt =
+              relation === 'attacker' && isPlayerActor(self)
+                ? rc.state.games.hurtBy.get(holderOf(self))
+                : undefined;
+            if (hurt !== undefined) {
+              const recent = rc.host.now() - hurt.tick <= KILL_CREDIT_TICKS;
+              return recent && present(rc, hurt.by) ? [{ ...src, executor: hurt.by }] : [];
             }
             if (relation !== 'attacker') {
               rc.only(

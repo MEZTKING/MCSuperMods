@@ -6,8 +6,9 @@
  * - the sidebar of the objective the functions show there, names in the player's team colour;
  * - "Your game": the game mode (adventure stops breaking), the team the player is on as the
  *   function engine keeps it (a function's `team join` moves the picker; picking runs `team join`
- *   or `team leave`; Try it is single player, limit M14), each magic block's phase and breaks, and
- *   each area with "You are in it" and "Rebuild now".
+ *   or `team leave`), each magic block's phase and breaks, each area with "You are in it" and
+ *   "Rebuild now", and the practice players (B728, `PracticePlayers.tsx`: stand-ins beside you
+ *   and Watch a round; ADR 0117 limit M14 as amended by ADR 0132 D10).
  * The areas' outlines are drawn in the view (`TryItView` adds `source.games.outline()` to the
  * picked block's outline). No ids: names are the elements' own or plain words of their ids.
  */
@@ -18,6 +19,7 @@ import { useEffect, useMemo } from 'react';
 import { Button } from '../../components/ui/Button';
 import { CHAT_COLOURS } from '../../liveviews/data/lines/text-component';
 import { gamesProjectOf } from '../grounds';
+import { PracticePlayers } from './PracticePlayers';
 
 /** Boss bar colours as CSS, close to the game's bars (as the Timer Studio draws them). */
 const BOSS_BAR_CSS: Readonly<Record<string, string>> = Object.freeze({
@@ -215,6 +217,7 @@ export default function GamesPanel(props: GamesPanelProps) {
             )}
           </div>
         ))}
+        <PracticePlayers source={source} games={games} onChanged={onChanged} />
         {status.sidebar !== null && status.sidebar.criterion !== 'dummy' && (
           <p className="text-muted">
             Scores that count by themselves (kills, blocks mined) count only in the game.

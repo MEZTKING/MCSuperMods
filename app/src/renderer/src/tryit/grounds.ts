@@ -21,12 +21,14 @@ import type { Project } from '@msm/plugin-api';
 import {
   AREA_KIND,
   flatGround,
+  GAME_KIND,
   type GamesElement,
   type GamesGroundMade,
   type GamesProject,
   type GroundBlocks,
   type GroundKind,
   idWords,
+  KIT_KIND,
   normaliseQuickOptions,
   OBJECTIVE_KIND,
   ONE_BLOCK_KIND,
@@ -195,6 +197,9 @@ const GAMES_KINDS: ReadonlySet<string> = new Set([
   OBJECTIVE_KIND,
   TIMER_KIND,
   AREA_KIND,
+  // A whole game and its kits (ADR 0132, B728): the panel's practice players and Watch a round.
+  GAME_KIND,
+  KIT_KIND,
 ]);
 
 const STRUCTURE_TEMPLATE_KIND = 'minecraft:structure_template';
