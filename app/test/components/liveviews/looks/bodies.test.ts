@@ -391,8 +391,17 @@ describe('stand-in bodies', () => {
       }
       const colour = new Int32Array(w * h).fill(0);
       for (const [key, set] of owners) colour[key] = Math.min(...set) + 1;
-      const sameTexels = (a: number, b: number): boolean =>
-        [...owners.values()].every((set) => set.has(a) === set.has(b));
+      const owned = [...owners.values()];
+      const same = new Map<string, boolean>();
+      const sameTexels = (a: number, b: number): boolean => {
+        const key = `${a} ${b}`;
+        let answer = same.get(key);
+        if (answer === undefined) {
+          answer = owned.every((set) => set.has(a) === set.has(b));
+          same.set(key, answer);
+        }
+        return answer;
+      };
       // Every part, drawn from twelve sides on its own and with the rest of the body, shows a
       // colour that is its own, never another part's.
       model.bones.forEach((bone, index) => {
@@ -506,6 +515,16 @@ function raster(faces: WorldFace[], colour: Int32Array, width: number): Set<numb
       const q = (projected[fi] as P3[]).map(
         (x) => [(x[0] - minX) * scale + 1, (x[1] - minY) * scale + 1, x[2]] as P3,
       );
+      // Sampled a hair inside the face, as the renderer's inset does. Worked out once a face,
+      // not once a pixel (B714): with the arrays made per pixel, and `sameTexels` walking every
+      // texel per call, the test took 4.2 s alone and 11 to 13 s of the app's 15 s limit on CI;
+      // now about 1 s alone.
+      const us = face.uv.map((t) => t[0]);
+      const vs = face.uv.map((t) => t[1]);
+      const uMin = Math.min(...us) + 0.01;
+      const uMax = Math.max(...us) - 0.01;
+      const vMin = Math.min(...vs) + 0.01;
+      const vMax = Math.max(...vs) - 0.01;
       // Two triangles a, b, c and b, d, c with their uvs.
       for (const [i, j, k] of [
         [0, 1, 2],
@@ -536,13 +555,8 @@ function raster(faces: WorldFace[], colour: Int32Array, width: number): Set<numb
             const uvA = face.uv[i];
             const uvB = face.uv[j];
             const uvC = face.uv[k];
-            // Sampled a hair inside the face, as the renderer's inset does.
-            const us = face.uv.map((t) => t[0]);
-            const vs = face.uv.map((t) => t[1]);
-            const clamp = (x: number, values: number[]): number =>
-              Math.min(Math.max(x, Math.min(...values) + 0.01), Math.max(...values) - 0.01);
-            const u = clamp(wa * uvA[0] + wb * uvB[0] + wc * uvC[0], us);
-            const v = clamp(wa * uvA[1] + wb * uvB[1] + wc * uvC[1], vs);
+            const u = Math.min(Math.max(wa * uvA[0] + wb * uvB[0] + wc * uvC[0], uMin), uMax);
+            const v = Math.min(Math.max(wa * uvA[1] + wb * uvB[1] + wc * uvC[1], vMin), vMax);
             pixel[at] = colour[Math.floor(v) * width + Math.floor(u)] ?? 0;
           }
       }

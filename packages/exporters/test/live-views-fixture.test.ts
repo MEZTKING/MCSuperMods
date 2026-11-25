@@ -187,7 +187,11 @@ describe('live views parity fixture', () => {
   describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
     '%s',
     (_id, bundle) => {
-      it('exports exactly the committed lowered data pack', async () => {
+      // Genuinely heavy: a whole data pack export for the target, checked against its mcdoc
+      // schemas and every function line through the offline Spyglass service built for that
+      // target (nothing to share between targets). 1 to 2 s alone, 2.2 to 3.4 s on CI and 5.3 s
+      // once here under load (B714), against Vitest's 5 s default.
+      it('exports exactly the committed lowered data pack', { timeout: 30_000 }, async () => {
         const exported = await exportData(bundle);
         const loweredRoot = join(fixtureRoot, 'lowered');
         const committed: Record<string, string> = {};

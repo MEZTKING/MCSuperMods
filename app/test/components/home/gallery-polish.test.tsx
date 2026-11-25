@@ -12,7 +12,7 @@ import type { ProjectStarter, Target } from '@msm/plugin-api';
 import { libraryExamples, libraryStarters } from '@msm/plugin-library';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { type ReactNode, useEffect } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { forbiddenIn } from '../../../src/renderer/src/components/ai/ai-words';
 import { clearLookStills } from '../../../src/renderer/src/components/home/gallery/card-picture';
 import { exampleForStarter } from '../../../src/renderer/src/components/home/gallery/flow-examples';
@@ -243,6 +243,12 @@ describe('card clips', () => {
 });
 
 describe('More ideas as the last row', () => {
+  // `MoreIdeas` loads the idea list as a lazy chunk. Its first import here is a cold module
+  // graph (the Surprise me generator and the card code), which under a loaded machine took longer
+  // than `findByTestId`'s one second (B714): the waits below are for React, not for the import.
+  beforeAll(async () => {
+    await import('../../../src/renderer/src/ideas/IdeaList');
+  });
   const input = {
     starters: builtInPlugins.flatMap((plugin) => plugin.contributes.projectStarters ?? []),
     target: TARGET,
