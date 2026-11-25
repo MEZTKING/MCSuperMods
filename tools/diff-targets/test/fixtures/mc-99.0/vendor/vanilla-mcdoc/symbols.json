@@ -1,0 +1,273 @@
+{
+  "mcdoc": {
+    "::java::data::worldgen::NoiseSettings": {
+      "fields": [
+        {
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "99.0"
+                }
+              }
+            }
+          ],
+          "key": "sea_level",
+          "kind": "pair",
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "99.0"
+                }
+              }
+            }
+          ],
+          "key": "sea_height",
+          "kind": "pair",
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "key": "aquifers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "99.0"
+                }
+              }
+            }
+          ],
+          "key": "legacy",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::java::data::worldgen::feature::Feature": {
+      "fields": [
+        {
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "worldgen/feature_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": [
+                  "type"
+                ],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "minecraft:feature_config"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::java::data::worldgen::feature::OreConfig": {
+      "fields": [
+        {
+          "key": "size",
+          "kind": "pair",
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "key": "targets",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "block"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::java::data::worldgen::feature::SpikeConfig": {
+      "fields": [
+        {
+          "attributes": [
+            {
+              "name": "until",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "99.0"
+                }
+              }
+            }
+          ],
+          "key": "height",
+          "kind": "pair",
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "99.0"
+                }
+              }
+            }
+          ],
+          "key": "height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "attributes": [
+            {
+              "name": "since",
+              "value": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "99.0"
+                }
+              }
+            }
+          ],
+          "key": "base",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    }
+  },
+  "mcdoc/dispatcher": {
+    "minecraft:feature_config": {
+      "mineral_vein": {
+        "attributes": [
+          {
+            "name": "since",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "99.0"
+              }
+            }
+          }
+        ],
+        "kind": "reference",
+        "path": "::java::data::worldgen::feature::OreConfig"
+      },
+      "ore": {
+        "attributes": [
+          {
+            "name": "until",
+            "value": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "99.0"
+              }
+            }
+          }
+        ],
+        "kind": "reference",
+        "path": "::java::data::worldgen::feature::OreConfig"
+      },
+      "spike": {
+        "kind": "reference",
+        "path": "::java::data::worldgen::feature::SpikeConfig"
+      }
+    },
+    "minecraft:resource": {
+      "worldgen/configured_feature": {
+        "kind": "reference",
+        "path": "::java::data::worldgen::feature::Feature"
+      },
+      "worldgen/noise_settings": {
+        "kind": "reference",
+        "path": "::java::data::worldgen::NoiseSettings"
+      }
+    }
+  },
+  "ref": "2222222222222222222222222222222222222222"
+}

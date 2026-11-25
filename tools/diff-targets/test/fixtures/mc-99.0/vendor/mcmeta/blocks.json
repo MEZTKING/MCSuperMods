@@ -1,0 +1,56 @@
+{
+  "basalt_pillar": [
+    {
+      "axis": [
+        "x",
+        "y",
+        "z"
+      ]
+    },
+    {
+      "axis": "y"
+    }
+  ],
+  "door": [
+    {
+      "open": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "open": "true"
+    }
+  ],
+  "lamp": [
+    {
+      "lit": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "lit": "false"
+    }
+  ],
+  "slab": [
+    {
+      "type": [
+        "top",
+        "bottom"
+      ],
+      "waterlogged": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "type": "bottom",
+      "waterlogged": "false"
+    }
+  ],
+  "stone": [
+    {},
+    {}
+  ]
+}

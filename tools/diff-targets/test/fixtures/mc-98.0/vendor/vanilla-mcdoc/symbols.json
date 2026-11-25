@@ -1,0 +1,139 @@
+{
+  "mcdoc": {
+    "::java::data::worldgen::NoiseSettings": {
+      "fields": [
+        {
+          "key": "sea_level",
+          "kind": "pair",
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "key": "aquifers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "key": "legacy",
+          "kind": "pair",
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::java::data::worldgen::feature::Feature": {
+      "fields": [
+        {
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "worldgen/feature_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": [
+                  "type"
+                ],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "minecraft:feature_config"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::java::data::worldgen::feature::OreConfig": {
+      "fields": [
+        {
+          "key": "size",
+          "kind": "pair",
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "key": "targets",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "block"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::java::data::worldgen::feature::SpikeConfig": {
+      "fields": [
+        {
+          "key": "height",
+          "kind": "pair",
+          "type": {
+            "kind": "int"
+          }
+        }
+      ],
+      "kind": "struct"
+    }
+  },
+  "mcdoc/dispatcher": {
+    "minecraft:feature_config": {
+      "ore": {
+        "kind": "reference",
+        "path": "::java::data::worldgen::feature::OreConfig"
+      },
+      "spike": {
+        "kind": "reference",
+        "path": "::java::data::worldgen::feature::SpikeConfig"
+      }
+    },
+    "minecraft:resource": {
+      "worldgen/configured_feature": {
+        "kind": "reference",
+        "path": "::java::data::worldgen::feature::Feature"
+      },
+      "worldgen/noise_settings": {
+        "kind": "reference",
+        "path": "::java::data::worldgen::NoiseSettings"
+      }
+    }
+  },
+  "ref": "1111111111111111111111111111111111111111"
+}

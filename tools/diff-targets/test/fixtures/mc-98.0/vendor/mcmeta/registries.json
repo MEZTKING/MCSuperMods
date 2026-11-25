@@ -1,0 +1,27 @@
+{
+  "block": [
+    "lamp",
+    "slab",
+    "stone",
+    "door"
+  ],
+  "fluid": [
+    "water",
+    "flowing_water"
+  ],
+  "item": [
+    "stone"
+  ],
+  "rule_test": [
+    "always_true",
+    "block_match"
+  ],
+  "worldgen/feature": [
+    "ore",
+    "spike_small"
+  ],
+  "worldgen/feature_type": [
+    "ore",
+    "spike"
+  ]
+}

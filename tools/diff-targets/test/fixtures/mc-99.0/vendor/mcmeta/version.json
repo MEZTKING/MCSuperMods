@@ -1,0 +1,12 @@
+{
+  "data_pack_version": 99,
+  "data_pack_version_minor": 0,
+  "data_version": 9900,
+  "id": "99.0",
+  "name": "99.0",
+  "protocol_version": 990,
+  "resource_pack_version": 77,
+  "resource_pack_version_minor": 1,
+  "stable": true,
+  "type": "release"
+}

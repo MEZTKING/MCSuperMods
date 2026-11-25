@@ -1,0 +1,31 @@
+{
+  "block": [
+    "lamp",
+    "slab",
+    "stone",
+    "door",
+    "basalt_pillar"
+  ],
+  "block_sound_set": [
+    "basalt"
+  ],
+  "fluid": [
+    "water"
+  ],
+  "item": [
+    "stone",
+    "basalt_pillar"
+  ],
+  "rule_test_type": [
+    "always_true",
+    "block_match"
+  ],
+  "worldgen/feature": [
+    "ore",
+    "spike_small"
+  ],
+  "worldgen/feature_type": [
+    "mineral_vein",
+    "spike"
+  ]
+}

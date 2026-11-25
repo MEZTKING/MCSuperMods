@@ -1,0 +1,38 @@
+{
+  "door": [
+    {
+      "open": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "open": "false"
+    }
+  ],
+  "lamp": [
+    {},
+    {}
+  ],
+  "slab": [
+    {
+      "type": [
+        "top",
+        "bottom",
+        "double"
+      ],
+      "waterlogged": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "type": "bottom",
+      "waterlogged": "false"
+    }
+  ],
+  "stone": [
+    {},
+    {}
+  ]
+}

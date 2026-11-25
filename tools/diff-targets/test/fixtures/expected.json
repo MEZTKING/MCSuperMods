@@ -1,0 +1,259 @@
+{
+  "additions": {
+    "commands:(paths)": 1,
+    "ids:(registries)": 1,
+    "ids:block": 1,
+    "ids:block_sound_set": 1,
+    "ids:item": 1,
+    "ids:worldgen/feature_type": 1
+  },
+  "changes": [
+    {
+      "area": "block-states",
+      "field": "open",
+      "from": "false",
+      "handling": "manual",
+      "id": "block-states:door#open",
+      "source": "blocks",
+      "subject": "door",
+      "to": "true",
+      "what": "default-changed"
+    },
+    {
+      "area": "block-states",
+      "field": "lit",
+      "handling": "none",
+      "id": "block-states:lamp#lit",
+      "source": "blocks",
+      "subject": "lamp",
+      "to": [
+        "true",
+        "false"
+      ],
+      "what": "property-added"
+    },
+    {
+      "area": "block-states",
+      "field": "type",
+      "from": [
+        "top",
+        "bottom",
+        "double"
+      ],
+      "handling": "manual",
+      "id": "block-states:slab#type",
+      "source": "blocks",
+      "subject": "slab",
+      "to": [
+        "top",
+        "bottom"
+      ],
+      "what": "values-changed"
+    },
+    {
+      "area": "commands",
+      "from": "brigadier:integer exec",
+      "handling": "none",
+      "id": "commands:give <targets> <item> <count>",
+      "source": "commands",
+      "subject": "give <targets> <item> <count>",
+      "to": "brigadier:integer{\"min\":1} exec",
+      "what": "argument-changed"
+    },
+    {
+      "area": "commands",
+      "handling": "manual",
+      "id": "commands:oldcmd",
+      "source": "commands",
+      "subject": "oldcmd",
+      "what": "root-removed"
+    },
+    {
+      "area": "formats",
+      "handling": "none",
+      "id": "formats:minecraft:feature_config/mineral_vein",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/mineral_vein",
+      "what": "type-added"
+    },
+    {
+      "area": "formats",
+      "handling": "manual",
+      "id": "formats:minecraft:feature_config/ore",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/ore",
+      "what": "type-removed"
+    },
+    {
+      "area": "formats",
+      "field": "/base",
+      "handling": "manual",
+      "id": "formats:minecraft:feature_config/spike#/base",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/spike",
+      "what": "field-addedRequired"
+    },
+    {
+      "area": "formats",
+      "field": "/height",
+      "handling": "none",
+      "id": "formats:minecraft:feature_config/spike#/height",
+      "registry": "minecraft:feature_config",
+      "source": "mcdoc",
+      "subject": "minecraft:feature_config/spike",
+      "what": "field-madeOptional"
+    },
+    {
+      "area": "formats",
+      "field": "/legacy",
+      "handling": "manual",
+      "id": "formats:minecraft:resource/worldgen/noise_settings#/legacy",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/worldgen/noise_settings",
+      "what": "field-removed"
+    },
+    {
+      "area": "formats",
+      "field": "/sea_height",
+      "handling": "manual",
+      "id": "formats:minecraft:resource/worldgen/noise_settings#/sea_height",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/worldgen/noise_settings",
+      "what": "field-addedRequired"
+    },
+    {
+      "area": "formats",
+      "candidate": {
+        "kind": "field-move",
+        "name": 0.33,
+        "shape": "same",
+        "to": "/sea_height"
+      },
+      "field": "/sea_level",
+      "handling": "manual",
+      "id": "formats:minecraft:resource/worldgen/noise_settings#/sea_level",
+      "registry": "minecraft:resource",
+      "source": "mcdoc",
+      "subject": "minecraft:resource/worldgen/noise_settings",
+      "what": "field-removed"
+    },
+    {
+      "area": "ids",
+      "from": "flowing_water",
+      "handling": "manual",
+      "id": "ids:fluid/flowing_water",
+      "registry": "fluid",
+      "source": "registries",
+      "subject": "fluid/flowing_water",
+      "what": "member-removed"
+    },
+    {
+      "area": "ids",
+      "from": "rule_test",
+      "handling": "none",
+      "id": "ids:rule_test",
+      "source": "registries",
+      "subject": "rule_test",
+      "to": "rule_test_type",
+      "what": "registry-moved"
+    },
+    {
+      "area": "ids",
+      "candidate": {
+        "kind": "rename",
+        "name": 0,
+        "shape": "same",
+        "to": "mineral_vein"
+      },
+      "from": "ore",
+      "handling": "manual",
+      "id": "ids:worldgen/feature_type/ore",
+      "registry": "worldgen/feature_type",
+      "source": "registries",
+      "stillIn": [
+        "worldgen/feature"
+      ],
+      "subject": "worldgen/feature_type/ore",
+      "what": "member-removed"
+    },
+    {
+      "area": "packs",
+      "from": {
+        "major": 98,
+        "minor": 0
+      },
+      "handling": "auto",
+      "id": "packs:data_pack_format",
+      "source": "version",
+      "subject": "data_pack_format",
+      "to": {
+        "major": 99,
+        "minor": 0
+      },
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": 9800,
+      "handling": "auto",
+      "id": "packs:data_version",
+      "source": "version",
+      "subject": "data_version",
+      "to": 9900,
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": 980,
+      "handling": "none",
+      "id": "packs:protocol_version",
+      "source": "version",
+      "subject": "protocol_version",
+      "to": 990,
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": {
+        "major": 76,
+        "minor": 0
+      },
+      "handling": "auto",
+      "id": "packs:resource_pack_format",
+      "source": "version",
+      "subject": "resource_pack_format",
+      "to": {
+        "major": 77,
+        "minor": 1
+      },
+      "what": "value-changed"
+    },
+    {
+      "area": "packs",
+      "from": "98.0",
+      "handling": "none",
+      "id": "packs:version",
+      "source": "version",
+      "subject": "version",
+      "to": "99.0",
+      "what": "value-changed"
+    }
+  ],
+  "from": "mc-98.0",
+  "refs": {
+    "from": {
+      "mcdoc": "1111111111111111111111111111111111111111",
+      "mcmeta": "98.0"
+    },
+    "to": {
+      "mcdoc": "2222222222222222222222222222222222222222",
+      "mcmeta": "99.0"
+    }
+  },
+  "to": "mc-99.0"
+}

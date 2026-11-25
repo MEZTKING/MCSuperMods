@@ -1,0 +1,54 @@
+{
+  "children": {
+    "give": {
+      "children": {
+        "targets": {
+          "children": {
+            "item": {
+              "children": {
+                "count": {
+                  "executable": true,
+                  "parser": "brigadier:integer",
+                  "type": "argument"
+                }
+              },
+              "executable": true,
+              "parser": "minecraft:item_stack",
+              "type": "argument"
+            }
+          },
+          "parser": "minecraft:entity",
+          "properties": {
+            "amount": "multiple",
+            "type": "players"
+          },
+          "type": "argument"
+        }
+      },
+      "type": "literal"
+    },
+    "oldcmd": {
+      "executable": true,
+      "type": "literal"
+    },
+    "time": {
+      "children": {
+        "set": {
+          "children": {
+            "value": {
+              "executable": true,
+              "parser": "minecraft:time",
+              "properties": {
+                "min": 0
+              },
+              "type": "argument"
+            }
+          },
+          "type": "literal"
+        }
+      },
+      "type": "literal"
+    }
+  },
+  "type": "root"
+}

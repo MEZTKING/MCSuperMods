@@ -1,0 +1,52 @@
+{
+  "additions": [
+    {
+      "area": "commands",
+      "id": "commands:newcmd",
+      "source": "commands",
+      "subject": "newcmd",
+      "what": "path-added"
+    },
+    {
+      "area": "ids",
+      "id": "ids:block/basalt_pillar",
+      "registry": "block",
+      "source": "registries",
+      "subject": "block/basalt_pillar",
+      "what": "member-added"
+    },
+    {
+      "area": "ids",
+      "id": "ids:block_sound_set",
+      "source": "registries",
+      "subject": "block_sound_set",
+      "what": "registry-added"
+    },
+    {
+      "area": "ids",
+      "id": "ids:block_sound_set/basalt",
+      "registry": "block_sound_set",
+      "source": "registries",
+      "subject": "block_sound_set/basalt",
+      "what": "member-added"
+    },
+    {
+      "area": "ids",
+      "id": "ids:item/basalt_pillar",
+      "registry": "item",
+      "source": "registries",
+      "subject": "item/basalt_pillar",
+      "what": "member-added"
+    },
+    {
+      "area": "ids",
+      "id": "ids:worldgen/feature_type/mineral_vein",
+      "registry": "worldgen/feature_type",
+      "source": "registries",
+      "subject": "worldgen/feature_type/mineral_vein",
+      "what": "member-added"
+    }
+  ],
+  "from": "mc-98.0",
+  "to": "mc-99.0"
+}

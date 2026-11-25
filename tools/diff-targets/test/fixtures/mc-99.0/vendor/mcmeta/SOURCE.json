@@ -1,0 +1,7 @@
+{
+  "note": "Invented test data for tools/diff-targets; not from mcmeta.",
+  "refs": {
+    "registries": "99.0-registries",
+    "summary": "99.0-summary"
+  }
+}

@@ -11649,3 +11649,25 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 **Next**
 - B813: the engine fills `details`, `reverses` and `inGameChecks`, and the 26.4 change set.
 - The app's `toTargetFacts` copies named fields for non-built-in targets, and the AI helper's target dump strips large facts by name: both will need `changes` handled when it is set (B813 or the app briefs).
+
+## 2026-11-25 — executor — B811 `tools/diff-targets`
+
+**What**
+- New `tools/diff-targets/` (`index.ts`, `cli.ts`, `diff.ts`, `registries.ts`, `mcdoc.ts`, `commands.ts`, `blocks.ts`, `packs.ts`, `candidates.ts`, `names.ts`, `change.ts`, `draft.ts`, `types.ts`, `README.md`, `test/` with an invented pair `test/fixtures/mc-98.0` and `mc-99.0` and its expected files): `node tools/diff-targets/index.ts --from <target folder> --to <target folder> [--out <file>] [--draft <CHANGES-draft.md>] [--check] [--mcdoc gated|refs]`. Pure and offline over the two folders' `vendor/mcmeta/` and `vendor/vanilla-mcdoc/`; writes the change set (sorted keys, byte-stable), the additions list beside it and the readable draft; `--check` exits 1 when a file differs from a fresh run.
+- The change set mirrors the plugin API's `TargetChangeSet` (1.29.0, B812, cherry-picked here as `a5a5913` to typecheck against): `test/types.test.ts` assigns each to the other. Fields are RFC 6901 pointers with the leading slash (`#/default_block`).
+- Applied B810's corrections: registries matched one to one by member overlap; mcdoc diffed both ways (`gated`, the newer export at both versions, across release lines; `refs`, each export at its own version, within one); commands normalised (the vendored parser-and-properties format and mcmeta's nested-argument format from `26.4-snapshot-8`, whose argument type renames are not mapped yet); one change per thing a user writes (dispatcher members by top-level fields, retyped fields followed down, named types only where no member, spread or alias reaches them, moved registries renamed before comparing, one-member unions folded).
+- On 26.3 to 26.4-snapshot-7: 124 changes (ids 18, formats 93, commands 5, block states 1, packs 7) and 945 additions in 0.9 s; the set is 3.5 KB gzipped. The removed members equal `REMOVED_IDS` (less the moved `rule_test`), `MOVED_REGISTRIES` and `STILL_REGISTERED_ELSEWHERE` exactly; `default_block` and `base_block` found; the speleothem, entity tag and GUI sprite renames are candidates, `interpolated` and `friends/button` ambiguous. `gated` and `refs` give the same changes. `tools/README.md` has a row; `tools/tsconfig.json` references `mc-26.4` (the test reads `removed-ids.ts`).
+
+**Checks**
+- `pnpm exec vitest run` in `tools/` (16 files, 247 tests; `diff-targets` 3 files, 19 tests), `pnpm lint` (Biome and check-deps), `pnpm typecheck`.
+
+**Decisions**
+- The plugin API's 21 `what` values have no registry, member, block or command-path additions, so those go to the additions list (counts `ids:<registry>`, `ids:(registries)`, `commands:(paths)` in the set); a registry gone with no successor is a `member-removed` per member; a literal whose executability or redirect changed is `argument-changed`; added and removed blocks are left to the `block` registry's members.
+- An ambiguous rename candidate's `to` is the first partner by code point and the change's own `to` lists every equally likely partner (the API's candidate has one `to`).
+- The speleothem candidate is marked `superset` (B810 item 16), not "shape differs" as the brief said: still never applied without a person.
+- `NoiseGeneratorSettingsRef` `/default_block` is kept beside the resource: it is where inline settings in dimensions and world presets live.
+
+**Next**
+- B813: write `packages/targets/mc-26.4/src/changes/generated.json` with `--out` and tie it with `--check`; decide whether the additions list is bundled; the curated file overrides `default_block` to `auto`, confirms the speleothem rename (reported with its hint) and can confirm the tag and sprite renames, which `removed-ids.ts` records as plain removals.
+- B826 or a brief before it: map the nested-argument command format's type renames once a vendored report has it.
+- The plan's section 8 should note B811's deviations (above); not this brief's file.
