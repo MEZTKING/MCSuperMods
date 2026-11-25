@@ -596,6 +596,11 @@ export function createLocalServerService(deps: LocalServerDeps): LocalServerServ
       const before = state;
       logState = serverStateAfter(logState, line);
       state = liveState();
+      // A failure the log names (a taken port, the EULA) is said at once: the real server
+      // takes a while to exit after it, and a status naming the failure without its words
+      // (the state from the log, the words only from the exit) was seen in between (B714).
+      const said = MESSAGES[state];
+      if (said !== undefined) message = said(current?.port ?? DEFAULT_SERVER_PORT);
       if (state !== before) push();
       else pushSoon();
     });

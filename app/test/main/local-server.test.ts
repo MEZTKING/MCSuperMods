@@ -77,7 +77,11 @@ function recordingFs(): InstallFileSystem {
 }
 
 function makeService(
-  options: { mode?: 'normal' | 'deaf' | 'port-taken'; java?: boolean; stopMs?: number } = {},
+  options: {
+    mode?: 'normal' | 'deaf' | 'port-taken' | 'port-taken-slow';
+    java?: boolean;
+    stopMs?: number;
+  } = {},
 ): LocalServerService {
   const created = createLocalServerService({
     fs: recordingFs(),
@@ -389,9 +393,25 @@ describe('local server: start and stop', () => {
     await service.prepare(request());
     await service.acceptEula(`ruby-${VERSION}`, accept);
     await service.start(request());
-    const ended = await waitFor((status) => status.state === 'port-taken');
+    // The state comes from the log line, a moment before the process ends: wait for the end.
+    const ended = await waitFor((status) => status.state === 'port-taken' && !service.isRunning());
     expect(ended.message).toMatch(/Another program is using port 25565/);
-    expect(service.isRunning()).toBe(false);
+  });
+
+  it('says a taken port in words while the server is still ending', async () => {
+    // A real server writes its crash report after the bind failure and exits a while later;
+    // the status names the failure with its words from the log line on (B714).
+    service = makeService({ mode: 'port-taken-slow' });
+    await service.prepare(request());
+    await service.acceptEula(`ruby-${VERSION}`, accept);
+    await service.start(request());
+    const taken = await waitFor((status) => status.state === 'port-taken');
+    expect(service.isRunning()).toBe(true);
+    expect(taken.message).toMatch(/Another program is using port 25565/);
+    await service.stop();
+    const ended = await waitFor(() => !service.isRunning());
+    expect(ended.state).toBe('port-taken');
+    expect(ended.message).toMatch(/Another program is using port 25565/);
   });
 
   it('restarts with the new jar', async () => {

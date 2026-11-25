@@ -1,7 +1,8 @@
 // A stand-in for `java -jar fabric-server-launch.jar nogui` (B763's tests): it prints a
 // server's start lines, as Minecraft's dedicated server logs them, and stops on `stop` read
 // from standard input. `STUB_SERVER_MODE`: `normal` (default), `deaf` (ignores `stop`, so it
-// must be killed) or `port-taken` (the bind failure, which still exits 0).
+// must be killed), `port-taken` (the bind failure, which still exits 0) or `port-taken-slow`
+// (the bind failure, then still running until `stop`, as a real server is for a while after it).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 
@@ -31,14 +32,17 @@ if (!/^eula=true$/m.test(eula)) {
   process.exit(0);
 }
 say('Server thread', `Starting Minecraft server on *:${port}`);
-if (mode === 'port-taken') {
+if (mode === 'port-taken' || mode === 'port-taken-slow') {
   console.log(`[${time()}] [Server thread/WARN]: **** FAILED TO BIND TO PORT!`);
   console.log(`[${time()}] [Server thread/ERROR]: This crash report has been saved to: crash-reports/x.txt`);
-  say('Server thread', 'Stopping server');
-  process.exit(0);
+  if (mode === 'port-taken') {
+    say('Server thread', 'Stopping server');
+    process.exit(0);
+  }
+} else {
+  say('Server thread', 'Done (0.123s)! For help, type "help"');
+  console.error(`[${time()}] [Server thread/WARN]: A line on standard error`);
 }
-say('Server thread', 'Done (0.123s)! For help, type "help"');
-console.error(`[${time()}] [Server thread/WARN]: A line on standard error`);
 
 const input = createInterface({ input: process.stdin });
 input.on('line', (line) => {
