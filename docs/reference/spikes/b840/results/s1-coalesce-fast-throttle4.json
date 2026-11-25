@@ -1,0 +1,190 @@
+[
+  {
+    "delay": 30,
+    "nodes": 501,
+    "mode": "whole",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 14.5,
+      "p95": 26.800000000745058,
+      "max": 31.799999998882413,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 31.300000000745058,
+      "p95": 69.5,
+      "max": 89.89999999850988,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.19999999925494194,
+      "max": 0.6999999992549419,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 5,
+      "p95": 12.099999999627471,
+      "max": 31.90000000037253,
+      "n": 81
+    },
+    "bytes": {
+      "median": 23603,
+      "p95": 23669,
+      "max": 23691,
+      "n": 81
+    }
+  },
+  {
+    "delay": 30,
+    "nodes": 501,
+    "mode": "diff",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 12,
+      "p95": 20.09999999962747,
+      "max": 21.300000000745058,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 27,
+      "p95": 38.90000000037253,
+      "max": 53.80000000074506,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.19999999925494194,
+      "max": 0.40000000037252903,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.5,
+      "max": 2.400000000372529,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 4.099999999627471,
+      "p95": 9.400000000372529,
+      "max": 14.199999999254942,
+      "n": 81
+    },
+    "bytes": {
+      "median": 318,
+      "p95": 393,
+      "max": 412,
+      "n": 81
+    }
+  },
+  {
+    "delay": 30,
+    "nodes": 2006,
+    "mode": "whole",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 22.700000001117587,
+      "p95": 46.5,
+      "max": 79.5,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 56.40000000037253,
+      "p95": 99.10000000149012,
+      "max": 136.90000000037253,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.2000000011175871,
+      "max": 0.6999999992549419,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 15.699999999254942,
+      "p95": 31.100000001490116,
+      "max": 39.09999999962747,
+      "n": 81
+    },
+    "bytes": {
+      "median": 95648,
+      "p95": 95720,
+      "max": 95732,
+      "n": 81
+    }
+  },
+  {
+    "delay": 30,
+    "nodes": 2006,
+    "mode": "diff",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 23.5,
+      "p95": 42.69999999925494,
+      "max": 49.30000000074506,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 67.90000000037253,
+      "p95": 108.79999999888241,
+      "max": 114.59999999962747,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.2000000011175871,
+      "max": 0.30000000074505806,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0.30000000074505806,
+      "p95": 1.599999999627471,
+      "max": 4.799999998882413,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 14.099999999627471,
+      "p95": 29.90000000037253,
+      "max": 49.70000000111759,
+      "n": 81
+    },
+    "bytes": {
+      "median": 330,
+      "p95": 403,
+      "max": 414,
+      "n": 81
+    }
+  }
+]

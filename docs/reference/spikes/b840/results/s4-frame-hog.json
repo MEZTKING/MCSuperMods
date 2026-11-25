@@ -1,0 +1,128 @@
+{
+  "before": [
+    {
+      "type": "Browser",
+      "pid": 23889,
+      "mb": 173
+    },
+    {
+      "type": "GPU",
+      "pid": 23919,
+      "mb": 145
+    },
+    {
+      "type": "Utility",
+      "pid": 23929,
+      "mb": 85
+    },
+    {
+      "type": "Tab",
+      "pid": 23934,
+      "mb": 113
+    }
+  ],
+  "frame": {
+    "hello": {
+      "type": "frame-ready",
+      "origin": "msm-plugin://p1"
+    },
+    "origin": {
+      "type": "origin",
+      "origin": "msm-plugin://p1",
+      "ls": "localStorage works",
+      "fetch": "TypeError: Failed to fetch"
+    },
+    "pageFrameRtt": {
+      "n": 500,
+      "mean": 0.061,
+      "median": 0.1,
+      "p95": 0.1,
+      "max": 2.1
+    },
+    "pageFrameWorkerRtt": {
+      "n": 500,
+      "mean": 0.108,
+      "median": 0.1,
+      "p95": 0.2,
+      "max": 2.7
+    }
+  },
+  "after": {
+    "metrics": [
+      {
+        "type": "Browser",
+        "pid": 23889,
+        "mb": 175
+      },
+      {
+        "type": "GPU",
+        "pid": 23919,
+        "mb": 145
+      },
+      {
+        "type": "Utility",
+        "pid": 23929,
+        "mb": 85
+      },
+      {
+        "type": "Tab",
+        "pid": 23934,
+        "mb": 120
+      },
+      {
+        "type": "Tab",
+        "pid": 23977,
+        "mb": 108
+      }
+    ],
+    "main": 23934,
+    "frames": [
+      {
+        "url": "msm-app://app/frame.html",
+        "pid": 23934
+      },
+      {
+        "url": "msm-plugin://p1/host.html",
+        "pid": 23977
+      }
+    ]
+  },
+  "hog": {
+    "answer": {
+      "timeout": true
+    },
+    "ms": 90001.59999999963,
+    "events": []
+  },
+  "pageAliveAfterHog": 2,
+  "afterHog": {
+    "mainCrashed": false,
+    "mainPid": 23934,
+    "metrics": [
+      {
+        "type": "Browser",
+        "pid": 23889
+      },
+      {
+        "type": "GPU",
+        "pid": 23919
+      },
+      {
+        "type": "Utility",
+        "pid": 23929
+      },
+      {
+        "type": "Tab",
+        "pid": 23934
+      }
+    ],
+    "frames": [
+      {
+        "url": "msm-app://app/frame.html",
+        "pid": 23934
+      },
+      "Error: Render frame was disposed before WebFrameMain could be accessed"
+    ]
+  },
+  "mainLog": ""
+}

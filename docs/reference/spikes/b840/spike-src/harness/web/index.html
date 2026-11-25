@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; worker-src 'self' blob:; connect-src 'self'; img-src 'self' data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'" />
+    <title>B840 harness</title>
+    <style>
+      body { font: 14px sans-serif; margin: 8px; background: #fff; }
+      .kit-section { border: 1px solid #ccc; padding: 4px; margin: 4px 0; }
+      .kit-row { display: flex; gap: 8px; align-items: center; }
+      .kit-field { display: flex; gap: 8px; }
+      #kit { height: 520px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <div id="kit"></div>
+    <canvas id="cv" width="512" height="512"></canvas>
+    <div id="frames"></div>
+    <script type="module" src="./bench.js"></script>
+  </body>
+</html>

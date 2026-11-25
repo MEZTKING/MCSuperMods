@@ -1,0 +1,107 @@
+{
+  "light": {
+    "probe": {
+      "origin": "null",
+      "fetch https": "refused: TypeError Failed to fetch",
+      "fetch msm-app": "refused: TypeError Failed to fetch",
+      "localStorage": "refused: SecurityError Failed to read the 'localStorage' property from 'Window': The document is sandboxed and lacks the 'allow-same-origin' fl",
+      "indexedDB.open": "refused: SecurityError Failed to execute 'open' on 'IDBFactory': access to the Indexed Database API is denied in this context.",
+      "caches.open": "refused: SecurityError Failed to read the 'caches' property from 'Window': Cache storage is disabled because the context is sandboxed and lacks",
+      "document.cookie": "refused: SecurityError Failed to set the 'cookie' property on 'Document': The document is sandboxed and lacks the 'allow-same-origin' flag.",
+      "top navigation": "refused: SecurityError Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target ",
+      "window.open": "OPEN: returned null (blocked)",
+      "pointer lock": "refused: SecurityError Failed to execute 'requestPointerLock' on 'Element': Blocked pointer lock on an element because the element's frame is s",
+      "blob worker": "refused: Error worker error undefined",
+      "inline script ran": "refused: Error inline script did not run",
+      "parent DOM": "refused: SecurityError Failed to read a named property 'document' from 'Window': Blocked a frame with origin \"null\" from accessing a cross-orig",
+      "navigate self to https": "see the harness log: ERR_BLOCKED_BY_CSP (the parent page has no frame-src for https)"
+    },
+    "loadMs": 49.899999998509884,
+    "frameDraw": {
+      "n": 90,
+      "mean": 2.014,
+      "median": 2,
+      "p95": 2,
+      "max": 3.1
+    },
+    "pageRaf": {
+      "n": 5367,
+      "mean": 16.669,
+      "median": 16.6,
+      "p95": 17.6,
+      "max": 46.1
+    },
+    "pageFramesOver50ms": 0
+  },
+  "busy20": {
+    "probe": {
+      "origin": "null",
+      "fetch https": "refused: TypeError Failed to fetch",
+      "fetch msm-app": "refused: TypeError Failed to fetch",
+      "localStorage": "refused: SecurityError Failed to read the 'localStorage' property from 'Window': The document is sandboxed and lacks the 'allow-same-origin' fl",
+      "indexedDB.open": "refused: SecurityError Failed to execute 'open' on 'IDBFactory': access to the Indexed Database API is denied in this context.",
+      "caches.open": "refused: SecurityError Failed to read the 'caches' property from 'Window': Cache storage is disabled because the context is sandboxed and lacks",
+      "document.cookie": "refused: SecurityError Failed to set the 'cookie' property on 'Document': The document is sandboxed and lacks the 'allow-same-origin' flag.",
+      "top navigation": "refused: SecurityError Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target ",
+      "window.open": "OPEN: returned null (blocked)",
+      "pointer lock": "refused: SecurityError Failed to execute 'requestPointerLock' on 'Element': Blocked pointer lock on an element because the element's frame is s",
+      "blob worker": "refused: Error worker error undefined",
+      "inline script ran": "refused: Error inline script did not run",
+      "parent DOM": "refused: SecurityError Failed to read a named property 'document' from 'Window': Blocked a frame with origin \"null\" from accessing a cross-orig",
+      "navigate self to https": "see the harness log: ERR_BLOCKED_BY_CSP (the parent page has no frame-src for https)"
+    },
+    "loadMs": 56.90000000037253,
+    "frameDraw": {
+      "n": 90,
+      "mean": 20.143,
+      "median": 20,
+      "p95": 21,
+      "max": 24.1
+    },
+    "pageRaf": {
+      "n": 5393,
+      "mean": 16.672,
+      "median": 16.6,
+      "p95": 17.7,
+      "max": 40.5
+    },
+    "pageFramesOver50ms": 0
+  },
+  "processes": {
+    "main": 18889,
+    "frames": [
+      {
+        "url": "msm-app://app/index.html",
+        "pid": 18889,
+        "origin": "msm-app://app"
+      },
+      {
+        "url": "about:srcdoc",
+        "pid": 19287,
+        "origin": "null"
+      }
+    ],
+    "metrics": [
+      {
+        "type": "Browser",
+        "pid": 18852
+      },
+      {
+        "type": "GPU",
+        "pid": 18878
+      },
+      {
+        "type": "Utility",
+        "pid": 18884
+      },
+      {
+        "type": "Tab",
+        "pid": 18889
+      },
+      {
+        "type": "Tab",
+        "pid": 19287
+      }
+    ]
+  }
+}

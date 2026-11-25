@@ -1,0 +1,58 @@
+{
+ "t1": {
+  "paletteClasses": 136,
+  "arbitraryColourClasses": 38,
+  "tokenClasses": 2449,
+  "hexLiterals": 303,
+  "colourFunctions": 113,
+  "files": 741,
+  "filesWithUnreachedColours": 96,
+  "canvasOrWebglFiles": 29,
+  "cssVarTokenUses": 9
+ },
+ "t1ByFolder": {
+  "tryit": 148,
+  "liveviews": 120,
+  "showcase": 99,
+  "components": 86,
+  "studios": 84,
+  "surprise": 40,
+  "terrain": 7,
+  "search": 3,
+  "ideas": 2,
+  "(root)": 1
+ },
+ "t1Examples": {
+  "palette": [
+   "App.tsx: bg-black/30",
+   "tryit/Chips.tsx: bg-black/70",
+   "tryit/MockScreen.tsx: bg-black/20",
+   "tryit/TryItView.tsx: text-white",
+   "tryit/blocks2/ChatBox.tsx: bg-black/60",
+   "tryit/blocks2/SignPlaque.tsx: bg-black/40"
+  ],
+  "arbitrary": [
+   "tryit/blocks2/ChatBox.tsx: text-[#ff8080]",
+   "tryit/blocks2/SignPlaque.tsx: border-[#6b4a2b]",
+   "tryit/games/GamesPanel.tsx: text-[#ff5555]",
+   "components/creator/CreatorCards.tsx: border-[#2a0f5c]",
+   "studios/games/TimerStudio.tsx: bg-[#3a5a2a]",
+   "studios/games/TeamStudio.tsx: bg-[#1e1e1e]"
+  ],
+  "hex": [
+   "tryit/hud/TryItHud.tsx: '#3f3f3f'",
+   "tryit/hud/hud-model.ts: '#d83030'",
+   "tryit/blocks2/SignPlaque.tsx: '#1d1d21'",
+   "tryit/render/mobs.ts: '#ffffff'",
+   "tryit/games/GamesPanel.tsx: '#ec00b8'",
+   "components/wizard/ParameterField.tsx: '#000000'"
+  ]
+ },
+ "t2": {
+  "jsxText": 1196,
+  "propStrings": 1651,
+  "objectStrings": 949,
+  "files": 375,
+  "total": 3796
+ }
+}

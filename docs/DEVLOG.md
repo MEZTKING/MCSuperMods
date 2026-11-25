@@ -11950,3 +11950,19 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 **Next**
 - Wiring (main session or B820): the plan's "B821's notes" (lazy part in `extras.after`, `effects` and the effect replay in `project-session.ts`, part 3 merged in the dialog).
 - B825 guide sentences (`modpacks.md`, `targets.md`): "If your mod is in a modpack, the report shows **Mods in this pack**. MCSuperMods asks Modrinth whether each mod has a build for the new Minecraft only when you press **Check my mods**. Mods with a build are updated in the same step as the move, so Undo puts them back. A mod without a build can wait in the pack or come out of it, or the pack can stay on the old Minecraft. The next time you press Play, MCSuperMods makes a new instance for the new Minecraft and leaves the old one as it is."
+
+## 2026-11-25 — executor — B840 App plugins spike: can the wall hold the new surface
+
+**What**
+- Answered S1 to S13 and T1 to T3 of `docs/PLAN-app-plugins.md` for proposed ADR 0137 in `docs/reference/spikes/b840/README.md`, with the throwaway harness, scripts and results beside it, and a line in the spikes index. No app or package source changed.
+- How: a throwaway Electron harness in the app's shape (the `msm-app` scheme, the app's CSP, sandbox, context isolation) driving plugin workers built from the real bootstrap or a copy that adds views, host calls and canvases, under Playwright and `xvfb-run -a`; the S2 and S7 probes inside the real app's window from `app/out/` and from `dist:dir` (both deleted afterwards); main-process scripts for the broker, hashing and signatures and safe mode's marks; Node scripts over the app's own `ProjectSession`, plugins and live view registry.
+- Headline numbers: typing through a kit drawn by the host is p95 5.5 to 10 ms at 500 nodes (20 to 23 ms with the main thread four times slower) when the host holds field values; values held in the worker lose 36 to 55 keys of 80 under load. `OffscreenCanvas` 2D works in the plugin worker in the built and packaged app, WebGL2 wherever the app's own WebGL does. An idle plugin worker costs 2.35 MB; one that fills its heap crashes the whole renderer. Node's `https` with a `lookup` hook can refuse private addresses before connecting; Electron's `net` cannot. Ed25519 verifies in Electron 45's main. A plugin can be added while a project is open in 0.2 to 0.4 s. Hot reload repaints 13 to 91 ms after a save.
+
+**Decisions**
+- Go on ADR 0137 D3 (the view kit), with host-held field values and path patches; the fallback frame is not needed.
+- Go on staying in the renderer (D7), on conditions: main handles `render-process-gone` (it does only in smoke runs today), an idle heartbeat, and the bootstrap also removes `navigator.storageBuckets`, `navigator.locks`, `Notification`, the device objects and `navigator.gpu`; reserve B864 stays, sized (a `msm-plugin://` frame: one process, 15 MB private, `frame-src msm-plugin:` in the CSP).
+- Found open under today's bootstrap: persistent storage through storage buckets, Web Locks shared with the app's origin, desktop notifications (granted: the app sets no permission handlers). Recorded for B842 and B843, not fixed here (spike only).
+
+**Next**
+- The main session folds the README's "Requested changes to ADR 0137" (13 items) and "to the plan" into the ADR and the briefs before B841; B867 can be dropped.
+- Outside this plan: the Try it script worker (`tryit/script-worker.ts`) strips the same globals and probably leaves storage buckets, locks and notifications open too (not measured).

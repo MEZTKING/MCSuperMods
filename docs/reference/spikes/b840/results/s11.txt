@@ -1,0 +1,61 @@
+== A: ok ok ok
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":0,"writeMs":0.11}
+[safe-mode] usable
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":0,"writeMs":0.57}
+[safe-mode] usable
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":0,"writeMs":0.5}
+[safe-mode] usable
+== B: crash-after-paint crash-after-paint ok
+[safe-mode] {"scenario":"crash-after-paint","safeMode":false,"failuresBefore":0,"writeMs":0.12}
+[safe-mode] failure recorded: renderer crashed
+[safe-mode] {"scenario":"crash-after-paint","safeMode":false,"failuresBefore":1,"writeMs":0.63}
+[safe-mode] failure recorded: renderer crashed
+[safe-mode] {"scenario":"ok","safeMode":true,"failuresBefore":2,"writeMs":0.49}
+[safe-mode] SAFE MODE: plugins off
+== C: close-early close-early ok
+[safe-mode] {"scenario":"close-early","safeMode":false,"failuresBefore":0,"writeMs":0.15}
+[safe-mode] clean end before usable: not counted
+[safe-mode] {"scenario":"close-early","safeMode":false,"failuresBefore":0,"writeMs":0.51}
+[safe-mode] clean end before usable: not counted
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":0,"writeMs":0.58}
+[safe-mode] usable
+== D: kill-early kill-early ok
+[safe-mode] {"scenario":"kill-early","safeMode":false,"failuresBefore":0,"writeMs":0.12}
+[safe-mode] {"scenario":"kill-early","safeMode":false,"failuresBefore":1,"writeMs":0.19}
+[safe-mode] {"scenario":"ok","safeMode":true,"failuresBefore":2,"writeMs":0.75}
+[safe-mode] SAFE MODE: plugins off
+== E: kill-early ok kill-early ok
+[safe-mode] {"scenario":"kill-early","safeMode":false,"failuresBefore":0,"writeMs":0.15}
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":1,"writeMs":0.67}
+[safe-mode] usable
+[safe-mode] {"scenario":"kill-early","safeMode":false,"failuresBefore":0,"writeMs":0.61}
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":1,"writeMs":0.78}
+[safe-mode] usable
+== F: hang hang ok
+[safe-mode] {"scenario":"hang","safeMode":false,"failuresBefore":0,"writeMs":0.11}
+[safe-mode] usable
+[safe-mode] {"scenario":"hang","safeMode":false,"failuresBefore":0,"writeMs":0.72}
+[safe-mode] usable
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":0,"writeMs":0.69}
+[safe-mode] usable
+== A2: ok ok
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":0,"writeMs":0.13}
+[safe-mode] usable
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":0,"writeMs":0.5}
+[safe-mode] usable
+== F2: hang hang ok
+[safe-mode] {"scenario":"hang","safeMode":false,"failuresBefore":0,"writeMs":0.12}
+[safe-mode] failure recorded: renderer did not answer
+[safe-mode] {"scenario":"hang","safeMode":false,"failuresBefore":1,"writeMs":0.48}
+[safe-mode] failure recorded: renderer did not answer
+[safe-mode] {"scenario":"ok","safeMode":true,"failuresBefore":2,"writeMs":0.61}
+[safe-mode] SAFE MODE: plugins off
+== B2: crash-after-paint ok crash-after-paint ok
+[safe-mode] {"scenario":"crash-after-paint","safeMode":false,"failuresBefore":0,"writeMs":0.15}
+[safe-mode] failure recorded: renderer crashed
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":1,"writeMs":1.07}
+[safe-mode] usable
+[safe-mode] {"scenario":"crash-after-paint","safeMode":false,"failuresBefore":0,"writeMs":0.61}
+[safe-mode] failure recorded: renderer crashed
+[safe-mode] {"scenario":"ok","safeMode":false,"failuresBefore":1,"writeMs":0.78}
+[safe-mode] usable

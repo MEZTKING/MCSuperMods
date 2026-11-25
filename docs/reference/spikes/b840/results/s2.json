@@ -1,0 +1,158 @@
+{
+  "args": [],
+  "probe": {
+    "result": {
+      "contexts": {
+        "2d": true,
+        "webgl2": false,
+        "webgl": false,
+        "bitmaprenderer": true,
+        "webgpu": "object"
+      },
+      "workerDraw": null,
+      "workerInterval": null,
+      "workerPostBitmap": null,
+      "hostReceiveLatency": null,
+      "hostApply": null,
+      "framesReceived": 0
+    },
+    "raf": {
+      "n": 1,
+      "mean": 4.5,
+      "median": 4.5,
+      "p95": 4.5,
+      "max": 4.5
+    },
+    "over50": 0
+  },
+  "2d-transfer": {
+    "result": {
+      "contexts": {
+        "2d": true,
+        "webgl2": false,
+        "webgl": false,
+        "bitmaprenderer": true,
+        "webgpu": "object"
+      },
+      "workerDraw": {
+        "n": 90,
+        "mean": 0.704,
+        "median": 0.6,
+        "p95": 1.5,
+        "max": 4
+      },
+      "workerInterval": {
+        "n": 89,
+        "mean": 32.828,
+        "median": 32.7,
+        "p95": 33.4,
+        "max": 35.4
+      },
+      "workerPostBitmap": null,
+      "hostReceiveLatency": null,
+      "hostApply": null,
+      "framesReceived": 0
+    },
+    "raf": {
+      "n": 177,
+      "mean": 16.668,
+      "median": 16.6,
+      "p95": 19.1,
+      "max": 23.1
+    },
+    "over50": 0
+  },
+  "2d-bitmap": {
+    "result": {
+      "contexts": {
+        "2d": true,
+        "webgl2": false,
+        "webgl": false,
+        "bitmaprenderer": true,
+        "webgpu": "object"
+      },
+      "workerDraw": {
+        "n": 90,
+        "mean": 1.203,
+        "median": 1,
+        "p95": 2,
+        "max": 4.2
+      },
+      "workerInterval": {
+        "n": 89,
+        "mean": 33.088,
+        "median": 32.9,
+        "p95": 34.7,
+        "max": 37.3
+      },
+      "workerPostBitmap": {
+        "n": 90,
+        "mean": 0.706,
+        "median": 0.6,
+        "p95": 1.6,
+        "max": 3.2
+      },
+      "hostReceiveLatency": {
+        "n": 90,
+        "mean": 0.142,
+        "median": 0,
+        "p95": 0.3,
+        "max": 3.3
+      },
+      "hostApply": {
+        "n": 90,
+        "mean": 0.021,
+        "median": 0,
+        "p95": 0.1,
+        "max": 0.1
+      },
+      "framesReceived": 90
+    },
+    "raf": {
+      "n": 179,
+      "mean": 16.663,
+      "median": 16.5,
+      "p95": 18.4,
+      "max": 20.9
+    },
+    "over50": 0
+  },
+  "webgl2-transfer": {
+    "result": {
+      "error": "TypeError: Cannot read properties of null (reading 'createShader')",
+      "workerDraw": null,
+      "workerInterval": null,
+      "workerPostBitmap": null,
+      "hostReceiveLatency": null,
+      "hostApply": null,
+      "framesReceived": 0
+    },
+    "raf": {
+      "n": 0,
+      "mean": 0,
+      "median": null,
+      "p95": null,
+      "max": null
+    },
+    "over50": 0
+  },
+  "webgl2-bitmap": {
+    "result": {
+      "error": "TypeError: Cannot read properties of null (reading 'createShader')",
+      "workerDraw": null,
+      "workerInterval": null,
+      "workerPostBitmap": null,
+      "hostReceiveLatency": null,
+      "hostApply": null,
+      "framesReceived": 0
+    },
+    "raf": {
+      "n": 2,
+      "mean": 14.35,
+      "median": 16.4,
+      "p95": 16.4,
+      "max": 16.4
+    },
+    "over50": 0
+  }
+}

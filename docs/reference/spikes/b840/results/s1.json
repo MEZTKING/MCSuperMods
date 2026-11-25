@@ -1,0 +1,848 @@
+[
+  {
+    "delay": 100,
+    "nodes": 53,
+    "mode": "whole",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 2.599999999627471,
+      "p95": 3.300000000745058,
+      "max": 5.700000001117587,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 12.099999999627471,
+      "p95": 20.09999999962747,
+      "max": 21.300000000745058,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.09999999962747097,
+      "max": 0.10000000149011612,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.40000000037252903,
+      "p95": 0.7999999988824129,
+      "max": 2.599999999627471,
+      "n": 81
+    },
+    "bytes": {
+      "median": 2560,
+      "p95": 2630,
+      "max": 2646,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 53,
+    "mode": "whole",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 12.199999999254942,
+      "p95": 19.300000000745058,
+      "max": 19.899999998509884,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 12.199999999254942,
+      "p95": 19.40000000037253,
+      "max": 20.199999999254942,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.09999999962747097,
+      "max": 0.10000000149011612,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.40000000037252903,
+      "p95": 0.8000000007450581,
+      "max": 3.699999999254942,
+      "n": 81
+    },
+    "bytes": {
+      "median": 2556,
+      "p95": 2630,
+      "max": 2646,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 53,
+    "mode": "whole-share",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 2.599999999627471,
+      "p95": 9.200000001117587,
+      "max": 15.599999999627471,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 12.700000001117587,
+      "p95": 19.200000001117587,
+      "max": 33.19999999925494,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.09999999962747097,
+      "max": 0.10000000149011612,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.40000000037252903,
+      "p95": 0.900000000372529,
+      "max": 1.700000001117587,
+      "n": 81
+    },
+    "bytes": {
+      "median": 2558,
+      "p95": 2632,
+      "max": 2644,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 53,
+    "mode": "whole-share",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 12.099999999627471,
+      "p95": 21.40000000037253,
+      "max": 22.300000000745058,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 12.199999999254942,
+      "p95": 21.40000000037253,
+      "max": 22.300000000745058,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.09999999962747097,
+      "max": 0.2000000011175871,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.5,
+      "p95": 1.599999999627471,
+      "max": 4,
+      "n": 81
+    },
+    "bytes": {
+      "median": 2558,
+      "p95": 2632,
+      "max": 2652,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 53,
+    "mode": "diff",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 2.599999999627471,
+      "p95": 8.899999998509884,
+      "max": 19.09999999962747,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 13.700000001117587,
+      "p95": 23.90000000037253,
+      "max": 39,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.10000000149011612,
+      "max": 0.2000000011175871,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0.19999999925494194,
+      "max": 1.599999999627471,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.30000000074505806,
+      "p95": 0.900000000372529,
+      "max": 3.300000000745058,
+      "n": 81
+    },
+    "bytes": {
+      "median": 314,
+      "p95": 376,
+      "max": 413,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 53,
+    "mode": "diff",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 12.600000001490116,
+      "p95": 20.09999999962747,
+      "max": 26.699999999254942,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 12.600000001490116,
+      "p95": 20.09999999962747,
+      "max": 26.800000000745058,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.10000000149011612,
+      "max": 0.19999999925494194,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0.19999999925494194,
+      "max": 4.900000000372529,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.40000000037252903,
+      "p95": 0.7999999988824129,
+      "max": 5.599999999627471,
+      "n": 81
+    },
+    "bytes": {
+      "median": 312,
+      "p95": 378,
+      "max": 394,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 501,
+    "mode": "whole",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 3.799999998882413,
+      "p95": 6.199999999254942,
+      "max": 8.5,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 14,
+      "p95": 22.09999999962747,
+      "max": 25.59999999962747,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.2000000011175871,
+      "max": 0.40000000037252903,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 1.299999998882413,
+      "p95": 2.200000001117587,
+      "max": 2.5,
+      "n": 81
+    },
+    "bytes": {
+      "median": 23607,
+      "p95": 23673,
+      "max": 23687,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 501,
+    "mode": "whole",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 13.199999999254942,
+      "p95": 22.40000000037253,
+      "max": 23.199999999254942,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 13.199999999254942,
+      "p95": 22.40000000037253,
+      "max": 23.199999999254942,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.19999999925494194,
+      "max": 0.30000000074505806,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 1.099999999627471,
+      "p95": 1.799999998882413,
+      "max": 1.900000000372529,
+      "n": 81
+    },
+    "bytes": {
+      "median": 23605,
+      "p95": 23680,
+      "max": 23691,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 501,
+    "mode": "whole-share",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 3.800000000745058,
+      "p95": 5.5,
+      "max": 10.799999998882413,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 14.700000001117587,
+      "p95": 22,
+      "max": 22.899999998509884,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.10000000149011612,
+      "max": 0.6999999992549419,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 1.299999998882413,
+      "p95": 2,
+      "max": 3.700000001117587,
+      "n": 81
+    },
+    "bytes": {
+      "median": 23597,
+      "p95": 23673,
+      "max": 23689,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 501,
+    "mode": "whole-share",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 14.700000001117587,
+      "p95": 23.899999998509884,
+      "max": 36,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 14.700000001117587,
+      "p95": 23.899999998509884,
+      "max": 36,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.19999999925494194,
+      "max": 2.299999998882413,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 1.400000000372529,
+      "p95": 1.900000000372529,
+      "max": 6.199999999254942,
+      "n": 81
+    },
+    "bytes": {
+      "median": 23601,
+      "p95": 23685,
+      "max": 23709,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 501,
+    "mode": "diff",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 3.099999999627471,
+      "p95": 10,
+      "max": 14.5,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 15,
+      "p95": 23.199999999254942,
+      "max": 32.40000000037253,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.2999999988824129,
+      "max": 0.40000000037252903,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0.19999999925494194,
+      "p95": 0.5,
+      "max": 2.400000000372529,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.8000000007450581,
+      "p95": 1.5,
+      "max": 2.400000000372529,
+      "n": 81
+    },
+    "bytes": {
+      "median": 325,
+      "p95": 397,
+      "max": 410,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 501,
+    "mode": "diff",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 12.700000001117587,
+      "p95": 21.200000001117587,
+      "max": 23.300000000745058,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 12.700000001117587,
+      "p95": 21.200000001117587,
+      "max": 23.300000000745058,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0,
+      "p95": 0.19999999925494194,
+      "max": 0.2000000011175871,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.6000000014901161,
+      "max": 3.599999999627471,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 0.900000000372529,
+      "p95": 1.5,
+      "max": 1.800000000745058,
+      "n": 81
+    },
+    "bytes": {
+      "median": 320,
+      "p95": 388,
+      "max": 396,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 2006,
+    "mode": "whole",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 5,
+      "p95": 6.800000000745058,
+      "max": 10.5,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 15.5,
+      "p95": 23.09999999962747,
+      "max": 26.09999999962747,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.30000000074505806,
+      "max": 0.8000000007450581,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 3.900000000372529,
+      "p95": 6.599999999627471,
+      "max": 10.599999999627471,
+      "n": 81
+    },
+    "bytes": {
+      "median": 95647,
+      "p95": 95724,
+      "max": 95732,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 2006,
+    "mode": "whole",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 17.700000001117587,
+      "p95": 25.299999998882413,
+      "max": 36.600000001490116,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 17.700000001117587,
+      "p95": 25.299999998882413,
+      "max": 36.600000001490116,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.30000000074505806,
+      "max": 1.800000000745058,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 4.099999999627471,
+      "p95": 6.5,
+      "max": 7.800000000745058,
+      "n": 81
+    },
+    "bytes": {
+      "median": 95652,
+      "p95": 95723,
+      "max": 95750,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 2006,
+    "mode": "whole-share",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 5.100000001490116,
+      "p95": 8,
+      "max": 10.800000000745058,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 15.900000000372529,
+      "p95": 23.699999999254942,
+      "max": 25.300000000745058,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.30000000074505806,
+      "max": 1.199999999254942,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 3.099999999627471,
+      "p95": 5.5,
+      "max": 7.199999999254942,
+      "n": 81
+    },
+    "bytes": {
+      "median": 95651,
+      "p95": 95720,
+      "max": 95734,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 2006,
+    "mode": "whole-share",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 16.09999999962747,
+      "p95": 23.40000000037253,
+      "max": 27.700000001117587,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 16.09999999962747,
+      "p95": 23.40000000037253,
+      "max": 27.700000001117587,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.2999999988824129,
+      "max": 1.799999998882413,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0,
+      "p95": 0,
+      "max": 0,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 3.099999999627471,
+      "p95": 5.099999999627471,
+      "max": 6.199999999254942,
+      "n": 81
+    },
+    "bytes": {
+      "median": 95647,
+      "p95": 95726,
+      "max": 95742,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 2006,
+    "mode": "diff",
+    "field": "host",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 4.699999999254942,
+      "p95": 7.400000000372529,
+      "max": 20.09999999962747,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 16.59999999962747,
+      "p95": 24.799999998882413,
+      "max": 29.800000000745058,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.2000000011175871,
+      "max": 0.599999999627471,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0.40000000037252903,
+      "p95": 2.100000001490116,
+      "max": 3.699999999254942,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 3.299999998882413,
+      "p95": 4.900000000372529,
+      "max": 6.5,
+      "n": 81
+    },
+    "bytes": {
+      "median": 328,
+      "p95": 403,
+      "max": 414,
+      "n": 81
+    }
+  },
+  {
+    "delay": 100,
+    "nodes": 2006,
+    "mode": "diff",
+    "field": "worker",
+    "keys": 81,
+    "fieldPaint": {
+      "median": 16.59999999962747,
+      "p95": 24.59999999962747,
+      "max": 28.800000000745058,
+      "n": 81
+    },
+    "echoPaint": {
+      "median": 16.59999999962747,
+      "p95": 24.59999999962747,
+      "max": 28.800000000745058,
+      "n": 81
+    },
+    "lostField": 0,
+    "lostEcho": 0,
+    "finalValueOk": true,
+    "finalValue": "thequickbrownfoxjumpsoverthelazydog0123456789THEQUICKBROWNFOXJUMPSOVERTHELAZYDOG!",
+    "workerRenderMs": {
+      "median": 0.09999999962747097,
+      "p95": 0.2000000011175871,
+      "max": 0.2999999988824129,
+      "n": 81
+    },
+    "workerDiffMs": {
+      "median": 0.40000000037252903,
+      "p95": 0.900000000372529,
+      "max": 2.099999999627471,
+      "n": 81
+    },
+    "hostApplyMs": {
+      "median": 3,
+      "p95": 4.5,
+      "max": 5.400000000372529,
+      "n": 81
+    },
+    "bytes": {
+      "median": 330,
+      "p95": 406,
+      "max": 413,
+      "n": 81
+    }
+  }
+]

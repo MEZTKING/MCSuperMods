@@ -1,0 +1,35 @@
+{
+  "pid": 20973,
+  "rows": [
+    {
+      "workers": 0,
+      "rssMb": 108.9,
+      "pssMb": 55.6,
+      "privateMb": 29.7
+    },
+    {
+      "workers": 10,
+      "rssMb": 134.2,
+      "pssMb": 80.2,
+      "privateMb": 53.8
+    },
+    {
+      "workers": 20,
+      "rssMb": 157.6,
+      "pssMb": 103.7,
+      "privateMb": 77.3
+    },
+    {
+      "workers": 40,
+      "rssMb": 204.1,
+      "pssMb": 150.1,
+      "privateMb": 123.7
+    },
+    {
+      "workers": "after terminate",
+      "rssMb": 141.5,
+      "pssMb": 87.2,
+      "privateMb": 60.7
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "versions": {
+    "electron": "45.2.2",
+    "node": "24.22.2",
+    "openssl": "0.0.0"
+  },
+  "sha256InMemoryMs": [
+    26.1,
+    53.6,
+    41.2,
+    26.4,
+    32.2
+  ],
+  "sha256StreamMs": [
+    133.9,
+    76.2,
+    68.6
+  ],
+  "keyType": "ed25519",
+  "verifyOpenSslSignature": true,
+  "verifyMs": 0.281,
+  "verifyTampered": false,
+  "signAndVerifyInProcess": true,
+  "publicKeyRaw": "Uz2ye7LzQX4R1RCFdx0aBnVnMIe4qtwQ4WVzpHLLdkw"
+}

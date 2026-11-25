@@ -1,0 +1,528 @@
+{
+ "counts": {
+  "viewKinds": 78,
+  "readableBack": 64
+ },
+ "readable": [
+  "minecraft:loot_table",
+  "minecraft:enchantment_provider",
+  "minecraft:trial_spawner",
+  "minecraft:predicate",
+  "minecraft:item_modifier",
+  "minecraft:enchantment",
+  "minecraft:advancement",
+  "minecraft:dialog",
+  "minecraft:damage_type",
+  "minecraft:chat_type",
+  "minecraft:tag/block",
+  "minecraft:tag/item",
+  "minecraft:tag/entity_type",
+  "minecraft:tag/fluid",
+  "minecraft:tag/game_event",
+  "minecraft:tag/function",
+  "minecraft:tag/damage_type",
+  "minecraft:tag/enchantment",
+  "minecraft:tag/painting_variant",
+  "minecraft:tag/banner_pattern",
+  "minecraft:tag/dialog",
+  "minecraft:tag/instrument",
+  "minecraft:tag/point_of_interest_type",
+  "minecraft:tag/potion",
+  "minecraft:tag/timeline",
+  "minecraft:tag/worldgen/biome",
+  "minecraft:tag/worldgen/feature",
+  "minecraft:tag/worldgen/flat_level_generator_preset",
+  "minecraft:tag/worldgen/structure",
+  "minecraft:tag/worldgen/world_preset",
+  "minecraft:function",
+  "minecraft:block_transformer",
+  "minecraft:trade_set",
+  "minecraft:villager_trade",
+  "minecraft:tag/villager_trade",
+  "minecraft:font",
+  "minecraft:particle",
+  "minecraft:waypoint_style",
+  "minecraft:timeline",
+  "minecraft:world_clock",
+  "minecraft:wolf_variant",
+  "minecraft:cat_variant",
+  "minecraft:pig_variant",
+  "minecraft:cow_variant",
+  "minecraft:chicken_variant",
+  "minecraft:frog_variant",
+  "minecraft:zombie_nautilus_variant",
+  "minecraft:cat_sound_variant",
+  "minecraft:pig_sound_variant",
+  "minecraft:cow_sound_variant",
+  "minecraft:chicken_sound_variant",
+  "minecraft:sulfur_cube_archetype",
+  "minecraft:painting_variant",
+  "minecraft:banner_pattern",
+  "minecraft:trim_pattern",
+  "minecraft:trim_material",
+  "minecraft:decorated_pot_pattern",
+  "minecraft:shader",
+  "minecraft:post_effect",
+  "minecraft:jukebox_song",
+  "minecraft:instrument",
+  "minecraft:worldgen/template_pool",
+  "minecraft:worldgen/structure",
+  "minecraft:worldgen/processor_list"
+ ],
+ "rows": [
+  {
+   "kind": "minecraft:loot_table",
+   "folder": "data/<ns>/loot_table",
+   "readBack": "equal"
+  },
+  {
+   "kind": "msm:loot_addition",
+   "result": "path does not name the id",
+   "path": "msm/spike/loot_addition/probe/thing.json"
+  },
+  {
+   "kind": "minecraft:enchantment_provider",
+   "folder": "data/<ns>/enchantment_provider",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:trial_spawner",
+   "folder": "data/<ns>/trial_spawner",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:predicate",
+   "folder": "data/<ns>/predicate",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:item_modifier",
+   "folder": "data/<ns>/item_modifier",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:enchantment",
+   "folder": "data/<ns>/enchantment",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:advancement",
+   "folder": "data/<ns>/advancement",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:dialog",
+   "folder": "data/<ns>/dialog",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:damage_type",
+   "folder": "data/<ns>/damage_type",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:chat_type",
+   "folder": "data/<ns>/chat_type",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/block",
+   "folder": "data/<ns>/tags/block",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/item",
+   "folder": "data/<ns>/tags/item",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/entity_type",
+   "folder": "data/<ns>/tags/entity_type",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/fluid",
+   "folder": "data/<ns>/tags/fluid",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/game_event",
+   "folder": "data/<ns>/tags/game_event",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/function",
+   "folder": "data/<ns>/tags/function",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/damage_type",
+   "folder": "data/<ns>/tags/damage_type",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/enchantment",
+   "folder": "data/<ns>/tags/enchantment",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/painting_variant",
+   "folder": "data/<ns>/tags/painting_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/banner_pattern",
+   "folder": "data/<ns>/tags/banner_pattern",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/dialog",
+   "folder": "data/<ns>/tags/dialog",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/instrument",
+   "folder": "data/<ns>/tags/instrument",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/point_of_interest_type",
+   "folder": "data/<ns>/tags/point_of_interest_type",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/potion",
+   "folder": "data/<ns>/tags/potion",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/timeline",
+   "folder": "data/<ns>/tags/timeline",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/worldgen/biome",
+   "folder": "data/<ns>/tags/worldgen/biome",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/worldgen/feature",
+   "folder": "data/<ns>/tags/worldgen/feature",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/worldgen/flat_level_generator_preset",
+   "folder": "data/<ns>/tags/worldgen/flat_level_generator_preset",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/worldgen/structure",
+   "folder": "data/<ns>/tags/worldgen/structure",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/worldgen/world_preset",
+   "folder": "data/<ns>/tags/worldgen/world_preset",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:function",
+   "folder": "data/<ns>/function",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:block_transformer",
+   "folder": "data/<ns>/block_transformer",
+   "readBack": "equal"
+  },
+  {
+   "kind": "msm:vanilla_block_rules",
+   "result": "path does not name the id",
+   "path": "msm/spike/vanilla_block_rules/probe/thing.json"
+  },
+  {
+   "kind": "msm:entity",
+   "result": "path does not name the id",
+   "path": "msm/spike/entity/probe/thing.json"
+  },
+  {
+   "kind": "msm:vehicle",
+   "result": "path does not name the id",
+   "path": "msm/spike/vehicle/probe/thing.json"
+  },
+  {
+   "kind": "msm:particle",
+   "result": "2 files",
+   "paths": [
+    "msm/spike/particle/probe/thing.json",
+    "assets/spike/particles/probe/thing.json"
+   ]
+  },
+  {
+   "kind": "msm:fluid",
+   "result": "6 files",
+   "paths": [
+    "msm/spike/fluid/probe/thing.json",
+    "assets/spike/blockstates/probe/thing.json",
+    "assets/spike/models/block/probe/thing.json",
+    "assets/spike/items/probe/thing_bucket.json"
+   ]
+  },
+  {
+   "kind": "minecraft:trade_set",
+   "folder": "data/<ns>/trade_set",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:villager_trade",
+   "folder": "data/<ns>/villager_trade",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:tag/villager_trade",
+   "folder": "data/<ns>/tags/villager_trade",
+   "readBack": "equal"
+  },
+  {
+   "kind": "msm:block",
+   "result": "4 files",
+   "paths": [
+    "msm/spike/block/probe/thing.json",
+    "assets/spike/blockstates/probe/thing.json",
+    "assets/spike/items/probe/thing.json",
+    "data/spike/loot_table/blocks/probe/thing.json"
+   ]
+  },
+  {
+   "kind": "msm:item",
+   "result": "2 files",
+   "paths": [
+    "msm/spike/item/probe/thing.json",
+    "assets/spike/items/probe/thing.json"
+   ]
+  },
+  {
+   "kind": "minecraft:sounds",
+   "result": "lower threw: ResourcePackLoweringError: Element spike:probe/thing: a sounds file must have th"
+  },
+  {
+   "kind": "minecraft:font",
+   "folder": "assets/<ns>/font",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:particle",
+   "folder": "assets/<ns>/particles",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:waypoint_style",
+   "folder": "assets/<ns>/waypoint_style",
+   "readBack": "equal"
+  },
+  {
+   "kind": "msm:potion",
+   "result": "6 files",
+   "paths": [
+    "msm/spike/potion/probe/thing.json",
+    "data/spike/recipe/brewing/potion_probe/thing.json",
+    "data/spike/recipe/brewing/splash_potion_probe/thing.json",
+    "data/spike/recipe/brewing/lingering_potion_probe/thing.json"
+   ]
+  },
+  {
+   "kind": "msm:creative_tab",
+   "result": "2 files",
+   "paths": [
+    "msm/spike/creative_tab/probe/thing.json",
+    "assets/spike/lang/en_us.json"
+   ]
+  },
+  {
+   "kind": "msm:effect",
+   "result": "path does not name the id",
+   "path": "msm/spike/effect/probe/thing.json"
+  },
+  {
+   "kind": "minecraft:timeline",
+   "folder": "data/<ns>/timeline",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:world_clock",
+   "folder": "data/<ns>/world_clock",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:wolf_variant",
+   "folder": "data/<ns>/wolf_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:cat_variant",
+   "folder": "data/<ns>/cat_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:pig_variant",
+   "folder": "data/<ns>/pig_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:cow_variant",
+   "folder": "data/<ns>/cow_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:chicken_variant",
+   "folder": "data/<ns>/chicken_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:frog_variant",
+   "folder": "data/<ns>/frog_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:zombie_nautilus_variant",
+   "folder": "data/<ns>/zombie_nautilus_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:cat_sound_variant",
+   "folder": "data/<ns>/cat_sound_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:pig_sound_variant",
+   "folder": "data/<ns>/pig_sound_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:cow_sound_variant",
+   "folder": "data/<ns>/cow_sound_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:chicken_sound_variant",
+   "folder": "data/<ns>/chicken_sound_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:sulfur_cube_archetype",
+   "folder": "data/<ns>/sulfur_cube_archetype",
+   "readBack": "equal"
+  },
+  {
+   "kind": "msm:villager_type",
+   "result": "path does not name the id",
+   "path": "msm/spike/villager_type/probe/thing.json"
+  },
+  {
+   "kind": "msm:villager_profession",
+   "result": "12 files",
+   "paths": [
+    "msm/spike/villager_profession/probe/thing.json",
+    "data/spike/trade_set/probe/thing/level_1.json",
+    "data/spike/tags/villager_trade/probe/thing/level_1.json",
+    "data/spike/trade_set/probe/thing/level_2.json"
+   ]
+  },
+  {
+   "kind": "minecraft:painting_variant",
+   "folder": "data/<ns>/painting_variant",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:banner_pattern",
+   "folder": "data/<ns>/banner_pattern",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:trim_pattern",
+   "folder": "data/<ns>/trim_pattern",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:trim_material",
+   "folder": "data/<ns>/trim_material",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:decorated_pot_pattern",
+   "folder": "data/<ns>/decorated_pot_pattern",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:shader",
+   "folder": "assets/<ns>/shaders",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:post_effect",
+   "folder": "assets/<ns>/post_effect",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:jukebox_song",
+   "folder": "data/<ns>/jukebox_song",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:instrument",
+   "folder": "data/<ns>/instrument",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:worldgen/template_pool",
+   "folder": "data/<ns>/worldgen/template_pool",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:worldgen/structure",
+   "folder": "data/<ns>/worldgen/structure",
+   "readBack": "equal"
+  },
+  {
+   "kind": "minecraft:worldgen/processor_list",
+   "folder": "data/<ns>/worldgen/processor_list",
+   "readBack": "equal"
+  }
+ ],
+ "plugins": {
+  "sample:greeting": [
+   {
+    "path": "data/demo/function/greet_thing.mcfunction",
+    "shownBy": "minecraft:function"
+   },
+   {
+    "path": "data/minecraft/tags/function/load.json",
+    "shownBy": "minecraft:tag/function"
+   }
+  ],
+  "invented:treasure (loot + function)": [
+   {
+    "path": "data/demo/loot_table/thing.json",
+    "shownBy": "minecraft:loot_table"
+   },
+   {
+    "path": "data/demo/function/give_thing.mcfunction",
+    "shownBy": "minecraft:function"
+   }
+  ],
+  "invented:gadget (model + texture)": [
+   {
+    "path": "assets/demo/models/item/thing.json",
+    "shownBy": null
+   },
+   {
+    "path": "assets/demo/items/thing.json",
+    "shownBy": null
+   },
+   {
+    "path": "assets/demo/textures/item/thing.png",
+    "shownBy": null
+   }
+  ]
+ }
+}

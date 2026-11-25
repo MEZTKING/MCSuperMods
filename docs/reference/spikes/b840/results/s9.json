@@ -1,0 +1,40 @@
+{
+ "folder": "examples/all-kinds",
+ "elements": 194,
+ "sessionConstructMs": {
+  "builtInsOnly": [
+   2.68,
+   1.66,
+   1.56,
+   1.24,
+   1.37
+  ],
+  "withSamplePlugin": [
+   2.01,
+   1.49,
+   1.33,
+   1.59,
+   1.24
+  ]
+ },
+ "registerPluginMs": [
+  0.04,
+  0.01,
+  0.01,
+  0.01,
+  0.01
+ ],
+ "builtInKinds": 126,
+ "builtInsOnly": {
+  "openMs": 16.39,
+  "firstSchemaContextMs": 139.33,
+  "validateMs": 261.32,
+  "problems": 6
+ },
+ "withPlugin": {
+  "openMs": 19.17,
+  "firstSchemaContextMs": 76.31,
+  "validateMs": 217.28,
+  "problems": 6
+ }
+}

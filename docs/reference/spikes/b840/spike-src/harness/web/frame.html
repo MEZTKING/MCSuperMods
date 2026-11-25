@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; worker-src 'self' blob:; connect-src 'self'; img-src 'self' data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; frame-src msm-plugin:" />
+    <title>B840 harness, frame-src variant</title>
+  </head>
+  <body>
+    <div id="kit"></div><canvas id="cv" width="512" height="512"></canvas><div id="frames"></div>
+    <script type="module" src="./bench.js"></script>
+  </body>
+</html>

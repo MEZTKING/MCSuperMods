@@ -1,0 +1,23 @@
+{
+  "kind": "arraybuffer",
+  "cap": 3072,
+  "flags": [],
+  "pid": 22340,
+  "result": {
+    "answer": {
+      "type": "response",
+      "id": 1,
+      "ok": true,
+      "value": {
+        "allocatedMb": 3072,
+        "stopped": "cap"
+      }
+    },
+    "ms": 1851.4000000003725,
+    "events": [],
+    "pageAlive": true
+  },
+  "peakRssMb": 3081,
+  "pageAliveAfter": 2,
+  "mainLog": ""
+}

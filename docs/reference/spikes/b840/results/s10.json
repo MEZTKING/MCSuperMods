@@ -1,0 +1,191 @@
+{
+  "saves": [
+    {
+      "writtenAt": 1795642623625
+    },
+    {
+      "writtenAt": 1795642625129
+    },
+    {
+      "writtenAt": 1795642626632
+    },
+    {
+      "writtenAt": 1795642628134
+    },
+    {
+      "writtenAt": 1795642629637
+    },
+    {
+      "writtenAt": 1795642631140
+    },
+    {
+      "writtenAt": 1795642632643
+    },
+    {
+      "writtenAt": 1795642634145
+    },
+    {
+      "writtenAt": 1795642635651
+    },
+    {
+      "writtenAt": 1795642637171
+    }
+  ],
+  "marks": [
+    {
+      "name": "kit.js",
+      "seenAt": 1795642623625,
+      "readAt": 1795642623626,
+      "recvAt": 1795642623626.5,
+      "restartAndPaintMs": 34.79999999888241,
+      "paintedAt": 1795642623661.3,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642625130,
+      "readAt": 1795642625130,
+      "recvAt": 1795642625130.6,
+      "restartAndPaintMs": 11.699999999254942,
+      "paintedAt": 1795642625142.3,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642626632,
+      "readAt": 1795642626633,
+      "recvAt": 1795642626633.4001,
+      "restartAndPaintMs": 25,
+      "paintedAt": 1795642626658.4001,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642628135,
+      "readAt": 1795642628135,
+      "recvAt": 1795642628138.2002,
+      "restartAndPaintMs": 20,
+      "paintedAt": 1795642628158.2002,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642629638,
+      "readAt": 1795642629638,
+      "recvAt": 1795642629647.4001,
+      "restartAndPaintMs": 27.299999998882413,
+      "paintedAt": 1795642629674.7002,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642631141,
+      "readAt": 1795642631141,
+      "recvAt": 1795642631141.8,
+      "restartAndPaintMs": 33.30000000074506,
+      "paintedAt": 1795642631175.1,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642632644,
+      "readAt": 1795642632644,
+      "recvAt": 1795642632645.4001,
+      "restartAndPaintMs": 28.799999998882413,
+      "paintedAt": 1795642632674.2002,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642634146,
+      "readAt": 1795642634147,
+      "recvAt": 1795642634147.4001,
+      "restartAndPaintMs": 28.59999999962747,
+      "paintedAt": 1795642634176,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642635655,
+      "readAt": 1795642635656,
+      "recvAt": 1795642635657.4001,
+      "restartAndPaintMs": 36.69999999925494,
+      "paintedAt": 1795642635694.1,
+      "nodes": 501
+    },
+    {
+      "name": "kit.js",
+      "seenAt": 1795642637197,
+      "readAt": 1795642637197,
+      "recvAt": 1795642637224.6,
+      "restartAndPaintMs": 37.59999999962747,
+      "paintedAt": 1795642637262.2002,
+      "nodes": 501
+    }
+  ],
+  "fieldAfter": "Ann",
+  "echoAfter": "Hello 9, Ann",
+  "perSave": [
+    {
+      "watchMs": 0,
+      "toRendererMs": 2,
+      "restartAndPaintMs": 34.8,
+      "saveToPaintMs": 36
+    },
+    {
+      "watchMs": 1,
+      "toRendererMs": 2,
+      "restartAndPaintMs": 11.7,
+      "saveToPaintMs": 13
+    },
+    {
+      "watchMs": 0,
+      "toRendererMs": 1,
+      "restartAndPaintMs": 25,
+      "saveToPaintMs": 26
+    },
+    {
+      "watchMs": 1,
+      "toRendererMs": 4,
+      "restartAndPaintMs": 20,
+      "saveToPaintMs": 24
+    },
+    {
+      "watchMs": 1,
+      "toRendererMs": 10,
+      "restartAndPaintMs": 27.3,
+      "saveToPaintMs": 38
+    },
+    {
+      "watchMs": 1,
+      "toRendererMs": 2,
+      "restartAndPaintMs": 33.3,
+      "saveToPaintMs": 35
+    },
+    {
+      "watchMs": 1,
+      "toRendererMs": 2,
+      "restartAndPaintMs": 28.8,
+      "saveToPaintMs": 31
+    },
+    {
+      "watchMs": 1,
+      "toRendererMs": 2,
+      "restartAndPaintMs": 28.6,
+      "saveToPaintMs": 31
+    },
+    {
+      "watchMs": 4,
+      "toRendererMs": 6,
+      "restartAndPaintMs": 36.7,
+      "saveToPaintMs": 43
+    },
+    {
+      "watchMs": 26,
+      "toRendererMs": 54,
+      "restartAndPaintMs": 37.6,
+      "saveToPaintMs": 91
+    }
+  ],
+  "eventsPerSave": 1
+}

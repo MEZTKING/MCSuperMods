@@ -1,0 +1,32 @@
+{
+ "glue (app parts shared)": {
+  "inputs": 1,
+  "largestInputs": [
+   "../docs/reference/spikes/b840/spike-src/kit-renderer.tsx 8 KB"
+  ],
+  "rawKB": 4.7,
+  "gzipKB": 1.8
+ },
+ "with components/ui bundled, Studio parts shared": {
+  "inputs": 3,
+  "largestInputs": [
+   "../docs/reference/spikes/b840/spike-src/kit-renderer.tsx 8 KB",
+   "components/ui/MoreOptions.tsx 6 KB",
+   "components/ui/Button.tsx 1 KB"
+  ],
+  "rawKB": 6.7,
+  "gzipKB": 2.6
+ },
+ "with every app part it imports bundled": {
+  "inputs": 876,
+  "largestInputs": [
+   "../packages/schemas/mcdoc/msm/symbols.json 855 KB",
+   "../node_modules/.pnpm/pako@2.2.0/node_modules/pako/dist/pako.esm.mjs 224 KB",
+   "../packages/plugins/scripting/api/script-api-v1.json 116 KB",
+   "../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/schemas.js 105 KB",
+   "../node_modules/.pnpm/zod@4.6.7/node_modules/zod/v4/core/compile.js 90 KB"
+  ],
+  "rawKB": 2837,
+  "gzipKB": 815.8
+ }
+}

@@ -1,0 +1,51 @@
+{
+  "node": {
+    "ok": {
+      "status": 200,
+      "bytes": 37,
+      "body": "{\"ok\":true,\"cookie\":null,\"auth\":null}",
+      "ms": 20.7
+    },
+    "notApproved": {
+      "refused": "host other.test not approved"
+    },
+    "addressLiteral": {
+      "refused": "address literal"
+    },
+    "decimalLiteral": {
+      "refused": "address literal"
+    },
+    "http": {
+      "refused": "not https"
+    },
+    "resolvesPrivate": {
+      "refused": "refused: rebind.test resolves to 127.0.0.1",
+      "serverSawConnection": false
+    },
+    "redirectOther": {
+      "status": 302,
+      "redirectTo": "https://other.test:33075/ok",
+      "followed": false,
+      "note": "other host: refused"
+    },
+    "redirectSame": {
+      "status": 302,
+      "redirectTo": "https://plugin.test:33075/ok",
+      "followed": false,
+      "note": "same approved host: the broker may follow by calling itself again"
+    },
+    "big": {
+      "refused": "over 10485760 bytes",
+      "bytesRead": 10502137,
+      "ms": 64.1
+    },
+    "bigRssGrowthMb": 22.8,
+    "hang": {
+      "refused": "no answer in 1000 ms"
+    },
+    "proxyEnv": {
+      "HTTPS_PROXY": "set",
+      "note": "node:https ignores HTTPS_PROXY and the system proxy"
+    }
+  }
+}

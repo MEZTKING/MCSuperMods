@@ -1,0 +1,104 @@
+{
+  "before": [
+    {
+      "type": "Browser",
+      "pid": 25275,
+      "mb": 169
+    },
+    {
+      "type": "GPU",
+      "pid": 25314,
+      "mb": 144
+    },
+    {
+      "type": "Utility",
+      "pid": 25317,
+      "mb": 84
+    },
+    {
+      "type": "Tab",
+      "pid": 25322,
+      "mb": 114
+    }
+  ],
+  "frame": {
+    "hello": {
+      "type": "frame-ready",
+      "origin": "msm-plugin://p1"
+    },
+    "origin": {
+      "type": "origin",
+      "origin": "msm-plugin://p1",
+      "ls": "localStorage works",
+      "fetch": "TypeError: Failed to fetch"
+    },
+    "pageFrameRtt": {
+      "n": 500,
+      "mean": 0.096,
+      "median": 0.1,
+      "p95": 0.2,
+      "max": 2
+    },
+    "pageFrameWorkerRtt": {
+      "n": 500,
+      "mean": 0.146,
+      "median": 0.1,
+      "p95": 0.2,
+      "max": 7.7
+    }
+  },
+  "after": {
+    "metrics": [
+      {
+        "type": "Browser",
+        "pid": 25275,
+        "mb": 171
+      },
+      {
+        "type": "GPU",
+        "pid": 25314,
+        "mb": 145
+      },
+      {
+        "type": "Utility",
+        "pid": 25317,
+        "mb": 84
+      },
+      {
+        "type": "Tab",
+        "pid": 25322,
+        "mb": 121
+      },
+      {
+        "type": "Tab",
+        "pid": 25385,
+        "mb": 109
+      }
+    ],
+    "main": 25322,
+    "frames": [
+      {
+        "url": "msm-app://app/frame.html",
+        "pid": 25322
+      },
+      {
+        "url": "msm-plugin://p1/host.html",
+        "pid": 25385
+      }
+    ]
+  },
+  "frameProcessMemory": [
+    {
+      "url": "msm-plugin://p1/host.html",
+      "rssMb": 108.6,
+      "pssMb": 41.8,
+      "privateMb": 15.1
+    }
+  ],
+  "mainProcessMemory": {
+    "rssMb": 121.2,
+    "pssMb": 50.6,
+    "privateMb": 20.9
+  },
+  "mainLog": ""
+}

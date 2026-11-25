@@ -1,0 +1,105 @@
+{
+  "node": {
+    "ok": {
+      "status": 200,
+      "bytes": 37,
+      "body": "{\"ok\":true,\"cookie\":null,\"auth\":null}",
+      "ms": 289.1
+    },
+    "notApproved": {
+      "refused": "host other.test not approved"
+    },
+    "addressLiteral": {
+      "refused": "address literal"
+    },
+    "decimalLiteral": {
+      "refused": "address literal"
+    },
+    "http": {
+      "refused": "not https"
+    },
+    "resolvesPrivate": {
+      "refused": "refused: rebind.test resolves to 127.0.0.1",
+      "serverSawConnection": false
+    },
+    "redirectOther": {
+      "status": 302,
+      "redirectTo": "https://other.test:34749/ok",
+      "followed": false,
+      "note": "other host: refused"
+    },
+    "redirectSame": {
+      "status": 302,
+      "redirectTo": "https://plugin.test:34749/ok",
+      "followed": false,
+      "note": "same approved host: the broker may follow by calling itself again"
+    },
+    "big": {
+      "refused": "over 10485760 bytes",
+      "bytesRead": 10502137,
+      "ms": 107.6
+    },
+    "bigRssGrowthMb": 15.8,
+    "hang": {
+      "refused": "no answer in 1000 ms"
+    },
+    "proxyEnv": {
+      "HTTPS_PROXY": "set",
+      "note": "node:https ignores HTTPS_PROXY and the system proxy"
+    }
+  },
+  "electron": {
+    "hasResolveHost": "function",
+    "localhostOk": {
+      "status": 200,
+      "bytes": 37
+    },
+    "serverSawConnectionBeforeAnyAddressCheck": true,
+    "redirectManual": {
+      "redirect": 302,
+      "to": "https://other.test:34749/ok",
+      "aborted": true
+    },
+    "bigCapped": {
+      "capped": 10616832,
+      "ms": 25.4
+    },
+    "resolveHostLocalhost": {
+      "endpoints": [
+        {
+          "address": "::1",
+          "family": "ipv6"
+        },
+        {
+          "address": "127.0.0.1",
+          "family": "ipv4"
+        }
+      ]
+    },
+    "webRequestStages": [
+      {
+        "stage": "before",
+        "url": "https://localhost:34749/ok"
+      },
+      {
+        "stage": "responseStarted",
+        "url": "https://localhost:34749/ok",
+        "ip": "127.0.0.1"
+      },
+      {
+        "stage": "before",
+        "url": "https://localhost:34749/redirect-other"
+      },
+      {
+        "stage": "before",
+        "url": "https://localhost:34749/big"
+      },
+      {
+        "stage": "responseStarted",
+        "url": "https://localhost:34749/big",
+        "ip": "127.0.0.1"
+      }
+    ],
+    "note": "webRequest shows the address only at onResponseStarted, after the request was sent; resolveHost then request is a second lookup (rebinding window)"
+  }
+}
