@@ -147,3 +147,5 @@ Accepted with findings (2026-11-23, close B562; briefs B547–B561 with B551b an
 - the Area Studio's own box from above and the side rather than over a Try it ground;
 - no sim-parity scenarios for the games pieces (the real-server parity tests instead);
 - the AI helper's prompt budget at 103,000 characters (ADR 0125 D7).
+
+Amendment (B728, ADR 0132 D10, 2026-11-25): limit M14 now reads: Try it is 48 x 32 x 48, with you and up to seven practice players. Practice players stand in as players: selectors (`@p`, `@r`, `@e` skip the dead, `@a` does not), scores, their own items, game modes, hits and knock-outs with the kill scores and the killer's advancements, `execute on attacker`, walking and falling; a round script per game type plays a round (Watch a round in Try it, the Game tab's live view). They have no client: no looking, swinging, picking up, weapon or armour damage, fall damage or hunger; scripts and Rules see only your own player; they are drawn as outlines. Larger arenas are cut at the edge; outside the area's columns a practice player stands where it is; the area's floor holds them as it holds you.

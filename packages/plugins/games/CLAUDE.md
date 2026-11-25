@@ -20,6 +20,7 @@ and limits M1–M16 are in ADR 0117). Eight kinds (the six of ADR 0113 plus `msm
 - `src/validators-world-setup.ts`, `validators-pieces.ts` (`validators.ts` joins them); `games.generated-path`
   refuses project functions under `<ns>:msm_games/`.
 - `src/templates/world-setup.ts` (4) and `pieces.ts` (8), group "Games"; `src/search.ts` (search words, B655).
+- `test/game/mechanics/sim*.test.ts` over `sim-support.ts`: the mechanics played through in `@msm/sim` with practice players (B728).
 - `test/`: goldens per target under `test/fixtures/<target>/`, every line through `@msm/schemas/mcfunction`, every
   JSON file through its schema, the generated ids against the lowered files, every validator code.
 
