@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.12.
+
+## [1.5.12] - 2026-11-25
+
 - **Moving to a newer Minecraft.** When a newer Minecraft is ready for your mod, MCSuperMods tries the move on a copy first; the status bar shows a small mark and Things to fix says how much would change by itself and how much needs you, with **See what changes** and **Not now**. Home's Your mods says which Minecraft each mod is made for. Test versions of Minecraft are announced only with **Tell me about test versions of Minecraft** on in Settings.
 - **The report of a move.** **Move to another Minecraft version…** now shows, in plain words, what changed in Minecraft for your mod, what MCSuperMods changes for you, what you need to change (each with **Show me**, **Ask the helper** and a hint on how), what your players need, what is new in the version, what to check in the game, and what the report cannot know. It follows your edits while it is open. **See it before and after** draws a changed thing as it is now and as it will be; Minecraft's own files your mod replaces that the new version changed are listed too.
 - **Move my mod.** One button moves the mod as one step that Undo takes back, and keeps a copy of it as it was. What you still need to change stays in Things to fix under **After moving to Minecraft X** and leaves by itself once fixed; **What changed when I moved** opens the report again.
@@ -13,6 +17,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Modpacks and Java projects.** A mod in a modpack gets **Mods in this pack** in its report: **Check my mods** asks Modrinth which mods have a build for the new Minecraft, and those are updated in the same step as the move. A Java project you exported is never changed: the report can read its folder and **Save upgrade notes…** on what to change there.
 - Search finds the move by words such as "new Minecraft version", "update Minecraft version", "port to a new version" or a version number such as "26.4", and the AI helper can read a move's report to explain or fix what it lists.
 - **Safer plugins and a window that comes back.** Plugins from other people can no longer keep files between runs, take locks, show desktop notifications or reach USB, HID, serial or graphics devices, and the same goes for scripts in Try it. MCSuperMods now refuses notifications and devices for its window and keeps only what it uses (copying, pointer lock, full screen). If something stops the window, MCSuperMods starts it again and says so, names the plugins that were running and says that unsaved changes could not be kept; if it happens twice in a short time, plugins from other people stay off until the next start.
+- Functions are checked correctly on Minecraft test versions: no more false warnings for settings that are new in that version.
 
 ## [1.5.11] - 2026-11-25
 
