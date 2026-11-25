@@ -733,6 +733,8 @@ export const SessionProblemCodes = {
   overwritesSkippedFile: 'project.overwrites-skipped-file',
   schemasUnavailable: 'schema.unavailable',
   assetTrashFailed: 'assets.trash-failed',
+  /** A modpack file a move to another version re-pins could not be written (B821, warning). */
+  modpackRepinFailed: 'modpack.repin-failed',
   /** The injected mcfunction checker failed; the function is not checked. */
   mcfunctionUnavailable: 'mcfunction.unavailable',
   /** A rename onto an id that already exists (from `@msm/core`). */
@@ -1590,7 +1592,12 @@ export class ProjectSession {
   async upgradeTarget(
     targetId: string,
     report: MigrationReport,
-    options: { keepCopy?: boolean; upgradeReport?: UpgradeReport } = {},
+    options: {
+      keepCopy?: boolean;
+      upgradeReport?: UpgradeReport;
+      /** More effects of the one undo step (the modpacks' re-pins, B821). */
+      effects?: readonly CommandEffect[];
+    } = {},
   ): Promise<{ saved?: SavedUpgrade; saveError?: string }> {
     const stack = this.#requireStack();
     const next = this.#targetById(targetId);
@@ -1616,6 +1623,9 @@ export class ProjectSession {
       apply(draft) {
         for (const part of parts) part.apply(draft);
       },
+      ...(options.effects === undefined || options.effects.length === 0
+        ? {}
+        : { effects: [...options.effects] }),
     });
     const outcome: { saved?: SavedUpgrade; saveError?: string } = {};
     if (options.keepCopy !== false && from.id !== next.id) {
@@ -3763,6 +3773,7 @@ export class ProjectSession {
     }
     this.#syncAssetFiles(this.#lastState, event.state);
     this.#replayAssetWrites(event);
+    this.#replayModpackRepins(event);
     this.#lastState = event.state;
     if (this.#pending.size > 0 || this.#pendingValidators.size > 0 || this.#texturesPending) {
       this.#scheduleValidation(this.#validationDelay);
@@ -3809,6 +3820,35 @@ export class ProjectSession {
           await this.#moveAssetFile(trashed, live, 'restore');
         }
       }
+    });
+  }
+
+  /**
+   * Writes the modpack files a move to another version re-pins (B821's effects, ADR 0136 D9):
+   * the new files on execute and redo, the old ones on undo; a file that cannot be written is a
+   * warning. The code loads only when a command carries such an effect.
+   */
+  #replayModpackRepins(event: CommandEvent): void {
+    // `MODPACK_REPIN_EFFECT` of `../modpacks/upgrade`, kept out of the first paint.
+    if (!event.effects.some((effect) => effect.type === 'app.modpack-repin')) return;
+    const modpacks = this.#platform.modpacks;
+    const generation = this.#generation;
+    this.#assetOps = this.#assetOps.then(async () => {
+      if (generation !== this.#generation) return;
+      const { replayModpackRepins } = await import('../modpacks/upgrade');
+      const failures = await replayModpackRepins(event, async (root, modpack) => {
+        if (modpacks === undefined) throw new Error('Modpacks cannot be written here.');
+        await modpacks.write(root, modpack);
+      });
+      if (failures.length === 0) return;
+      for (const message of failures) {
+        this.#assetProblems.push({
+          severity: 'warning',
+          code: SessionProblemCodes.modpackRepinFailed,
+          message,
+        });
+      }
+      this.#publish();
     });
   }
 

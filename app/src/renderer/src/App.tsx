@@ -162,6 +162,7 @@ import { WishlistDialog } from './components/WishlistDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import type { Idea, IdeaInput, IdeaSpec } from './ideas/ideas';
+import type { PackMove } from './modpacks/upgrade';
 import { builtInPlugins } from './plugins/built-in';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
 import type { SearchActionHost, SearchStartMod } from './search/actions';
@@ -307,6 +308,12 @@ const UpgradeJavaProject = lazy(() =>
   })),
 );
 
+/** The upgrade report's Mods in this pack (ADR 0136 D9; B821, wired by B820). */
+const UpgradeModpackMods = lazy(() =>
+  import('./components/upgrade/parts/ModpackMods').then((module) => ({
+    default: module.ModpackMods,
+  })),
+);
 /** Check on other versions and what moving back cannot put back (ADR 0136 D7; B820). */
 const UpgradeOtherVersions = lazy(() =>
   import('./components/upgrade/OtherVersions').then((module) => ({
@@ -839,6 +846,20 @@ export function App({
     [session],
   );
   const loadSavedMoves = useCallback(() => session.savedUpgradeReports(), [session]);
+  // The modpacks' moves the report's Mods in this pack part chose (B821), per target, and the
+  // module that turns them into part 3 items and the move's effects (loaded with the part).
+  const [packMoves, setPackMoves] = useState<{
+    targetId: string;
+    moves: readonly PackMove[];
+    module: typeof import('./modpacks/upgrade');
+  } | null>(null);
+  const onPackMoves = useCallback((targetId: string, moves: readonly PackMove[]) => {
+    void import('./modpacks/upgrade').then((module) =>
+      setPackMoves(moves.length === 0 ? null : { targetId, moves, module }),
+    );
+  }, []);
+  const packMovesFor = (targetId: string) =>
+    packMoves !== null && packMoves.targetId === targetId ? packMoves : null;
 
   const openRecent = useCallback(
     (root: string) => void openWith('Open project', () => session.openRecent(root)),
@@ -4156,7 +4177,10 @@ export function App({
                   {...(dialog.savedFolder === undefined
                     ? {}
                     : { initialSavedFolder: dialog.savedFolder })}
-                  onCancel={() => setDialog(null)}
+                  onCancel={() => {
+                    setPackMoves(null);
+                    setDialog(null);
+                  }}
                   onShow={(elementId, path) => {
                     setDialog(null);
                     navigateTo(elementId as ResourceLocation, path ?? null, null);
@@ -4188,6 +4212,21 @@ export function App({
                           scanJavaProject={bridge.exports.scanJavaProject}
                           saveFile={bridge.dialogs.saveFile}
                         />
+                        {move.inverted === undefined && (
+                          <UpgradeModpackMods
+                            key={targetId}
+                            modpacks={bridge.modpacks}
+                            projectRoot={snapshot.root}
+                            from={{ targetId: target.id, mcVersion: target.mcVersion }}
+                            to={{
+                              targetId,
+                              mcVersion:
+                                session.availableTargets.find((entry) => entry.id === targetId)
+                                  ?.mcVersion ?? targetId,
+                            }}
+                            onMovesChange={(moves) => onPackMoves(targetId, moves)}
+                          />
+                        )}
                         <UpgradeOtherVersions
                           currentTargetId={target.id}
                           targets={session.availableTargets}
@@ -4217,13 +4256,33 @@ export function App({
                           explainWithAi(problem);
                         },
                       })}
+                  shownReport={(targetId, move) => {
+                    const packs = packMovesFor(targetId);
+                    return packs === null
+                      ? move.report
+                      : packs.module.withModpackItems(move.report, packs.moves);
+                  }}
                   onMove={(targetId, move) => {
+                    const packs = packMovesFor(targetId);
+                    setPackMoves(null);
                     setDialog(null);
                     const mcVersion =
                       session.availableTargets.find((entry) => entry.id === targetId)?.mcVersion ??
                       targetId;
                     session
-                      .upgradeTarget(targetId, move.migration, { upgradeReport: move.report })
+                      .upgradeTarget(
+                        targetId,
+                        move.migration,
+                        packs === null
+                          ? { upgradeReport: move.report }
+                          : {
+                              upgradeReport: packs.module.withModpackItems(
+                                move.report,
+                                packs.moves,
+                              ),
+                              effects: packs.module.modpackRepinEffects(packs.moves),
+                            },
+                      )
                       .then(
                         (outcome) => {
                           setMessage({

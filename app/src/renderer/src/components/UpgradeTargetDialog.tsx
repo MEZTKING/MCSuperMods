@@ -151,6 +151,11 @@ export interface UpgradeTargetDialogProps {
   /** Opens the AI helper with the problem attached. */
   onAsk?(problem: Problem): void;
   /**
+   * The report to show for a move: `move.report` with what the host adds to it before the move
+   * (the modpacks' part 3 items, B821's `withModpackItems`); `move.report` by default.
+   */
+  shownReport?(targetId: string, move: MoveReport): UpgradeReport;
+  /**
    * More for a move's report: `lead` before its parts, `after` after them, `doneExtra` under
    * each thing MCSuperMods changes (the slots of B819's before and after views and B820's other
    * versions and moving back); `context.choose` opens another version's report.
@@ -278,6 +283,7 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
       ? 'Move my mod'
       : `Move my mod to Minecraft ${chosenTarget.mcVersion}`;
   const canMove = view.kind === 'move' && ready !== null && !ready.checking;
+  const shown = ready === null ? null : (props.shownReport?.(ready.targetId, ready.move) ?? null);
 
   return (
     <DialogRoot
@@ -369,7 +375,7 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
                       data-testid="upgrade-target-preview"
                     >
                       <p className="font-medium text-sm" data-testid="upgrade-report-summary">
-                        {moveSummary(ready.move.report)}
+                        {moveSummary(shown ?? ready.move.report)}
                         {ready.checking && (
                           <span
                             className="ml-2 font-normal text-muted"
@@ -382,7 +388,7 @@ export function UpgradeTargetDialog(props: UpgradeTargetDialogProps) {
                       <Suspense fallback={<p className="text-muted text-sm">Checking your mod…</p>}>
                         <UpgradeReportView
                           {...reportProps}
-                          report={ready.move.report}
+                          report={shown ?? ready.move.report}
                           made={false}
                           testVersion={chosenTarget?.channel === 'snapshot'}
                           {...(props.extras?.(ready.targetId, ready.move, { choose: setChosen }) ??

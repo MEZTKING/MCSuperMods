@@ -247,6 +247,46 @@ describe('Moving back in the report', () => {
   });
 });
 
+describe('The report the host adds to (B821 wired by B820)', () => {
+  it('shows the report the host gives before the move', async () => {
+    const opened = await openSampleWorldgen({ hills: true });
+    const { session } = opened;
+    const shownReport = vi.fn((_targetId: string, move: MoveReport) => ({
+      ...move.report,
+      todo: [
+        ...move.report.todo,
+        {
+          id: 'modpack.mod-no-build:/packs/a:LUMEN001',
+          source: 'export' as const,
+          problem: {
+            severity: 'warning' as const,
+            code: 'modpack.mod-no-build',
+            message: 'Lumen in the modpack Pack has no build for this version yet.',
+          },
+          hint: 'wait for one',
+          check: 'manual' as const,
+        },
+      ],
+    }));
+    render(
+      <UpgradeTargetDialog
+        currentTargetId={session.target.id}
+        targets={session.availableTargets as TargetFacts[]}
+        project={session.snapshot.project}
+        report={(id, signal) => session.upgradeReport(id, { signal })}
+        initialTargetId={next.id}
+        shownReport={shownReport}
+        onMove={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    await screen.findByTestId('upgrade-report', {}, { timeout: 10_000 });
+    expect(screen.getByTestId('upgrade-report-summary').textContent).toContain('1 needs you');
+    expect(screen.getByTestId('upgrade-report').textContent).toContain('Lumen in the modpack Pack');
+    session.dispose();
+  });
+});
+
 describe('The export dialogs’ More options line', () => {
   it('opens the move dialog from the jar and Java project dialogs', async () => {
     window.msmMoreOptionsOpen = true;

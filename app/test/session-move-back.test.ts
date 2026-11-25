@@ -240,6 +240,51 @@ describe('Moving back (ADR 0136 D7)', () => {
   });
 });
 
+describe('The modpacks re-pinned with the move (B821, wired by B820)', () => {
+  it('writes the packs with the move, puts them back on undo, and warns when one cannot be written', async () => {
+    const { session, platform } = await openWorldgen();
+    const before = {
+      formatVersion: 1 as const,
+      name: 'Pack',
+      version: '1.0.0',
+      targetId: release.id,
+      projects: [],
+      mods: [],
+    };
+    const after = { ...before, targetId: next.id };
+    const writes: string[] = [];
+    let fail = false;
+    platform.modpacks = {
+      write: async (root: string, modpack: { targetId: string }) => {
+        if (fail) throw new Error('disk full');
+        writes.push(`${root}:${modpack.targetId}`);
+        return {} as never;
+      },
+    } as unknown as NonNullable<typeof platform.modpacks>;
+    const up = await session.upgradeReport(next.id);
+    await session.upgradeTarget(next.id, up.migration, {
+      keepCopy: false,
+      effects: [{ type: 'app.modpack-repin', data: { root: '/packs/a', before, after } }],
+    });
+    await session.flushAssetFiles();
+    expect(writes).toEqual([`/packs/a:${next.id}`]);
+    expect(session.undo()).toBe(true);
+    await session.flushAssetFiles();
+    expect(writes).toEqual([`/packs/a:${next.id}`, `/packs/a:${release.id}`]);
+    fail = true;
+    expect(session.redo()).toBe(true);
+    await session.flushAssetFiles();
+    expect(session.snapshot.problems).toContainEqual(
+      expect.objectContaining({
+        severity: 'warning',
+        code: 'modpack.repin-failed',
+        message: expect.stringContaining('disk full'),
+      }),
+    );
+    session.dispose();
+  });
+});
+
 describe('moveBack without a record (B815 suggestion)', () => {
   const changeSet: TargetChangeSet = {
     from: 'mc-old',
