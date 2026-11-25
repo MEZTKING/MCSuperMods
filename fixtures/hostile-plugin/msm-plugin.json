@@ -1,0 +1,13 @@
+{
+  "apiVersion": "^1.0.0",
+  "author": "MCSuperMods",
+  "capabilities": ["exporters"],
+  "description": "Test plugin: tries everything a plugin must not reach and writes down what it found.",
+  "id": "hostile.probe",
+  "licence": "MIT",
+  "main": "main.js",
+  "manifestVersion": 1,
+  "name": "Hostile probe",
+  "schemas": [],
+  "version": "1.0.0"
+}

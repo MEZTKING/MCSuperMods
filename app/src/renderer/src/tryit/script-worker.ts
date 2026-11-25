@@ -10,8 +10,10 @@
  *   (`createScriptRuntime`, self-contained, serialised with `Function.prototype.toString`) and
  *   {@link scriptWorkerMain}. Nothing is evaluated from text inside the worker.
  * - **No network, no storage.** A `blob:` worker inherits the document's CSP (`connect-src
- *   'self'`); {@link scriptWorkerMain} also removes the network, storage, worker and timer
- *   globals before any script runs, and keeps `postMessage` for itself.
+ *   'self'`); {@link scriptWorkerMain} also removes, before any script runs, the plugin
+ *   worker's list (`plugins/sandbox/worker-lockdown.ts`: network, storage and storage buckets,
+ *   Web Locks, `Notification`, devices, the GPU; B870) and the timers, and keeps `postMessage`
+ *   for itself.
  * - **A budget per call.** Each request has {@link SCRIPT_BUDGET_MS} (ADR 0031 D3's 2,000 ms):
  *   past it the worker is terminated and the call answers `timedOut`; the bridge reports it in
  *   "What happened" and starts the scripts again in a fresh worker.
@@ -29,29 +31,32 @@ import {
   type ScriptRuntimeInit,
 } from '@msm/sim';
 import { spawnBlobWorker, type WorkerLike } from '../plugins/sandbox/host';
+import {
+  lockDownWorkerScope,
+  WORKER_STRIPPED_GLOBALS,
+  WORKER_STRIPPED_NAVIGATOR,
+} from '../plugins/sandbox/worker-lockdown';
 
 /** How long one call may run before the worker is stopped (ADR 0031 D3). */
 export const SCRIPT_BUDGET_MS = 2000;
 
-/** The globals the worker removes before any script runs. */
+/**
+ * The globals the worker removes before any script runs: the plugin worker's list, and the
+ * timers (a script runs only inside a call: nothing of it may keep running after one).
+ */
 export const SCRIPT_WORKER_STRIPPED = [
-  'fetch',
-  'XMLHttpRequest',
-  'WebSocket',
-  'WebSocketStream',
-  'EventSource',
-  'WebTransport',
-  'importScripts',
-  'indexedDB',
-  'caches',
-  'BroadcastChannel',
-  'Worker',
-  'SharedWorker',
+  ...WORKER_STRIPPED_GLOBALS,
   'setTimeout',
   'setInterval',
   'clearTimeout',
   'clearInterval',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'scheduler',
 ] as const;
+
+/** The `navigator` members the worker removes before any script runs. */
+export const SCRIPT_WORKER_STRIPPED_NAVIGATOR = WORKER_STRIPPED_NAVIGATOR;
 
 /** A message to the worker. */
 export type ScriptWorkerMessage =
@@ -69,48 +74,28 @@ export type ScriptWorkerReply =
  *
  * @param createRuntime - `createScriptRuntime` of `@msm/sim`.
  * @param modules - The compiled scripts by id.
+ * @param lockDown - `lockDownWorkerScope` of the plugin sandbox.
  * @param stripped - The global names to remove.
+ * @param strippedNavigator - The `navigator` members to remove.
  */
 export function scriptWorkerMain(
   createRuntime: typeof createScriptRuntime,
   modules: Parameters<typeof createScriptRuntime>[1],
+  lockDown: typeof lockDownWorkerScope,
   stripped: readonly string[],
+  strippedNavigator: readonly string[],
 ): void {
   type Obj = Record<string, unknown>;
   interface Scope {
     postMessage(message: unknown): void;
     addEventListener(type: string, listener: (event: { data: unknown }) => void): void;
     setTimeout(callback: () => void, ms: number): unknown;
-    navigator?: Obj;
   }
   const scope = globalThis as unknown as Scope & Obj;
   const post = scope.postMessage.bind(scope);
   const listen = scope.addEventListener.bind(scope);
   const later = scope.setTimeout.bind(scope);
-  const remove = (target: Obj | undefined, name: string): void => {
-    if (target === undefined || target === null) return;
-    let object: Obj | null = target;
-    while (object !== null) {
-      try {
-        delete object[name];
-      } catch {
-        // Not configurable: shadowed below.
-      }
-      object = Object.getPrototypeOf(object) as Obj | null;
-    }
-    try {
-      Object.defineProperty(target, name, {
-        value: undefined,
-        configurable: false,
-        writable: false,
-      });
-    } catch {
-      // Already not configurable on the object itself.
-    }
-  };
-  for (const name of stripped) remove(scope, name);
-  remove(scope.navigator, 'storage');
-  remove(scope, 'postMessage');
+  lockDown([...stripped, 'postMessage'], strippedNavigator);
 
   let runtime: ReturnType<typeof createScriptRuntime> | null = null;
   listen('message', (event) => {
@@ -154,7 +139,7 @@ export function scriptWorkerSource(scripts: readonly CompiledScript[]): string {
     );
   }
   parts.push(
-    `(${scriptWorkerMain.toString()})(${createScriptRuntime.toString()}, __msmScripts, ${JSON.stringify(SCRIPT_WORKER_STRIPPED)});\n`,
+    `(${scriptWorkerMain.toString()})(${createScriptRuntime.toString()}, __msmScripts, ${lockDownWorkerScope.toString()}, ${JSON.stringify(SCRIPT_WORKER_STRIPPED)}, ${JSON.stringify(SCRIPT_WORKER_STRIPPED_NAVIGATOR)});\n`,
   );
   return parts.join('');
 }

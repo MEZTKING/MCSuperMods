@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.11.
+- **Safer plugins and a window that comes back.** Plugins from other people can no longer keep files between runs, take locks, show desktop notifications or reach USB, HID, serial or graphics devices, and the same goes for scripts in Try it. MCSuperMods now refuses notifications and devices for its window and keeps only what it uses (copying, pointer lock, full screen). If something stops the window, MCSuperMods starts it again and says so, names the plugins that were running and says that unsaved changes could not be kept; if it happens twice in a short time, plugins from other people stay off until the next start.
 
 ## [1.5.11] - 2026-11-25
 

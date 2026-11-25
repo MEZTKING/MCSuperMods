@@ -39,6 +39,7 @@ import {
   UPDATE_STATUS_MESSAGE_MAX,
   VENDORED_KEYS,
 } from './ipc-channels';
+import { RECOVERY_NOTICE_PLUGINS_MAX } from './recovery-notice';
 
 export type {
   AiEventPayload,
@@ -1892,6 +1893,16 @@ export const ipcContract = {
   [InvokeChannels.appLaunchNotice]: {
     request: noRequest,
     response: z.enum(['welcome', 'whats-new']).nullable(),
+  },
+  [InvokeChannels.appRecoveryNotice]: {
+    request: noRequest,
+    response: z
+      .object({
+        plugins: z.array(z.string().max(80)).max(RECOVERY_NOTICE_PLUGINS_MAX),
+        pluginsOff: z.boolean(),
+      })
+      .strict()
+      .nullable(),
   },
   [InvokeChannels.pluginsList]: {
     request: noRequest,

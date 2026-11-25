@@ -1,6 +1,7 @@
 /**
  * The main window: sandboxed renderer, typed preload, unsaved-changes prompt on close (after
- * the renderer reports held-back edits, `close-guard.ts`). In
+ * the renderer reports held-back edits, `close-guard.ts`), and a page started again when it
+ * stops (`crash-recovery.ts`, B870). In
  * production the renderer is loaded from the privileged `msm-app://app/` scheme, not from
  * `file:` (ADR 0035 D1a); in development from electron-vite's dev server.
  *
@@ -18,6 +19,7 @@ import {
   createCloseGuard,
   createCloseRequests,
 } from './close-guard';
+import type { CrashRecovery } from './crash-recovery';
 
 /** The built renderer folder (`out/renderer/`, inside `app.asar` when packaged). */
 export const RENDERER_DIR = fileURLToPath(new URL('../renderer/', import.meta.url));
@@ -49,8 +51,19 @@ ipcMain.on(EventChannels.closeAnswer, (event, payload: unknown) => {
   closeRequests.get(event.sender.id)?.answer(payload);
 });
 
+/** Options of {@link createMainWindow}. */
+export interface MainWindowOptions {
+  /** Whether to show the window once it is ready (default `true`). */
+  show?: boolean;
+  /**
+   * The crash state: when the page stops, it is started again (B870). Without it (smoke runs)
+   * nothing is done.
+   */
+  recovery?: CrashRecovery;
+}
+
 /** Creates the main window and loads the renderer. */
-export function createMainWindow(options: { show?: boolean } = {}): BrowserWindow {
+export function createMainWindow(options: MainWindowOptions = {}): BrowserWindow {
   const window = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -102,6 +115,41 @@ export function createMainWindow(options: { show?: boolean } = {}): BrowserWindo
     dirtyWindows.delete(contentsId);
     closeRequests.delete(contentsId);
   });
+  const recovery = options.recovery;
+  if (recovery !== undefined) {
+    window.webContents.on('render-process-gone', (_event, details) => {
+      // The page's memory is gone: there are no unsaved changes left to ask about.
+      dirtyWindows.delete(contentsId);
+      if (window.isDestroyed()) return;
+      const action = recovery.onGone(details.reason);
+      if (action === 'ignore') return;
+      console.error(
+        `MSM: the window's page stopped (${details.reason}, exit code ${details.exitCode}); ${
+          action === 'reload' ? 'starting it again' : 'asking what to do'
+        }.`,
+      );
+      if (action === 'reload') {
+        window.webContents.reload();
+        return;
+      }
+      void dialog
+        .showMessageBox(window, {
+          type: 'error',
+          buttons: ['Start it again', 'Close MCSuperMods'],
+          defaultId: 0,
+          cancelId: 1,
+          message: 'The MCSuperMods window stopped again.',
+          detail:
+            'It stopped three times in a short time, the last time with plugins from other ' +
+            'people turned off. Changes you had not saved could not be kept.',
+        })
+        .then(({ response }) => {
+          if (window.isDestroyed()) return;
+          if (response === 0) window.webContents.reload();
+          else window.close();
+        });
+    });
+  }
 
   const devUrl = process.env.ELECTRON_RENDERER_URL;
   if (devUrl !== undefined && devUrl !== '') {

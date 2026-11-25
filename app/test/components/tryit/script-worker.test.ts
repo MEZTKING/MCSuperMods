@@ -13,10 +13,12 @@ import type { ScriptResponse, ScriptRunner, ScriptRuntimeInit } from '@msm/sim';
 import ts from 'typescript';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { WorkerLike } from '../../../src/renderer/src/plugins/sandbox/host';
+import { WORKER_STRIPPED_GLOBALS } from '../../../src/renderer/src/plugins/sandbox/worker-lockdown';
 import {
   createWorkerRunner,
   SCRIPT_BUDGET_MS,
   SCRIPT_WORKER_STRIPPED,
+  SCRIPT_WORKER_STRIPPED_NAVIGATOR,
   scriptWorkerSource,
 } from '../../../src/renderer/src/tryit/script-worker';
 import {
@@ -24,6 +26,7 @@ import {
   TryItArea,
   toSimFiles,
 } from '../../../src/renderer/src/tryit/session-source';
+import { reachableProbe, workerLikeGlobals } from '../../helpers/worker-probe';
 import { demoOutputs, NS, TARGET } from './tryit-fixture';
 
 /** TypeScript to ES5 as main's scripting engine does (ADR 0031 D2). */
@@ -50,7 +53,10 @@ function transpile(source: string): TranspileOutcome {
  * A worker double: the script runs in a fresh `vm` context with a worker's message functions and
  * timers. Messages go through `structuredClone`, as `postMessage` copies them.
  */
-function vmWorker(source: string): WorkerLike & { context: Record<string, unknown> } {
+function vmWorker(
+  source: string,
+  globals: Record<string, unknown> = {},
+): WorkerLike & { context: Record<string, unknown> } {
   const toWorker: ((event: { data: unknown }) => void)[] = [];
   const toHost: ((event: { data: unknown }) => void)[] = [];
   const context: Record<string, unknown> = {
@@ -71,6 +77,7 @@ function vmWorker(source: string): WorkerLike & { context: Record<string, unknow
     XMLHttpRequest: class {},
     importScripts: () => undefined,
     navigator: { storage: {} },
+    ...globals,
   };
   context.globalThis = context;
   createContext(context);
@@ -133,6 +140,24 @@ describe('the worker script', () => {
     }
     expect(worker.context.postMessage).toBeUndefined();
     expect((worker.context.navigator as { storage?: unknown }).storage).toBeUndefined();
+  });
+
+  it('removes what the plugin worker removes: storage buckets, Web Locks, notices, devices (B870)', () => {
+    // Scripts in Try it come from mods people download: B840's S7 list applies to them too.
+    for (const name of WORKER_STRIPPED_GLOBALS) expect(SCRIPT_WORKER_STRIPPED).toContain(name);
+    expect(SCRIPT_WORKER_STRIPPED_NAVIGATOR).toEqual(
+      expect.arrayContaining(['storage', 'storageBuckets', 'locks', 'usb', 'hid', 'serial', 'gpu']),
+    );
+    const worker = vmWorker(
+      scriptWorkerSource([]),
+      workerLikeGlobals(SCRIPT_WORKER_STRIPPED_NAVIGATOR),
+    );
+    const reached = runInContext(
+      reachableProbe([...SCRIPT_WORKER_STRIPPED, 'postMessage'], SCRIPT_WORKER_STRIPPED_NAVIGATOR),
+      worker.context,
+    ) as string[];
+    expect([...reached]).toEqual([]);
+    expect(runInContext('typeof navigator.userAgent', worker.context)).toBe('object');
   });
 
   it('runs scripts against the shim and answers after their Promise callbacks', async () => {

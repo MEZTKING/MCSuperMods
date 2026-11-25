@@ -14,8 +14,10 @@ import {
 import {
   bootstrapSource,
   STRIPPED_GLOBALS,
+  STRIPPED_NAVIGATOR,
 } from '../src/renderer/src/plugins/sandbox/worker-bootstrap';
 import { sampleBundle, vmWorkers } from './helpers/plugins-fixtures';
+import { reachableProbe, workerLikeGlobals } from './helpers/worker-probe';
 
 const target = { id: 'mc-test', mcVersion: '1.0-test', packFormats: { data: 1, resource: 1 } };
 const element = {
@@ -216,6 +218,29 @@ describe('plugin sandbox host', () => {
       'undefined',
     ]);
     expect(STRIPPED_GLOBALS).toContain('importScripts');
+  });
+
+  it('removes storage buckets, Web Locks, notifications, devices and the GPU, prototypes too (B870)', async () => {
+    // B840's S7 found these open under the real bootstrap; the real worker is checked by the
+    // hostile plugin in e2e `plugins-path`.
+    expect([...STRIPPED_NAVIGATOR].sort()).toEqual(
+      ['gpu', 'hid', 'locks', 'serial', 'storage', 'storageBuckets', 'usb'].sort(),
+    );
+    for (const name of ['Notification', 'StorageBucketManager', 'LockManager']) {
+      expect(STRIPPED_GLOBALS).toContain(name);
+    }
+    const probe = `const reached = ${reachableProbe([...STRIPPED_GLOBALS, 'postMessage'], STRIPPED_NAVIGATOR)};
+      const kept = typeof navigator.userAgent;
+      defineMsmPlugin({ id: 'p', apiVersion: '^1.0.0', contributes: { elementTemplates: [
+        { id: 'p-t', kind: 'p:k', title: 't', description: 'd', category: 'c', data() { return { reached, kept }; } },
+      ] } });`;
+    const workers = vmWorkers(workerLikeGlobals(STRIPPED_NAVIGATOR));
+    const worker = createPluginWorker(probe, { spawn: workers.spawn });
+    await worker.ready;
+    await expect(worker.call('data', ['p-t', {}])).resolves.toEqual({
+      reached: [],
+      kept: 'object',
+    });
   });
 
   it('serialises a self-contained bootstrap', () => {

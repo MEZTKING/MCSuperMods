@@ -18,6 +18,7 @@ import {
   Notification,
   nativeImage,
   safeStorage,
+  session,
   shell,
 } from 'electron';
 import { EventChannels } from '../shared/ipc-channels';
@@ -26,6 +27,7 @@ import { createAiService } from './ai/ai-service';
 import { aiPicturesKeyFile, createAiPicturesService } from './ai-pictures/ai-pictures-service';
 import { fakeProvider } from './ai-pictures/fake';
 import { registerAppSchemePrivileges } from './app-scheme';
+import { createCrashRecovery, withCrashRecovery } from './crash-recovery';
 import {
   applyE2eHooks,
   readE2eAiScript,
@@ -35,6 +37,7 @@ import {
 } from './e2e-hooks';
 import { registerIpc, registerLocalServerEvents, registerPlayEvents } from './ipc';
 import { installMenu, registerMenuIpc } from './menu';
+import { appOrigins, installPermissionHandlers } from './permissions';
 import { processJavaEnv } from './platform/local-server';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
 import { createPluginsService } from './platform/plugins';
@@ -146,7 +149,12 @@ function resizePng(png: Uint8Array, size: number): Uint8Array {
 const msmHome = resolveMsmHome(process.env, app.getPath('home'));
 
 // ADR 0035: third-party plugin folders under `<msmHome>/plugins/`; main reads, never runs them.
-const plugins = createPluginsService({ msmHome, openPath: (path) => shell.openPath(path) });
+// B870: when the window's page stops, main starts it again and names the plugins that were
+// running; a second stop soon after turns third-party plugins off for the rest of this run.
+// Smoke runs end on a stop instead (`runSmoke`).
+const recovery = smoke ? undefined : createCrashRecovery();
+const pluginFolders = createPluginsService({ msmHome, openPath: (path) => shell.openPath(path) });
+const plugins = recovery === undefined ? pluginFolders : withCrashRecovery(pluginFolders, recovery);
 
 const platform = createNodePlatform({
   async info() {
@@ -329,6 +337,9 @@ function runSmoke(window: BrowserWindow): void {
 }
 
 void app.whenReady().then(() => {
+  // B870: the page and its workers get only the permissions the app uses (no notifications,
+  // no devices); before this Electron granted every request.
+  installPermissionHandlers(session.defaultSession, appOrigins(process.env.ELECTRON_RENDERER_URL));
   registerIpc(platform, updater, plugins, aiService, aiPictures);
   registerPlayEvents(platform.play, app);
   registerLocalServerEvents(platform.localServer, app);
@@ -340,12 +351,16 @@ void app.whenReady().then(() => {
       // Unreadable settings: the menu keeps "No recent projects".
     },
   );
-  const window = createMainWindow({ show: !smoke });
+  const window = createMainWindow({
+    show: !smoke,
+    ...(recovery === undefined ? {} : { recovery }),
+  });
   if (smoke) runSmoke(window);
   window.webContents.once('did-finish-load', () => updater.scheduleStartupCheck());
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    if (BrowserWindow.getAllWindows().length === 0)
+      createMainWindow(recovery === undefined ? {} : { recovery });
   });
 });
 
@@ -366,7 +381,7 @@ app.on('window-all-closed', () => {
 
 /** Opens the main window again after the update installer could not start. */
 function reopenAfterFailedInstall(): void {
-  const window = createMainWindow();
+  const window = createMainWindow(recovery === undefined ? {} : { recovery });
   const status = updater.status;
   const detail =
     status.state === 'error' ? status.message : 'The update installer could not start.';

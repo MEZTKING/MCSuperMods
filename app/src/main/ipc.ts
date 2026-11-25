@@ -24,6 +24,7 @@ import type {
   PlayInput,
   PlayOutputFile,
 } from '../shared/platform';
+import type { RecoveryNotice } from '../shared/recovery-notice';
 import type { AiSender, AiService } from './ai/ai-service';
 import type { AiPicturesService } from './ai-pictures/ai-pictures-service';
 import { createGuideService, type GuideService, guideDirFor } from './guide';
@@ -36,7 +37,10 @@ import type { Updater } from './updater';
 export type IpcUpdates = Pick<Updater, 'check' | 'install' | 'status'>;
 
 /** The third-party plugin operations the IPC layer serves (ADR 0035). */
-export type IpcPlugins = Pick<PluginsService, 'list' | 'read' | 'openFolder'>;
+export type IpcPlugins = Pick<PluginsService, 'list' | 'read' | 'openFolder'> & {
+  /** B870: the crash recovery's notice for the reloaded page, once (`crash-recovery.ts`). */
+  recoveryNotice?(): RecoveryNotice | null;
+};
 
 /** The AI helper operations the IPC layer serves (ADR 0041 D3). */
 export type IpcAi = Pick<
@@ -124,6 +128,8 @@ export function createIpcHandlers(
     [InvokeChannels.fsRemove]: (req) => platform.fs.remove(req.path),
     [InvokeChannels.appInfo]: () => platform.app.info(),
     [InvokeChannels.appLaunchNotice]: () => platform.app.launchNotice(),
+    // B870: what to tell the user after main started the window's page again (once).
+    [InvokeChannels.appRecoveryNotice]: async () => plugins.recoveryNotice?.() ?? null,
     [InvokeChannels.dialogConfirmDiscard]: (req) => platform.dialogs.confirmDiscard(req.message),
     [InvokeChannels.dialogPickFiles]: (req) => platform.dialogs.pickFiles(req),
     [InvokeChannels.dialogSaveFile]: (req) => platform.dialogs.saveFile(req),

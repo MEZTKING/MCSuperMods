@@ -8,7 +8,7 @@
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "include": ["src/renderer", "src/shared", "test/components"],
+  "include": ["src/renderer", "src/shared", "test/components", "test/helpers/worker-probe.ts"],
   "references": [
     { "path": "../packages/plugin-api" },
     { "path": "../packages/core" },

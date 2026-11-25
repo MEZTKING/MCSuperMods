@@ -8,29 +8,26 @@
  * level.
  *
  * The network boundary is the document's CSP, which a `blob:` worker inherits (B150); the
- * bootstrap also removes network globals (defence in depth) and the storage globals, which the
- * CSP does not govern (`indexedDB`, `caches`, `navigator.storage`).
+ * bootstrap also removes, through {@link lockDownWorkerScope}, the network globals (defence in
+ * depth) and what the CSP does not govern: storage (`indexedDB`, `caches`, `navigator.storage`,
+ * `navigator.storageBuckets`), Web Locks, `Notification`, devices and the GPU (B870, after
+ * B840's S7). The list is `worker-lockdown.ts`'s, shared with Try it's script worker.
  *
  * @packageDocumentation
  */
 
 import type { SandboxRequest } from './protocol';
+import {
+  lockDownWorkerScope,
+  WORKER_STRIPPED_GLOBALS,
+  WORKER_STRIPPED_NAVIGATOR,
+} from './worker-lockdown';
 
 /** The globals the bootstrap removes from the worker scope before the plugin runs. */
-export const STRIPPED_GLOBALS = [
-  'fetch',
-  'XMLHttpRequest',
-  'WebSocket',
-  'WebSocketStream',
-  'EventSource',
-  'WebTransport',
-  'importScripts',
-  'indexedDB',
-  'caches',
-  'BroadcastChannel',
-  'Worker',
-  'SharedWorker',
-] as const;
+export const STRIPPED_GLOBALS = WORKER_STRIPPED_GLOBALS;
+
+/** The `navigator` members the bootstrap removes before the plugin runs. */
+export const STRIPPED_NAVIGATOR = WORKER_STRIPPED_NAVIGATOR;
 
 /** How many registry snapshots a worker keeps (the host resends an evicted one). */
 export const REGISTRY_SNAPSHOTS_KEPT = 4;
@@ -42,47 +39,30 @@ export const REGISTRY_SNAPSHOTS_KEPT = 4;
  * A function that throws answers its request with `plugin.crashed` and leaves the worker
  * running; a result that is not JSON or `Uint8Array` answers with `plugin.bad-result`.
  *
- * @param stripped - The global names to remove (passed in: the function cannot see the module).
+ * @param lockDown - {@link lockDownWorkerScope} (passed in: the function cannot see the module).
+ * @param stripped - The global names to remove.
+ * @param strippedNavigator - The `navigator` members to remove.
  * @param keep - How many registry snapshots to keep.
  */
-export function workerBootstrap(stripped: readonly string[], keep: number): void {
+export function workerBootstrap(
+  lockDown: typeof lockDownWorkerScope,
+  stripped: readonly string[],
+  strippedNavigator: readonly string[],
+  keep: number,
+): void {
   type Fn = (...args: unknown[]) => unknown;
   type Obj = Record<string, unknown>;
   interface Scope {
     postMessage(message: unknown): void;
     addEventListener(type: string, listener: (event: { data: unknown }) => void): void;
-    navigator?: Obj;
     defineMsmPlugin?: (plugin: unknown) => void;
   }
   const scope = globalThis as unknown as Scope & Obj;
   const post = scope.postMessage.bind(scope);
   const listen = scope.addEventListener.bind(scope);
 
-  const remove = (target: Obj | undefined, name: string): void => {
-    if (target === undefined || target === null) return;
-    let object: Obj | null = target;
-    while (object !== null) {
-      try {
-        delete object[name];
-      } catch {
-        // Non-configurable: shadowed below.
-      }
-      object = Object.getPrototypeOf(object) as Obj | null;
-    }
-    try {
-      Object.defineProperty(target, name, {
-        value: undefined,
-        configurable: false,
-        writable: false,
-      });
-    } catch {
-      // Already non-configurable on the object itself.
-    }
-  };
-  for (const name of stripped) remove(scope, name);
-  remove(scope.navigator, 'storage');
   // Only the bootstrap answers the host: the plugin cannot post messages of its own.
-  remove(scope, 'postMessage');
+  lockDown([...stripped, 'postMessage'], strippedNavigator);
 
   const isUint8Array = (value: unknown): boolean =>
     ArrayBuffer.isView(value) && Object.prototype.toString.call(value) === '[object Uint8Array]';
@@ -313,5 +293,5 @@ export function workerBootstrap(stripped: readonly string[], keep: number): void
 
 /** The bootstrap's source text, ready to be followed by a plugin bundle. */
 export function bootstrapSource(): string {
-  return `(${workerBootstrap.toString()})(${JSON.stringify(STRIPPED_GLOBALS)}, ${REGISTRY_SNAPSHOTS_KEPT});\n`;
+  return `(${workerBootstrap.toString()})(${lockDownWorkerScope.toString()}, ${JSON.stringify(STRIPPED_GLOBALS)}, ${JSON.stringify(STRIPPED_NAVIGATOR)}, ${REGISTRY_SNAPSHOTS_KEPT});\n`;
 }

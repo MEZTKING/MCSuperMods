@@ -81,6 +81,8 @@ export const InvokeChannels = {
   updatesInstall: 'msm:v1:updates:install',
   updatesCurrent: 'msm:v1:updates:current',
   appLaunchNotice: 'msm:v1:app:launchNotice',
+  /** B870: once after main started the window's page again, what to tell the user. */
+  appRecoveryNotice: 'msm:v1:app:recoveryNotice',
   pluginsList: 'msm:v1:plugins:list',
   pluginsRead: 'msm:v1:plugins:read',
   pluginsOpenFolder: 'msm:v1:plugins:openFolder',

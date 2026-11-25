@@ -11,15 +11,32 @@
  * 3. A hand-written bundle whose `lower` never returns: the worker is stopped at the `lower`
  *    deadline (2 s); Settings shows the plugin as failed with `plugin.timeout`, the Problems
  *    panel shows a `plugin.unavailable` error on the element and the exports are disabled.
+ * 4. The hostile plugin (`fixtures/hostile-plugin`, B870): in the real worker, under the real
+ *    CSP and main's permission handlers, it reaches none of B840's S7 list (storage buckets,
+ *    Web Locks, notifications, devices, the GPU, the network and storage globals); WebAssembly
+ *    and `import()` of another origin are refused, `import()` of the app's own files is not
+ *    (accepted, recorded). The app's own page keeps what it uses: copying, sounds, pointer
+ *    lock; notifications are refused.
+ * 5. The window's page stopped (B870): main starts it again and the page says so, naming the
+ *    plugin that was running; a second stop soon after starts it with plugins off.
  */
 
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import {
+  appDir,
   ensureSamplePluginBuilt,
   expectStatusAgrees,
   installPlugin,
@@ -359,4 +376,210 @@ test('plugins: a lower call that never returns stops the plugin and blocks expor
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+});
+
+/** The page's `document` as far as the pointer lock check reads it (no DOM types in e2e). */
+type PageWithDataset = { document: { documentElement: { dataset: Record<string, string> } } };
+
+/** The hostile probe plugin (B870): plain files, nothing to build. */
+const hostilePluginDir = resolve(appDir, '..', 'fixtures', 'hostile-plugin');
+
+test('plugins: the hostile plugin reaches nothing it must not (B870)', async () => {
+  const namespace = 'hostile_e2e';
+  const folders = foldersFor(namespace);
+  installPlugin(folders.msmHome, 'hostile', hostilePluginDir);
+
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+
+  const section = await openPluginSettings(window);
+  await expect(section.getByTestId('plugin-hostile.probe-state')).toHaveText('Loaded');
+  await closeSettings(window);
+
+  // The app's own page keeps what it uses and loses notifications (main's permission
+  // handlers). The e2e TypeScript has no DOM types, hence the casts.
+  const page = await window.evaluate(async () => {
+    const nav = navigator as unknown as {
+      permissions: { query(d: { name: string }): Promise<{ state: string }> };
+      clipboard: { writeText(text: string): Promise<void> };
+    };
+    const scope = globalThis as unknown as {
+      Notification: { requestPermission(): Promise<string> };
+      AudioContext: new () => { resume(): Promise<void>; close(): Promise<void>; state: string };
+    };
+    const notifications = (await nav.permissions.query({ name: 'notifications' })).state;
+    const asked = await scope.Notification.requestPermission();
+    const clipboardWrite = (await nav.permissions.query({ name: 'clipboard-write' })).state;
+    let copied = 'copied';
+    try {
+      await nav.clipboard.writeText('MSM B870');
+    } catch (error) {
+      copied = String(error);
+    }
+    const audio = new scope.AudioContext();
+    await audio.resume();
+    const sound = audio.state;
+    await audio.close();
+    return { notifications, asked, clipboardWrite, copied, sound };
+  });
+  expect(page.notifications).toBe('denied');
+  expect(page.asked).toBe('denied');
+  expect(page.clipboardWrite).toBe('granted');
+  expect(page.sound).toBe('running');
+  if (page.copied === 'copied') {
+    const text = await launched.app.evaluate(({ clipboard }) => clipboard.readText());
+    expect(text).toBe('MSM B870');
+  } else {
+    // A window without focus may not write the clipboard; the permission is what B870 sets.
+    expect(page.copied).toContain('focus');
+  }
+  // Pointer lock (Try it): granted on a click.
+  await window.evaluate(() => {
+    const doc = (globalThis as unknown as { document: unknown }).document as {
+      body: { requestPointerLock(): Promise<void> | undefined };
+      addEventListener(type: string, listener: () => void, options: { once: boolean }): void;
+      documentElement: { dataset: Record<string, string> };
+    };
+    doc.addEventListener(
+      'click',
+      () => {
+        const done = (outcome: string) => {
+          doc.documentElement.dataset.pointerLock = outcome;
+        };
+        try {
+          Promise.resolve(doc.body.requestPointerLock()).then(
+            () => done('locked'),
+            (error: unknown) => done(String(error)),
+          );
+        } catch (error) {
+          done(String(error));
+        }
+      },
+      { once: true },
+    );
+  });
+  await window.mouse.click(5, 5);
+  await expect
+    .poll(() =>
+      window.evaluate(
+        () =>
+          (globalThis as unknown as PageWithDataset).document.documentElement.dataset.pointerLock ??
+          '',
+      ),
+    )
+    .not.toBe('');
+  const pointerLock = await window.evaluate(
+    () =>
+      (globalThis as unknown as PageWithDataset).document.documentElement.dataset.pointerLock ?? '',
+  );
+  expect(pointerLock).not.toMatch(/permission|denied|NotAllowed/i);
+  await window.evaluate(() => {
+    (
+      (globalThis as unknown as { document: unknown }).document as { exitPointerLock(): void }
+    ).exitPointerLock();
+  });
+
+  // The probe runs in the plugin's worker through its exporter, and writes what it reached.
+  await newProjectInFolder(window);
+  await expect(window.getByTestId(`element-row-${namespace}:pack`)).toBeVisible();
+  await openToolbarMenu(window, 'toolbar-export-menu');
+  const probeExport = window.getByTestId('export-plugin-hostile-report');
+  await expect(probeExport).toHaveText('Hostile probe report into a folder…');
+  await probeExport.focus();
+  await window.keyboard.press('Enter');
+  await window.getByTestId('plugin-export-dialog').getByRole('button', { name: 'Export…' }).click();
+  const reportFile = join(folders.outDir, 'hostile-report.json');
+  await expect.poll(() => existsSync(reportFile), { timeout: 20_000 }).toBe(true);
+  const report = JSON.parse(readFileSync(reportFile, 'utf8')) as {
+    reached: string[];
+    notifications: string;
+    wasm: string;
+    appImport: string;
+    otherImport: string;
+  };
+  expect(report.reached).toEqual([]);
+  expect(report.notifications).toBe('denied');
+  expect(report.wasm).toMatch(/^refused: /);
+  expect(report.otherImport).toBe('refused by the CSP');
+  // Accepted on purpose (B154, B840 S7): the app's public files, no DOM or bridge in a worker.
+  expect(report.appImport).toBe('not refused by the CSP');
+});
+
+test('plugins: the window starts again after its page stops, then without plugins (B870)', async () => {
+  const folders = foldersFor('crash_e2e');
+  installPlugin(folders.msmHome, PLUGIN_FOLDER, samplePluginDist);
+
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  const section = await openPluginSettings(window);
+  await expect(section.getByTestId(`plugin-${PLUGIN_ID}-state`)).toHaveText('Loaded');
+  await closeSettings(window);
+
+  // Playwright's page stays "crashed" after the page stops, although the window loads it
+  // again; the reloaded page is read through main instead.
+  const inPage = (script: string): Promise<unknown> =>
+    launched.app.evaluate(async ({ BrowserWindow }, code) => {
+      const [main] = BrowserWindow.getAllWindows();
+      if (main === undefined || main.webContents.isCrashed()) return null;
+      try {
+        return await main.webContents.executeJavaScript(code);
+      } catch {
+        return null;
+      }
+    }, script);
+  const stopPage = () =>
+    launched.app.evaluate(({ BrowserWindow }) => {
+      const [main] = BrowserWindow.getAllWindows();
+      if (main === undefined) throw new Error('No window.');
+      main.webContents.forcefullyCrashRenderer();
+    });
+  const noticeOf = (): Promise<unknown> =>
+    inPage(`(() => {
+      const notice = document.querySelector('[data-testid="recovery-notice"]');
+      return notice === null ? null : { text: notice.textContent, off: notice.dataset.pluginsOff };
+    })()`);
+  const plugins = async (): Promise<{ id: string; on: boolean; codes: string[] }[]> =>
+    ((await inPage(
+      'window.msm.plugins.list().then((entries) => entries.map((entry) => ({ id: entry.id, on: entry.manifest !== null, codes: entry.problems.map((p) => p.code) })))',
+    )) as { id: string; on: boolean; codes: string[] }[] | null) ?? [];
+
+  // The first stop: the page comes back and says what happened, naming the plugin.
+  await stopPage();
+  await expect.poll(noticeOf, { timeout: 30_000 }).not.toBeNull();
+  const first = (await noticeOf()) as { text: string; off: string };
+  expect(first.text).toContain('MCSuperMods started its window again');
+  expect(first.text).toContain('Changes you had not saved could not be kept.');
+  expect(first.text).toContain('Greetings');
+  expect(first.off).toBe('false');
+  await inPage(`document.querySelector('[data-testid="recovery-notice-close"]').click()`);
+  await expect.poll(noticeOf).toBeNull();
+  expect(await plugins()).toEqual([{ id: PLUGIN_ID, on: true, codes: [] }]);
+
+  // The second stop soon after: plugins from other people are off for this run.
+  await stopPage();
+  await expect
+    .poll(async () => ((await noticeOf()) as { off?: string } | null)?.off ?? null, {
+      timeout: 30_000,
+    })
+    .toBe('true');
+  const second = (await noticeOf()) as { text: string };
+  expect(second.text).toContain('plugins from other people are off');
+  expect(second.text).toContain('Greetings');
+  // The page started no plugin: main lists it as off, which Settings > Plugins shows.
+  expect(await plugins()).toEqual([
+    { id: PLUGIN_ID, on: false, codes: ['plugin.off-for-this-run'] },
+  ]);
+  const shot = await launched.app.evaluate(async ({ BrowserWindow }) => {
+    const [main] = BrowserWindow.getAllWindows();
+    return main === undefined
+      ? null
+      : (await main.webContents.capturePage()).toPNG().toString('base64');
+  });
+  if (shot !== null) {
+    writeFileSync(join(outputDir, 'plugins-path-recovered.png'), Buffer.from(shot, 'base64'));
+  }
 });

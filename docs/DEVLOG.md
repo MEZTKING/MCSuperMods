@@ -12006,3 +12006,25 @@ Next: B714 (e2e flakes, CI test concurrency, toast Escape), B727 (Try it game co
 **Next**
 - B825 guide sentences: "**Check on other versions**, at the end of the report and under More options when you save the mod as a file or export a Java project, says for each Minecraft version whether your mod works as it is, works after a move, or how many things would break." "Moving back to an older version puts back what the move up took away, from the record MCSuperMods kept, even over more than one move. Before you press, the report lists first what cannot be put back and why, and the things you changed since the move." "A move made before MCSuperMods kept records cannot be undone in full: the report lists what that move changed by itself, so you can check those things."
 - The undo label "Upgrade target to <id>" is still not plain words (B818's note).
+## 2026-11-25 — executor — B870 Security hardening of what ships today
+
+**What**
+- Plugin workers and Try it's script worker now share one lock-down (`app/src/renderer/src/plugins/sandbox/worker-lockdown.ts`): besides the network and storage globals they removed before, both remove `Notification`, `StorageBucketManager`, `LockManager` and `navigator.storageBuckets`, `locks`, `usb`, `hid`, `serial`, `gpu` (B840's S7), along the prototype chain and pinned to `undefined`. The plugin bootstrap and `scriptWorkerMain` receive the function serialised, as before with their own copies. The script worker also removes `requestAnimationFrame`, `cancelAnimationFrame` and `scheduler` with the timers.
+- Main sets permission handlers on the default session (`app/src/main/permissions.ts`): only `clipboard-sanitized-write` (copy buttons), `clipboard-read` (Monaco's Paste), `pointerLock` (Try it) and `fullscreen`, and only for `msm-app://app` or the dev server; everything else refused, `media` included (sounds need no permission); `setDevicePermissionHandler` refuses every device.
+- Main handles `render-process-gone` (`app/src/main/crash-recovery.ts`, wired in `window.ts` and `index.ts`, not in smoke runs): it reloads the page, which asks once for `msm:v1:app:recoveryNotice` and shows `RecoveryNoticeDialog` (mounted beside `App` in `main.tsx`): the window started again, unsaved changes could not be kept, the plugins that were running (those whose files main handed out since the last stop). A second stop within two minutes reloads with every third-party plugin off for the rest of the run (`plugin.off-for-this-run`, shown in Settings > Plugins as refused); a third that soon asks with a native box instead of looping. The page's dirty flag is dropped on a stop.
+- `fixtures/hostile-plugin/` (plain files: manifest and a hand-written `main.js`): its exporter probes every name and call of S7 in the real worker and writes `hostile-report.json`; two new cases in e2e `plugins-path`.
+
+**Checks**
+- e2e `plugins-path` (5, two new: the hostile plugin reaches nothing, notifications are `denied` in the worker and the page, clipboard write, pointer lock and an `AudioContext` still work, WebAssembly and `import()` of `https:` refused, `import()` of `msm-app://app/` not; the window comes back after `forcefullyCrashRenderer()` naming Greetings, then with plugins off), `tryit-path` (8), `scripting-path` (2), `smoke`: all pass under `xvfb-run -a`. Mutation runs: with the old lists the report names all 16 open things; without the handlers the page reads notifications `granted`.
+- New unit tests `main-permissions.test.ts`, `main-crash-recovery.test.ts`; worker-like `node:vm` probes (`test/helpers/worker-probe.ts`) in `plugins-sandbox.test.ts` and `script-worker.test.ts`; `ipc-contract.test.ts` for the channel. `pnpm lint`, `pnpm typecheck`, app tests (466 files, 4,919 tests), `pnpm build`; `check-size`: renderer 20.2 MB of 21, first paint 5.3 MB of 6 (`dist:dir` not run, for disk).
+
+**Decisions**
+- `import()` of the app's own files stays possible (CSP `'self'`; the public bundle, no DOM or bridge in a worker), as B154 and S7 found; the hostile check asserts it so a change is noticed. WebAssembly stays refused by the CSP.
+- Timers after a call are left open for plugins (an idle heartbeat is B842's); only Try it's script worker removes them.
+- `clipboard-read` is kept for the app's page because Monaco's own Paste uses it; plugin workers have no clipboard object.
+- The notice comes from main through a new invoke channel and a dialog mounted in `main.tsx`, not the launch notice, which `App.tsx` reads (B820's file).
+- Interface names of devices (`USB`, `HID`, `GPU`, `Lock`) are not removed from the global scope: a plugin bundle with a top-level declaration of the same name would fail to load against a pinned global, and the objects are what gave access.
+
+**Next**
+- ADR 0137 D7 and D8 (other agent): record the new lists, the handlers, the reload and the simple safe mode, `import()` accepted and WebAssembly refused.
+- B843: safe mode with its marks across starts (S11), the `unresponsive` case; B842: the idle heartbeat; B862: the e2e case of a plugin that really fills its heap.

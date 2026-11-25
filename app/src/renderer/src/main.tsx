@@ -2,6 +2,7 @@ import { builtInTargets } from '@msm/targets';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { RecoveryNoticeDialog } from './components/RecoveryNoticeDialog';
 import { builtInPlugins } from './plugins/built-in';
 import { loadExternalPlugins } from './plugins/external-plugins';
 import { bridge, createBridgeFileSystem } from './session/bridge-fs';
@@ -47,6 +48,8 @@ async function start(root: HTMLElement): Promise<void> {
   createRoot(root).render(
     <StrictMode>
       <App session={session} bridge={msm} externalPlugins={external.plugins} />
+      {/* B870: after main started this page again because it stopped. */}
+      <RecoveryNoticeDialog bridge={msm} />
     </StrictMode>,
   );
 }

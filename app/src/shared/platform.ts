@@ -25,6 +25,7 @@ import type {
   UpdateStatus,
   VendoredKeyName,
 } from './ipc-channels';
+import type { RecoveryNotice } from './recovery-notice';
 
 /** The outcome of opening or creating a project root. */
 export type RootResult = { ok: true } | { ok: false; reason: string };
@@ -2059,6 +2060,11 @@ export interface MsmBridge extends PlatformAdapter {
   onCloseRequest?(handlers: CloseRequestHandlers): () => void;
   /** Tells the main process the renderer has rendered (smoke mode). */
   smokeReady(): void;
+  /**
+   * Once after main started the window's page again because it stopped (B870), what to tell
+   * the user; otherwise `null`. Optional for older test doubles.
+   */
+  recoveryNotice?(): Promise<RecoveryNotice | null>;
   /**
    * `true` when the app runs in smoke mode (`MSM_SMOKE=1`). The renderer then sets
    * `window.msmNoMonaco` so headless smoke runs skip Monaco. Optional so test doubles may omit it.

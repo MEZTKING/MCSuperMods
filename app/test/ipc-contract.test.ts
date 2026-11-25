@@ -810,6 +810,13 @@ const samples: Record<
     request: [undefined, { force: true }],
     response: ['welcome', 'yes'],
   },
+  [InvokeChannels.appRecoveryNotice]: {
+    request: [undefined, { force: true }],
+    response: [
+      { plugins: ['Greetings'], pluginsOff: true },
+      { plugins: Array.from({ length: 65 }, (_, i) => `p${i}`), pluginsOff: false },
+    ],
+  },
   [InvokeChannels.pluginsList]: {
     request: [undefined, { folder: 'x' }],
     response: [

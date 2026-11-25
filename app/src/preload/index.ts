@@ -134,6 +134,7 @@ const bridge: MsmBridge = {
     info: () => ipcRenderer.invoke(InvokeChannels.appInfo),
     launchNotice: () => ipcRenderer.invoke(InvokeChannels.appLaunchNotice),
   },
+  recoveryNotice: () => ipcRenderer.invoke(InvokeChannels.appRecoveryNotice),
   dialogs: {
     pickDirectory: (opts) => ipcRenderer.invoke(InvokeChannels.projectPickDirectory, opts),
     confirmDiscard: (message) =>
