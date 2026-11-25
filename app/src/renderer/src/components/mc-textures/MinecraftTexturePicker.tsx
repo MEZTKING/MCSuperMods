@@ -14,6 +14,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { pngDataUrl } from '../AssetList';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import { usePlain } from '../ui/MoreOptions';
 import {
   filterTextures,
@@ -163,7 +164,7 @@ export function MinecraftTexturePicker(props: MinecraftTexturePickerProps) {
   };
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onClose();
@@ -171,7 +172,7 @@ export function MinecraftTexturePicker(props: MinecraftTexturePickerProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="mc-texture-picker"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[min(94vw,720px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -294,9 +295,9 @@ export function MinecraftTexturePicker(props: MinecraftTexturePickerProps) {
               <Button data-testid="mc-texture-cancel">Cancel</Button>
             </Dialog.Close>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
 

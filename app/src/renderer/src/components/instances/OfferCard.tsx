@@ -18,6 +18,7 @@ import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { type ActiveOffer, useInstancesStore } from '../../store/instances-store';
 import { installTargetName } from '../install-target';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import { MoreOptions } from '../ui/MoreOptions';
 import { INSTANCE_WORDS, loaderWords, makeLabel, plainSentence, readinessOf } from './words';
 
@@ -285,7 +286,7 @@ export function OfferCardHost() {
   if (card === null) return null;
   const store = useInstancesStore.getState();
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) store.cancel();
@@ -293,7 +294,7 @@ export function OfferCardHost() {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="instance-offer-dialog"
           ref={content}
@@ -327,8 +328,8 @@ export function OfferCardHost() {
             onUseMine={(id) => store.useMine(id)}
             onCancel={() => store.cancel()}
           />
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

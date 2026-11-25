@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { changelogSection, loadChangelog, RELEASES_URL } from '../whats-new';
 import { Markdown } from './Markdown';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 
 /** Props of {@link WhatsNewDialog}. */
 export interface WhatsNewDialogProps {
@@ -58,7 +59,7 @@ export function WhatsNewDialog({
   }, [load, notes, shown]);
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) onClose();
@@ -66,7 +67,7 @@ export function WhatsNewDialog({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="whats-new-dialog"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[85vh] w-[min(94vw,640px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-x-hidden rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -98,8 +99,8 @@ export function WhatsNewDialog({
               </Button>
             </Dialog.Close>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

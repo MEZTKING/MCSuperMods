@@ -10,6 +10,7 @@
 
 import { Dialog } from 'radix-ui';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 
 /** One choice. */
 export interface Choice {
@@ -33,7 +34,7 @@ export interface ChoiceDialogProps {
 /** The chooser dialog. */
 export function ChoiceDialog(props: ChoiceDialogProps) {
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onClose();
@@ -41,7 +42,7 @@ export function ChoiceDialog(props: ChoiceDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="choice-dialog"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[85vh] w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -70,8 +71,8 @@ export function ChoiceDialog(props: ChoiceDialogProps) {
               Cancel
             </Button>
           </Dialog.Close>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

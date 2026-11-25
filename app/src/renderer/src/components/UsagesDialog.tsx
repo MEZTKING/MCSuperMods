@@ -8,6 +8,7 @@
 import type { Reference, ResourceLocation } from '@msm/core';
 import { Dialog } from 'radix-ui';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 
 /** Props of {@link UsagesDialog}. */
 export interface UsagesDialogProps {
@@ -27,7 +28,7 @@ export function usageLocation(reference: Reference): string {
 /** The "Find usages" result list. */
 export function UsagesDialog({ id, usages, onNavigate, onClose }: UsagesDialogProps) {
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) onClose();
@@ -35,7 +36,7 @@ export function UsagesDialog({ id, usages, onNavigate, onClose }: UsagesDialogPr
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="usages-dialog"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[80vh] w-[min(94vw,560px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -67,8 +68,8 @@ export function UsagesDialog({ id, usages, onNavigate, onClose }: UsagesDialogPr
               <Button>Close</Button>
             </Dialog.Close>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

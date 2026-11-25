@@ -24,6 +24,7 @@ import {
 } from '../../surprise/surprise';
 import { AiPicturesSwitch, useAiBatch } from '../ai-pictures/AiPicturesSwitch';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import { pngDataUrl } from '../wizard/wizard-model';
 
 /** Props of {@link SurpriseDialog}. */
@@ -123,7 +124,7 @@ export function SurpriseDialog(props: SurpriseDialogProps) {
   const empty = mod !== null && mod.things.length === 0;
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open && !making) props.onClose();
@@ -131,7 +132,7 @@ export function SurpriseDialog(props: SurpriseDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="surprise-dialog"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[min(94vw,640px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -305,8 +306,8 @@ export function SurpriseDialog(props: SurpriseDialogProps) {
               </Button>
             </Dialog.Close>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

@@ -1,5 +1,6 @@
 import { AlertDialog } from 'radix-ui';
 import { Button } from './ui/Button';
+import { escapeNotTaken } from './ui/DialogContent';
 
 /** A yes/no confirmation (Radix alert dialog: focus starts on Cancel). */
 export function ConfirmDialog(props: {
@@ -20,6 +21,12 @@ export function ConfirmDialog(props: {
         <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
         <AlertDialog.Content
           data-testid="confirm-dialog"
+          onKeyDown={(event) => {
+            // A status toast above the dialog takes Radix's Escape (`ui/DialogContent.tsx`).
+            if (!escapeNotTaken(event)) return;
+            event.preventDefault();
+            props.onCancel();
+          }}
           className="fixed top-1/2 left-1/2 z-50 w-[min(90vw,380px)] -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
         >
           <AlertDialog.Title className="mb-1.5 text-base font-semibold">

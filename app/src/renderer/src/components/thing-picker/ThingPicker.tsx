@@ -52,6 +52,7 @@ import { vanillaNamesFor } from '../../search/vanilla-names';
 import { pngDataUrl } from '../AssetList';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import {
   filterThings,
   THING_WORDS,
@@ -390,7 +391,7 @@ export function ThingPicker(props: ThingPickerProps) {
   let index = showNone ? 1 : 0;
   const empty = flat.length === 0;
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onCancel();
@@ -398,7 +399,7 @@ export function ThingPicker(props: ThingPickerProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="thing-picker"
           onOpenAutoFocus={(event) => {
@@ -499,8 +500,8 @@ export function ThingPicker(props: ThingPickerProps) {
               <Button>Cancel</Button>
             </Dialog.Close>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

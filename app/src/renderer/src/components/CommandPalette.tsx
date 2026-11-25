@@ -13,6 +13,7 @@
 
 import { Dialog } from 'radix-ui';
 import { useEffect, useId, useMemo, useState } from 'react';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 
 /** One command the palette offers. */
 export interface PaletteCommand {
@@ -161,7 +162,7 @@ export function CommandPalette({
   };
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open={open}
       onOpenChange={(next) => {
         if (!next) onClose();
@@ -169,7 +170,7 @@ export function CommandPalette({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/30" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid={testId}
           className="fixed top-[15vh] left-1/2 z-50 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-1 rounded-md border border-border bg-panel p-2 text-text shadow-lg"
@@ -233,8 +234,8 @@ export function CommandPalette({
             ))}
           </div>
           {matches.length === 0 && <p className="px-2 py-1 text-muted text-sm">{emptyText}</p>}
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

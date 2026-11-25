@@ -148,6 +148,7 @@ import { TextureEditorDialog } from './components/texture-editor/TextureEditorDi
 import { UpdateBanner, updateCheckMessage } from './components/UpdateBanner';
 import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { UsagesDialog } from './components/UsagesDialog';
+import { DialogContent, DialogRoot } from './components/ui/DialogContent';
 import { WelcomeDialog } from './components/WelcomeDialog';
 import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WishlistDialog } from './components/WishlistDialog';
@@ -4566,7 +4567,7 @@ export function App({
                 rank={rankCommands}
               />
               {searchDoor !== null && (
-                <Dialog.Root
+                <DialogRoot
                   open
                   onOpenChange={(open) => {
                     if (!open) closeSearch();
@@ -4574,7 +4575,7 @@ export function App({
                 >
                   <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 z-40 bg-black/30" />
-                    <Dialog.Content
+                    <DialogContent
                       aria-describedby={undefined}
                       data-testid="search-dialog"
                       data-door={searchDoor.door}
@@ -4623,9 +4624,9 @@ export function App({
                           canFix={canFixSearch}
                         />
                       </Suspense>
-                    </Dialog.Content>
+                    </DialogContent>
                   </Dialog.Portal>
-                </Dialog.Root>
+                </DialogRoot>
               )}
               {dialog?.type === 'choice' && (
                 <ChoiceDialog

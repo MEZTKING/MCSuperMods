@@ -23,6 +23,7 @@ import { folderOfPath, isStrip } from '../mc-textures/catalogue';
 import type { McTexturePick } from '../mc-textures/host';
 import { StartFromMinecraftButton } from '../mc-textures/StartFromMinecraftButton';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import { fitInside } from './image-convert';
 import {
   floodFill,
@@ -264,7 +265,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
   };
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onClose();
@@ -272,7 +273,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="texture-editor"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[92vh] w-[min(94vw,760px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -442,8 +443,8 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
               {saving ? 'Saving…' : 'Save'}
             </Button>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

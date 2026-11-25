@@ -27,6 +27,7 @@ import {
 import { InstanceList } from './instances/InstanceList';
 import { fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 import { WorldBackupsSection } from './WorldBackupsSection';
 
 /** Props of {@link SettingsDialog}. */
@@ -643,7 +644,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
     props.instances ?? (globalThis as { msm?: { instances?: InstancesPlatform } }).msm?.instances;
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onClose();
@@ -652,7 +653,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
       <Dialog.Portal>
         {/* z-50 like the dialogs' content, so the dialog Settings opened over is dimmed too. */}
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="settings-dialog"
           ref={setContent}
@@ -981,8 +982,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
               </Dialog.Close>
             </div>
           </form>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

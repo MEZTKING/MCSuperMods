@@ -22,6 +22,7 @@ import { Dialog, DropdownMenu } from 'radix-ui';
 import { type KeyboardEvent, useEffect, useId, useState } from 'react';
 import type { RecentProjectSummary, RecentProjectView } from '../../../../shared/platform';
 import { Button, iconButtonClass } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import {
   monogram,
   monogramHue,
@@ -264,10 +265,10 @@ export function YourMods(props: YourModsProps) {
       </div>
       <ModGrid {...props} entries={shown} label={YOUR_MODS} />
       {all && (
-        <Dialog.Root open onOpenChange={(open) => setAll(open)}>
+        <DialogRoot open onOpenChange={(open) => setAll(open)}>
           <Dialog.Portal>
             <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-            <Dialog.Content
+            <DialogContent
               aria-describedby={undefined}
               data-testid="your-mods-dialog"
               className="fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[min(94vw,960px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -289,9 +290,9 @@ export function YourMods(props: YourModsProps) {
                   props.onOpen(root);
                 }}
               />
-            </Dialog.Content>
+            </DialogContent>
           </Dialog.Portal>
-        </Dialog.Root>
+        </DialogRoot>
       )}
     </section>
   );

@@ -17,6 +17,7 @@ import type { Json, OutputLayer, ProjectStarter, TargetFacts } from '@msm/plugin
 import { Dialog } from 'radix-ui';
 import { type FormEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 import { MoreOptions } from './ui/MoreOptions';
 import { StarterWizard, TargetSelect } from './wizard/StarterWizard';
 import {
@@ -195,7 +196,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
   };
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onCancel();
@@ -203,7 +204,7 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="new-project-dialog"
           className="fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-[min(94vw,560px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -345,9 +346,9 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
               </div>
             </form>
           )}
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
 
@@ -427,7 +428,7 @@ export function NewModDialog(props: NewModDialogProps) {
   };
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onCancel();
@@ -435,7 +436,7 @@ export function NewModDialog(props: NewModDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="new-mod-dialog"
           className="fixed top-1/2 left-1/2 z-50 w-[min(90vw,420px)] -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -508,8 +509,8 @@ export function NewModDialog(props: NewModDialogProps) {
               </Dialog.Close>
             </div>
           </form>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

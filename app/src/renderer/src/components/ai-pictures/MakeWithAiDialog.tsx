@@ -45,6 +45,7 @@ import {
 import { fieldClass } from '../NewElementDialog';
 import { imageDataUrl } from '../texture-editor/png-canvas';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import type { AiPicturesHost } from './ai-pictures-host';
 import {
   type AiCandidate,
@@ -311,7 +312,7 @@ export function MakeWithAiDialog(props: MakeWithAiDialogProps) {
   );
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open && !saving) props.onClose();
@@ -319,7 +320,7 @@ export function MakeWithAiDialog(props: MakeWithAiDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           data-testid="ai-pictures-dialog"
           aria-describedby={undefined}
           className="fixed top-1/2 left-1/2 z-[70] flex max-h-[92vh] w-[min(94vw,820px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -509,8 +510,8 @@ export function MakeWithAiDialog(props: MakeWithAiDialogProps) {
               Close
             </Button>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

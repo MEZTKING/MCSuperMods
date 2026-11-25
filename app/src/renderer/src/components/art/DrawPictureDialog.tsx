@@ -34,6 +34,7 @@ import { useId, useMemo, useReducer, useState } from 'react';
 import { usePreferences } from '../../store/preferences';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import { MoreOptions } from '../ui/MoreOptions';
 import {
   DETAIL_LABELS,
@@ -129,7 +130,7 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
   const title = props.title ?? DRAW_IT_FOR_ME;
   const thing = field.colour;
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open && !saving) props.onClose();
@@ -137,7 +138,7 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           data-testid="draw-dialog"
           aria-describedby={undefined}
           className="fixed top-1/2 left-1/2 z-[70] flex max-h-[92vh] w-[min(94vw,820px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -388,9 +389,9 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
               Cancel
             </Button>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
 

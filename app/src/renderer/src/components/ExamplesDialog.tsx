@@ -16,6 +16,7 @@ import { type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 import { exactFirst, matchesLocally, useLocalWords } from '../search/local-match';
 import { categorySlug, fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 
 /** What copying an example added and skipped (the session's `addBundle` result). */
 export interface CopyExampleResult {
@@ -245,7 +246,7 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
   const shownResult = result !== null && result.exampleId === selected?.id ? result : null;
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onClose();
@@ -253,7 +254,7 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="examples-dialog"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[min(94vw,820px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-x-hidden overflow-y-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -505,8 +506,8 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
               {copyReason}
             </p>
           )}
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

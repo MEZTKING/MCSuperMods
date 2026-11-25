@@ -6,6 +6,7 @@ import { exactFirst, matchesLocally, useLocalWords } from '../search/local-match
 import { useUiStore } from '../store/ui-store';
 import { type ElementTemplate, templateContext, templateElementId } from '../studios/templates';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 
 export const fieldClass = 'rounded border border-border bg-bg px-2 py-1';
 
@@ -29,7 +30,7 @@ export function Modal(props: {
   };
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onCancel();
@@ -37,7 +38,7 @@ export function Modal(props: {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid={props.testId}
           className={`fixed top-1/2 left-1/2 z-50 max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg ${props.wide === true ? 'w-[min(94vw,560px)]' : 'w-[min(90vw,380px)]'}`}
@@ -63,9 +64,9 @@ export function Modal(props: {
               </Dialog.Close>
             </div>
           </form>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
 

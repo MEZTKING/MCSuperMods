@@ -45,6 +45,7 @@ import { newSeed, pickForMe } from '../../surprise/surprise';
 import { AiPicturesSwitch, useAiBatch } from '../ai-pictures/AiPicturesSwitch';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
+import { DialogContent, DialogRoot } from '../ui/DialogContent';
 import { ParameterField } from '../wizard/ParameterField';
 import {
   defaultRawValues,
@@ -458,7 +459,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
   const title = starter === null ? 'Create' : `${editing ? 'Edit' : 'Create'}: ${starter.title}`;
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open && !creating) props.onClose();
@@ -466,7 +467,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="creator-dialog"
           className="fixed inset-4 z-50 flex flex-col gap-2 rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -677,8 +678,8 @@ export function CreatorDialog(props: CreatorDialogProps) {
               Cancel
             </Button>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }

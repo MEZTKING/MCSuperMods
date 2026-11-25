@@ -17,6 +17,7 @@ import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState }
 import type { GuidePlatform } from '../../../shared/platform';
 import { Markdown, type MarkdownBlock, parseMarkdown } from './Markdown';
 import { Button, buttonClass } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 
 /** The published docs site (`docs/site/.vitepress/config.ts`, `base: '/MCSuperMods/'`). */
 export const GUIDE_SITE_URL = 'https://meztking.github.io/MCSuperMods/';
@@ -309,7 +310,7 @@ export function GuideDialog({ guide, page, anchor, onClose }: GuideDialogProps) 
   const previous = history[history.length - 1];
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) onClose();
@@ -317,7 +318,7 @@ export function GuideDialog({ guide, page, anchor, onClose }: GuideDialogProps) 
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="guide-dialog"
           onKeyDown={onKeyDown}
@@ -405,9 +406,9 @@ export function GuideDialog({ guide, page, anchor, onClose }: GuideDialogProps) 
               )}
             </div>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
 

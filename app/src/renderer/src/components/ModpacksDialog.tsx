@@ -16,6 +16,7 @@ import { buildModpackJars, modpackMrpack } from '../modpacks/build';
 import type { ProjectSession } from '../session/project-session';
 import { fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
+import { DialogContent, DialogRoot } from './ui/DialogContent';
 import { targetLabel } from './wizard/wizard-model';
 
 export interface ModpacksDialogProps {
@@ -253,7 +254,7 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
   const labelOf = (entry: ModpackListEntry): string => entry.name ?? `${entry.root} (not found)`;
 
   return (
-    <Dialog.Root
+    <DialogRoot
       open
       onOpenChange={(open) => {
         if (!open) props.onClose();
@@ -261,7 +262,7 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
+        <DialogContent
           aria-describedby={undefined}
           data-testid="modpacks-dialog"
           className="fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[min(94vw,900px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-2 overflow-x-hidden overflow-y-auto rounded-md border border-border bg-panel p-4 text-text shadow-lg"
@@ -565,8 +566,8 @@ export function ModpacksDialog(props: ModpacksDialogProps) {
               <Button data-testid="modpacks-close">Close</Button>
             </Dialog.Close>
           </div>
-        </Dialog.Content>
+        </DialogContent>
       </Dialog.Portal>
-    </Dialog.Root>
+    </DialogRoot>
   );
 }
