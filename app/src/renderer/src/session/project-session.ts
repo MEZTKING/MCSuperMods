@@ -221,6 +221,16 @@ import {
 } from './validator-problems';
 
 /** Everything the UI renders from the session. Replaced, never mutated. */
+/** {@link ProjectSession.loweredElements}' answer (B819). */
+export interface LoweredElements {
+  /** The project after its expanders. */
+  readonly expanded: Project;
+  /** The target it was lowered on. */
+  readonly target: Target;
+  /** Each thing's own lowered files by element id (before files at one path are merged). */
+  readonly files: ReadonlyMap<string, readonly OutputFile[]>;
+}
+
 export interface SessionSnapshot {
   /** The absolute project directory, or `null` when no project is open. */
   root: string | null;
@@ -985,6 +995,8 @@ export class ProjectSession {
   #dryRunQueue: Promise<unknown> = Promise.resolve();
   /** The saved moves of the open project, newest first, once read. */
   #savedUpgrades: { root: string | null; list: SavedUpgrade[] } | null = null;
+  /** {@link loweredElements}' answers by project state and target id (B819). */
+  readonly #loweredElements = new WeakMap<Project, Map<string, Promise<LoweredElements>>>();
   /** `openUpgradeItemsOf` of the saved-report module, once it is loaded. */
   #openUpgradeItemsOf: typeof import('./upgrade/saved-report')['openUpgradeItemsOf'] | null = null;
 
@@ -1242,6 +1254,47 @@ export class ProjectSession {
     if (element === undefined || kind === undefined) return [];
     const files = await kind.lower(element, context.target);
     return files.map((file) => `${file.layer}: ${file.path}`).sort();
+  }
+
+  /**
+   * Each thing's lowered files of `project` on the built-in target `targetId`, after the
+   * project's expanders (ADR 0082 D9), with the expanded project and the target: what the
+   * upgrade report's before and after views and its **Minecraft changed these too** read
+   * (ADR 0136 D11, D13; B819), for the open project on its target and for a dry run's moved
+   * copy on the target it moves to. A thing whose lowering fails is left out. Needs no schema
+   * context; one answer is kept per project state and target. Writes nothing.
+   *
+   * @throws Error If `targetId` names no built-in target.
+   */
+  loweredElements(project: Project, targetId: string): Promise<LoweredElements> {
+    const target = this.#targetById(targetId);
+    if (target === undefined) {
+      return Promise.reject(new Error(`Unknown target ${JSON.stringify(targetId)}.`));
+    }
+    let byTarget = this.#loweredElements.get(project);
+    if (byTarget === undefined) {
+      byTarget = new Map();
+      this.#loweredElements.set(project, byTarget);
+    }
+    const known = byTarget.get(targetId);
+    if (known !== undefined) return known;
+    const made = (async (): Promise<LoweredElements> => {
+      const expansion = await expandProject(project, this.#plugins, target);
+      const files = new Map<string, readonly OutputFile[]>();
+      for (const element of projectElements(expansion.project)) {
+        const kind = this.registry.get(element.kind);
+        if (kind === undefined) continue;
+        try {
+          files.set(element.id, await kind.lower(element, target));
+        } catch {
+          // Left out: the live pass reports why.
+        }
+      }
+      return { expanded: expansion.project, target, files };
+    })();
+    byTarget.set(targetId, made);
+    made.catch(() => byTarget.delete(targetId));
+    return made;
   }
 
   /**

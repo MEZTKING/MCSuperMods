@@ -155,6 +155,7 @@ import { UpgradeTargetDialog } from './components/UpgradeTargetDialog';
 import { UsagesDialog } from './components/UsagesDialog';
 import { DialogContent, DialogRoot } from './components/ui/DialogContent';
 import { noticeShows, useUpgradeNotice } from './components/upgrade/use-upgrade-notice';
+import type { UpgradeViewsHost } from './components/upgrade/before-after/host';
 import { WelcomeDialog } from './components/WelcomeDialog';
 import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WishlistDialog } from './components/WishlistDialog';
@@ -291,6 +292,14 @@ const ResultPreview = lazy(() => import('./search/ResultPreview'));
 /** The user guide read inside the app (ADR 0124 D14; B661). */
 const GuideDialog = lazy(() => import('./components/GuideDialog'));
 const UpgradeNotice = lazy(() => import('./components/upgrade/UpgradeNotice'));
+/** The upgrade report's before and after views (ADR 0136 D13; B819), one lazy chunk. */
+const UpgradeBeforeAfter = lazy(() => import('./components/upgrade/BeforeAfter'));
+/** The upgrade report's Minecraft changed these too (ADR 0136 D11; B823, B819). */
+const UpgradeVanillaFiles = lazy(() =>
+  import('./components/upgrade/BeforeAfter').then((module) => ({
+    default: module.MovedVanillaFiles,
+  })),
+);
 
 /** The app's own lists the search reads (ADR 0124 D3; B660, B662). */
 const SEARCH_LISTS: AppLists = {
@@ -3431,6 +3440,24 @@ export function App({
       session.readAsset(namespace, path).catch((): Uint8Array | null => null),
     [session],
   );
+  // The upgrade report's before and after views and Minecraft changed these too (B819).
+  const upgradeViewsHost = useMemo<UpgradeViewsHost>(
+    () => ({
+      loweredElements: (from, targetId) => session.loweredElements(from, targetId),
+      registry: session.registry,
+      targets: session.availableTargets,
+      minecraftStatus: (version) => bridge.minecraft.status(version),
+      readVanillaAsset: (version, path) => bridge.minecraft.readAsset(version, path),
+      readProjectAsset,
+      projectRoot: snapshot.root,
+      onShow: (elementId) => {
+        setDialog(null);
+        navigateTo(elementId as ResourceLocation, null, null);
+      },
+      onSetup: openSetUp,
+    }),
+    [session, bridge, readProjectAsset, snapshot.root, navigateTo, openSetUp],
+  );
   const vanillaSounds = useMemo(
     () =>
       mcVersion === null
@@ -4116,6 +4143,27 @@ export function App({
                     navigateTo(elementId as ResourceLocation, path ?? null, null);
                   }}
                   onFix={fixProblem}
+                  extras={(_targetId, move) => ({
+                    after: (
+                      <Suspense fallback={null}>
+                        <UpgradeVanillaFiles
+                          host={upgradeViewsHost}
+                          project={project}
+                          move={move}
+                        />
+                      </Suspense>
+                    ),
+                    doneExtra: (item) => (
+                      <Suspense fallback={null}>
+                        <UpgradeBeforeAfter
+                          host={upgradeViewsHost}
+                          project={project}
+                          move={move}
+                          item={item}
+                        />
+                      </Suspense>
+                    ),
+                  })}
                   {...(aiController === null
                     ? {}
                     : {

@@ -24,6 +24,8 @@
  *   **Value map** for density functions and noises (`ValueMap.tsx`), a **Scatter** for features,
  *   placed features, block state providers and biome additions (`Scatter.tsx`), and for a carver
  *   the line that its caves show only in the game (limit WL4).
+ * - B819: `compareWith` puts another session's world in the compare view's place (the upgrade
+ *   report's "Before the move", ADR 0136 D13): the toggle names it, starts on and needs no jar.
  */
 
 import type { Element, Project } from '@msm/plugin-api';
@@ -470,6 +472,20 @@ export function missesVanillaFile(summary: WorldSummary | null): boolean {
 
 // --- The view ------------------------------------------------------------------------------
 
+/** Another world for the compare view, in vanilla's place (B819). */
+export interface CompareWith {
+  /** What the compare view calls it ("Before the move"). */
+  readonly label: string;
+  /** Its files and worker: another session's handle (`createTerrainSession`). */
+  readonly terrain: TerrainSessionHandle;
+  /** The first line under it. */
+  readonly note?: string;
+}
+
+const NO_SNAPSHOT: TerrainFilesSnapshot = { state: null, error: null };
+const noSubscribe = (): (() => void) => () => undefined;
+const noSnapshot = (): TerrainFilesSnapshot => NO_SNAPSHOT;
+
 /** Props of {@link WorldMap}. */
 export interface WorldMapProps {
   /** The project session (its files are read through one `TerrainFiles` a session). */
@@ -493,6 +509,11 @@ export interface WorldMapProps {
    * Creator's map (nothing made yet) and the Studios' (their own line has it) leave it out.
    */
   walkIn?: boolean;
+  /**
+   * Another world in Compare with vanilla's place, shown from the start (B819: the project
+   * before a move); only the map from above offers it.
+   */
+  compareWith?: CompareWith;
 }
 
 /** Kinds drawn as a Value map (B585). */
@@ -893,9 +914,15 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
       ? null
       : markerNear(markerResult.markers, hover.x, hover.z, 3 * zoom);
 
-  // Compare with vanilla (B585): vanilla's world in its own worker.
-  const [compareOn, setCompareOn] = useState(false);
-  const compareClient = props.compareClient ?? compareClientFor(terrain);
+  // Compare with vanilla (B585): vanilla's world in its own worker; or, with `compareWith`
+  // (B819), another session's world in its own.
+  const against = props.compareWith ?? null;
+  const againstSnapshot = useSyncExternalStore(
+    against?.terrain.subscribe ?? noSubscribe,
+    against?.terrain.getSnapshot ?? noSnapshot,
+  );
+  const [compareOn, setCompareOn] = useState(against !== null);
+  const compareClient = against?.terrain.client ?? props.compareClient ?? compareClientFor(terrain);
 
   const onPointerDown = (event: PointerEvent<HTMLCanvasElement>): void => {
     if (event.button !== 0) return;
@@ -1113,11 +1140,13 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
                   <input
                     type="checkbox"
                     data-testid="terrain-compare"
-                    checked={compareOn && state.vanilla !== null}
-                    disabled={state.vanilla === null}
+                    checked={compareOn && (against !== null || state.vanilla !== null)}
+                    disabled={against === null && state.vanilla === null}
                     onChange={(event) => setCompareOn(event.target.checked)}
                   />
-                  Compare with vanilla
+                  {against === null
+                    ? 'Compare with vanilla'
+                    : `Show ${against.label.toLowerCase()} beside it`}
                 </label>
               </div>
               {markerResult === null ? null : (
@@ -1129,7 +1158,32 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
                       } in this view where a structure may start.`}
                 </p>
               )}
-              {state.vanilla === null ? (
+              {against !== null ? (
+                compareOn ? (
+                  againstSnapshot.state === null || host === undefined ? (
+                    <p className="text-xs text-muted" data-testid="terrain-compare-waiting">
+                      {againstSnapshot.error === null
+                        ? `${against.label}: drawing…`
+                        : `${against.label} could not be drawn: ${againstSnapshot.error}`}
+                    </p>
+                  ) : (
+                    <CompareView
+                      client={compareClient}
+                      state={againstSnapshot.state}
+                      dimension={dimension}
+                      end={end}
+                      mode={mode === 'height' ? 'height' : 'biomes'}
+                      view={view}
+                      colours={colours}
+                      against={{
+                        label: against.label,
+                        spec: { extra: host.extra, source: host.source },
+                        ...(against.note === undefined ? {} : { note: against.note }),
+                      }}
+                    />
+                  )
+                ) : null
+              ) : state.vanilla === null ? (
                 <div
                   role="status"
                   data-testid="terrain-compare-set-up"

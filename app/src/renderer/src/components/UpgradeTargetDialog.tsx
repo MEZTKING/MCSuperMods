@@ -20,7 +20,7 @@
  */
 
 import { openItems, type Problem, type Project, type UpgradeReport } from '@msm/core';
-import type { MigrationReport, ProblemSeverity, TargetFacts } from '@msm/plugin-api';
+import type { MigrationReport, OutputFile, ProblemSeverity, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import type { PlainFix } from '../session/plain-problems';
@@ -91,6 +91,13 @@ export interface MoveReport {
   report: UpgradeReport;
   /** What to apply as the one undo step. */
   migration: MigrationReport;
+  /** The moved copy (B819's after views); a dry run always has it. */
+  moved?: Project;
+  /** The lowered files of the project as it is and of the moved copy (B819). */
+  filesBefore?: readonly OutputFile[];
+  filesAfter?: readonly OutputFile[];
+  /** The hops of the move, in order (whose change sets the report's parts read). */
+  hops?: readonly { from: string; to: string; direction: 'up' | 'down' }[];
 }
 
 /** What the dialog needs of a saved move (`SavedUpgrade` of `session/upgrade/saved-report`). */

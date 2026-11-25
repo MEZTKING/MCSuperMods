@@ -10,6 +10,9 @@
  * biomes are drawn in one colour until a Play has given their list (limit WL7), and what the
  * preview does not draw is named. Vanilla's world is made in its own worker (one world a worker,
  * F9), so the project's map is never pushed out by it.
+ *
+ * B819: `against` draws another world in vanilla's place (the upgrade report's "Before the
+ * move": the project as it is, from its own files and worker), with its own label and note.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -168,6 +171,28 @@ export function compareClientFor(owner: object): TerrainClient {
   return client;
 }
 
+/** Another world drawn in vanilla's place (B819). */
+export interface CompareAgainst {
+  /** What the view calls it ("Before the move"). */
+  readonly label: string;
+  /** The world: files laid over `state`'s project files, and where to look. */
+  readonly spec: ViewWorldSpec;
+  /** The first line under it. */
+  readonly note?: string;
+}
+
+/** The notes under another world's map: its own line, then what the preview leaves out. */
+export function againstNotes(against: CompareAgainst, summary: WorldSummary | null): string[] {
+  return [
+    ...new Set([
+      against.note ?? against.label,
+      ...partLines(summary?.unsupported ?? [], unsupportedLine),
+      'Carved caves, buildings and the land shaped around them show only in the game.',
+      'Trees, plants and ores are not drawn here.',
+    ]),
+  ];
+}
+
 /** Props of {@link CompareView}. */
 export interface CompareViewProps {
   /** The client of vanilla's world (`compareClientFor`). */
@@ -179,14 +204,20 @@ export interface CompareViewProps {
   mode: 'biomes' | 'height';
   view: Pick<TerrainView, 'x' | 'z' | 'zoom' | 'seed'>;
   colours: BiomeColours;
+  /** Another world in vanilla's place (B819); `state` and `client` are then its own. */
+  against?: CompareAgainst;
 }
 
 /** Vanilla's map beside the project's; see the module comment. */
 export default function CompareView(props: CompareViewProps) {
   const { client, state, mode, view, colours } = props;
-  const source = useMemo(
-    () => compareSource(props.dimension, props.end),
-    [props.dimension, props.end],
+  const against = props.against;
+  const source = useMemo<CompareSource>(
+    () =>
+      against === undefined
+        ? compareSource(props.dimension, props.end)
+        : { spec: against.spec, label: against.label, end: false, climate: false },
+    [props.dimension, props.end, against],
   );
   const { world, error } = useViewWorld(client, state, source.spec, view.seed);
   const [layers, setLayers] = useState<readonly MapLayer[]>([]);
@@ -249,7 +280,11 @@ export default function CompareView(props: CompareViewProps) {
 
   const [hover, setHover] = useState<{ x: number; z: number } | null>(null);
   const hovered = hover === null ? null : hoverAt(shown, hover.x, hover.z);
-  const notes = compareNotes({ facts: state.facts, source, summary });
+  const notes =
+    against === undefined
+      ? compareNotes({ facts: state.facts, source, summary })
+      : againstNotes(against, summary);
+  const what = against === undefined ? 'Vanilla' : against.label;
 
   return (
     <div className="flex min-w-0 flex-col gap-1" data-testid="terrain-compare-view">
@@ -259,7 +294,9 @@ export default function CompareView(props: CompareViewProps) {
       </p>
       {error !== null ? (
         <p role="status" className="text-sm text-error" data-testid="terrain-compare-error">
-          {`Vanilla's world could not be drawn: ${error}`}
+          {against === undefined
+            ? `Vanilla's world could not be drawn: ${error}`
+            : `${against.label} could not be drawn: ${error}`}
         </p>
       ) : (
         <div className="relative aspect-square w-full overflow-hidden rounded border border-border">
@@ -292,13 +329,15 @@ export default function CompareView(props: CompareViewProps) {
       )}
       <p className="min-h-5 text-xs text-muted [overflow-wrap:anywhere]" aria-live="polite">
         {hover === null
-          ? 'Hover to see vanilla here.'
-          : `Vanilla at X ${hover.x}, Z ${hover.z}${hovered?.biome === undefined ? '' : `: ${hovered.biome}`}${
+          ? `Hover to see ${against === undefined ? 'vanilla' : 'it'} here.`
+          : `${what} at X ${hover.x}, Z ${hover.z}${hovered?.biome === undefined ? '' : `: ${hovered.biome}`}${
               hovered?.height === undefined ? '' : `, land at y ${hovered.height}`
             }`}
       </p>
       <ul
-        aria-label="What vanilla's map leaves out"
+        aria-label={
+          against === undefined ? "What vanilla's map leaves out" : 'What this map leaves out'
+        }
         data-testid="terrain-compare-notes"
         className="flex flex-col gap-1 text-xs text-muted [overflow-wrap:anywhere]"
       >
